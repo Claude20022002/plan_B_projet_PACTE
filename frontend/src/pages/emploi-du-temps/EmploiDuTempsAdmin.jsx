@@ -8,8 +8,10 @@ import {
     FormControl,
     InputLabel,
     Button,
+    Menu,
+    IconButton,
 } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import { ArrowBack, Download } from '@mui/icons-material';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -17,6 +19,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, groupeAPI, enseignantAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { exportToExcel, exportToPDF, exportToCSV } from '../../utils/exportEmploiDuTemps';
 
 export default function EmploiDuTempsAdmin() {
     const navigate = useNavigate();
@@ -27,6 +30,8 @@ export default function EmploiDuTempsAdmin() {
     const [groupes, setGroupes] = useState([]);
     const [enseignants, setEnseignants] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [affectationsData, setAffectationsData] = useState([]);
+    const [exportMenuAnchor, setExportMenuAnchor] = useState(null);
 
     useEffect(() => {
         loadOptions();
@@ -66,6 +71,9 @@ export default function EmploiDuTempsAdmin() {
                 const result = await affectationAPI.getAll({ limit: 1000 });
                 data = result.data || [];
             }
+
+            // Sauvegarder les données brutes pour l'export
+            setAffectationsData(data);
 
             const formattedEvents = data.map((aff) => ({
                 id: aff.id_affectation,
@@ -166,8 +174,47 @@ export default function EmploiDuTempsAdmin() {
                                 <MenuItem value="timeGridDay">Jour</MenuItem>
                             </Select>
                         </FormControl>
+                        <IconButton
+                            color="primary"
+                            onClick={(e) => setExportMenuAnchor(e.currentTarget)}
+                            title="Télécharger l'emploi du temps"
+                        >
+                            <Download />
+                        </IconButton>
                     </Box>
                 </Box>
+
+                {/* Menu d'export */}
+                <Menu
+                    anchorEl={exportMenuAnchor}
+                    open={Boolean(exportMenuAnchor)}
+                    onClose={() => setExportMenuAnchor(null)}
+                >
+                    <MenuItem
+                        onClick={() => {
+                            exportToPDF(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps - Administrateur');
+                            setExportMenuAnchor(null);
+                        }}
+                    >
+                        Télécharger en PDF
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            exportToExcel(affectationsData, 'emploi-du-temps-admin');
+                            setExportMenuAnchor(null);
+                        }}
+                    >
+                        Télécharger en Excel
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            exportToCSV(affectationsData, 'emploi-du-temps-admin');
+                            setExportMenuAnchor(null);
+                        }}
+                    >
+                        Télécharger en CSV
+                    </MenuItem>
+                </Menu>
 
                 <Paper sx={{ p: 2 }}>
                     <FullCalendar
