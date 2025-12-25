@@ -81,7 +81,6 @@ export default function EtudiantDashboard() {
 
     const quickActions = [
         { label: 'Mon emploi du temps', path: '/emploi-du-temps/etudiant', icon: <CalendarToday />, variant: 'contained' },
-        { label: 'Salles disponibles', path: '/salles/disponibles', icon: <School />, variant: 'outlined' },
     ];
 
     const statCards = [

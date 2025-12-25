@@ -98,7 +98,6 @@ export default function DashboardLayout({ children }) {
             return [
                 ...baseItems,
                 { text: 'Mon emploi du temps', icon: <Schedule />, path: '/emploi-du-temps/etudiant' },
-                { text: 'Salles disponibles', icon: <Room />, path: '/salles/disponibles' },
             ];
         }
     };

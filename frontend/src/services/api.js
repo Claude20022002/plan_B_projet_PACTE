@@ -95,6 +95,7 @@ export const userAPI = {
     create: (data) => request('/users', { method: 'POST', body: data }),
     update: (id, data) => request(`/users/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/users/${id}`, { method: 'DELETE' }),
+    importBulk: (data) => request('/users/import', { method: 'POST', body: data }),
 };
 
 // ==================== ENSEIGNANTS ====================
@@ -107,6 +108,7 @@ export const enseignantAPI = {
     create: (data) => request('/enseignants', { method: 'POST', body: data }),
     update: (id, data) => request(`/enseignants/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/enseignants/${id}`, { method: 'DELETE' }),
+    importBulk: (data) => request('/enseignants/import', { method: 'POST', body: data }),
 };
 
 // ==================== ÉTUDIANTS ====================
@@ -119,6 +121,7 @@ export const etudiantAPI = {
     create: (data) => request('/etudiants', { method: 'POST', body: data }),
     update: (id, data) => request(`/etudiants/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/etudiants/${id}`, { method: 'DELETE' }),
+    importBulk: (data) => request('/etudiants/import', { method: 'POST', body: data }),
 };
 
 // ==================== FILIÈRES ====================
