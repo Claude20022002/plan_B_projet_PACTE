@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
     Box,
     Paper,
@@ -21,10 +22,13 @@ import {
     InputLabel,
     Select,
     MenuItem,
+    Alert,
+    Snackbar,
 } from '@mui/material';
 import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI } from '../../services/api';
+import { useAuth } from '../../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 
@@ -39,12 +43,15 @@ const validationSchema = yup.object({
 
 export default function Affectations() {
     const { user } = useAuth();
+    const [searchParams, setSearchParams] = useSearchParams();
     const [affectations, setAffectations] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [total, setTotal] = useState(0);
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
     const [options, setOptions] = useState({
         cours: [],
         groupes: [],
@@ -69,14 +76,15 @@ export default function Affectations() {
             ]);
 
             setOptions({
-                cours: cours.data || [],
-                groupes: groupes.data || [],
-                salles: salles.data || [],
-                creneaux: creneaux.data || [],
-                enseignants: enseignants.data || [],
+                cours: cours.data || cours || [],
+                groupes: groupes.data || groupes || [],
+                salles: salles.data || salles || [],
+                creneaux: creneaux.data || creneaux || [],
+                enseignants: enseignants.data || enseignants || [],
             });
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('Erreur lors du chargement des options:', error);
+            setError('Erreur lors du chargement des données');
         }
     };
 
@@ -106,19 +114,58 @@ export default function Affectations() {
             id_user_admin: user?.id_user || '',
         },
         validationSchema,
-        onSubmit: async (values) => {
+        enableReinitialize: true,
+        onSubmit: async (values, { setSubmitting }) => {
             try {
+                setError('');
+                setSuccess('');
+                
+                // Validation manuelle des champs requis
+                if (!values.id_cours || !values.id_groupe || !values.id_user_enseignant || 
+                    !values.id_salle || !values.id_creneau || !values.date_seance) {
+                    setError('Veuillez remplir tous les champs requis');
+                    setSubmitting(false);
+                    return;
+                }
+                
+                // Convertir les valeurs string en nombres pour les IDs
+                const dataToSend = {
+                    date_seance: values.date_seance,
+                    statut: values.statut || 'planifie',
+                    commentaire: values.commentaire || '',
+                    id_cours: Number(values.id_cours),
+                    id_groupe: Number(values.id_groupe),
+                    id_user_enseignant: Number(values.id_user_enseignant),
+                    id_salle: Number(values.id_salle),
+                    id_creneau: Number(values.id_creneau),
+                    id_user_admin: user?.id_user || Number(values.id_user_admin),
+                };
+
                 if (editing) {
-                    await affectationAPI.update(editing.id_affectation, values);
+                    await affectationAPI.update(editing.id_affectation, dataToSend);
+                    setSuccess('Affectation modifiée avec succès');
                 } else {
-                    await affectationAPI.create(values);
+                    await affectationAPI.create(dataToSend);
+                    setSuccess('Affectation créée avec succès');
                 }
                 formik.resetForm();
                 setOpen(false);
                 setEditing(null);
+                setSearchParams({}); // Nettoyer les paramètres URL
                 loadAffectations();
             } catch (error) {
                 console.error('Erreur:', error);
+                const errorMessage = error.message || error.response?.data?.message || 'Erreur lors de la sauvegarde de l\'affectation';
+                setError(errorMessage);
+                
+                // Si erreur 401, rediriger vers la connexion
+                if (error.status === 401 || errorMessage.includes('401') || errorMessage.includes('Non autorisé')) {
+                    setTimeout(() => {
+                        window.location.href = '/connexion';
+                    }, 2000);
+                }
+            } finally {
+                setSubmitting(false);
             }
         },
     });
@@ -138,6 +185,36 @@ export default function Affectations() {
         });
         setOpen(true);
     };
+
+    const handleOpenNewDialog = () => {
+        setEditing(null);
+        setError('');
+        setSuccess('');
+        formik.resetForm({
+            values: {
+                date_seance: '',
+                statut: 'planifie',
+                commentaire: '',
+                id_cours: '',
+                id_groupe: '',
+                id_user_enseignant: '',
+                id_salle: '',
+                id_creneau: '',
+                id_user_admin: user?.id_user || '',
+            },
+        });
+        setOpen(true);
+    };
+
+    // Ouvrir automatiquement le dialog si le paramètre "nouvelle" est présent dans l'URL
+    useEffect(() => {
+        if (searchParams.get('nouvelle') === 'true') {
+            handleOpenNewDialog();
+            // Retirer le paramètre de l'URL
+            setSearchParams({});
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchParams]);
 
     const handleDelete = async (id) => {
         if (window.confirm('Êtes-vous sûr de vouloir supprimer cette affectation ?')) {
@@ -162,13 +239,53 @@ export default function Affectations() {
                         startIcon={<Add />}
                         onClick={() => {
                             setEditing(null);
-                            formik.resetForm();
+                            setError('');
+                            setSuccess('');
+                            formik.resetForm({
+                                values: {
+                                    date_seance: '',
+                                    statut: 'planifie',
+                                    commentaire: '',
+                                    id_cours: '',
+                                    id_groupe: '',
+                                    id_user_enseignant: '',
+                                    id_salle: '',
+                                    id_creneau: '',
+                                    id_user_admin: user?.id_user || '',
+                                },
+                            });
                             setOpen(true);
                         }}
                     >
                         Nouvelle affectation
                     </Button>
                 </Box>
+
+                {error && (
+                    <Snackbar
+                        open={!!error}
+                        autoHideDuration={6000}
+                        onClose={() => setError('')}
+                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    >
+                        <Alert onClose={() => setError('')} severity="error">
+                            {error}
+                        </Alert>
+                    </Snackbar>
+                )}
+
+                {success && (
+                    <Snackbar
+                        open={!!success}
+                        autoHideDuration={6000}
+                        onClose={() => setSuccess('')}
+                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                    >
+                        <Alert onClose={() => setSuccess('')} severity="success">
+                            {success}
+                        </Alert>
+                    </Snackbar>
+                )}
 
                 <TableContainer component={Paper}>
                     <Table>

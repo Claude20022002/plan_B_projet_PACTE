@@ -279,7 +279,7 @@ export default function AdminDashboard() {
                         <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
                             <Button
                                 variant="contained"
-                                onClick={() => navigate('/gestion/affectations/nouvelle')}
+                                onClick={() => navigate('/gestion/affectations?nouvelle=true')}
                             >
                                 Créer une affectation
                             </Button>

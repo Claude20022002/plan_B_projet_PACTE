@@ -12,29 +12,66 @@ async function request(endpoint, options = {}) {
     const token = localStorage.getItem('token');
 
     const config = {
+        method: options.method || 'GET',
         headers: {
             'Content-Type': 'application/json',
             ...(token && { Authorization: `Bearer ${token}` }),
             ...options.headers,
         },
-        ...options,
     };
 
-    if (config.body && typeof config.body === 'object') {
-        config.body = JSON.stringify(config.body);
+    // Ajouter le body si présent
+    if (options.body) {
+        if (typeof options.body === 'object') {
+            config.body = JSON.stringify(options.body);
+        } else {
+            config.body = options.body;
+        }
     }
 
     try {
         const response = await fetch(url, config);
-        const data = await response.json();
+        
+        // Gérer les réponses sans contenu JSON
+        let data;
+        const contentType = response.headers.get('content-type');
+        if (contentType && contentType.includes('application/json')) {
+            data = await response.json();
+        } else {
+            const text = await response.text();
+            data = { message: text || `Erreur ${response.status}` };
+        }
 
         if (!response.ok) {
-            throw new Error(data.message || `Erreur ${response.status}`);
+            // Si erreur 401 (non autorisé), ne pas rediriger automatiquement
+            // Laisser le composant gérer la redirection
+            if (response.status === 401) {
+                const error = new Error(data.message || data.error || 'Non autorisé');
+                error.status = 401;
+                error.response = { data };
+                throw error;
+            }
+            // Si erreur 403 (interdit), c'est un problème de permissions
+            if (response.status === 403) {
+                const error = new Error(data.message || data.error || 'Accès interdit');
+                error.status = 403;
+                error.response = { data };
+                throw error;
+            }
+            const error = new Error(data.message || data.error || `Erreur ${response.status}`);
+            error.status = response.status;
+            error.response = { data };
+            throw error;
         }
 
         return data;
     } catch (error) {
-        console.error('API Error:', error);
+        console.error('API Error:', {
+            endpoint,
+            method: config.method,
+            status: error.status,
+            message: error.message,
+        });
         throw error;
     }
 }

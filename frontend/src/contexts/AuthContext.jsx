@@ -33,7 +33,10 @@ export const AuthProvider = ({ children }) => {
             setIsAuthenticated(true);
         } catch (error) {
             console.error('Erreur de vérification auth:', error);
-            logout();
+            // Ne pas déconnecter automatiquement si c'est juste une erreur réseau
+            if (error.status === 401 || error.message?.includes('401')) {
+                logout();
+            }
         } finally {
             setLoading(false);
         }

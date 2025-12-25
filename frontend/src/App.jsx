@@ -19,10 +19,26 @@ import EtudiantDashboard from './pages/dashboard/EtudiantDashboard';
 import Salles from './pages/gestion/Salles';
 import Affectations from './pages/gestion/Affectations';
 import Conflits from './pages/gestion/Conflits';
+import Utilisateurs from './pages/gestion/Utilisateurs';
+import Enseignants from './pages/gestion/Enseignants';
+import Etudiants from './pages/gestion/Etudiants';
+import Filieres from './pages/gestion/Filieres';
+import Groupes from './pages/gestion/Groupes';
+import Cours from './pages/gestion/Cours';
+import Creneaux from './pages/gestion/Creneaux';
 
 // Pages d'emploi du temps
 import EmploiDuTempsEnseignant from './pages/emploi-du-temps/EmploiDuTempsEnseignant';
 import EmploiDuTempsEtudiant from './pages/emploi-du-temps/EmploiDuTempsEtudiant';
+
+// Pages fonctionnelles
+import Notifications from './pages/Notifications';
+import Parametres from './pages/Parametres';
+import Statistiques from './pages/Statistiques';
+import MesAffectations from './pages/MesAffectations';
+import DemandesReport from './pages/DemandesReport';
+import Disponibilites from './pages/Disponibilites';
+import SallesDisponibles from './pages/SallesDisponibles';
 
 const queryClient = new QueryClient();
 
@@ -77,10 +93,66 @@ function App() {
 
                             {/* Gestion - Admin seulement */}
                             <Route
+                                path="/gestion/utilisateurs"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <Utilisateurs />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/gestion/enseignants"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <Enseignants />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/gestion/etudiants"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <Etudiants />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/gestion/filieres"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <Filieres />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/gestion/groupes"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <Groupes />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
                                 path="/gestion/salles"
                                 element={
                                     <PrivateRoute requiredRole="admin">
                                         <Salles />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/gestion/cours"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <Cours />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/gestion/creneaux"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <Creneaux />
                                     </PrivateRoute>
                                 }
                             />
@@ -115,6 +187,70 @@ function App() {
                                 element={
                                     <PrivateRoute requiredRole="etudiant">
                                         <EmploiDuTempsEtudiant />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            {/* Pages fonctionnelles - Tous les rôles */}
+                            <Route
+                                path="/notifications"
+                                element={
+                                    <PrivateRoute>
+                                        <Notifications />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/parametres"
+                                element={
+                                    <PrivateRoute>
+                                        <Parametres />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            {/* Pages fonctionnelles - Admin */}
+                            <Route
+                                path="/statistiques"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <Statistiques />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            {/* Pages fonctionnelles - Enseignant */}
+                            <Route
+                                path="/mes-affectations"
+                                element={
+                                    <PrivateRoute requiredRole="enseignant">
+                                        <MesAffectations />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/demandes-report"
+                                element={
+                                    <PrivateRoute requiredRole="enseignant">
+                                        <DemandesReport />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/disponibilites"
+                                element={
+                                    <PrivateRoute requiredRole="enseignant">
+                                        <Disponibilites />
+                                    </PrivateRoute>
+                                }
+                            />
+
+                            {/* Pages fonctionnelles - Étudiant */}
+                            <Route
+                                path="/salles/disponibles"
+                                element={
+                                    <PrivateRoute requiredRole="etudiant">
+                                        <SallesDisponibles />
                                     </PrivateRoute>
                                 }
                             />
