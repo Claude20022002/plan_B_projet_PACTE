@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Select, MenuItem, FormControl, InputLabel } from '@mui/material';
+import { Box, Typography, Paper, Select, MenuItem, FormControl, InputLabel, Button } from '@mui/material';
+import { ArrowBack } from '@mui/icons-material';
 import FullCalendar from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -7,9 +8,11 @@ import interactionPlugin from '@fullcalendar/interaction';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { emploiDuTempsAPI, etudiantAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
+import { useNavigate } from 'react-router-dom';
 
 export default function EmploiDuTempsEtudiant() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [events, setEvents] = useState([]);
     const [view, setView] = useState('timeGridWeek');
     const [groupeId, setGroupeId] = useState(null);
@@ -60,10 +63,19 @@ export default function EmploiDuTempsEtudiant() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Mon Emploi du Temps
-                    </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/etudiant')}
+                            variant="outlined"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Mon Emploi du Temps
+                        </Typography>
+                    </Box>
                     <FormControl size="small" sx={{ minWidth: 150 }}>
                         <InputLabel>Vue</InputLabel>
                         <Select value={view} onChange={(e) => setView(e.target.value)} label="Vue">

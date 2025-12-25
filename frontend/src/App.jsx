@@ -1,9 +1,9 @@
 import React from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import { AuthProvider } from './contexts/AuthContext';
+import { ThemeProvider } from './contexts/ThemeContext';
 import PrivateRoute from './components/common/PrivateRoute';
 
 // Pages publiques
@@ -28,6 +28,7 @@ import Cours from './pages/gestion/Cours';
 import Creneaux from './pages/gestion/Creneaux';
 
 // Pages d'emploi du temps
+import EmploiDuTempsAdmin from './pages/emploi-du-temps/EmploiDuTempsAdmin';
 import EmploiDuTempsEnseignant from './pages/emploi-du-temps/EmploiDuTempsEnseignant';
 import EmploiDuTempsEtudiant from './pages/emploi-du-temps/EmploiDuTempsEtudiant';
 
@@ -42,21 +43,10 @@ import SallesDisponibles from './pages/SallesDisponibles';
 
 const queryClient = new QueryClient();
 
-const theme = createTheme({
-    palette: {
-        primary: {
-            main: '#7c4dff',
-        },
-        secondary: {
-            main: '#001962',
-        },
-    },
-});
-
 function App() {
     return (
         <QueryClientProvider client={queryClient}>
-            <ThemeProvider theme={theme}>
+            <ThemeProvider>
                 <CssBaseline />
                 <AuthProvider>
                     <BrowserRouter>
@@ -174,6 +164,14 @@ function App() {
                             />
 
                             {/* Emplois du temps */}
+                            <Route
+                                path="/gestion/emplois-du-temps"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <EmploiDuTempsAdmin />
+                                    </PrivateRoute>
+                                }
+                            />
                             <Route
                                 path="/emploi-du-temps/enseignant"
                                 element={

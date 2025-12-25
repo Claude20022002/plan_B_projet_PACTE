@@ -25,12 +25,13 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({
     date_seance: yup.date().required('La date est requise'),
@@ -43,6 +44,7 @@ const validationSchema = yup.object({
 
 export default function Affectations() {
     const { user } = useAuth();
+    const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
     const [affectations, setAffectations] = useState([]);
     const [page, setPage] = useState(0);
@@ -230,10 +232,20 @@ export default function Affectations() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Gestion des Affectations
-                    </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/admin')}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Gestion des Affectations
+                        </Typography>
+                    </Box>
                     <Button
                         variant="contained"
                         startIcon={<Add />}

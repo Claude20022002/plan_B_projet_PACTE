@@ -107,7 +107,7 @@ export const createRateLimiter = (options = {}) => {
  */
 export const authRateLimiter = createRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 5, // 5 tentatives de connexion
+    max: 20, // 20 tentatives de connexion (augmenté)
     message:
         "Trop de tentatives de connexion, veuillez réessayer dans 15 minutes.",
 });
@@ -117,7 +117,7 @@ export const authRateLimiter = createRateLimiter({
  */
 export const apiRateLimiter = createRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 100, // 100 requêtes
+    max: 500, // 500 requêtes (augmenté pour éviter les erreurs 429)
     message: "Trop de requêtes, veuillez réessayer plus tard.",
 });
 

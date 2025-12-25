@@ -31,13 +31,17 @@ import {
     Logout,
     Groups,
     Category,
+    Brightness4,
+    Brightness7,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTheme } from '../../contexts/ThemeContext';
 
 const drawerWidth = 260;
 
 export default function DashboardLayout({ children }) {
     const { user, logout } = useAuth();
+    const { mode, toggleTheme } = useTheme();
     const navigate = useNavigate();
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
@@ -173,6 +177,16 @@ export default function DashboardLayout({ children }) {
                         onClick={() => navigate('/notifications')}
                     >
                         <Notifications />
+                    </IconButton>
+                    <IconButton
+                        size="large"
+                        edge="end"
+                        aria-label="changer le thème"
+                        color="inherit"
+                        onClick={toggleTheme}
+                        sx={{ ml: 1 }}
+                    >
+                        {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
                     </IconButton>
                     <IconButton onClick={handleMenuOpen} sx={{ ml: 1 }}>
                         <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>

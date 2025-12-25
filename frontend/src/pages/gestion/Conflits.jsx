@@ -19,11 +19,13 @@ import {
     Typography,
     Alert,
 } from '@mui/material';
-import { CheckCircle, Cancel, Visibility } from '@mui/icons-material';
+import { CheckCircle, Cancel, Visibility, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { conflitAPI } from '../../services/api';
+import { useNavigate } from 'react-router-dom';
 
 export default function Conflits() {
+    const navigate = useNavigate();
     const [conflits, setConflits] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -75,10 +77,20 @@ export default function Conflits() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Gestion des Conflits
-                    </Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/admin')}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Gestion des Conflits
+                        </Typography>
+                    </Box>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         <Button
                             variant={filter === 'all' ? 'contained' : 'outlined'}
