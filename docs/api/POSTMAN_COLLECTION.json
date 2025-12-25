@@ -1,0 +1,320 @@
+{
+    "info": {
+        "name": "HESTIM Planner API",
+        "description": "Collection Postman pour l'API HESTIM Planner",
+        "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+        "_exporter_id": "hestim-planner"
+    },
+    "auth": {
+        "type": "bearer",
+        "bearer": [
+            {
+                "key": "token",
+                "value": "{{jwt_token}}",
+                "type": "string"
+            }
+        ]
+    },
+    "variable": [
+        {
+            "key": "base_url",
+            "value": "http://localhost:5000/api",
+            "type": "string"
+        },
+        {
+            "key": "jwt_token",
+            "value": "",
+            "type": "string"
+        }
+    ],
+    "item": [
+        {
+            "name": "Utilisateurs",
+            "item": [
+                {
+                    "name": "Récupérer tous les utilisateurs",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users",
+                            "host": ["{{base_url}}"],
+                            "path": ["users"]
+                        }
+                    }
+                },
+                {
+                    "name": "Récupérer un utilisateur par ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Créer un utilisateur",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"nom\": \"Dupont\",\n  \"prenom\": \"Jean\",\n  \"email\": \"jean.dupont@hestim.ma\",\n  \"password_hash\": \"$2a$10$...\",\n  \"role\": \"enseignant\",\n  \"telephone\": \"0612345678\",\n  \"actif\": true\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users",
+                            "host": ["{{base_url}}"],
+                            "path": ["users"]
+                        }
+                    }
+                },
+                {
+                    "name": "Mettre à jour un utilisateur",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"telephone\": \"0698765432\",\n  \"actif\": false\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/users/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Supprimer un utilisateur",
+                    "request": {
+                        "method": "DELETE",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/users/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["users", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Affectations",
+            "item": [
+                {
+                    "name": "Récupérer toutes les affectations",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/affectations",
+                            "host": ["{{base_url}}"],
+                            "path": ["affectations"]
+                        }
+                    }
+                },
+                {
+                    "name": "Récupérer une affectation par ID",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/affectations/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["affectations", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Récupérer les affectations d'un enseignant",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/affectations/enseignant/:id_enseignant",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "affectations",
+                                "enseignant",
+                                ":id_enseignant"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id_enseignant",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Récupérer les affectations d'un groupe",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/affectations/groupe/:id_groupe",
+                            "host": ["{{base_url}}"],
+                            "path": ["affectations", "groupe", ":id_groupe"],
+                            "variable": [
+                                {
+                                    "key": "id_groupe",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Créer une affectation",
+                    "request": {
+                        "method": "POST",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"date_seance\": \"2024-12-15\",\n  \"statut\": \"planifie\",\n  \"commentaire\": \"Première séance\",\n  \"id_cours\": 1,\n  \"id_groupe\": 1,\n  \"id_user_enseignant\": 1,\n  \"id_salle\": 1,\n  \"id_creneau\": 1,\n  \"id_user_admin\": 1\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/affectations",
+                            "host": ["{{base_url}}"],
+                            "path": ["affectations"]
+                        }
+                    }
+                },
+                {
+                    "name": "Mettre à jour une affectation",
+                    "request": {
+                        "method": "PUT",
+                        "header": [
+                            {
+                                "key": "Content-Type",
+                                "value": "application/json"
+                            }
+                        ],
+                        "body": {
+                            "mode": "raw",
+                            "raw": "{\n  \"statut\": \"confirme\",\n  \"commentaire\": \"Séance confirmée\"\n}"
+                        },
+                        "url": {
+                            "raw": "{{base_url}}/affectations/:id",
+                            "host": ["{{base_url}}"],
+                            "path": ["affectations", ":id"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "name": "Notifications",
+            "item": [
+                {
+                    "name": "Récupérer les notifications d'un utilisateur",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/user/:id_user",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications", "user", ":id_user"],
+                            "variable": [
+                                {
+                                    "key": "id_user",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Récupérer les notifications non lues",
+                    "request": {
+                        "method": "GET",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/user/:id_user/non-lues",
+                            "host": ["{{base_url}}"],
+                            "path": [
+                                "notifications",
+                                "user",
+                                ":id_user",
+                                "non-lues"
+                            ],
+                            "variable": [
+                                {
+                                    "key": "id_user",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                },
+                {
+                    "name": "Marquer une notification comme lue",
+                    "request": {
+                        "method": "PATCH",
+                        "header": [],
+                        "url": {
+                            "raw": "{{base_url}}/notifications/:id/lire",
+                            "host": ["{{base_url}}"],
+                            "path": ["notifications", ":id", "lire"],
+                            "variable": [
+                                {
+                                    "key": "id",
+                                    "value": "1"
+                                }
+                            ]
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}

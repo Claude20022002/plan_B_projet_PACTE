@@ -1,0 +1,64 @@
+import express from "express";
+import {
+    getAllEnseignants,
+    getEnseignantById,
+    createEnseignant,
+    updateEnseignant,
+    deleteEnseignant,
+} from "../controllers/index.js";
+import {
+    authenticateToken,
+    requireAdmin,
+    requireEnseignant,
+    requireOwnResourceOrAdmin,
+    asyncHandler,
+    validateEnseignantCreation,
+    handleValidationErrors,
+} from "../middleware/index.js";
+
+const router = express.Router();
+
+// 🔍 Récupérer tous les enseignants (Admin ou Enseignant)
+router.get(
+    "/",
+    authenticateToken,
+    requireEnseignant,
+    asyncHandler(getAllEnseignants)
+);
+
+// 🔍 Récupérer un enseignant par ID (Admin ou propriétaire)
+router.get(
+    "/:id",
+    authenticateToken,
+    requireOwnResourceOrAdmin("id"),
+    asyncHandler(getEnseignantById)
+);
+
+// ➕ Créer un enseignant (Admin seulement)
+router.post(
+    "/",
+    authenticateToken,
+    requireAdmin,
+    validateEnseignantCreation,
+    handleValidationErrors,
+    asyncHandler(createEnseignant)
+);
+
+// ✏️ Mettre à jour un enseignant (Admin ou propriétaire)
+router.put(
+    "/:id",
+    authenticateToken,
+    requireOwnResourceOrAdmin("id"),
+    handleValidationErrors,
+    asyncHandler(updateEnseignant)
+);
+
+// 🗑️ Supprimer un enseignant (Admin seulement)
+router.delete(
+    "/:id",
+    authenticateToken,
+    requireAdmin,
+    asyncHandler(deleteEnseignant)
+);
+
+export default router;

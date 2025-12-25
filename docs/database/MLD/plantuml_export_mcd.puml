@@ -1,0 +1,206 @@
+@startuml MCD_HESTIM
+!define ENTITY class
+!define PK <b><color:red>
+!define FK <color:blue>
+
+skinparam class {
+    BackgroundColor LightYellow
+    BorderColor Black
+    ArrowColor Black
+}
+
+title Modèle Conceptuel de Données - HESTIM Planning
+
+' ============= ENTITÉS =============
+
+ENTITY User {
+    PK id_user : INT
+    --
+    nom : VARCHAR(100)
+    prenom : VARCHAR(100)
+    email : VARCHAR(255) <<UK>>
+    password_hash : VARCHAR(255)
+    role : ENUM
+    telephone : VARCHAR(20)
+    avatar_url : VARCHAR(500)
+    actif : BOOLEAN
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+}
+
+ENTITY Enseignant {
+    PK FK id_enseignant : INT
+    --
+    specialite : VARCHAR(100)
+    departement : VARCHAR(100)
+    grade : ENUM
+    bureau : VARCHAR(50)
+}
+
+ENTITY Etudiant {
+    PK FK id_etudiant : INT
+    --
+    numero_etudiant : VARCHAR(20) <<UK>>
+    FK id_groupe : INT
+    niveau : ENUM
+    date_inscription : DATE
+}
+
+ENTITY Filiere {
+    PK id_filiere : INT
+    --
+    nom_filiere : VARCHAR(100)
+    code_filiere : VARCHAR(20) <<UK>>
+    description : TEXT
+    created_at : TIMESTAMP
+}
+
+ENTITY Groupe {
+    PK id_groupe : INT
+    --
+    nom_groupe : VARCHAR(50)
+    niveau : ENUM
+    effectif : INT
+    FK id_filiere : INT
+    annee_scolaire : VARCHAR(20)
+    created_at : TIMESTAMP
+}
+
+ENTITY Salle {
+    PK id_salle : INT
+    --
+    nom_salle : VARCHAR(50) <<UK>>
+    type_salle : ENUM
+    capacite : INT
+    batiment : VARCHAR(50)
+    etage : INT
+    equipements : JSON
+    disponible : BOOLEAN
+    created_at : TIMESTAMP
+}
+
+ENTITY Cours {
+    PK id_cours : INT
+    --
+    nom_cours : VARCHAR(150)
+    code_cours : VARCHAR(20) <<UK>>
+    FK id_filiere : INT
+    niveau : ENUM
+    volume_horaire : INT
+    type_cours : ENUM
+    semestre : ENUM
+    coefficient : INT
+    created_at : TIMESTAMP
+}
+
+ENTITY Creneau {
+    PK id_creneau : INT
+    --
+    jour_semaine : ENUM
+    heure_debut : TIME
+    heure_fin : TIME
+    periode : ENUM
+    duree_minutes : INT
+}
+
+ENTITY Reservation {
+    PK id_reservation : INT
+    --
+    FK id_cours : INT
+    FK id_enseignant : INT
+    FK id_salle : INT
+    FK id_groupe : INT
+    FK id_creneau : INT
+    date_seance : DATE
+    statut : ENUM
+    commentaire : TEXT
+    created_at : TIMESTAMP
+    updated_at : TIMESTAMP
+    FK created_by : INT
+}
+
+ENTITY Conflit {
+    PK id_conflit : INT
+    --
+    FK id_reservation_1 : INT
+    FK id_reservation_2 : INT
+    type_conflit : ENUM
+    description : TEXT
+    date_detection : TIMESTAMP
+    resolu : BOOLEAN
+    date_resolution : TIMESTAMP
+    FK resolu_par : INT
+}
+
+ENTITY DisponibiliteEnseignant {
+    PK id_disponibilite : INT
+    --
+    FK id_enseignant : INT
+    FK id_creneau : INT
+    disponible : BOOLEAN
+    raison_indisponibilite : VARCHAR(255)
+    date_debut : DATE
+    date_fin : DATE
+}
+
+ENTITY Notification {
+    PK id_notification : INT
+    --
+    FK id_user : INT
+    titre : VARCHAR(150)
+    message : TEXT
+    type_notification : ENUM
+    lue : BOOLEAN
+    date_envoi : TIMESTAMP
+}
+
+' ============= RELATIONS =============
+
+' Héritage
+User <|-- Enseignant : "est un"
+User <|-- Etudiant : "est un"
+
+' Relations 1:N
+Filiere "1" --o{ "N" Groupe : "contient"
+Filiere "1" --o{ "N" Cours : "propose"
+Groupe "1" --o{ "N" Etudiant : "appartient à\n(CLASSE)"
+
+' Relations vers Reservation
+Cours "1" --o{ "N" Reservation : "fait l'objet de"
+Enseignant "1" --o{ "N" Reservation : "assure"
+Salle "1" --o{ "N" Reservation : "accueille"
+Groupe "1" --o{ "N" Reservation : "assiste à"
+Creneau "1" --o{ "N" Reservation : "se déroule dans"
+User "1" ..o{ "N" Reservation : "créé par"
+
+' Relations Conflit
+Reservation "1" --o{ "N" Conflit : "est en conflit"
+User "1" ..o{ "N" Conflit : "résolu par"
+
+' Relations Disponibilité
+Enseignant "1" --o{ "N" DisponibiliteEnseignant : "définit"
+Creneau "1" --o{ "N" DisponibiliteEnseignant : "concerne"
+
+' Relations Notification
+User "1" --o{ "N" Notification : "reçoit"
+
+note right of Etudiant
+  IMPORTANT: Un étudiant
+  APPARTIENT obligatoirement
+  à UN groupe (sa classe)
+  via id_groupe
+end note
+
+note bottom of Reservation
+  Table centrale avec 5 FK obligatoires:
+  - Cours
+  - Enseignant
+  - Salle
+  - Groupe
+  - Creneau
+  
+  Détection automatique des conflits
+  via triggers SQL
+end note
+
+@enduml
