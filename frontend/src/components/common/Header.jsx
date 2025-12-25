@@ -39,15 +39,6 @@ export default function Header() {
                               sx={{width: { xs: '160px', md: '220px' }, height: { xs: '40px', md: '60px' }}}   
                         />
                        
-                        {/* connexion button */}
-                         <ThemeProvider theme={theme}>
-                              <Buton
-                              component={NavLink}
-                              to="/connexion"
-                              color="primary"
-                              label="Connexion"
-                              />
-                        </ThemeProvider>
 
           
                   </Toolbar>
