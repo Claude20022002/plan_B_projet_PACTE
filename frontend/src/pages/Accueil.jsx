@@ -210,89 +210,11 @@ export default function Accueil() {
                         </motion.div>
                     </Box>
 
-                    {/* Section Fonctionnalités */}
-                    <Box
-                        sx={{
-                            mt: 10,
-                            left: '-7px',
-                            top: '86px',
-                        }}
-                    >
-                        <motion.div
-                            initial={{ opacity: 0, y: 50 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.8, delay: 0.3 }}
-                        >
-                            <Typography
-                                variant="h3"
-                                fontWeight={700}
-                                align="center"
-                                sx={{ mb: 6, color: 'white', fontSize: { xs: '1.75rem', md: '2.5rem' } }}
-                            >
-                                Fonctionnalités Principales
-                            </Typography>
-                        </motion.div>
-
-                        <Grid container spacing={4}>
-                            {features.map((feature, index) => (
-                                <Grid item xs={12} sm={6} md={4} key={index}>
-                                    <motion.div
-                                        initial={{ opacity: 0, y: 30 }}
-                                        animate={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.6, delay: 0.4 + index * 0.1 }}
-                                        whileHover={{ y: -10, transition: { duration: 0.3 } }}
-                                    >
-                                        <Card
-                                            sx={{
-                                                height: '100%',
-                                                bgcolor: 'rgba(255, 255, 255, 0.95)',
-                                                backdropFilter: 'blur(10px)',
-                                                borderRadius: 3,
-                                                boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2)',
-                                                transition: 'all 0.3s',
-                                                '&:hover': {
-                                                    boxShadow: '0 12px 48px rgba(0, 0, 0, 0.3)',
-                                                    transform: 'translateY(-5px)',
-                                                },
-                                            }}
-                                        >
-                                            <CardContent sx={{ p: 3 }}>
-                                                <Box
-                                                    sx={{
-                                                        width: 64,
-                                                        height: 64,
-                                                        borderRadius: 2,
-                                                        bgcolor: `${feature.color}15`,
-                                                        display: 'flex',
-                                                        alignItems: 'center',
-                                                        justifyContent: 'center',
-                                                        mb: 2,
-                                                        color: feature.color,
-                                                    }}
-                                                >
-                                                    {feature.icon}
-                                                </Box>
-                                                <Typography
-                                                    variant="h6"
-                                                    fontWeight={600}
-                                                    gutterBottom
-                                                    sx={{ mb: 1.5 }}
-                                                >
-                                                    {feature.title}
-                                                </Typography>
-                                                <Typography
-                                                    variant="body2"
-                                                    color="text.secondary"
-                                                    sx={{ lineHeight: 1.7 }}
-                                                >
-                                                    {feature.description}
-                                                </Typography>
-                                            </CardContent>
-                                        </Card>
-                                    </motion.div>
-                                </Grid>
-                            ))}
-                        </Grid>
+                    {/* Footer */}
+                    <Box sx={{ textAlign: 'center', mt: 4, position: 'absolute', bottom: 0, left: 0, right: 0 }}>
+                        <Typography variant="body1" color="white">
+                            &copy; {new Date().getFullYear()} HESTIM Planner. Tous droits réservés.
+                        </Typography>
                     </Box>
                 </Container>
             </Box>

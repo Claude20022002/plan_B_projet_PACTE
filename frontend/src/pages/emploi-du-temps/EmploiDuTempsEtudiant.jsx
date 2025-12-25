@@ -90,6 +90,7 @@ export default function EmploiDuTempsEtudiant() {
                     <FullCalendar
                         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                         initialView={view}
+                        view={view}
                         events={events}
                         headerToolbar={{
                             left: 'prev,next today',

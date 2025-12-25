@@ -110,3 +110,53 @@ export const deleteUser = asyncHandler(async (req, res) => {
         message: "Utilisateur supprimé avec succès",
     });
 });
+
+// 📥 Importer des utilisateurs en masse
+export const importUsers = asyncHandler(async (req, res) => {
+    const { users } = req.body;
+
+    if (!Array.isArray(users) || users.length === 0) {
+        return res.status(400).json({
+            message: "Données invalides",
+            error: "Un tableau d'utilisateurs est requis",
+        });
+    }
+
+    const results = {
+        success: [],
+        errors: [],
+    };
+
+    for (const userData of users) {
+        try {
+            // Vérifier si l'email existe déjà
+            const existingUser = await Users.findOne({ where: { email: userData.email } });
+            if (existingUser) {
+                results.errors.push({
+                    email: userData.email,
+                    error: "Email déjà utilisé",
+                });
+                continue;
+            }
+
+            const user = await Users.create(userData);
+            const userResponse = user.toJSON();
+            delete userResponse.password_hash;
+            results.success.push(userResponse);
+        } catch (error) {
+            results.errors.push({
+                email: userData.email || "N/A",
+                error: error.message || "Erreur lors de la création",
+            });
+        }
+    }
+
+    res.status(201).json({
+        message: `${results.success.length} utilisateur(s) créé(s) avec succès`,
+        success: results.success,
+        errors: results.errors,
+        total: users.length,
+        successCount: results.success.length,
+        errorCount: results.errors.length,
+    });
+});

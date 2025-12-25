@@ -143,29 +143,43 @@ export default function Affectations() {
                     id_user_admin: user?.id_user || Number(values.id_user_admin),
                 };
 
+                let response;
                 if (editing) {
-                    await affectationAPI.update(editing.id_affectation, dataToSend);
+                    response = await affectationAPI.update(editing.id_affectation, dataToSend);
                     setSuccess('Affectation modifiée avec succès');
                 } else {
-                    await affectationAPI.create(dataToSend);
+                    response = await affectationAPI.create(dataToSend);
                     setSuccess('Affectation créée avec succès');
                 }
+                
+                // Fermer le dialog et réinitialiser
                 formik.resetForm();
                 setOpen(false);
                 setEditing(null);
                 setSearchParams({}); // Nettoyer les paramètres URL
-                loadAffectations();
+                
+                // Recharger les affectations
+                await loadAffectations();
             } catch (error) {
-                console.error('Erreur:', error);
-                const errorMessage = error.message || error.response?.data?.message || 'Erreur lors de la sauvegarde de l\'affectation';
+                console.error('Erreur lors de la sauvegarde:', error);
+                
+                // Extraire le message d'erreur de manière plus robuste
+                let errorMessage = 'Erreur lors de la sauvegarde de l\'affectation';
+                
+                if (error.message) {
+                    errorMessage = error.message;
+                } else if (error.response?.data?.message) {
+                    errorMessage = error.response.data.message;
+                } else if (error.response?.data?.error) {
+                    errorMessage = error.response.data.error;
+                } else if (typeof error.response?.data === 'string') {
+                    errorMessage = error.response.data;
+                }
+                
                 setError(errorMessage);
                 
-                // Si erreur 401, rediriger vers la connexion
-                if (error.status === 401 || errorMessage.includes('401') || errorMessage.includes('Non autorisé')) {
-                    setTimeout(() => {
-                        window.location.href = '/connexion';
-                    }, 2000);
-                }
+                // Ne pas rediriger automatiquement - laisser l'utilisateur voir l'erreur
+                // Le dialog reste ouvert pour qu'il puisse corriger les erreurs
             } finally {
                 setSubmitting(false);
             }

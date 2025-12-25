@@ -34,7 +34,9 @@ export default function EmploiDuTempsAdmin() {
     }, []);
 
     useEffect(() => {
-        loadEmploiDuTemps();
+        if (filterType === 'all' || (filterType !== 'all' && filterId)) {
+            loadEmploiDuTemps();
+        }
     }, [filterType, filterId]);
 
     const loadOptions = async () => {
@@ -122,12 +124,15 @@ export default function EmploiDuTempsAdmin() {
                             <FormControl size="small" sx={{ minWidth: 200 }}>
                                 <InputLabel>Groupe</InputLabel>
                                 <Select
-                                    value={filterId}
+                                    value={filterId || ''}
                                     onChange={(e) => setFilterId(e.target.value)}
                                     label="Groupe"
                                 >
+                                    <MenuItem value="">
+                                        <em>Sélectionner un groupe</em>
+                                    </MenuItem>
                                     {groupes.map((groupe) => (
-                                        <MenuItem key={groupe.id_groupe} value={groupe.id_groupe}>
+                                        <MenuItem key={groupe.id_groupe} value={String(groupe.id_groupe)}>
                                             {groupe.nom_groupe}
                                         </MenuItem>
                                     ))}
@@ -138,12 +143,15 @@ export default function EmploiDuTempsAdmin() {
                             <FormControl size="small" sx={{ minWidth: 200 }}>
                                 <InputLabel>Enseignant</InputLabel>
                                 <Select
-                                    value={filterId}
+                                    value={filterId || ''}
                                     onChange={(e) => setFilterId(e.target.value)}
                                     label="Enseignant"
                                 >
+                                    <MenuItem value="">
+                                        <em>Sélectionner un enseignant</em>
+                                    </MenuItem>
                                     {enseignants.map((ens) => (
-                                        <MenuItem key={ens.id_user} value={ens.id_user}>
+                                        <MenuItem key={ens.id_user} value={String(ens.id_user)}>
                                             {ens.user?.prenom} {ens.user?.nom}
                                         </MenuItem>
                                     ))}
@@ -165,6 +173,7 @@ export default function EmploiDuTempsAdmin() {
                     <FullCalendar
                         plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
                         initialView={view}
+                        view={view}
                         events={events}
                         headerToolbar={{
                             left: 'prev,next today',

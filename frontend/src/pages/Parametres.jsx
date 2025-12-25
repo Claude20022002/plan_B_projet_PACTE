@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     Box,
     Paper,
@@ -8,7 +8,10 @@ import {
     Alert,
     Snackbar,
     Divider,
+    Avatar,
+    IconButton,
 } from '@mui/material';
+import { PhotoCamera } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
@@ -28,6 +31,14 @@ export default function Parametres() {
     const { user, checkAuth } = useAuth();
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || '');
+    const fileInputRef = useRef(null);
+
+    React.useEffect(() => {
+        if (user?.avatar_url) {
+            setAvatarPreview(user.avatar_url);
+        }
+    }, [user]);
 
     const formik = useFormik({
         initialValues: {
@@ -37,6 +48,7 @@ export default function Parametres() {
             telephone: user?.telephone || '',
             password: '',
             confirmPassword: '',
+            avatar_url: user?.avatar_url || '',
         },
         validationSchema,
         enableReinitialize: true,
@@ -52,6 +64,9 @@ export default function Parametres() {
                 };
                 if (values.password) {
                     dataToSend.password = values.password;
+                }
+                if (values.avatar_url) {
+                    dataToSend.avatar_url = values.avatar_url;
                 }
                 await userAPI.update(user.id_user, dataToSend);
                 setSuccess('Paramètres mis à jour avec succès');
@@ -95,6 +110,59 @@ export default function Parametres() {
                         <Typography variant="h6" gutterBottom>
                             Informations personnelles
                         </Typography>
+                        
+                        {/* Avatar */}
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
+                            <Avatar
+                                src={avatarPreview}
+                                sx={{ width: 100, height: 100 }}
+                            >
+                                {user?.prenom?.[0]?.toUpperCase()}
+                            </Avatar>
+                            <Box>
+                                <input
+                                    accept="image/*"
+                                    style={{ display: 'none' }}
+                                    id="avatar-upload"
+                                    type="file"
+                                    ref={fileInputRef}
+                                    onChange={(e) => {
+                                        const file = e.target.files[0];
+                                        if (file) {
+                                            // Vérifier la taille (max 2MB)
+                                            if (file.size > 2 * 1024 * 1024) {
+                                                setError('L\'image est trop grande. Taille maximale : 2MB');
+                                                return;
+                                            }
+                                            
+                                            // Vérifier le type
+                                            if (!file.type.startsWith('image/')) {
+                                                setError('Le fichier doit être une image');
+                                                return;
+                                            }
+                                            
+                                            // Convertir en base64
+                                            const reader = new FileReader();
+                                            reader.onloadend = () => {
+                                                const base64String = reader.result;
+                                                formik.setFieldValue('avatar_url', base64String);
+                                                setAvatarPreview(base64String);
+                                            };
+                                            reader.readAsDataURL(file);
+                                        }
+                                    }}
+                                />
+                                <label htmlFor="avatar-upload">
+                                    <IconButton color="primary" component="span">
+                                        <PhotoCamera />
+                                    </IconButton>
+                                </label>
+                                <Typography variant="caption" display="block" sx={{ mt: 1 }}>
+                                    Cliquez pour changer votre photo de profil
+                                </Typography>
+                            </Box>
+                        </Box>
+                        
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mb: 3 }}>
                             <TextField
                                 fullWidth

@@ -5,6 +5,7 @@ import {
     createUser,
     updateUser,
     deleteUser,
+    importUsers,
 } from "../controllers/index.js";
 import {
     authenticateToken,
@@ -55,6 +56,14 @@ router.delete(
     authenticateToken,
     requireAdmin,
     asyncHandler(deleteUser)
+);
+
+// 📥 Importer des utilisateurs en masse (Admin seulement)
+router.post(
+    "/import",
+    authenticateToken,
+    requireAdmin,
+    asyncHandler(importUsers)
 );
 
 export default router;

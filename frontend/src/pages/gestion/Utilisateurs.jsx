@@ -24,6 +24,10 @@ import {
     MenuItem,
     Alert,
     Snackbar,
+    List,
+    ListItem,
+    ListItemText,
+    CircularProgress,
 } from '@mui/material';
 import { Add, Edit, Delete, Search, ArrowBack, UploadFile } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
@@ -144,6 +148,42 @@ export default function Utilisateurs() {
                 console.error('Erreur:', error);
                 setError('Erreur lors de la suppression');
             }
+        }
+    };
+
+    const handleFileImport = async (file) => {
+        setImportLoading(true);
+        setImportErrors([]);
+        try {
+            const data = await parseFile(file);
+            const validation = validateUserData(data);
+            
+            if (!validation.valid) {
+                setImportErrors(validation.errors);
+                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
+                return;
+            }
+
+            // Préparer les données pour l'import
+            const usersToImport = data.map((row) => ({
+                nom: row.nom?.trim(),
+                prenom: row.prenom?.trim(),
+                email: row.email?.trim().toLowerCase(),
+                role: row.role?.trim().toLowerCase(),
+                telephone: row.telephone?.trim() || '',
+                password: row.password?.trim() || 'password123', // Mot de passe par défaut
+                actif: row.actif !== undefined ? row.actif : true,
+            }));
+
+            await userAPI.importBulk({ users: usersToImport });
+            setSuccess(`${usersToImport.length} utilisateur(s) importé(s) avec succès`);
+            setImportOpen(false);
+            loadUtilisateurs();
+        } catch (error) {
+            console.error('Erreur lors de l\'import:', error);
+            setError(error.message || 'Erreur lors de l\'import du fichier');
+        } finally {
+            setImportLoading(false);
         }
     };
 
@@ -366,6 +406,84 @@ export default function Utilisateurs() {
                             </Button>
                         </DialogActions>
                     </form>
+                </Dialog>
+
+                {/* Dialog d'import */}
+                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
+                    <DialogTitle>Importer des utilisateurs (Excel/CSV)</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ mt: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Typography variant="body2" gutterBottom>
+                                    <strong>Format du fichier requis :</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div">
+                                    Les colonnes requises sont : <strong>nom</strong>, <strong>prenom</strong>, <strong>email</strong>, <strong>role</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Colonnes optionnelles : <strong>telephone</strong>, <strong>password</strong>, <strong>actif</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Les rôles acceptés sont : <strong>admin</strong>, <strong>enseignant</strong>, <strong>etudiant</strong>
+                                </Typography>
+                            </Alert>
+                            
+                            <input
+                                accept=".csv,.xlsx,.xls"
+                                style={{ display: 'none' }}
+                                id="import-file-input"
+                                type="file"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        handleFileImport(file);
+                                    }
+                                }}
+                            />
+                            <label htmlFor="import-file-input">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    startIcon={<UploadFile />}
+                                    fullWidth
+                                    disabled={importLoading}
+                                >
+                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
+                                </Button>
+                            </label>
+
+                            {importLoading && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                    <CircularProgress />
+                                </Box>
+                            )}
+
+                            {importErrors.length > 0 && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Alert severity="error">
+                                        <Typography variant="subtitle2" gutterBottom>
+                                            Erreurs détectées ({importErrors.length}) :
+                                        </Typography>
+                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+                                            {importErrors.map((err, index) => (
+                                                <ListItem key={index}>
+                                                    <ListItemText primary={err} />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Alert>
+                                </Box>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => {
+                            setImportOpen(false);
+                            setImportErrors([]);
+                        }}>
+                            Fermer
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </Box>
         </DashboardLayout>
