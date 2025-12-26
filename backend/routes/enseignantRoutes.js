@@ -5,6 +5,7 @@ import {
     createEnseignant,
     updateEnseignant,
     deleteEnseignant,
+    importEnseignants,
 } from "../controllers/index.js";
 import {
     authenticateToken,
@@ -59,6 +60,14 @@ router.delete(
     authenticateToken,
     requireAdmin,
     asyncHandler(deleteEnseignant)
+);
+
+// 📥 Importer des enseignants en masse (Admin seulement)
+router.post(
+    "/import",
+    authenticateToken,
+    requireAdmin,
+    asyncHandler(importEnseignants)
 );
 
 export default router;

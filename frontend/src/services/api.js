@@ -108,7 +108,7 @@ export const enseignantAPI = {
     create: (data) => request('/enseignants', { method: 'POST', body: data }),
     update: (id, data) => request(`/enseignants/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/enseignants/${id}`, { method: 'DELETE' }),
-    importBulk: (data) => request('/enseignants/import', { method: 'POST', body: data }),
+    importEnseignants: (data) => request('/enseignants/import', { method: 'POST', body: { enseignants: data } }),
 };
 
 // ==================== ÉTUDIANTS ====================
@@ -121,7 +121,7 @@ export const etudiantAPI = {
     create: (data) => request('/etudiants', { method: 'POST', body: data }),
     update: (id, data) => request(`/etudiants/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/etudiants/${id}`, { method: 'DELETE' }),
-    importBulk: (data) => request('/etudiants/import', { method: 'POST', body: data }),
+    importEtudiants: (data) => request('/etudiants/import', { method: 'POST', body: { etudiants: data } }),
 };
 
 // ==================== FILIÈRES ====================
@@ -282,6 +282,6 @@ export const disponibiliteAPI = {
 export const statistiquesAPI = {
     getOccupationSalles: () => request('/statistiques/occupation-salles'),
     getChargeEnseignants: () => request('/statistiques/charge-enseignants'),
-    getStatistiquesGlobales: () => request('/statistiques/globales'),
+    getStatistiquesGlobales: () => request('/statistiques/dashboard'),
 };
 

@@ -80,14 +80,22 @@ export default function DemandesReport() {
             try {
                 setError('');
                 setSuccess('');
-                await demandeReportAPI.create(values);
+                // Ajouter automatiquement l'ID de l'enseignant connecté
+                const dataToSend = {
+                    ...values,
+                    id_user_enseignant: user.id_user,
+                    id_affectation: Number(values.id_affectation),
+                    statut_demande: 'en_attente', // Valeur par défaut
+                };
+                await demandeReportAPI.create(dataToSend);
                 setSuccess('Demande de report créée avec succès');
                 formik.resetForm();
                 setOpen(false);
                 loadDemandes();
             } catch (error) {
                 console.error('Erreur:', error);
-                setError(error.message || 'Erreur lors de la création de la demande');
+                const errorMessage = error.message || error.response?.data?.message || error.response?.data?.error || 'Erreur lors de la création de la demande';
+                setError(errorMessage);
             } finally {
                 setSubmitting(false);
             }

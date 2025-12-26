@@ -24,11 +24,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { etudiantAPI, userAPI, groupeAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
+import { parseFile, validateEtudiantData } from '../../utils/fileImport';
+import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 
 const validationSchema = yup.object({
     id_user: yup.number().required('L\'utilisateur est requis'),
@@ -49,6 +52,10 @@ export default function Etudiants() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [importOpen, setImportOpen] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importErrors, setImportErrors] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         loadEtudiants();
@@ -147,6 +154,48 @@ export default function Etudiants() {
         }
     };
 
+    const handleFileImport = async (file) => {
+        setImportLoading(true);
+        setImportErrors([]);
+        try {
+            const data = await parseFile(file);
+            const validation = validateEtudiantData(data);
+            
+            if (!validation.valid) {
+                setImportErrors(validation.errors);
+                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
+                return;
+            }
+
+            // Préparer les données pour l'import
+            const etudiantsToImport = data.map((row) => ({
+                nom: row.nom?.trim() || '',
+                prenom: row.prenom?.trim() || '',
+                email: row.email?.trim().toLowerCase() || '',
+                telephone: row.telephone?.trim() || '',
+                numero_etudiant: row.numero_etudiant?.trim() || '',
+                niveau: row.niveau?.trim() || '',
+                id_groupe: row.id_groupe ? Number(row.id_groupe) : null,
+                actif: row.actif !== undefined ? row.actif : true,
+            }));
+
+            const result = await etudiantAPI.importEtudiants(etudiantsToImport);
+            setSuccess(`${result.successCount || result.success?.length || 0} étudiant(s) importé(s) avec succès`);
+            if (result.errors && result.errors.length > 0) {
+                setImportErrors(result.errors.map(e => e.error || e.message || 'Erreur inconnue'));
+            }
+            setImportOpen(false);
+            loadEtudiants();
+            loadUsers();
+            loadGroupes();
+        } catch (error) {
+            console.error('Erreur lors de l\'import:', error);
+            setError(error.message || 'Erreur lors de l\'import du fichier');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
     const filteredEtudiants = etudiants.filter(
         (etu) =>
             etu.user?.nom?.toLowerCase().includes(search.toLowerCase()) ||
@@ -157,23 +206,45 @@ export default function Etudiants() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Gestion des Étudiants
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
-                            setEditing(null);
-                            setError('');
-                            setSuccess('');
-                            formik.resetForm();
-                            setOpen(true);
-                        }}
-                    >
-                        Ajouter un étudiant
-                    </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/admin')}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Gestion des Étudiants
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadFile />}
+                            onClick={() => {
+                                setImportOpen(true);
+                                setImportErrors([]);
+                            }}
+                        >
+                            Importer (Excel/CSV)
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                setEditing(null);
+                                setError('');
+                                setSuccess('');
+                                formik.resetForm();
+                                setOpen(true);
+                            }}
+                        >
+                            Ajouter un étudiant
+                        </Button>
+                    </Box>
                 </Box>
 
                 {error && (

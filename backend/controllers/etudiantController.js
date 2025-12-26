@@ -1,6 +1,7 @@
 import { Etudiant, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
+import { hashPassword } from "../utils/passwordHelper.js";
 
 /**
  * Contrôleur pour les étudiants
@@ -166,5 +167,114 @@ export const deleteEtudiant = asyncHandler(async (req, res) => {
 
     res.json({
         message: "Étudiant supprimé avec succès",
+    });
+});
+
+// 📥 Importer des étudiants en masse
+export const importEtudiants = asyncHandler(async (req, res) => {
+    const { etudiants } = req.body;
+
+    if (!Array.isArray(etudiants) || etudiants.length === 0) {
+        return res.status(400).json({
+            message: "Données invalides",
+            error: "Un tableau d'étudiants est requis",
+        });
+    }
+
+    const results = {
+        success: [],
+        errors: [],
+    };
+
+    for (const etudiantData of etudiants) {
+        try {
+            // Vérifier les champs requis
+            if (!etudiantData.email || !etudiantData.nom || !etudiantData.prenom || !etudiantData.numero_etudiant || !etudiantData.niveau) {
+                results.errors.push({
+                    email: etudiantData.email || "N/A",
+                    error: "Champs requis manquants (email, nom, prenom, numero_etudiant, niveau)",
+                });
+                continue;
+            }
+
+            // Vérifier si l'email existe déjà
+            let user = await Users.findOne({ where: { email: etudiantData.email } });
+            
+            if (!user) {
+                // Créer l'utilisateur
+                const password = etudiantData.password || "password123";
+                const password_hash = await hashPassword(password);
+
+                user = await Users.create({
+                    nom: etudiantData.nom,
+                    prenom: etudiantData.prenom,
+                    email: etudiantData.email,
+                    role: "etudiant",
+                    telephone: etudiantData.telephone || null,
+                    actif: etudiantData.actif !== undefined ? etudiantData.actif : true,
+                    password_hash: password_hash,
+                });
+            } else if (user.role !== "etudiant") {
+                // Mettre à jour le rôle si nécessaire
+                await user.update({ role: "etudiant" });
+            }
+
+            // Vérifier si l'étudiant existe déjà
+            const existingEtudiant = await Etudiant.findByPk(user.id_user);
+            if (existingEtudiant) {
+                results.errors.push({
+                    email: etudiantData.email,
+                    error: "Étudiant déjà existant",
+                });
+                continue;
+            }
+
+            // Vérifier l'unicité du numéro étudiant
+            const existingNumero = await Etudiant.findOne({
+                where: { numero_etudiant: etudiantData.numero_etudiant },
+            });
+            if (existingNumero) {
+                results.errors.push({
+                    email: etudiantData.email,
+                    error: `Numéro étudiant "${etudiantData.numero_etudiant}" déjà utilisé`,
+                });
+                continue;
+            }
+
+            // Créer l'étudiant
+            const etudiant = await Etudiant.create({
+                id_user: user.id_user,
+                numero_etudiant: etudiantData.numero_etudiant,
+                niveau: etudiantData.niveau,
+                id_groupe: etudiantData.id_groupe || null,
+                date_inscription: etudiantData.date_inscription || new Date(),
+            });
+
+            const etudiantAvecUser = await Etudiant.findByPk(etudiant.id_user, {
+                include: [
+                    {
+                        model: Users,
+                        as: "user",
+                        attributes: { exclude: ["password_hash"] },
+                    },
+                ],
+            });
+
+            results.success.push(etudiantAvecUser);
+        } catch (error) {
+            results.errors.push({
+                email: etudiantData.email || "N/A",
+                error: error.message || "Erreur lors de la création",
+            });
+        }
+    }
+
+    res.status(201).json({
+        message: `${results.success.length} étudiant(s) créé(s) avec succès`,
+        success: results.success,
+        errors: results.errors,
+        total: etudiants.length,
+        successCount: results.success.length,
+        errorCount: results.errors.length,
     });
 });

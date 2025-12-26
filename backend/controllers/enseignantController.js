@@ -1,6 +1,7 @@
 import { Enseignant, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
+import { hashPassword } from "../utils/passwordHelper.js";
 
 /**
  * Contrôleur pour les enseignants
@@ -130,5 +131,102 @@ export const deleteEnseignant = asyncHandler(async (req, res) => {
 
     res.json({
         message: "Enseignant supprimé avec succès",
+    });
+});
+
+// 📥 Importer des enseignants en masse
+export const importEnseignants = asyncHandler(async (req, res) => {
+    const { enseignants } = req.body;
+
+    if (!Array.isArray(enseignants) || enseignants.length === 0) {
+        return res.status(400).json({
+            message: "Données invalides",
+            error: "Un tableau d'enseignants est requis",
+        });
+    }
+
+    const results = {
+        success: [],
+        errors: [],
+    };
+
+    for (const enseignantData of enseignants) {
+        try {
+            // Vérifier les champs requis
+            if (!enseignantData.email || !enseignantData.nom || !enseignantData.prenom) {
+                results.errors.push({
+                    email: enseignantData.email || "N/A",
+                    error: "Champs requis manquants (email, nom, prenom)",
+                });
+                continue;
+            }
+
+            // Vérifier si l'email existe déjà
+            let user = await Users.findOne({ where: { email: enseignantData.email } });
+            
+            if (!user) {
+                // Créer l'utilisateur
+                const password = enseignantData.password || "password123";
+                const password_hash = await hashPassword(password);
+
+                user = await Users.create({
+                    nom: enseignantData.nom,
+                    prenom: enseignantData.prenom,
+                    email: enseignantData.email,
+                    role: "enseignant",
+                    telephone: enseignantData.telephone || null,
+                    actif: enseignantData.actif !== undefined ? enseignantData.actif : true,
+                    password_hash: password_hash,
+                });
+            } else if (user.role !== "enseignant") {
+                // Mettre à jour le rôle si nécessaire
+                await user.update({ role: "enseignant" });
+            }
+
+            // Vérifier si l'enseignant existe déjà
+            const existingEnseignant = await Enseignant.findByPk(user.id_user);
+            if (existingEnseignant) {
+                results.errors.push({
+                    email: enseignantData.email,
+                    error: "Enseignant déjà existant",
+                });
+                continue;
+            }
+
+            // Créer l'enseignant
+            const enseignant = await Enseignant.create({
+                id_user: user.id_user,
+                specialite: enseignantData.specialite || null,
+                departement: enseignantData.departement || null,
+                grade: enseignantData.grade || null,
+                bureau: enseignantData.bureau || null,
+            });
+
+            const enseignantAvecUser = await Enseignant.findByPk(enseignant.id_user, {
+                include: [
+                    {
+                        model: Users,
+                        as: "user",
+                        attributes: { exclude: ["password_hash"] },
+                    },
+                ],
+            });
+
+            results.success.push(enseignantAvecUser);
+        } catch (error) {
+            results.errors.push({
+                email: enseignantData.email || "N/A",
+                error: error.message || "Erreur lors de la création",
+            });
+        }
+    }
+
+    res.status(201).json({
+        message: `${results.success.length} enseignant(s) créé(s) avec succès`,
+        success: results.success,
+        errors: results.errors,
+        total: enseignants.length,
+        successCount: results.success.length,
+        errorCount: results.errors.length,
     });
 });

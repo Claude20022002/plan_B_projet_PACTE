@@ -56,9 +56,9 @@ export default function AdminDashboard() {
                 conflitAPI.getNonResolus(),
             ]);
 
-            setStats(statsData);
-            setNotifications(notifsData.data || []);
-            setConflits(conflitsData.data || []);
+            setStats(statsData.resume || statsData);
+            setNotifications(notifsData.data || notifsData || []);
+            setConflits(conflitsData.data || conflitsData || []);
         } catch (error) {
             console.error('Erreur lors du chargement:', error);
         } finally {

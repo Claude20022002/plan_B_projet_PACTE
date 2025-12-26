@@ -14,7 +14,7 @@ export const getAllUsers = asyncHandler(async (req, res) => {
         attributes: { exclude: ["password_hash"] },
         limit,
         offset,
-        order: [["created_at", "DESC"]],
+        order: [["id_user", "DESC"]],
     });
 
     res.json(createPaginationResponse(users, count, page, limit));

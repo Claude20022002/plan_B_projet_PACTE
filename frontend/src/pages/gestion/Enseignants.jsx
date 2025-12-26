@@ -24,11 +24,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { enseignantAPI, userAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { useNavigate } from 'react-router-dom';
+import { parseFile, validateEnseignantData } from '../../utils/fileImport';
+import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 
 const validationSchema = yup.object({
     id_user: yup.number().required('L\'utilisateur est requis'),
@@ -49,6 +52,10 @@ export default function Enseignants() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [importOpen, setImportOpen] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importErrors, setImportErrors] = useState([]);
+    const navigate = useNavigate();
 
     useEffect(() => {
         loadEnseignants();
@@ -139,6 +146,48 @@ export default function Enseignants() {
         }
     };
 
+    const handleFileImport = async (file) => {
+        setImportLoading(true);
+        setImportErrors([]);
+        try {
+            const data = await parseFile(file);
+            const validation = validateEnseignantData(data);
+            
+            if (!validation.valid) {
+                setImportErrors(validation.errors);
+                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
+                return;
+            }
+
+            // Préparer les données pour l'import
+            const enseignantsToImport = data.map((row) => ({
+                nom: row.nom?.trim() || '',
+                prenom: row.prenom?.trim() || '',
+                email: row.email?.trim().toLowerCase() || '',
+                telephone: row.telephone?.trim() || '',
+                specialite: row.specialite?.trim() || '',
+                departement: row.departement?.trim() || '',
+                grade: row.grade?.trim() || '',
+                bureau: row.bureau?.trim() || '',
+                actif: row.actif !== undefined ? row.actif : true,
+            }));
+
+            const result = await enseignantAPI.importEnseignants(enseignantsToImport);
+            setSuccess(`${result.successCount || result.success?.length || 0} enseignant(s) importé(s) avec succès`);
+            if (result.errors && result.errors.length > 0) {
+                setImportErrors(result.errors.map(e => e.error || e.message || 'Erreur inconnue'));
+            }
+            setImportOpen(false);
+            loadEnseignants();
+            loadUsers();
+        } catch (error) {
+            console.error('Erreur lors de l\'import:', error);
+            setError(error.message || 'Erreur lors de l\'import du fichier');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
     const filteredEnseignants = enseignants.filter(
         (ens) =>
             ens.user?.nom?.toLowerCase().includes(search.toLowerCase()) ||
@@ -149,23 +198,45 @@ export default function Enseignants() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Gestion des Enseignants
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
-                            setEditing(null);
-                            setError('');
-                            setSuccess('');
-                            formik.resetForm();
-                            setOpen(true);
-                        }}
-                    >
-                        Ajouter un enseignant
-                    </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/admin')}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Gestion des Enseignants
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadFile />}
+                            onClick={() => {
+                                setImportOpen(true);
+                                setImportErrors([]);
+                            }}
+                        >
+                            Importer (Excel/CSV)
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                setEditing(null);
+                                setError('');
+                                setSuccess('');
+                                formik.resetForm();
+                                setOpen(true);
+                            }}
+                        >
+                            Ajouter un enseignant
+                        </Button>
+                    </Box>
                 </Box>
 
                 {error && (
@@ -308,6 +379,66 @@ export default function Enseignants() {
                             </Button>
                         </DialogActions>
                     </form>
+                </Dialog>
+
+                {/* Dialog d'import */}
+                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="sm" fullWidth>
+                    <DialogTitle>Importer des enseignants</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
+                            <Typography variant="body2" color="text.secondary">
+                                Format attendu : CSV ou Excel avec les colonnes suivantes :
+                                <br />
+                                <strong>nom, prenom, email, telephone, specialite, departement, grade, bureau</strong>
+                                <br />
+                                Les colonnes <strong>nom, prenom, email, specialite, departement</strong> sont obligatoires.
+                            </Typography>
+                            <input
+                                type="file"
+                                accept=".csv,.xlsx,.xls"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        handleFileImport(file);
+                                    }
+                                }}
+                                style={{ display: 'none' }}
+                                id="import-file-enseignant"
+                            />
+                            <label htmlFor="import-file-enseignant">
+                                <Button variant="outlined" component="span" fullWidth>
+                                    Sélectionner un fichier
+                                </Button>
+                            </label>
+                            {importLoading && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', p: 2 }}>
+                                    <CircularProgress />
+                                </Box>
+                            )}
+                            {importErrors.length > 0 && (
+                                <Box>
+                                    <Typography variant="subtitle2" color="error" gutterBottom>
+                                        Erreurs ({importErrors.length}) :
+                                    </Typography>
+                                    <List dense>
+                                        {importErrors.slice(0, 10).map((err, idx) => (
+                                            <ListItem key={idx}>
+                                                <ListItemText primary={err} />
+                                            </ListItem>
+                                        ))}
+                                        {importErrors.length > 10 && (
+                                            <ListItem>
+                                                <ListItemText primary={`... et ${importErrors.length - 10} autre(s) erreur(s)`} />
+                                            </ListItem>
+                                        )}
+                                    </List>
+                                </Box>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setImportOpen(false)}>Fermer</Button>
+                    </DialogActions>
                 </Dialog>
             </Box>
         </DashboardLayout>
