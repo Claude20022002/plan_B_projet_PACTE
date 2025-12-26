@@ -18,15 +18,23 @@ async function seed() {
         await testConnection();
         console.log('✅ Connexion à la base de données réussie');
 
-        // Synchroniser les tables si nécessaire
-        await Users.sync({ alter: true });
-        await Filiere.sync({ alter: true });
-        await Groupe.sync({ alter: true });
-        await Salle.sync({ alter: true });
-        await Cours.sync({ alter: true });
-        await Creneau.sync({ alter: true });
-        await Enseignant.sync({ alter: true });
-        await Etudiant.sync({ alter: true });
+        // Créer les tables si elles n'existent pas (sans modifier les existantes)
+        // Utiliser sync({ force: false }) pour créer sans modifier
+        console.log('🔄 Vérification des tables...');
+        try {
+            await Users.sync({ force: false });
+            await Filiere.sync({ force: false });
+            await Salle.sync({ force: false });
+            await Creneau.sync({ force: false });
+            await Groupe.sync({ force: false });
+            await Cours.sync({ force: false });
+            await Enseignant.sync({ force: false });
+            await Etudiant.sync({ force: false });
+            console.log('✅ Tables vérifiées/créées');
+        } catch (error) {
+            console.error('⚠️  Erreur lors de la vérification des tables:', error.message);
+            console.log('💡 Astuce: Si les tables existent déjà, vous pouvez ignorer cette erreur');
+        }
 
         // Hasher le mot de passe par défaut
         const defaultPassword = await hashPassword('password123');

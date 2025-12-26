@@ -1,6 +1,7 @@
 import { Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
+import { hashPassword } from "../utils/passwordHelper.js";
 
 /**
  * Contrôleur pour les utilisateurs
@@ -81,7 +82,14 @@ export const updateUser = asyncHandler(async (req, res) => {
         }
     }
 
-    await user.update(req.body);
+    // Si un mot de passe est fourni, le hasher
+    const updateData = { ...req.body };
+    if (updateData.password) {
+        updateData.password_hash = await hashPassword(updateData.password);
+        delete updateData.password; // Supprimer le champ password non hashé
+    }
+
+    await user.update(updateData);
 
     // Retourner l'utilisateur sans le mot de passe
     const userResponse = user.toJSON();

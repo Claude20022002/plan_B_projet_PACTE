@@ -153,73 +153,115 @@ const PORT = process.env.PORT || 5000;
 
         // Synchronisation séquentielle : créer les tables sans FK, puis Sequelize ajoutera les FK via les associations
         // Niveau 1 : Tables sans dépendances
-        // Gestion spéciale pour Users : si erreur de trop d'index, supprimer toutes les tables et les recréer
+        // Gestion spéciale : si erreur de trop d'index, supprimer toutes les tables et les recréer
         let tablesRecreated = false;
-        try {
-            await Users.sync({ alter: true });
-        } catch (error) {
-            if (
-                error.name === "SequelizeDatabaseError" &&
-                error.parent?.code === "ER_TOO_MANY_KEYS"
-            ) {
-                console.log(
-                    "⚠️ Trop d'index sur la table Users, suppression de toutes les tables..."
-                );
-                console.log(
-                    "⚠️ ATTENTION : Toutes les données seront supprimées !"
-                );
-                // Désactiver les vérifications de contraintes FK avant suppression
-                await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-                // Supprimer toutes les tables
-                await sequelize.drop({ cascade: true });
-                // Réactiver les vérifications de contraintes FK
-                await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
-                console.log("🗑️ Toutes les tables supprimées");
-                console.log("🔄 Recréation de toutes les tables...");
-                // Recréer Users en premier car il est référencé par d'autres tables
-                await Users.sync({ force: false });
-                console.log("✅ Table Users recréée");
-                tablesRecreated = true;
-            } else {
-                throw error;
+        
+        // Fonction helper pour synchroniser avec gestion d'erreur
+        // Utilise force: false pour éviter les problèmes de trop d'index
+        const safeSync = async (model, modelName) => {
+            try {
+                // Utiliser force: false (créer si n'existe pas, ne pas modifier si existe)
+                await model.sync({ force: false });
+            } catch (error) {
+                if (
+                    error.name === "SequelizeDatabaseError" &&
+                    error.parent?.code === "ER_TOO_MANY_KEYS"
+                ) {
+                    if (!tablesRecreated) {
+                        console.log(
+                            "⚠️ Trop d'index détecté, suppression de toutes les tables..."
+                        );
+                        console.log(
+                            "⚠️ ATTENTION : Toutes les données seront supprimées !"
+                        );
+                        // Désactiver les vérifications de contraintes FK avant suppression
+                        await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
+                        // Supprimer toutes les tables
+                        await sequelize.drop({ cascade: true });
+                        // Réactiver les vérifications de contraintes FK
+                        await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
+                        console.log("🗑️ Toutes les tables supprimées");
+                        console.log("🔄 Recréation de toutes les tables...");
+                        tablesRecreated = true;
+                    }
+                    // Recréer la table sans alter
+                    await model.sync({ force: false });
+                    console.log(`✅ Table ${modelName} recréée`);
+                } else {
+                    throw error;
+                }
             }
-        }
-        // Si les tables ont été recréées, utiliser force: false pour créer sans alter
-        const syncOption = tablesRecreated ? { force: false } : { alter: true };
-        await Filiere.sync(syncOption);
-        await Salle.sync(syncOption);
-        await Creneau.sync(syncOption);
+        };
+
+        // Synchroniser Users en premier
+        await safeSync(Users, "Users");
+        
+        // Fonction helper pour synchroniser avec gestion d'erreur ER_TOO_MANY_KEYS
+        // Utilise force: false pour éviter les problèmes de trop d'index
+        const syncTableSafe = async (model, modelName) => {
+            try {
+                // Essayer d'abord avec force: false (créer si n'existe pas, ne pas modifier si existe)
+                await model.sync({ force: false });
+            } catch (error) {
+                // Si erreur de trop d'index, supprimer toutes les tables et les recréer
+                if (error.parent?.code === "ER_TOO_MANY_KEYS") {
+                    if (!tablesRecreated) {
+                        console.log(
+                            "⚠️ Trop d'index détecté, suppression de toutes les tables..."
+                        );
+                        console.log(
+                            "⚠️ ATTENTION : Toutes les données seront supprimées !"
+                        );
+                        await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
+                        await sequelize.drop({ cascade: true });
+                        await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
+                        console.log("🗑️ Toutes les tables supprimées");
+                        console.log("🔄 Recréation de toutes les tables...");
+                        tablesRecreated = true;
+                    }
+                    await model.sync({ force: false });
+                    console.log(`✅ Table ${modelName} recréée`);
+                } else {
+                    throw error;
+                }
+            }
+        };
+        
+        // Synchroniser les autres tables avec gestion d'erreur
+        await syncTableSafe(Filiere, "Filiere");
+        await syncTableSafe(Salle, "Salle");
+        await syncTableSafe(Creneau, "Creneau");
         console.log("--> Niveau 1 : Tables de base synchronisées");
 
         // Niveau 2 : Tables qui dépendent de Users
-        await Enseignant.sync(syncOption);
-        await Etudiant.sync(syncOption);
-        await Notification.sync(syncOption);
+        await syncTableSafe(Enseignant, "Enseignant");
+        await syncTableSafe(Etudiant, "Etudiant");
+        await syncTableSafe(Notification, "Notification");
         console.log("--> Niveau 2 : Tables dépendantes de Users synchronisées");
 
         // Niveau 3 : Tables qui dépendent de Filiere
-        await Groupe.sync(syncOption);
-        await Cours.sync(syncOption);
+        await syncTableSafe(Groupe, "Groupe");
+        await syncTableSafe(Cours, "Cours");
         console.log(
             "--> Niveau 3 : Tables dépendantes de Filiere synchronisées"
         );
 
         // Niveau 4 : Tables qui dépendent de plusieurs tables
-        await Affectation.sync(syncOption);
-        await Disponibilite.sync(syncOption);
-        await Appartenir.sync(syncOption);
+        await syncTableSafe(Affectation, "Affectation");
+        await syncTableSafe(Disponibilite, "Disponibilite");
+        await syncTableSafe(Appartenir, "Appartenir");
         console.log("--> Niveau 4 : Tables complexes synchronisées");
 
         // Niveau 5 : Tables qui dépendent d'Affectation
-        await DemandeReport.sync(syncOption);
-        await HistoriqueAffectation.sync(syncOption);
+        await syncTableSafe(DemandeReport, "DemandeReport");
+        await syncTableSafe(HistoriqueAffectation, "HistoriqueAffectation");
         console.log(
             "--> Niveau 5 : Tables dépendantes d'Affectation synchronisées"
         );
 
         // Niveau 6 : Tables de liaison
-        await Conflit.sync(syncOption);
-        await ConflitAffectation.sync(syncOption);
+        await syncTableSafe(Conflit, "Conflit");
+        await syncTableSafe(ConflitAffectation, "ConflitAffectation");
         console.log("--> Niveau 6 : Tables de liaison synchronisées");
 
         // Maintenant, Sequelize va ajouter les clés étrangères via les associations

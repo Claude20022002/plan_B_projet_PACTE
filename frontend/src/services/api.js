@@ -66,12 +66,24 @@ async function request(endpoint, options = {}) {
 
         return data;
     } catch (error) {
-        console.error('API Error:', {
-            endpoint,
-            method: config.method,
-            status: error.status,
-            message: error.message,
-        });
+        // Gérer les erreurs de connexion réseau
+        if (error.message === 'Failed to fetch' || error.name === 'TypeError') {
+            const connectionError = new Error('Impossible de se connecter au serveur. Vérifiez que le serveur backend est démarré.');
+            connectionError.status = 0;
+            connectionError.isConnectionError = true;
+            // Ne pas logger en console pour éviter le spam si le serveur n'est pas démarré
+            throw connectionError;
+        }
+        
+        // Logger les autres erreurs
+        if (error.status !== 0) {
+            console.error('API Error:', {
+                endpoint,
+                method: config.method,
+                status: error.status,
+                message: error.message,
+            });
+        }
         throw error;
     }
 }

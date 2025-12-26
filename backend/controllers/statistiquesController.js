@@ -5,6 +5,7 @@ import {
     Users,
     Groupe,
     Disponibilite,
+    Cours,
 } from "../models/index.js";
 import { Op } from "sequelize";
 import sequelize from "../config/db.js";
@@ -455,12 +456,18 @@ export const getDashboard = asyncHandler(async (req, res) => {
         totalSalles,
         totalEnseignants,
         totalGroupes,
+        totalUsers,
+        totalCours,
+        totalAdmins,
         affectations,
     ] = await Promise.all([
         Affectation.count({ where: whereConditions }),
         Salle.count({ where: { disponible: true } }),
         Users.count({ where: { role: "enseignant", actif: true } }),
         Groupe.count(),
+        Users.count({ where: { actif: true } }),
+        Cours.count(),
+        Users.count({ where: { role: "admin", actif: true } }),
         Affectation.findAll({
             where: whereConditions,
             include: [
@@ -487,12 +494,15 @@ export const getDashboard = asyncHandler(async (req, res) => {
     res.json({
         periode: date_debut && date_fin ? { date_debut, date_fin } : null,
         resume: {
+            total_users: totalUsers,
+            total_admins: totalAdmins,
             total_affectations: totalAffectations,
             total_salles: totalSalles,
             salles_utilisees: sallesUtilisees,
             total_enseignants: totalEnseignants,
             enseignants_actifs: enseignantsActifs,
             total_groupes: totalGroupes,
+            total_cours: totalCours,
             total_heures: Math.round(totalHeures * 100) / 100,
         },
         note: "Utilisez les endpoints spécifiques pour des statistiques détaillées",

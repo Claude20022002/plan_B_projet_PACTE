@@ -32,10 +32,17 @@ export const AuthProvider = ({ children }) => {
             setUser(data.user);
             setIsAuthenticated(true);
         } catch (error) {
-            console.error('Erreur de vérification auth:', error);
+            // Ne pas logger les erreurs de connexion pour éviter le spam
+            if (!error.isConnectionError) {
+                console.error('Erreur de vérification auth:', error);
+            }
             // Ne pas déconnecter automatiquement si c'est juste une erreur réseau
             if (error.status === 401 || error.message?.includes('401')) {
                 logout();
+            } else if (error.isConnectionError) {
+                // Si erreur de connexion, garder le token mais marquer comme non authentifié
+                // L'utilisateur pourra réessayer quand le serveur sera disponible
+                setIsAuthenticated(false);
             }
         } finally {
             setLoading(false);
