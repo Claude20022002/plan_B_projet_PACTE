@@ -56,9 +56,27 @@ export const validateUserUpdate = [
         .isIn(["admin", "enseignant", "etudiant"])
         .withMessage("Rôle invalide"),
     body("telephone")
-        .optional()
-        .isMobilePhone()
+        .optional({ nullable: true, checkFalsy: true })
+        .custom((value) => {
+            if (!value || value.trim() === '') {
+                return true; // Permettre les valeurs vides
+            }
+            // Utiliser une regex simple pour valider le format du téléphone
+            const phoneRegex = /^[\d\s\-\+\(\)]+$/;
+            if (!phoneRegex.test(value)) {
+                throw new Error("Numéro de téléphone invalide");
+            }
+            return true;
+        })
         .withMessage("Numéro de téléphone invalide"),
+    body("avatar_url")
+        .optional({ nullable: true })
+        .isString()
+        .withMessage("L'avatar doit être une chaîne de caractères"),
+    body("password")
+        .optional()
+        .isLength({ min: 6 })
+        .withMessage("Le mot de passe doit contenir au moins 6 caractères"),
     body("actif")
         .optional()
         .isBoolean()

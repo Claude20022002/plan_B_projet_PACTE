@@ -316,6 +316,8 @@ export default function Creneaux() {
                                     name="periode"
                                     value={formik.values.periode}
                                     onChange={formik.handleChange}
+                                    helperText="Période de l'année (ex: S1, S2, ou période spécifique). Optionnel."
+                                    placeholder="Ex: S1, S2, Trimestre 1..."
                                 />
                             </Box>
                         </DialogContent>

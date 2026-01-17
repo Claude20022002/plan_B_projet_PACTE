@@ -1,4 +1,4 @@
-import { Etudiant, Users } from "../models/index.js";
+import { Etudiant, Users, Groupe } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { hashPassword } from "../utils/passwordHelper.js";
@@ -45,6 +45,10 @@ export const getEtudiantById = asyncHandler(async (req, res) => {
                 model: Users,
                 as: "user",
                 attributes: { exclude: ["password_hash"] },
+            },
+            {
+                model: Groupe,
+                as: "groupe",
             },
         ],
     });

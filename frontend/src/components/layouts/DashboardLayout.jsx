@@ -33,6 +33,9 @@ import {
     Category,
     Brightness4,
     Brightness7,
+    CalendarToday,
+    Assignment,
+    EventAvailable,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -89,10 +92,9 @@ export default function DashboardLayout({ children }) {
         } else if (user?.role === 'enseignant') {
             return [
                 ...baseItems,
-                { text: 'Mon emploi du temps', icon: <Schedule />, path: '/emploi-du-temps/enseignant' },
-                { text: 'Mes affectations', icon: <Schedule />, path: '/mes-affectations' },
-                { text: 'Demandes de report', icon: <Schedule />, path: '/demandes-report' },
-                { text: 'Mes disponibilités', icon: <Schedule />, path: '/disponibilites' },
+                { text: 'Mon emploi du temps', icon: <CalendarToday />, path: '/emploi-du-temps/enseignant' },
+                { text: 'Mes affectations', icon: <Assignment />, path: '/mes-affectations' },
+                { text: 'Mes disponibilités', icon: <EventAvailable />, path: '/disponibilites' },
             ];
         } else {
             return [
@@ -108,7 +110,7 @@ export default function DashboardLayout({ children }) {
         <Box>
             <Toolbar
                 sx={{
-                    bgcolor: 'primary.main',
+                    bgcolor: '#001962', // Bleu HESTIM
                     color: 'white',
                     display: 'flex',
                     alignItems: 'center',
@@ -116,7 +118,7 @@ export default function DashboardLayout({ children }) {
                 }}
             >
                 <Typography variant="h6" noWrap component="div" fontWeight="bold">
-                    HESTIM Planner
+                    Table de bord
                 </Typography>
             </Toolbar>
             <Divider />
@@ -132,7 +134,7 @@ export default function DashboardLayout({ children }) {
                         >
                             <ListItemIcon
                                 sx={{
-                                    color: location.pathname === item.path ? 'primary.main' : 'inherit',
+                                    color: location.pathname === item.path ? '#001962' : 'inherit', // Bleu HESTIM
                                 }}
                             >
                                 {item.icon}
@@ -164,6 +166,18 @@ export default function DashboardLayout({ children }) {
                     >
                         <MenuIcon />
                     </IconButton>
+                    <Box
+                        component="img"
+                        src="/HESTIM.png"
+                        alt="HESTIM Logo"
+                        sx={{
+                            width: { xs: '120px', sm: '150px' },
+                            height: { xs: '30px', sm: '40px' },
+                            objectFit: 'contain',
+                            mr: 2,
+                            display: { xs: 'none', sm: 'block' },
+                        }}
+                    />
                     <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
                         {menuItems.find((item) => item.path === location.pathname)?.text ||
                             'HESTIM Planner'}

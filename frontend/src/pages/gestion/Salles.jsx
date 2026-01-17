@@ -18,6 +18,10 @@ import {
     DialogContent,
     DialogActions,
     Typography,
+    FormControl,
+    InputLabel,
+    Select,
+    MenuItem,
 } from '@mui/material';
 import { Add, Edit, Delete, Search, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
@@ -177,7 +181,15 @@ export default function Salles() {
                                     <TableCell>{salle.type_salle}</TableCell>
                                     <TableCell>{salle.capacite}</TableCell>
                                     <TableCell>{salle.batiment}</TableCell>
-                                    <TableCell>{salle.etage || '-'}</TableCell>
+                                    <TableCell>
+                                        {salle.etage === null || salle.etage === undefined
+                                            ? '-'
+                                            : salle.etage === -1
+                                              ? 'Sous-sol'
+                                              : salle.etage === 0
+                                                ? 'Rez-de-chaussée'
+                                                : `${salle.etage}ème étage`}
+                                    </TableCell>
                                     <TableCell>
                                         <Chip
                                             label={salle.disponible ? 'Disponible' : 'Indisponible'}
@@ -235,15 +247,22 @@ export default function Salles() {
                                     error={formik.touched.nom_salle && Boolean(formik.errors.nom_salle)}
                                     helperText={formik.touched.nom_salle && formik.errors.nom_salle}
                                 />
-                                <TextField
-                                    fullWidth
-                                    label="Type de salle"
-                                    name="type_salle"
-                                    value={formik.values.type_salle}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.type_salle && Boolean(formik.errors.type_salle)}
-                                    helperText={formik.touched.type_salle && formik.errors.type_salle}
-                                />
+                                <FormControl fullWidth>
+                                    <InputLabel>Type de salle</InputLabel>
+                                    <Select
+                                        name="type_salle"
+                                        value={formik.values.type_salle}
+                                        onChange={formik.handleChange}
+                                        label="Type de salle"
+                                        error={formik.touched.type_salle && Boolean(formik.errors.type_salle)}
+                                    >
+                                        <MenuItem value="amphi">Amphithéâtre</MenuItem>
+                                        <MenuItem value="informatique">Salle informatique</MenuItem>
+                                        <MenuItem value="standard">Salle standard</MenuItem>
+                                        <MenuItem value="labo">Laboratoire</MenuItem>
+                                        <MenuItem value="atelier">Atelier</MenuItem>
+                                    </Select>
+                                </FormControl>
                                 <TextField
                                     fullWidth
                                     label="Capacité"
@@ -254,23 +273,38 @@ export default function Salles() {
                                     error={formik.touched.capacite && Boolean(formik.errors.capacite)}
                                     helperText={formik.touched.capacite && formik.errors.capacite}
                                 />
-                                <TextField
-                                    fullWidth
-                                    label="Bâtiment"
-                                    name="batiment"
-                                    value={formik.values.batiment}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.batiment && Boolean(formik.errors.batiment)}
-                                    helperText={formik.touched.batiment && formik.errors.batiment}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Étage"
-                                    name="etage"
-                                    type="number"
-                                    value={formik.values.etage}
-                                    onChange={formik.handleChange}
-                                />
+                                <FormControl fullWidth>
+                                    <InputLabel>Bâtiment</InputLabel>
+                                    <Select
+                                        name="batiment"
+                                        value={formik.values.batiment}
+                                        onChange={formik.handleChange}
+                                        label="Bâtiment"
+                                        error={formik.touched.batiment && Boolean(formik.errors.batiment)}
+                                    >
+                                        <MenuItem value="A">Bâtiment A</MenuItem>
+                                        <MenuItem value="B">Bâtiment B</MenuItem>
+                                        <MenuItem value="C">Bâtiment C</MenuItem>
+                                        <MenuItem value="D">Bâtiment D</MenuItem>
+                                    </Select>
+                                </FormControl>
+                                <FormControl fullWidth>
+                                    <InputLabel>Étage</InputLabel>
+                                    <Select
+                                        name="etage"
+                                        value={formik.values.etage}
+                                        onChange={formik.handleChange}
+                                        label="Étage"
+                                    >
+                                        <MenuItem value="-1">Sous-sol</MenuItem>
+                                        <MenuItem value="0">Rez-de-chaussée</MenuItem>
+                                        <MenuItem value="1">1er étage</MenuItem>
+                                        <MenuItem value="2">2ème étage</MenuItem>
+                                        <MenuItem value="3">3ème étage</MenuItem>
+                                        <MenuItem value="4">4ème étage</MenuItem>
+                                        <MenuItem value="5">5ème étage</MenuItem>
+                                    </Select>
+                                </FormControl>
                                 <TextField
                                     fullWidth
                                     label="Équipements"

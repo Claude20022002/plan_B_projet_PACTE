@@ -34,9 +34,9 @@ export default function Header() {
                   
                         <Box 
                               component="img"
-                              src="/logo.png"
-                              alt="Logo"
-                              sx={{width: { xs: '160px', md: '220px' }, height: { xs: '40px', md: '60px' }}}   
+                              src="/HESTIM.png"
+                              alt="HESTIM Logo"
+                              sx={{width: { xs: '160px', md: '220px' }, height: { xs: '40px', md: '60px' }, objectFit: 'contain' }}   
                         />
                        
 

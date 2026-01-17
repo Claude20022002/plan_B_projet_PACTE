@@ -178,34 +178,6 @@ export default function Accueil() {
                                         Accéder à la plateforme
                                     </Button>
                                 </motion.div>
-                                <motion.div
-                                    whileHover={{ scale: 1.05 }}
-                                    whileTap={{ scale: 0.95 }}
-                                >
-                                    <Button
-                                        variant="outlined"
-                                        size="large"
-                                        onClick={() => navigate('/connexion')}
-                                        sx={{
-                                            borderColor: 'white',
-                                            borderWidth: 2,
-                                            color: 'white',
-                                            textTransform: 'none',
-                                            px: 5,
-                                            py: 1.8,
-                                            fontSize: '1.1rem',
-                                            fontWeight: 600,
-                                            borderRadius: 3,
-                                            '&:hover': {
-                                                borderColor: 'white',
-                                                borderWidth: 2,
-                                                bgcolor: 'rgba(255, 255, 255, 0.1)',
-                                            },
-                                        }}
-                                    >
-                                        Consulter mon emploi du temps
-                                    </Button>
-                                </motion.div>
                             </Box>
                         </motion.div>
                     </Box>

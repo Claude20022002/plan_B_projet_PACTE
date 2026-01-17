@@ -92,6 +92,7 @@ export default function Utilisateurs() {
             telephone: '',
             password: '',
             actif: true,
+            niveau: '',
         },
         validationSchema,
         enableReinitialize: true,
@@ -134,6 +135,7 @@ export default function Utilisateurs() {
             telephone: user.telephone || '',
             password: '',
             actif: user.actif,
+            niveau: user.niveau || '',
         });
         setOpen(true);
     };
@@ -397,6 +399,23 @@ export default function Utilisateurs() {
                                     error={formik.touched.password && Boolean(formik.errors.password)}
                                     helperText={formik.touched.password && formik.errors.password}
                                 />
+                                {formik.values.role === 'etudiant' && (
+                                    <FormControl fullWidth>
+                                        <InputLabel>Niveau</InputLabel>
+                                        <Select
+                                            name="niveau"
+                                            value={formik.values.niveau}
+                                            onChange={formik.handleChange}
+                                            label="Niveau"
+                                        >
+                                            <MenuItem value="1A">1ère année</MenuItem>
+                                            <MenuItem value="2A">2ème année</MenuItem>
+                                            <MenuItem value="3A">3ème année</MenuItem>
+                                            <MenuItem value="4A">4ème année</MenuItem>
+                                            <MenuItem value="5A">5ème année</MenuItem>
+                                        </Select>
+                                    </FormControl>
+                                )}
                             </Box>
                         </DialogContent>
                         <DialogActions>

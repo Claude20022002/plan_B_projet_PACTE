@@ -6,7 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { emploiDuTempsAPI } from '../../services/api';
+import { emploiDuTempsAPI, affectationAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { exportToExcel, exportToPDF, exportToCSV } from '../../utils/exportEmploiDuTemps';
@@ -27,11 +27,16 @@ export default function EmploiDuTempsEnseignant() {
 
     const loadEmploiDuTemps = async () => {
         try {
-            const data = await emploiDuTempsAPI.getByEnseignant(user.id_user);
-            // Sauvegarder les données brutes pour l'export
-            setAffectationsData(data);
+            const response = await emploiDuTempsAPI.getByEnseignant(user.id_user);
+            // Le backend retourne un objet avec affectations dedans
+            // On doit récupérer les affectations complètes depuis l'API des affectations
+            const affectationsResponse = await affectationAPI.getByEnseignant(user.id_user);
+            const affectations = affectationsResponse.data || [];
             
-            const formattedEvents = data.map((aff) => ({
+            // Sauvegarder les données brutes pour l'export
+            setAffectationsData(affectations);
+            
+            const formattedEvents = affectations.map((aff) => ({
                 id: aff.id_affectation,
                 title: `${aff.cours?.nom_cours || 'Cours'} - ${aff.groupe?.nom_groupe || ''}`,
                 start: `${aff.date_seance}T${aff.creneau?.heure_debut || '08:00'}`,

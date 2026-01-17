@@ -43,6 +43,10 @@ export default function MesAffectations() {
                 <Typography variant="h5" fontWeight="bold" gutterBottom>
                     Mes Affectations
                 </Typography>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    Liste de tous les cours qui vous ont été assignés avec leurs détails (groupe, salle, date, créneau horaire).
+                    Ces affectations apparaissent également dans votre emploi du temps.
+                </Typography>
 
                 {loading ? (
                     <Typography>Chargement...</Typography>

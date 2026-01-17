@@ -153,6 +153,25 @@ export default function Connexion() {
                     component="form"
                     onSubmit={handleSubmit}
                 >
+                    {/* Logo HESTIM */}
+                    <Box
+                        sx={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                            mb: 4,
+                        }}
+                    >
+                        <Box
+                            component="img"
+                            src="/HESTIM.png"
+                            alt="HESTIM Logo"
+                            sx={{
+                                width: { xs: '180px', sm: '220px' },
+                                height: { xs: '45px', sm: '55px' },
+                                objectFit: 'contain',
+                            }}
+                        />
+                    </Box>
                     <motion.div
                         initial={{ opacity: 0, x: 20 }}
                         animate={{ opacity: 1, x: 0 }}

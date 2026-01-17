@@ -21,7 +21,7 @@ import {
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
-import { disponibiliteAPI } from '../services/api';
+import { disponibiliteAPI, creneauAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -30,7 +30,9 @@ const validationSchema = yup.object({
     jour_semaine: yup.string().required('Le jour est requis'),
     heure_debut: yup.string().required('L\'heure de début est requise'),
     heure_fin: yup.string().required('L\'heure de fin est requise'),
-    type_disponibilite: yup.string().oneOf(['disponible', 'indisponible']).required(),
+    date_debut: yup.string().required('La date de début est requise'),
+    date_fin: yup.string().required('La date de fin est requise'),
+    disponible: yup.boolean(),
 });
 
 export default function Disponibilites() {
@@ -64,16 +66,55 @@ export default function Disponibilites() {
             jour_semaine: '',
             heure_debut: '',
             heure_fin: '',
-            type_disponibilite: 'disponible',
+            date_debut: '',
+            date_fin: '',
+            disponible: true,
         },
         validationSchema,
         onSubmit: async (values, { setSubmitting }) => {
             try {
                 setError('');
                 setSuccess('');
+                
+                // Trouver ou créer le créneau
+                let creneau;
+                try {
+                    // Chercher un créneau existant
+                    const creneaux = await creneauAPI.getAll({
+                        jour_semaine: values.jour_semaine,
+                    });
+                    const existingCreneau = (creneaux.data || []).find(
+                        (c) => c.heure_debut === values.heure_debut && c.heure_fin === values.heure_fin
+                    );
+                    
+                    if (existingCreneau) {
+                        creneau = existingCreneau;
+                    } else {
+                        // Créer un nouveau créneau
+                        const duree = Math.round(
+                            (new Date(`2000-01-01T${values.heure_fin}`) - new Date(`2000-01-01T${values.heure_debut}`)) / 60000
+                        );
+                        const creneauResponse = await creneauAPI.create({
+                            jour_semaine: values.jour_semaine,
+                            heure_debut: values.heure_debut,
+                            heure_fin: values.heure_fin,
+                            duree_minutes: duree,
+                        });
+                        creneau = creneauResponse.creneau || creneauResponse;
+                    }
+                } catch (creneauError) {
+                    console.error('Erreur lors de la création/recherche du créneau:', creneauError);
+                    setError('Erreur lors de la création du créneau. Veuillez réessayer.');
+                    return;
+                }
+                
+                // Créer la disponibilité
                 await disponibiliteAPI.create({
-                    ...values,
                     id_user_enseignant: user.id_user,
+                    id_creneau: creneau.id_creneau,
+                    date_debut: values.date_debut,
+                    date_fin: values.date_fin,
+                    disponible: values.disponible,
                 });
                 setSuccess('Disponibilité ajoutée avec succès');
                 formik.resetForm();
@@ -154,17 +195,27 @@ export default function Disponibilites() {
                                     <TableCell>Jour</TableCell>
                                     <TableCell>Heure début</TableCell>
                                     <TableCell>Heure fin</TableCell>
-                                    <TableCell>Type</TableCell>
+                                    <TableCell>Date début</TableCell>
+                                    <TableCell>Date fin</TableCell>
+                                    <TableCell>Disponible</TableCell>
                                     <TableCell align="right">Actions</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {disponibilites.map((disp) => (
                                     <TableRow key={disp.id_disponibilite}>
-                                        <TableCell>{disp.jour_semaine}</TableCell>
-                                        <TableCell>{disp.heure_debut}</TableCell>
-                                        <TableCell>{disp.heure_fin}</TableCell>
-                                        <TableCell>{disp.type_disponibilite}</TableCell>
+                                        <TableCell>{disp.creneau?.jour_semaine || '-'}</TableCell>
+                                        <TableCell>{disp.creneau?.heure_debut || '-'}</TableCell>
+                                        <TableCell>{disp.creneau?.heure_fin || '-'}</TableCell>
+                                        <TableCell>{disp.date_debut ? new Date(disp.date_debut).toLocaleDateString('fr-FR') : '-'}</TableCell>
+                                        <TableCell>{disp.date_fin ? new Date(disp.date_fin).toLocaleDateString('fr-FR') : '-'}</TableCell>
+                                        <TableCell>
+                                            <Chip
+                                                label={disp.disponible ? 'Disponible' : 'Indisponible'}
+                                                size="small"
+                                                color={disp.disponible ? 'success' : 'default'}
+                                            />
+                                        </TableCell>
                                         <TableCell align="right">
                                             <IconButton size="small" color="error" onClick={() => handleDelete(disp.id_disponibilite)}>
                                                 <Delete />
@@ -226,20 +277,26 @@ export default function Disponibilites() {
                                 />
                                 <TextField
                                     fullWidth
-                                    select
-                                    label="Type"
-                                    name="type_disponibilite"
-                                    value={formik.values.type_disponibilite}
+                                    label="Date de début"
+                                    name="date_debut"
+                                    type="date"
+                                    value={formik.values.date_debut}
                                     onChange={formik.handleChange}
-                                    error={formik.touched.type_disponibilite && Boolean(formik.errors.type_disponibilite)}
-                                    helperText={formik.touched.type_disponibilite && formik.errors.type_disponibilite}
-                                    SelectProps={{
-                                        native: true,
-                                    }}
-                                >
-                                    <option value="disponible">Disponible</option>
-                                    <option value="indisponible">Indisponible</option>
-                                </TextField>
+                                    InputLabelProps={{ shrink: true }}
+                                    error={formik.touched.date_debut && Boolean(formik.errors.date_debut)}
+                                    helperText={formik.touched.date_debut && formik.errors.date_debut}
+                                />
+                                <TextField
+                                    fullWidth
+                                    label="Date de fin"
+                                    name="date_fin"
+                                    type="date"
+                                    value={formik.values.date_fin}
+                                    onChange={formik.handleChange}
+                                    InputLabelProps={{ shrink: true }}
+                                    error={formik.touched.date_fin && Boolean(formik.errors.date_fin)}
+                                    helperText={formik.touched.date_fin && formik.errors.date_fin}
+                                />
                             </Box>
                         </DialogContent>
                         <DialogActions>

@@ -1,0 +1,32 @@
+Failed to load resource: net::ERR_CONNECTION_REFUSED
+api.js:69  API Error: Objectendpoint: "/auth/me"message: "Failed to fetch"method: "GET"status: undefined[[Prototype]]: Object
+request @ api.js:69
+AuthContext.jsx:35  Erreur de vérification auth: TypeError: Failed to fetch
+    at request (api.js:33:32)
+    at Object.getMe (api.js:84:18)
+    at checkAuth (AuthContext.jsx:31:40)
+    at AuthContext.jsx:23:13
+    at Object.react_stack_bottom_frame (react-dom-client.development.js:25989:20)
+    at runWithFiberInDEV (react-dom-client.development.js:871:30)
+    at commitHookEffectListMount (react-dom-client.development.js:13249:29)
+    at commitHookPassiveMountEffects (react-dom-client.development.js:13336:11)
+    at commitPassiveMountOnFiber (react-dom-client.development.js:15484:13)
+    at recursivelyTraversePassiveMountEffects (react-dom-client.development.js:15439:11)
+checkAuth @ AuthContext.jsx:35
+:5000/api/auth/me:1   Failed to load resource: net::ERR_CONNECTION_REFUSED
+api.js:69  API Error: Object
+request @ api.js:69
+AuthContext.jsx:35  Erreur de vérification auth: TypeError: Failed to fetch
+    at request (api.js:33:32)
+    at Object.getMe (api.js:84:18)
+    at checkAuth (AuthContext.jsx:31:40)
+    at AuthContext.jsx:23:13
+    at Object.react_stack_bottom_frame (react-dom-client.development.js:25989:20)
+    at runWithFiberInDEV (react-dom-client.development.js:871:30)
+    at commitHookEffectListMount (react-dom-client.development.js:13249:29)
+    at commitHookPassiveMountEffects (react-dom-client.development.js:13336:11)
+    at reconnectPassiveEffects (react-dom-client.development.js:15832:11)
+    at recursivelyTraverseReconnectPassiveEffects (react-dom-client.development.js:15784:9)
+checkAuth @ AuthContext.jsx:35
+:5000/api/auth/login:1   Failed to load resource: net::ERR_CONNECTION_REFUSED
+api.js:69  API Error: Object
