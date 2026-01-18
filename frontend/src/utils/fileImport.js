@@ -164,3 +164,184 @@ export const validateEtudiantData = (data) => {
     };
 };
 
+/**
+ * Valide les données importées pour les filières
+ * @param {Array} data - Les données à valider
+ * @returns {Object} - { valid: boolean, errors: Array }
+ */
+export const validateFiliereData = (data) => {
+    const errors = [];
+    
+    if (!Array.isArray(data) || data.length === 0) {
+        errors.push('Le fichier est vide ou invalide');
+        return { valid: false, errors };
+    }
+
+    const requiredFields = ['nom_filiere', 'code_filiere'];
+    
+    data.forEach((row, index) => {
+        const rowNum = index + 2;
+        
+        requiredFields.forEach((field) => {
+            if (!row[field] || row[field].toString().trim() === '') {
+                errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
+            }
+        });
+    });
+
+    return {
+        valid: errors.length === 0,
+        errors,
+    };
+};
+
+/**
+ * Valide les données importées pour les groupes
+ * @param {Array} data - Les données à valider
+ * @returns {Object} - { valid: boolean, errors: Array }
+ */
+export const validateGroupeData = (data) => {
+    const errors = [];
+    
+    if (!Array.isArray(data) || data.length === 0) {
+        errors.push('Le fichier est vide ou invalide');
+        return { valid: false, errors };
+    }
+
+    const requiredFields = ['nom_groupe', 'id_filiere', 'niveau'];
+    
+    data.forEach((row, index) => {
+        const rowNum = index + 2;
+        
+        requiredFields.forEach((field) => {
+            if (!row[field] || row[field].toString().trim() === '') {
+                errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
+            }
+        });
+
+        // Validation id_filiere
+        if (row.id_filiere && isNaN(Number(row.id_filiere))) {
+            errors.push(`Ligne ${rowNum}: id_filiere doit être un nombre`);
+        }
+    });
+
+    return {
+        valid: errors.length === 0,
+        errors,
+    };
+};
+
+/**
+ * Valide les données importées pour les salles
+ * @param {Array} data - Les données à valider
+ * @returns {Object} - { valid: boolean, errors: Array }
+ */
+export const validateSalleData = (data) => {
+    const errors = [];
+    
+    if (!Array.isArray(data) || data.length === 0) {
+        errors.push('Le fichier est vide ou invalide');
+        return { valid: false, errors };
+    }
+
+    const requiredFields = ['nom_salle', 'type_salle', 'capacite', 'batiment'];
+    
+    data.forEach((row, index) => {
+        const rowNum = index + 2;
+        
+        requiredFields.forEach((field) => {
+            if (!row[field] || row[field].toString().trim() === '') {
+                errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
+            }
+        });
+
+        // Validation capacite
+        if (row.capacite && (isNaN(Number(row.capacite)) || Number(row.capacite) <= 0)) {
+            errors.push(`Ligne ${rowNum}: capacite doit être un nombre positif`);
+        }
+
+        // Validation type_salle
+        const validTypes = ['amphi', 'informatique', 'standard', 'labo', 'atelier'];
+        if (row.type_salle && !validTypes.includes(row.type_salle.toLowerCase())) {
+            errors.push(`Ligne ${rowNum}: type_salle invalide. Doit être: ${validTypes.join(', ')}`);
+        }
+    });
+
+    return {
+        valid: errors.length === 0,
+        errors,
+    };
+};
+
+/**
+ * Valide les données importées pour les cours
+ * @param {Array} data - Les données à valider
+ * @returns {Object} - { valid: boolean, errors: Array }
+ */
+export const validateCoursData = (data) => {
+    const errors = [];
+    
+    if (!Array.isArray(data) || data.length === 0) {
+        errors.push('Le fichier est vide ou invalide');
+        return { valid: false, errors };
+    }
+
+    const requiredFields = ['nom_cours', 'code_cours', 'id_filiere'];
+    
+    data.forEach((row, index) => {
+        const rowNum = index + 2;
+        
+        requiredFields.forEach((field) => {
+            if (!row[field] || row[field].toString().trim() === '') {
+                errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
+            }
+        });
+
+        // Validation id_filiere
+        if (row.id_filiere && isNaN(Number(row.id_filiere))) {
+            errors.push(`Ligne ${rowNum}: id_filiere doit être un nombre`);
+        }
+    });
+
+    return {
+        valid: errors.length === 0,
+        errors,
+    };
+};
+
+/**
+ * Valide les données importées pour les créneaux
+ * @param {Array} data - Les données à valider
+ * @returns {Object} - { valid: boolean, errors: Array }
+ */
+export const validateCreneauData = (data) => {
+    const errors = [];
+    
+    if (!Array.isArray(data) || data.length === 0) {
+        errors.push('Le fichier est vide ou invalide');
+        return { valid: false, errors };
+    }
+
+    const requiredFields = ['jour_semaine', 'heure_debut', 'heure_fin'];
+    const validJours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+    
+    data.forEach((row, index) => {
+        const rowNum = index + 2;
+        
+        requiredFields.forEach((field) => {
+            if (!row[field] || row[field].toString().trim() === '') {
+                errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
+            }
+        });
+
+        // Validation jour_semaine
+        if (row.jour_semaine && !validJours.includes(row.jour_semaine.toLowerCase())) {
+            errors.push(`Ligne ${rowNum}: jour_semaine invalide. Doit être: ${validJours.join(', ')}`);
+        }
+    });
+
+    return {
+        valid: errors.length === 0,
+        errors,
+    };
+};

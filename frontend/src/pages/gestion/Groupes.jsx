@@ -24,11 +24,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { groupeAPI, filiereAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { parseFile, validateGroupeData } from '../../utils/fileImport';
+import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({
     nom_groupe: yup.string().required('Le nom du groupe est requis'),
@@ -39,6 +42,7 @@ const validationSchema = yup.object({
 });
 
 export default function Groupes() {
+    const navigate = useNavigate();
     const [groupes, setGroupes] = useState([]);
     const [filieres, setFilieres] = useState([]);
     const [page, setPage] = useState(0);
@@ -49,6 +53,9 @@ export default function Groupes() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [importOpen, setImportOpen] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importErrors, setImportErrors] = useState([]);
 
     useEffect(() => {
         loadGroupes();
@@ -137,6 +144,59 @@ export default function Groupes() {
         }
     };
 
+    const handleFileImport = async (file) => {
+        setImportLoading(true);
+        setImportErrors([]);
+        try {
+            const data = await parseFile(file);
+            const validation = validateGroupeData(data);
+            
+            if (!validation.valid) {
+                setImportErrors(validation.errors);
+                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
+                return;
+            }
+
+            const currentYear = new Date().getFullYear();
+            const defaultAnneeScolaire = `${currentYear}-${currentYear + 1}`;
+
+            // Préparer les données pour l'import
+            const groupesToImport = data.map((row) => ({
+                nom_groupe: row.nom_groupe?.trim() || '',
+                niveau: row.niveau?.trim() || '',
+                effectif: row.effectif ? Number(row.effectif) : 0,
+                annee_scolaire: row.annee_scolaire?.trim() || defaultAnneeScolaire,
+                id_filiere: row.id_filiere ? Number(row.id_filiere) : null,
+            }));
+
+            // Importer les groupes une par une
+            const results = { success: 0, errors: [] };
+            for (const groupe of groupesToImport) {
+                try {
+                    await groupeAPI.create(groupe);
+                    results.success++;
+                } catch (error) {
+                    results.errors.push({
+                        nom: groupe.nom_groupe,
+                        error: error.message || 'Erreur lors de la création',
+                    });
+                }
+            }
+
+            setSuccess(`${results.success} groupe(s) importé(s) avec succès`);
+            if (results.errors.length > 0) {
+                setImportErrors(results.errors.map(e => `${e.nom}: ${e.error}`));
+            }
+            setImportOpen(false);
+            loadGroupes();
+        } catch (error) {
+            console.error('Erreur lors de l\'import:', error);
+            setError(error.message || 'Erreur lors de l\'import du fichier');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
     const filteredGroupes = groupes.filter(
         (g) =>
             g.nom_groupe?.toLowerCase().includes(search.toLowerCase()) ||
@@ -146,31 +206,53 @@ export default function Groupes() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Gestion des Groupes
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
-                            setEditing(null);
-                            setError('');
-                            setSuccess('');
-                            formik.resetForm({
-                                values: {
-                                    nom_groupe: '',
-                                    niveau: '',
-                                    effectif: 0,
-                                    annee_scolaire: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
-                                    id_filiere: '',
-                                },
-                            });
-                            setOpen(true);
-                        }}
-                    >
-                        Ajouter un groupe
-                    </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/admin')}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Gestion des Groupes
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadFile />}
+                            onClick={() => {
+                                setImportOpen(true);
+                                setImportErrors([]);
+                            }}
+                        >
+                            Importer (Excel/CSV)
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                setEditing(null);
+                                setError('');
+                                setSuccess('');
+                                formik.resetForm({
+                                    values: {
+                                        nom_groupe: '',
+                                        niveau: '',
+                                        effectif: 0,
+                                        annee_scolaire: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
+                                        id_filiere: '',
+                                    },
+                                });
+                                setOpen(true);
+                            }}
+                        >
+                            Ajouter un groupe
+                        </Button>
+                    </Box>
                 </Box>
 
                 {error && (
@@ -316,6 +398,81 @@ export default function Groupes() {
                             </Button>
                         </DialogActions>
                     </form>
+                </Dialog>
+
+                {/* Dialog d'import */}
+                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
+                    <DialogTitle>Importer des groupes (Excel/CSV)</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ mt: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Typography variant="body2" gutterBottom>
+                                    <strong>Format du fichier requis :</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div">
+                                    Les colonnes requises sont : <strong>nom_groupe</strong>, <strong>id_filiere</strong>, <strong>niveau</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Colonnes optionnelles : <strong>effectif</strong>, <strong>annee_scolaire</strong>
+                                </Typography>
+                            </Alert>
+                            
+                            <input
+                                accept=".csv,.xlsx,.xls"
+                                style={{ display: 'none' }}
+                                id="import-groupe-file-input"
+                                type="file"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        handleFileImport(file);
+                                    }
+                                }}
+                            />
+                            <label htmlFor="import-groupe-file-input">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    startIcon={<UploadFile />}
+                                    fullWidth
+                                    disabled={importLoading}
+                                >
+                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
+                                </Button>
+                            </label>
+
+                            {importLoading && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                    <CircularProgress />
+                                </Box>
+                            )}
+
+                            {importErrors.length > 0 && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Alert severity="error">
+                                        <Typography variant="subtitle2" gutterBottom>
+                                            Erreurs détectées ({importErrors.length}) :
+                                        </Typography>
+                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+                                            {importErrors.map((err, index) => (
+                                                <ListItem key={index}>
+                                                    <ListItemText primary={err} />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Alert>
+                                </Box>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => {
+                            setImportOpen(false);
+                            setImportErrors([]);
+                        }}>
+                            Fermer
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </Box>
         </DashboardLayout>

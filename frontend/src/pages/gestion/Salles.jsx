@@ -23,12 +23,14 @@ import {
     Select,
     MenuItem,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, ArrowBack } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, ArrowBack, UploadFile } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { salleAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
+import { parseFile, validateSalleData } from '../../utils/fileImport';
+import { Alert, Snackbar, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 
 const validationSchema = yup.object({
     nom_salle: yup.string().required('Le nom de la salle est requis'),
@@ -46,6 +48,11 @@ export default function Salles() {
     const [open, setOpen] = useState(false);
     const [editing, setEditing] = useState(null);
     const [search, setSearch] = useState('');
+    const [error, setError] = useState('');
+    const [success, setSuccess] = useState('');
+    const [importOpen, setImportOpen] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importErrors, setImportErrors] = useState([]);
 
     useEffect(() => {
         loadSalles();
@@ -110,10 +117,64 @@ export default function Salles() {
         if (window.confirm('Êtes-vous sûr de vouloir supprimer cette salle ?')) {
             try {
                 await salleAPI.delete(id);
+                setSuccess('Salle supprimée avec succès');
                 loadSalles();
             } catch (error) {
                 console.error('Erreur:', error);
+                setError('Erreur lors de la suppression');
             }
+        }
+    };
+
+    const handleFileImport = async (file) => {
+        setImportLoading(true);
+        setImportErrors([]);
+        try {
+            const data = await parseFile(file);
+            const validation = validateSalleData(data);
+            
+            if (!validation.valid) {
+                setImportErrors(validation.errors);
+                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
+                return;
+            }
+
+            // Préparer les données pour l'import
+            const sallesToImport = data.map((row) => ({
+                nom_salle: row.nom_salle?.trim() || '',
+                type_salle: row.type_salle?.trim().toLowerCase() || '',
+                capacite: row.capacite ? Number(row.capacite) : 0,
+                batiment: row.batiment?.trim() || '',
+                etage: row.etage !== undefined && row.etage !== '' ? Number(row.etage) : null,
+                equipements: row.equipements?.trim() || '',
+                disponible: row.disponible !== undefined ? Boolean(row.disponible) : true,
+            }));
+
+            // Importer les salles une par une
+            const results = { success: 0, errors: [] };
+            for (const salle of sallesToImport) {
+                try {
+                    await salleAPI.create(salle);
+                    results.success++;
+                } catch (error) {
+                    results.errors.push({
+                        nom: salle.nom_salle,
+                        error: error.message || 'Erreur lors de la création',
+                    });
+                }
+            }
+
+            setSuccess(`${results.success} salle(s) importée(s) avec succès`);
+            if (results.errors.length > 0) {
+                setImportErrors(results.errors.map(e => `${e.nom}: ${e.error}`));
+            }
+            setImportOpen(false);
+            loadSalles();
+        } catch (error) {
+            console.error('Erreur lors de l\'import:', error);
+            setError(error.message || 'Erreur lors de l\'import du fichier');
+        } finally {
+            setImportLoading(false);
         }
     };
 
@@ -134,18 +195,46 @@ export default function Salles() {
                             Gestion des Salles
                         </Typography>
                     </Box>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
-                            setEditing(null);
-                            formik.resetForm();
-                            setOpen(true);
-                        }}
-                    >
-                        Ajouter une salle
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadFile />}
+                            onClick={() => {
+                                setImportOpen(true);
+                                setImportErrors([]);
+                            }}
+                        >
+                            Importer (Excel/CSV)
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                setEditing(null);
+                                formik.resetForm();
+                                setOpen(true);
+                            }}
+                        >
+                            Ajouter une salle
+                        </Button>
+                    </Box>
                 </Box>
+
+                {error && (
+                    <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
+                        <Alert onClose={() => setError('')} severity="error">
+                            {error}
+                        </Alert>
+                    </Snackbar>
+                )}
+
+                {success && (
+                    <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess('')}>
+                        <Alert onClose={() => setSuccess('')} severity="success">
+                            {success}
+                        </Alert>
+                    </Snackbar>
+                )}
 
                 <Paper sx={{ mb: 2 }}>
                     <Box sx={{ p: 2 }}>
@@ -323,6 +412,84 @@ export default function Salles() {
                             </Button>
                         </DialogActions>
                     </form>
+                </Dialog>
+
+                {/* Dialog d'import */}
+                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
+                    <DialogTitle>Importer des salles (Excel/CSV)</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ mt: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Typography variant="body2" gutterBottom>
+                                    <strong>Format du fichier requis :</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div">
+                                    Les colonnes requises sont : <strong>nom_salle</strong>, <strong>type_salle</strong>, <strong>capacite</strong>, <strong>batiment</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Colonnes optionnelles : <strong>etage</strong>, <strong>equipements</strong>, <strong>disponible</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Types de salle acceptés : <strong>amphi</strong>, <strong>informatique</strong>, <strong>standard</strong>, <strong>labo</strong>, <strong>atelier</strong>
+                                </Typography>
+                            </Alert>
+                            
+                            <input
+                                accept=".csv,.xlsx,.xls"
+                                style={{ display: 'none' }}
+                                id="import-salle-file-input"
+                                type="file"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        handleFileImport(file);
+                                    }
+                                }}
+                            />
+                            <label htmlFor="import-salle-file-input">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    startIcon={<UploadFile />}
+                                    fullWidth
+                                    disabled={importLoading}
+                                >
+                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
+                                </Button>
+                            </label>
+
+                            {importLoading && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                    <CircularProgress />
+                                </Box>
+                            )}
+
+                            {importErrors.length > 0 && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Alert severity="error">
+                                        <Typography variant="subtitle2" gutterBottom>
+                                            Erreurs détectées ({importErrors.length}) :
+                                        </Typography>
+                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+                                            {importErrors.map((err, index) => (
+                                                <ListItem key={index}>
+                                                    <ListItemText primary={err} />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Alert>
+                                </Box>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => {
+                            setImportOpen(false);
+                            setImportErrors([]);
+                        }}>
+                            Fermer
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </Box>
         </DashboardLayout>

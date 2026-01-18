@@ -24,11 +24,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { creneauAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { parseFile, validateCreneauData } from '../../utils/fileImport';
+import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({
     jour_semaine: yup.string().required('Le jour de la semaine est requis'),
@@ -41,6 +44,7 @@ const validationSchema = yup.object({
 const joursSemaine = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
 
 export default function Creneaux() {
+    const navigate = useNavigate();
     const [creneaux, setCreneaux] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -50,6 +54,9 @@ export default function Creneaux() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [importOpen, setImportOpen] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importErrors, setImportErrors] = useState([]);
 
     useEffect(() => {
         loadCreneaux();
@@ -140,6 +147,56 @@ export default function Creneaux() {
         }
     };
 
+    const handleFileImport = async (file) => {
+        setImportLoading(true);
+        setImportErrors([]);
+        try {
+            const data = await parseFile(file);
+            const validation = validateCreneauData(data);
+            
+            if (!validation.valid) {
+                setImportErrors(validation.errors);
+                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
+                return;
+            }
+
+            // Préparer les données pour l'import
+            const creneauxToImport = data.map((row) => ({
+                jour_semaine: row.jour_semaine?.trim().toLowerCase() || '',
+                heure_debut: row.heure_debut?.trim() || '',
+                heure_fin: row.heure_fin?.trim() || '',
+                duree_minutes: row.duree_minutes ? Number(row.duree_minutes) : calculateDuration(row.heure_debut, row.heure_fin),
+                periode: row.periode?.trim() || '',
+            }));
+
+            // Importer les créneaux une par une
+            const results = { success: 0, errors: [] };
+            for (const creneau of creneauxToImport) {
+                try {
+                    await creneauAPI.create(creneau);
+                    results.success++;
+                } catch (error) {
+                    results.errors.push({
+                        creneau: `${creneau.jour_semaine} ${creneau.heure_debut}-${creneau.heure_fin}`,
+                        error: error.message || 'Erreur lors de la création',
+                    });
+                }
+            }
+
+            setSuccess(`${results.success} créneau(x) importé(s) avec succès`);
+            if (results.errors.length > 0) {
+                setImportErrors(results.errors.map(e => `${e.creneau}: ${e.error}`));
+            }
+            setImportOpen(false);
+            loadCreneaux();
+        } catch (error) {
+            console.error('Erreur lors de l\'import:', error);
+            setError(error.message || 'Erreur lors de l\'import du fichier');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
     const filteredCreneaux = creneaux.filter(
         (c) =>
             c.jour_semaine?.toLowerCase().includes(search.toLowerCase()) ||
@@ -150,23 +207,45 @@ export default function Creneaux() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Gestion des Créneaux
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
-                            setEditing(null);
-                            setError('');
-                            setSuccess('');
-                            formik.resetForm();
-                            setOpen(true);
-                        }}
-                    >
-                        Ajouter un créneau
-                    </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/admin')}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Gestion des Créneaux
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadFile />}
+                            onClick={() => {
+                                setImportOpen(true);
+                                setImportErrors([]);
+                            }}
+                        >
+                            Importer (Excel/CSV)
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                setEditing(null);
+                                setError('');
+                                setSuccess('');
+                                formik.resetForm();
+                                setOpen(true);
+                            }}
+                        >
+                            Ajouter un créneau
+                        </Button>
+                    </Box>
                 </Box>
 
                 {error && (
@@ -328,6 +407,84 @@ export default function Creneaux() {
                             </Button>
                         </DialogActions>
                     </form>
+                </Dialog>
+
+                {/* Dialog d'import */}
+                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
+                    <DialogTitle>Importer des créneaux (Excel/CSV)</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ mt: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Typography variant="body2" gutterBottom>
+                                    <strong>Format du fichier requis :</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div">
+                                    Les colonnes requises sont : <strong>jour_semaine</strong>, <strong>heure_debut</strong>, <strong>heure_fin</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Colonnes optionnelles : <strong>duree_minutes</strong>, <strong>periode</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Jours acceptés : <strong>lundi</strong>, <strong>mardi</strong>, <strong>mercredi</strong>, <strong>jeudi</strong>, <strong>vendredi</strong>, <strong>samedi</strong>, <strong>dimanche</strong>
+                                </Typography>
+                            </Alert>
+                            
+                            <input
+                                accept=".csv,.xlsx,.xls"
+                                style={{ display: 'none' }}
+                                id="import-creneau-file-input"
+                                type="file"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        handleFileImport(file);
+                                    }
+                                }}
+                            />
+                            <label htmlFor="import-creneau-file-input">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    startIcon={<UploadFile />}
+                                    fullWidth
+                                    disabled={importLoading}
+                                >
+                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
+                                </Button>
+                            </label>
+
+                            {importLoading && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                    <CircularProgress />
+                                </Box>
+                            )}
+
+                            {importErrors.length > 0 && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Alert severity="error">
+                                        <Typography variant="subtitle2" gutterBottom>
+                                            Erreurs détectées ({importErrors.length}) :
+                                        </Typography>
+                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+                                            {importErrors.map((err, index) => (
+                                                <ListItem key={index}>
+                                                    <ListItemText primary={err} />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Alert>
+                                </Box>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => {
+                            setImportOpen(false);
+                            setImportErrors([]);
+                        }}>
+                            Fermer
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </Box>
         </DashboardLayout>

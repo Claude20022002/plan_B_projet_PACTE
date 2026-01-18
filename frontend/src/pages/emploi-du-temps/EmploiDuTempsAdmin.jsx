@@ -166,14 +166,6 @@ export default function EmploiDuTempsAdmin() {
                                 </Select>
                             </FormControl>
                         )}
-                        <FormControl size="small" sx={{ minWidth: 150 }}>
-                            <InputLabel>Vue</InputLabel>
-                            <Select value={view} onChange={(e) => setView(e.target.value)} label="Vue">
-                                <MenuItem value="timeGridWeek">Semaine</MenuItem>
-                                <MenuItem value="dayGridMonth">Mois</MenuItem>
-                                <MenuItem value="timeGridDay">Jour</MenuItem>
-                            </Select>
-                        </FormControl>
                         <IconButton
                             color="primary"
                             onClick={(e) => setExportMenuAnchor(e.currentTarget)}

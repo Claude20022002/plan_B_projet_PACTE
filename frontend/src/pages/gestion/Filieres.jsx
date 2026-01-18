@@ -20,11 +20,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { filiereAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { parseFile, validateFiliereData } from '../../utils/fileImport';
+import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({
     code_filiere: yup.string().required('Le code filière est requis'),
@@ -33,6 +36,7 @@ const validationSchema = yup.object({
 });
 
 export default function Filieres() {
+    const navigate = useNavigate();
     const [filieres, setFilieres] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -42,6 +46,9 @@ export default function Filieres() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [importOpen, setImportOpen] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importErrors, setImportErrors] = useState([]);
 
     useEffect(() => {
         loadFilieres();
@@ -116,6 +123,54 @@ export default function Filieres() {
         }
     };
 
+    const handleFileImport = async (file) => {
+        setImportLoading(true);
+        setImportErrors([]);
+        try {
+            const data = await parseFile(file);
+            const validation = validateFiliereData(data);
+            
+            if (!validation.valid) {
+                setImportErrors(validation.errors);
+                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
+                return;
+            }
+
+            // Préparer les données pour l'import
+            const filieresToImport = data.map((row) => ({
+                code_filiere: row.code_filiere?.trim() || '',
+                nom_filiere: row.nom_filiere?.trim() || '',
+                description: row.description?.trim() || '',
+            }));
+
+            // Importer les filières une par une
+            const results = { success: 0, errors: [] };
+            for (const filiere of filieresToImport) {
+                try {
+                    await filiereAPI.create(filiere);
+                    results.success++;
+                } catch (error) {
+                    results.errors.push({
+                        code: filiere.code_filiere,
+                        error: error.message || 'Erreur lors de la création',
+                    });
+                }
+            }
+
+            setSuccess(`${results.success} filière(s) importée(s) avec succès`);
+            if (results.errors.length > 0) {
+                setImportErrors(results.errors.map(e => `${e.code}: ${e.error}`));
+            }
+            setImportOpen(false);
+            loadFilieres();
+        } catch (error) {
+            console.error('Erreur lors de l\'import:', error);
+            setError(error.message || 'Erreur lors de l\'import du fichier');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
     const filteredFilieres = filieres.filter(
         (f) =>
             f.code_filiere?.toLowerCase().includes(search.toLowerCase()) ||
@@ -125,23 +180,45 @@ export default function Filieres() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Gestion des Filières
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
-                            setEditing(null);
-                            setError('');
-                            setSuccess('');
-                            formik.resetForm();
-                            setOpen(true);
-                        }}
-                    >
-                        Ajouter une filière
-                    </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/admin')}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Gestion des Filières
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadFile />}
+                            onClick={() => {
+                                setImportOpen(true);
+                                setImportErrors([]);
+                            }}
+                        >
+                            Importer (Excel/CSV)
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                setEditing(null);
+                                setError('');
+                                setSuccess('');
+                                formik.resetForm();
+                                setOpen(true);
+                            }}
+                        >
+                            Ajouter une filière
+                        </Button>
+                    </Box>
                 </Box>
 
                 {error && (
@@ -257,6 +334,81 @@ export default function Filieres() {
                             </Button>
                         </DialogActions>
                     </form>
+                </Dialog>
+
+                {/* Dialog d'import */}
+                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
+                    <DialogTitle>Importer des filières (Excel/CSV)</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ mt: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Typography variant="body2" gutterBottom>
+                                    <strong>Format du fichier requis :</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div">
+                                    Les colonnes requises sont : <strong>nom_filiere</strong>, <strong>code_filiere</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Colonnes optionnelles : <strong>description</strong>
+                                </Typography>
+                            </Alert>
+                            
+                            <input
+                                accept=".csv,.xlsx,.xls"
+                                style={{ display: 'none' }}
+                                id="import-filiere-file-input"
+                                type="file"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        handleFileImport(file);
+                                    }
+                                }}
+                            />
+                            <label htmlFor="import-filiere-file-input">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    startIcon={<UploadFile />}
+                                    fullWidth
+                                    disabled={importLoading}
+                                >
+                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
+                                </Button>
+                            </label>
+
+                            {importLoading && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                    <CircularProgress />
+                                </Box>
+                            )}
+
+                            {importErrors.length > 0 && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Alert severity="error">
+                                        <Typography variant="subtitle2" gutterBottom>
+                                            Erreurs détectées ({importErrors.length}) :
+                                        </Typography>
+                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+                                            {importErrors.map((err, index) => (
+                                                <ListItem key={index}>
+                                                    <ListItemText primary={err} />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Alert>
+                                </Box>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => {
+                            setImportOpen(false);
+                            setImportErrors([]);
+                        }}>
+                            Fermer
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </Box>
         </DashboardLayout>

@@ -24,11 +24,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { coursAPI, filiereAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { parseFile, validateCoursData } from '../../utils/fileImport';
+import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({
     code_cours: yup.string().required('Le code cours est requis'),
@@ -42,6 +45,7 @@ const validationSchema = yup.object({
 });
 
 export default function Cours() {
+    const navigate = useNavigate();
     const [cours, setCours] = useState([]);
     const [filieres, setFilieres] = useState([]);
     const [page, setPage] = useState(0);
@@ -52,6 +56,9 @@ export default function Cours() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [importOpen, setImportOpen] = useState(false);
+    const [importLoading, setImportLoading] = useState(false);
+    const [importErrors, setImportErrors] = useState([]);
 
     useEffect(() => {
         loadCours();
@@ -146,6 +153,59 @@ export default function Cours() {
         }
     };
 
+    const handleFileImport = async (file) => {
+        setImportLoading(true);
+        setImportErrors([]);
+        try {
+            const data = await parseFile(file);
+            const validation = validateCoursData(data);
+            
+            if (!validation.valid) {
+                setImportErrors(validation.errors);
+                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
+                return;
+            }
+
+            // Préparer les données pour l'import
+            const coursToImport = data.map((row) => ({
+                code_cours: row.code_cours?.trim() || '',
+                nom_cours: row.nom_cours?.trim() || '',
+                id_filiere: row.id_filiere ? Number(row.id_filiere) : null,
+                niveau: row.niveau?.trim() || '',
+                volume_horaire: row.volume_horaire ? Number(row.volume_horaire) : null,
+                type_cours: row.type_cours?.trim() || '',
+                semestre: row.semestre?.trim() || '',
+                coefficient: row.coefficient ? Number(row.coefficient) : 1.0,
+            }));
+
+            // Importer les cours une par une
+            const results = { success: 0, errors: [] };
+            for (const coursItem of coursToImport) {
+                try {
+                    await coursAPI.create(coursItem);
+                    results.success++;
+                } catch (error) {
+                    results.errors.push({
+                        code: coursItem.code_cours,
+                        error: error.message || 'Erreur lors de la création',
+                    });
+                }
+            }
+
+            setSuccess(`${results.success} cours importé(s) avec succès`);
+            if (results.errors.length > 0) {
+                setImportErrors(results.errors.map(e => `${e.code}: ${e.error}`));
+            }
+            setImportOpen(false);
+            loadCours();
+        } catch (error) {
+            console.error('Erreur lors de l\'import:', error);
+            setError(error.message || 'Erreur lors de l\'import du fichier');
+        } finally {
+            setImportLoading(false);
+        }
+    };
+
     const filteredCours = cours.filter(
         (c) =>
             c.code_cours?.toLowerCase().includes(search.toLowerCase()) ||
@@ -156,23 +216,45 @@ export default function Cours() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Gestion des Cours
-                    </Typography>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
-                            setEditing(null);
-                            setError('');
-                            setSuccess('');
-                            formik.resetForm();
-                            setOpen(true);
-                        }}
-                    >
-                        Ajouter un cours
-                    </Button>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                        <Button
+                            startIcon={<ArrowBack />}
+                            onClick={() => navigate('/dashboard/admin')}
+                            variant="outlined"
+                            size="small"
+                        >
+                            Retour
+                        </Button>
+                        <Typography variant="h5" fontWeight="bold">
+                            Gestion des Cours
+                        </Typography>
+                    </Box>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button
+                            variant="outlined"
+                            startIcon={<UploadFile />}
+                            onClick={() => {
+                                setImportOpen(true);
+                                setImportErrors([]);
+                            }}
+                        >
+                            Importer (Excel/CSV)
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                setEditing(null);
+                                setError('');
+                                setSuccess('');
+                                formik.resetForm();
+                                setOpen(true);
+                            }}
+                        >
+                            Ajouter un cours
+                        </Button>
+                    </Box>
                 </Box>
 
                 {error && (
@@ -356,6 +438,81 @@ export default function Cours() {
                             </Button>
                         </DialogActions>
                     </form>
+                </Dialog>
+
+                {/* Dialog d'import */}
+                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
+                    <DialogTitle>Importer des cours (Excel/CSV)</DialogTitle>
+                    <DialogContent>
+                        <Box sx={{ mt: 2 }}>
+                            <Alert severity="info" sx={{ mb: 2 }}>
+                                <Typography variant="body2" gutterBottom>
+                                    <strong>Format du fichier requis :</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div">
+                                    Les colonnes requises sont : <strong>nom_cours</strong>, <strong>code_cours</strong>, <strong>id_filiere</strong>
+                                </Typography>
+                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
+                                    Colonnes optionnelles : <strong>niveau</strong>, <strong>volume_horaire</strong>, <strong>type_cours</strong>, <strong>semestre</strong>, <strong>coefficient</strong>
+                                </Typography>
+                            </Alert>
+                            
+                            <input
+                                accept=".csv,.xlsx,.xls"
+                                style={{ display: 'none' }}
+                                id="import-cours-file-input"
+                                type="file"
+                                onChange={(e) => {
+                                    const file = e.target.files[0];
+                                    if (file) {
+                                        handleFileImport(file);
+                                    }
+                                }}
+                            />
+                            <label htmlFor="import-cours-file-input">
+                                <Button
+                                    variant="outlined"
+                                    component="span"
+                                    startIcon={<UploadFile />}
+                                    fullWidth
+                                    disabled={importLoading}
+                                >
+                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
+                                </Button>
+                            </label>
+
+                            {importLoading && (
+                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
+                                    <CircularProgress />
+                                </Box>
+                            )}
+
+                            {importErrors.length > 0 && (
+                                <Box sx={{ mt: 2 }}>
+                                    <Alert severity="error">
+                                        <Typography variant="subtitle2" gutterBottom>
+                                            Erreurs détectées ({importErrors.length}) :
+                                        </Typography>
+                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
+                                            {importErrors.map((err, index) => (
+                                                <ListItem key={index}>
+                                                    <ListItemText primary={err} />
+                                                </ListItem>
+                                            ))}
+                                        </List>
+                                    </Alert>
+                                </Box>
+                            )}
+                        </Box>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => {
+                            setImportOpen(false);
+                            setImportErrors([]);
+                        }}>
+                            Fermer
+                        </Button>
+                    </DialogActions>
                 </Dialog>
             </Box>
         </DashboardLayout>
