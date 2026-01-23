@@ -1,4 +1,5 @@
 import { DemandeReport, Affectation, Users } from "../models/index.js";
+import { notifierDemandeReport } from "../utils/notificationHelper.js";
 
 /**
  * Contrôleur pour les demandes de report
@@ -56,6 +57,26 @@ export const createDemandeReport = async (req, res) => {
             { model: Affectation, as: "affectation" },
         ],
     });
+
+    // Notifier les administrateurs de la nouvelle demande
+    try {
+        // Récupérer tous les administrateurs actifs
+        const admins = await Users.findAll({
+            where: { role: "admin", actif: true },
+            attributes: ['id_user'],
+        });
+
+        // Notifier chaque administrateur
+        for (const admin of admins) {
+            await notifierDemandeReport({
+                id_user_admin: admin.id_user,
+                demande: demandeComplete,
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'envoi de la notification de demande de report:", error);
+        // Ne pas bloquer la réponse si la notification échoue
+    }
 
     res.status(201).json(demandeComplete);
 };

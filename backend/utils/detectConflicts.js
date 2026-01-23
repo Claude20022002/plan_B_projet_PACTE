@@ -3,8 +3,10 @@ import {
     Conflit,
     ConflitAffectation,
     Creneau,
+    Users,
 } from "../models/index.js";
 import { Op } from "sequelize";
+import { notifierConflit, notifierAdministrateurs } from "./notificationHelper.js";
 
 /**
  * Utilitaires pour la détection automatique des conflits d'horaires
@@ -226,6 +228,62 @@ export const creerConflit = async (conflitData) => {
             id_conflit: conflit.id_conflit,
             id_affectation: conflitData.affectation2,
         });
+    }
+
+    // Notifier les utilisateurs concernés
+    try {
+        const id_enseignants = [];
+        const id_admins = [];
+        
+        // Récupérer les affectations pour obtenir les IDs des enseignants et admins
+        if (conflitData.affectation1) {
+            const affectation1 = await Affectation.findByPk(conflitData.affectation1, {
+                attributes: ['id_user_enseignant', 'id_user_admin'],
+            });
+            if (affectation1) {
+                if (affectation1.id_user_enseignant) {
+                    id_enseignants.push(affectation1.id_user_enseignant);
+                }
+                if (affectation1.id_user_admin) {
+                    id_admins.push(affectation1.id_user_admin);
+                }
+            }
+        }
+        
+        if (conflitData.affectation2) {
+            const affectation2 = await Affectation.findByPk(conflitData.affectation2, {
+                attributes: ['id_user_enseignant', 'id_user_admin'],
+            });
+            if (affectation2) {
+                if (affectation2.id_user_enseignant && !id_enseignants.includes(affectation2.id_user_enseignant)) {
+                    id_enseignants.push(affectation2.id_user_enseignant);
+                }
+                if (affectation2.id_user_admin && !id_admins.includes(affectation2.id_user_admin)) {
+                    id_admins.push(affectation2.id_user_admin);
+                }
+            }
+        }
+
+        // Notifier tous les administrateurs (pour qu'ils soient au courant de tous les conflits)
+        await notifierAdministrateurs({
+            titre: "⚠️ Conflit d'horaires détecté",
+            message: `Un conflit de type "${conflitData.type}" a été détecté : ${conflitData.description}`,
+            type_notification: "warning",
+        });
+
+        // Notifier les enseignants concernés par le conflit
+        if (id_enseignants.length > 0) {
+            await notifierConflit({
+                id_users: [...new Set(id_enseignants)], // Supprimer les doublons
+                conflit: {
+                    type_conflit: conflitData.type,
+                    description: conflitData.description,
+                },
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'envoi des notifications de conflit:", error);
+        // Ne pas bloquer la création du conflit si la notification échoue
     }
 
     return conflit;

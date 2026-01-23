@@ -1,5 +1,5 @@
 import express from "express";
-import { Notification, User } from "../models/index.js";
+import { Notification, Users } from "../models/index.js";
 
 const router = express.Router();
 
@@ -7,7 +7,7 @@ const router = express.Router();
 router.get("/", async (req, res) => {
     try {
         const notifications = await Notification.findAll({
-            include: [{ model: User, as: "user" }],
+            include: [{ model: Users, as: "user" }],
         });
         res.json(notifications);
     } catch (error) {
@@ -22,7 +22,7 @@ router.get("/", async (req, res) => {
 router.get("/:id", async (req, res) => {
     try {
         const notification = await Notification.findByPk(req.params.id, {
-            include: [{ model: User, as: "user" }],
+            include: [{ model: Users, as: "user" }],
         });
         if (!notification) {
             return res
@@ -45,7 +45,7 @@ router.post("/", async (req, res) => {
         const notificationComplete = await Notification.findByPk(
             notification.id_notification,
             {
-                include: [{ model: User, as: "user" }],
+                include: [{ model: Users, as: "user" }],
             }
         );
         res.status(201).json(notificationComplete);
@@ -70,7 +70,7 @@ router.put("/:id", async (req, res) => {
         const notificationComplete = await Notification.findByPk(
             notification.id_notification,
             {
-                include: [{ model: User, as: "user" }],
+                include: [{ model: Users, as: "user" }],
             }
         );
         res.json(notificationComplete);

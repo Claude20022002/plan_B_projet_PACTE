@@ -1,4 +1,5 @@
-import { Notification, User } from "../models/index.js";
+import { Notification, Users } from "../models/index.js";
+import { sendAffectationNotification, sendConflitNotification, sendDemandeReportNotification } from "./sendEmail.js";
 
 /**
  * Utilitaires pour créer et gérer les notifications
@@ -73,7 +74,7 @@ export const notifierAdministrateurs = async ({
     message,
     type_notification = "info",
 }) => {
-    const admins = await User.findAll({
+    const admins = await Users.findAll({
         where: { role: "admin", actif: true },
     });
 
@@ -101,12 +102,31 @@ export const notifierNouvelleAffectation = async ({
     const titre = "Nouvelle affectation de cours";
     const message = `Une nouvelle affectation a été créée pour vous le ${affectation.date_seance}.`;
 
-    return await creerNotification({
+    // Créer la notification en base de données
+    const notification = await creerNotification({
         id_user: id_user_enseignant,
         titre,
         message,
         type_notification: "info",
     });
+
+    // Envoyer un email si l'enseignant a un email
+    try {
+        const enseignant = await Users.findByPk(id_user_enseignant, {
+            attributes: ['email'],
+        });
+        if (enseignant && enseignant.email) {
+            await sendAffectationNotification({
+                to: enseignant.email,
+                affectation,
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'envoi de l'email de notification d'affectation:", error);
+        // Ne pas bloquer si l'email échoue
+    }
+
+    return notification;
 };
 
 /**
@@ -120,12 +140,35 @@ export const notifierConflit = async ({ id_users, conflit }) => {
     const titre = "⚠️ Conflit d'horaires détecté";
     const message = `Un conflit de type "${conflit.type_conflit}" a été détecté : ${conflit.description}`;
 
-    return await creerNotificationsMultiples({
+    // Créer les notifications en base de données
+    const notifications = await creerNotificationsMultiples({
         id_users,
         titre,
         message,
         type_notification: "warning",
     });
+
+    // Envoyer des emails aux utilisateurs concernés
+    try {
+        const users = await Users.findAll({
+            where: { id_user: id_users },
+            attributes: ['id_user', 'email'],
+        });
+        
+        for (const user of users) {
+            if (user.email) {
+                await sendConflitNotification({
+                    to: user.email,
+                    conflit,
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'envoi des emails de notification de conflit:", error);
+        // Ne pas bloquer si l'email échoue
+    }
+
+    return notifications;
 };
 
 /**
@@ -139,12 +182,31 @@ export const notifierDemandeReport = async ({ id_user_admin, demande }) => {
     const titre = "Nouvelle demande de report";
     const message = `Une demande de report a été soumise pour le ${demande.nouvelle_date}. Motif : ${demande.motif}`;
 
-    return await creerNotification({
+    // Créer la notification en base de données
+    const notification = await creerNotification({
         id_user: id_user_admin,
         titre,
         message,
         type_notification: "info",
     });
+
+    // Envoyer un email si l'admin a un email
+    try {
+        const admin = await Users.findByPk(id_user_admin, {
+            attributes: ['email'],
+        });
+        if (admin && admin.email) {
+            await sendDemandeReportNotification({
+                to: admin.email,
+                demande,
+            });
+        }
+    } catch (error) {
+        console.error("Erreur lors de l'envoi de l'email de notification de demande de report:", error);
+        // Ne pas bloquer si l'email échoue
+    }
+
+    return notification;
 };
 
 /**

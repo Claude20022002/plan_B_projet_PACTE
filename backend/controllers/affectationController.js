@@ -9,6 +9,7 @@ import {
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { verifierEtCreerConflits } from "../utils/detectConflicts.js";
+import { notifierNouvelleAffectation } from "../utils/notificationHelper.js";
 
 /**
  * Contrôleur pour les affectations
@@ -112,6 +113,19 @@ export const createAffectation = asyncHandler(async (req, res) => {
             ],
         }
     );
+
+    // Notifier l'enseignant de la nouvelle affectation
+    if (affectation.id_user_enseignant) {
+        try {
+            await notifierNouvelleAffectation({
+                id_user_enseignant: affectation.id_user_enseignant,
+                affectation: affectationComplete,
+            });
+        } catch (error) {
+            console.error("Erreur lors de l'envoi de la notification:", error);
+            // Ne pas bloquer la réponse si la notification échoue
+        }
+    }
 
     res.status(201).json({
         message: "Affectation créée avec succès",
