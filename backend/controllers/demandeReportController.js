@@ -7,7 +7,7 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
  */
 
 // 🔍 Récupérer toutes les demandes de report
-export const getAllDemandesReport = async (req, res) => {
+export const getAllDemandesReport = asyncHandler(async (req, res) => {
     const demandes = await DemandeReport.findAll({
         include: [
             {
@@ -15,15 +15,30 @@ export const getAllDemandesReport = async (req, res) => {
                 as: "enseignant",
                 attributes: { exclude: ["password_hash"] },
             },
-            { model: Affectation, as: "affectation" },
+            {
+                model: Affectation,
+                as: "affectation",
+                include: [
+                    { model: Cours, as: "cours" },
+                    { model: Groupe, as: "groupe" },
+                    {
+                        model: Users,
+                        as: "enseignant",
+                        attributes: { exclude: ["password_hash"] },
+                    },
+                    { model: Salle, as: "salle" },
+                    { model: Creneau, as: "creneau" },
+                ],
+            },
         ],
+        order: [["date_demande", "DESC"]],
     });
 
     res.json(demandes);
-};
+});
 
 // 🔍 Récupérer une demande de report par ID
-export const getDemandeReportById = async (req, res) => {
+export const getDemandeReportById = asyncHandler(async (req, res) => {
     const demande = await DemandeReport.findByPk(req.params.id, {
         include: [
             {
@@ -31,7 +46,21 @@ export const getDemandeReportById = async (req, res) => {
                 as: "enseignant",
                 attributes: { exclude: ["password_hash"] },
             },
-            { model: Affectation, as: "affectation" },
+            {
+                model: Affectation,
+                as: "affectation",
+                include: [
+                    { model: Cours, as: "cours" },
+                    { model: Groupe, as: "groupe" },
+                    {
+                        model: Users,
+                        as: "enseignant",
+                        attributes: { exclude: ["password_hash"] },
+                    },
+                    { model: Salle, as: "salle" },
+                    { model: Creneau, as: "creneau" },
+                ],
+            },
         ],
     });
 
@@ -42,10 +71,10 @@ export const getDemandeReportById = async (req, res) => {
     }
 
     res.json(demande);
-};
+});
 
 // ➕ Créer une demande de report
-export const createDemandeReport = async (req, res) => {
+export const createDemandeReport = asyncHandler(async (req, res) => {
     const demande = await DemandeReport.create(req.body);
 
     const demandeComplete = await DemandeReport.findByPk(demande.id_demande, {
@@ -55,7 +84,21 @@ export const createDemandeReport = async (req, res) => {
                 as: "enseignant",
                 attributes: { exclude: ["password_hash"] },
             },
-            { model: Affectation, as: "affectation" },
+            {
+                model: Affectation,
+                as: "affectation",
+                include: [
+                    { model: Cours, as: "cours" },
+                    { model: Groupe, as: "groupe" },
+                    {
+                        model: Users,
+                        as: "enseignant",
+                        attributes: { exclude: ["password_hash"] },
+                    },
+                    { model: Salle, as: "salle" },
+                    { model: Creneau, as: "creneau" },
+                ],
+            },
         ],
     });
 
@@ -97,10 +140,10 @@ export const createDemandeReport = async (req, res) => {
     }
 
     res.status(201).json(demandeComplete);
-};
+});
 
 // ✏️ Mettre à jour une demande de report
-export const updateDemandeReport = async (req, res) => {
+export const updateDemandeReport = asyncHandler(async (req, res) => {
     const demande = await DemandeReport.findByPk(req.params.id);
 
     if (!demande) {
@@ -118,12 +161,26 @@ export const updateDemandeReport = async (req, res) => {
                 as: "enseignant",
                 attributes: { exclude: ["password_hash"] },
             },
-            { model: Affectation, as: "affectation" },
+            {
+                model: Affectation,
+                as: "affectation",
+                include: [
+                    { model: Cours, as: "cours" },
+                    { model: Groupe, as: "groupe" },
+                    {
+                        model: Users,
+                        as: "enseignant",
+                        attributes: { exclude: ["password_hash"] },
+                    },
+                    { model: Salle, as: "salle" },
+                    { model: Creneau, as: "creneau" },
+                ],
+            },
         ],
     });
 
     res.json(demandeComplete);
-};
+});
 
 // ✅ Valider ou refuser une demande de report
 export const traiterDemandeReport = asyncHandler(async (req, res) => {
@@ -345,7 +402,7 @@ export const traiterDemandeReport = asyncHandler(async (req, res) => {
 });
 
 // 🗑️ Supprimer une demande de report
-export const deleteDemandeReport = async (req, res) => {
+export const deleteDemandeReport = asyncHandler(async (req, res) => {
     const demande = await DemandeReport.findByPk(req.params.id);
 
     if (!demande) {
@@ -357,20 +414,37 @@ export const deleteDemandeReport = async (req, res) => {
     await demande.destroy();
 
     res.json({ message: "Demande de report supprimée avec succès" });
-};
+});
 
 // 🔍 Récupérer les demandes de report par enseignant
-export const getDemandesReportByEnseignant = async (req, res) => {
+export const getDemandesReportByEnseignant = asyncHandler(async (req, res) => {
     const demandes = await DemandeReport.findAll({
         where: { id_user_enseignant: req.params.id_enseignant },
-        include: [{ model: Affectation, as: "affectation" }],
+        include: [
+            {
+                model: Affectation,
+                as: "affectation",
+                include: [
+                    { model: Cours, as: "cours" },
+                    { model: Groupe, as: "groupe" },
+                    {
+                        model: Users,
+                        as: "enseignant",
+                        attributes: { exclude: ["password_hash"] },
+                    },
+                    { model: Salle, as: "salle" },
+                    { model: Creneau, as: "creneau" },
+                ],
+            },
+        ],
+        order: [["date_demande", "DESC"]],
     });
 
     res.json(demandes);
-};
+});
 
 // 🔍 Récupérer les demandes de report par statut
-export const getDemandesReportByStatut = async (req, res) => {
+export const getDemandesReportByStatut = asyncHandler(async (req, res) => {
     const demandes = await DemandeReport.findAll({
         where: { statut_demande: req.params.statut },
         include: [
@@ -379,9 +453,24 @@ export const getDemandesReportByStatut = async (req, res) => {
                 as: "enseignant",
                 attributes: { exclude: ["password_hash"] },
             },
-            { model: Affectation, as: "affectation" },
+            {
+                model: Affectation,
+                as: "affectation",
+                include: [
+                    { model: Cours, as: "cours" },
+                    { model: Groupe, as: "groupe" },
+                    {
+                        model: Users,
+                        as: "enseignant",
+                        attributes: { exclude: ["password_hash"] },
+                    },
+                    { model: Salle, as: "salle" },
+                    { model: Creneau, as: "creneau" },
+                ],
+            },
         ],
+        order: [["date_demande", "DESC"]],
     });
 
     res.json(demandes);
-};
+});
