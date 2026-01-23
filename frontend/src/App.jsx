@@ -39,7 +39,6 @@ import Statistiques from './pages/Statistiques';
 import MesAffectations from './pages/MesAffectations';
 import DemandesReport from './pages/DemandesReport';
 import Disponibilites from './pages/Disponibilites';
-import SallesDisponibles from './pages/SallesDisponibles';
 
 const queryClient = new QueryClient();
 
@@ -244,14 +243,7 @@ function App() {
                             />
 
                             {/* Pages fonctionnelles - Étudiant */}
-                            <Route
-                                path="/salles/disponibles"
-                                element={
-                                    <PrivateRoute requiredRole="etudiant">
-                                        <SallesDisponibles />
-                                    </PrivateRoute>
-                                }
-                            />
+                            {/* Route salles disponibles désactivée pour les étudiants */}
 
                             {/* Route par défaut */}
                             <Route path="*" element={<Navigate to="/" replace />} />

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
     Box,
@@ -16,6 +16,7 @@ import {
     Avatar,
     Menu,
     MenuItem,
+    Badge,
 } from '@mui/material';
 import {
     Menu as MenuIcon,
@@ -39,6 +40,7 @@ import {
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
+import { notificationAPI } from '../../services/api';
 
 const drawerWidth = 260;
 
@@ -49,6 +51,7 @@ export default function DashboardLayout({ children }) {
     const location = useLocation();
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
+    const [unreadNotifications, setUnreadNotifications] = useState(0);
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -65,6 +68,28 @@ export default function DashboardLayout({ children }) {
     const handleLogout = async () => {
         await logout();
         navigate('/connexion');
+    };
+
+    // Charger les notifications non lues
+    useEffect(() => {
+        if (user?.id_user) {
+            loadUnreadNotifications();
+            // Rafraîchir toutes les 30 secondes
+            const interval = setInterval(loadUnreadNotifications, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
+
+    const loadUnreadNotifications = async () => {
+        try {
+            if (user?.id_user) {
+                const data = await notificationAPI.getNonLues(user.id_user);
+                const notifications = data.data || data || [];
+                setUnreadNotifications(notifications.length);
+            }
+        } catch (error) {
+            console.error('Erreur lors du chargement des notifications:', error);
+        }
     };
 
     // Menu items selon le rôle
@@ -189,7 +214,9 @@ export default function DashboardLayout({ children }) {
                         color="inherit"
                         onClick={() => navigate('/notifications')}
                     >
-                        <Notifications />
+                        <Badge badgeContent={unreadNotifications} color="error">
+                            <Notifications />
+                        </Badge>
                     </IconButton>
                     <IconButton
                         size="large"

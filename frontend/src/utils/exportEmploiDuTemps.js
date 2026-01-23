@@ -53,55 +53,75 @@ export const exportToExcel = (affectations, filename = 'emploi-du-temps') => {
  * @param {String} title - Le titre du document
  */
 export const exportToPDF = (affectations, filename = 'emploi-du-temps', title = 'Emploi du Temps') => {
-    const doc = new jsPDF();
-    
-    // Titre
-    doc.setFontSize(18);
-    doc.text(title, 14, 20);
-    
-    // Date de génération
-    doc.setFontSize(10);
-    doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, 14, 28);
-    
-    // Préparer les données pour le tableau
-    const tableData = affectations.map((aff) => [
-        new Date(aff.date_seance).toLocaleDateString('fr-FR'),
-        new Date(aff.date_seance).toLocaleDateString('fr-FR', { weekday: 'short' }),
-        aff.creneau?.heure_debut || '',
-        aff.creneau?.heure_fin || '',
-        aff.cours?.nom_cours || '',
-        aff.groupe?.nom_groupe || '',
-        aff.enseignant ? `${aff.enseignant.prenom} ${aff.enseignant.nom}` : '',
-        aff.salle?.nom_salle || '',
-        aff.statut || '',
-    ]);
+    try {
+        const doc = new jsPDF();
+        
+        // Vérifier si autoTable est disponible
+        if (!doc.autoTable) {
+            console.error('jspdf-autotable n\'est pas correctement chargé');
+            alert('Erreur: La bibliothèque PDF n\'est pas correctement chargée. Veuillez réessayer.');
+            return;
+        }
 
-    // En-têtes du tableau
-    const headers = [
-        'Date',
-        'Jour',
-        'H. début',
-        'H. fin',
-        'Cours',
-        'Groupe',
-        'Enseignant',
-        'Salle',
-        'Statut',
-    ];
+        // Titre
+        doc.setFontSize(18);
+        doc.text(title, 14, 20);
+        
+        // Date de génération
+        doc.setFontSize(10);
+        doc.text(`Généré le ${new Date().toLocaleDateString('fr-FR')}`, 14, 28);
+        
+        // Vérifier si on a des données
+        if (!affectations || affectations.length === 0) {
+            doc.setFontSize(12);
+            doc.text('Aucune affectation à exporter', 14, 50);
+            doc.save(`${filename}.pdf`);
+            return;
+        }
+        
+        // Préparer les données pour le tableau
+        const tableData = affectations.map((aff) => [
+            new Date(aff.date_seance).toLocaleDateString('fr-FR'),
+            new Date(aff.date_seance).toLocaleDateString('fr-FR', { weekday: 'short' }),
+            aff.creneau?.heure_debut || '',
+            aff.creneau?.heure_fin || '',
+            aff.cours?.nom_cours || '',
+            aff.groupe?.nom_groupe || '',
+            aff.enseignant ? `${aff.enseignant.prenom} ${aff.enseignant.nom}` : '',
+            aff.salle?.nom_salle || '',
+            aff.statut || '',
+        ]);
 
-    // Créer le tableau
-    doc.autoTable({
-        head: [headers],
-        body: tableData,
-        startY: 35,
-        styles: { fontSize: 8 },
-        headStyles: { fillColor: [124, 77, 255] },
-        alternateRowStyles: { fillColor: [245, 245, 245] },
-        margin: { top: 35 },
-    });
+        // En-têtes du tableau
+        const headers = [
+            'Date',
+            'Jour',
+            'H. début',
+            'H. fin',
+            'Cours',
+            'Groupe',
+            'Enseignant',
+            'Salle',
+            'Statut',
+        ];
 
-    // Télécharger le PDF
-    doc.save(`${filename}.pdf`);
+        // Créer le tableau
+        doc.autoTable({
+            head: [headers],
+            body: tableData,
+            startY: 35,
+            styles: { fontSize: 8 },
+            headStyles: { fillColor: [124, 77, 255] },
+            alternateRowStyles: { fillColor: [245, 245, 245] },
+            margin: { top: 35 },
+        });
+
+        // Télécharger le PDF
+        doc.save(`${filename}.pdf`);
+    } catch (error) {
+        console.error('Erreur lors de la génération du PDF:', error);
+        alert('Erreur lors de la génération du PDF. Veuillez réessayer.');
+    }
 };
 
 /**

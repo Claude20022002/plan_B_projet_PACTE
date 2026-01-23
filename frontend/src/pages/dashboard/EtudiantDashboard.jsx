@@ -18,7 +18,6 @@ import {
 import {
     CalendarToday,
     Notifications,
-    School,
     Event,
     AccessTime,
     LocationOn,
@@ -388,30 +387,6 @@ export default function EtudiantDashboard() {
                                 </Paper>
                             </Grid>
 
-                            <Grid item xs={12}>
-                                <Paper
-                                    elevation={2}
-                                    sx={{
-                                        p: 2,
-                                        borderRadius: 2,
-                                    }}
-                                >
-                                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                                        Actions rapides
-                                    </Typography>
-                                    <Divider sx={{ mb: 2 }} />
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                        <Button
-                                            variant="outlined"
-                                            fullWidth
-                                            startIcon={<School />}
-                                            onClick={() => navigate('/salles/disponibles')}
-                                        >
-                                            Salles disponibles
-                                        </Button>
-                                    </Box>
-                                </Paper>
-                            </Grid>
                         </Grid>
                     </Grid>
                 </Grid>
