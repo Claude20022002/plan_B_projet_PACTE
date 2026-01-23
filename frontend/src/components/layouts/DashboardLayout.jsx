@@ -17,6 +17,7 @@ import {
     Menu,
     MenuItem,
     Badge,
+    Collapse,
 } from '@mui/material';
 import {
     Menu as MenuIcon,
@@ -37,6 +38,11 @@ import {
     CalendarToday,
     Assignment,
     EventAvailable,
+    ExpandLess,
+    ExpandMore,
+    AdminPanelSettings,
+    AccountTree,
+    Business,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -52,6 +58,12 @@ export default function DashboardLayout({ children }) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [unreadNotifications, setUnreadNotifications] = useState(0);
+    const [openMenus, setOpenMenus] = useState({
+        utilisateurs: false,
+        academique: false,
+        ressources: false,
+        planning: false,
+    });
 
     const handleDrawerToggle = () => {
         setMobileOpen(!mobileOpen);
@@ -70,16 +82,6 @@ export default function DashboardLayout({ children }) {
         navigate('/connexion');
     };
 
-    // Charger les notifications non lues
-    useEffect(() => {
-        if (user?.id_user) {
-            loadUnreadNotifications();
-            // Rafraîchir toutes les 30 secondes
-            const interval = setInterval(loadUnreadNotifications, 30000);
-            return () => clearInterval(interval);
-        }
-    }, [user]);
-
     const loadUnreadNotifications = async () => {
         try {
             if (user?.id_user) {
@@ -92,44 +94,115 @@ export default function DashboardLayout({ children }) {
         }
     };
 
+    const handleMenuToggle = (menu) => {
+        setOpenMenus((prev) => ({
+            ...prev,
+            [menu]: !prev[menu],
+        }));
+    };
+
     // Menu items selon le rôle
     const getMenuItems = () => {
         const baseItems = [
-            { text: 'Tableau de bord', icon: <Dashboard />, path: `/dashboard/${user?.role}` },
+            { text: 'Tableau de bord', icon: <Dashboard />, path: `/dashboard/${user?.role}`, type: 'item' },
         ];
 
         if (user?.role === 'admin') {
             return [
                 ...baseItems,
-                { text: 'Utilisateurs', icon: <People />, path: '/gestion/utilisateurs' },
-                { text: 'Enseignants', icon: <School />, path: '/gestion/enseignants' },
-                { text: 'Étudiants', icon: <People />, path: '/gestion/etudiants' },
-                { text: 'Filières', icon: <Category />, path: '/gestion/filieres' },
-                { text: 'Groupes', icon: <Groups />, path: '/gestion/groupes' },
-                { text: 'Salles', icon: <Room />, path: '/gestion/salles' },
-                { text: 'Cours', icon: <Book />, path: '/gestion/cours' },
-                { text: 'Créneaux', icon: <Schedule />, path: '/gestion/creneaux' },
-                { text: 'Affectations', icon: <Schedule />, path: '/gestion/affectations' },
-                { text: 'Conflits', icon: <Warning />, path: '/gestion/conflits' },
-                { text: 'Emplois du temps', icon: <Schedule />, path: '/gestion/emplois-du-temps' },
-                { text: 'Statistiques', icon: <Dashboard />, path: '/statistiques' },
+                {
+                    text: 'Gestion des utilisateurs',
+                    icon: <AdminPanelSettings />,
+                    type: 'group',
+                    key: 'utilisateurs',
+                    items: [
+                        { text: 'Utilisateurs', icon: <People />, path: '/gestion/utilisateurs' },
+                        { text: 'Enseignants', icon: <School />, path: '/gestion/enseignants' },
+                        { text: 'Étudiants', icon: <People />, path: '/gestion/etudiants' },
+                    ],
+                },
+                {
+                    text: 'Gestion académique',
+                    icon: <AccountTree />,
+                    type: 'group',
+                    key: 'academique',
+                    items: [
+                        { text: 'Filières', icon: <Category />, path: '/gestion/filieres' },
+                        { text: 'Groupes', icon: <Groups />, path: '/gestion/groupes' },
+                        { text: 'Cours', icon: <Book />, path: '/gestion/cours' },
+                        { text: 'Créneaux', icon: <Schedule />, path: '/gestion/creneaux' },
+                    ],
+                },
+                {
+                    text: 'Gestion des ressources',
+                    icon: <Business />,
+                    type: 'group',
+                    key: 'ressources',
+                    items: [
+                        { text: 'Salles', icon: <Room />, path: '/gestion/salles' },
+                    ],
+                },
+                {
+                    text: 'Planning',
+                    icon: <CalendarToday />,
+                    type: 'group',
+                    key: 'planning',
+                    items: [
+                        { text: 'Affectations', icon: <Schedule />, path: '/gestion/affectations' },
+                        { text: 'Emplois du temps', icon: <Schedule />, path: '/gestion/emplois-du-temps' },
+                    ],
+                },
+                { text: 'Conflits', icon: <Warning />, path: '/gestion/conflits', type: 'item' },
+                { text: 'Statistiques', icon: <Dashboard />, path: '/statistiques', type: 'item' },
             ];
         } else if (user?.role === 'enseignant') {
             return [
                 ...baseItems,
-                { text: 'Mon emploi du temps', icon: <CalendarToday />, path: '/emploi-du-temps/enseignant' },
-                { text: 'Mes affectations', icon: <Assignment />, path: '/mes-affectations' },
-                { text: 'Mes disponibilités', icon: <EventAvailable />, path: '/disponibilites' },
+                { text: 'Mon emploi du temps', icon: <CalendarToday />, path: '/emploi-du-temps/enseignant', type: 'item' },
+                { text: 'Mes affectations', icon: <Assignment />, path: '/mes-affectations', type: 'item' },
+                { text: 'Mes disponibilités', icon: <EventAvailable />, path: '/disponibilites', type: 'item' },
             ];
         } else {
             return [
                 ...baseItems,
-                { text: 'Mon emploi du temps', icon: <Schedule />, path: '/emploi-du-temps/etudiant' },
+                { text: 'Mon emploi du temps', icon: <Schedule />, path: '/emploi-du-temps/etudiant', type: 'item' },
             ];
         }
     };
 
     const menuItems = getMenuItems();
+
+    const isPathInGroup = (groupItems, currentPath) => {
+        return groupItems.some((item) => item.path === currentPath);
+    };
+
+    // Charger les notifications non lues
+    useEffect(() => {
+        if (user?.id_user) {
+            loadUnreadNotifications();
+            // Rafraîchir toutes les 30 secondes
+            const interval = setInterval(loadUnreadNotifications, 30000);
+            return () => clearInterval(interval);
+        }
+    }, [user]);
+
+    // Ouvrir automatiquement les menus contenant la page actuelle
+    useEffect(() => {
+        if (user?.role === 'admin') {
+            const newOpenMenus = { ...openMenus };
+            
+            menuItems.forEach((item) => {
+                if (item.type === 'group' && item.items) {
+                    if (isPathInGroup(item.items, location.pathname)) {
+                        newOpenMenus[item.key] = true;
+                    }
+                }
+            });
+            
+            setOpenMenus(newOpenMenus);
+        }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [location.pathname, user]);
 
     const drawer = (
         <Box>
@@ -148,26 +221,79 @@ export default function DashboardLayout({ children }) {
             </Toolbar>
             <Divider />
             <List>
-                {menuItems.map((item) => (
-                    <ListItem key={item.text} disablePadding>
-                        <ListItemButton
-                            selected={location.pathname === item.path}
-                            onClick={() => {
-                                navigate(item.path);
-                                setMobileOpen(false);
-                            }}
-                        >
-                            <ListItemIcon
-                                sx={{
-                                    color: location.pathname === item.path ? '#001962' : 'inherit', // Bleu HESTIM
-                                }}
-                            >
-                                {item.icon}
-                            </ListItemIcon>
-                            <ListItemText primary={item.text} />
-                        </ListItemButton>
-                    </ListItem>
-                ))}
+                {menuItems.map((item) => {
+                    if (item.type === 'group') {
+                        const isOpen = openMenus[item.key];
+                        const isSelected = isPathInGroup(item.items, location.pathname);
+                        
+                        return (
+                            <React.Fragment key={item.text}>
+                                <ListItem disablePadding>
+                                    <ListItemButton
+                                        onClick={() => handleMenuToggle(item.key)}
+                                        selected={isSelected}
+                                    >
+                                        <ListItemIcon
+                                            sx={{
+                                                color: isSelected ? '#001962' : 'inherit',
+                                            }}
+                                        >
+                                            {item.icon}
+                                        </ListItemIcon>
+                                        <ListItemText primary={item.text} />
+                                        {isOpen ? <ExpandLess /> : <ExpandMore />}
+                                    </ListItemButton>
+                                </ListItem>
+                                <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                                    <List component="div" disablePadding>
+                                        {item.items.map((subItem) => (
+                                            <ListItem key={subItem.text} disablePadding>
+                                                <ListItemButton
+                                                    selected={location.pathname === subItem.path}
+                                                    onClick={() => {
+                                                        navigate(subItem.path);
+                                                        setMobileOpen(false);
+                                                    }}
+                                                    sx={{ pl: 4 }}
+                                                >
+                                                    <ListItemIcon
+                                                        sx={{
+                                                            color: location.pathname === subItem.path ? '#001962' : 'inherit',
+                                                        }}
+                                                    >
+                                                        {subItem.icon}
+                                                    </ListItemIcon>
+                                                    <ListItemText primary={subItem.text} />
+                                                </ListItemButton>
+                                            </ListItem>
+                                        ))}
+                                    </List>
+                                </Collapse>
+                            </React.Fragment>
+                        );
+                    } else {
+                        return (
+                            <ListItem key={item.text} disablePadding>
+                                <ListItemButton
+                                    selected={location.pathname === item.path}
+                                    onClick={() => {
+                                        navigate(item.path);
+                                        setMobileOpen(false);
+                                    }}
+                                >
+                                    <ListItemIcon
+                                        sx={{
+                                            color: location.pathname === item.path ? '#001962' : 'inherit',
+                                        }}
+                                    >
+                                        {item.icon}
+                                    </ListItemIcon>
+                                    <ListItemText primary={item.text} />
+                                </ListItemButton>
+                            </ListItem>
+                        );
+                    }
+                })}
             </List>
         </Box>
     );
