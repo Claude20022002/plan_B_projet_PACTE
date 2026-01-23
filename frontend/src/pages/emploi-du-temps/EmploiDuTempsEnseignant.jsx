@@ -27,11 +27,9 @@ export default function EmploiDuTempsEnseignant() {
 
     const loadEmploiDuTemps = async () => {
         try {
-            const response = await emploiDuTempsAPI.getByEnseignant(user.id_user);
-            // Le backend retourne un objet avec affectations dedans
-            // On doit récupérer les affectations complètes depuis l'API des affectations
-            const affectationsResponse = await affectationAPI.getByEnseignant(user.id_user);
-            const affectations = affectationsResponse.data || [];
+            // Utiliser affectationAPI pour obtenir les affectations complètes avec toutes les relations
+            const response = await affectationAPI.getByEnseignant(user.id_user, { limit: 1000 });
+            const affectations = response.data || [];
             
             // Sauvegarder les données brutes pour l'export
             setAffectationsData(affectations);
@@ -50,7 +48,7 @@ export default function EmploiDuTempsEnseignant() {
             }));
             setEvents(formattedEvents);
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('Erreur lors du chargement de l\'emploi du temps:', error);
         }
     };
 

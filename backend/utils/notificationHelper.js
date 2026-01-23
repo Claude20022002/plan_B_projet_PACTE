@@ -210,6 +210,57 @@ export const notifierDemandeReport = async ({ id_user_admin, demande }) => {
 };
 
 /**
+ * Notifie les étudiants d'un groupe
+ * @param {Object} options - Options
+ * @param {number} options.id_groupe - ID du groupe
+ * @param {string} options.titre - Titre de la notification
+ * @param {string} options.message - Message de la notification
+ * @param {string} options.type_notification - Type de notification
+ * @returns {Promise<Array>} - Liste des notifications créées
+ */
+export const notifierEtudiantsGroupe = async ({
+    id_groupe,
+    titre,
+    message,
+    type_notification = "info",
+}) => {
+    const { Appartenir, Etudiant } = await import("../models/index.js");
+    
+    // Récupérer tous les étudiants du groupe
+    const appartenances = await Appartenir.findAll({
+        where: { id_groupe },
+        include: [
+            {
+                model: Etudiant,
+                as: "etudiant",
+                include: [
+                    {
+                        model: Users,
+                        as: "user",
+                        attributes: ["id_user"],
+                    },
+                ],
+            },
+        ],
+    });
+
+    const id_etudiants = appartenances
+        .map((app) => app.etudiant?.user?.id_user)
+        .filter((id) => id !== undefined);
+
+    if (id_etudiants.length === 0) {
+        return [];
+    }
+
+    return await creerNotificationsMultiples({
+        id_users: id_etudiants,
+        titre,
+        message,
+        type_notification,
+    });
+};
+
+/**
  * Marque toutes les notifications d'un utilisateur comme lues
  * @param {number} id_user - ID de l'utilisateur
  * @returns {Promise<number>} - Nombre de notifications mises à jour

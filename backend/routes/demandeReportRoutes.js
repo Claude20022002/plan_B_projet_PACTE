@@ -1,5 +1,8 @@
 import express from "express";
 import { DemandeReport, Affectation, Users } from "../models/index.js";
+import { authenticateToken, requireAdmin } from "../middleware/index.js";
+import { traiterDemandeReport } from "../controllers/demandeReportController.js";
+import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
 
@@ -135,7 +138,7 @@ router.get("/statut/:statut", async (req, res) => {
         const demandes = await DemandeReport.findAll({
             where: { statut_demande: req.params.statut },
             include: [
-                { model: User, as: "enseignant" },
+                { model: Users, as: "enseignant" },
                 { model: Affectation, as: "affectation" },
             ],
         });
@@ -147,5 +150,13 @@ router.get("/statut/:statut", async (req, res) => {
         });
     }
 });
+
+// ✅ Traiter une demande de report (approuver ou refuser) - Admin seulement
+router.patch(
+    "/:id/traiter",
+    authenticateToken,
+    requireAdmin,
+    asyncHandler(traiterDemandeReport)
+);
 
 export default router;

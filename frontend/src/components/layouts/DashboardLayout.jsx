@@ -150,6 +150,7 @@ export default function DashboardLayout({ children }) {
                     items: [
                         { text: 'Affectations', icon: <Schedule />, path: '/gestion/affectations' },
                         { text: 'Emplois du temps', icon: <Schedule />, path: '/gestion/emplois-du-temps' },
+                        { text: 'Demandes de report', icon: <Assignment />, path: '/gestion/demandes-report' },
                     ],
                 },
                 { text: 'Conflits', icon: <Warning />, path: '/gestion/conflits', type: 'item' },

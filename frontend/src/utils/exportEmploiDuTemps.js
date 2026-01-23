@@ -1,5 +1,6 @@
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
+// Importer jspdf-autotable - il étend automatiquement jsPDF avec la méthode autoTable
 import 'jspdf-autotable';
 
 /**
@@ -56,10 +57,10 @@ export const exportToPDF = (affectations, filename = 'emploi-du-temps', title = 
     try {
         const doc = new jsPDF();
         
-        // Vérifier si autoTable est disponible
-        if (!doc.autoTable) {
-            console.error('jspdf-autotable n\'est pas correctement chargé');
-            alert('Erreur: La bibliothèque PDF n\'est pas correctement chargée. Veuillez réessayer.');
+        // Vérifier si autoTable est disponible (jspdf-autotable devrait l'ajouter automatiquement)
+        if (typeof doc.autoTable !== 'function') {
+            console.error('jspdf-autotable n\'est pas correctement chargé. Vérifiez que le module est installé.');
+            alert('Erreur: La bibliothèque PDF n\'est pas correctement chargée. Veuillez réessayer ou utiliser Excel/CSV.');
             return;
         }
 

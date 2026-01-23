@@ -229,3 +229,67 @@ HESTIM Planner
 
     return await sendEmail({ to, subject, text });
 };
+
+/**
+ * Envoie un email de confirmation de report à l'enseignant
+ * @param {Object} options - Options
+ * @param {string} options.to - Email du destinataire (enseignant)
+ * @param {Object} options.demande - Données de la demande
+ * @param {Object} options.affectation - Données de l'affectation mise à jour
+ * @returns {Promise<Object>}
+ */
+export const sendReportConfirmation = async ({ to, demande, affectation }) => {
+    const subject = "Demande de report approuvée";
+    const text = `
+Bonjour,
+
+Votre demande de report a été approuvée.
+
+Détails :
+- Ancienne date : ${affectation.date_seance}
+- Nouvelle date : ${demande.nouvelle_date}
+- Cours : ${affectation.cours?.nom_cours || "N/A"}
+- Groupe : ${affectation.groupe?.nom_groupe || "N/A"}
+- Salle : ${affectation.salle?.nom_salle || "N/A"}
+
+La séance a été reportée avec succès. Les étudiants ont été notifiés de l'annulation de l'ancienne séance.
+
+Cordialement,
+HESTIM Planner
+    `;
+
+    return await sendEmail({ to, subject, text });
+};
+
+/**
+ * Envoie un email d'annulation de séance aux étudiants
+ * @param {Object} options - Options
+ * @param {string} options.to - Email du destinataire (étudiant)
+ * @param {Object} options.affectation - Données de l'affectation annulée
+ * @param {string} options.nouvelle_date - Nouvelle date de la séance
+ * @returns {Promise<Object>}
+ */
+export const sendAnnulationSeance = async ({ to, affectation, nouvelle_date }) => {
+    const subject = "Annulation de séance - Report";
+    const text = `
+Bonjour,
+
+La séance prévue a été annulée et reportée.
+
+Détails de la séance annulée :
+- Date : ${affectation.date_seance}
+- Cours : ${affectation.cours?.nom_cours || "N/A"}
+- Groupe : ${affectation.groupe?.nom_groupe || "N/A"}
+- Salle : ${affectation.salle?.nom_salle || "N/A"}
+- Enseignant : ${affectation.enseignant?.prenom || ""} ${affectation.enseignant?.nom || "N/A"}
+
+Nouvelle date : ${nouvelle_date}
+
+La nouvelle séance sera planifiée à cette date. Veuillez consulter votre emploi du temps pour plus de détails.
+
+Cordialement,
+HESTIM Planner
+    `;
+
+    return await sendEmail({ to, subject, text });
+};

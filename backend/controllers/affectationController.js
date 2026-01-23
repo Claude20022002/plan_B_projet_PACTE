@@ -208,6 +208,11 @@ export const getAffectationsByEnseignant = asyncHandler(async (req, res) => {
         include: [
             { model: Cours, as: "cours" },
             { model: Groupe, as: "groupe" },
+            {
+                model: Users,
+                as: "enseignant",
+                attributes: { exclude: ["password_hash"] },
+            },
             { model: Salle, as: "salle" },
             { model: Creneau, as: "creneau" },
         ],
@@ -227,6 +232,7 @@ export const getAffectationsByGroupe = asyncHandler(async (req, res) => {
         where: { id_groupe: req.params.id_groupe },
         include: [
             { model: Cours, as: "cours" },
+            { model: Groupe, as: "groupe" },
             {
                 model: Users,
                 as: "enseignant",

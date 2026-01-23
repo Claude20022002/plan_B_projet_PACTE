@@ -6,7 +6,7 @@ import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { emploiDuTempsAPI, etudiantAPI } from '../../services/api';
+import { affectationAPI, etudiantAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { exportToExcel, exportToPDF, exportToCSV } from '../../utils/exportEmploiDuTemps';
@@ -45,11 +45,14 @@ export default function EmploiDuTempsEtudiant() {
 
     const loadEmploiDuTemps = async () => {
         try {
-            const data = await emploiDuTempsAPI.getByGroupe(groupeId);
-            // Sauvegarder les données brutes pour l'export
-            setAffectationsData(data);
+            // Utiliser affectationAPI pour obtenir les affectations complètes avec toutes les relations
+            const response = await affectationAPI.getByGroupe(groupeId, { limit: 1000 });
+            const affectations = response.data || [];
             
-            const formattedEvents = data.map((aff) => ({
+            // Sauvegarder les données brutes pour l'export
+            setAffectationsData(affectations);
+            
+            const formattedEvents = affectations.map((aff) => ({
                 id: aff.id_affectation,
                 title: `${aff.cours?.nom_cours || 'Cours'}`,
                 start: `${aff.date_seance}T${aff.creneau?.heure_debut || '08:00'}`,
@@ -62,7 +65,7 @@ export default function EmploiDuTempsEtudiant() {
             }));
             setEvents(formattedEvents);
         } catch (error) {
-            console.error('Erreur:', error);
+            console.error('Erreur lors du chargement de l\'emploi du temps:', error);
         }
     };
 

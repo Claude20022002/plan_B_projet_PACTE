@@ -274,6 +274,7 @@ export const demandeReportAPI = {
     create: (data) => request('/demandes-report', { method: 'POST', body: data }),
     update: (id, data) => request(`/demandes-report/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/demandes-report/${id}`, { method: 'DELETE' }),
+    traiter: (id, action) => request(`/demandes-report/${id}/traiter`, { method: 'PATCH', body: { action } }),
 };
 
 // ==================== DISPONIBILITÉS ====================

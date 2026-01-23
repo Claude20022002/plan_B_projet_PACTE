@@ -1,4 +1,4 @@
-import { Etudiant, Users, Groupe } from "../models/index.js";
+import { Etudiant, Users, Groupe, Appartenir, Filiere } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { hashPassword } from "../utils/passwordHelper.js";
@@ -47,8 +47,20 @@ export const getEtudiantById = asyncHandler(async (req, res) => {
                 attributes: { exclude: ["password_hash"] },
             },
             {
-                model: Groupe,
-                as: "groupe",
+                model: Appartenir,
+                as: "appartenance",
+                include: [
+                    {
+                        model: Groupe,
+                        as: "groupe",
+                        include: [
+                            {
+                                model: Filiere,
+                                as: "filiere",
+                            },
+                        ],
+                    },
+                ],
             },
         ],
     });
@@ -60,7 +72,17 @@ export const getEtudiantById = asyncHandler(async (req, res) => {
         });
     }
 
-    res.json(etudiant);
+    // Transformer la réponse pour avoir la structure attendue par le frontend
+    const etudiantData = etudiant.toJSON();
+    if (etudiantData.appartenance?.groupe) {
+        etudiantData.groupe = etudiantData.appartenance.groupe;
+        etudiantData.id_groupe = etudiantData.appartenance.groupe.id_groupe;
+    } else {
+        etudiantData.groupe = null;
+        etudiantData.id_groupe = null;
+    }
+
+    res.json(etudiantData);
 });
 
 // ➕ Créer un étudiant

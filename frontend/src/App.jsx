@@ -38,6 +38,7 @@ import Parametres from './pages/Parametres';
 import Statistiques from './pages/Statistiques';
 import MesAffectations from './pages/MesAffectations';
 import DemandesReport from './pages/DemandesReport';
+import DemandesReportAdmin from './pages/gestion/DemandesReportAdmin';
 import Disponibilites from './pages/Disponibilites';
 
 const queryClient = new QueryClient();
