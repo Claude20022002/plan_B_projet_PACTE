@@ -100,7 +100,16 @@ export default function GenerationAutomatique() {
             setDialogOpen(true);
         } catch (err) {
             console.error('Erreur lors de la génération:', err);
-            setError(err.message || 'Erreur lors de la génération automatique');
+            // Gérer les erreurs d'authentification
+            if (err.status === 401) {
+                setError('Votre session a expiré. Veuillez vous reconnecter.');
+                // Optionnel: rediriger vers la page de connexion
+                setTimeout(() => {
+                    window.location.href = '/connexion';
+                }, 2000);
+            } else {
+                setError(err.message || 'Erreur lors de la génération automatique');
+            }
         } finally {
             setLoading(false);
         }

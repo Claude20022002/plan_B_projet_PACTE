@@ -19,18 +19,44 @@ export const authenticateToken = async (req, res, next) => {
         }
 
         // Vérifier et décoder le token
-        const decoded = jwt.verify(
-            token,
-            process.env.JWT_SECRET || "secret_key_default"
-        );
+        let decoded;
+        try {
+            decoded = jwt.verify(
+                token,
+                process.env.JWT_SECRET || "secret_key_default"
+            );
+        } catch (jwtError) {
+            if (jwtError.name === "JsonWebTokenError") {
+                return res.status(401).json({
+                    message: "Token invalide",
+                    error: "Le token fourni n'est pas valide",
+                });
+            }
+            if (jwtError.name === "TokenExpiredError") {
+                return res.status(401).json({
+                    message: "Token expiré",
+                    error: "Votre session a expiré, veuillez vous reconnecter",
+                });
+            }
+            throw jwtError;
+        }
 
         // Récupérer l'utilisateur depuis la base de données
-        const user = await Users.findByPk(decoded.userId || decoded.id_user);
+        const userId = decoded.userId || decoded.id_user;
+        if (!userId) {
+            return res.status(401).json({
+                message: "Token invalide",
+                error: "Le token ne contient pas d'identifiant utilisateur",
+            });
+        }
+
+        const user = await Users.findByPk(userId);
 
         if (!user) {
+            console.error(`Utilisateur non trouvé pour l'ID: ${userId} (token: ${token.substring(0, 20)}...)`);
             return res.status(401).json({
                 message: "Utilisateur non trouvé",
-                error: "Token invalide - utilisateur introuvable",
+                error: "Token invalide - utilisateur introuvable. Veuillez vous reconnecter.",
             });
         }
 

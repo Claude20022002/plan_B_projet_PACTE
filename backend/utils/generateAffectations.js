@@ -18,6 +18,8 @@ import {
     Users,
     Disponibilite,
     Evenement,
+    Filiere,
+    Enseignant,
 } from "../models/index.js";
 
 /**
@@ -32,13 +34,39 @@ const calculerNombreSeances = (volumeHoraire, dureeCreneau) => {
 
 /**
  * Calcule la durée d'un créneau en heures
- * @param {String} heureDebut - Heure de début (format HH:mm)
- * @param {String} heureFin - Heure de fin (format HH:mm)
+ * @param {String|Date} heureDebut - Heure de début (format HH:mm ou Date)
+ * @param {String|Date} heureFin - Heure de fin (format HH:mm ou Date)
  * @returns {Number} Durée en heures
  */
 const calculerDureeCreneau = (heureDebut, heureFin) => {
-    const [h1, m1] = heureDebut.split(":").map(Number);
-    const [h2, m2] = heureFin.split(":").map(Number);
+    // Convertir en string si c'est un objet Date ou autre format
+    let debutStr = heureDebut;
+    let finStr = heureFin;
+    
+    if (heureDebut instanceof Date) {
+        debutStr = `${heureDebut.getHours().toString().padStart(2, '0')}:${heureDebut.getMinutes().toString().padStart(2, '0')}`;
+    } else if (typeof heureDebut === 'string' && heureDebut.includes('T')) {
+        // Format ISO datetime
+        const date = new Date(heureDebut);
+        debutStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    }
+    
+    if (heureFin instanceof Date) {
+        finStr = `${heureFin.getHours().toString().padStart(2, '0')}:${heureFin.getMinutes().toString().padStart(2, '0')}`;
+    } else if (typeof heureFin === 'string' && heureFin.includes('T')) {
+        // Format ISO datetime
+        const date = new Date(heureFin);
+        finStr = `${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+    }
+    
+    // Extraire les heures et minutes (gérer le format HH:mm:ss)
+    const debutParts = debutStr.split(":");
+    const finParts = finStr.split(":");
+    const h1 = parseInt(debutParts[0], 10);
+    const m1 = parseInt(debutParts[1] || 0, 10);
+    const h2 = parseInt(finParts[0], 10);
+    const m2 = parseInt(finParts[1] || 0, 10);
+    
     const debut = h1 * 60 + m1;
     const fin = h2 * 60 + m2;
     return (fin - debut) / 60;
@@ -371,7 +399,6 @@ export const genererAffectationsAutomatiques = async (params) => {
         // 5. Récupérer les enseignants
         const enseignants = await Users.findAll({
             where: { role: "enseignant", actif: true },
-            include: [{ model: Enseignant, as: "enseignant" }],
         });
 
         if (enseignants.length === 0) {
@@ -395,13 +422,20 @@ export const genererAffectationsAutomatiques = async (params) => {
             );
         });
 
-        // 7. Récupérer les événements bloquants
-        const evenements = await Evenement.findAll({
-            where: {
-                date_debut: { [Op.lte]: dateFin },
-                date_fin: { [Op.gte]: dateDebut },
-            },
-        });
+        // 7. Récupérer les événements bloquants (si la table existe)
+        let evenements = [];
+        try {
+            evenements = await Evenement.findAll({
+                where: {
+                    date_debut: { [Op.lte]: dateFin },
+                    date_fin: { [Op.gte]: dateDebut },
+                },
+            });
+        } catch (error) {
+            // Si la table n'existe pas encore, continuer sans événements
+            console.warn("Table Evenements non trouvée, continuation sans événements bloquants:", error.message);
+            evenements = [];
+        }
 
         // 8. Récupérer les affectations existantes
         const affectationsExistantes = await Affectation.findAll({

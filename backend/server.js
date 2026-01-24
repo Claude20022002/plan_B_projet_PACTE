@@ -241,6 +241,8 @@ const PORT = process.env.PORT || 5000;
         await syncTableSafe(Enseignant, "Enseignant");
         await syncTableSafe(Etudiant, "Etudiant");
         await syncTableSafe(Notification, "Notification");
+        await syncTableSafe(PasswordResetToken, "PasswordResetToken");
+        await syncTableSafe(Evenement, "Evenement");
         console.log("--> Niveau 2 : Tables dépendantes de Users synchronisées");
 
         // Niveau 3 : Tables qui dépendent de Filiere

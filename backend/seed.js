@@ -74,16 +74,21 @@ async function seed() {
         }
         const admin = admins[0]; // Garder le premier admin pour les références
 
-        // 2. Créer des enseignants (plus d'enseignants pour avoir plus de flexibilité)
+        // 2. Créer des enseignants (un enseignant pour chaque module/cours)
         const enseignantsData = [
-            { nom: 'Dupont', prenom: 'Jean', email: 'enseignant@hestim.ma', specialite: 'Informatique', departement: 'Génie Informatique' },
-            { nom: 'Benali', prenom: 'Ahmed', email: 'enseignant2@hestim.ma', specialite: 'Réseaux', departement: 'Génie Informatique' },
-            { nom: 'Alaoui', prenom: 'Sanae', email: 'enseignant3@hestim.ma', specialite: 'Base de données', departement: 'Génie Informatique' },
-            { nom: 'Idrissi', prenom: 'Mohamed', email: 'enseignant4@hestim.ma', specialite: 'Développement Web', departement: 'Génie Informatique' },
-            { nom: 'Bennani', prenom: 'Karim', email: 'enseignant5@hestim.ma', specialite: 'Algorithmique', departement: 'Génie Informatique' },
-            { nom: 'Tazi', prenom: 'Fatima', email: 'enseignant6@hestim.ma', specialite: 'Intelligence Artificielle', departement: 'Génie Informatique' },
-            { nom: 'El Fassi', prenom: 'Hassan', email: 'enseignant7@hestim.ma', specialite: 'Systèmes d\'exploitation', departement: 'Génie Informatique' },
-            { nom: 'Cherkaoui', prenom: 'Nadia', email: 'enseignant8@hestim.ma', specialite: 'Sécurité informatique', departement: 'Génie Informatique' },
+            // Enseignants pour les cours de 3ème année
+            { nom: 'Alaoui', prenom: 'Sanae', email: 'sanae.alaoui@hestim.ma', specialite: 'Base de données', departement: 'Génie Informatique' },
+            { nom: 'Idrissi', prenom: 'Mohamed', email: 'mohamed.idrissi@hestim.ma', specialite: 'Développement Web', departement: 'Génie Informatique' },
+            { nom: 'Bennani', prenom: 'Karim', email: 'karim.bennani@hestim.ma', specialite: 'Algorithmique', departement: 'Génie Informatique' },
+            { nom: 'Benali', prenom: 'Ahmed', email: 'ahmed.benali@hestim.ma', specialite: 'Réseaux', departement: 'Génie Informatique' },
+            { nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@hestim.ma', specialite: 'Programmation Orientée Objet', departement: 'Génie Informatique' },
+            { nom: 'Lahlou', prenom: 'Fatima', email: 'fatima.lahlou@hestim.ma', specialite: 'Technologies Web Avancées', departement: 'Génie Informatique' },
+            // Enseignants pour les cours de 4ème année
+            { nom: 'El Fassi', prenom: 'Hassan', email: 'hassan.elfassi@hestim.ma', specialite: 'Systèmes d\'exploitation', departement: 'Génie Informatique' },
+            { nom: 'Tazi', prenom: 'Fatima', email: 'fatima.tazi@hestim.ma', specialite: 'Intelligence Artificielle', departement: 'Génie Informatique' },
+            { nom: 'Cherkaoui', prenom: 'Nadia', email: 'nadia.cherkaoui@hestim.ma', specialite: 'Sécurité Informatique', departement: 'Génie Informatique' },
+            { nom: 'Amrani', prenom: 'Youssef', email: 'youssef.amrani@hestim.ma', specialite: 'Cloud Computing', departement: 'Génie Informatique' },
+            { nom: 'Bouazza', prenom: 'Sara', email: 'sara.bouazza@hestim.ma', specialite: 'Big Data', departement: 'Génie Informatique' },
         ];
 
         const enseignants = [];
@@ -427,12 +432,25 @@ async function seed() {
             }
         }
 
-        // 9. Créer des disponibilités pour les enseignants (pour un mois complet)
-        const today = new Date();
-        const inOneMonth = new Date(today);
-        inOneMonth.setMonth(today.getMonth() + 1);
+        // 9. Créer des disponibilités pour les enseignants pour le mois de février
+        // Définir les dates pour février (année en cours ou prochaine)
+        const yearForFebruary = new Date().getFullYear();
+        const februaryStart = new Date(yearForFebruary, 1, 1); // 1er février (mois 1 = février en JS)
+        const februaryEnd = new Date(yearForFebruary, 1, 28); // 28 février (gère les années bissextiles)
         
-        // Créer des disponibilités pour tous les enseignants sur tous les créneaux pour un mois
+        // Si février est déjà passé cette année, utiliser février de l'année prochaine
+        const today = new Date();
+        if (februaryStart < today) {
+            februaryStart.setFullYear(yearForFebruary + 1);
+            februaryEnd.setFullYear(yearForFebruary + 1);
+        }
+        
+        const dateDebutFevrier = februaryStart.toISOString().split('T')[0];
+        const dateFinFevrier = februaryEnd.toISOString().split('T')[0];
+        
+        console.log(`📅 Création des disponibilités pour février ${februaryStart.getFullYear()}: ${dateDebutFevrier} au ${dateFinFevrier}`);
+        
+        // Créer des disponibilités pour tous les enseignants sur tous les créneaux pour février
         const disponibilitesData = [];
         for (const enseignant of enseignants) {
             for (const creneau of creneaux) {
@@ -440,23 +458,56 @@ async function seed() {
                     id_user_enseignant: enseignant.id_user,
                     id_creneau: creneau.id_creneau,
                     disponible: true,
-                    date_debut: today.toISOString().split('T')[0],
-                    date_fin: inOneMonth.toISOString().split('T')[0],
+                    date_debut: dateDebutFevrier,
+                    date_fin: dateFinFevrier,
                 });
             }
         }
         
         // Ajouter quelques indisponibilités pour rendre le test plus réaliste
-        const nextWeek = new Date(today);
-        nextWeek.setDate(today.getDate() + 7);
-        disponibilitesData.push({
-            id_user_enseignant: enseignants[2].id_user,
-            id_creneau: creneaux[6].id_creneau,
-            disponible: false,
-            raison_indisponibilite: 'Congé',
-            date_debut: nextWeek.toISOString().split('T')[0],
-            date_fin: inOneMonth.toISOString().split('T')[0],
-        });
+        // Enseignant indisponible le mercredi après-midi (créneau 10) pendant la deuxième semaine
+        const mercrediSemaine2 = new Date(februaryStart);
+        mercrediSemaine2.setDate(februaryStart.getDate() + 7 + 2); // Mercredi de la 2ème semaine
+        
+        // Trouver le créneau du mercredi après-midi (14:00-16:00)
+        const creneauMercrediApresMidi = creneaux.find(c => 
+            c.jour_semaine === 'mercredi' && 
+            c.heure_debut === '14:00' && 
+            c.heure_fin === '16:00'
+        );
+        
+        if (creneauMercrediApresMidi) {
+            disponibilitesData.push({
+                id_user_enseignant: enseignants[2].id_user, // Karim Bennani
+                id_creneau: creneauMercrediApresMidi.id_creneau,
+                disponible: false,
+                raison_indisponibilite: 'Formation',
+                date_debut: mercrediSemaine2.toISOString().split('T')[0],
+                date_fin: mercrediSemaine2.toISOString().split('T')[0], // Un seul jour
+            });
+        }
+        
+        // Enseignant indisponible le vendredi matin (créneau 14) pendant la troisième semaine
+        const vendrediSemaine3 = new Date(februaryStart);
+        vendrediSemaine3.setDate(februaryStart.getDate() + 14 + 4); // Vendredi de la 3ème semaine
+        
+        // Trouver le créneau du vendredi matin (08:00-10:00)
+        const creneauVendrediMatin = creneaux.find(c => 
+            c.jour_semaine === 'vendredi' && 
+            c.heure_debut === '08:00' && 
+            c.heure_fin === '10:00'
+        );
+        
+        if (creneauVendrediMatin) {
+            disponibilitesData.push({
+                id_user_enseignant: enseignants[5].id_user, // Fatima Lahlou
+                id_creneau: creneauVendrediMatin.id_creneau,
+                disponible: false,
+                raison_indisponibilite: 'Congé personnel',
+                date_debut: vendrediSemaine3.toISOString().split('T')[0],
+                date_fin: vendrediSemaine3.toISOString().split('T')[0], // Un seul jour
+            });
+        }
 
         for (const dispoData of disponibilitesData) {
             const [dispo, created] = await Disponibilite.findOrCreate({
@@ -464,13 +515,27 @@ async function seed() {
                     id_user_enseignant: dispoData.id_user_enseignant,
                     id_creneau: dispoData.id_creneau,
                     date_debut: dispoData.date_debut,
+                    date_fin: dispoData.date_fin,
                 },
                 defaults: dispoData,
             });
             if (created) {
-                console.log('✅ Disponibilité créée pour enseignant:', dispo.id_user_enseignant);
+                const enseignant = enseignants.find(e => e.id_user === dispo.id_user_enseignant);
+                const creneau = creneaux.find(c => c.id_creneau === dispo.id_creneau);
+                const status = dispo.disponible ? '✅ Disponible' : '❌ Indisponible';
+                if (dispo.disponible) {
+                    // Ne logger que les indisponibilités pour éviter trop de logs
+                } else {
+                    console.log(`${status} - ${enseignant?.prenom} ${enseignant?.nom}: ${creneau?.jour_semaine} ${creneau?.heure_debut}-${creneau?.heure_fin} (${dispo.date_debut} au ${dispo.date_fin})`);
+                }
             }
         }
+        
+        console.log(`\n✅ ${disponibilitesData.filter(d => d.disponible).length} disponibilités créées pour ${enseignants.length} enseignants sur ${creneaux.length} créneaux pour février ${februaryStart.getFullYear()}`);
+        console.log(`   ${disponibilitesData.filter(d => !d.disponible).length} indisponibilités ajoutées pour rendre les tests plus réalistes\n`);
+        
+        console.log(`\n✅ ${disponibilitesData.filter(d => d.disponible).length} disponibilités créées pour ${enseignants.length} enseignants sur ${creneaux.length} créneaux pour février ${februaryStart.getFullYear()}`);
+        console.log(`   ${disponibilitesData.filter(d => !d.disponible).length} indisponibilités ajoutées pour rendre les tests plus réalistes\n`);
 
         // 10. Créer des affectations
         const nextMonday = new Date(today);
@@ -620,7 +685,10 @@ async function seed() {
         console.log('      Email: admin@hestim.ma / admin2@hestim.ma');
         console.log('      Mot de passe: password123');
         console.log('   👨‍🏫 Enseignants:');
-        console.log('      Email: enseignant@hestim.ma / enseignant2@hestim.ma / enseignant3@hestim.ma / enseignant4@hestim.ma');
+        console.log('      Emails:');
+        enseignants.forEach((ens, index) => {
+            console.log(`         ${index + 1}. ${ens.email} (${ens.prenom} ${ens.nom}) - ${ens.specialite || 'Informatique'}`);
+        });
         console.log('      Mot de passe: password123');
         console.log('   👨‍🎓 Étudiants:');
         console.log('      Email: etudiant@hestim.ma / etudiant2@hestim.ma / etudiant3@hestim.ma / etudiant4@hestim.ma / etudiant5@hestim.ma');
@@ -630,6 +698,7 @@ async function seed() {
         console.log(`   - ${groupes.length} groupe(s)`);
         console.log(`   - ${salles.length} salle(s)`);
         console.log(`   - ${creneaux.length} créneau(x)`);
+        console.log(`   - ${enseignants.length} enseignant(s)`);
         console.log(`   - ${cours.length} cours`);
         console.log(`   - ${affectations.length} affectation(s)`);
         console.log(`   - ${demandesReportData.length} demande(s) de report`);

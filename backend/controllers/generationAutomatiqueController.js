@@ -9,6 +9,14 @@ import { Affectation } from "../models/index.js";
  * Génère automatiquement les affectations pour un semestre
  */
 export const genererAffectations = asyncHandler(async (req, res) => {
+    // Vérifier que l'utilisateur est authentifié
+    if (!req.user || !req.user.id_user) {
+        return res.status(401).json({
+            message: "Authentification requise",
+            error: "Vous devez être connecté pour accéder à cette ressource",
+        });
+    }
+
     const {
         dateDebut,
         dateFin,
