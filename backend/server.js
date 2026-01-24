@@ -68,9 +68,9 @@ app.use(customSecurityHeaders);
 // CORS
 app.use(cors());
 
-// Body parser
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Body parser - Augmenter la limite pour permettre l'upload d'images en base64
+app.use(express.json({ limit: '10mb' }));
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
 // Rate limiting global
 app.use(apiRateLimiter);

@@ -149,12 +149,47 @@ export default function Parametres() {
                                                 return;
                                             }
                                             
-                                            // Convertir en base64
+                                            // Compresser et convertir en base64
                                             const reader = new FileReader();
                                             reader.onloadend = () => {
-                                                const base64String = reader.result;
-                                                formik.setFieldValue('avatar_url', base64String);
-                                                setAvatarPreview(base64String);
+                                                const img = new Image();
+                                                img.onload = () => {
+                                                    // Créer un canvas pour redimensionner l'image
+                                                    const canvas = document.createElement('canvas');
+                                                    const maxWidth = 300;
+                                                    const maxHeight = 300;
+                                                    let width = img.width;
+                                                    let height = img.height;
+                                                    
+                                                    // Calculer les nouvelles dimensions en gardant le ratio
+                                                    if (width > height) {
+                                                        if (width > maxWidth) {
+                                                            height *= maxWidth / width;
+                                                            width = maxWidth;
+                                                        }
+                                                    } else {
+                                                        if (height > maxHeight) {
+                                                            width *= maxHeight / height;
+                                                            height = maxHeight;
+                                                        }
+                                                    }
+                                                    
+                                                    canvas.width = width;
+                                                    canvas.height = height;
+                                                    
+                                                    // Dessiner l'image redimensionnée
+                                                    const ctx = canvas.getContext('2d');
+                                                    ctx.drawImage(img, 0, 0, width, height);
+                                                    
+                                                    // Convertir en base64 avec compression JPEG (qualité 0.8)
+                                                    const base64String = canvas.toDataURL('image/jpeg', 0.8);
+                                                    formik.setFieldValue('avatar_url', base64String);
+                                                    setAvatarPreview(base64String);
+                                                };
+                                                img.onerror = () => {
+                                                    setError('Erreur lors du chargement de l\'image');
+                                                };
+                                                img.src = reader.result;
                                             };
                                             reader.readAsDataURL(file);
                                         }
