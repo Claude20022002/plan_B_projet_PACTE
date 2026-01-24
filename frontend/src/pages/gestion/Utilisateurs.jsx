@@ -158,6 +158,14 @@ export default function Utilisateurs() {
         setImportErrors([]);
         try {
             const data = await parseFile(file);
+            console.log('Données parsées depuis le fichier:', data);
+            
+            if (!data || data.length === 0) {
+                setError('Le fichier est vide ou ne contient pas de données valides');
+                setImportLoading(false);
+                return;
+            }
+            
             const validation = validateUserData(data);
             
             if (!validation.valid) {
@@ -177,8 +185,20 @@ export default function Utilisateurs() {
                 actif: row.actif !== undefined ? row.actif : true,
             }));
 
-            await userAPI.importBulk({ users: usersToImport });
-            setSuccess(`${usersToImport.length} utilisateur(s) importé(s) avec succès`);
+            const result = await userAPI.importBulk({ users: usersToImport });
+            
+            // Afficher les résultats détaillés
+            const successCount = result.successCount || result.success?.length || 0;
+            const errorCount = result.errorCount || result.errors?.length || 0;
+            
+            if (successCount > 0) {
+                setSuccess(`${successCount} utilisateur(s) importé(s) avec succès${errorCount > 0 ? `, ${errorCount} erreur(s)` : ''}`);
+            }
+            
+            if (errorCount > 0 && result.errors) {
+                setImportErrors(result.errors.map(e => `${e.email || 'N/A'}: ${e.error || 'Erreur inconnue'}`));
+            }
+            
             setImportOpen(false);
             loadUtilisateurs();
         } catch (error) {

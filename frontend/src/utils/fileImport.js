@@ -36,8 +36,27 @@ export const parseFile = async (file) => {
                     const workbook = XLSX.read(data, { type: 'array' });
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: '' });
-                    resolve(jsonData);
+                    
+                    // Convertir en JSON avec header: true pour utiliser la première ligne comme en-têtes
+                    // raw: false pour convertir les valeurs (dates, nombres, etc.)
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
+                        defval: '', 
+                        raw: false,
+                        blankrows: false // Ignorer les lignes vides
+                    });
+                    
+                    // Filtrer les lignes complètement vides
+                    const filteredData = jsonData.filter(row => {
+                        return Object.values(row).some(value => value !== '' && value !== null && value !== undefined);
+                    });
+                    
+                    if (filteredData.length === 0) {
+                        reject(new Error('Le fichier Excel est vide ou ne contient pas de données valides'));
+                        return;
+                    }
+                    
+                    console.log('Données parsées depuis Excel:', filteredData);
+                    resolve(filteredData);
                 } catch (error) {
                     reject(new Error(`Erreur lors du parsing Excel: ${error.message}`));
                 }

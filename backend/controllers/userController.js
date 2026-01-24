@@ -147,11 +147,26 @@ export const importUsers = asyncHandler(async (req, res) => {
                 continue;
             }
 
-            const user = await Users.create(userData);
+            // Préparer les données pour la création
+            const userCreateData = {
+                nom: userData.nom,
+                prenom: userData.prenom,
+                email: userData.email,
+                role: userData.role || 'etudiant',
+                telephone: userData.telephone || null,
+                actif: userData.actif !== undefined ? userData.actif : true,
+            };
+
+            // Hasher le mot de passe si fourni, sinon utiliser le mot de passe par défaut
+            const password = userData.password || 'password123';
+            userCreateData.password_hash = await hashPassword(password);
+
+            const user = await Users.create(userCreateData);
             const userResponse = user.toJSON();
             delete userResponse.password_hash;
             results.success.push(userResponse);
         } catch (error) {
+            console.error(`Erreur lors de la création de l'utilisateur ${userData.email}:`, error);
             results.errors.push({
                 email: userData.email || "N/A",
                 error: error.message || "Erreur lors de la création",
