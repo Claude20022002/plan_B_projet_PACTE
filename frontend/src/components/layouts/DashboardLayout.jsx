@@ -43,10 +43,12 @@ import {
     AdminPanelSettings,
     AccountTree,
     Business,
+    Search,
 } from '@mui/icons-material';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { notificationAPI } from '../../services/api';
+import GlobalSearch from '../common/GlobalSearch';
 
 const drawerWidth = 260;
 
@@ -58,6 +60,7 @@ export default function DashboardLayout({ children }) {
     const [mobileOpen, setMobileOpen] = useState(false);
     const [anchorEl, setAnchorEl] = useState(null);
     const [unreadNotifications, setUnreadNotifications] = useState(0);
+    const [searchOpen, setSearchOpen] = useState(false);
     const [openMenus, setOpenMenus] = useState({
         utilisateurs: false,
         academique: false,
@@ -337,6 +340,16 @@ export default function DashboardLayout({ children }) {
                     <IconButton
                         size="large"
                         edge="end"
+                        aria-label="recherche"
+                        color="inherit"
+                        onClick={() => setSearchOpen(true)}
+                        sx={{ mr: 1 }}
+                    >
+                        <Search />
+                    </IconButton>
+                    <IconButton
+                        size="large"
+                        edge="end"
                         aria-label="notifications"
                         color="inherit"
                         onClick={() => navigate('/notifications')}
@@ -426,6 +439,7 @@ export default function DashboardLayout({ children }) {
                 <Toolbar />
                 {children}
             </Box>
+            <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
         </Box>
     );
 }

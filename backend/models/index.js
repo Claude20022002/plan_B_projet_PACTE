@@ -14,6 +14,7 @@ import HistoriqueAffectation from "./HistoriqueAffectation.js";
 import Disponibilite from "./Disponibilite.js";
 import ConflitAffectation from "./ConflitAffectation.js";
 import Appartenir from "./Appartenir.js";
+import PasswordResetToken from "./PasswordResetToken.js";
 
 // ==================== RELATIONS USER ====================
 
@@ -302,4 +303,5 @@ export {
     Disponibilite,
     ConflitAffectation,
     Appartenir,
+    PasswordResetToken,
 };

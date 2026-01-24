@@ -20,6 +20,7 @@ import {
     HistoriqueAffectation,
     Conflit,
     ConflitAffectation,
+    PasswordResetToken,
 } from "./models/index.js";
 
 // Import des routes

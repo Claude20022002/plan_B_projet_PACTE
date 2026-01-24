@@ -9,6 +9,8 @@ import PrivateRoute from './components/common/PrivateRoute';
 // Pages publiques
 import Accueil from './pages/Accueil';
 import Connexion from './pages/Connexion';
+import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 
 // Dashboards
 import AdminDashboard from './pages/dashboard/AdminDashboard';
@@ -54,6 +56,8 @@ function App() {
                             {/* Routes publiques */}
                             <Route path="/" element={<Accueil />} />
                             <Route path="/connexion" element={<Connexion />} />
+                            <Route path="/forgot-password" element={<ForgotPassword />} />
+                            <Route path="/reset-password" element={<ResetPassword />} />
 
                             {/* Dashboards */}
                             <Route

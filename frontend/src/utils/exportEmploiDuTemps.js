@@ -184,3 +184,103 @@ export const exportToCSV = (affectations, filename = 'emploi-du-temps') => {
     document.body.removeChild(link);
 };
 
+/**
+ * Exporte l'emploi du temps en format iCal (pour import dans calendriers externes)
+ * @param {Array} affectations - Les affectations à exporter
+ * @param {String} filename - Le nom du fichier
+ * @param {String} title - Le titre du calendrier
+ */
+export const exportToiCal = (affectations, filename = 'emploi-du-temps', title = 'Emploi du Temps') => {
+    try {
+        // Fonction pour formater une date au format iCal (YYYYMMDDTHHmmss)
+        const formatDate = (date) => {
+            const d = new Date(date);
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            const hours = String(d.getHours()).padStart(2, '0');
+            const minutes = String(d.getMinutes()).padStart(2, '0');
+            const seconds = String(d.getSeconds()).padStart(2, '0');
+            return `${year}${month}${day}T${hours}${minutes}${seconds}`;
+        };
+
+        // Fonction pour calculer la date de fin (ajouter la durée du créneau)
+        const calculateEndDate = (dateSeance, heureDebut, heureFin) => {
+            const start = new Date(dateSeance);
+            const [startHours, startMinutes] = heureDebut.split(':').map(Number);
+            const [endHours, endMinutes] = heureFin.split(':').map(Number);
+            
+            start.setHours(startHours, startMinutes, 0, 0);
+            
+            const end = new Date(start);
+            const duration = (endHours * 60 + endMinutes) - (startHours * 60 + startMinutes);
+            end.setMinutes(end.getMinutes() + duration);
+            
+            return end;
+        };
+
+        // En-tête iCal
+        let icalContent = [
+            'BEGIN:VCALENDAR',
+            'VERSION:2.0',
+            'PRODID:-//HESTIM Planner//Emploi du Temps//FR',
+            `X-WR-CALNAME:${title}`,
+            'CALSCALE:GREGORIAN',
+            'METHOD:PUBLISH',
+        ];
+
+        // Ajouter chaque affectation comme événement
+        affectations.forEach((aff, index) => {
+            const dateDebut = new Date(aff.date_seance);
+            const dateFin = calculateEndDate(
+                aff.date_seance,
+                aff.creneau?.heure_debut || '08:00',
+                aff.creneau?.heure_fin || '10:00'
+            );
+
+            const dtstart = formatDate(dateDebut);
+            const dtend = formatDate(dateFin);
+            const uid = `affectation-${aff.id_affectation || index}-${Date.now()}@hestim.ma`;
+            
+            const summary = `${aff.cours?.nom_cours || 'Cours'} - ${aff.groupe?.nom_groupe || 'Groupe'}`;
+            const location = aff.salle?.nom_salle || 'Non spécifié';
+            const description = [
+                `Cours: ${aff.cours?.nom_cours || 'N/A'}`,
+                `Groupe: ${aff.groupe?.nom_groupe || 'N/A'}`,
+                `Enseignant: ${aff.enseignant ? `${aff.enseignant.prenom} ${aff.enseignant.nom}` : 'N/A'}`,
+                `Salle: ${aff.salle?.nom_salle || 'N/A'}`,
+                `Créneau: ${aff.creneau?.heure_debut || ''} - ${aff.creneau?.heure_fin || ''}`,
+            ].join('\\n');
+
+            icalContent.push(
+                'BEGIN:VEVENT',
+                `UID:${uid}`,
+                `DTSTART:${dtstart}`,
+                `DTEND:${dtend}`,
+                `SUMMARY:${summary}`,
+                `LOCATION:${location}`,
+                `DESCRIPTION:${description}`,
+                'STATUS:CONFIRMED',
+                'SEQUENCE:0',
+                'END:VEVENT'
+            );
+        });
+
+        // Fin du calendrier
+        icalContent.push('END:VCALENDAR');
+
+        // Créer le fichier et le télécharger
+        const blob = new Blob([icalContent.join('\r\n')], { type: 'text/calendar;charset=utf-8' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${filename}.ics`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    } catch (error) {
+        console.error('Erreur lors de la génération du fichier iCal:', error);
+        alert('Erreur lors de la génération du fichier iCal. Veuillez réessayer.');
+    }
+};

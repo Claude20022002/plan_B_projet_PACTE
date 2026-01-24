@@ -299,11 +299,8 @@ export default function Connexion() {
                                     sx={{ fontSize: '0.875rem' }}
                                 />
                                 <Link
-                                    href="#"
-                                    onClick={(e) => {
-                                        e.preventDefault();
-                                        // TODO: Implémenter la récupération de mot de passe
-                                    }}
+                                    component={Link}
+                                    to="/forgot-password"
                                     sx={{
                                         fontSize: '0.875rem',
                                         color: '#1976d2',

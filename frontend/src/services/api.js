@@ -90,6 +90,8 @@ async function request(endpoint, options = {}) {
 
 // ==================== AUTHENTIFICATION ====================
 export const authAPI = {
+    forgotPassword: (email) => request('/auth/forgot-password', { method: 'POST', body: { email } }),
+    resetPassword: (token, id_user, password) => request('/auth/reset-password', { method: 'POST', body: { token, id_user, password } }),
     register: (data) => request('/auth/register', { method: 'POST', body: data }),
     login: (data) => request('/auth/login', { method: 'POST', body: data }),
     logout: () => request('/auth/logout', { method: 'POST' }),

@@ -9,7 +9,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, etudiantAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { exportToExcel, exportToPDF, exportToCSV } from '../../utils/exportEmploiDuTemps';
+import { exportToExcel, exportToPDF, exportToCSV, exportToiCal } from '../../utils/exportEmploiDuTemps';
 
 export default function EmploiDuTempsEtudiant() {
     const { user } = useAuth();
@@ -125,6 +125,14 @@ export default function EmploiDuTempsEtudiant() {
                         }}
                     >
                         Télécharger en CSV
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            exportToiCal(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`);
+                            setExportMenuAnchor(null);
+                        }}
+                    >
+                        Télécharger en iCal (.ics)
                     </MenuItem>
                 </Menu>
 

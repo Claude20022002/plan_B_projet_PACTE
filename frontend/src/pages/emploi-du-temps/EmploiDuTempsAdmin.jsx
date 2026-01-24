@@ -19,7 +19,7 @@ import interactionPlugin from '@fullcalendar/interaction';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, groupeAPI, enseignantAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import { exportToExcel, exportToPDF, exportToCSV } from '../../utils/exportEmploiDuTemps';
+import { exportToExcel, exportToPDF, exportToCSV, exportToiCal } from '../../utils/exportEmploiDuTemps';
 
 export default function EmploiDuTempsAdmin() {
     const navigate = useNavigate();
@@ -205,6 +205,14 @@ export default function EmploiDuTempsAdmin() {
                         }}
                     >
                         Télécharger en CSV
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            exportToiCal(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps - Administrateur');
+                            setExportMenuAnchor(null);
+                        }}
+                    >
+                        Télécharger en iCal (.ics)
                     </MenuItem>
                 </Menu>
 
