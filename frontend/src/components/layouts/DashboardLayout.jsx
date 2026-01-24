@@ -154,6 +154,7 @@ export default function DashboardLayout({ children }) {
                         { text: 'Affectations', icon: <Schedule />, path: '/gestion/affectations' },
                         { text: 'Emplois du temps', icon: <Schedule />, path: '/gestion/emplois-du-temps' },
                         { text: 'Demandes de report', icon: <Assignment />, path: '/gestion/demandes-report' },
+                        { text: 'Génération automatique', icon: <EventAvailable />, path: '/gestion/generation-automatique' },
                     ],
                 },
                 { text: 'Conflits', icon: <Warning />, path: '/gestion/conflits', type: 'item' },

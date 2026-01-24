@@ -74,12 +74,16 @@ async function seed() {
         }
         const admin = admins[0]; // Garder le premier admin pour les références
 
-        // 2. Créer des enseignants
+        // 2. Créer des enseignants (plus d'enseignants pour avoir plus de flexibilité)
         const enseignantsData = [
             { nom: 'Dupont', prenom: 'Jean', email: 'enseignant@hestim.ma', specialite: 'Informatique', departement: 'Génie Informatique' },
             { nom: 'Benali', prenom: 'Ahmed', email: 'enseignant2@hestim.ma', specialite: 'Réseaux', departement: 'Génie Informatique' },
             { nom: 'Alaoui', prenom: 'Sanae', email: 'enseignant3@hestim.ma', specialite: 'Base de données', departement: 'Génie Informatique' },
             { nom: 'Idrissi', prenom: 'Mohamed', email: 'enseignant4@hestim.ma', specialite: 'Développement Web', departement: 'Génie Informatique' },
+            { nom: 'Bennani', prenom: 'Karim', email: 'enseignant5@hestim.ma', specialite: 'Algorithmique', departement: 'Génie Informatique' },
+            { nom: 'Tazi', prenom: 'Fatima', email: 'enseignant6@hestim.ma', specialite: 'Intelligence Artificielle', departement: 'Génie Informatique' },
+            { nom: 'El Fassi', prenom: 'Hassan', email: 'enseignant7@hestim.ma', specialite: 'Systèmes d\'exploitation', departement: 'Génie Informatique' },
+            { nom: 'Cherkaoui', prenom: 'Nadia', email: 'enseignant8@hestim.ma', specialite: 'Sécurité informatique', departement: 'Génie Informatique' },
         ];
 
         const enseignants = [];
@@ -141,6 +145,7 @@ async function seed() {
             { nom_groupe: 'GI-3A', id_filiere: filiereGI.id_filiere, niveau: '3ème année', effectif: 30 },
             { nom_groupe: 'GI-3B', id_filiere: filiereGI.id_filiere, niveau: '3ème année', effectif: 28 },
             { nom_groupe: 'GI-4A', id_filiere: filiereGI.id_filiere, niveau: '4ème année', effectif: 25 },
+            { nom_groupe: 'GI-4B', id_filiere: filiereGI.id_filiere, niveau: '4ème année', effectif: 22 },
         ];
 
         const groupes = [];
@@ -159,14 +164,28 @@ async function seed() {
         }
         const groupeGI3A = groupes[0]; // Garder le premier pour les références
 
-        // 5. Créer des étudiants
-        const etudiantsData = [
-            { nom: 'Martin', prenom: 'Sophie', email: 'etudiant@hestim.ma', numero_etudiant: 'ETU001', id_groupe: groupeGI3A.id_groupe },
-            { nom: 'Benjelloun', prenom: 'Youssef', email: 'etudiant2@hestim.ma', numero_etudiant: 'ETU002', id_groupe: groupeGI3A.id_groupe },
-            { nom: 'Tazi', prenom: 'Laila', email: 'etudiant3@hestim.ma', numero_etudiant: 'ETU003', id_groupe: groupes[1].id_groupe },
-            { nom: 'Bennani', prenom: 'Omar', email: 'etudiant4@hestim.ma', numero_etudiant: 'ETU004', id_groupe: groupes[1].id_groupe },
-            { nom: 'Cherkaoui', prenom: 'Amina', email: 'etudiant5@hestim.ma', numero_etudiant: 'ETU005', id_groupe: groupes[2].id_groupe },
-        ];
+        // 5. Créer des étudiants (plus d'étudiants pour chaque groupe)
+        const etudiantsData = [];
+        const prenoms = ['Sophie', 'Youssef', 'Laila', 'Omar', 'Amina', 'Mehdi', 'Fatima', 'Hassan', 'Nadia', 'Karim', 'Sara', 'Ahmed', 'Imane', 'Yassine', 'Salma'];
+        const noms = ['Martin', 'Benjelloun', 'Tazi', 'Bennani', 'Cherkaoui', 'Alaoui', 'Idrissi', 'El Fassi', 'Bensaid', 'Amrani', 'Lahlou', 'Bouazza', 'Tahiri', 'Mekouar', 'Bouhaddou'];
+        
+        let etudiantIndex = 1;
+        for (let i = 0; i < groupes.length; i++) {
+            const groupe = groupes[i];
+            const nombreEtudiants = Math.min(groupe.effectif, 10); // Limiter à 10 étudiants par groupe pour le seed
+            for (let j = 0; j < nombreEtudiants; j++) {
+                const prenom = prenoms[(etudiantIndex - 1) % prenoms.length];
+                const nom = noms[(etudiantIndex - 1) % noms.length];
+                etudiantsData.push({
+                    nom,
+                    prenom,
+                    email: `etudiant${etudiantIndex}@hestim.ma`,
+                    numero_etudiant: `ETU${String(etudiantIndex).padStart(3, '0')}`,
+                    id_groupe: groupe.id_groupe,
+                });
+                etudiantIndex++;
+            }
+        }
 
         const etudiants = [];
         for (const etudiantData of etudiantsData) {
@@ -216,11 +235,17 @@ async function seed() {
         const sallesData = [
             { nom_salle: 'Salle A101', type_salle: 'Amphithéâtre', capacite: 100, batiment: 'A', etage: 1 },
             { nom_salle: 'Salle A102', type_salle: 'Amphithéâtre', capacite: 80, batiment: 'A', etage: 1 },
+            { nom_salle: 'Salle A201', type_salle: 'Amphithéâtre', capacite: 120, batiment: 'A', etage: 2 },
             { nom_salle: 'Salle B205', type_salle: 'Salle de cours', capacite: 30, batiment: 'B', etage: 2 },
             { nom_salle: 'Salle B206', type_salle: 'Salle de cours', capacite: 35, batiment: 'B', etage: 2 },
+            { nom_salle: 'Salle B207', type_salle: 'Salle de cours', capacite: 32, batiment: 'B', etage: 2 },
+            { nom_salle: 'Salle B208', type_salle: 'Salle de cours', capacite: 28, batiment: 'B', etage: 2 },
             { nom_salle: 'Labo Info 1', type_salle: 'Laboratoire', capacite: 25, batiment: 'C', etage: 1 },
             { nom_salle: 'Labo Info 2', type_salle: 'Laboratoire', capacite: 25, batiment: 'C', etage: 1 },
+            { nom_salle: 'Labo Info 3', type_salle: 'Laboratoire', capacite: 30, batiment: 'C', etage: 1 },
             { nom_salle: 'Salle C301', type_salle: 'Salle de cours', capacite: 40, batiment: 'C', etage: 3 },
+            { nom_salle: 'Salle C302', type_salle: 'Salle de cours', capacite: 38, batiment: 'C', etage: 3 },
+            { nom_salle: 'Salle C303', type_salle: 'Salle de cours', capacite: 35, batiment: 'C', etage: 3 },
         ];
 
         const salles = [];
@@ -243,14 +268,21 @@ async function seed() {
             { jour_semaine: 'lundi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
             { jour_semaine: 'lundi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
             { jour_semaine: 'lundi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
+            { jour_semaine: 'lundi', heure_debut: '16:15', heure_fin: '18:15', duree_minutes: 120 },
             { jour_semaine: 'mardi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
             { jour_semaine: 'mardi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
             { jour_semaine: 'mardi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
+            { jour_semaine: 'mardi', heure_debut: '16:15', heure_fin: '18:15', duree_minutes: 120 },
             { jour_semaine: 'mercredi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
+            { jour_semaine: 'mercredi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
             { jour_semaine: 'mercredi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
             { jour_semaine: 'jeudi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
             { jour_semaine: 'jeudi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
+            { jour_semaine: 'jeudi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
+            { jour_semaine: 'jeudi', heure_debut: '16:15', heure_fin: '18:15', duree_minutes: 120 },
             { jour_semaine: 'vendredi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
+            { jour_semaine: 'vendredi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
+            { jour_semaine: 'vendredi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
         ];
 
         const creneaux = [];
@@ -278,8 +310,9 @@ async function seed() {
             }
         }
 
-        // 8. Créer des cours
+        // 8. Créer des cours (plus de cours pour chaque niveau)
         const coursData = [
+            // Cours pour 3ème année
             {
                 code_cours: 'BD001',
                 nom_cours: 'Base de données',
@@ -317,6 +350,25 @@ async function seed() {
                 semestre: 'S5',
             },
             {
+                code_cours: 'POO005',
+                nom_cours: 'Programmation Orientée Objet',
+                id_filiere: filiereGI.id_filiere,
+                niveau: '3ème année',
+                volume_horaire: 40,
+                type_cours: 'TP',
+                semestre: 'S5',
+            },
+            {
+                code_cours: 'WEB006',
+                nom_cours: 'Technologies Web Avancées',
+                id_filiere: filiereGI.id_filiere,
+                niveau: '3ème année',
+                volume_horaire: 35,
+                type_cours: 'Cours magistral',
+                semestre: 'S5',
+            },
+            // Cours pour 4ème année
+            {
                 code_cours: 'SE005',
                 nom_cours: 'Systèmes d\'exploitation',
                 id_filiere: filiereGI.id_filiere,
@@ -328,6 +380,33 @@ async function seed() {
             {
                 code_cours: 'IA006',
                 nom_cours: 'Intelligence Artificielle',
+                id_filiere: filiereGI.id_filiere,
+                niveau: '4ème année',
+                volume_horaire: 40,
+                type_cours: 'TP',
+                semestre: 'S7',
+            },
+            {
+                code_cours: 'SEC007',
+                nom_cours: 'Sécurité Informatique',
+                id_filiere: filiereGI.id_filiere,
+                niveau: '4ème année',
+                volume_horaire: 30,
+                type_cours: 'Cours magistral',
+                semestre: 'S7',
+            },
+            {
+                code_cours: 'CLOUD008',
+                nom_cours: 'Cloud Computing',
+                id_filiere: filiereGI.id_filiere,
+                niveau: '4ème année',
+                volume_horaire: 35,
+                type_cours: 'Cours magistral',
+                semestre: 'S7',
+            },
+            {
+                code_cours: 'BIGDATA009',
+                nom_cours: 'Big Data',
                 id_filiere: filiereGI.id_filiere,
                 niveau: '4ème année',
                 volume_horaire: 40,
@@ -348,37 +427,36 @@ async function seed() {
             }
         }
 
-        // 9. Créer des disponibilités pour les enseignants
+        // 9. Créer des disponibilités pour les enseignants (pour un mois complet)
         const today = new Date();
+        const inOneMonth = new Date(today);
+        inOneMonth.setMonth(today.getMonth() + 1);
+        
+        // Créer des disponibilités pour tous les enseignants sur tous les créneaux pour un mois
+        const disponibilitesData = [];
+        for (const enseignant of enseignants) {
+            for (const creneau of creneaux) {
+                disponibilitesData.push({
+                    id_user_enseignant: enseignant.id_user,
+                    id_creneau: creneau.id_creneau,
+                    disponible: true,
+                    date_debut: today.toISOString().split('T')[0],
+                    date_fin: inOneMonth.toISOString().split('T')[0],
+                });
+            }
+        }
+        
+        // Ajouter quelques indisponibilités pour rendre le test plus réaliste
         const nextWeek = new Date(today);
         nextWeek.setDate(today.getDate() + 7);
-        const inTwoWeeks = new Date(today);
-        inTwoWeeks.setDate(today.getDate() + 14);
-
-        const disponibilitesData = [
-            {
-                id_user_enseignant: enseignants[0].id_user,
-                id_creneau: creneaux[0].id_creneau,
-                disponible: true,
-                date_debut: today.toISOString().split('T')[0],
-                date_fin: inTwoWeeks.toISOString().split('T')[0],
-            },
-            {
-                id_user_enseignant: enseignants[1].id_user,
-                id_creneau: creneaux[3].id_creneau,
-                disponible: true,
-                date_debut: today.toISOString().split('T')[0],
-                date_fin: inTwoWeeks.toISOString().split('T')[0],
-            },
-            {
-                id_user_enseignant: enseignants[2].id_user,
-                id_creneau: creneaux[6].id_creneau,
-                disponible: false,
-                raison_indisponibilite: 'Congé',
-                date_debut: nextWeek.toISOString().split('T')[0],
-                date_fin: inTwoWeeks.toISOString().split('T')[0],
-            },
-        ];
+        disponibilitesData.push({
+            id_user_enseignant: enseignants[2].id_user,
+            id_creneau: creneaux[6].id_creneau,
+            disponible: false,
+            raison_indisponibilite: 'Congé',
+            date_debut: nextWeek.toISOString().split('T')[0],
+            date_fin: inOneMonth.toISOString().split('T')[0],
+        });
 
         for (const dispoData of disponibilitesData) {
             const [dispo, created] = await Disponibilite.findOrCreate({

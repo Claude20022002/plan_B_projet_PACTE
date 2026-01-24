@@ -41,6 +41,7 @@ import Statistiques from './pages/Statistiques';
 import MesAffectations from './pages/MesAffectations';
 import DemandesReport from './pages/DemandesReport';
 import DemandesReportAdmin from './pages/gestion/DemandesReportAdmin';
+import GenerationAutomatique from './pages/gestion/GenerationAutomatique';
 import Disponibilites from './pages/Disponibilites';
 
 const queryClient = new QueryClient();
@@ -171,6 +172,14 @@ function App() {
                                 element={
                                     <PrivateRoute requiredRole="admin">
                                         <DemandesReportAdmin />
+                                    </PrivateRoute>
+                                }
+                            />
+                            <Route
+                                path="/gestion/generation-automatique"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <GenerationAutomatique />
                                     </PrivateRoute>
                                 }
                             />

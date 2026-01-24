@@ -300,3 +300,7 @@ export const statistiquesAPI = {
     getStatistiquesGlobales: () => request('/statistiques/dashboard'),
 };
 
+// ==================== GÉNÉRATION AUTOMATIQUE ====================
+export const generationAutomatiqueAPI = {
+    generer: (data) => request('/generation-automatique/generer', { method: 'POST', body: data }),
+};
