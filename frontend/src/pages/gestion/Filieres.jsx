@@ -128,6 +128,14 @@ export default function Filieres() {
         setImportErrors([]);
         try {
             const data = await parseFile(file);
+            console.log('Données parsées depuis le fichier:', data);
+            
+            if (!data || data.length === 0) {
+                setError('Le fichier est vide ou ne contient pas de données valides');
+                setImportLoading(false);
+                return;
+            }
+            
             const validation = validateFiliereData(data);
             
             if (!validation.valid) {

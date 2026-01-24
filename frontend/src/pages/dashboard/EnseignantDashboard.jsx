@@ -83,7 +83,6 @@ export default function EnseignantDashboard() {
     const quickActions = [
         { label: 'Mon emploi du temps', path: '/emploi-du-temps/enseignant', icon: <CalendarToday />, variant: 'contained' },
         { label: 'Mes affectations', path: '/mes-affectations', icon: <Schedule />, variant: 'outlined' },
-        { label: 'Demander un report', path: '/demandes-report', icon: <Assignment />, variant: 'outlined' },
     ];
 
     const statCards = [

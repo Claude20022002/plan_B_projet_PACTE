@@ -288,6 +288,7 @@ export const importEtudiants = asyncHandler(async (req, res) => {
 
             results.success.push(etudiantAvecUser);
         } catch (error) {
+            console.error(`Erreur lors de la création de l'étudiant ${etudiantData.email}:`, error);
             results.errors.push({
                 email: etudiantData.email || "N/A",
                 error: error.message || "Erreur lors de la création",

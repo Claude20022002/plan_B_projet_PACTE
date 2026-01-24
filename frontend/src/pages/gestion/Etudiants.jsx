@@ -159,6 +159,14 @@ export default function Etudiants() {
         setImportErrors([]);
         try {
             const data = await parseFile(file);
+            console.log('Données parsées depuis le fichier:', data);
+            
+            if (!data || data.length === 0) {
+                setError('Le fichier est vide ou ne contient pas de données valides');
+                setImportLoading(false);
+                return;
+            }
+            
             const validation = validateEtudiantData(data);
             
             if (!validation.valid) {

@@ -214,6 +214,7 @@ export const importEnseignants = asyncHandler(async (req, res) => {
 
             results.success.push(enseignantAvecUser);
         } catch (error) {
+            console.error(`Erreur lors de la création de l'enseignant ${enseignantData.email}:`, error);
             results.errors.push({
                 email: enseignantData.email || "N/A",
                 error: error.message || "Erreur lors de la création",
