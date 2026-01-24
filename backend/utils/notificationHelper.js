@@ -224,7 +224,7 @@ export const notifierEtudiantsGroupe = async ({
     message,
     type_notification = "info",
 }) => {
-    const { Appartenir, Etudiant } = await import("../models/index.js");
+    const { Appartenir, Etudiant, Users } = await import("../models/index.js");
     
     // Récupérer tous les étudiants du groupe
     const appartenances = await Appartenir.findAll({

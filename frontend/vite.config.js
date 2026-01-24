@@ -6,5 +6,13 @@ export default defineConfig({
   plugins: [react()],
   optimizeDeps: {
     include: ['jspdf', 'jspdf-autotable'],
+    esbuildOptions: {
+      target: 'esnext',
+    },
+  },
+  build: {
+    commonjsOptions: {
+      include: [/jspdf-autotable/, /node_modules/],
+    },
   },
 })

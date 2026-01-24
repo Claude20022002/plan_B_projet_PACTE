@@ -16,6 +16,8 @@ export {
     sendAffectationNotification,
     sendConflitNotification,
     sendDemandeReportNotification,
+    sendReportConfirmation,
+    sendAnnulationSeance,
 } from "./sendEmail.js";
 
 // Notifications
@@ -26,6 +28,7 @@ export {
     notifierNouvelleAffectation,
     notifierConflit,
     notifierDemandeReport,
+    notifierEtudiantsGroupe,
     marquerToutesCommeLues,
 } from "./notificationHelper.js";
 

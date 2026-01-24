@@ -1,7 +1,6 @@
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
-// Importer jspdf-autotable - il étend automatiquement jsPDF avec la méthode autoTable
-import 'jspdf-autotable';
+// Note: jspdf-autotable sera chargé dynamiquement pour éviter les problèmes avec Vite
 
 /**
  * Exporte l'emploi du temps en format Excel
@@ -53,13 +52,23 @@ export const exportToExcel = (affectations, filename = 'emploi-du-temps') => {
  * @param {String} filename - Le nom du fichier
  * @param {String} title - Le titre du document
  */
-export const exportToPDF = (affectations, filename = 'emploi-du-temps', title = 'Emploi du Temps') => {
+export const exportToPDF = async (affectations, filename = 'emploi-du-temps', title = 'Emploi du Temps') => {
     try {
+        // Charger dynamiquement jspdf-autotable pour éviter les problèmes avec Vite
+        try {
+            await import('jspdf-autotable');
+        } catch (importError) {
+            console.error('Erreur lors du chargement de jspdf-autotable:', importError);
+            alert('Erreur: Impossible de charger la bibliothèque PDF. Veuillez réessayer ou utiliser Excel/CSV.');
+            return;
+        }
+        
         const doc = new jsPDF();
         
-        // Vérifier si autoTable est disponible (jspdf-autotable devrait l'ajouter automatiquement)
+        // Vérifier si autoTable est disponible après l'import
         if (typeof doc.autoTable !== 'function') {
-            console.error('jspdf-autotable n\'est pas correctement chargé. Vérifiez que le module est installé.');
+            console.error('jspdf-autotable n\'est pas correctement chargé.');
+            console.error('Type de doc.autoTable:', typeof doc.autoTable);
             alert('Erreur: La bibliothèque PDF n\'est pas correctement chargée. Veuillez réessayer ou utiliser Excel/CSV.');
             return;
         }

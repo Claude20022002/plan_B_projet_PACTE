@@ -162,6 +162,14 @@ function App() {
                                     </PrivateRoute>
                                 }
                             />
+                            <Route
+                                path="/gestion/demandes-report"
+                                element={
+                                    <PrivateRoute requiredRole="admin">
+                                        <DemandesReportAdmin />
+                                    </PrivateRoute>
+                                }
+                            />
 
                             {/* Emplois du temps */}
                             <Route
