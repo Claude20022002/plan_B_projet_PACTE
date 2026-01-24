@@ -17,7 +17,6 @@ import {
 } from '@mui/material';
 import {
     Schedule,
-    Notifications,
     Assignment,
     CalendarToday,
     School,
@@ -29,14 +28,13 @@ import {
 } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { affectationAPI, notificationAPI, demandeReportAPI } from '../../services/api';
+import { affectationAPI, demandeReportAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
 export default function EnseignantDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [affectations, setAffectations] = useState([]);
-    const [notifications, setNotifications] = useState([]);
     const [demandes, setDemandes] = useState([]);
     const [stats, setStats] = useState({ totalCours: 0, coursAujourdhui: 0, demandesEnAttente: 0 });
     const [loading, setLoading] = useState(true);
@@ -49,15 +47,13 @@ export default function EnseignantDashboard() {
 
     const loadDashboardData = async () => {
         try {
-            const [affectationsData, notifsData, demandesData] = await Promise.all([
+            const [affectationsData, demandesData] = await Promise.all([
                 affectationAPI.getByEnseignant(user.id_user, { limit: 10 }),
-                notificationAPI.getNonLues(user.id_user),
                 demandeReportAPI.getByEnseignant(user.id_user),
             ]);
 
             const affs = affectationsData.data || [];
             setAffectations(affs);
-            setNotifications(notifsData.data || []);
             setDemandes(demandesData.data || demandesData || []);
 
             // Calculer les statistiques
@@ -198,7 +194,7 @@ export default function EnseignantDashboard() {
 
                 <Grid container spacing={3}>
                     {/* Mes prochains cours */}
-                    <Grid item xs={12} md={8}>
+                    <Grid item xs={12}>
                         <Paper
                             elevation={2}
                             sx={{
@@ -318,108 +314,6 @@ export default function EnseignantDashboard() {
                                 </Box>
                             )}
                         </Paper>
-                    </Grid>
-
-                    {/* Notifications et actions */}
-                    <Grid item xs={12} md={4}>
-                        <Grid container spacing={2}>
-                            <Grid item xs={12}>
-                                <Paper
-                                    elevation={2}
-                                    sx={{
-                                        p: 2,
-                                        borderRadius: 2,
-                                    }}
-                                >
-                                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                                        <Typography variant="h6" fontWeight="bold">
-                                            Notifications
-                                        </Typography>
-                                        {notifications.length > 0 && (
-                                            <Chip
-                                                label={notifications.length}
-                                                color="primary"
-                                                size="small"
-                                            />
-                                        )}
-                                    </Box>
-                                    <Divider sx={{ mb: 2 }} />
-                                    {notifications.length > 0 ? (
-                                        <List sx={{ p: 0 }}>
-                                            {notifications.slice(0, 3).map((notif) => (
-                                                <ListItem
-                                                    key={notif.id_notification}
-                                                    sx={{
-                                                        bgcolor: 'action.hover',
-                                                        borderRadius: 1,
-                                                        mb: 1,
-                                                    }}
-                                                >
-                                                    <ListItemText
-                                                        primary={
-                                                            <Typography variant="subtitle2" fontWeight="bold">
-                                                                {notif.titre}
-                                                            </Typography>
-                                                        }
-                                                        secondary={
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {notif.message}
-                                                            </Typography>
-                                                        }
-                                                    />
-                                                </ListItem>
-                                            ))}
-                                        </List>
-                                    ) : (
-                                        <Typography variant="body2" color="text.secondary" align="center" sx={{ py: 2 }}>
-                                            Aucune notification
-                                        </Typography>
-                                    )}
-                                    <Button
-                                        fullWidth
-                                        variant="outlined"
-                                        size="small"
-                                        onClick={() => navigate('/notifications')}
-                                        sx={{ mt: 2 }}
-                                    >
-                                        Voir toutes les notifications
-                                    </Button>
-                                </Paper>
-                            </Grid>
-
-                            <Grid item xs={12}>
-                                <Paper
-                                    elevation={2}
-                                    sx={{
-                                        p: 2,
-                                        borderRadius: 2,
-                                    }}
-                                >
-                                    <Typography variant="h6" fontWeight="bold" gutterBottom>
-                                        Actions rapides
-                                    </Typography>
-                                    <Divider sx={{ mb: 2 }} />
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-                                        <Button
-                                            variant="outlined"
-                                            fullWidth
-                                            startIcon={<Assignment />}
-                                            onClick={() => navigate('/demandes-report')}
-                                        >
-                                            Demander un report
-                                        </Button>
-                                        <Button
-                                            variant="outlined"
-                                            fullWidth
-                                            startIcon={<AccessTime />}
-                                            onClick={() => navigate('/disponibilites')}
-                                        >
-                                            Gérer mes disponibilités
-                                        </Button>
-                                    </Box>
-                                </Paper>
-                            </Grid>
-                        </Grid>
                     </Grid>
                 </Grid>
             </Box>
