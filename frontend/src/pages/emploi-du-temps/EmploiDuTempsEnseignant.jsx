@@ -1,20 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Box, Typography, Paper, Select, MenuItem, FormControl, InputLabel, Button, Menu, IconButton } from '@mui/material';
+import { Box, Typography, Button, Menu, MenuItem, IconButton } from '@mui/material';
 import { ArrowBack, Download } from '@mui/icons-material';
-import FullCalendar from '@fullcalendar/react';
-import dayGridPlugin from '@fullcalendar/daygrid';
-import timeGridPlugin from '@fullcalendar/timegrid';
-import interactionPlugin from '@fullcalendar/interaction';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { emploiDuTempsAPI, affectationAPI } from '../../services/api';
+import { affectationAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { exportToExcel, exportToPDF, exportToCSV, exportToiCal } from '../../utils/exportEmploiDuTemps';
+import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetable';
 
 export default function EmploiDuTempsEnseignant() {
     const { user } = useAuth();
     const navigate = useNavigate();
-    const [events, setEvents] = useState([]);
     const [view, setView] = useState('timeGridWeek');
     const [affectationsData, setAffectationsData] = useState([]);
     const [exportMenuAnchor, setExportMenuAnchor] = useState(null);
@@ -33,20 +29,6 @@ export default function EmploiDuTempsEnseignant() {
             
             // Sauvegarder les données brutes pour l'export
             setAffectationsData(affectations);
-            
-            const formattedEvents = affectations.map((aff) => ({
-                id: aff.id_affectation,
-                title: `${aff.cours?.nom_cours || 'Cours'} - ${aff.groupe?.nom_groupe || ''}`,
-                start: `${aff.date_seance}T${aff.creneau?.heure_debut || '08:00'}`,
-                end: `${aff.date_seance}T${aff.creneau?.heure_fin || '10:00'}`,
-                extendedProps: {
-                    salle: aff.salle?.nom_salle,
-                    groupe: aff.groupe?.nom_groupe,
-                    statut: aff.statut,
-                },
-                color: aff.statut === 'confirme' ? '#4caf50' : '#ff9800',
-            }));
-            setEvents(formattedEvents);
         } catch (error) {
             console.error('Erreur lors du chargement de l\'emploi du temps:', error);
         }
@@ -119,31 +101,11 @@ export default function EmploiDuTempsEnseignant() {
                     </MenuItem>
                 </Menu>
 
-                <Paper sx={{ p: 2 }}>
-                    <FullCalendar
-                        plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                        initialView={view}
-                        view={view}
-                        events={events}
-                        headerToolbar={{
-                            left: 'prev,next today',
-                            center: 'title',
-                            right: 'dayGridMonth,timeGridWeek,timeGridDay',
-                        }}
-                        locale="fr"
-                        height="auto"
-                        eventContent={(eventInfo) => (
-                            <Box>
-                                <Typography variant="body2" fontWeight="bold">
-                                    {eventInfo.event.title}
-                                </Typography>
-                                <Typography variant="caption" display="block">
-                                    {eventInfo.event.extendedProps.salle}
-                                </Typography>
-                            </Box>
-                        )}
-                    />
-                </Paper>
+                <EnhancedTimetable
+                    affectations={affectationsData}
+                    view={view}
+                    onViewChange={setView}
+                />
             </Box>
         </DashboardLayout>
     );

@@ -268,26 +268,36 @@ async function seed() {
             }
         }
 
-        // 7. Créer des créneaux
+        // 7. Créer des créneaux selon les horaires de l'école
+        // Matin : 09h00-10h45, pause, 11h00-12h30
+        // Après-midi : 13h30-17h00 (sauf vendredi : 14h00-17h30)
+        // Vendredi spécial : pause 11h00-11h15
         const creneauxData = [
-            { jour_semaine: 'lundi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
-            { jour_semaine: 'lundi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
-            { jour_semaine: 'lundi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
-            { jour_semaine: 'lundi', heure_debut: '16:15', heure_fin: '18:15', duree_minutes: 120 },
-            { jour_semaine: 'mardi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
-            { jour_semaine: 'mardi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
-            { jour_semaine: 'mardi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
-            { jour_semaine: 'mardi', heure_debut: '16:15', heure_fin: '18:15', duree_minutes: 120 },
-            { jour_semaine: 'mercredi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
-            { jour_semaine: 'mercredi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
-            { jour_semaine: 'mercredi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
-            { jour_semaine: 'jeudi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
-            { jour_semaine: 'jeudi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
-            { jour_semaine: 'jeudi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
-            { jour_semaine: 'jeudi', heure_debut: '16:15', heure_fin: '18:15', duree_minutes: 120 },
-            { jour_semaine: 'vendredi', heure_debut: '08:00', heure_fin: '10:00', duree_minutes: 120 },
-            { jour_semaine: 'vendredi', heure_debut: '10:15', heure_fin: '12:15', duree_minutes: 120 },
-            { jour_semaine: 'vendredi', heure_debut: '14:00', heure_fin: '16:00', duree_minutes: 120 },
+            // Lundi
+            { jour_semaine: 'lundi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
+            { jour_semaine: 'lundi', heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90 },
+            { jour_semaine: 'lundi', heure_debut: '13:30', heure_fin: '15:00', duree_minutes: 90 },
+            { jour_semaine: 'lundi', heure_debut: '15:15', heure_fin: '17:00', duree_minutes: 105 },
+            // Mardi
+            { jour_semaine: 'mardi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
+            { jour_semaine: 'mardi', heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90 },
+            { jour_semaine: 'mardi', heure_debut: '13:30', heure_fin: '15:00', duree_minutes: 90 },
+            { jour_semaine: 'mardi', heure_debut: '15:15', heure_fin: '17:00', duree_minutes: 105 },
+            // Mercredi
+            { jour_semaine: 'mercredi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
+            { jour_semaine: 'mercredi', heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90 },
+            { jour_semaine: 'mercredi', heure_debut: '13:30', heure_fin: '15:00', duree_minutes: 90 },
+            { jour_semaine: 'mercredi', heure_debut: '15:15', heure_fin: '17:00', duree_minutes: 105 },
+            // Jeudi
+            { jour_semaine: 'jeudi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
+            { jour_semaine: 'jeudi', heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90 },
+            { jour_semaine: 'jeudi', heure_debut: '13:30', heure_fin: '15:00', duree_minutes: 90 },
+            { jour_semaine: 'jeudi', heure_debut: '15:15', heure_fin: '17:00', duree_minutes: 105 },
+            // Vendredi (horaires spéciaux)
+            { jour_semaine: 'vendredi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
+            { jour_semaine: 'vendredi', heure_debut: '11:15', heure_fin: '12:30', duree_minutes: 75 }, // Pause 11h00-11h15
+            { jour_semaine: 'vendredi', heure_debut: '14:00', heure_fin: '15:30', duree_minutes: 90 },
+            { jour_semaine: 'vendredi', heure_debut: '15:45', heure_fin: '17:30', duree_minutes: 105 },
         ];
 
         const creneaux = [];
