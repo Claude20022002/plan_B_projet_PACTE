@@ -35,7 +35,7 @@ const Users = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
-        avatar_url: DataTypes.STRING,
+        avatar_url: DataTypes.TEXT, // Utiliser TEXT au lieu de STRING pour permettre les images base64 longues
     },
     {
         tableName: "Users",

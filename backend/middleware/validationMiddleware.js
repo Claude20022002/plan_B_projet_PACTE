@@ -72,7 +72,8 @@ export const validateUserUpdate = [
     body("avatar_url")
         .optional({ nullable: true })
         .isString()
-        .withMessage("L'avatar doit être une chaîne de caractères"),
+        .isLength({ max: 10000000 }) // Limite de ~10MB pour les images base64
+        .withMessage("L'avatar doit être une chaîne de caractères valide"),
     body("password")
         .optional()
         .isLength({ min: 6 })

@@ -90,6 +90,9 @@ export const updateUser = asyncHandler(async (req, res) => {
     }
 
     await user.update(updateData);
+    
+    // Recharger l'utilisateur pour obtenir les données à jour
+    await user.reload();
 
     // Retourner l'utilisateur sans le mot de passe
     const userResponse = user.toJSON();

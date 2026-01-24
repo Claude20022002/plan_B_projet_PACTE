@@ -165,8 +165,17 @@ export const login = asyncHandler(async (req, res) => {
  * Récupérer le profil de l'utilisateur connecté
  */
 export const getMe = asyncHandler(async (req, res) => {
-    // L'utilisateur est déjà dans req.user grâce au middleware authenticateToken
-    const user = req.user;
+    // Recharger l'utilisateur depuis la base de données pour avoir les données à jour
+    const user = await Users.findByPk(req.user.id_user, {
+        attributes: { exclude: ["password_hash"] },
+    });
+
+    if (!user) {
+        return res.status(404).json({
+            message: "Utilisateur non trouvé",
+            error: "L'utilisateur n'existe plus",
+        });
+    }
 
     // Récupérer les informations complémentaires selon le rôle
     let additionalInfo = {};
@@ -193,7 +202,6 @@ export const getMe = asyncHandler(async (req, res) => {
 
     // Retourner l'utilisateur sans le mot de passe
     const userResponse = user.toJSON();
-    delete userResponse.password_hash;
 
     res.json({
         user: {

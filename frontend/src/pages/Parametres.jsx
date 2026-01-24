@@ -75,13 +75,16 @@ export default function Parametres() {
                 formik.setFieldValue('confirmPassword', '');
             } catch (error) {
                 console.error('Erreur:', error);
+                console.error('Détails de l\'erreur:', error.response?.data);
                 // Extraire les détails de l'erreur de validation
                 let errorMessage = error.message || 'Erreur lors de la mise à jour';
                 if (error.response?.data?.errors) {
                     const validationErrors = error.response.data.errors;
-                    errorMessage = validationErrors.map(err => `${err.field}: ${err.message}`).join(', ');
+                    errorMessage = validationErrors.map(err => `${err.field || err.param || 'Champ'}: ${err.msg || err.message || 'Erreur de validation'}`).join(', ');
                 } else if (error.response?.data?.message) {
                     errorMessage = error.response.data.message;
+                } else if (error.response?.data?.error) {
+                    errorMessage = error.response.data.error;
                 }
                 setError(errorMessage);
             } finally {

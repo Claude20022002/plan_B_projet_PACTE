@@ -370,8 +370,11 @@ export default function DashboardLayout({ children }) {
                         {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
                     </IconButton>
                     <IconButton onClick={handleMenuOpen} sx={{ ml: 1 }}>
-                        <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}>
-                            {user?.prenom?.[0]?.toUpperCase()}
+                        <Avatar 
+                            src={user?.avatar_url} 
+                            sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}
+                        >
+                            {!user?.avatar_url && user?.prenom?.[0]?.toUpperCase()}
                         </Avatar>
                     </IconButton>
                     <Menu
