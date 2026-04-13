@@ -164,7 +164,7 @@ export default function EmploiDuTempsAdmin() {
                 >
                     <MenuItem
                         onClick={async () => {
-                            await exportToPDF(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps - Administrateur');
+                            await exportToPDF(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps — Vue consolidée', 'admin');
                             setExportMenuAnchor(null);
                         }}
                     >

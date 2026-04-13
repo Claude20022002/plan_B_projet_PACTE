@@ -87,7 +87,7 @@ export default function EmploiDuTempsEtudiant() {
                 >
                     <MenuItem
                         onClick={async () => {
-                            await exportToPDF(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`);
+                            await exportToPDF(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`, 'etudiant');
                             setExportMenuAnchor(null);
                         }}
                     >

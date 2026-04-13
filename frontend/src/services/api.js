@@ -295,9 +295,13 @@ export const disponibiliteAPI = {
 
 // ==================== STATISTIQUES ====================
 export const statistiquesAPI = {
-    getOccupationSalles: () => request('/statistiques/occupation-salles'),
-    getChargeEnseignants: () => request('/statistiques/charge-enseignants'),
+    getOccupationSalles: () => request('/statistiques/salles/occupation'),
+    getChargeEnseignants: () => request('/statistiques/enseignants/charge'),
     getStatistiquesGlobales: () => request('/statistiques/dashboard'),
+    getKPIs: (params) => {
+        const query = new URLSearchParams(params || {}).toString();
+        return request(`/statistiques/kpis${query ? `?${query}` : ''}`);
+    },
 };
 
 // ==================== GÉNÉRATION AUTOMATIQUE ====================

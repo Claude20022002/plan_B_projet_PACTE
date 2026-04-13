@@ -6,6 +6,9 @@ import {
     Groupe,
     Disponibilite,
     Cours,
+    Filiere,
+    Conflit,
+    Etudiant,
 } from "../models/index.js";
 import { Op } from "sequelize";
 import sequelize from "../config/db.js";
@@ -506,6 +509,206 @@ export const getDashboard = asyncHandler(async (req, res) => {
             total_heures: Math.round(totalHeures * 100) / 100,
         },
         note: "Utilisez les endpoints spécifiques pour des statistiques détaillées",
+    });
+});
+
+/**
+ * GET /api/statistiques/kpis
+ * KPIs consolidés pour le tableau de bord administrateur
+ * Retourne tous les indicateurs en un seul appel
+ */
+export const getKPIs = asyncHandler(async (req, res) => {
+    const { date_debut, date_fin } = req.query;
+
+    const whereAffectations = { statut: { [Op.ne]: "annule" } };
+    if (date_debut && date_fin) {
+        whereAffectations.date_seance = { [Op.between]: [date_debut, date_fin] };
+    }
+
+    const [
+        affectations,
+        totalSallesDisponibles,
+        totalConflits,
+        conflitsNonResolus,
+        filieres,
+        groupesAll,
+    ] = await Promise.all([
+        Affectation.findAll({
+            where: whereAffectations,
+            include: [
+                { model: Creneau, as: "creneau" },
+                { model: Salle, as: "salle" },
+                { model: Cours, as: "cours", include: [{ model: Filiere, as: "filiere" }] },
+            ],
+        }),
+        Salle.count({ where: { disponible: true } }),
+        Conflit.count(),
+        Conflit.count({ where: { statut: { [Op.ne]: "resolu" } } }),
+        Filiere.findAll(),
+        Groupe.findAll(),
+    ]);
+
+    // ── 1. Taux d'occupation des salles ──────────────────────────────
+    const heuresParSalle = {};
+    const HEURES_DISPO_PAR_SEMAINE = 40;
+
+    affectations.forEach((aff) => {
+        if (aff.id_salle && aff.creneau?.duree_minutes) {
+            if (!heuresParSalle[aff.id_salle]) heuresParSalle[aff.id_salle] = 0;
+            heuresParSalle[aff.id_salle] += aff.creneau.duree_minutes / 60;
+        }
+    });
+
+    const totalHeuresUtilisees = Object.values(heuresParSalle).reduce((s, h) => s + h, 0);
+    const tauxOccupationSalles = totalSallesDisponibles > 0
+        ? Math.min(100, Math.round((totalHeuresUtilisees / (totalSallesDisponibles * HEURES_DISPO_PAR_SEMAINE)) * 10000) / 100)
+        : 0;
+    const sallesOccupees = Object.keys(heuresParSalle).length;
+
+    const detailSalles = await Salle.findAll({ where: { disponible: true } });
+    const sallesStats = detailSalles.map((s) => ({
+        nom: s.nom_salle,
+        heures: Math.round((heuresParSalle[s.id_salle] || 0) * 100) / 100,
+        taux: Math.min(100, Math.round(((heuresParSalle[s.id_salle] || 0) / HEURES_DISPO_PAR_SEMAINE) * 10000) / 100),
+    })).sort((a, b) => b.taux - a.taux).slice(0, 10);
+
+    // ── 2. Moyenne d'heures par enseignant ───────────────────────────
+    const heuresParEnseignant = {};
+    affectations.forEach((aff) => {
+        if (aff.id_user_enseignant && aff.creneau?.duree_minutes) {
+            if (!heuresParEnseignant[aff.id_user_enseignant]) heuresParEnseignant[aff.id_user_enseignant] = 0;
+            heuresParEnseignant[aff.id_user_enseignant] += aff.creneau.duree_minutes / 60;
+        }
+    });
+    const enseignantsAvecHeures = Object.keys(heuresParEnseignant).length;
+    const totalHeuresEnseignants = Object.values(heuresParEnseignant).reduce((s, h) => s + h, 0);
+    const moyenneHeuresEnseignant = enseignantsAvecHeures > 0
+        ? Math.round((totalHeuresEnseignants / enseignantsAvecHeures) * 100) / 100
+        : 0;
+
+    // ── 3. Moyenne d'heures par étudiant (via groupes) ───────────────
+    const heuresParGroupe = {};
+    affectations.forEach((aff) => {
+        if (aff.id_groupe && aff.creneau?.duree_minutes) {
+            if (!heuresParGroupe[aff.id_groupe]) heuresParGroupe[aff.id_groupe] = 0;
+            heuresParGroupe[aff.id_groupe] += aff.creneau.duree_minutes / 60;
+        }
+    });
+    let totalEtudiantsConcernes = 0;
+    let totalHeuresEtudiants = 0;
+    groupesAll.forEach((g) => {
+        const effectif = g.effectif || 1;
+        const heures = heuresParGroupe[g.id_groupe] || 0;
+        if (heures > 0) {
+            totalEtudiantsConcernes += effectif;
+            totalHeuresEtudiants += heures * effectif;
+        }
+    });
+    const moyenneHeuresEtudiant = totalEtudiantsConcernes > 0
+        ? Math.round((totalHeuresEtudiants / totalEtudiantsConcernes) * 100) / 100
+        : 0;
+
+    // ── 4. Créneaux les plus demandés ────────────────────────────────
+    const compteParCreneau = {};
+    affectations.forEach((aff) => {
+        if (aff.creneau) {
+            const key = aff.id_creneau;
+            if (!compteParCreneau[key]) {
+                compteParCreneau[key] = {
+                    id: key,
+                    label: `${aff.creneau.jour_semaine} ${aff.creneau.heure_debut}-${aff.creneau.heure_fin}`,
+                    jour: aff.creneau.jour_semaine,
+                    heure_debut: aff.creneau.heure_debut,
+                    heure_fin: aff.creneau.heure_fin,
+                    count: 0,
+                };
+            }
+            compteParCreneau[key].count++;
+        }
+    });
+    const creneauxLesPlusDemandes = Object.values(compteParCreneau)
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 7);
+
+    // ── 5. Taux de conflits de réservation ───────────────────────────
+    const totalAffectations = affectations.length;
+    const tauxConflits = totalAffectations > 0
+        ? Math.round((conflitsNonResolus / totalAffectations) * 10000) / 100
+        : 0;
+
+    // ── 6. Durée moyenne des cours ───────────────────────────────────
+    const durees = affectations
+        .filter((aff) => aff.creneau?.duree_minutes)
+        .map((aff) => aff.creneau.duree_minutes);
+    const dureeMoyenneCours = durees.length > 0
+        ? Math.round((durees.reduce((s, d) => s + d, 0) / durees.length) * 100) / 100
+        : 0;
+
+    // ── 7. Répartition des cours par filière ─────────────────────────
+    const repartitionParFiliere = {};
+    filieres.forEach((f) => {
+        repartitionParFiliere[f.nom_filiere] = {
+            nom: f.nom_filiere,
+            nombre_seances: 0,
+            nombre_heures: 0,
+        };
+    });
+    affectations.forEach((aff) => {
+        if (aff.cours?.filiere) {
+            const nom = aff.cours.filiere.nom_filiere;
+            if (!repartitionParFiliere[nom]) {
+                repartitionParFiliere[nom] = { nom, nombre_seances: 0, nombre_heures: 0 };
+            }
+            repartitionParFiliere[nom].nombre_seances++;
+            if (aff.creneau?.duree_minutes) {
+                repartitionParFiliere[nom].nombre_heures += aff.creneau.duree_minutes / 60;
+            }
+        }
+    });
+    Object.keys(repartitionParFiliere).forEach((k) => {
+        repartitionParFiliere[k].nombre_heures = Math.round(repartitionParFiliere[k].nombre_heures * 100) / 100;
+    });
+
+    res.json({
+        periode: date_debut && date_fin ? { date_debut, date_fin } : null,
+        kpis: {
+            taux_occupation_salles: {
+                valeur: tauxOccupationSalles,
+                unite: "%",
+                detail: { salles_occupees: sallesOccupees, total_salles: totalSallesDisponibles },
+                graphique: sallesStats,
+            },
+            moyenne_heures_enseignant: {
+                valeur: moyenneHeuresEnseignant,
+                unite: "h",
+                detail: { enseignants_actifs: enseignantsAvecHeures, total_heures: Math.round(totalHeuresEnseignants * 100) / 100 },
+            },
+            moyenne_heures_etudiant: {
+                valeur: moyenneHeuresEtudiant,
+                unite: "h",
+                detail: { etudiants_concernes: totalEtudiantsConcernes },
+            },
+            creneaux_les_plus_demandes: {
+                top: creneauxLesPlusDemandes,
+            },
+            taux_conflits: {
+                valeur: tauxConflits,
+                unite: "%",
+                detail: {
+                    conflits_non_resolus: conflitsNonResolus,
+                    total_conflits: totalConflits,
+                    total_affectations: totalAffectations,
+                },
+            },
+            duree_moyenne_cours: {
+                valeur: dureeMoyenneCours,
+                unite: "min",
+                valeur_heures: Math.round((dureeMoyenneCours / 60) * 100) / 100,
+            },
+            repartition_par_filiere: {
+                data: Object.values(repartitionParFiliere).sort((a, b) => b.nombre_seances - a.nombre_seances),
+            },
+        },
     });
 });
 

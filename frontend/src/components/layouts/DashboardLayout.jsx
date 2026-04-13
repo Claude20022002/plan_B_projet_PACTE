@@ -210,96 +210,145 @@ export default function DashboardLayout({ children }) {
     }, [location.pathname, user]);
 
     const drawer = (
-        <Box>
+        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <Toolbar
                 sx={{
-                    bgcolor: '#001962', // Bleu HESTIM
+                    background: 'linear-gradient(135deg, #001062 0%, #1a3a8f 100%)',
                     color: 'white',
                     display: 'flex',
                     alignItems: 'center',
-                    gap: 2,
+                    gap: 1.5,
+                    minHeight: '64px !important',
                 }}
             >
-                <Typography variant="h6" noWrap component="div" fontWeight="bold">
-                    Table de bord
-                </Typography>
+                <Box
+                    sx={{
+                        width: 32,
+                        height: 32,
+                        borderRadius: '8px',
+                        bgcolor: 'rgba(232,160,32,0.9)',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        flexShrink: 0,
+                    }}
+                >
+                    <Typography variant="body2" fontWeight="bold" color="#001062" fontSize={14}>H</Typography>
+                </Box>
+                <Box>
+                    <Typography variant="subtitle2" noWrap fontWeight="bold" lineHeight={1.2}>
+                        HESTIM Planner
+                    </Typography>
+                    <Typography variant="caption" sx={{ opacity: 0.75, fontSize: 9 }} noWrap>
+                        {user?.role === 'admin' ? 'Administrateur' : user?.role === 'enseignant' ? 'Enseignant' : 'Étudiant'}
+                    </Typography>
+                </Box>
             </Toolbar>
-            <Divider />
-            <List>
+            <Box sx={{ height: 3, background: 'linear-gradient(90deg, #e8a020, #f5c842)' }} />
+            <List sx={{ flexGrow: 1, pt: 1 }}>
                 {menuItems.map((item) => {
                     if (item.type === 'group') {
                         const isOpen = openMenus[item.key];
                         const isSelected = isPathInGroup(item.items, location.pathname);
-                        
                         return (
                             <React.Fragment key={item.text}>
                                 <ListItem disablePadding>
                                     <ListItemButton
                                         onClick={() => handleMenuToggle(item.key)}
                                         selected={isSelected}
+                                        sx={{
+                                            mx: 1,
+                                            borderRadius: 2,
+                                            mb: 0.25,
+                                            '&.Mui-selected': { color: 'primary.main' },
+                                        }}
                                     >
-                                        <ListItemIcon
-                                            sx={{
-                                                color: isSelected ? '#001962' : 'inherit',
-                                            }}
-                                        >
+                                        <ListItemIcon sx={{ color: isSelected ? 'primary.main' : 'text.secondary', minWidth: 36 }}>
                                             {item.icon}
                                         </ListItemIcon>
-                                        <ListItemText primary={item.text} />
-                                        {isOpen ? <ExpandLess /> : <ExpandMore />}
+                                        <ListItemText
+                                            primary={item.text}
+                                            primaryTypographyProps={{ fontSize: 13, fontWeight: isSelected ? 600 : 400 }}
+                                        />
+                                        {isOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
                                     </ListItemButton>
                                 </ListItem>
                                 <Collapse in={isOpen} timeout="auto" unmountOnExit>
                                     <List component="div" disablePadding>
-                                        {item.items.map((subItem) => (
-                                            <ListItem key={subItem.text} disablePadding>
-                                                <ListItemButton
-                                                    selected={location.pathname === subItem.path}
-                                                    onClick={() => {
-                                                        navigate(subItem.path);
-                                                        setMobileOpen(false);
-                                                    }}
-                                                    sx={{ pl: 4 }}
-                                                >
-                                                    <ListItemIcon
+                                        {item.items.map((subItem) => {
+                                            const isSubSel = location.pathname === subItem.path;
+                                            return (
+                                                <ListItem key={subItem.text} disablePadding>
+                                                    <ListItemButton
+                                                        selected={isSubSel}
+                                                        onClick={() => { navigate(subItem.path); setMobileOpen(false); }}
                                                         sx={{
-                                                            color: location.pathname === subItem.path ? '#001962' : 'inherit',
+                                                            pl: 5,
+                                                            mx: 1,
+                                                            borderRadius: 2,
+                                                            mb: 0.25,
+                                                            '&.Mui-selected': { color: 'primary.main' },
                                                         }}
                                                     >
-                                                        {subItem.icon}
-                                                    </ListItemIcon>
-                                                    <ListItemText primary={subItem.text} />
-                                                </ListItemButton>
-                                            </ListItem>
-                                        ))}
+                                                        <ListItemIcon sx={{ color: isSubSel ? 'primary.main' : 'text.disabled', minWidth: 32 }}>
+                                                            {subItem.icon}
+                                                        </ListItemIcon>
+                                                        <ListItemText
+                                                            primary={subItem.text}
+                                                            primaryTypographyProps={{ fontSize: 12.5, fontWeight: isSubSel ? 600 : 400 }}
+                                                        />
+                                                    </ListItemButton>
+                                                </ListItem>
+                                            );
+                                        })}
                                     </List>
                                 </Collapse>
                             </React.Fragment>
                         );
                     } else {
+                        const isSel = location.pathname === item.path;
                         return (
                             <ListItem key={item.text} disablePadding>
                                 <ListItemButton
-                                    selected={location.pathname === item.path}
-                                    onClick={() => {
-                                        navigate(item.path);
-                                        setMobileOpen(false);
+                                    selected={isSel}
+                                    onClick={() => { navigate(item.path); setMobileOpen(false); }}
+                                    sx={{
+                                        mx: 1,
+                                        borderRadius: 2,
+                                        mb: 0.25,
+                                        '&.Mui-selected': { color: 'primary.main' },
                                     }}
                                 >
-                                    <ListItemIcon
-                                        sx={{
-                                            color: location.pathname === item.path ? '#001962' : 'inherit',
-                                        }}
-                                    >
+                                    <ListItemIcon sx={{ color: isSel ? 'primary.main' : 'text.secondary', minWidth: 36 }}>
                                         {item.icon}
                                     </ListItemIcon>
-                                    <ListItemText primary={item.text} />
+                                    <ListItemText
+                                        primary={item.text}
+                                        primaryTypographyProps={{ fontSize: 13, fontWeight: isSel ? 600 : 400 }}
+                                    />
                                 </ListItemButton>
                             </ListItem>
                         );
                     }
                 })}
             </List>
+
+            {/* User info at bottom */}
+            <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Avatar sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: 14 }}>
+                        {user?.prenom?.[0]?.toUpperCase()}
+                    </Avatar>
+                    <Box sx={{ flex: 1, minWidth: 0 }}>
+                        <Typography variant="body2" fontWeight={600} noWrap>
+                            {user?.prenom} {user?.nom}
+                        </Typography>
+                        <Typography variant="caption" color="text.secondary" noWrap>
+                            {user?.email}
+                        </Typography>
+                    </Box>
+                </Box>
+            </Box>
         </Box>
     );
 

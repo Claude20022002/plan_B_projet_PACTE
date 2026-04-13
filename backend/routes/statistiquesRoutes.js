@@ -8,6 +8,7 @@ import {
     getChargeEnseignants,
     getOccupationGroupes,
     getDashboard,
+    getKPIs,
 } from "../controllers/statistiquesController.js";
 import { authenticateToken, requireAdmin } from "../middleware/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
@@ -76,6 +77,14 @@ router.get(
     authenticateToken,
     requireAdmin,
     asyncHandler(getDashboard)
+);
+
+// 📊 GET /api/statistiques/kpis - KPIs consolidés (occupation salles, heures enseignant/étudiant, créneaux, conflits, durée, filières)
+router.get(
+    "/kpis",
+    authenticateToken,
+    requireAdmin,
+    asyncHandler(getKPIs)
 );
 
 export default router;

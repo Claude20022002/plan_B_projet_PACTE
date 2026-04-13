@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash -n \"c:/Users/clusa/Desktop/Github Project/plan_B_projet_PACTE/start.sh\")",
+      "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/Users/clusa/Desktop/Github Project/plan_B_projet_PACTE/package.json','utf8'\\)\\); console.log\\('✓ package.json valide'\\)\")"
+    ]
+  }
+}
