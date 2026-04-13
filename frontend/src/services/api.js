@@ -244,9 +244,27 @@ export const conflitAPI = {
 
 // ==================== EMPLOIS DU TEMPS ====================
 export const emploiDuTempsAPI = {
-    getByEnseignant: (id) => request(`/emplois-du-temps/enseignant/${id}`),
-    getByGroupe: (id) => request(`/emplois-du-temps/groupe/${id}`),
-    getBySalle: (id) => request(`/emplois-du-temps/salle/${id}`),
+    getByEnseignant: (id, params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/emplois-du-temps/enseignant/${id}${query ? `?${query}` : ''}`);
+    },
+    getByGroupe: (id, params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/emplois-du-temps/groupe/${id}${query ? `?${query}` : ''}`);
+    },
+    getByEtudiant: (id, params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/emplois-du-temps/etudiant/${id}${query ? `?${query}` : ''}`);
+    },
+    getBySalle: (id, params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/emplois-du-temps/salle/${id}${query ? `?${query}` : ''}`);
+    },
+    getConsolide: (params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/emplois-du-temps/consolide${query ? `?${query}` : ''}`);
+    },
+    generer: (data) => request('/emplois-du-temps/generer', { method: 'POST', body: data }),
 };
 
 // ==================== NOTIFICATIONS ====================

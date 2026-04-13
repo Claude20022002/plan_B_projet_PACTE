@@ -1,7 +1,7 @@
 import dotenv from 'dotenv';
 import sequelize, { testConnection } from './config/db.js';
-import './models/index.js'; // Import pour initialiser les relations
-import { 
+import './models/index.js';
+import {
     Users, Enseignant, Etudiant, Filiere, Groupe, Salle, Cours, Creneau,
     Affectation, DemandeReport, Disponibilite, Notification, Conflit, Appartenir
 } from './models/index.js';
@@ -10,19 +10,15 @@ import { hashPassword } from './utils/passwordHelper.js';
 dotenv.config();
 
 /**
- * Script de seed pour créer des données de test
- * Usage: node seed.js
+ * Seed HESTIM-STENDHAL — 3A IIIA (S6) — 2025/2026
+ * Données en adéquation avec le planning YAML weekly_blocks (W1-W4 / S1-S4)
  */
 async function seed() {
     try {
-        console.log('🌱 Démarrage du seed...');
-
-        // Test de connexion
+        console.log('🌱 Démarrage du seed HESTIM-STENDHAL S6...');
         await testConnection();
         console.log('✅ Connexion à la base de données réussie');
 
-        // Créer les tables si elles n'existent pas (sans modifier les existantes)
-        // Utiliser sync({ force: false }) pour créer sans modifier
         console.log('🔄 Vérification des tables...');
         try {
             await Users.sync({ force: false });
@@ -39,682 +35,430 @@ async function seed() {
             await Notification.sync({ force: false });
             await Conflit.sync({ force: false });
             await Appartenir.sync({ force: false });
-            console.log('✅ Tables vérifiées/créées');
-        } catch (error) {
-            console.error('⚠️  Erreur lors de la vérification des tables:', error.message);
-            console.log('💡 Astuce: Si les tables existent déjà, vous pouvez ignorer cette erreur');
+            console.log('✅ Tables vérifiées');
+        } catch (err) {
+            console.warn('⚠️  Erreur tables (ignorée):', err.message);
         }
 
-        // Hasher le mot de passe par défaut
         const defaultPassword = await hashPassword('password123');
 
-        // 1. Créer des administrateurs
-        const adminsData = [
-            { nom: 'Admin', prenom: 'HESTIM', email: 'admin@hestim.ma', telephone: '+212 6XX XXX XXX' },
-            { nom: 'Alami', prenom: 'Fatima', email: 'admin2@hestim.ma', telephone: '+212 6XX XXX XXX' },
+        // ── 1. Administrateurs ────────────────────────────────────────────────
+        const adminsRaw = [
+            { nom: 'HAIDRAR', prenom: 'Admin', email: 'admin@hestim.ma', telephone: '+212 522 000 001' },
+            { nom: 'ALAOUI',  prenom: 'Leila', email: 'admin2@hestim.ma', telephone: '+212 522 000 002' },
         ];
-
         const admins = [];
-        for (const adminData of adminsData) {
-            const [admin, adminCreated] = await Users.findOrCreate({
-                where: { email: adminData.email },
-                defaults: {
-                    ...adminData,
-                    password_hash: defaultPassword,
-                    role: 'admin',
-                    actif: true,
-                },
+        for (const d of adminsRaw) {
+            const [u] = await Users.findOrCreate({
+                where: { email: d.email },
+                defaults: { ...d, password_hash: defaultPassword, role: 'admin', actif: true },
             });
-            admins.push(admin);
-            if (adminCreated) {
-                console.log('✅ Administrateur créé:', admin.email);
-            } else {
-                console.log('ℹ️  Administrateur existe déjà:', admin.email);
-            }
+            admins.push(u);
         }
-        const admin = admins[0]; // Garder le premier admin pour les références
+        const admin = admins[0];
+        console.log(`✅ ${admins.length} administrateurs`);
 
-        // 2. Créer des enseignants (un enseignant pour chaque module/cours)
-        const enseignantsData = [
-            // Enseignants pour les cours de 3ème année
-            { nom: 'Alaoui', prenom: 'Sanae', email: 'sanae.alaoui@hestim.ma', specialite: 'Base de données', departement: 'Génie Informatique' },
-            { nom: 'Idrissi', prenom: 'Mohamed', email: 'mohamed.idrissi@hestim.ma', specialite: 'Développement Web', departement: 'Génie Informatique' },
-            { nom: 'Bennani', prenom: 'Karim', email: 'karim.bennani@hestim.ma', specialite: 'Algorithmique', departement: 'Génie Informatique' },
-            { nom: 'Benali', prenom: 'Ahmed', email: 'ahmed.benali@hestim.ma', specialite: 'Réseaux', departement: 'Génie Informatique' },
-            { nom: 'Dupont', prenom: 'Jean', email: 'jean.dupont@hestim.ma', specialite: 'Programmation Orientée Objet', departement: 'Génie Informatique' },
-            { nom: 'Lahlou', prenom: 'Fatima', email: 'fatima.lahlou@hestim.ma', specialite: 'Technologies Web Avancées', departement: 'Génie Informatique' },
-            // Enseignants pour les cours de 4ème année
-            { nom: 'El Fassi', prenom: 'Hassan', email: 'hassan.elfassi@hestim.ma', specialite: 'Systèmes d\'exploitation', departement: 'Génie Informatique' },
-            { nom: 'Tazi', prenom: 'Fatima', email: 'fatima.tazi@hestim.ma', specialite: 'Intelligence Artificielle', departement: 'Génie Informatique' },
-            { nom: 'Cherkaoui', prenom: 'Nadia', email: 'nadia.cherkaoui@hestim.ma', specialite: 'Sécurité Informatique', departement: 'Génie Informatique' },
-            { nom: 'Amrani', prenom: 'Youssef', email: 'youssef.amrani@hestim.ma', specialite: 'Cloud Computing', departement: 'Génie Informatique' },
-            { nom: 'Bouazza', prenom: 'Sara', email: 'sara.bouazza@hestim.ma', specialite: 'Big Data', departement: 'Génie Informatique' },
+        // ── 2. Enseignants (correspondant exactement au YAML) ─────────────────
+        const enseignantsRaw = [
+            { nom: 'BENNIS',      prenom: 'D.',        email: 'd.bennis@hestim.ma',      specialite: 'Mathématiques appliquées',       departement: 'Sciences et Techniques', grade: 'Professeur' },
+            { nom: 'MOUSTAKIM',   prenom: 'M.',        email: 'm.moustakim@hestim.ma',   specialite: 'Langues et Communication',       departement: 'Langues',                grade: 'Professeur' },
+            { nom: 'AYAD',        prenom: 'Samira',    email: 's.ayad@hestim.ma',        specialite: 'Recherche Opérationnelle',       departement: 'Mathématiques',           grade: 'Professeur' },
+            { nom: 'BOUBEKRAOUI', prenom: 'Houda',     email: 'h.boubekraoui@hestim.ma', specialite: 'Algorithmique et Graphes',       departement: 'Génie Informatique',      grade: 'Professeur' },
+            { nom: 'HAIDRAR',     prenom: 'Nadia',     email: 'n.haidrar@hestim.ma',     specialite: 'Développement Web Full-stack',   departement: 'Génie Informatique',      grade: 'Professeur' },
+            { nom: 'HANBALI',     prenom: 'Imane',     email: 'i.hanbali@hestim.ma',     specialite: 'Développement Web Full-stack',   departement: 'Génie Informatique',      grade: 'Professeur' },
+            { nom: 'KHIAT',       prenom: 'Mehdi',     email: 'm.khiat@hestim.ma',       specialite: 'Réseaux et Systèmes Distribués', departement: 'Génie Informatique',      grade: 'Professeur' },
+            { nom: 'EL KARI',     prenom: 'Fatima',    email: 'f.elkari@hestim.ma',      specialite: 'Finance et Développement Personnel', departement: 'Sciences de Gestion', grade: 'Professeur' },
+            { nom: 'ELOTMANI',    prenom: 'Salma',     email: 's.elotmani@hestim.ma',    specialite: 'Entrepreneuriat et Innovation',  departement: 'Management',              grade: 'Professeur' },
+            { nom: 'BENIRZIK',    prenom: 'Youssef',   email: 'y.benirzik@hestim.ma',    specialite: 'Automatisation No-Code',         departement: 'Innovation Digitale',     grade: 'Intervenant' },
         ];
 
         const enseignants = [];
-        for (const enseignantData of enseignantsData) {
-            const [enseignantUser, enseignantCreated] = await Users.findOrCreate({
-                where: { email: enseignantData.email },
-                defaults: {
-                    nom: enseignantData.nom,
-                    prenom: enseignantData.prenom,
-                    email: enseignantData.email,
-                    password_hash: defaultPassword,
-                    role: 'enseignant',
-                    telephone: '+212 6XX XXX XXX',
-                    actif: true,
-                },
+        for (const d of enseignantsRaw) {
+            const [user, created] = await Users.findOrCreate({
+                where: { email: d.email },
+                defaults: { nom: d.nom, prenom: d.prenom, email: d.email, password_hash: defaultPassword, role: 'enseignant', telephone: '+212 6XX XXX XXX', actif: true },
             });
-
-            if (enseignantCreated) {
-                const existingEnseignant = await Enseignant.findByPk(enseignantUser.id_user);
-                if (!existingEnseignant) {
-                    await Enseignant.create({
-                        id_user: enseignantUser.id_user,
-                        specialite: enseignantData.specialite,
-                        departement: enseignantData.departement,
-                    });
-                }
-                console.log('✅ Enseignant créé:', enseignantUser.email);
-            } else {
-                console.log('ℹ️  Enseignant existe déjà:', enseignantUser.email);
+            if (created) {
+                await Enseignant.create({ id_user: user.id_user, specialite: d.specialite, departement: d.departement, grade: d.grade });
             }
-            enseignants.push(enseignantUser);
+            enseignants.push({ user, nom: d.nom });
         }
-        const enseignantUser = enseignants[0]; // Garder le premier pour les références
+        const findEns = (nom) => enseignants.find(e => e.nom === nom)?.user;
+        console.log(`✅ ${enseignants.length} enseignants`);
 
-        // 3. Créer des filières
-        const filieresData = [
-            { code_filiere: 'GI', nom_filiere: 'Génie Informatique', description: 'Filière de génie informatique' },
-            { code_filiere: 'GE', nom_filiere: 'Génie Électrique', description: 'Filière de génie électrique' },
-            { code_filiere: 'GC', nom_filiere: 'Génie Civil', description: 'Filière de génie civil' },
-        ];
-
+        // ── 3. Filières ───────────────────────────────────────────────────────
         const filieres = [];
-        for (const filiereData of filieresData) {
-            const [filiere, created] = await Filiere.findOrCreate({
-                where: { nom_filiere: filiereData.nom_filiere },
-                defaults: filiereData,
-            });
-            filieres.push(filiere);
-            if (created) {
-                console.log('✅ Filière créée:', filiere.nom_filiere);
-            }
+        for (const d of [
+            { code_filiere: 'IIIA', nom_filiere: 'Ingénierie Informatique et Intelligence Artificielle', description: 'Filière IIIA — 3 ans' },
+            { code_filiere: 'IID',  nom_filiere: 'Ingénierie et Innovation Digitale',                   description: 'Filière IID — 3 ans' },
+            { code_filiere: 'GC',   nom_filiere: 'Génie Civil',                                         description: 'Filière GC — 3 ans' },
+        ]) {
+            const [f] = await Filiere.findOrCreate({ where: { code_filiere: d.code_filiere }, defaults: d });
+            filieres.push(f);
         }
-        const filiereGI = filieres[0]; // Garder la première pour les références
+        const filiereIIIA = filieres[0];
+        console.log(`✅ ${filieres.length} filières`);
 
-        // 4. Créer des groupes
-        const currentYear = new Date().getFullYear();
-        const anneeScolaire = `${currentYear}-${currentYear + 1}`;
-        const groupesData = [
-            { nom_groupe: 'GI-3A', id_filiere: filiereGI.id_filiere, niveau: '3ème année', effectif: 30 },
-            { nom_groupe: 'GI-3B', id_filiere: filiereGI.id_filiere, niveau: '3ème année', effectif: 28 },
-            { nom_groupe: 'GI-4A', id_filiere: filiereGI.id_filiere, niveau: '4ème année', effectif: 25 },
-            { nom_groupe: 'GI-4B', id_filiere: filiereGI.id_filiere, niveau: '4ème année', effectif: 22 },
-        ];
-
+        // ── 4. Groupes ────────────────────────────────────────────────────────
         const groupes = [];
-        for (const groupeData of groupesData) {
-            const [groupe, created] = await Groupe.findOrCreate({
-                where: { nom_groupe: groupeData.nom_groupe },
-                defaults: {
-                    ...groupeData,
-                    annee_scolaire: anneeScolaire,
-                },
-            });
-            groupes.push(groupe);
-            if (created) {
-                console.log('✅ Groupe créé:', groupe.nom_groupe);
-            }
+        for (const d of [
+            { nom_groupe: '3A IIIA', id_filiere: filiereIIIA.id_filiere, niveau: '3ème année', effectif: 25, annee_scolaire: '2025/2026' },
+            { nom_groupe: '3B IIIA', id_filiere: filiereIIIA.id_filiere, niveau: '3ème année', effectif: 22, annee_scolaire: '2025/2026' },
+        ]) {
+            const [g] = await Groupe.findOrCreate({ where: { nom_groupe: d.nom_groupe }, defaults: d });
+            groupes.push(g);
         }
-        const groupeGI3A = groupes[0]; // Garder le premier pour les références
+        const groupe3A = groupes[0];
+        const groupe3B = groupes[1];
+        console.log(`✅ ${groupes.length} groupes`);
 
-        // 5. Créer des étudiants (plus d'étudiants pour chaque groupe)
-        const etudiantsData = [];
-        const prenoms = ['Sophie', 'Youssef', 'Laila', 'Omar', 'Amina', 'Mehdi', 'Fatima', 'Hassan', 'Nadia', 'Karim', 'Sara', 'Ahmed', 'Imane', 'Yassine', 'Salma'];
-        const noms = ['Martin', 'Benjelloun', 'Tazi', 'Bennani', 'Cherkaoui', 'Alaoui', 'Idrissi', 'El Fassi', 'Bensaid', 'Amrani', 'Lahlou', 'Bouazza', 'Tahiri', 'Mekouar', 'Bouhaddou'];
-        
-        let etudiantIndex = 1;
-        for (let i = 0; i < groupes.length; i++) {
-            const groupe = groupes[i];
-            const nombreEtudiants = Math.min(groupe.effectif, 10); // Limiter à 10 étudiants par groupe pour le seed
-            for (let j = 0; j < nombreEtudiants; j++) {
-                const prenom = prenoms[(etudiantIndex - 1) % prenoms.length];
-                const nom = noms[(etudiantIndex - 1) % noms.length];
-                etudiantsData.push({
-                    nom,
-                    prenom,
-                    email: `etudiant${etudiantIndex}@hestim.ma`,
-                    numero_etudiant: `ETU${String(etudiantIndex).padStart(3, '0')}`,
-                    id_groupe: groupe.id_groupe,
-                });
-                etudiantIndex++;
-            }
-        }
+        // ── 5. Étudiants ──────────────────────────────────────────────────────
+        const etudiantsRaw = [
+            // Groupe 3A IIIA (15 étudiants)
+            { nom: 'BENALI',      prenom: 'Aya',          email: 'aya.benali@hestim.ma',       num: 'ETU3A001', grp: groupe3A },
+            { nom: 'TAZI',        prenom: 'Hamza',        email: 'hamza.tazi@hestim.ma',       num: 'ETU3A002', grp: groupe3A },
+            { nom: 'CHERKAOUI',   prenom: 'Meryem',       email: 'meryem.cherkaoui@hestim.ma', num: 'ETU3A003', grp: groupe3A },
+            { nom: 'OUALI',       prenom: 'Yassine',      email: 'yassine.ouali@hestim.ma',    num: 'ETU3A004', grp: groupe3A },
+            { nom: 'HAJJI',       prenom: 'Salma',        email: 'salma.hajji@hestim.ma',      num: 'ETU3A005', grp: groupe3A },
+            { nom: 'IDRISSI',     prenom: 'Karim',        email: 'karim.idrissi@hestim.ma',    num: 'ETU3A006', grp: groupe3A },
+            { nom: 'ALAMI',       prenom: 'Zineb',        email: 'zineb.alami@hestim.ma',      num: 'ETU3A007', grp: groupe3A },
+            { nom: 'BENALI',      prenom: 'Omar',         email: 'omar.benali@hestim.ma',      num: 'ETU3A008', grp: groupe3A },
+            { nom: 'BENSAID',     prenom: 'Nora',         email: 'nora.bensaid@hestim.ma',     num: 'ETU3A009', grp: groupe3A },
+            { nom: 'ZAHIR',       prenom: 'Mehdi',        email: 'mehdi.zahir@hestim.ma',      num: 'ETU3A010', grp: groupe3A },
+            { nom: 'BOUKHRISS',   prenom: 'Fatima Zahra', email: 'fz.boukhriss@hestim.ma',     num: 'ETU3A011', grp: groupe3A },
+            { nom: 'TAHIRI',      prenom: 'Anas',         email: 'anas.tahiri@hestim.ma',      num: 'ETU3A012', grp: groupe3A },
+            { nom: 'MEKOUAR',     prenom: 'Rania',        email: 'rania.mekouar@hestim.ma',    num: 'ETU3A013', grp: groupe3A },
+            { nom: 'LACHGAR',     prenom: 'Ibrahim',      email: 'ibrahim.lachgar@hestim.ma',  num: 'ETU3A014', grp: groupe3A },
+            { nom: 'AMRANI',      prenom: 'Hana',         email: 'hana.amrani@hestim.ma',      num: 'ETU3A015', grp: groupe3A },
+            // Groupe 3B IIIA (12 étudiants)
+            { nom: 'BERRADA',     prenom: 'Khalid',       email: 'khalid.berrada@hestim.ma',   num: 'ETU3B001', grp: groupe3B },
+            { nom: 'KETTANI',     prenom: 'Lamia',        email: 'lamia.kettani@hestim.ma',    num: 'ETU3B002', grp: groupe3B },
+            { nom: 'FASSI',       prenom: 'Younes',       email: 'younes.fassi@hestim.ma',     num: 'ETU3B003', grp: groupe3B },
+            { nom: 'NACIRI',      prenom: 'Sara',         email: 'sara.naciri@hestim.ma',      num: 'ETU3B004', grp: groupe3B },
+            { nom: 'BENOMAR',     prenom: 'Amine',        email: 'amine.benomar@hestim.ma',    num: 'ETU3B005', grp: groupe3B },
+            { nom: 'DRISSI',      prenom: 'Ghita',        email: 'ghita.drissi@hestim.ma',     num: 'ETU3B006', grp: groupe3B },
+            { nom: 'ELFILALI',    prenom: 'Nabil',        email: 'nabil.elfilali@hestim.ma',   num: 'ETU3B007', grp: groupe3B },
+            { nom: 'ZOUHEIR',     prenom: 'Asmaa',        email: 'asmaa.zouheir@hestim.ma',    num: 'ETU3B008', grp: groupe3B },
+            { nom: 'BAKKALI',     prenom: 'Rachid',       email: 'rachid.bakkali@hestim.ma',   num: 'ETU3B009', grp: groupe3B },
+            { nom: 'BENALI',      prenom: 'Imane',        email: 'imane.benali3b@hestim.ma',   num: 'ETU3B010', grp: groupe3B },
+            { nom: 'AKJOUT',      prenom: 'Tariq',        email: 'tariq.akjout@hestim.ma',     num: 'ETU3B011', grp: groupe3B },
+            { nom: 'SEBTI',       prenom: 'Hajar',        email: 'hajar.sebti@hestim.ma',      num: 'ETU3B012', grp: groupe3B },
+        ];
 
         const etudiants = [];
-        for (const etudiantData of etudiantsData) {
-            const [etudiantUser, etudiantCreated] = await Users.findOrCreate({
-                where: { email: etudiantData.email },
-                defaults: {
-                    nom: etudiantData.nom,
-                    prenom: etudiantData.prenom,
-                    email: etudiantData.email,
-                    password_hash: defaultPassword,
-                    role: 'etudiant',
-                    telephone: '+212 6XX XXX XXX',
-                    actif: true,
-                },
+        for (const d of etudiantsRaw) {
+            const [user, created] = await Users.findOrCreate({
+                where: { email: d.email },
+                defaults: { nom: d.nom, prenom: d.prenom, email: d.email, password_hash: defaultPassword, role: 'etudiant', telephone: '+212 6XX XXX XXX', actif: true },
             });
-
-            if (etudiantCreated) {
-                const existingEtudiant = await Etudiant.findByPk(etudiantUser.id_user);
-                if (!existingEtudiant) {
-                    await Etudiant.create({
-                        id_user: etudiantUser.id_user,
-                        numero_etudiant: etudiantData.numero_etudiant,
-                        id_groupe: etudiantData.id_groupe,
-                        niveau: '3ème année',
-                    });
-                    // Créer l'appartenance au groupe
+            if (created) {
+                const exists = await Etudiant.findByPk(user.id_user);
+                if (!exists) {
+                    await Etudiant.create({ id_user: user.id_user, numero_etudiant: d.num, niveau: '3ème année' });
                     await Appartenir.findOrCreate({
-                        where: {
-                            id_user_etudiant: etudiantUser.id_user,
-                            id_groupe: etudiantData.id_groupe,
-                        },
-                        defaults: {
-                            id_user_etudiant: etudiantUser.id_user,
-                            id_groupe: etudiantData.id_groupe,
-                        },
+                        where: { id_user_etudiant: user.id_user, id_groupe: d.grp.id_groupe },
+                        defaults: { id_user_etudiant: user.id_user, id_groupe: d.grp.id_groupe },
                     });
                 }
-                console.log('✅ Étudiant créé:', etudiantUser.email);
-            } else {
-                console.log('ℹ️  Étudiant existe déjà:', etudiantUser.email);
             }
-            etudiants.push(etudiantUser);
+            etudiants.push(user);
         }
-        const etudiantUser = etudiants[0]; // Garder le premier pour les références
+        console.log(`✅ ${etudiants.length} étudiants`);
 
-        // 6. Créer des salles
-        const sallesData = [
-            { nom_salle: 'Salle A101', type_salle: 'Amphithéâtre', capacite: 100, batiment: 'A', etage: 1 },
-            { nom_salle: 'Salle A102', type_salle: 'Amphithéâtre', capacite: 80, batiment: 'A', etage: 1 },
-            { nom_salle: 'Salle A201', type_salle: 'Amphithéâtre', capacite: 120, batiment: 'A', etage: 2 },
-            { nom_salle: 'Salle B205', type_salle: 'Salle de cours', capacite: 30, batiment: 'B', etage: 2 },
-            { nom_salle: 'Salle B206', type_salle: 'Salle de cours', capacite: 35, batiment: 'B', etage: 2 },
-            { nom_salle: 'Salle B207', type_salle: 'Salle de cours', capacite: 32, batiment: 'B', etage: 2 },
-            { nom_salle: 'Salle B208', type_salle: 'Salle de cours', capacite: 28, batiment: 'B', etage: 2 },
-            { nom_salle: 'Labo Info 1', type_salle: 'Laboratoire', capacite: 25, batiment: 'C', etage: 1 },
-            { nom_salle: 'Labo Info 2', type_salle: 'Laboratoire', capacite: 25, batiment: 'C', etage: 1 },
-            { nom_salle: 'Labo Info 3', type_salle: 'Laboratoire', capacite: 30, batiment: 'C', etage: 1 },
-            { nom_salle: 'Salle C301', type_salle: 'Salle de cours', capacite: 40, batiment: 'C', etage: 3 },
-            { nom_salle: 'Salle C302', type_salle: 'Salle de cours', capacite: 38, batiment: 'C', etage: 3 },
-            { nom_salle: 'Salle C303', type_salle: 'Salle de cours', capacite: 35, batiment: 'C', etage: 3 },
-        ];
-
+        // ── 6. Salles (correspondant exactement au YAML) ──────────────────────
         const salles = [];
-        for (const salleData of sallesData) {
-            const [salle, created] = await Salle.findOrCreate({
-                where: { nom_salle: salleData.nom_salle },
-                defaults: {
-                    ...salleData,
-                    disponible: true,
-                },
-            });
-            salles.push(salle);
-            if (created) {
-                console.log('✅ Salle créée:', salle.nom_salle);
-            }
+        for (const d of [
+            { nom_salle: 'Etage 1 - Salle Info', type_salle: 'Laboratoire informatique', capacite: 35,  batiment: 'Principal', etage: 1 },
+            { nom_salle: 'Etage 3 - Amphi C',    type_salle: 'Amphithéâtre',             capacite: 80,  batiment: 'Principal', etage: 3 },
+            { nom_salle: 'Etage 4 - Amphi G',    type_salle: 'Amphithéâtre',             capacite: 120, batiment: 'Principal', etage: 4 },
+            { nom_salle: 'Distanciel',            type_salle: 'Distanciel',               capacite: 999, batiment: 'Virtuel',   etage: 0 },
+        ]) {
+            const [s] = await Salle.findOrCreate({ where: { nom_salle: d.nom_salle }, defaults: { ...d, disponible: true } });
+            salles.push(s);
         }
+        const [salleInfo, amphi3, amphi4, distanciel] = salles;
+        console.log(`✅ ${salles.length} salles`);
 
-        // 7. Créer des créneaux selon les horaires de l'école
-        // Matin : 09h00-10h45, pause, 11h00-12h30
-        // Après-midi : 13h30-17h00 (sauf vendredi : 14h00-17h30)
-        // Vendredi spécial : pause 11h00-11h15
-        const creneauxData = [
-            // Lundi
-            { jour_semaine: 'lundi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
-            { jour_semaine: 'lundi', heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90 },
-            { jour_semaine: 'lundi', heure_debut: '13:30', heure_fin: '15:00', duree_minutes: 90 },
-            { jour_semaine: 'lundi', heure_debut: '15:15', heure_fin: '17:00', duree_minutes: 105 },
-            // Mardi
-            { jour_semaine: 'mardi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
-            { jour_semaine: 'mardi', heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90 },
-            { jour_semaine: 'mardi', heure_debut: '13:30', heure_fin: '15:00', duree_minutes: 90 },
-            { jour_semaine: 'mardi', heure_debut: '15:15', heure_fin: '17:00', duree_minutes: 105 },
-            // Mercredi
-            { jour_semaine: 'mercredi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
-            { jour_semaine: 'mercredi', heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90 },
-            { jour_semaine: 'mercredi', heure_debut: '13:30', heure_fin: '15:00', duree_minutes: 90 },
-            { jour_semaine: 'mercredi', heure_debut: '15:15', heure_fin: '17:00', duree_minutes: 105 },
-            // Jeudi
-            { jour_semaine: 'jeudi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
-            { jour_semaine: 'jeudi', heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90 },
-            { jour_semaine: 'jeudi', heure_debut: '13:30', heure_fin: '15:00', duree_minutes: 90 },
-            { jour_semaine: 'jeudi', heure_debut: '15:15', heure_fin: '17:00', duree_minutes: 105 },
-            // Vendredi (horaires spéciaux)
-            { jour_semaine: 'vendredi', heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 },
-            { jour_semaine: 'vendredi', heure_debut: '11:15', heure_fin: '12:30', duree_minutes: 75 }, // Pause 11h00-11h15
-            { jour_semaine: 'vendredi', heure_debut: '14:00', heure_fin: '15:30', duree_minutes: 90 },
-            { jour_semaine: 'vendredi', heure_debut: '15:45', heure_fin: '17:30', duree_minutes: 105 },
+        // ── 7. Créneaux S1-S4 × 6 jours (correspondant au YAML time_slots) ───
+        const JOURS_6 = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+        const SLOTS_DEF = [
+            { heure_debut: '09:00', heure_fin: '10:45', duree_minutes: 105 }, // S1
+            { heure_debut: '11:00', heure_fin: '12:30', duree_minutes: 90  }, // S2
+            { heure_debut: '13:30', heure_fin: '15:15', duree_minutes: 105 }, // S3
+            { heure_debut: '15:30', heure_fin: '17:00', duree_minutes: 90  }, // S4
         ];
 
         const creneaux = [];
-        for (const creneauData of creneauxData) {
-            // Calculer la durée en minutes si non fournie
-            if (!creneauData.duree_minutes) {
-                const [debutH, debutM] = creneauData.heure_debut.split(':').map(Number);
-                const [finH, finM] = creneauData.heure_fin.split(':').map(Number);
-                const debutMinutes = debutH * 60 + debutM;
-                const finMinutes = finH * 60 + finM;
-                creneauData.duree_minutes = finMinutes - debutMinutes;
-            }
-
-            const [creneau, created] = await Creneau.findOrCreate({
-                where: {
-                    jour_semaine: creneauData.jour_semaine,
-                    heure_debut: creneauData.heure_debut,
-                    heure_fin: creneauData.heure_fin,
-                },
-                defaults: creneauData,
-            });
-            creneaux.push(creneau);
-            if (created) {
-                console.log('✅ Créneau créé:', creneau.jour_semaine, creneau.heure_debut);
+        for (const jour of JOURS_6) {
+            for (const slot of SLOTS_DEF) {
+                const [c] = await Creneau.findOrCreate({
+                    where: { jour_semaine: jour, heure_debut: slot.heure_debut, heure_fin: slot.heure_fin },
+                    defaults: { jour_semaine: jour, ...slot },
+                });
+                creneaux.push(c);
             }
         }
+        const getCreneau = (jour, debut) => creneaux.find(c => c.jour_semaine === jour && c.heure_debut === debut);
+        console.log(`✅ ${creneaux.length} créneaux (S1-S4 × 6 jours)`);
 
-        // 8. Créer des cours (plus de cours pour chaque niveau)
-        const coursData = [
-            // Cours pour 3ème année
-            {
-                code_cours: 'BD001',
-                nom_cours: 'Base de données',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '3ème année',
-                volume_horaire: 30,
-                type_cours: 'Cours magistral',
-                semestre: 'S5',
-            },
-            {
-                code_cours: 'DW002',
-                nom_cours: 'Développement Web',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '3ème année',
-                volume_horaire: 40,
-                type_cours: 'TP',
-                semestre: 'S5',
-            },
-            {
-                code_cours: 'ALG003',
-                nom_cours: 'Algorithmique',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '3ème année',
-                volume_horaire: 35,
-                type_cours: 'Cours magistral',
-                semestre: 'S5',
-            },
-            {
-                code_cours: 'RES004',
-                nom_cours: 'Réseaux',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '3ème année',
-                volume_horaire: 30,
-                type_cours: 'Cours magistral',
-                semestre: 'S5',
-            },
-            {
-                code_cours: 'POO005',
-                nom_cours: 'Programmation Orientée Objet',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '3ème année',
-                volume_horaire: 40,
-                type_cours: 'TP',
-                semestre: 'S5',
-            },
-            {
-                code_cours: 'WEB006',
-                nom_cours: 'Technologies Web Avancées',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '3ème année',
-                volume_horaire: 35,
-                type_cours: 'Cours magistral',
-                semestre: 'S5',
-            },
-            // Cours pour 4ème année
-            {
-                code_cours: 'SE005',
-                nom_cours: 'Systèmes d\'exploitation',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '4ème année',
-                volume_horaire: 35,
-                type_cours: 'Cours magistral',
-                semestre: 'S7',
-            },
-            {
-                code_cours: 'IA006',
-                nom_cours: 'Intelligence Artificielle',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '4ème année',
-                volume_horaire: 40,
-                type_cours: 'TP',
-                semestre: 'S7',
-            },
-            {
-                code_cours: 'SEC007',
-                nom_cours: 'Sécurité Informatique',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '4ème année',
-                volume_horaire: 30,
-                type_cours: 'Cours magistral',
-                semestre: 'S7',
-            },
-            {
-                code_cours: 'CLOUD008',
-                nom_cours: 'Cloud Computing',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '4ème année',
-                volume_horaire: 35,
-                type_cours: 'Cours magistral',
-                semestre: 'S7',
-            },
-            {
-                code_cours: 'BIGDATA009',
-                nom_cours: 'Big Data',
-                id_filiere: filiereGI.id_filiere,
-                niveau: '4ème année',
-                volume_horaire: 40,
-                type_cours: 'TP',
-                semestre: 'S7',
-            },
+        // ── 8. Cours S6 — 3A IIIA ─────────────────────────────────────────────
+        const coursRaw = [
+            { code: 'S6-ANNUM',  nom: 'Analyse numérique',                                  type: 'CM',     vh: 30, coef: 2 },
+            { code: 'S6-BENG',   nom: 'Business English',                                   type: 'TD',     vh: 20, coef: 1 },
+            { code: 'S6-RO',     nom: 'Recherche Opérationnelle',                            type: 'CM',     vh: 30, coef: 3 },
+            { code: 'S6-ALGP',   nom: 'Algorithmes efficaces de graphes avec Python',        type: 'TP',     vh: 30, coef: 2 },
+            { code: 'S6-DWFS',   nom: 'Développement Web Full-stack',                        type: 'TP',     vh: 40, coef: 3 },
+            { code: 'S6-RESINF', nom: 'Réseaux informatiques',                               type: 'CM',     vh: 30, coef: 2 },
+            { code: 'S6-FINI',   nom: "La finance pour l'ingénieur",                         type: 'CM',     vh: 20, coef: 1 },
+            { code: 'S6-PACTE',  nom: 'Projet PACTE',                                        type: 'Projet', vh: 40, coef: 4 },
+            { code: 'S6-RESIL',  nom: 'Développer sa résilience et son mindset positif',     type: 'TD',     vh: 20, coef: 1 },
+            { code: 'S6-ENT2',   nom: 'Entrepreneuriat 2 - Business Model',                  type: 'CM',     vh: 20, coef: 2 },
+            { code: 'S6-N8N',    nom: 'Atelier N8N',                                         type: 'TP',     vh: 20, coef: 1 },
+            { code: 'S6-CULT',   nom: 'Journée culturelle',                                  type: 'Autre',  vh:  8, coef: 0 },
         ];
 
         const cours = [];
-        for (const coursItem of coursData) {
-            const [coursItemCreated, created] = await Cours.findOrCreate({
-                where: { code_cours: coursItem.code_cours },
-                defaults: coursItem,
+        for (const d of coursRaw) {
+            const [c] = await Cours.findOrCreate({
+                where: { code_cours: d.code },
+                defaults: { code_cours: d.code, nom_cours: d.nom, id_filiere: filiereIIIA.id_filiere, niveau: '3ème année', volume_horaire: d.vh, type_cours: d.type, semestre: 'S6', coefficient: d.coef },
             });
-            cours.push(coursItemCreated);
-            if (created) {
-                console.log('✅ Cours créé:', coursItemCreated.nom_cours);
-            }
+            cours.push(c);
         }
+        const findCours = (code) => cours.find(c => c.code_cours === code);
+        console.log(`✅ ${cours.length} cours S6`);
 
-        // 9. Créer des disponibilités pour les enseignants pour le mois de février
-        // Définir les dates pour février (année en cours ou prochaine)
-        const yearForFebruary = new Date().getFullYear();
-        const februaryStart = new Date(yearForFebruary, 1, 1); // 1er février (mois 1 = février en JS)
-        const februaryEnd = new Date(yearForFebruary, 1, 28); // 28 février (gère les années bissextiles)
-        
-        // Si février est déjà passé cette année, utiliser février de l'année prochaine
-        const today = new Date();
-        if (februaryStart < today) {
-            februaryStart.setFullYear(yearForFebruary + 1);
-            februaryEnd.setFullYear(yearForFebruary + 1);
-        }
-        
-        const dateDebutFevrier = februaryStart.toISOString().split('T')[0];
-        const dateFinFevrier = februaryEnd.toISOString().split('T')[0];
-        
-        console.log(`📅 Création des disponibilités pour février ${februaryStart.getFullYear()}: ${dateDebutFevrier} au ${dateFinFevrier}`);
-        
-        // Créer des disponibilités pour tous les enseignants sur tous les créneaux pour février
-        const disponibilitesData = [];
-        for (const enseignant of enseignants) {
-            for (const creneau of creneaux) {
-                disponibilitesData.push({
-                    id_user_enseignant: enseignant.id_user,
-                    id_creneau: creneau.id_creneau,
-                    disponible: true,
-                    date_debut: dateDebutFevrier,
-                    date_fin: dateFinFevrier,
+        // ── 9. Disponibilités (tous enseignants × tous créneaux × W1-W4) ──────
+        const DISPO_START = '2026-03-30';
+        const DISPO_END   = '2026-04-25';
+        let dispoCount = 0;
+        for (const ens of enseignants) {
+            for (const cr of creneaux) {
+                const [, created] = await Disponibilite.findOrCreate({
+                    where: { id_user_enseignant: ens.user.id_user, id_creneau: cr.id_creneau, date_debut: DISPO_START, date_fin: DISPO_END },
+                    defaults: { id_user_enseignant: ens.user.id_user, id_creneau: cr.id_creneau, disponible: true, date_debut: DISPO_START, date_fin: DISPO_END },
                 });
+                if (created) dispoCount++;
             }
         }
-        
-        // Ajouter quelques indisponibilités pour rendre le test plus réaliste
-        // Enseignant indisponible le mercredi après-midi (créneau 10) pendant la deuxième semaine
-        const mercrediSemaine2 = new Date(februaryStart);
-        mercrediSemaine2.setDate(februaryStart.getDate() + 7 + 2); // Mercredi de la 2ème semaine
-        
-        // Trouver le créneau du mercredi après-midi (14:00-16:00)
-        const creneauMercrediApresMidi = creneaux.find(c => 
-            c.jour_semaine === 'mercredi' && 
-            c.heure_debut === '14:00' && 
-            c.heure_fin === '16:00'
-        );
-        
-        if (creneauMercrediApresMidi) {
-            disponibilitesData.push({
-                id_user_enseignant: enseignants[2].id_user, // Karim Bennani
-                id_creneau: creneauMercrediApresMidi.id_creneau,
-                disponible: false,
-                raison_indisponibilite: 'Formation',
-                date_debut: mercrediSemaine2.toISOString().split('T')[0],
-                date_fin: mercrediSemaine2.toISOString().split('T')[0], // Un seul jour
-            });
-        }
-        
-        // Enseignant indisponible le vendredi matin (créneau 14) pendant la troisième semaine
-        const vendrediSemaine3 = new Date(februaryStart);
-        vendrediSemaine3.setDate(februaryStart.getDate() + 14 + 4); // Vendredi de la 3ème semaine
-        
-        // Trouver le créneau du vendredi matin (08:00-10:00)
-        const creneauVendrediMatin = creneaux.find(c => 
-            c.jour_semaine === 'vendredi' && 
-            c.heure_debut === '08:00' && 
-            c.heure_fin === '10:00'
-        );
-        
-        if (creneauVendrediMatin) {
-            disponibilitesData.push({
-                id_user_enseignant: enseignants[5].id_user, // Fatima Lahlou
-                id_creneau: creneauVendrediMatin.id_creneau,
-                disponible: false,
-                raison_indisponibilite: 'Congé personnel',
-                date_debut: vendrediSemaine3.toISOString().split('T')[0],
-                date_fin: vendrediSemaine3.toISOString().split('T')[0], // Un seul jour
-            });
-        }
+        console.log(`✅ ${dispoCount} disponibilités (W1-W4)`);
 
-        for (const dispoData of disponibilitesData) {
-            const [dispo, created] = await Disponibilite.findOrCreate({
-                where: {
-                    id_user_enseignant: dispoData.id_user_enseignant,
-                    id_creneau: dispoData.id_creneau,
-                    date_debut: dispoData.date_debut,
-                    date_fin: dispoData.date_fin,
-                },
-                defaults: dispoData,
-            });
-            if (created) {
-                const enseignant = enseignants.find(e => e.id_user === dispo.id_user_enseignant);
-                const creneau = creneaux.find(c => c.id_creneau === dispo.id_creneau);
-                const status = dispo.disponible ? '✅ Disponible' : '❌ Indisponible';
-                if (dispo.disponible) {
-                    // Ne logger que les indisponibilités pour éviter trop de logs
-                } else {
-                    console.log(`${status} - ${enseignant?.prenom} ${enseignant?.nom}: ${creneau?.jour_semaine} ${creneau?.heure_debut}-${creneau?.heure_fin} (${dispo.date_debut} au ${dispo.date_fin})`);
-                }
-            }
-        }
-        
-        console.log(`\n✅ ${disponibilitesData.filter(d => d.disponible).length} disponibilités créées pour ${enseignants.length} enseignants sur ${creneaux.length} créneaux pour février ${februaryStart.getFullYear()}`);
-        console.log(`   ${disponibilitesData.filter(d => !d.disponible).length} indisponibilités ajoutées pour rendre les tests plus réalistes\n`);
-        
-        console.log(`\n✅ ${disponibilitesData.filter(d => d.disponible).length} disponibilités créées pour ${enseignants.length} enseignants sur ${creneaux.length} créneaux pour février ${februaryStart.getFullYear()}`);
-        console.log(`   ${disponibilitesData.filter(d => !d.disponible).length} indisponibilités ajoutées pour rendre les tests plus réalistes\n`);
+        // ── 10. Affectations — Planning W1-W4 (selon schéma YAML) ────────────
+        // Format: [date, cours_code, slot_debut, jour, ens_nom, salle, statut, commentaire]
+        const affSpec = [
+            // ── W1 : 2026-03-30 → 2026-04-04 ────────────────────────────────
+            // Lundi 30/03 : Analyse numérique (S1+S2) + Résilience DS (S3+S4)
+            ['2026-03-30', 'S6-ANNUM',  '09:00', 'lundi',    'BENNIS',      salleInfo,  'planifie', ''],
+            ['2026-03-30', 'S6-ANNUM',  '11:00', 'lundi',    'BENNIS',      salleInfo,  'planifie', ''],
+            ['2026-03-30', 'S6-RESIL',  '13:30', 'lundi',    'EL KARI',     amphi3,     'confirme', 'DS | Evaluation'],
+            ['2026-03-30', 'S6-RESIL',  '15:30', 'lundi',    'EL KARI',     amphi3,     'confirme', 'DS | Evaluation'],
+            // Mardi 31/03 : Dev Web (S1+S2) + Recherche Op (S3+S4)
+            ['2026-03-31', 'S6-DWFS',   '09:00', 'mardi',    'HAIDRAR',     salleInfo,  'planifie', ''],
+            ['2026-03-31', 'S6-DWFS',   '11:00', 'mardi',    'HAIDRAR',     salleInfo,  'planifie', ''],
+            ['2026-03-31', 'S6-RO',     '13:30', 'mardi',    'AYAD',        amphi4,     'planifie', ''],
+            ['2026-03-31', 'S6-RO',     '15:30', 'mardi',    'AYAD',        amphi4,     'planifie', ''],
+            // Mercredi 01/04 : Business English (S1+S2) + Algo graphes (S3+S4)
+            ['2026-04-01', 'S6-BENG',   '09:00', 'mercredi', 'MOUSTAKIM',   amphi3,     'planifie', ''],
+            ['2026-04-01', 'S6-BENG',   '11:00', 'mercredi', 'MOUSTAKIM',   amphi3,     'planifie', ''],
+            ['2026-04-01', 'S6-ALGP',   '13:30', 'mercredi', 'BOUBEKRAOUI', salleInfo,  'planifie', ''],
+            ['2026-04-01', 'S6-ALGP',   '15:30', 'mercredi', 'BOUBEKRAOUI', salleInfo,  'planifie', ''],
+            // Jeudi 02/04 : Réseaux (S1+S2) + Entrepreneuriat (S3+S4)
+            ['2026-04-02', 'S6-RESINF', '09:00', 'jeudi',    'KHIAT',       salleInfo,  'planifie', ''],
+            ['2026-04-02', 'S6-RESINF', '11:00', 'jeudi',    'KHIAT',       salleInfo,  'planifie', ''],
+            ['2026-04-02', 'S6-ENT2',   '13:30', 'jeudi',    'ELOTMANI',    amphi4,     'planifie', ''],
+            ['2026-04-02', 'S6-ENT2',   '15:30', 'jeudi',    'ELOTMANI',    amphi4,     'planifie', ''],
+            // Vendredi 03/04 : Projet PACTE (S1+S2+S3+S4)
+            ['2026-04-03', 'S6-PACTE',  '09:00', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-03', 'S6-PACTE',  '11:00', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-03', 'S6-PACTE',  '13:30', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-03', 'S6-PACTE',  '15:30', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            // Samedi 04/04 : Finance (S1+S2) + Atelier N8N (S3+S4)
+            ['2026-04-04', 'S6-FINI',   '09:00', 'samedi',   'EL KARI',     amphi3,     'planifie', ''],
+            ['2026-04-04', 'S6-FINI',   '11:00', 'samedi',   'EL KARI',     amphi3,     'planifie', ''],
+            ['2026-04-04', 'S6-N8N',    '13:30', 'samedi',   'BENIRZIK',    salleInfo,  'planifie', ''],
+            ['2026-04-04', 'S6-N8N',    '15:30', 'samedi',   'BENIRZIK',    salleInfo,  'planifie', ''],
 
-        // 10. Créer des affectations
-        const nextMonday = new Date(today);
-        const daysUntilMonday = (1 + 7 - nextMonday.getDay()) % 7;
-        nextMonday.setDate(today.getDate() + (daysUntilMonday || 7));
-        const nextTuesday = new Date(nextMonday);
-        nextTuesday.setDate(nextMonday.getDate() + 1);
-        const nextWednesday = new Date(nextMonday);
-        nextWednesday.setDate(nextMonday.getDate() + 2);
+            // ── W2 : 2026-04-06 → 2026-04-11 ────────────────────────────────
+            // Lundi 06/04 : Algo graphes (S1+S2) + Dev Web (S3+S4)
+            ['2026-04-06', 'S6-ALGP',   '09:00', 'lundi',    'BOUBEKRAOUI', salleInfo,  'planifie', ''],
+            ['2026-04-06', 'S6-ALGP',   '11:00', 'lundi',    'BOUBEKRAOUI', salleInfo,  'planifie', ''],
+            ['2026-04-06', 'S6-DWFS',   '13:30', 'lundi',    'HAIDRAR',     salleInfo,  'planifie', ''],
+            ['2026-04-06', 'S6-DWFS',   '15:30', 'lundi',    'HAIDRAR',     salleInfo,  'planifie', ''],
+            // Mardi 07/04 : Business English (S1+S2) + Entrepreneuriat (S3+S4)
+            ['2026-04-07', 'S6-BENG',   '09:00', 'mardi',    'MOUSTAKIM',   amphi3,     'planifie', ''],
+            ['2026-04-07', 'S6-BENG',   '11:00', 'mardi',    'MOUSTAKIM',   amphi3,     'planifie', ''],
+            ['2026-04-07', 'S6-ENT2',   '13:30', 'mardi',    'ELOTMANI',    amphi4,     'planifie', ''],
+            ['2026-04-07', 'S6-ENT2',   '15:30', 'mardi',    'ELOTMANI',    amphi4,     'planifie', ''],
+            // Mercredi 08/04 : Analyse numérique (S1+S2) + Recherche Op (S3+S4)
+            ['2026-04-08', 'S6-ANNUM',  '09:00', 'mercredi', 'BENNIS',      salleInfo,  'planifie', ''],
+            ['2026-04-08', 'S6-ANNUM',  '11:00', 'mercredi', 'BENNIS',      salleInfo,  'planifie', ''],
+            ['2026-04-08', 'S6-RO',     '13:30', 'mercredi', 'AYAD',        amphi4,     'planifie', ''],
+            ['2026-04-08', 'S6-RO',     '15:30', 'mercredi', 'AYAD',        amphi4,     'planifie', ''],
+            // Jeudi 09/04 : Réseaux Blended (S1+S2) + Finance (S3+S4)
+            ['2026-04-09', 'S6-RESINF', '09:00', 'jeudi',    'KHIAT',       distanciel, 'planifie', 'Blended | Distanciel'],
+            ['2026-04-09', 'S6-RESINF', '11:00', 'jeudi',    'KHIAT',       distanciel, 'planifie', 'Blended | Distanciel'],
+            ['2026-04-09', 'S6-FINI',   '13:30', 'jeudi',    'EL KARI',     amphi3,     'planifie', ''],
+            ['2026-04-09', 'S6-FINI',   '15:30', 'jeudi',    'EL KARI',     amphi3,     'planifie', ''],
+            // Vendredi 10/04 : Projet PACTE (S1+S2+S3+S4)
+            ['2026-04-10', 'S6-PACTE',  '09:00', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-10', 'S6-PACTE',  '11:00', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-10', 'S6-PACTE',  '13:30', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-10', 'S6-PACTE',  '15:30', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            // Samedi 11/04 : Atelier N8N (S1+S2) + Journée culturelle (S3+S4)
+            ['2026-04-11', 'S6-N8N',    '09:00', 'samedi',   'BENIRZIK',    salleInfo,  'planifie', ''],
+            ['2026-04-11', 'S6-N8N',    '11:00', 'samedi',   'BENIRZIK',    salleInfo,  'planifie', ''],
+            ['2026-04-11', 'S6-CULT',   '13:30', 'samedi',   null,           amphi4,     'planifie', 'Journée culturelle'],
+            ['2026-04-11', 'S6-CULT',   '15:30', 'samedi',   null,           amphi4,     'planifie', 'Journée culturelle'],
 
-        const affectationsData = [
-            {
-                date_seance: nextMonday.toISOString().split('T')[0],
-                statut: 'planifie',
-                id_cours: cours[0].id_cours,
-                id_groupe: groupeGI3A.id_groupe,
-                id_user_enseignant: enseignants[0].id_user,
-                id_salle: salles[0].id_salle,
-                id_creneau: creneaux[0].id_creneau,
-                id_user_admin: admin.id_user,
-                commentaire: 'Première séance du cours',
-            },
-            {
-                date_seance: nextTuesday.toISOString().split('T')[0],
-                statut: 'confirme',
-                id_cours: cours[1].id_cours,
-                id_groupe: groupeGI3A.id_groupe,
-                id_user_enseignant: enseignants[1].id_user,
-                id_salle: salles[2].id_salle,
-                id_creneau: creneaux[3].id_creneau,
-                id_user_admin: admin.id_user,
-            },
-            {
-                date_seance: nextWednesday.toISOString().split('T')[0],
-                statut: 'planifie',
-                id_cours: cours[2].id_cours,
-                id_groupe: groupes[1].id_groupe,
-                id_user_enseignant: enseignants[2].id_user,
-                id_salle: salles[4].id_salle,
-                id_creneau: creneaux[6].id_creneau,
-                id_user_admin: admin.id_user,
-            },
-            {
-                date_seance: nextMonday.toISOString().split('T')[0],
-                statut: 'planifie',
-                id_cours: cours[3].id_cours,
-                id_groupe: groupes[2].id_groupe,
-                id_user_enseignant: enseignants[3].id_user,
-                id_salle: salles[1].id_salle,
-                id_creneau: creneaux[1].id_creneau,
-                id_user_admin: admin.id_user,
-            },
+            // ── W3 : 2026-04-13 → 2026-04-18 ────────────────────────────────
+            // Lundi 13/04 : Analyse numérique (S1+S2) + Dev Web (S3+S4)
+            ['2026-04-13', 'S6-ANNUM',  '09:00', 'lundi',    'BENNIS',      salleInfo,  'planifie', ''],
+            ['2026-04-13', 'S6-ANNUM',  '11:00', 'lundi',    'BENNIS',      salleInfo,  'planifie', ''],
+            ['2026-04-13', 'S6-DWFS',   '13:30', 'lundi',    'HAIDRAR',     salleInfo,  'planifie', ''],
+            ['2026-04-13', 'S6-DWFS',   '15:30', 'lundi',    'HAIDRAR',     salleInfo,  'planifie', ''],
+            // Mardi 14/04 : Recherche Op DS (S1+S2) + Algo graphes (S3+S4)
+            ['2026-04-14', 'S6-RO',     '09:00', 'mardi',    'AYAD',        amphi4,     'confirme', 'DS | Evaluation'],
+            ['2026-04-14', 'S6-RO',     '11:00', 'mardi',    'AYAD',        amphi4,     'confirme', 'DS | Evaluation'],
+            ['2026-04-14', 'S6-ALGP',   '13:30', 'mardi',    'BOUBEKRAOUI', salleInfo,  'planifie', ''],
+            ['2026-04-14', 'S6-ALGP',   '15:30', 'mardi',    'BOUBEKRAOUI', salleInfo,  'planifie', ''],
+            // Mercredi 15/04 : Business English (S1+S2) + Réseaux (S3+S4)
+            ['2026-04-15', 'S6-BENG',   '09:00', 'mercredi', 'MOUSTAKIM',   amphi3,     'planifie', ''],
+            ['2026-04-15', 'S6-BENG',   '11:00', 'mercredi', 'MOUSTAKIM',   amphi3,     'planifie', ''],
+            ['2026-04-15', 'S6-RESINF', '13:30', 'mercredi', 'KHIAT',       salleInfo,  'planifie', ''],
+            ['2026-04-15', 'S6-RESINF', '15:30', 'mercredi', 'KHIAT',       salleInfo,  'planifie', ''],
+            // Jeudi 16/04 : Entrepreneuriat (S1+S2) + Finance (S3+S4)
+            ['2026-04-16', 'S6-ENT2',   '09:00', 'jeudi',    'ELOTMANI',    amphi4,     'planifie', ''],
+            ['2026-04-16', 'S6-ENT2',   '11:00', 'jeudi',    'ELOTMANI',    amphi4,     'planifie', ''],
+            ['2026-04-16', 'S6-FINI',   '13:30', 'jeudi',    'EL KARI',     amphi3,     'planifie', ''],
+            ['2026-04-16', 'S6-FINI',   '15:30', 'jeudi',    'EL KARI',     amphi3,     'planifie', ''],
+            // Vendredi 17/04 : Projet PACTE (S1+S2+S3+S4)
+            ['2026-04-17', 'S6-PACTE',  '09:00', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-17', 'S6-PACTE',  '11:00', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-17', 'S6-PACTE',  '13:30', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-17', 'S6-PACTE',  '15:30', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            // Samedi 18/04 : Atelier N8N (S1+S2)
+            ['2026-04-18', 'S6-N8N',    '09:00', 'samedi',   'BENIRZIK',    salleInfo,  'planifie', ''],
+            ['2026-04-18', 'S6-N8N',    '11:00', 'samedi',   'BENIRZIK',    salleInfo,  'planifie', ''],
+
+            // ── W4 : 2026-04-20 → 2026-04-25 ────────────────────────────────
+            // Lundi 20/04 : Business English DS (S1+S2) + Algo graphes DS (S3+S4)
+            ['2026-04-20', 'S6-BENG',   '09:00', 'lundi',    'MOUSTAKIM',   amphi3,     'confirme', 'DS | Evaluation'],
+            ['2026-04-20', 'S6-BENG',   '11:00', 'lundi',    'MOUSTAKIM',   amphi3,     'confirme', 'DS | Evaluation'],
+            ['2026-04-20', 'S6-ALGP',   '13:30', 'lundi',    'BOUBEKRAOUI', amphi4,     'confirme', 'DS | Evaluation'],
+            ['2026-04-20', 'S6-ALGP',   '15:30', 'lundi',    'BOUBEKRAOUI', amphi4,     'confirme', 'DS | Evaluation'],
+            // Mardi 21/04 : Dev Web (S1+S2) + Recherche Op Blended (S3+S4)
+            ['2026-04-21', 'S6-DWFS',   '09:00', 'mardi',    'HAIDRAR',     salleInfo,  'planifie', ''],
+            ['2026-04-21', 'S6-DWFS',   '11:00', 'mardi',    'HAIDRAR',     salleInfo,  'planifie', ''],
+            ['2026-04-21', 'S6-RO',     '13:30', 'mardi',    'AYAD',        distanciel, 'planifie', 'Blended | Distanciel'],
+            ['2026-04-21', 'S6-RO',     '15:30', 'mardi',    'AYAD',        distanciel, 'planifie', 'Blended | Distanciel'],
+            // Mercredi 22/04 : Réseaux DS (S1+S2) + Entrepreneuriat (S3+S4)
+            ['2026-04-22', 'S6-RESINF', '09:00', 'mercredi', 'KHIAT',       amphi4,     'confirme', 'DS | Evaluation'],
+            ['2026-04-22', 'S6-RESINF', '11:00', 'mercredi', 'KHIAT',       amphi4,     'confirme', 'DS | Evaluation'],
+            ['2026-04-22', 'S6-ENT2',   '13:30', 'mercredi', 'ELOTMANI',    amphi4,     'planifie', ''],
+            ['2026-04-22', 'S6-ENT2',   '15:30', 'mercredi', 'ELOTMANI',    amphi4,     'planifie', ''],
+            // Jeudi 23/04 : Analyse num Blended (S1+S2) + Finance DS (S3+S4)
+            ['2026-04-23', 'S6-ANNUM',  '09:00', 'jeudi',    'BENNIS',      distanciel, 'planifie', 'Blended | Distanciel'],
+            ['2026-04-23', 'S6-ANNUM',  '11:00', 'jeudi',    'BENNIS',      distanciel, 'planifie', 'Blended | Distanciel'],
+            ['2026-04-23', 'S6-FINI',   '13:30', 'jeudi',    'EL KARI',     amphi3,     'confirme', 'DS | Evaluation'],
+            ['2026-04-23', 'S6-FINI',   '15:30', 'jeudi',    'EL KARI',     amphi3,     'confirme', 'DS | Evaluation'],
+            // Vendredi 24/04 : Projet PACTE (S1+S2+S3+S4)
+            ['2026-04-24', 'S6-PACTE',  '09:00', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-24', 'S6-PACTE',  '11:00', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-24', 'S6-PACTE',  '13:30', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            ['2026-04-24', 'S6-PACTE',  '15:30', 'vendredi', 'HAIDRAR',     salleInfo,  'planifie', 'Projet'],
+            // Samedi 25/04 : Atelier N8N (S1+S2)
+            ['2026-04-25', 'S6-N8N',    '09:00', 'samedi',   'BENIRZIK',    salleInfo,  'planifie', ''],
+            ['2026-04-25', 'S6-N8N',    '11:00', 'samedi',   'BENIRZIK',    salleInfo,  'planifie', ''],
         ];
 
-        const affectations = [];
-        for (const affectationData of affectationsData) {
-            const [affectation, created] = await Affectation.findOrCreate({
-                where: {
-                    date_seance: affectationData.date_seance,
-                    id_cours: affectationData.id_cours,
-                    id_groupe: affectationData.id_groupe,
-                    id_creneau: affectationData.id_creneau,
-                },
-                defaults: affectationData,
-            });
-            affectations.push(affectation);
-            if (created) {
-                console.log('✅ Affectation créée pour le', affectation.date_seance);
+        let affCount = 0;
+        for (const [date, code, heure, jour, ensNom, salle, statut, commentaire] of affSpec) {
+            const coursObj = findCours(code);
+            const cr      = getCreneau(jour, heure);
+            const ensUser = ensNom ? findEns(ensNom) : null;
+            if (!coursObj || !cr) {
+                console.warn(`⚠️  Données manquantes pour ${code} ${jour} ${heure}`);
+                continue;
             }
+            const [, created] = await Affectation.findOrCreate({
+                where: { date_seance: date, id_cours: coursObj.id_cours, id_groupe: groupe3A.id_groupe, id_creneau: cr.id_creneau },
+                defaults: {
+                    date_seance: date,
+                    statut,
+                    id_cours: coursObj.id_cours,
+                    id_groupe: groupe3A.id_groupe,
+                    id_user_enseignant: ensUser?.id_user || admin.id_user,
+                    id_salle: salle.id_salle,
+                    id_creneau: cr.id_creneau,
+                    id_user_admin: admin.id_user,
+                    commentaire: commentaire || null,
+                },
+            });
+            if (created) affCount++;
         }
+        console.log(`✅ ${affCount} affectations créées (W1-W4)`);
 
-        // 11. Créer des demandes de report
-        const nouvelleDate = new Date(nextTuesday);
-        nouvelleDate.setDate(nextTuesday.getDate() + 3);
-
-        const demandesReportData = [
-            {
-                id_user_enseignant: enseignants[0].id_user,
-                id_affectation: affectations[0].id_affectation,
-                motif: 'Empêchement personnel',
-                nouvelle_date: nouvelleDate.toISOString().split('T')[0],
-                statut_demande: 'en_attente',
-            },
-            {
-                id_user_enseignant: enseignants[2].id_user,
-                id_affectation: affectations[2].id_affectation,
-                motif: 'Formation',
-                nouvelle_date: nouvelleDate.toISOString().split('T')[0],
-                statut_demande: 'en_attente',
-            },
+        // ── 11. Conflits (exemples réalistes) ────────────────────────────────
+        const conflitsRaw = [
+            { type_conflit: 'chevauchement_salle',       description: 'Salle Info réservée deux fois le 2026-04-01 à 13h30',              resolu: false },
+            { type_conflit: 'chevauchement_enseignant',  description: 'Mme EL KARI : 2 séances simultanées le 2026-04-23',                resolu: false },
+            { type_conflit: 'chevauchement_groupe',      description: 'Groupe 3A IIIA : 2 affectations au même créneau le 2026-04-09',    resolu: true  },
         ];
-
-        for (const demandeData of demandesReportData) {
-            const [demande, created] = await DemandeReport.findOrCreate({
-                where: {
-                    id_user_enseignant: demandeData.id_user_enseignant,
-                    id_affectation: demandeData.id_affectation,
-                },
-                defaults: demandeData,
+        for (const d of conflitsRaw) {
+            await Conflit.findOrCreate({
+                where: { description: d.description },
+                defaults: { ...d, date_detection: new Date(), date_resolution: d.resolu ? new Date() : null },
             });
-            if (created) {
-                console.log('✅ Demande de report créée');
-            }
+        }
+        console.log('✅ Conflits créés');
+
+        // ── 12. Demandes de report ────────────────────────────────────────────
+        const firstAff = await Affectation.findOne({ where: { id_user_enseignant: findEns('BENNIS')?.id_user } });
+        if (firstAff) {
+            await DemandeReport.findOrCreate({
+                where: { id_user_enseignant: findEns('BENNIS').id_user, id_affectation: firstAff.id_affectation },
+                defaults: {
+                    id_user_enseignant: findEns('BENNIS').id_user,
+                    id_affectation: firstAff.id_affectation,
+                    motif: 'Participation au jury de soutenance',
+                    nouvelle_date: '2026-04-06',
+                    statut_demande: 'en_attente',
+                },
+            });
+            console.log('✅ Demande de report créée');
         }
 
-        // 12. Créer des notifications de test
-        const notificationsData = [
-            {
-                id_user: enseignants[0].id_user,
-                titre: 'Bienvenue sur HESTIM Planner',
-                message: 'Votre compte a été créé avec succès. Vous pouvez maintenant consulter vos affectations.',
-                type_notification: 'success',
-                lue: false,
-            },
-            {
-                id_user: etudiants[0].id_user,
-                titre: 'Nouvelle affectation',
-                message: 'Une nouvelle séance a été planifiée pour votre groupe.',
-                type_notification: 'info',
-                lue: false,
-            },
-            {
-                id_user: admin.id_user,
-                titre: 'Système opérationnel',
-                message: 'Le système de gestion des emplois du temps est maintenant opérationnel.',
-                type_notification: 'info',
-                lue: true,
-            },
-        ];
+        // ── 13. Notifications ─────────────────────────────────────────────────
+        const notifsRaw = [
+            { id_user: admin.id_user,              titre: 'HESTIM Planner S6 opérationnel',   message: 'Le planning S6 2025-2026 est disponible.',                       type_notification: 'success', lue: true  },
+            { id_user: admin.id_user,              titre: 'Conflit détecté',                   message: 'Double réservation Salle Info le 01/04/2026 à 13h30.',           type_notification: 'warning', lue: false },
+            { id_user: findEns('BENNIS')?.id_user, titre: 'Planning disponible',               message: 'Votre emploi du temps S6 est consultable sur HESTIM Planner.',  type_notification: 'info',    lue: false },
+            { id_user: findEns('HAIDRAR')?.id_user,titre: 'Projet PACTE — rappel',             message: 'Les séances Projet PACTE sont planifiées chaque vendredi.',      type_notification: 'info',    lue: false },
+            { id_user: findEns('EL KARI')?.id_user,titre: 'DS planifiés',                      message: 'Vos séances DS (S6-RESIL et S6-FINI) sont confirmées.',         type_notification: 'success', lue: false },
+            { id_user: etudiants[0]?.id_user,      titre: 'Emploi du temps S6',                message: 'Consultez votre emploi du temps du semestre 6 sur Planner.',    type_notification: 'info',    lue: false },
+            { id_user: etudiants[1]?.id_user,      titre: 'DS Résilience — 30/03',             message: 'Devoir surveillé programmé le lundi 30/03 à 13h30 — Amphi C.',  type_notification: 'warning', lue: false },
+        ].filter(n => n.id_user);
 
-        for (const notifData of notificationsData) {
-            const [notif, created] = await Notification.findOrCreate({
-                where: {
-                    id_user: notifData.id_user,
-                    titre: notifData.titre,
-                },
-                defaults: notifData,
-            });
-            if (created) {
-                console.log('✅ Notification créée pour utilisateur:', notif.id_user);
-            }
+        for (const d of notifsRaw) {
+            await Notification.findOrCreate({ where: { id_user: d.id_user, titre: d.titre }, defaults: d });
         }
+        console.log(`✅ ${notifsRaw.length} notifications créées`);
 
-        console.log('\n🎉 Seed terminé avec succès !\n');
-        console.log('📋 Comptes de test créés :');
-        console.log('   👨‍💼 Admins:');
-        console.log('      Email: admin@hestim.ma / admin2@hestim.ma');
-        console.log('      Mot de passe: password123');
-        console.log('   👨‍🏫 Enseignants:');
-        console.log('      Emails:');
-        enseignants.forEach((ens, index) => {
-            console.log(`         ${index + 1}. ${ens.email} (${ens.prenom} ${ens.nom}) - ${ens.specialite || 'Informatique'}`);
-        });
-        console.log('      Mot de passe: password123');
-        console.log('   👨‍🎓 Étudiants:');
-        console.log('      Email: etudiant@hestim.ma / etudiant2@hestim.ma / etudiant3@hestim.ma / etudiant4@hestim.ma / etudiant5@hestim.ma');
-        console.log('      Mot de passe: password123');
+        // ── Résumé final ──────────────────────────────────────────────────────
+        console.log('\n🎉 Seed HESTIM-STENDHAL — 3A IIIA (S6) terminé !\n');
+        console.log('📋 Comptes de test :');
+        console.log('   👨‍💼 Admins      :  admin@hestim.ma  |  admin2@hestim.ma        (password123)');
+        console.log('   👨‍🏫 Enseignants :  d.bennis@hestim.ma  |  n.haidrar@hestim.ma  (password123)');
+        console.log('                    m.moustakim@hestim.ma  |  s.ayad@hestim.ma');
+        console.log('                    h.boubekraoui@hestim.ma  |  m.khiat@hestim.ma');
+        console.log('                    f.elkari@hestim.ma  |  s.elotmani@hestim.ma');
+        console.log('                    i.hanbali@hestim.ma  |  y.benirzik@hestim.ma');
+        console.log('   👨‍🎓 Étudiants  :  aya.benali@hestim.ma ... hamza.tazi@hestim.ma  (password123)');
         console.log('\n📊 Données créées :');
-        console.log(`   - ${filieres.length} filière(s)`);
-        console.log(`   - ${groupes.length} groupe(s)`);
-        console.log(`   - ${salles.length} salle(s)`);
-        console.log(`   - ${creneaux.length} créneau(x)`);
-        console.log(`   - ${enseignants.length} enseignant(s)`);
-        console.log(`   - ${cours.length} cours`);
-        console.log(`   - ${affectations.length} affectation(s)`);
-        console.log(`   - ${demandesReportData.length} demande(s) de report`);
-        console.log(`   - ${notificationsData.length} notification(s)`);
-        console.log('\n💡 Vous pouvez maintenant vous connecter avec ces identifiants !\n');
-
+        console.log(`   Filières     : ${filieres.length}   Groupes      : ${groupes.length}   Étudiants  : ${etudiants.length}`);
+        console.log(`   Enseignants  : ${enseignants.length}  Cours S6     : ${cours.length}   Salles     : ${salles.length}`);
+        console.log(`   Créneaux     : ${creneaux.length}  Affectations : ${affCount}   Semaines   : W1-W4`);
+        console.log(`   Période      : 2026-03-30 → 2026-04-25`);
         process.exit(0);
     } catch (error) {
         console.error('❌ Erreur lors du seed:', error);
@@ -722,6 +466,4 @@ async function seed() {
     }
 }
 
-// Exécuter le seed
 seed();
-

@@ -543,7 +543,7 @@ export const getKPIs = asyncHandler(async (req, res) => {
         }),
         Salle.count({ where: { disponible: true } }),
         Conflit.count(),
-        Conflit.count({ where: { statut: { [Op.ne]: "resolu" } } }),
+        Conflit.count({ where: { resolu: false } }),
         Filiere.findAll(),
         Groupe.findAll(),
     ]);

@@ -21,6 +21,25 @@ router.get("/", async (req, res) => {
     }
 });
 
+// 🔍 Récupérer les conflits non résolus (route spécifique AVANT /:id)
+router.get("/non-resolus/liste", async (req, res) => {
+    try {
+        const conflits = await Conflit.findAll({
+            where: { resolu: false },
+            include: [
+                {
+                    model: Affectation,
+                    as: "affectations",
+                    through: { attributes: [] },
+                },
+            ],
+        });
+        res.json(conflits);
+    } catch (error) {
+        res.status(500).json({ message: "Erreur de récupération des conflits non résolus", error: error.message });
+    }
+});
+
 // 🔍 Récupérer un conflit par ID
 router.get("/:id", async (req, res) => {
     try {
@@ -127,25 +146,6 @@ router.delete("/:id_conflit/affectation/:id_affectation", async (req, res) => {
         res.json({ message: "Association supprimée avec succès" });
     } catch (error) {
         res.status(500).json({ message: "Erreur lors de la dissociation", error: error.message });
-    }
-});
-
-// 🔍 Récupérer les conflits non résolus
-router.get("/non-resolus/liste", async (req, res) => {
-    try {
-        const conflits = await Conflit.findAll({
-            where: { resolu: false },
-            include: [
-                {
-                    model: Affectation,
-                    as: "affectations",
-                    through: { attributes: [] },
-                },
-            ],
-        });
-        res.json(conflits);
-    } catch (error) {
-        res.status(500).json({ message: "Erreur de récupération des conflits non résolus", error: error.message });
     }
 });
 

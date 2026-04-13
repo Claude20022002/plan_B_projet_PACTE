@@ -14,7 +14,7 @@ import { ArrowBack, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, groupeAPI, enseignantAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import { exportToExcel, exportToPDF, exportToCSV, exportToiCal } from '../../utils/exportEmploiDuTemps';
+import { exportToExcel, exportToPDF, exportToCSV, exportToiCal, exportToYAML } from '../../utils/exportEmploiDuTemps';
 import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetable';
 
 export default function EmploiDuTempsAdmin() {
@@ -193,6 +193,14 @@ export default function EmploiDuTempsAdmin() {
                         }}
                     >
                         Télécharger en iCal (.ics)
+                    </MenuItem>
+                    <MenuItem
+                        onClick={() => {
+                            exportToYAML(affectationsData, 'emploi-du-temps-admin', { etablissement: 'HESTIM-STENDHAL' });
+                            setExportMenuAnchor(null);
+                        }}
+                    >
+                        Télécharger en YAML (weekly_blocks)
                     </MenuItem>
                 </Menu>
 

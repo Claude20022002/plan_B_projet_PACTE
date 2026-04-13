@@ -1,0 +1,186 @@
+type: timetable
+version: 1.0
+format: weekly_blocks
+
+meta:
+    annee_universitaire: "2025/2026"
+    filiere: "3A IIIA (S6)"
+    etablissement: "HESTIM-STENDHAL"
+
+structure:
+    slot_count_per_day: 4
+    days_per_week: 6
+
+time_slots:
+    - id: S1
+      range: "09:00-10:45"
+    - id: S2
+      range: "11:00-12:30"
+    - id: S3
+      range: "13:30-15:15"
+    - id: S4
+      range: "15:30-17:00"
+
+jours: [lundi, mardi, mercredi, jeudi, vendredi, samedi]
+
+semaines:
+    - id: W1
+      range: "2026-03-30 → 2026-04-04"
+    - id: W2
+      range: "2026-04-06 → 2026-04-11"
+    - id: W3
+      range: "2026-04-13 → 2026-04-18"
+    - id: W4
+      range: "2026-04-20 → 2026-04-25"
+
+matieres:
+    - Analyse numérique
+    - Business English
+    - Recherche Opérationnelle
+    - Algorithmes efficaces de graphes avec Python
+    - Développement Web Full-stack
+    - Réseaux informatiques
+    - La finance pour l’ingénieur
+    - Projet PACTE
+    - Développer sa résilience et son mindset positif
+    - Entrepreneuriat 2 - Business Model
+    - Atelier N8N
+    - Journée culturelle
+
+enseignants:
+    Analyse numérique: "M.D.BENNIS"
+    Business English: "M.MOUSTAKIM"
+    Recherche Opérationnelle: "Mme AYAD"
+    Algorithmes efficaces de graphes avec Python: "Mme BOUBEKRAOUI"
+    Développement Web Full-stack: "Mme HAIDRAR / Mme HANBALI"
+    Réseaux informatiques: "M.KHIAT"
+    La finance pour l’ingénieur: "Mme EL KARI"
+    Développer sa résilience et son mindset positif: "Mme EL KARI"
+    Projet PACTE: "Mme HAIDRAR / Mme HANBALI"
+    Entrepreneuriat 2 - Business Model: "Mme ELOTMANI"
+    Atelier N8N: "M.BENIRZIK"
+    Journée culturelle: "N/A"
+
+salles:
+    - "Etage 1 - Salle Info"
+    - "Etage 3 - Amphi C"
+    - "Etage 4 - Amphi G"
+    - "Distanciel"
+
+flags:
+    - DS
+    - PS
+    - Evaluation
+    - Distanciel
+    - Blended
+    - Projet
+    - Autonomie
+
+rules:
+    - every_day_has_4_slots: true
+    - allow_empty_slots: true
+    - allow_double_slots: true
+    - allow_groups: true
+    - friday_special_hours: true
+
+cell_schema:
+    subject: string
+    teacher: string
+    room: string
+    flags: optional[list]
+    group: optional[string]
+
+planning:
+    W1:
+        lundi:
+            S1:
+                {
+                    subject: "Analyse numérique",
+                    teacher: "M.D.BENNIS",
+                    room: "Etage 1 - Salle Info",
+                }
+            S2:
+                {
+                    subject: "Analyse numérique",
+                    teacher: "M.D.BENNIS",
+                    room: "Etage 1 - Salle Info",
+                }
+            S3:
+                {
+                    subject: "Développer sa résilience et son mindset positif",
+                    teacher: "Mme EL KARI",
+                    room: "Etage 3 - Amphi C",
+                    flags: [DS, Evaluation],
+                }
+            S4:
+                {
+                    subject: "Développer sa résilience et son mindset positif",
+                    teacher: "Mme EL KARI",
+                    room: "Etage 3 - Amphi C",
+                    flags: [DS, Evaluation],
+                }
+
+    W2:
+        jeudi:
+            S1:
+                {
+                    subject: "Réseaux informatiques",
+                    teacher: "M.KHIAT",
+                    room: "Distanciel",
+                    flags: [Blended],
+                }
+            S2:
+                {
+                    subject: "Réseaux informatiques",
+                    teacher: "M.KHIAT",
+                    room: "Distanciel",
+                    flags: [Blended],
+                }
+
+    W3:
+        lundi:
+            S1:
+                {
+                    subject: "Analyse numérique",
+                    teacher: "M.D.BENNIS",
+                    room: "Etage 1 - Salle Info",
+                }
+            S2:
+                {
+                    subject: "Analyse numérique",
+                    teacher: "M.D.BENNIS",
+                    room: "Etage 1 - Salle Info",
+                }
+            S3: { subject: "", teacher: "", room: "" }
+            S4: { subject: "", teacher: "", room: "" }
+
+    W4:
+        jeudi:
+            S1:
+                {
+                    subject: "Analyse numérique",
+                    teacher: "M.D.BENNIS",
+                    room: "Distanciel",
+                    flags: [Blended],
+                }
+            S2:
+                {
+                    subject: "Analyse numérique",
+                    teacher: "M.D.BENNIS",
+                    room: "Distanciel",
+                    flags: [Blended],
+                }
+            S3:
+                {
+                    subject: "La finance pour l’ingénieur",
+                    teacher: "Mme EL KARI",
+                    room: "Etage 3 - Amphi C",
+                    flags: [DS, Evaluation],
+                }
+            S4:
+                {
+                    subject: "La finance pour l’ingénieur",
+                    teacher: "Mme EL KARI",
+                    room: "Etage 3 - Amphi C",
+                    flags: [DS, Evaluation],
+                }

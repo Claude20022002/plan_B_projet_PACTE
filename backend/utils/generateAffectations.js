@@ -331,11 +331,13 @@ const trouverEnseignantDisponible = (
 
 /**
  * Trouve une salle disponible pour un groupe
+ * Alterne entre Amphi (CM) et Salle Info (TP/TD) selon le type de cours
  * @param {Number} effectifGroupe - Effectif du groupe
  * @param {Number} idCreneau - ID du créneau
  * @param {String} date - Date (format YYYY-MM-DD)
  * @param {Array} salles - Liste des salles
  * @param {Array} affectationsExistantes - Affectations déjà créées
+ * @param {String|null} typeCours - Type du cours pour choisir le type de salle
  * @returns {Object|null} Salle disponible ou null
  */
 const trouverSalleDisponible = (
@@ -343,22 +345,34 @@ const trouverSalleDisponible = (
     idCreneau,
     date,
     salles,
-    affectationsExistantes
+    affectationsExistantes,
+    typeCours = null
 ) => {
-    // Trier les salles par capacité (plus petite salle qui peut accueillir le groupe)
+    const type = (typeCours || '').toLowerCase();
+    const preferAmphi    = ['cm', 'cours magistral'].includes(type);
+    const preferSalleInfo = ['tp', 'td', 'travaux pratiques', 'travaux dirigés'].includes(type);
+
+    // Trier : plus petite salle adaptée, en priorisant le type de salle voulu
     const sallesTriees = [...salles]
         .filter((s) => s.disponible && s.capacite >= effectifGroupe)
-        .sort((a, b) => a.capacite - b.capacite);
+        .sort((a, b) => {
+            const aIsAmphi = (a.nom_salle || '').toLowerCase().includes('amphi');
+            const bIsAmphi = (b.nom_salle || '').toLowerCase().includes('amphi');
+            const aIsInfo  = (a.nom_salle || '').toLowerCase().includes('info');
+            const bIsInfo  = (b.nom_salle || '').toLowerCase().includes('info');
+
+            if (preferAmphi) {
+                if (aIsAmphi && !bIsAmphi) return -1;
+                if (!aIsAmphi && bIsAmphi) return 1;
+            } else if (preferSalleInfo) {
+                if (aIsInfo && !bIsInfo) return -1;
+                if (!aIsInfo && bIsInfo) return 1;
+            }
+            return a.capacite - b.capacite;
+        });
 
     for (const salle of sallesTriees) {
-        if (
-            estSalleDisponible(
-                salle.id_salle,
-                idCreneau,
-                date,
-                affectationsExistantes
-            )
-        ) {
+        if (estSalleDisponible(salle.id_salle, idCreneau, date, affectationsExistantes)) {
             return salle;
         }
     }
@@ -558,6 +572,7 @@ export const genererAffectationsAutomatiques = async (params) => {
             const heuresParJourGroupe = {};
             const heuresParJourCours = {};
             let dernierCoursPlanifie = null;
+            let dernierSlotDate = null;
             let roundRobinIndex = 0;
 
             for (const slot of slotsChronologiques) {
@@ -611,9 +626,21 @@ export const genererAffectationsAutomatiques = async (params) => {
                     return resteApresSlot >= -0.01 || autoriserDernierPetitReste;
                 });
 
+                // Préférer le double créneau consécutif (même cours sur le même jour)
+                // Sinon, alterner les cours pour une distribution équilibrée
+                const memeJourQueAvant = dernierSlotDate === slot.date;
                 candidats.sort((a, b) => {
-                    if (a.coursItem.id_cours === dernierCoursPlanifie && b.coursItem.id_cours !== dernierCoursPlanifie) return 1;
-                    if (b.coursItem.id_cours === dernierCoursPlanifie && a.coursItem.id_cours !== dernierCoursPlanifie) return -1;
+                    const aIsLast = a.coursItem.id_cours === dernierCoursPlanifie;
+                    const bIsLast = b.coursItem.id_cours === dernierCoursPlanifie;
+                    if (memeJourQueAvant) {
+                        // Même jour → favoriser le même cours (double slot consécutif)
+                        if (aIsLast && !bIsLast) return -1;
+                        if (!aIsLast && bIsLast) return 1;
+                    } else {
+                        // Jour différent → alterner pour équilibrer
+                        if (aIsLast && !bIsLast) return 1;
+                        if (!aIsLast && bIsLast) return -1;
+                    }
                     return b.heuresRestantes - a.heuresRestantes;
                 });
 
@@ -639,7 +666,8 @@ export const genererAffectationsAutomatiques = async (params) => {
                         slot.id_creneau,
                         slot.date,
                         salles,
-                        affectationsExistantes
+                        affectationsExistantes,
+                        coursItem.type_cours
                     );
 
                     if (!salle) {
@@ -697,6 +725,7 @@ export const genererAffectationsAutomatiques = async (params) => {
 
                         resultat.statistiques.totalSeancesPlanifiees++;
                         dernierCoursPlanifie = coursItem.id_cours;
+                        dernierSlotDate = slot.date;
                         roundRobinIndex =
                             ((indexParCours.get(coursItem.id_cours) || 0) + 1) % etatCours.length;
                         slotPlanifie = true;

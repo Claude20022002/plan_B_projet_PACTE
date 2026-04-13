@@ -14,6 +14,118 @@ const TYPE_COLORS = {
 const JOURS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const JOURS_LABELS = { lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Jeudi', vendredi: 'Vendredi', samedi: 'Samedi' };
 
+// ── Schéma YAML weekly_blocks ──────────────────────────────────────────────
+const TIME_SLOTS = [
+    { id: 'S1', range: '09:00-10:45', debut: '09:00', fin: '10:45' },
+    { id: 'S2', range: '11:00-12:30', debut: '11:00', fin: '12:30' },
+    { id: 'S3', range: '13:30-15:15', debut: '13:30', fin: '15:15' },
+    { id: 'S4', range: '15:30-17:00', debut: '15:30', fin: '17:00' },
+];
+
+const FLAG_COLORS = {
+    DS:         [198,  40,  40],
+    PS:         [255, 152,   0],
+    Evaluation: [198,  40,  40],
+    Distanciel: [ 33, 150, 243],
+    Blended:    [ 33, 150, 243],
+    Projet:     [232, 160,  32],
+    Autonomie:  [ 76, 175,  80],
+};
+
+/**
+ * Détecte les flags d'une affectation selon le schéma YAML
+ */
+function detectFlags(aff) {
+    const flags = new Set();
+    const type = (aff.cours?.type_cours || '').toLowerCase();
+    const nom  = (aff.cours?.nom_cours   || '').toLowerCase();
+    const salle = (aff.salle?.nom_salle  || '').toLowerCase();
+    const commentaire = (aff.commentaire || '').toLowerCase();
+
+    if (type === 'examen' || type === 'ds' || nom.includes('devoir surveillé') || nom.includes('contrôle') || commentaire.includes('ds ')) {
+        flags.add('DS');
+        flags.add('Evaluation');
+    }
+    if (salle.includes('distanciel')) {
+        flags.add('Distanciel');
+        flags.add('Blended');
+    }
+    if (type.includes('projet') || nom.includes('projet')) {
+        flags.add('Projet');
+    }
+    if (commentaire.includes('autonomie')) {
+        flags.add('Autonomie');
+    }
+    if (commentaire.includes('partiel') || commentaire.includes('ps ')) {
+        flags.add('PS');
+    }
+    return [...flags];
+}
+
+/**
+ * Retourne le label de slot (S1-S4) correspondant à une heure de début
+ */
+function getSlotLabel(heureDebut) {
+    const h = (heureDebut || '').substring(0, 5);
+    const slot = TIME_SLOTS.find(s => s.debut === h);
+    return slot ? slot.id : null;
+}
+
+/**
+ * Groupe les affectations par semaines (W1, W2...) puis jour puis slot
+ */
+function buildWeeklyBlocks(affectations) {
+    if (!affectations || affectations.length === 0) return { semaines: [], blocks: {} };
+
+    const dates = [...new Set(affectations.map(a => a.date_seance))].filter(Boolean).sort();
+
+    // Détecter les semaines (lundi→samedi)
+    const semainesMap = {};
+    dates.forEach(dateStr => {
+        const d = new Date(dateStr);
+        const day = d.getDay();
+        const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+        const monday = new Date(d);
+        monday.setDate(diff);
+        const saturday = new Date(monday);
+        saturday.setDate(monday.getDate() + 5);
+        const key = monday.toISOString().split('T')[0];
+        if (!semainesMap[key]) {
+            semainesMap[key] = { debut: key, fin: saturday.toISOString().split('T')[0] };
+        }
+    });
+
+    const semaines = Object.values(semainesMap)
+        .sort((a, b) => a.debut.localeCompare(b.debut))
+        .map((s, i) => ({ id: `W${i + 1}`, ...s }));
+
+    // Construire les blocs vides
+    const blocks = {};
+    semaines.forEach(sem => {
+        blocks[sem.id] = {};
+        JOURS.forEach(jour => {
+            blocks[sem.id][jour] = {};
+            TIME_SLOTS.forEach(slot => { blocks[sem.id][jour][slot.id] = null; });
+        });
+    });
+
+    // Remplir avec les affectations
+    const JOUR_MAP = { 1: 'lundi', 2: 'mardi', 3: 'mercredi', 4: 'jeudi', 5: 'vendredi', 6: 'samedi' };
+    affectations.forEach(aff => {
+        const date = aff.date_seance;
+        const sem = semaines.find(s => date >= s.debut && date <= s.fin);
+        if (!sem) return;
+        const d = new Date(date);
+        const jour = JOUR_MAP[d.getDay()];
+        if (!jour) return;
+        const slotId = getSlotLabel(aff.creneau?.heure_debut);
+        if (!slotId) return;
+        if (!blocks[sem.id][jour][slotId]) blocks[sem.id][jour][slotId] = aff;
+    });
+
+    return { semaines, blocks };
+}
+
 /**
  * Obtient la couleur RGB selon le type de cours
  */
@@ -227,7 +339,7 @@ export const exportToPDF = async (affectations, filename = 'emploi-du-temps', ti
                 const rowY = startY + ri * rowHeight;
                 const isAlternate = ri % 2 === 1;
 
-                // Colonne horaire
+                // Colonne horaire — avec label S1/S2/S3/S4
                 doc.setFillColor(isAlternate ? 240 : 248, isAlternate ? 244 : 250, isAlternate ? 255 : 255);
                 doc.rect(14, rowY, colTimeWidth, rowHeight, 'F');
                 doc.setDrawColor(200, 210, 230);
@@ -236,9 +348,12 @@ export const exportToPDF = async (affectations, filename = 'emploi-du-temps', ti
                 doc.setTextColor(40, 40, 100);
                 doc.setFont('helvetica', 'bold');
                 doc.setFontSize(7);
-                doc.text(creneau.debut, 14 + colTimeWidth / 2, rowY + rowHeight / 2 - 1, { align: 'center' });
+                const slotLabel = getSlotLabel(creneau.debut) || '';
+                doc.text(slotLabel ? `${slotLabel}` : creneau.debut, 14 + colTimeWidth / 2, rowY + rowHeight / 2 - 3, { align: 'center' });
                 doc.setFont('helvetica', 'normal');
-                doc.text(creneau.fin, 14 + colTimeWidth / 2, rowY + rowHeight / 2 + 3, { align: 'center' });
+                doc.setFontSize(6);
+                doc.text(creneau.debut, 14 + colTimeWidth / 2, rowY + rowHeight / 2 + 1, { align: 'center' });
+                doc.text(creneau.fin, 14 + colTimeWidth / 2, rowY + rowHeight / 2 + 4.5, { align: 'center' });
 
                 // Colonnes de jours
                 joursActifs.forEach((jour, ci) => {
@@ -310,6 +425,24 @@ export const exportToPDF = async (affectations, filename = 'emploi-du-temps', ti
                             doc.setFontSize(4.5);
                             doc.setFont('helvetica', 'bold');
                             doc.text(aff.cours.type_cours.substring(0, 4).toUpperCase(), cellX + colWidth - padding - badgeW / 2, rowY + padding + 2.8, { align: 'center' });
+                        }
+
+                        // Badges flags (DS, Blended, Projet...)
+                        const flags = detectFlags(aff);
+                        if (flags.length > 0 && rowHeight > 10) {
+                            let flagX = cellX + padding + 4;
+                            const flagY = rowY + rowHeight - padding - 4;
+                            flags.slice(0, 3).forEach(flag => {
+                                const [fr, fg, fb] = FLAG_COLORS[flag] || [90, 90, 90];
+                                const flagW = doc.getTextWidth(flag) * 0.55 + 3;
+                                doc.setFillColor(fr, fg, fb);
+                                doc.roundedRect(flagX, flagY, flagW, 3.5, 0.8, 0.8, 'F');
+                                doc.setTextColor(255, 255, 255);
+                                doc.setFontSize(4);
+                                doc.setFont('helvetica', 'bold');
+                                doc.text(flag, flagX + flagW / 2, flagY + 2.5, { align: 'center' });
+                                flagX += flagW + 1.5;
+                            });
                         }
 
                         // Plusieurs affectations au même créneau
@@ -513,6 +646,130 @@ export const exportToCSV = (affectations, filename = 'emploi-du-temps') => {
     const a = document.createElement('a');
     a.href = url;
     a.download = `${filename}.csv`;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+};
+
+/**
+ * Exporte l'emploi du temps en format YAML (weekly_blocks schema)
+ * @param {Array} affectations
+ * @param {String} filename
+ * @param {Object} meta - { annee_universitaire, filiere, etablissement }
+ */
+export const exportToYAML = (affectations, filename = 'emploi-du-temps', meta = {}) => {
+    const { semaines, blocks } = buildWeeklyBlocks(affectations);
+
+    const matieres = [...new Set(affectations.map(a => a.cours?.nom_cours).filter(Boolean))];
+    const enseignantsMap = {};
+    const sallesSet = new Set();
+    affectations.forEach(a => {
+        const mat = a.cours?.nom_cours;
+        if (mat && a.enseignant) {
+            enseignantsMap[mat] = `${a.enseignant.prenom || ''} ${a.enseignant.nom || ''}`.trim();
+        }
+        if (a.salle?.nom_salle) sallesSet.add(a.salle.nom_salle);
+    });
+    const salles = [...sallesSet];
+
+    const indent = (n) => '    '.repeat(n);
+    const lines = [];
+
+    lines.push('type: timetable');
+    lines.push('version: 1.0');
+    lines.push('format: weekly_blocks');
+    lines.push('');
+    lines.push('meta:');
+    lines.push(`${indent(1)}annee_universitaire: "${meta.annee_universitaire || ''}"`);
+    lines.push(`${indent(1)}filiere: "${meta.filiere || ''}"`);
+    lines.push(`${indent(1)}etablissement: "${meta.etablissement || 'HESTIM-STENDHAL'}"`);
+    lines.push('');
+    lines.push('structure:');
+    lines.push(`${indent(1)}slot_count_per_day: 4`);
+    lines.push(`${indent(1)}days_per_week: 6`);
+    lines.push('');
+    lines.push('time_slots:');
+    TIME_SLOTS.forEach(s => {
+        lines.push(`${indent(1)}- id: ${s.id}`);
+        lines.push(`${indent(2)}range: "${s.range}"`);
+    });
+    lines.push('');
+    lines.push('jours: [lundi, mardi, mercredi, jeudi, vendredi, samedi]');
+    lines.push('');
+    lines.push('semaines:');
+    semaines.forEach(s => {
+        lines.push(`${indent(1)}- id: ${s.id}`);
+        lines.push(`${indent(2)}range: "${s.debut} → ${s.fin}"`);
+    });
+    lines.push('');
+    lines.push('matieres:');
+    matieres.forEach(m => lines.push(`${indent(1)}- ${m}`));
+    lines.push('');
+    lines.push('enseignants:');
+    Object.entries(enseignantsMap).forEach(([mat, ens]) => {
+        lines.push(`${indent(1)}${mat}: "${ens}"`);
+    });
+    lines.push('');
+    lines.push('salles:');
+    salles.forEach(s => lines.push(`${indent(1)}- "${s}"`));
+    lines.push('');
+    lines.push('flags:');
+    ['DS', 'PS', 'Evaluation', 'Distanciel', 'Blended', 'Projet', 'Autonomie'].forEach(f => {
+        lines.push(`${indent(1)}- ${f}`);
+    });
+    lines.push('');
+    lines.push('rules:');
+    lines.push(`${indent(1)}- every_day_has_4_slots: true`);
+    lines.push(`${indent(1)}- allow_empty_slots: true`);
+    lines.push(`${indent(1)}- allow_double_slots: true`);
+    lines.push(`${indent(1)}- allow_groups: true`);
+    lines.push('');
+    lines.push('cell_schema:');
+    lines.push(`${indent(1)}subject: string`);
+    lines.push(`${indent(1)}teacher: string`);
+    lines.push(`${indent(1)}room: string`);
+    lines.push(`${indent(1)}flags: optional[list]`);
+    lines.push(`${indent(1)}group: optional[string]`);
+    lines.push('');
+    lines.push('planning:');
+
+    semaines.forEach(sem => {
+        lines.push(`${indent(1)}${sem.id}:`);
+        JOURS.forEach(jour => {
+            const jourData = blocks[sem.id]?.[jour];
+            if (!jourData) return;
+            const hasContent = Object.values(jourData).some(v => v !== null);
+            if (!hasContent) return;
+            lines.push(`${indent(2)}${jour}:`);
+            TIME_SLOTS.forEach(slot => {
+                const aff = jourData[slot.id];
+                if (aff) {
+                    const flags = detectFlags(aff);
+                    const group = aff.groupe?.nom_groupe;
+                    const teacher = aff.enseignant ? `${aff.enseignant.prenom || ''} ${aff.enseignant.nom || ''}`.trim() : '';
+                    const parts = [
+                        `subject: "${aff.cours?.nom_cours || ''}"`,
+                        `teacher: "${teacher}"`,
+                        `room: "${aff.salle?.nom_salle || ''}"`,
+                    ];
+                    if (flags.length > 0) parts.push(`flags: [${flags.join(', ')}]`);
+                    if (group) parts.push(`group: "${group}"`);
+                    lines.push(`${indent(3)}${slot.id}: {${parts.join(', ')}}`);
+                } else {
+                    lines.push(`${indent(3)}${slot.id}: {subject: "", teacher: "", room: ""}`);
+                }
+            });
+        });
+    });
+
+    const yaml = lines.join('\n');
+    const blob = new Blob([yaml], { type: 'text/yaml;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${filename}.yaml`;
     a.style.display = 'none';
     document.body.appendChild(a);
     a.click();
