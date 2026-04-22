@@ -65,8 +65,21 @@ const app = express();
 app.use(securityHeaders);
 app.use(customSecurityHeaders);
 
-// CORS
-app.use(cors());
+// CORS — restreindre aux origines connues (frontend dev + prod via ALLOWED_ORIGINS)
+const allowedOrigins = process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
+    : ['http://localhost:5173', 'http://localhost:3000'];
+
+app.use(cors({
+    origin: (origin, callback) => {
+        // Autoriser les requêtes sans origine (ex: Postman, curl)
+        if (!origin || allowedOrigins.includes(origin)) {
+            return callback(null, true);
+        }
+        callback(new Error(`Origine CORS non autorisée: ${origin}`));
+    },
+    credentials: true,
+}));
 
 // Body parser - Augmenter la limite pour permettre l'upload d'images en base64
 app.use(express.json({ limit: '10mb' }));

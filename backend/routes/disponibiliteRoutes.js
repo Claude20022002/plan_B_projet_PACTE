@@ -1,10 +1,17 @@
 import express from "express";
 import { Disponibilite, Users, Creneau } from "../models/index.js";
+import {
+    authenticateToken,
+    requireAdmin,
+    requireEnseignant,
+} from "../middleware/index.js";
 
 const router = express.Router();
 
-// 🔍 Récupérer toutes les disponibilités
-router.get("/", async (req, res) => {
+// Toutes les routes nécessitent une authentification
+
+// 🔍 Récupérer toutes les disponibilités (admin uniquement)
+router.get("/", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const disponibilites = await Disponibilite.findAll({
             include: [
@@ -21,8 +28,45 @@ router.get("/", async (req, res) => {
     }
 });
 
-// 🔍 Récupérer une disponibilité par ID
-router.get("/:id", async (req, res) => {
+// 🔍 Récupérer les disponibilités d'un enseignant (avant /:id pour éviter le shadowing)
+// Accessible par l'enseignant concerné ou l'admin
+router.get("/enseignant/:id_enseignant", authenticateToken, requireEnseignant, async (req, res) => {
+    try {
+        const disponibilites = await Disponibilite.findAll({
+            where: { id_user_enseignant: req.params.id_enseignant },
+            include: [{ model: Creneau, as: "creneau" }],
+        });
+        res.json(disponibilites);
+    } catch (error) {
+        res.status(500).json({
+            message: "Erreur de récupération des disponibilités",
+            error: error.message,
+        });
+    }
+});
+
+// 🔍 Récupérer les indisponibilités d'un enseignant (avant /:id pour éviter le shadowing)
+// Accessible par l'enseignant concerné ou l'admin
+router.get("/enseignant/:id_enseignant/indisponibilites", authenticateToken, requireEnseignant, async (req, res) => {
+    try {
+        const indisponibilites = await Disponibilite.findAll({
+            where: {
+                id_user_enseignant: req.params.id_enseignant,
+                disponible: false,
+            },
+            include: [{ model: Creneau, as: "creneau" }],
+        });
+        res.json(indisponibilites);
+    } catch (error) {
+        res.status(500).json({
+            message: "Erreur de récupération des indisponibilités",
+            error: error.message,
+        });
+    }
+});
+
+// 🔍 Récupérer une disponibilité par ID (tout utilisateur authentifié)
+router.get("/:id", authenticateToken, async (req, res) => {
     try {
         const disponibilite = await Disponibilite.findByPk(req.params.id, {
             include: [
@@ -44,8 +88,8 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-// ➕ Créer une disponibilité
-router.post("/", async (req, res) => {
+// ➕ Créer une disponibilité (enseignant ou admin)
+router.post("/", authenticateToken, requireEnseignant, async (req, res) => {
     try {
         const disponibilite = await Disponibilite.create(req.body);
         const disponibiliteComplete = await Disponibilite.findByPk(
@@ -66,8 +110,8 @@ router.post("/", async (req, res) => {
     }
 });
 
-// ✏️ Mettre à jour une disponibilité
-router.put("/:id", async (req, res) => {
+// ✏️ Mettre à jour une disponibilité (enseignant ou admin)
+router.put("/:id", authenticateToken, requireEnseignant, async (req, res) => {
     try {
         const disponibilite = await Disponibilite.findByPk(req.params.id);
         if (!disponibilite) {
@@ -94,8 +138,8 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-// 🗑️ Supprimer une disponibilité
-router.delete("/:id", async (req, res) => {
+// 🗑️ Supprimer une disponibilité (admin uniquement)
+router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const disponibilite = await Disponibilite.findByPk(req.params.id);
         if (!disponibilite) {
@@ -108,41 +152,6 @@ router.delete("/:id", async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Erreur lors de la suppression de la disponibilité",
-            error: error.message,
-        });
-    }
-});
-
-// 🔍 Récupérer les disponibilités d'un enseignant
-router.get("/enseignant/:id_enseignant", async (req, res) => {
-    try {
-        const disponibilites = await Disponibilite.findAll({
-            where: { id_user_enseignant: req.params.id_enseignant },
-            include: [{ model: Creneau, as: "creneau" }],
-        });
-        res.json(disponibilites);
-    } catch (error) {
-        res.status(500).json({
-            message: "Erreur de récupération des disponibilités",
-            error: error.message,
-        });
-    }
-});
-
-// 🔍 Récupérer les indisponibilités d'un enseignant
-router.get("/enseignant/:id_enseignant/indisponibilites", async (req, res) => {
-    try {
-        const indisponibilites = await Disponibilite.findAll({
-            where: {
-                id_user_enseignant: req.params.id_enseignant,
-                disponible: false,
-            },
-            include: [{ model: Creneau, as: "creneau" }],
-        });
-        res.json(indisponibilites);
-    } catch (error) {
-        res.status(500).json({
-            message: "Erreur de récupération des indisponibilités",
             error: error.message,
         });
     }

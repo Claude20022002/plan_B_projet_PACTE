@@ -11,7 +11,7 @@ import { sendEmail } from "../utils/sendEmail.js";
 const generateToken = (userId) => {
     return jwt.sign(
         { userId, id_user: userId },
-        process.env.JWT_SECRET || "secret_key_default",
+        process.env.JWT_SECRET || "dev_secret_temporaire_non_securise",
         {
             expiresIn: process.env.JWT_EXPIRES_IN || "7d",
         }

@@ -1,6 +1,19 @@
 import jwt from "jsonwebtoken";
 import { Users } from "../models/index.js";
 
+// Validation critique au démarrage : JWT_SECRET doit être défini explicitement.
+// Un secret par défaut ("secret_key_default") serait devinable et compromettrait tous les tokens.
+if (!process.env.JWT_SECRET) {
+    if (process.env.NODE_ENV === "production") {
+        console.error("ERREUR CRITIQUE: JWT_SECRET n'est pas défini. Arrêt du serveur.");
+        process.exit(1);
+    } else {
+        console.warn("AVERTISSEMENT: JWT_SECRET non défini. Utilisation d'un secret temporaire (dev uniquement).");
+    }
+}
+
+const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_temporaire_non_securise";
+
 /**
  * Middleware d'authentification JWT
  * Vérifie la présence et la validité du token JWT
@@ -23,7 +36,7 @@ export const authenticateToken = async (req, res, next) => {
         try {
             decoded = jwt.verify(
                 token,
-                process.env.JWT_SECRET || "secret_key_default"
+                JWT_SECRET
             );
         } catch (jwtError) {
             if (jwtError.name === "JsonWebTokenError") {
@@ -105,7 +118,7 @@ export const optionalAuth = async (req, res, next) => {
         if (token) {
             const decoded = jwt.verify(
                 token,
-                process.env.JWT_SECRET || "secret_key_default"
+                JWT_SECRET
             );
             const user = await Users.findByPk(
                 decoded.userId || decoded.id_user
