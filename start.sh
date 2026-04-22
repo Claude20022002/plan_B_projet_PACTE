@@ -65,8 +65,8 @@ check_deps() {
 print_banner() {
     echo ""
     echo -e "${BLUE}${BOLD}╔══════════════════════════════════════════════╗${NC}"
-    echo -e "${BLUE}${BOLD}║        HESTIM Planner — Démarrage           ║${NC}"
-    echo -e "${BLUE}${BOLD}║   Projet PACTE • École d'Ingénierie HESTIM  ║${NC}"
+    echo -e "${BLUE}${BOLD}║        HESTIM Planner — Démarrage            ║${NC}"
+    echo -e "${BLUE}${BOLD}║   Projet PACTE • École d'Ingénierie HESTIM   ║${NC}"
     echo -e "${BLUE}${BOLD}╚══════════════════════════════════════════════╝${NC}"
     echo ""
     $DEV_MODE  && echo -e "   Mode : ${CYAN}Développement (nodemon)${NC}"
