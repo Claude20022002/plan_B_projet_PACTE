@@ -38,9 +38,6 @@ export * from "./conflitController.js";
 // Notification
 export * from "./notificationController.js";
 
-// HistoriqueAffectation
-export * from "./historiqueAffectationController.js";
-
 // Disponibilite
 export * from "./disponibiliteController.js";
 

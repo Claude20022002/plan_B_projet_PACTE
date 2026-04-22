@@ -1,12 +1,23 @@
 import express from "express";
+import { Op } from "sequelize";
 import { Conflit, ConflitAffectation, Affectation } from "../models/index.js";
+import { authenticateToken, requireAdmin } from "../middleware/index.js";
+import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 
 const router = express.Router();
 
-// 🔍 Récupérer tous les conflits
-router.get("/", async (req, res) => {
+// 🔍 Récupérer tous les conflits (paginé) — admin uniquement
+router.get("/", authenticateToken, requireAdmin, async (req, res) => {
     try {
-        const conflits = await Conflit.findAll({
+        const { page, limit, offset } = getPaginationParams(req, 10);
+
+        const where = {};
+        if (req.query.resolu !== undefined) {
+            where.resolu = req.query.resolu === 'true';
+        }
+
+        const { count, rows: conflits } = await Conflit.findAndCountAll({
+            where,
             include: [
                 {
                     model: Affectation,
@@ -14,17 +25,23 @@ router.get("/", async (req, res) => {
                     through: { attributes: [] },
                 },
             ],
+            limit,
+            offset,
+            order: [["id_conflit", "DESC"]],
         });
-        res.json(conflits);
+
+        res.json(createPaginationResponse(conflits, count, page, limit));
     } catch (error) {
         res.status(500).json({ message: "Erreur de récupération des conflits", error: error.message });
     }
 });
 
-// 🔍 Récupérer les conflits non résolus (route spécifique AVANT /:id)
-router.get("/non-resolus/liste", async (req, res) => {
+// 🔍 Récupérer les conflits non résolus (paginé) — avant /:id pour éviter le shadowing
+router.get("/non-resolus/liste", authenticateToken, async (req, res) => {
     try {
-        const conflits = await Conflit.findAll({
+        const { page, limit, offset } = getPaginationParams(req, 10);
+
+        const { count, rows: conflits } = await Conflit.findAndCountAll({
             where: { resolu: false },
             include: [
                 {
@@ -33,15 +50,19 @@ router.get("/non-resolus/liste", async (req, res) => {
                     through: { attributes: [] },
                 },
             ],
+            limit,
+            offset,
+            order: [["id_conflit", "DESC"]],
         });
-        res.json(conflits);
+
+        res.json(createPaginationResponse(conflits, count, page, limit));
     } catch (error) {
         res.status(500).json({ message: "Erreur de récupération des conflits non résolus", error: error.message });
     }
 });
 
 // 🔍 Récupérer un conflit par ID
-router.get("/:id", async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
     try {
         const conflit = await Conflit.findByPk(req.params.id, {
             include: [
@@ -61,8 +82,8 @@ router.get("/:id", async (req, res) => {
     }
 });
 
-// ➕ Créer un conflit
-router.post("/", async (req, res) => {
+// ➕ Créer un conflit — admin uniquement
+router.post("/", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const conflit = await Conflit.create(req.body);
         const conflitComplete = await Conflit.findByPk(conflit.id_conflit, {
@@ -80,8 +101,8 @@ router.post("/", async (req, res) => {
     }
 });
 
-// ✏️ Mettre à jour un conflit
-router.put("/:id", async (req, res) => {
+// ✏️ Mettre à jour un conflit (résolution) — admin uniquement
+router.put("/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const conflit = await Conflit.findByPk(req.params.id);
         if (!conflit) {
@@ -103,8 +124,8 @@ router.put("/:id", async (req, res) => {
     }
 });
 
-// 🗑️ Supprimer un conflit
-router.delete("/:id", async (req, res) => {
+// 🗑️ Supprimer un conflit — admin uniquement
+router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const conflit = await Conflit.findByPk(req.params.id);
         if (!conflit) {
@@ -117,8 +138,8 @@ router.delete("/:id", async (req, res) => {
     }
 });
 
-// ➕ Associer une affectation à un conflit
-router.post("/:id_conflit/affectation/:id_affectation", async (req, res) => {
+// ➕ Associer une affectation à un conflit — admin uniquement
+router.post("/:id_conflit/affectation/:id_affectation", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const conflitAffectation = await ConflitAffectation.create({
             id_conflit: req.params.id_conflit,
@@ -130,8 +151,8 @@ router.post("/:id_conflit/affectation/:id_affectation", async (req, res) => {
     }
 });
 
-// 🗑️ Dissocier une affectation d'un conflit
-router.delete("/:id_conflit/affectation/:id_affectation", async (req, res) => {
+// 🗑️ Dissocier une affectation d'un conflit — admin uniquement
+router.delete("/:id_conflit/affectation/:id_affectation", authenticateToken, requireAdmin, async (req, res) => {
     try {
         const conflitAffectation = await ConflitAffectation.findOne({
             where: {
@@ -150,4 +171,3 @@ router.delete("/:id_conflit/affectation/:id_affectation", async (req, res) => {
 });
 
 export default router;
-

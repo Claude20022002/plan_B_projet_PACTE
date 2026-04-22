@@ -3,12 +3,12 @@ import {
     Typography,
     Button,
     Container,
-    Grid,
     Card,
     CardContent,
+    IconButton,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { motion } from "motion/react";
+import { motion, AnimatePresence } from "motion/react";
 import {
     Schedule,
     School,
@@ -16,12 +16,18 @@ import {
     TrendingUp,
     Notifications,
     Analytics,
+    ChevronLeft,
+    ChevronRight,
 } from "@mui/icons-material";
+import { useState, useEffect } from "react";
 import Header from "../components/common/Header";
 import businessImg from "../assets/img/business.webp";
 
 export default function Accueil() {
     const navigate = useNavigate();
+    const [currentIndex, setCurrentIndex] = useState(0);
+
+    const featuresPerView = 3;
 
     const features = [
         {
@@ -95,7 +101,7 @@ export default function Accueil() {
                         right: 0,
                         bottom: 0,
                         background:
-                            "linear-gradient(135deg, rgba(0, 25, 98, 0.85) 0%, rgba(124, 77, 255, 0.75) 100%)",
+                            "linear-gradient(135deg, rgba(81, 91, 122, 0.85) 0%, rgba(124, 77, 255, 0.75) 70%)",
                         zIndex: 1,
                     },
                 }}
@@ -181,8 +187,8 @@ export default function Accueil() {
                                         size="large"
                                         onClick={() => navigate("/connexion")}
                                         sx={{
-                                            bgcolor: "white",
-                                            color: "#001962",
+                                            bgcolor: "#001962",
+                                            color: "#ffffff",
                                             textTransform: "none",
                                             px: 5,
                                             py: 1.8,
@@ -205,6 +211,240 @@ export default function Accueil() {
                                 </motion.div>
                             </Box>
                         </motion.div>
+                    </Box>
+
+                    {/* Features Carousel Section */}
+                    <Box
+                        sx={{
+                            py: 4,
+                            color: "white",
+                        }}
+                    >
+                        <Typography
+                            variant="h4"
+                            fontWeight={800}
+                            sx={{
+                                textAlign: "center",
+                                mb: 4,
+                                fontSize: { xs: "1.5rem", md: "2rem" },
+                                textShadow: "2px 2px 4px rgba(0,0,0,0.3)",
+                            }}
+                        >
+                            Nos Fonctionnalités
+                        </Typography>
+
+                        {/* Carousel Container */}
+                        <Box
+                            sx={{
+                                position: "relative",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "center",
+                            }}
+                        >
+                            {/* Left Button */}
+                            <IconButton
+                                onClick={() =>
+                                    setCurrentIndex((prev) =>
+                                        prev === 0
+                                            ? features.length - featuresPerView
+                                            : prev - 1,
+                                    )
+                                }
+                                sx={{
+                                    position: "absolute",
+                                    left: -50,
+                                    color: "white",
+                                    "&:hover": {
+                                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                                    },
+                                    zIndex: 10,
+                                }}
+                            >
+                                <ChevronLeft sx={{ fontSize: 32 }} />
+                            </IconButton>
+
+                            {/* Carousel Viewport */}
+                            <Box
+                                sx={{
+                                    position: "relative",
+                                    width: "100%",
+                                    overflow: "hidden",
+                                    px: { xs: 0, md: 8 },
+                                }}
+                            >
+                                <AnimatePresence mode="wait">
+                                    <Box
+                                        component={motion.div}
+                                        key={currentIndex}
+                                        initial={{ opacity: 0, x: 100 }}
+                                        animate={{ opacity: 1, x: 0 }}
+                                        exit={{ opacity: 0, x: -100 }}
+                                        transition={{ duration: 0.5 }}
+                                        sx={{
+                                            display: "grid",
+                                            gridTemplateColumns: {
+                                                xs: "1fr",
+                                                sm: "repeat(2, 1fr)",
+                                                md: "repeat(3, 1fr)",
+                                            },
+                                            gap: 2,
+                                        }}
+                                    >
+                                        {features
+                                            .slice(
+                                                currentIndex,
+                                                currentIndex + featuresPerView,
+                                            )
+                                            .map((feature, index) => (
+                                                <motion.div
+                                                    key={feature.title}
+                                                    initial={{ opacity: 0 }}
+                                                    animate={{ opacity: 1 }}
+                                                    transition={{
+                                                        delay: index * 0.1,
+                                                    }}
+                                                    whileHover={{ y: -4 }}
+                                                >
+                                                    <Card
+                                                        sx={{
+                                                            height: "280px",
+                                                            background:
+                                                                "rgba(255, 255, 255, 0.08)",
+                                                            backdropFilter:
+                                                                "blur(10px)",
+                                                            border: `2px solid ${feature.color}`,
+                                                            borderRadius: 2,
+                                                            transition:
+                                                                "all 0.3s ease",
+                                                            display: "flex",
+                                                            flexDirection:
+                                                                "column",
+                                                            "&:hover": {
+                                                                background:
+                                                                    "rgba(255, 255, 255, 0.12)",
+                                                                boxShadow: `0 8px 32px ${feature.color}33`,
+                                                            },
+                                                        }}
+                                                    >
+                                                        <CardContent
+                                                            sx={{
+                                                                textAlign:
+                                                                    "center",
+                                                                p: 2,
+                                                                flex: 1,
+                                                                display: "flex",
+                                                                flexDirection:
+                                                                    "column",
+                                                                justifyContent:
+                                                                    "center",
+                                                            }}
+                                                        >
+                                                            <Box
+                                                                sx={{
+                                                                    color: feature.color,
+                                                                    mb: 1,
+                                                                }}
+                                                            >
+                                                                {feature.icon}
+                                                            </Box>
+                                                            <Typography
+                                                                variant="subtitle1"
+                                                                fontWeight={700}
+                                                                sx={{
+                                                                    mb: 1,
+                                                                    color: feature.color,
+                                                                    fontSize:
+                                                                        "0.95rem",
+                                                                }}
+                                                            >
+                                                                {feature.title}
+                                                            </Typography>
+                                                            <Typography
+                                                                variant="caption"
+                                                                sx={{
+                                                                    color: "rgba(255, 255, 255, 0.8)",
+                                                                    lineHeight: 1.4,
+                                                                    fontSize:
+                                                                        "0.8rem",
+                                                                }}
+                                                            >
+                                                                {
+                                                                    feature.description
+                                                                }
+                                                            </Typography>
+                                                        </CardContent>
+                                                    </Card>
+                                                </motion.div>
+                                            ))}
+                                    </Box>
+                                </AnimatePresence>
+                            </Box>
+
+                            {/* Right Button */}
+                            <IconButton
+                                onClick={() =>
+                                    setCurrentIndex((prev) =>
+                                        prev ===
+                                        features.length - featuresPerView
+                                            ? 0
+                                            : prev + 1,
+                                    )
+                                }
+                                sx={{
+                                    position: "absolute",
+                                    right: -50,
+                                    color: "white",
+                                    "&:hover": {
+                                        bgcolor: "rgba(255, 255, 255, 0.1)",
+                                    },
+                                    zIndex: 10,
+                                }}
+                            >
+                                <ChevronRight sx={{ fontSize: 32 }} />
+                            </IconButton>
+                        </Box>
+
+                        {/* Indicators */}
+                        <Box
+                            sx={{
+                                display: "flex",
+                                justifyContent: "center",
+                                gap: 1,
+                                mt: 3,
+                            }}
+                        >
+                            {Array.from({
+                                length: Math.ceil(
+                                    features.length / featuresPerView,
+                                ),
+                            }).map((_, index) => (
+                                <motion.div
+                                    key={index}
+                                    whileHover={{ scale: 1.2 }}
+                                >
+                                    <Box
+                                        onClick={() =>
+                                            setCurrentIndex(
+                                                index * featuresPerView,
+                                            )
+                                        }
+                                        sx={{
+                                            width: "8px",
+                                            height: "8px",
+                                            borderRadius: "50%",
+                                            bgcolor:
+                                                currentIndex ===
+                                                index * featuresPerView
+                                                    ? "white"
+                                                    : "rgba(255, 255, 255, 0.4)",
+                                            cursor: "pointer",
+                                            transition: "all 0.3s ease",
+                                        }}
+                                    />
+                                </motion.div>
+                            ))}
+                        </Box>
                     </Box>
 
                     {/* Footer */}

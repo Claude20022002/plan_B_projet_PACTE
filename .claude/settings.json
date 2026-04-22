@@ -2,7 +2,8 @@
   "permissions": {
     "allow": [
       "Bash(npm install:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(node --experimental-vm-modules node_modules/.bin/jest --testPathPattern=\"paginationHelper|passwordHelper|roleMiddleware\" --no-coverage)"
     ]
   }
 }

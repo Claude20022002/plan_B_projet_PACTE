@@ -17,7 +17,7 @@ import {
     Disponibilite,
     Appartenir,
     DemandeReport,
-    HistoriqueAffectation,
+
     Conflit,
     ConflitAffectation,
     PasswordResetToken,
@@ -37,7 +37,7 @@ import affectationRoutes from "./routes/affectationRoutes.js";
 import demandeReportRoutes from "./routes/demandeReportRoutes.js";
 import conflitRoutes from "./routes/conflitRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
-import historiqueAffectationRoutes from "./routes/historiqueAffectationRoutes.js";
+// historiqueAffectationRoutes désactivé — fonctionnalité non utilisée par le frontend
 import disponibiliteRoutes from "./routes/disponibiliteRoutes.js";
 import appartenirRoutes from "./routes/appartenirRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
@@ -106,7 +106,7 @@ app.use("/api/affectations", affectationRoutes);
 app.use("/api/demandes-report", demandeReportRoutes);
 app.use("/api/conflits", conflitRoutes);
 app.use("/api/notifications", notificationRoutes);
-app.use("/api/historiques", historiqueAffectationRoutes);
+// /api/historiques désactivé — HistoriqueAffectation non utilisé côté frontend
 app.use("/api/disponibilites", disponibiliteRoutes);
 app.use("/api/appartenances", appartenirRoutes);
 app.use("/api/auth", authRoutes);
@@ -273,7 +273,7 @@ const PORT = process.env.PORT || 5000;
 
         // Niveau 5 : Tables qui dépendent d'Affectation
         await syncTableSafe(DemandeReport, "DemandeReport");
-        await syncTableSafe(HistoriqueAffectation, "HistoriqueAffectation");
+
         console.log(
             "--> Niveau 5 : Tables dépendantes d'Affectation synchronisées"
         );

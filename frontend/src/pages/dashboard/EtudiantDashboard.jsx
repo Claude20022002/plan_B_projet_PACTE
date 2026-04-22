@@ -53,7 +53,8 @@ export default function EtudiantDashboard() {
             ]);
 
             setEtudiant(etudiantData);
-            setNotifications(notifsData.data || []);
+            // L'API notifications retourne un tableau plat (non paginé)
+            setNotifications(notifsData.data || notifsData || []);
 
             if (etudiantData?.id_groupe) {
                 const affectationsData = await affectationAPI.getByGroupe(etudiantData.id_groupe, { limit: 10 });
