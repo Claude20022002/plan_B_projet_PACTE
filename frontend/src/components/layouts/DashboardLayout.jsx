@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import {
     Box,
     Drawer,
@@ -18,7 +18,7 @@ import {
     MenuItem,
     Badge,
     Collapse,
-} from '@mui/material';
+} from "@mui/material";
 import {
     Menu as MenuIcon,
     Dashboard,
@@ -44,11 +44,11 @@ import {
     AccountTree,
     Business,
     Search,
-} from '@mui/icons-material';
-import { useAuth } from '../../contexts/AuthContext';
-import { useTheme } from '../../contexts/ThemeContext';
-import { notificationAPI } from '../../services/api';
-import GlobalSearch from '../common/GlobalSearch';
+} from "@mui/icons-material";
+import { useAuth } from "../../contexts/AuthContext";
+import { useTheme } from "../../contexts/ThemeContext";
+import { notificationAPI } from "../../services/api";
+import GlobalSearch from "../common/GlobalSearch";
 
 const drawerWidth = 260;
 
@@ -82,7 +82,7 @@ export default function DashboardLayout({ children }) {
 
     const handleLogout = async () => {
         await logout();
-        navigate('/connexion');
+        navigate("/connexion");
     };
 
     const loadUnreadNotifications = async () => {
@@ -93,7 +93,10 @@ export default function DashboardLayout({ children }) {
                 setUnreadNotifications(notifications.length);
             }
         } catch (error) {
-            console.error('Erreur lors du chargement des notifications:', error);
+            console.error(
+                "Erreur lors du chargement des notifications:",
+                error,
+            );
         }
     };
 
@@ -107,70 +110,153 @@ export default function DashboardLayout({ children }) {
     // Menu items selon le rôle
     const getMenuItems = () => {
         const baseItems = [
-            { text: 'Tableau de bord', icon: <Dashboard />, path: `/dashboard/${user?.role}`, type: 'item' },
+            {
+                text: "Tableau de bord",
+                icon: <Dashboard />,
+                path: `/dashboard/${user?.role}`,
+                type: "item",
+            },
         ];
 
-        if (user?.role === 'admin') {
+        if (user?.role === "admin") {
             return [
                 ...baseItems,
                 {
-                    text: 'Gestion des utilisateurs',
+                    text: "Gestion des utilisateurs",
                     icon: <AdminPanelSettings />,
-                    type: 'group',
-                    key: 'utilisateurs',
+                    type: "group",
+                    key: "utilisateurs",
                     items: [
-                        { text: 'Utilisateurs', icon: <People />, path: '/gestion/utilisateurs' },
-                        { text: 'Enseignants', icon: <School />, path: '/gestion/enseignants' },
-                        { text: 'Étudiants', icon: <People />, path: '/gestion/etudiants' },
+                        {
+                            text: "Utilisateurs",
+                            icon: <People />,
+                            path: "/gestion/utilisateurs",
+                        },
+                        {
+                            text: "Enseignants",
+                            icon: <School />,
+                            path: "/gestion/enseignants",
+                        },
+                        {
+                            text: "Étudiants",
+                            icon: <People />,
+                            path: "/gestion/etudiants",
+                        },
                     ],
                 },
                 {
-                    text: 'Gestion académique',
+                    text: "Gestion académique",
                     icon: <AccountTree />,
-                    type: 'group',
-                    key: 'academique',
+                    type: "group",
+                    key: "academique",
                     items: [
-                        { text: 'Filières', icon: <Category />, path: '/gestion/filieres' },
-                        { text: 'Groupes', icon: <Groups />, path: '/gestion/groupes' },
-                        { text: 'Cours', icon: <Book />, path: '/gestion/cours' },
-                        { text: 'Créneaux', icon: <Schedule />, path: '/gestion/creneaux' },
+                        {
+                            text: "Filières",
+                            icon: <Category />,
+                            path: "/gestion/filieres",
+                        },
+                        {
+                            text: "Groupes",
+                            icon: <Groups />,
+                            path: "/gestion/groupes",
+                        },
+                        {
+                            text: "Cours",
+                            icon: <Book />,
+                            path: "/gestion/cours",
+                        },
+                        {
+                            text: "Créneaux",
+                            icon: <Schedule />,
+                            path: "/gestion/creneaux",
+                        },
                     ],
                 },
                 {
-                    text: 'Gestion des ressources',
+                    text: "Gestion des ressources",
                     icon: <Business />,
-                    type: 'group',
-                    key: 'ressources',
+                    type: "group",
+                    key: "ressources",
                     items: [
-                        { text: 'Salles', icon: <Room />, path: '/gestion/salles' },
+                        {
+                            text: "Salles",
+                            icon: <Room />,
+                            path: "/gestion/salles",
+                        },
                     ],
                 },
                 {
-                    text: 'Planning',
+                    text: "Planning",
                     icon: <CalendarToday />,
-                    type: 'group',
-                    key: 'planning',
+                    type: "group",
+                    key: "planning",
                     items: [
-                        { text: 'Affectations', icon: <Schedule />, path: '/gestion/affectations' },
-                        { text: 'Emplois du temps', icon: <Schedule />, path: '/gestion/emplois-du-temps' },
-                        { text: 'Demandes de report', icon: <Assignment />, path: '/gestion/demandes-report' },
-                        { text: 'Génération automatique', icon: <EventAvailable />, path: '/gestion/generation-automatique' },
+                        {
+                            text: "Affectations",
+                            icon: <Schedule />,
+                            path: "/gestion/affectations",
+                        },
+                        {
+                            text: "Emplois du temps",
+                            icon: <Schedule />,
+                            path: "/gestion/emplois-du-temps",
+                        },
+                        {
+                            text: "Demandes de report",
+                            icon: <Assignment />,
+                            path: "/gestion/demandes-report",
+                        },
+                        {
+                            text: "Génération automatique",
+                            icon: <EventAvailable />,
+                            path: "/gestion/generation-automatique",
+                        },
                     ],
                 },
-                { text: 'Conflits', icon: <Warning />, path: '/gestion/conflits', type: 'item' },
-                { text: 'Statistiques', icon: <Dashboard />, path: '/statistiques', type: 'item' },
+                {
+                    text: "Conflits",
+                    icon: <Warning />,
+                    path: "/gestion/conflits",
+                    type: "item",
+                },
+                {
+                    text: "Statistiques",
+                    icon: <Dashboard />,
+                    path: "/statistiques",
+                    type: "item",
+                },
             ];
-        } else if (user?.role === 'enseignant') {
+        } else if (user?.role === "enseignant") {
             return [
                 ...baseItems,
-                { text: 'Mon emploi du temps', icon: <CalendarToday />, path: '/emploi-du-temps/enseignant', type: 'item' },
-                { text: 'Mes affectations', icon: <Assignment />, path: '/mes-affectations', type: 'item' },
-                { text: 'Mes disponibilités', icon: <EventAvailable />, path: '/disponibilites', type: 'item' },
+                {
+                    text: "Mon emploi du temps",
+                    icon: <CalendarToday />,
+                    path: "/emploi-du-temps/enseignant",
+                    type: "item",
+                },
+                {
+                    text: "Mes affectations",
+                    icon: <Assignment />,
+                    path: "/mes-affectations",
+                    type: "item",
+                },
+                {
+                    text: "Mes disponibilités",
+                    icon: <EventAvailable />,
+                    path: "/disponibilites",
+                    type: "item",
+                },
             ];
         } else {
             return [
                 ...baseItems,
-                { text: 'Mon emploi du temps', icon: <Schedule />, path: '/emploi-du-temps/etudiant', type: 'item' },
+                {
+                    text: "Mon emploi du temps",
+                    icon: <Schedule />,
+                    path: "/emploi-du-temps/etudiant",
+                    type: "item",
+                },
             ];
         }
     };
@@ -193,109 +279,191 @@ export default function DashboardLayout({ children }) {
 
     // Ouvrir automatiquement les menus contenant la page actuelle
     useEffect(() => {
-        if (user?.role === 'admin') {
+        if (user?.role === "admin") {
             const newOpenMenus = { ...openMenus };
-            
+
             menuItems.forEach((item) => {
-                if (item.type === 'group' && item.items) {
+                if (item.type === "group" && item.items) {
                     if (isPathInGroup(item.items, location.pathname)) {
                         newOpenMenus[item.key] = true;
                     }
                 }
             });
-            
+
             setOpenMenus(newOpenMenus);
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [location.pathname, user]);
 
     const drawer = (
-        <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
+        <Box sx={{ height: "100%", display: "flex", flexDirection: "column" }}>
             <Toolbar
                 sx={{
-                    background: 'linear-gradient(135deg, #001062 0%, #1a3a8f 100%)',
-                    color: 'white',
-                    display: 'flex',
-                    alignItems: 'center',
+                    background:
+                        "linear-gradient(135deg, #001062 0%, #1a3a8f 100%)",
+                    color: "white",
+                    display: "flex",
+                    alignItems: "center",
                     gap: 1.5,
-                    minHeight: '64px !important',
+                    minHeight: "64px !important",
                 }}
             >
                 <Box
                     sx={{
                         width: 32,
                         height: 32,
-                        borderRadius: '8px',
-                        bgcolor: 'rgba(232,160,32,0.9)',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
+                        borderRadius: "8px",
+                        bgcolor: "rgba(232,160,32,0.9)",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
                         flexShrink: 0,
                     }}
                 >
-                    <Typography variant="body2" fontWeight="bold" color="#001062" fontSize={14}>H</Typography>
+                    <Typography
+                        variant="body2"
+                        fontWeight="bold"
+                        color="#001062"
+                        fontSize={14}
+                    >
+                        H
+                    </Typography>
                 </Box>
                 <Box>
-                    <Typography variant="subtitle2" noWrap fontWeight="bold" lineHeight={1.2}>
+                    <Typography
+                        variant="subtitle2"
+                        noWrap
+                        fontWeight="bold"
+                        lineHeight={1.2}
+                    >
                         HESTIM Planner
                     </Typography>
-                    <Typography variant="caption" sx={{ opacity: 0.75, fontSize: 9 }} noWrap>
-                        {user?.role === 'admin' ? 'Administrateur' : user?.role === 'enseignant' ? 'Enseignant' : 'Étudiant'}
+                    <Typography
+                        variant="caption"
+                        sx={{ opacity: 0.75, fontSize: 9 }}
+                        noWrap
+                    >
+                        {user?.role === "admin"
+                            ? "Administrateur"
+                            : user?.role === "enseignant"
+                              ? "Enseignant"
+                              : "Étudiant"}
                     </Typography>
                 </Box>
             </Toolbar>
-            <Box sx={{ height: 3, background: 'linear-gradient(90deg, #e8a020, #f5c842)' }} />
+            <Box
+                sx={{
+                    height: 3,
+                    background: "linear-gradient(90deg, #e8a020, #f5c842)",
+                }}
+            />
             <List sx={{ flexGrow: 1, pt: 1 }}>
                 {menuItems.map((item) => {
-                    if (item.type === 'group') {
+                    if (item.type === "group") {
                         const isOpen = openMenus[item.key];
-                        const isSelected = isPathInGroup(item.items, location.pathname);
+                        const isSelected = isPathInGroup(
+                            item.items,
+                            location.pathname,
+                        );
                         return (
                             <React.Fragment key={item.text}>
                                 <ListItem disablePadding>
                                     <ListItemButton
-                                        onClick={() => handleMenuToggle(item.key)}
+                                        onClick={() =>
+                                            handleMenuToggle(item.key)
+                                        }
                                         selected={isSelected}
                                         sx={{
                                             mx: 1,
                                             borderRadius: 2,
                                             mb: 0.25,
-                                            '&.Mui-selected': { color: 'primary.main' },
+                                            "&.Mui-selected": {
+                                                color: "primary.main",
+                                            },
                                         }}
                                     >
-                                        <ListItemIcon sx={{ color: isSelected ? 'primary.main' : 'text.secondary', minWidth: 36 }}>
+                                        <ListItemIcon
+                                            sx={{
+                                                color: isSelected
+                                                    ? "primary.main"
+                                                    : "text.secondary",
+                                                minWidth: 36,
+                                            }}
+                                        >
                                             {item.icon}
                                         </ListItemIcon>
                                         <ListItemText
                                             primary={item.text}
-                                            primaryTypographyProps={{ fontSize: 13, fontWeight: isSelected ? 600 : 400 }}
+                                            primaryTypographyProps={{
+                                                fontSize: 13,
+                                                fontWeight: isSelected
+                                                    ? 600
+                                                    : 400,
+                                            }}
                                         />
-                                        {isOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
+                                        {isOpen ? (
+                                            <ExpandLess fontSize="small" />
+                                        ) : (
+                                            <ExpandMore fontSize="small" />
+                                        )}
                                     </ListItemButton>
                                 </ListItem>
-                                <Collapse in={isOpen} timeout="auto" unmountOnExit>
+                                <Collapse
+                                    in={isOpen}
+                                    timeout="auto"
+                                    unmountOnExit
+                                >
                                     <List component="div" disablePadding>
                                         {item.items.map((subItem) => {
-                                            const isSubSel = location.pathname === subItem.path;
+                                            const isSubSel =
+                                                location.pathname ===
+                                                subItem.path;
                                             return (
-                                                <ListItem key={subItem.text} disablePadding>
+                                                <ListItem
+                                                    key={subItem.text}
+                                                    disablePadding
+                                                >
                                                     <ListItemButton
                                                         selected={isSubSel}
-                                                        onClick={() => { navigate(subItem.path); setMobileOpen(false); }}
+                                                        onClick={() => {
+                                                            navigate(
+                                                                subItem.path,
+                                                            );
+                                                            setMobileOpen(
+                                                                false,
+                                                            );
+                                                        }}
                                                         sx={{
                                                             pl: 5,
                                                             mx: 1,
                                                             borderRadius: 2,
                                                             mb: 0.25,
-                                                            '&.Mui-selected': { color: 'primary.main' },
+                                                            "&.Mui-selected": {
+                                                                color: "primary.main",
+                                                            },
                                                         }}
                                                     >
-                                                        <ListItemIcon sx={{ color: isSubSel ? 'primary.main' : 'text.disabled', minWidth: 32 }}>
+                                                        <ListItemIcon
+                                                            sx={{
+                                                                color: isSubSel
+                                                                    ? "primary.main"
+                                                                    : "text.disabled",
+                                                                minWidth: 32,
+                                                            }}
+                                                        >
                                                             {subItem.icon}
                                                         </ListItemIcon>
                                                         <ListItemText
-                                                            primary={subItem.text}
-                                                            primaryTypographyProps={{ fontSize: 12.5, fontWeight: isSubSel ? 600 : 400 }}
+                                                            primary={
+                                                                subItem.text
+                                                            }
+                                                            primaryTypographyProps={{
+                                                                fontSize: 12.5,
+                                                                fontWeight:
+                                                                    isSubSel
+                                                                        ? 600
+                                                                        : 400,
+                                                            }}
                                                         />
                                                     </ListItemButton>
                                                 </ListItem>
@@ -311,20 +479,35 @@ export default function DashboardLayout({ children }) {
                             <ListItem key={item.text} disablePadding>
                                 <ListItemButton
                                     selected={isSel}
-                                    onClick={() => { navigate(item.path); setMobileOpen(false); }}
+                                    onClick={() => {
+                                        navigate(item.path);
+                                        setMobileOpen(false);
+                                    }}
                                     sx={{
                                         mx: 1,
                                         borderRadius: 2,
                                         mb: 0.25,
-                                        '&.Mui-selected': { color: 'primary.main' },
+                                        "&.Mui-selected": {
+                                            color: "primary.main",
+                                        },
                                     }}
                                 >
-                                    <ListItemIcon sx={{ color: isSel ? 'primary.main' : 'text.secondary', minWidth: 36 }}>
+                                    <ListItemIcon
+                                        sx={{
+                                            color: isSel
+                                                ? "primary.main"
+                                                : "text.secondary",
+                                            minWidth: 36,
+                                        }}
+                                    >
                                         {item.icon}
                                     </ListItemIcon>
                                     <ListItemText
                                         primary={item.text}
-                                        primaryTypographyProps={{ fontSize: 13, fontWeight: isSel ? 600 : 400 }}
+                                        primaryTypographyProps={{
+                                            fontSize: 13,
+                                            fontWeight: isSel ? 600 : 400,
+                                        }}
                                     />
                                 </ListItemButton>
                             </ListItem>
@@ -334,16 +517,27 @@ export default function DashboardLayout({ children }) {
             </List>
 
             {/* User info at bottom */}
-            <Box sx={{ p: 2, borderTop: '1px solid', borderColor: 'divider' }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                    <Avatar sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: 14 }}>
+            <Box sx={{ p: 2, borderTop: "1px solid", borderColor: "divider" }}>
+                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
+                    <Avatar
+                        sx={{
+                            width: 34,
+                            height: 34,
+                            bgcolor: "primary.main",
+                            fontSize: 14,
+                        }}
+                    >
                         {user?.prenom?.[0]?.toUpperCase()}
                     </Avatar>
                     <Box sx={{ flex: 1, minWidth: 0 }}>
                         <Typography variant="body2" fontWeight={600} noWrap>
                             {user?.prenom} {user?.nom}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary" noWrap>
+                        <Typography
+                            variant="caption"
+                            color="text.secondary"
+                            noWrap
+                        >
                             {user?.email}
                         </Typography>
                     </Box>
@@ -353,12 +547,14 @@ export default function DashboardLayout({ children }) {
     );
 
     return (
-        <Box sx={{ display: 'flex' }}>
+        <Box sx={{ display: "flex" }}>
             <AppBar
                 position="fixed"
                 sx={{
                     width: { sm: `calc(100% - ${drawerWidth}px)` },
                     ml: { sm: `${drawerWidth}px` },
+                    background:
+                        "linear-gradient(90deg, #001062 0%, #1a3a8f 100%)",
                 }}
             >
                 <Toolbar>
@@ -367,7 +563,7 @@ export default function DashboardLayout({ children }) {
                         aria-label="open drawer"
                         edge="start"
                         onClick={handleDrawerToggle}
-                        sx={{ mr: 2, display: { sm: 'none' } }}
+                        sx={{ mr: 2, display: { sm: "none" } }}
                     >
                         <MenuIcon />
                     </IconButton>
@@ -376,16 +572,26 @@ export default function DashboardLayout({ children }) {
                         src="/HESTIM.png"
                         alt="HESTIM Logo"
                         sx={{
-                            width: { xs: '120px', sm: '150px' },
-                            height: { xs: '30px', sm: '40px' },
-                            objectFit: 'contain',
+                            width: { xs: "120px", sm: "150px" },
+                            height: { xs: "30px", sm: "40px" },
+                            objectFit: "contain",
                             mr: 2,
-                            display: { xs: 'none', sm: 'block' },
+                            display: { xs: "none", sm: "block" },
+                            padding: "6px 10px",
+                            backgroundColor: "rgba(255, 255, 255, 0.95)",
+                            borderRadius: "6px",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
                         }}
                     />
-                    <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
-                        {menuItems.find((item) => item.path === location.pathname)?.text ||
-                            'HESTIM Planner'}
+                    <Typography
+                        variant="h6"
+                        noWrap
+                        component="div"
+                        sx={{ flexGrow: 1 }}
+                    >
+                        {menuItems.find(
+                            (item) => item.path === location.pathname,
+                        )?.text || "HESTIM Planner"}
                     </Typography>
                     <IconButton
                         size="large"
@@ -402,7 +608,7 @@ export default function DashboardLayout({ children }) {
                         edge="end"
                         aria-label="notifications"
                         color="inherit"
-                        onClick={() => navigate('/notifications')}
+                        onClick={() => navigate("/notifications")}
                     >
                         <Badge badgeContent={unreadNotifications} color="error">
                             <Notifications />
@@ -416,14 +622,19 @@ export default function DashboardLayout({ children }) {
                         onClick={toggleTheme}
                         sx={{ ml: 1 }}
                     >
-                        {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
+                        {mode === "dark" ? <Brightness7 /> : <Brightness4 />}
                     </IconButton>
                     <IconButton onClick={handleMenuOpen} sx={{ ml: 1 }}>
-                        <Avatar 
-                            src={user?.avatar_url} 
-                            sx={{ width: 32, height: 32, bgcolor: 'secondary.main' }}
+                        <Avatar
+                            src={user?.avatar_url}
+                            sx={{
+                                width: 32,
+                                height: 32,
+                                bgcolor: "secondary.main",
+                            }}
                         >
-                            {!user?.avatar_url && user?.prenom?.[0]?.toUpperCase()}
+                            {!user?.avatar_url &&
+                                user?.prenom?.[0]?.toUpperCase()}
                         </Avatar>
                     </IconButton>
                     <Menu
@@ -431,7 +642,7 @@ export default function DashboardLayout({ children }) {
                         open={Boolean(anchorEl)}
                         onClose={handleMenuClose}
                     >
-                        <MenuItem onClick={() => navigate('/parametres')}>
+                        <MenuItem onClick={() => navigate("/parametres")}>
                             <ListItemIcon>
                                 <Settings fontSize="small" />
                             </ListItemIcon>
@@ -458,9 +669,9 @@ export default function DashboardLayout({ children }) {
                         keepMounted: true,
                     }}
                     sx={{
-                        display: { xs: 'block', sm: 'none' },
-                        '& .MuiDrawer-paper': {
-                            boxSizing: 'border-box',
+                        display: { xs: "block", sm: "none" },
+                        "& .MuiDrawer-paper": {
+                            boxSizing: "border-box",
                             width: drawerWidth,
                         },
                     }}
@@ -470,9 +681,9 @@ export default function DashboardLayout({ children }) {
                 <Drawer
                     variant="permanent"
                     sx={{
-                        display: { xs: 'none', sm: 'block' },
-                        '& .MuiDrawer-paper': {
-                            boxSizing: 'border-box',
+                        display: { xs: "none", sm: "block" },
+                        "& .MuiDrawer-paper": {
+                            boxSizing: "border-box",
                             width: drawerWidth,
                         },
                     }}
@@ -492,8 +703,10 @@ export default function DashboardLayout({ children }) {
                 <Toolbar />
                 {children}
             </Box>
-            <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+            <GlobalSearch
+                open={searchOpen}
+                onClose={() => setSearchOpen(false)}
+            />
         </Box>
     );
 }
-

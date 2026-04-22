@@ -24,10 +24,15 @@ const theme = createTheme({
 
 export default function Header() {
     return (
-        <Box sx={{ flexGrow: 1, backgroundColor: "white" }}>
+        <Box sx={{ flexGrow: 1 }}>
             <AppBar
-                color="white"
-                sx={{ boxShadow: "none", pt: 2, px: 6 }}
+                sx={{
+                    background:
+                        "linear-gradient(90deg, #001062 0%, #1a3a8f 100%)",
+                    boxShadow: "none",
+                    pt: 2,
+                    px: 6,
+                }}
                 position="static"
             >
                 <Toolbar
@@ -43,6 +48,10 @@ export default function Header() {
                             width: { xs: "160px", md: "220px" },
                             height: { xs: "40px", md: "60px" },
                             objectFit: "contain",
+                            padding: "8px 12px",
+                            backgroundColor: "rgba(255, 255, 255, 0.95)",
+                            borderRadius: "8px",
+                            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
                         }}
                     />
                 </Toolbar>
