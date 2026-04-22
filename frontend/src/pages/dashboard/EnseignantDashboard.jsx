@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
     Box,
     Grid,
@@ -14,7 +14,7 @@ import {
     Avatar,
     Divider,
     LinearProgress,
-} from '@mui/material';
+} from "@mui/material";
 import {
     Schedule,
     Assignment,
@@ -25,18 +25,22 @@ import {
     LocationOn,
     Person,
     ArrowBack,
-} from '@mui/icons-material';
-import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { useAuth } from '../../contexts/AuthContext';
-import { affectationAPI, demandeReportAPI } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
+} from "@mui/icons-material";
+import DashboardLayout from "../../components/layouts/DashboardLayout";
+import { useAuth } from "../../contexts/AuthContext";
+import { affectationAPI, demandeReportAPI } from "../../services/api";
+import { useNavigate } from "react-router-dom";
 
 export default function EnseignantDashboard() {
     const { user } = useAuth();
     const navigate = useNavigate();
     const [affectations, setAffectations] = useState([]);
     const [demandes, setDemandes] = useState([]);
-    const [stats, setStats] = useState({ totalCours: 0, coursAujourdhui: 0, demandesEnAttente: 0 });
+    const [stats, setStats] = useState({
+        totalCours: 0,
+        coursAujourdhui: 0,
+        demandesEnAttente: 0,
+    });
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -59,72 +63,109 @@ export default function EnseignantDashboard() {
             // Calculer les statistiques
             const aujourdhui = new Date().toDateString();
             const coursAujourdhui = affs.filter(
-                (aff) => new Date(aff.date_seance).toDateString() === aujourdhui
+                (aff) =>
+                    new Date(aff.date_seance).toDateString() === aujourdhui,
             ).length;
 
             setStats({
                 totalCours: affs.length,
                 coursAujourdhui,
-                demandesEnAttente: (demandesData.data || demandesData || []).filter(
-                    (d) => d.statut === 'en_attente'
-                ).length,
+                demandesEnAttente: (
+                    demandesData.data ||
+                    demandesData ||
+                    []
+                ).filter((d) => d.statut === "en_attente").length,
             });
         } catch (error) {
-            console.error('Erreur lors du chargement:', error);
+            console.error("Erreur lors du chargement:", error);
         } finally {
             setLoading(false);
         }
     };
 
     const quickActions = [
-        { label: 'Mon emploi du temps', path: '/emploi-du-temps/enseignant', icon: <CalendarToday />, variant: 'contained' },
-        { label: 'Mes affectations', path: '/mes-affectations', icon: <Schedule />, variant: 'outlined' },
+        {
+            label: "Mon emploi du temps",
+            path: "/emploi-du-temps/enseignant",
+            icon: <CalendarToday />,
+            variant: "contained",
+        },
+        {
+            label: "Mes affectations",
+            path: "/mes-affectations",
+            icon: <Schedule />,
+            variant: "outlined",
+        },
     ];
 
     const statCards = [
         {
-            title: 'Total cours',
+            title: "Total cours",
             value: stats.totalCours,
             icon: <School />,
-            color: '#1976d2',
+            color: "#1976d2",
         },
         {
-            title: 'Cours aujourd\'hui',
+            title: "Cours aujourd'hui",
             value: stats.coursAujourdhui,
             icon: <Event />,
-            color: '#388e3c',
+            color: "#388e3c",
         },
         {
-            title: 'Demandes en attente',
+            title: "Demandes en attente",
             value: stats.demandesEnAttente,
             icon: <Assignment />,
-            color: '#f57c00',
+            color: "#f57c00",
         },
     ];
 
     return (
         <DashboardLayout>
-            <Box sx={{ flexGrow: 1, bgcolor: 'background.default', minHeight: '100vh' }}>
+            <Box
+                sx={{
+                    flexGrow: 1,
+                    bgcolor: "background.default",
+                    minHeight: "100vh",
+                }}
+            >
                 {/* Barre d'actions rapides en haut */}
                 <Paper
                     elevation={2}
                     sx={{
                         p: 2,
                         mb: 3,
-                        bgcolor: 'background.paper',
+                        bgcolor: "background.paper",
                         borderRadius: 2,
                     }}
                 >
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
+                    <Box
+                        sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "space-between",
+                            flexWrap: "wrap",
+                            gap: 2,
+                        }}
+                    >
                         <Box>
-                            <Typography variant="h5" fontWeight="bold" gutterBottom>
+                            <Typography
+                                variant="h5"
+                                fontWeight="bold"
+                                gutterBottom
+                            >
                                 Tableau de bord Enseignant
                             </Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Bienvenue, {user?.prenom} {user?.nom} • {new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                Bienvenue, {user?.prenom} {user?.nom} •{" "}
+                                {new Date().toLocaleDateString("fr-FR", {
+                                    weekday: "long",
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                })}
                             </Typography>
                         </Box>
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
+                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
                             {quickActions.map((action, index) => (
                                 <Button
                                     key={index}
@@ -145,15 +186,15 @@ export default function EnseignantDashboard() {
                 {/* Statistiques */}
                 <Grid container spacing={3} sx={{ mb: 3 }}>
                     {statCards.map((card, index) => (
-                        <Grid item xs={12} sm={6} md={4} key={index}>
+                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
                             <Card
                                 sx={{
-                                    height: '100%',
-                                    transition: 'all 0.3s ease',
-                                    border: '1px solid',
-                                    borderColor: 'divider',
-                                    '&:hover': {
-                                        transform: 'translateY(-8px)',
+                                    height: "100%",
+                                    transition: "all 0.3s ease",
+                                    border: "1px solid",
+                                    borderColor: "divider",
+                                    "&:hover": {
+                                        transform: "translateY(-8px)",
                                         boxShadow: 6,
                                         borderColor: card.color,
                                     },
@@ -162,16 +203,27 @@ export default function EnseignantDashboard() {
                                 <CardContent>
                                     <Box
                                         sx={{
-                                            display: 'flex',
-                                            alignItems: 'center',
-                                            justifyContent: 'space-between',
+                                            display: "flex",
+                                            alignItems: "center",
+                                            justifyContent: "space-between",
                                         }}
                                     >
                                         <Box sx={{ flex: 1 }}>
-                                            <Typography variant="h3" fontWeight="bold" sx={{ color: card.color, mb: 1 }}>
+                                            <Typography
+                                                variant="h3"
+                                                fontWeight="bold"
+                                                sx={{
+                                                    color: card.color,
+                                                    mb: 1,
+                                                }}
+                                            >
                                                 {card.value}
                                             </Typography>
-                                            <Typography variant="body1" color="text.secondary" fontWeight="medium">
+                                            <Typography
+                                                variant="body1"
+                                                color="text.secondary"
+                                                fontWeight="medium"
+                                            >
                                                 {card.title}
                                             </Typography>
                                         </Box>
@@ -194,7 +246,7 @@ export default function EnseignantDashboard() {
 
                 <Grid container spacing={3}>
                     {/* Mes prochains cours */}
-                    <Grid item xs={12}>
+                    <Grid size={{ xs: 12 }}>
                         <Paper
                             elevation={2}
                             sx={{
@@ -204,9 +256,9 @@ export default function EnseignantDashboard() {
                         >
                             <Box
                                 sx={{
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'space-between',
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "space-between",
                                     mb: 3,
                                 }}
                             >
@@ -216,7 +268,9 @@ export default function EnseignantDashboard() {
                                 <Button
                                     size="small"
                                     variant="outlined"
-                                    onClick={() => navigate('/emploi-du-temps/enseignant')}
+                                    onClick={() =>
+                                        navigate("/emploi-du-temps/enseignant")
+                                    }
                                 >
                                     Voir tout
                                 </Button>
@@ -224,91 +278,218 @@ export default function EnseignantDashboard() {
                             <Divider sx={{ mb: 2 }} />
                             {affectations.length > 0 ? (
                                 <List sx={{ p: 0 }}>
-                                    {affectations.slice(0, 5).map((aff, index) => (
-                                        <React.Fragment key={aff.id_affectation}>
-                                            <ListItem
-                                                sx={{
-                                                    border: '1px solid',
-                                                    borderColor: 'divider',
-                                                    borderRadius: 2,
-                                                    mb: 2,
-                                                    bgcolor: 'background.paper',
-                                                    '&:hover': {
-                                                        bgcolor: 'action.hover',
-                                                        borderColor: 'primary.main',
-                                                    },
-                                                }}
+                                    {affectations
+                                        .slice(0, 5)
+                                        .map((aff, index) => (
+                                            <React.Fragment
+                                                key={aff.id_affectation}
                                             >
-                                                <Avatar
+                                                <ListItem
                                                     sx={{
-                                                        bgcolor: 'primary.main',
-                                                        mr: 2,
+                                                        border: "1px solid",
+                                                        borderColor: "divider",
+                                                        borderRadius: 2,
+                                                        mb: 2,
+                                                        bgcolor:
+                                                            "background.paper",
+                                                        "&:hover": {
+                                                            bgcolor:
+                                                                "action.hover",
+                                                            borderColor:
+                                                                "primary.main",
+                                                        },
                                                     }}
                                                 >
-                                                    <School />
-                                                </Avatar>
-                                                <ListItemText
-                                                    primary={
-                                                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 0.5 }}>
-                                                            <Typography variant="subtitle1" fontWeight="bold">
-                                                                {aff.cours?.nom_cours || 'Cours'}
-                                                            </Typography>
-                                                            <Chip
-                                                                label={aff.statut}
-                                                                size="small"
-                                                                color={
-                                                                    aff.statut === 'confirme'
-                                                                        ? 'success'
-                                                                        : aff.statut === 'annule'
-                                                                          ? 'error'
-                                                                          : 'default'
-                                                                }
-                                                            />
-                                                        </Box>
-                                                    }
-                                                    secondary={
-                                                        <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5, mt: 1 }}>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                <Person fontSize="small" color="action" />
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    Groupe: {aff.groupe?.nom_groupe || 'N/A'}
+                                                    <Avatar
+                                                        sx={{
+                                                            bgcolor:
+                                                                "primary.main",
+                                                            mr: 2,
+                                                        }}
+                                                    >
+                                                        <School />
+                                                    </Avatar>
+                                                    <ListItemText
+                                                        primary={
+                                                            <Box
+                                                                sx={{
+                                                                    display:
+                                                                        "flex",
+                                                                    alignItems:
+                                                                        "center",
+                                                                    gap: 1,
+                                                                    mb: 0.5,
+                                                                }}
+                                                            >
+                                                                <Typography
+                                                                    variant="subtitle1"
+                                                                    fontWeight="bold"
+                                                                >
+                                                                    {aff.cours
+                                                                        ?.nom_cours ||
+                                                                        "Cours"}
                                                                 </Typography>
+                                                                <Chip
+                                                                    label={
+                                                                        aff.statut
+                                                                    }
+                                                                    size="small"
+                                                                    color={
+                                                                        aff.statut ===
+                                                                        "confirme"
+                                                                            ? "success"
+                                                                            : aff.statut ===
+                                                                                "annule"
+                                                                              ? "error"
+                                                                              : "default"
+                                                                    }
+                                                                />
                                                             </Box>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                <CalendarToday fontSize="small" color="action" />
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    {new Date(aff.date_seance).toLocaleDateString('fr-FR', {
-                                                                        weekday: 'long',
-                                                                        year: 'numeric',
-                                                                        month: 'long',
-                                                                        day: 'numeric',
-                                                                    })}
-                                                                </Typography>
+                                                        }
+                                                        secondary={
+                                                            <Box
+                                                                sx={{
+                                                                    display:
+                                                                        "flex",
+                                                                    flexDirection:
+                                                                        "column",
+                                                                    gap: 0.5,
+                                                                    mt: 1,
+                                                                }}
+                                                            >
+                                                                <Box
+                                                                    sx={{
+                                                                        display:
+                                                                            "flex",
+                                                                        alignItems:
+                                                                            "center",
+                                                                        gap: 1,
+                                                                    }}
+                                                                >
+                                                                    <Person
+                                                                        fontSize="small"
+                                                                        color="action"
+                                                                    />
+                                                                    <Typography
+                                                                        variant="body2"
+                                                                        color="text.secondary"
+                                                                    >
+                                                                        Groupe:{" "}
+                                                                        {aff
+                                                                            .groupe
+                                                                            ?.nom_groupe ||
+                                                                            "N/A"}
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Box
+                                                                    sx={{
+                                                                        display:
+                                                                            "flex",
+                                                                        alignItems:
+                                                                            "center",
+                                                                        gap: 1,
+                                                                    }}
+                                                                >
+                                                                    <CalendarToday
+                                                                        fontSize="small"
+                                                                        color="action"
+                                                                    />
+                                                                    <Typography
+                                                                        variant="body2"
+                                                                        color="text.secondary"
+                                                                    >
+                                                                        {new Date(
+                                                                            aff.date_seance,
+                                                                        ).toLocaleDateString(
+                                                                            "fr-FR",
+                                                                            {
+                                                                                weekday:
+                                                                                    "long",
+                                                                                year: "numeric",
+                                                                                month: "long",
+                                                                                day: "numeric",
+                                                                            },
+                                                                        )}
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Box
+                                                                    sx={{
+                                                                        display:
+                                                                            "flex",
+                                                                        alignItems:
+                                                                            "center",
+                                                                        gap: 1,
+                                                                    }}
+                                                                >
+                                                                    <AccessTime
+                                                                        fontSize="small"
+                                                                        color="action"
+                                                                    />
+                                                                    <Typography
+                                                                        variant="body2"
+                                                                        color="text.secondary"
+                                                                    >
+                                                                        {
+                                                                            aff
+                                                                                .creneau
+                                                                                ?.heure_debut
+                                                                        }{" "}
+                                                                        -{" "}
+                                                                        {
+                                                                            aff
+                                                                                .creneau
+                                                                                ?.heure_fin
+                                                                        }
+                                                                    </Typography>
+                                                                </Box>
+                                                                <Box
+                                                                    sx={{
+                                                                        display:
+                                                                            "flex",
+                                                                        alignItems:
+                                                                            "center",
+                                                                        gap: 1,
+                                                                    }}
+                                                                >
+                                                                    <LocationOn
+                                                                        fontSize="small"
+                                                                        color="action"
+                                                                    />
+                                                                    <Typography
+                                                                        variant="body2"
+                                                                        color="text.secondary"
+                                                                    >
+                                                                        Salle:{" "}
+                                                                        {aff
+                                                                            .salle
+                                                                            ?.nom_salle ||
+                                                                            "N/A"}
+                                                                    </Typography>
+                                                                </Box>
                                                             </Box>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                <AccessTime fontSize="small" color="action" />
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    {aff.creneau?.heure_debut} - {aff.creneau?.heure_fin}
-                                                                </Typography>
-                                                            </Box>
-                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                                <LocationOn fontSize="small" color="action" />
-                                                                <Typography variant="body2" color="text.secondary">
-                                                                    Salle: {aff.salle?.nom_salle || 'N/A'}
-                                                                </Typography>
-                                                            </Box>
-                                                        </Box>
-                                                    }
-                                                />
-                                            </ListItem>
-                                            {index < affectations.slice(0, 5).length - 1 && <Divider />}
-                                        </React.Fragment>
-                                    ))}
+                                                        }
+                                                    />
+                                                </ListItem>
+                                                {index <
+                                                    affectations.slice(0, 5)
+                                                        .length -
+                                                        1 && <Divider />}
+                                            </React.Fragment>
+                                        ))}
                                 </List>
                             ) : (
-                                <Box sx={{ textAlign: 'center', py: 4 }}>
-                                    <Schedule sx={{ fontSize: 48, color: 'text.disabled', mb: 2 }} />
-                                    <Typography variant="body2" color="text.secondary">
+                                <Box sx={{ textAlign: "center", py: 4 }}>
+                                    <Schedule
+                                        sx={{
+                                            fontSize: 48,
+                                            color: "text.disabled",
+                                            mb: 2,
+                                        }}
+                                    />
+                                    <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                    >
                                         Aucun cours programmé
                                     </Typography>
                                 </Box>
