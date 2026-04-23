@@ -51,12 +51,16 @@ const HESTIM_CONFIG = {
     // niveaux : { label, semestre, effectif, nb_groupes }
     filieres: [
         // ── Cycle Préparatoire ────────────────────────────────────────────────
+        // ── IIIA — Informatique & IA (1ère → 5ème année) ─────────────────────
         {
-            code:'PREPA-IIIA', nom:'Prépa Informatique et Intelligence Artificielle',
-            abrege:'IIIA', cycle:'Préparatoire',
+            code:'IIIA', nom:'Ingénierie Informatique et Intelligence Artificielle',
+            abrege:'IIIA', cycle:'Ingénieur',
             niveaux:[
-                { label:'1ère année Prépa', semestre:'S1', effectif:30, nb_groupes:2 },
-                { label:'2ème année Prépa', semestre:'S3', effectif:28, nb_groupes:2 },
+                { label:'1ère année', semestre:'S1', effectif:30, nb_groupes:2 },
+                { label:'2ème année', semestre:'S3', effectif:28, nb_groupes:2 },
+                { label:'3ème année', semestre:'S5', effectif:25, nb_groupes:2 },
+                { label:'4ème année', semestre:'S7', effectif:22, nb_groupes:2 },
+                { label:'5ème année', semestre:'S9', effectif:20, nb_groupes:1 },
             ],
         },
         {
@@ -68,15 +72,6 @@ const HESTIM_CONFIG = {
             ],
         },
         // ── Cycle Ingénieur ───────────────────────────────────────────────────
-        {
-            code:'IIA', nom:'Ingénierie Informatique et Intelligence Artificielle',
-            abrege:'IIA', cycle:'Ingénieur',
-            niveaux:[
-                { label:'3ème année', semestre:'S5', effectif:25, nb_groupes:2 },
-                { label:'4ème année', semestre:'S7', effectif:22, nb_groupes:2 },
-                { label:'5ème année', semestre:'S9', effectif:20, nb_groupes:1 },
-            ],
-        },
         {
             code:'CYB', nom:'Cybersécurité',
             abrege:'CYB', cycle:'Ingénieur',
@@ -113,17 +108,17 @@ const HESTIM_CONFIG = {
     // Ajouter un cours : { code, nom, filiere, niveau, type, vh, coef, dept }
     // dept doit correspondre à un HESTIM_CONFIG.departements[].nom
     cours: [
-        // ── PREPA-IIIA — 1ère année Prépa ────────────────────────────────────
-        { code:'IIIA-1-ALGO',   nom:'Algorithmique et Structures de données', filiere:'PREPA-IIIA', niveau:'1ère année Prépa', type:'CM', vh:30, coef:3, dept:'Informatique' },
-        { code:'IIIA-1-PROG',   nom:'Programmation C/C++',                    filiere:'PREPA-IIIA', niveau:'1ère année Prépa', type:'TP', vh:30, coef:3, dept:'Informatique' },
-        { code:'IIIA-1-MATH',   nom:'Mathématiques 1',                        filiere:'PREPA-IIIA', niveau:'1ère année Prépa', type:'CM', vh:30, coef:3, dept:'Mathématiques' },
-        { code:'IIIA-1-PHYS',   nom:'Physique',                               filiere:'PREPA-IIIA', niveau:'1ère année Prépa', type:'CM', vh:30, coef:2, dept:'Sciences' },
-        { code:'IIIA-1-ANG',    nom:'Anglais Technique',                      filiere:'PREPA-IIIA', niveau:'1ère année Prépa', type:'TD', vh:20, coef:1, dept:'Langues' },
-        // ── PREPA-IIIA — 2ème année Prépa ────────────────────────────────────
-        { code:'IIIA-2-ALGO2',  nom:'Algorithmique Avancée',                  filiere:'PREPA-IIIA', niveau:'2ème année Prépa', type:'CM', vh:30, coef:3, dept:'Informatique' },
-        { code:'IIIA-2-POO',    nom:'Programmation Orientée Objet (Java)',    filiere:'PREPA-IIIA', niveau:'2ème année Prépa', type:'TP', vh:30, coef:3, dept:'Informatique' },
-        { code:'IIIA-2-MATH2',  nom:'Mathématiques 2',                        filiere:'PREPA-IIIA', niveau:'2ème année Prépa', type:'CM', vh:30, coef:3, dept:'Mathématiques' },
-        { code:'IIIA-2-SYS',    nom:"Systèmes d'information",                 filiere:'PREPA-IIIA', niveau:'2ème année Prépa', type:'CM', vh:20, coef:2, dept:'Informatique' },
+        // ── IIIA — 1ère année ─────────────────────────────────────────────────
+        { code:'IIIA-1-ALGO',   nom:'Algorithmique et Structures de données', filiere:'IIIA', niveau:'1ère année', type:'CM', vh:30, coef:3, dept:'Informatique' },
+        { code:'IIIA-1-PROG',   nom:'Programmation C/C++',                    filiere:'IIIA', niveau:'1ère année', type:'TP', vh:30, coef:3, dept:'Informatique' },
+        { code:'IIIA-1-MATH',   nom:'Mathématiques 1',                        filiere:'IIIA', niveau:'1ère année', type:'CM', vh:30, coef:3, dept:'Mathématiques' },
+        { code:'IIIA-1-PHYS',   nom:'Physique',                               filiere:'IIIA', niveau:'1ère année', type:'CM', vh:30, coef:2, dept:'Sciences' },
+        { code:'IIIA-1-ANG',    nom:'Anglais Technique',                      filiere:'IIIA', niveau:'1ère année', type:'TD', vh:20, coef:1, dept:'Langues' },
+        // ── IIIA — 2ème année ─────────────────────────────────────────────────
+        { code:'IIIA-2-ALGO2',  nom:'Algorithmique Avancée',                  filiere:'IIIA', niveau:'2ème année', type:'CM', vh:30, coef:3, dept:'Informatique' },
+        { code:'IIIA-2-POO',    nom:'Programmation Orientée Objet (Java)',    filiere:'IIIA', niveau:'2ème année', type:'TP', vh:30, coef:3, dept:'Informatique' },
+        { code:'IIIA-2-MATH2',  nom:'Mathématiques 2',                        filiere:'IIIA', niveau:'2ème année', type:'CM', vh:30, coef:3, dept:'Mathématiques' },
+        { code:'IIIA-2-SYS',    nom:"Systèmes d'information",                 filiere:'IIIA', niveau:'2ème année', type:'CM', vh:20, coef:2, dept:'Informatique' },
         // ── PREPA-GI — 1ère année Prépa ──────────────────────────────────────
         { code:'GI-1-MATH',     nom:'Mathématiques Générales 1',              filiere:'PREPA-GI', niveau:'1ère année Prépa', type:'CM', vh:30, coef:3, dept:'Mathématiques' },
         { code:'GI-1-PHYS',     nom:'Physique Générale',                      filiere:'PREPA-GI', niveau:'1ère année Prépa', type:'CM', vh:30, coef:3, dept:'Sciences' },
@@ -134,22 +129,22 @@ const HESTIM_CONFIG = {
         { code:'GI-2-MATH2',    nom:'Mathématiques Générales 2',              filiere:'PREPA-GI', niveau:'2ème année Prépa', type:'CM', vh:30, coef:3, dept:'Mathématiques' },
         { code:'GI-2-ELEC',     nom:'Électronique',                           filiere:'PREPA-GI', niveau:'2ème année Prépa', type:'CM', vh:30, coef:3, dept:'Sciences' },
         { code:'GI-2-PROG',     nom:'Programmation Python',                   filiere:'PREPA-GI', niveau:'2ème année Prépa', type:'TP', vh:30, coef:2, dept:'Informatique' },
-        // ── IIA — 3ème année ──────────────────────────────────────────────────
-        { code:'IIA-3-ANNUM',   nom:'Analyse Numérique',                      filiere:'IIA', niveau:'3ème année', type:'CM', vh:30, coef:2, dept:'Mathématiques' },
-        { code:'IIA-3-RO',      nom:'Recherche Opérationnelle',               filiere:'IIA', niveau:'3ème année', type:'CM', vh:30, coef:3, dept:'Mathématiques' },
-        { code:'IIA-3-ALGP',    nom:'Algorithmes de Graphes avec Python',     filiere:'IIA', niveau:'3ème année', type:'TP', vh:30, coef:2, dept:'Informatique' },
-        { code:'IIA-3-DWFS',    nom:'Développement Web Full-stack',           filiere:'IIA', niveau:'3ème année', type:'TP', vh:40, coef:3, dept:'Informatique' },
-        { code:'IIA-3-RESINF',  nom:'Réseaux Informatiques',                  filiere:'IIA', niveau:'3ème année', type:'CM', vh:30, coef:2, dept:'Informatique' },
-        { code:'IIA-3-PACTE',   nom:'Projet PACTE',                           filiere:'IIA', niveau:'3ème année', type:'Projet', vh:40, coef:4, dept:'Informatique' },
-        // ── IIA — 4ème année ──────────────────────────────────────────────────
-        { code:'IIA-4-ML',      nom:'Machine Learning',                       filiere:'IIA', niveau:'4ème année', type:'CM', vh:30, coef:3, dept:'IA & Data' },
-        { code:'IIA-4-DL',      nom:'Deep Learning',                          filiere:'IIA', niveau:'4ème année', type:'CM', vh:30, coef:3, dept:'IA & Data' },
-        { code:'IIA-4-CLOUD',   nom:'Cloud Computing',                        filiere:'IIA', niveau:'4ème année', type:'CM', vh:20, coef:2, dept:'Informatique' },
-        { code:'IIA-4-ENT',     nom:'Entrepreneuriat',                        filiere:'IIA', niveau:'4ème année', type:'CM', vh:20, coef:2, dept:'Management' },
-        // ── IIA — 5ème année ──────────────────────────────────────────────────
-        { code:'IIA-5-LLM',     nom:'LLMs & Agents IA',                      filiere:'IIA', niveau:'5ème année', type:'CM', vh:30, coef:3, dept:'IA & Data' },
-        { code:'IIA-5-MLOPS',   nom:'MLOps & Déploiement',                   filiere:'IIA', niveau:'5ème année', type:'TP', vh:20, coef:2, dept:'IA & Data' },
-        { code:'IIA-5-PFE',     nom:"Projet de Fin d'Études",                filiere:'IIA', niveau:'5ème année', type:'Projet', vh:60, coef:6, dept:'Informatique' },
+        // ── IIIA — 3ème année ─────────────────────────────────────────────────
+        { code:'IIIA-3-ANNUM',  nom:'Analyse Numérique',                      filiere:'IIIA', niveau:'3ème année', type:'CM', vh:30, coef:2, dept:'Mathématiques' },
+        { code:'IIIA-3-RO',     nom:'Recherche Opérationnelle',               filiere:'IIIA', niveau:'3ème année', type:'CM', vh:30, coef:3, dept:'Mathématiques' },
+        { code:'IIIA-3-ALGP',   nom:'Algorithmes de Graphes avec Python',     filiere:'IIIA', niveau:'3ème année', type:'TP', vh:30, coef:2, dept:'Informatique' },
+        { code:'IIIA-3-DWFS',   nom:'Développement Web Full-stack',           filiere:'IIIA', niveau:'3ème année', type:'TP', vh:40, coef:3, dept:'Informatique' },
+        { code:'IIIA-3-RESINF', nom:'Réseaux Informatiques',                  filiere:'IIIA', niveau:'3ème année', type:'CM', vh:30, coef:2, dept:'Informatique' },
+        { code:'IIIA-3-PACTE',  nom:'Projet PACTE',                           filiere:'IIIA', niveau:'3ème année', type:'Projet', vh:40, coef:4, dept:'Informatique' },
+        // ── IIIA — 4ème année ─────────────────────────────────────────────────
+        { code:'IIIA-4-ML',     nom:'Machine Learning',                       filiere:'IIIA', niveau:'4ème année', type:'CM', vh:30, coef:3, dept:'IA & Data' },
+        { code:'IIIA-4-DL',     nom:'Deep Learning',                          filiere:'IIIA', niveau:'4ème année', type:'CM', vh:30, coef:3, dept:'IA & Data' },
+        { code:'IIIA-4-CLOUD',  nom:'Cloud Computing',                        filiere:'IIIA', niveau:'4ème année', type:'CM', vh:20, coef:2, dept:'Informatique' },
+        { code:'IIIA-4-ENT',    nom:'Entrepreneuriat',                        filiere:'IIIA', niveau:'4ème année', type:'CM', vh:20, coef:2, dept:'Management' },
+        // ── IIIA — 5ème année ─────────────────────────────────────────────────
+        { code:'IIIA-5-LLM',    nom:'LLMs & Agents IA',                      filiere:'IIIA', niveau:'5ème année', type:'CM', vh:30, coef:3, dept:'IA & Data' },
+        { code:'IIIA-5-MLOPS',  nom:'MLOps & Déploiement',                   filiere:'IIIA', niveau:'5ème année', type:'TP', vh:20, coef:2, dept:'IA & Data' },
+        { code:'IIIA-5-PFE',    nom:"Projet de Fin d'Études",                filiere:'IIIA', niveau:'5ème année', type:'Projet', vh:60, coef:6, dept:'Informatique' },
         // ── CYB — 3ème année ──────────────────────────────────────────────────
         { code:'CYB-3-CRYPTO',  nom:'Cryptographie',                          filiere:'CYB', niveau:'3ème année', type:'CM', vh:30, coef:3, dept:'Cybersécurité' },
         { code:'CYB-3-RESX',    nom:'Sécurité des Réseaux',                  filiere:'CYB', niveau:'3ème année', type:'CM', vh:30, coef:3, dept:'Cybersécurité' },
@@ -414,20 +409,19 @@ async function seed() {
                 const nom    = NOMS_ETU[etuCount % NOMS_ETU.length];
                 const slug   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'.');
                 const email  = `${slug(prenom)}.${nom.toLowerCase().replace(/\s/g,'')}${etuCount}@hestim.ma`;
-                const [user, created] = await Users.findOrCreate({
+                const [user] = await Users.findOrCreate({
                     where: { email },
                     defaults: { nom, prenom, email, password_hash:pwd, role:'etudiant', telephone:`+212 6${String(etuCount).padStart(8,'0')}`, actif:true },
                 });
-                if (created) {
-                    const exists = await Etudiant.findByPk(user.id_user);
-                    if (!exists) {
-                        await Etudiant.create({ id_user:user.id_user, numero_etudiant:`ETU-${gDef.nom_groupe}-${String(i+1).padStart(3,'0')}`, niveau:gDef.niveau });
-                        await Appartenir.findOrCreate({
-                            where: { id_user_etudiant:user.id_user, id_groupe:groupe.id_groupe },
-                            defaults: { id_user_etudiant:user.id_user, id_groupe:groupe.id_groupe },
-                        });
-                    }
+                // Idempotent : toujours s'assurer que Etudiant et Appartenir existent
+                const etudiantExists = await Etudiant.findByPk(user.id_user);
+                if (!etudiantExists) {
+                    await Etudiant.create({ id_user:user.id_user, numero_etudiant:`ETU-${gDef.nom_groupe}-${String(i+1).padStart(3,'0')}`, niveau:gDef.niveau });
                 }
+                await Appartenir.findOrCreate({
+                    where: { id_user_etudiant:user.id_user, id_groupe:groupe.id_groupe },
+                    defaults: { id_user_etudiant:user.id_user, id_groupe:groupe.id_groupe },
+                });
                 if (firstEtu.length < 5) firstEtu.push(user);
                 etuCount++;
             }

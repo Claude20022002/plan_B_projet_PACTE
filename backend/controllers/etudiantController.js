@@ -20,7 +20,7 @@ export const getAllEtudiants = asyncHandler(async (req, res) => {
         where.niveau = req.query.niveau;
     }
 
-    const { count, rows: etudiants } = await Etudiant.findAndCountAll({
+    const { count, rows: etudiantsRaw } = await Etudiant.findAndCountAll({
         where,
         include: [
             {
@@ -28,10 +28,29 @@ export const getAllEtudiants = asyncHandler(async (req, res) => {
                 as: "user",
                 attributes: { exclude: ["password_hash"] },
             },
+            {
+                model: Appartenir,
+                as: "appartenance",
+                include: [
+                    {
+                        model: Groupe,
+                        as: "groupe",
+                        include: [{ model: Filiere, as: "filiere" }],
+                    },
+                ],
+            },
         ],
         limit,
         offset,
         order: [["numero_etudiant", "ASC"]],
+    });
+
+    // Aplatir groupe pour correspondre à la structure attendue par le frontend
+    const etudiants = etudiantsRaw.map((e) => {
+        const data = e.toJSON();
+        data.groupe    = data.appartenance?.groupe || null;
+        data.id_groupe = data.appartenance?.groupe?.id_groupe || null;
+        return data;
     });
 
     res.json(createPaginationResponse(etudiants, count, page, limit));
