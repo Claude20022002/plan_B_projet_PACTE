@@ -61,18 +61,18 @@ export default function EtudiantDashboard() {
             setNotifications(notifsData.data || notifsData || []);
 
             if (etudiantData?.id_groupe) {
+                const today2 = new Date().toISOString().slice(0, 10);
                 const affectationsData = await affectationAPI.getByGroupe(
                     etudiantData.id_groupe,
-                    { limit: 10 },
+                    { date_from: today2, limit: 200 },
                 );
                 const affs = affectationsData.data || [];
                 setAffectations(affs);
 
                 // Calculer les statistiques
-                const aujourdhui = new Date().toDateString();
+                const todayStr = new Date().toISOString().slice(0, 10);
                 const coursAujourdhui = affs.filter(
-                    (aff) =>
-                        new Date(aff.date_seance).toDateString() === aujourdhui,
+                    (aff) => aff.date_seance?.slice(0, 10) === todayStr,
                 ).length;
 
                 setStats({

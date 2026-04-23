@@ -262,34 +262,103 @@ HESTIM Planner
 };
 
 /**
- * Envoie un email d'annulation de séance aux étudiants
- * @param {Object} options - Options
- * @param {string} options.to - Email du destinataire (étudiant)
- * @param {Object} options.affectation - Données de l'affectation annulée
- * @param {string} options.nouvelle_date - Nouvelle date de la séance
- * @returns {Promise<Object>}
+ * Envoie un email de report de séance aux étudiants
+ * @param {Object} options
+ * @param {string} options.to - Email de l'étudiant
+ * @param {Object} options.affectation - Affectation (avec ancienne date)
+ * @param {string} options.nouvelle_date - Nouvelle date
  */
 export const sendAnnulationSeance = async ({ to, affectation, nouvelle_date }) => {
-    const subject = "Annulation de séance - Report";
+    const coursNom    = affectation.cours?.nom_cours       || 'N/A';
+    const groupeNom   = affectation.groupe?.nom_groupe     || 'N/A';
+    const salleNom    = affectation.salle?.nom_salle       || 'N/A';
+    const ensNom      = `${affectation.enseignant?.prenom || ''} ${affectation.enseignant?.nom || ''}`.trim() || 'N/A';
+    const ancienneDate = new Date(affectation.date_seance).toLocaleDateString('fr-FR', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    });
+    const nouvelleDate = new Date(nouvelle_date).toLocaleDateString('fr-FR', {
+        weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
+    });
+
+    const subject = `⚠️ Séance reportée — ${coursNom}`;
+
     const text = `
 Bonjour,
 
-La séance prévue a été annulée et reportée.
+La séance de cours suivante a été reportée à une nouvelle date.
 
-Détails de la séance annulée :
-- Date : ${affectation.date_seance}
-- Cours : ${affectation.cours?.nom_cours || "N/A"}
-- Groupe : ${affectation.groupe?.nom_groupe || "N/A"}
-- Salle : ${affectation.salle?.nom_salle || "N/A"}
-- Enseignant : ${affectation.enseignant?.prenom || ""} ${affectation.enseignant?.nom || "N/A"}
+Cours     : ${coursNom}
+Groupe    : ${groupeNom}
+Enseignant: ${ensNom}
+Salle     : ${salleNom}
 
-Nouvelle date : ${nouvelle_date}
+Ancienne date : ${ancienneDate}
+Nouvelle date : ${nouvelleDate}
 
-La nouvelle séance sera planifiée à cette date. Veuillez consulter votre emploi du temps pour plus de détails.
+Veuillez consulter votre emploi du temps pour les détails complets.
 
 Cordialement,
 HESTIM Planner
     `;
 
-    return await sendEmail({ to, subject, text });
+    const html = `
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    body{font-family:Arial,sans-serif;line-height:1.6;color:#333;margin:0;padding:0}
+    .wrap{max-width:600px;margin:0 auto;padding:20px}
+    .header{background:#ED7D31;color:white;padding:20px;border-radius:8px 8px 0 0;text-align:center}
+    .header h2{margin:0;font-size:20px}
+    .body{background:#fff8f5;padding:24px;border:1px solid #f0c6a0;border-top:none}
+    .badge{display:inline-block;background:#ED7D31;color:white;padding:4px 12px;border-radius:12px;font-size:13px;margin-bottom:16px}
+    .dates{display:flex;gap:16px;margin:16px 0}
+    .date-box{flex:1;padding:12px;border-radius:6px;text-align:center}
+    .date-old{background:#fef2f2;border:1px solid #fca5a5}
+    .date-new{background:#f0fdf4;border:1px solid #86efac}
+    .date-label{font-size:11px;text-transform:uppercase;font-weight:bold;color:#888;margin-bottom:4px}
+    .date-value{font-size:14px;font-weight:bold}
+    .date-old .date-value{color:#dc2626}
+    .date-new .date-value{color:#16a34a}
+    table{width:100%;border-collapse:collapse;margin-top:12px}
+    td{padding:8px 12px;border-bottom:1px solid #f3e4d6;font-size:14px}
+    td:first-child{font-weight:bold;color:#555;width:40%}
+    .footer{text-align:center;padding:16px;color:#999;font-size:12px;background:#f9f9f9;border:1px solid #f0c6a0;border-top:none;border-radius:0 0 8px 8px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="header">
+      <h2>⚠️ Séance Reportée</h2>
+    </div>
+    <div class="body">
+      <p>Bonjour,</p>
+      <p>La séance de cours suivante a été <strong>reportée</strong> à une nouvelle date :</p>
+      <span class="badge">Avis de report</span>
+      <table>
+        <tr><td>Cours</td><td>${coursNom}</td></tr>
+        <tr><td>Groupe</td><td>${groupeNom}</td></tr>
+        <tr><td>Enseignant</td><td>${ensNom}</td></tr>
+        <tr><td>Salle</td><td>${salleNom}</td></tr>
+      </table>
+      <div class="dates">
+        <div class="date-box date-old">
+          <div class="date-label">Ancienne date</div>
+          <div class="date-value">${ancienneDate}</div>
+        </div>
+        <div class="date-box date-new">
+          <div class="date-label">Nouvelle date</div>
+          <div class="date-value">${nouvelleDate}</div>
+        </div>
+      </div>
+      <p style="font-size:13px;color:#666">Veuillez consulter votre emploi du temps sur HESTIM Planner pour confirmer les détails.</p>
+    </div>
+    <div class="footer">HESTIM Planner — Système de gestion des plannings</div>
+  </div>
+</body>
+</html>
+    `;
+
+    return await sendEmail({ to, subject, text, html });
 };

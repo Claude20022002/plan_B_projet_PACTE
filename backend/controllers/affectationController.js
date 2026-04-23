@@ -6,6 +6,8 @@ import {
     Creneau,
     Users,
 } from "../models/index.js";
+import sequelize from "../config/db.js";
+import { Op } from "sequelize";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { verifierEtCreerConflits } from "../utils/detectConflicts.js";
@@ -203,8 +205,15 @@ export const deleteAffectation = asyncHandler(async (req, res) => {
 export const getAffectationsByEnseignant = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
+    const where = { id_user_enseignant: req.params.id_enseignant };
+    if (req.query.date_from && req.query.date_to) {
+        where.date_seance = { [Op.between]: [req.query.date_from, req.query.date_to] };
+    } else if (req.query.date_from) {
+        where.date_seance = { [Op.gte]: req.query.date_from };
+    }
+
     const { count, rows: affectations } = await Affectation.findAndCountAll({
-        where: { id_user_enseignant: req.params.id_enseignant },
+        where,
         include: [
             { model: Cours, as: "cours" },
             { model: Groupe, as: "groupe" },
@@ -253,8 +262,15 @@ export const confirmerAffectation = asyncHandler(async (req, res) => {
 export const getAffectationsByGroupe = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
+    const where = { id_groupe: req.params.id_groupe };
+    if (req.query.date_from && req.query.date_to) {
+        where.date_seance = { [Op.between]: [req.query.date_from, req.query.date_to] };
+    } else if (req.query.date_from) {
+        where.date_seance = { [Op.gte]: req.query.date_from };
+    }
+
     const { count, rows: affectations } = await Affectation.findAndCountAll({
-        where: { id_groupe: req.params.id_groupe },
+        where,
         include: [
             { model: Cours, as: "cours" },
             { model: Groupe, as: "groupe" },

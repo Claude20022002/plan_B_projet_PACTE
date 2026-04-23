@@ -58,11 +58,12 @@ const SLOTS_DEF = [
     { heure_debut: '15:30', heure_fin: '17:00', duree_minutes: 90  }, // S5
 ];
 
-// Statuts : ~75 % CONFIRMEE, ~15 % ANNULEE, ~10 % REPORTEE (source KPI notebook)
+// Statuts conformes à l'ENUM du modèle Affectation (lowercase)
+// ~73 % confirme · 18 % annule · 9 % reporte
 const STATUTS_POOL = [
-    'CONFIRMEE','CONFIRMEE','CONFIRMEE','CONFIRMEE','CONFIRMEE','CONFIRMEE','CONFIRMEE','CONFIRMEE',
-    'ANNULEE','ANNULEE',
-    'REPORTEE',
+    'confirme','confirme','confirme','confirme','confirme','confirme','confirme','confirme',
+    'annule','annule',
+    'reporte',
 ];
 
 // 35 salles — nommage A-S01/B-LABO01 comme dans le notebook
@@ -314,6 +315,15 @@ async function seed() {
 
         const defaultPassword = await hashPassword('password123');
 
+        // Dates dynamiques : mois en cours → fin du mois prochain
+        const _now   = new Date();
+        const _year  = _now.getFullYear();
+        const _month = _now.getMonth();
+        const DISPO_START  = new Date(_year, _month, 1).toISOString().slice(0, 10);
+        const DISPO_END    = new Date(_year, _month + 2, 0).toISOString().slice(0, 10);
+        const PERIOD_START = DISPO_START;
+        const PERIOD_END   = DISPO_END;
+
         // ── 1. Admins ─────────────────────────────────────────────────────────
         const [admin] = await Users.findOrCreate({
             where: { email: 'admin@hestim.ma' },
@@ -458,9 +468,9 @@ async function seed() {
             for (const cr of creneauxList) {
                 const [, created] = await Disponibilite.findOrCreate({
                     where: { id_user_enseignant: user.id_user, id_creneau: cr.id_creneau,
-                             date_debut: '2025-09-01', date_fin: '2026-01-31' },
+                             date_debut: DISPO_START, date_fin: DISPO_END },
                     defaults: { id_user_enseignant: user.id_user, id_creneau: cr.id_creneau,
-                                disponible: true, date_debut: '2025-09-01', date_fin: '2026-01-31' },
+                                disponible: true, date_debut: DISPO_START, date_fin: DISPO_END },
                 });
                 if (created) dispoCount++;
             }
@@ -486,7 +496,7 @@ async function seed() {
 
         // Génération hebdomadaire — p=0.48 pour atteindre ~55 % taux d'occupation
         // Vendredi 14h30 boosté à p=0.90 → créneau dominant (KPI 4)
-        const mondays = getMondays('2025-09-01', '2026-01-31');
+        const mondays = getMondays(PERIOD_START, PERIOD_END);
         let affCount  = 0;
 
         for (const monday of mondays) {
@@ -631,7 +641,7 @@ async function seed() {
         console.log('\n📦 Volumes créés :');
         console.log(`   Filières : 3    Groupes : ${GROUPES_DEF.length}    Salles : ${sallesList.length}    Créneaux : ${creneauxList.length}`);
         console.log(`   Enseignants : ${enseignantsList.length}    Étudiants : ${etuCount}    Cours : ${COURS_DEF.length}`);
-        console.log(`   Affectations : ${affCount}    Période : Sep 2025 → Jan 2026`);
+        console.log(`   Affectations : ${affCount}    Période : ${PERIOD_START} → ${PERIOD_END}`);
         process.exit(0);
     } catch (error) {
         console.error('❌ Erreur seed:', error);

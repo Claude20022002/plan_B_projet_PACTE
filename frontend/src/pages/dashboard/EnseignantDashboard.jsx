@@ -51,8 +51,9 @@ export default function EnseignantDashboard() {
 
     const loadDashboardData = async () => {
         try {
+            const today = new Date().toISOString().slice(0, 10);
             const [affectationsData, demandesData] = await Promise.all([
-                affectationAPI.getByEnseignant(user.id_user, { limit: 10 }),
+                affectationAPI.getByEnseignant(user.id_user, { date_from: today, limit: 200 }),
                 demandeReportAPI.getByEnseignant(user.id_user),
             ]);
 
@@ -61,10 +62,8 @@ export default function EnseignantDashboard() {
             setDemandes(demandesData.data || demandesData || []);
 
             // Calculer les statistiques
-            const aujourdhui = new Date().toDateString();
             const coursAujourdhui = affs.filter(
-                (aff) =>
-                    new Date(aff.date_seance).toDateString() === aujourdhui,
+                (aff) => aff.date_seance?.slice(0, 10) === today,
             ).length;
 
             setStats({
@@ -74,7 +73,7 @@ export default function EnseignantDashboard() {
                     demandesData.data ||
                     demandesData ||
                     []
-                ).filter((d) => d.statut === "en_attente").length,
+                ).filter((d) => d.statut_demande === "en_attente").length,
             });
         } catch (error) {
             console.error("Erreur lors du chargement:", error);
@@ -332,17 +331,18 @@ export default function EnseignantDashboard() {
                                                                 </Typography>
                                                                 <Chip
                                                                     label={
+                                                                        aff.statut === 'planifie' ? 'Planifié'  :
+                                                                        aff.statut === 'confirme' ? 'Confirmé'  :
+                                                                        aff.statut === 'annule'   ? 'Annulé'    :
+                                                                        aff.statut === 'reporte'  ? 'Reporté'   :
                                                                         aff.statut
                                                                     }
                                                                     size="small"
                                                                     color={
-                                                                        aff.statut ===
-                                                                        "confirme"
-                                                                            ? "success"
-                                                                            : aff.statut ===
-                                                                                "annule"
-                                                                              ? "error"
-                                                                              : "default"
+                                                                        aff.statut === 'confirme' ? 'success' :
+                                                                        aff.statut === 'annule'   ? 'error'   :
+                                                                        aff.statut === 'reporte'  ? 'warning' :
+                                                                        'default'
                                                                     }
                                                                 />
                                                             </Box>

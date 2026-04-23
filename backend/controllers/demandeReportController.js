@@ -265,9 +265,10 @@ export const traiterDemandeReport = asyncHandler(async (req, res) => {
 
         const ancienneDate = affectation.date_seance;
 
-        // Mettre à jour l'affectation avec la nouvelle date
+        // Mettre à jour l'affectation avec la nouvelle date et statut reporte
         await affectation.update({
             date_seance: demande.nouvelle_date,
+            statut: "reporte",
         });
 
         // Recharger l'affectation mise à jour
