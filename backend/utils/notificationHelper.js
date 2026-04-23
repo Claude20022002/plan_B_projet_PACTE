@@ -19,6 +19,7 @@ export const creerNotification = async ({
     titre,
     message,
     type_notification = "info",
+    lien = null,
 }) => {
     const notification = await Notification.create({
         id_user,
@@ -26,6 +27,7 @@ export const creerNotification = async ({
         message,
         type_notification,
         lue: false,
+        lien,
     });
 
     return notification;
@@ -45,6 +47,7 @@ export const creerNotificationsMultiples = async ({
     titre,
     message,
     type_notification = "info",
+    lien = null,
 }) => {
     const notifications = [];
 
@@ -54,6 +57,7 @@ export const creerNotificationsMultiples = async ({
             titre,
             message,
             type_notification,
+            lien,
         });
         notifications.push(notification);
     }
@@ -73,6 +77,7 @@ export const notifierAdministrateurs = async ({
     titre,
     message,
     type_notification = "info",
+    lien = null,
 }) => {
     const admins = await Users.findAll({
         where: { role: "admin", actif: true },
@@ -85,6 +90,7 @@ export const notifierAdministrateurs = async ({
         titre,
         message,
         type_notification,
+        lien,
     });
 };
 
@@ -108,6 +114,7 @@ export const notifierNouvelleAffectation = async ({
         titre,
         message,
         type_notification: "info",
+        lien: "/mes-affectations",
     });
 
     // Envoyer un email si l'enseignant a un email
@@ -223,6 +230,7 @@ export const notifierEtudiantsGroupe = async ({
     titre,
     message,
     type_notification = "info",
+    lien = null,
 }) => {
     const { Appartenir, Etudiant, Users } = await import("../models/index.js");
     
@@ -257,6 +265,7 @@ export const notifierEtudiantsGroupe = async ({
         titre,
         message,
         type_notification,
+        lien,
     });
 };
 

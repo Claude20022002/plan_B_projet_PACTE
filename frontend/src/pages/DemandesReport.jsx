@@ -172,14 +172,16 @@ export default function DemandesReport() {
                                         <TableCell>{demande.motif}</TableCell>
                                         <TableCell>
                                             <Chip
-                                                label={demande.statut}
+                                                label={
+                                                    demande.statut_demande === 'approuve'   ? 'Approuvée'   :
+                                                    demande.statut_demande === 'refuse'     ? 'Refusée'     :
+                                                    'En attente'
+                                                }
                                                 size="small"
                                                 color={
-                                                    demande.statut === 'approuvee'
-                                                        ? 'success'
-                                                        : demande.statut === 'refusee'
-                                                          ? 'error'
-                                                          : 'default'
+                                                    demande.statut_demande === 'approuve' ? 'success' :
+                                                    demande.statut_demande === 'refuse'   ? 'error'   :
+                                                    'warning'
                                                 }
                                             />
                                         </TableCell>

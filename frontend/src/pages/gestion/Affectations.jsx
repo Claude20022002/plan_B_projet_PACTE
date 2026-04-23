@@ -287,31 +287,27 @@ export default function Affectations() {
                     </Button>
                 </Box>
 
-                {error && (
-                    <Snackbar
-                        open={!!error}
-                        autoHideDuration={6000}
-                        onClose={() => setError('')}
-                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    >
-                        <Alert onClose={() => setError('')} severity="error">
-                            {error}
-                        </Alert>
-                    </Snackbar>
-                )}
+                <Snackbar
+                    open={!!error}
+                    autoHideDuration={6000}
+                    onClose={() => setError('')}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <Alert onClose={() => setError('')} severity="error" sx={{ width: '100%' }}>
+                        {error}
+                    </Alert>
+                </Snackbar>
 
-                {success && (
-                    <Snackbar
-                        open={!!success}
-                        autoHideDuration={6000}
-                        onClose={() => setSuccess('')}
-                        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
-                    >
-                        <Alert onClose={() => setSuccess('')} severity="success">
-                            {success}
-                        </Alert>
-                    </Snackbar>
-                )}
+                <Snackbar
+                    open={!!success}
+                    autoHideDuration={4000}
+                    onClose={() => setSuccess('')}
+                    anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+                >
+                    <Alert onClose={() => setSuccess('')} severity="success" sx={{ width: '100%' }}>
+                        {success}
+                    </Alert>
+                </Snackbar>
 
                 <TableContainer component={Paper}>
                     <Table>
@@ -344,14 +340,19 @@ export default function Affectations() {
                                     </TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={aff.statut}
+                                            label={
+                                                aff.statut === 'planifie'  ? 'Planifié'  :
+                                                aff.statut === 'confirme'  ? 'Confirmé'  :
+                                                aff.statut === 'annule'    ? 'Annulé'    :
+                                                aff.statut === 'reporte'   ? 'Reporté'   :
+                                                aff.statut
+                                            }
                                             size="small"
                                             color={
-                                                aff.statut === 'confirme'
-                                                    ? 'success'
-                                                    : aff.statut === 'annule'
-                                                      ? 'error'
-                                                      : 'default'
+                                                aff.statut === 'confirme' ? 'success' :
+                                                aff.statut === 'annule'   ? 'error'   :
+                                                aff.statut === 'reporte'  ? 'warning' :
+                                                'default'
                                             }
                                         />
                                     </TableCell>

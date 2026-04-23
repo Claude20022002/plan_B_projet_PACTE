@@ -113,6 +113,7 @@ export const createDemandeReport = asyncHandler(async (req, res) => {
             titre: "Nouvelle demande de report",
             message: `${enseignantNom} a soumis une demande de report pour le ${demandeComplete.nouvelle_date}. Motif : ${demandeComplete.motif || 'Non spécifié'}`,
             type_notification: "info",
+            lien: "/gestion/demandes-report",
         });
         
         // Envoyer aussi des emails aux admins si configuré
@@ -287,11 +288,16 @@ export const traiterDemandeReport = asyncHandler(async (req, res) => {
         // Vérifier les conflits avec la nouvelle date
         const conflits = await verifierEtCreerConflits(affectationMiseAJour);
 
-        // Notifier l'enseignant (confirmation)
+        // Notifier l'enseignant (confirmation de la demande de report)
         try {
-            await notifierNouvelleAffectation({
-                id_user_enseignant: affectation.id_user_enseignant,
-                affectation: affectationMiseAJour,
+            const { creerNotification } = await import("../utils/notificationHelper.js");
+            const coursNom = affectationMiseAJour.cours?.nom_cours || "votre cours";
+            await creerNotification({
+                id_user: affectation.id_user_enseignant,
+                titre: "Demande de report approuvée",
+                message: `Votre demande de report pour "${coursNom}" a été approuvée. Nouvelle date : ${demande.nouvelle_date}.`,
+                type_notification: "success",
+                lien: "/demandes-report",
             });
 
             // Envoyer un email de confirmation à l'enseignant
@@ -316,6 +322,7 @@ export const traiterDemandeReport = asyncHandler(async (req, res) => {
                 titre: "Séance reportée",
                 message: `La séance du ${ancienneDate} a été reportée au ${demande.nouvelle_date}. Veuillez consulter votre emploi du temps.`,
                 type_notification: "warning",
+                lien: "/emploi-du-temps/etudiant",
             });
 
             // Envoyer des emails aux étudiants
@@ -364,6 +371,7 @@ export const traiterDemandeReport = asyncHandler(async (req, res) => {
                 titre: "Demande de report refusée",
                 message: `Votre demande de report pour le ${demande.nouvelle_date} a été refusée.`,
                 type_notification: "error",
+                lien: "/demandes-report",
             });
         } catch (error) {
             console.error("Erreur lors de la notification de refus:", error);

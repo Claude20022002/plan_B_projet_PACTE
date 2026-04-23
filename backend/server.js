@@ -287,6 +287,13 @@ const PORT = process.env.PORT || 5000;
         // en utilisant les noms de tables définis avec freezeTableName
         console.log("--> Toutes les tables synchronisées avec succès !");
 
+        // Migration incrémentale : ajout de la colonne lien si absente
+        try {
+            await sequelize.query(
+                "ALTER TABLE Notifications ADD COLUMN IF NOT EXISTS lien VARCHAR(500) NULL DEFAULT NULL"
+            );
+        } catch (_) { /* colonne déjà présente ou MySQL < 8 — ignoré */ }
+
         // Démarrage du serveur
         app.listen(PORT, () => {
             console.log(`--> Serveur lancé sur http://localhost:${PORT}`);

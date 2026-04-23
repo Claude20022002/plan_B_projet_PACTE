@@ -25,6 +25,11 @@ const Notification = sequelize.define(
             type: DataTypes.BOOLEAN,
             defaultValue: false,
         },
+        lien: {
+            type: DataTypes.STRING(500),
+            allowNull: true,
+            defaultValue: null,
+        },
         date_envoi: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,
