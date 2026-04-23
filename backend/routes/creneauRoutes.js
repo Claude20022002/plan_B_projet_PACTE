@@ -22,11 +22,10 @@ router.get("/", authenticateToken, asyncHandler(getAllCreneaux));
 // 🔍 Récupérer un créneau par ID (Tous les utilisateurs authentifiés)
 router.get("/:id", authenticateToken, asyncHandler(getCreneauById));
 
-// ➕ Créer un créneau (Admin seulement)
+// ➕ Créer un créneau (tout utilisateur authentifié — utilisé par enseignants pour les disponibilités)
 router.post(
     "/",
     authenticateToken,
-    requireAdmin,
     validateCreneauCreation,
     handleValidationErrors,
     asyncHandler(createCreneau)
