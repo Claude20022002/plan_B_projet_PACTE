@@ -314,12 +314,29 @@ export const disponibiliteAPI = {
 
 // ==================== STATISTIQUES ====================
 export const statistiquesAPI = {
-    getOccupationSalles: () => request('/statistiques/salles/occupation'),
-    getChargeEnseignants: () => request('/statistiques/enseignants/charge'),
-    getStatistiquesGlobales: () => request('/statistiques/dashboard'),
+    getStatistiquesGlobales: (params) => {
+        const query = new URLSearchParams(params || {}).toString();
+        return request(`/statistiques/dashboard${query ? `?${query}` : ''}`);
+    },
     getKPIs: (params) => {
         const query = new URLSearchParams(params || {}).toString();
         return request(`/statistiques/kpis${query ? `?${query}` : ''}`);
+    },
+    getOccupationSalles: (params) => {
+        const query = new URLSearchParams(params || {}).toString();
+        return request(`/statistiques/salles/occupation${query ? `?${query}` : ''}`);
+    },
+    getChargeEnseignants: (params) => {
+        const query = new URLSearchParams(params || {}).toString();
+        return request(`/statistiques/enseignants/charge${query ? `?${query}` : ''}`);
+    },
+    getOccupationGroupes: (params) => {
+        const query = new URLSearchParams(params || {}).toString();
+        return request(`/statistiques/groupes/occupation${query ? `?${query}` : ''}`);
+    },
+    getPicsActivite: (params) => {
+        const query = new URLSearchParams(params || {}).toString();
+        return request(`/statistiques/activite/pics${query ? `?${query}` : ''}`);
     },
 };
 

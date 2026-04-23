@@ -21,9 +21,10 @@ import {
     Tooltip,
     CircularProgress,
 } from '@mui/material';
-import { Check, Close, Visibility } from '@mui/icons-material';
+import { Check, Close, Visibility, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { demandeReportAPI } from '../../services/api';
+import { exportToExcel, COLS_DEMANDES_REPORT } from '../../utils/exportExcel';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function DemandesReportAdmin() {
@@ -97,6 +98,10 @@ export default function DemandesReportAdmin() {
         }
     };
 
+    const handleExport = () => {
+        exportToExcel(demandes, COLS_DEMANDES_REPORT, 'Demandes_Report', 'Demandes de report');
+    };
+
     return (
         <DashboardLayout>
             <Box>
@@ -104,6 +109,9 @@ export default function DemandesReportAdmin() {
                     <Typography variant="h5" fontWeight="bold">
                         Gestion des Demandes de Report
                     </Typography>
+                    <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
+                        Exporter Excel
+                    </Button>
                 </Box>
 
                 {error && (

@@ -1008,7 +1008,7 @@ export default function AdminDashboard() {
                                                                     component="span"
                                                                 >
                                                                     {new Date(
-                                                                        notif.date_creation,
+                                                                        notif.date_envoi || notif.date_creation,
                                                                     ).toLocaleString(
                                                                         "fr-FR",
                                                                     )}

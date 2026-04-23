@@ -24,12 +24,13 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { coursAPI, filiereAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { parseFile, validateCoursData } from '../../utils/fileImport';
+import { exportToExcel, COLS_COURS } from '../../utils/exportExcel';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -214,6 +215,13 @@ export default function Cours() {
         }
     };
 
+    const handleExport = async () => {
+        try {
+            const data = await coursAPI.getAll({ page: 1, limit: 10000 });
+            exportToExcel(data.data || [], COLS_COURS, 'Cours', 'Cours');
+        } catch { setError('Erreur lors de l\'export'); }
+    };
+
     const filteredCours = cours.filter(
         (c) =>
             c.code_cours?.toLowerCase().includes(search.toLowerCase()) ||
@@ -248,6 +256,9 @@ export default function Cours() {
                             }}
                         >
                             Importer (Excel/CSV)
+                        </Button>
+                        <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
+                            Exporter Excel
                         </Button>
                         <Button
                             variant="contained"

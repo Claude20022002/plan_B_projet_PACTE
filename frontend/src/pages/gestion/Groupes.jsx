@@ -24,12 +24,13 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { groupeAPI, filiereAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { parseFile, validateGroupeData } from '../../utils/fileImport';
+import { exportToExcel, COLS_GROUPES } from '../../utils/exportExcel';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -205,6 +206,10 @@ export default function Groupes() {
         }
     };
 
+    const handleExport = () => {
+        exportToExcel(groupes, COLS_GROUPES, 'Groupes', 'Groupes');
+    };
+
     const filteredGroupes = groupes.filter(
         (g) =>
             g.nom_groupe?.toLowerCase().includes(search.toLowerCase()) ||
@@ -238,6 +243,9 @@ export default function Groupes() {
                             }}
                         >
                             Importer (Excel/CSV)
+                        </Button>
+                        <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
+                            Exporter Excel
                         </Button>
                         <Button
                             variant="contained"

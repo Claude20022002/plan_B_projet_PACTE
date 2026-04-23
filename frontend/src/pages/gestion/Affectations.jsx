@@ -25,9 +25,10 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Visibility, ArrowBack } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility, ArrowBack, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI } from '../../services/api';
+import { exportToExcel, COLS_AFFECTATIONS } from '../../utils/exportExcel';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -232,6 +233,13 @@ export default function Affectations() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [searchParams]);
 
+    const handleExport = async () => {
+        try {
+            const data = await affectationAPI.getAll({ page: 1, limit: 10000 });
+            exportToExcel(data.data || [], COLS_AFFECTATIONS, 'Affectations', 'Affectations');
+        } catch { setError('Erreur lors de l\'export'); }
+    };
+
     const handleDelete = async (id) => {
         if (window.confirm('Êtes-vous sûr de vouloir supprimer cette affectation ?')) {
             try {
@@ -260,31 +268,36 @@ export default function Affectations() {
                             Gestion des Affectations
                         </Typography>
                     </Box>
-                    <Button
-                        variant="contained"
-                        startIcon={<Add />}
-                        onClick={() => {
-                            setEditing(null);
-                            setError('');
-                            setSuccess('');
-                            formik.resetForm({
-                                values: {
-                                    date_seance: '',
-                                    statut: 'planifie',
-                                    commentaire: '',
-                                    id_cours: '',
-                                    id_groupe: '',
-                                    id_user_enseignant: '',
-                                    id_salle: '',
-                                    id_creneau: '',
-                                    id_user_admin: user?.id_user || '',
-                                },
-                            });
-                            setOpen(true);
-                        }}
-                    >
-                        Nouvelle affectation
-                    </Button>
+                    <Box sx={{ display: 'flex', gap: 1 }}>
+                        <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
+                            Exporter Excel
+                        </Button>
+                        <Button
+                            variant="contained"
+                            startIcon={<Add />}
+                            onClick={() => {
+                                setEditing(null);
+                                setError('');
+                                setSuccess('');
+                                formik.resetForm({
+                                    values: {
+                                        date_seance: '',
+                                        statut: 'planifie',
+                                        commentaire: '',
+                                        id_cours: '',
+                                        id_groupe: '',
+                                        id_user_enseignant: '',
+                                        id_salle: '',
+                                        id_creneau: '',
+                                        id_user_admin: user?.id_user || '',
+                                    },
+                                });
+                                setOpen(true);
+                            }}
+                        >
+                            Nouvelle affectation
+                        </Button>
+                    </Box>
                 </Box>
 
                 <Snackbar

@@ -23,13 +23,14 @@ import {
     Select,
     MenuItem,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, ArrowBack, UploadFile } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, ArrowBack, UploadFile, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { salleAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { parseFile, validateSalleData } from '../../utils/fileImport';
+import { exportToExcel, COLS_SALLES } from '../../utils/exportExcel';
 import { Alert, Snackbar, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 
 const validationSchema = yup.object({
@@ -186,6 +187,10 @@ export default function Salles() {
         }
     };
 
+    const handleExport = () => {
+        exportToExcel(salles, COLS_SALLES, 'Salles', 'Salles');
+    };
+
     return (
         <DashboardLayout>
             <Box>
@@ -213,6 +218,9 @@ export default function Salles() {
                             }}
                         >
                             Importer (Excel/CSV)
+                        </Button>
+                        <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
+                            Exporter Excel
                         </Button>
                         <Button
                             variant="contained"

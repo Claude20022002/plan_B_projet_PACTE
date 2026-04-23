@@ -24,13 +24,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { enseignantAPI, userAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { parseFile, validateEnseignantData } from '../../utils/fileImport';
+import { exportToExcel, COLS_ENSEIGNANTS } from '../../utils/exportExcel';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 
 const validationSchema = yup.object({
@@ -196,6 +197,13 @@ export default function Enseignants() {
         }
     };
 
+    const handleExport = async () => {
+        try {
+            const data = await enseignantAPI.getAll({ page: 1, limit: 10000 });
+            exportToExcel(data.data || [], COLS_ENSEIGNANTS, 'Enseignants', 'Enseignants');
+        } catch { setError('Erreur lors de l\'export'); }
+    };
+
     const filteredEnseignants = enseignants.filter(
         (ens) =>
             ens.user?.nom?.toLowerCase().includes(search.toLowerCase()) ||
@@ -230,6 +238,9 @@ export default function Enseignants() {
                             }}
                         >
                             Importer (Excel/CSV)
+                        </Button>
+                        <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
+                            Exporter Excel
                         </Button>
                         <Button
                             variant="contained"
