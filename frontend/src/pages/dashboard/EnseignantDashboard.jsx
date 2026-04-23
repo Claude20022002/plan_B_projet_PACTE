@@ -312,6 +312,7 @@ export default function EnseignantDashboard() {
                                                     <ListItemText
                                                         primary={
                                                             <Box
+                                                                component="div"
                                                                 sx={{
                                                                     display:
                                                                         "flex",
@@ -348,6 +349,7 @@ export default function EnseignantDashboard() {
                                                         }
                                                         secondary={
                                                             <Box
+                                                                component="div"
                                                                 sx={{
                                                                     display:
                                                                         "flex",

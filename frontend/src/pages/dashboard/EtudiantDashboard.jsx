@@ -337,6 +337,7 @@ export default function EtudiantDashboard() {
                                                         }
                                                         secondary={
                                                             <Box
+                                                                component="div"
                                                                 sx={{
                                                                     display:
                                                                         "flex",
@@ -544,6 +545,7 @@ export default function EtudiantDashboard() {
                                                                 <Typography
                                                                     variant="subtitle2"
                                                                     fontWeight="bold"
+                                                                    component="span"
                                                                 >
                                                                     {
                                                                         notif.titre
@@ -554,6 +556,7 @@ export default function EtudiantDashboard() {
                                                                 <Typography
                                                                     variant="caption"
                                                                     color="text.secondary"
+                                                                    component="span"
                                                                 >
                                                                     {
                                                                         notif.message

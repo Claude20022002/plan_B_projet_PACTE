@@ -1101,6 +1101,7 @@ export default function AdminDashboard() {
                                                     <Typography
                                                         variant="body2"
                                                         fontWeight="bold"
+                                                        component="span"
                                                     >
                                                         {conflit.type_conflit}
                                                     </Typography>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
     Box,
     Paper,
@@ -28,16 +28,20 @@ import {
     DialogContent,
     DialogActions,
     Divider,
-} from '@mui/material';
+} from "@mui/material";
 import {
     PlayArrow,
     CheckCircle,
     Error as ErrorIcon,
     Info,
-} from '@mui/icons-material';
-import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { useAuth } from '../../contexts/AuthContext';
-import { generationAutomatiqueAPI, coursAPI, groupeAPI } from '../../services/api';
+} from "@mui/icons-material";
+import DashboardLayout from "../../components/layouts/DashboardLayout";
+import { useAuth } from "../../contexts/AuthContext";
+import {
+    generationAutomatiqueAPI,
+    coursAPI,
+    groupeAPI,
+} from "../../services/api";
 
 export default function GenerationAutomatique() {
     const { user } = useAuth();
@@ -46,15 +50,16 @@ export default function GenerationAutomatique() {
     const [groupes, setGroupes] = useState([]);
     const [selectedCours, setSelectedCours] = useState([]);
     const [selectedGroupes, setSelectedGroupes] = useState([]);
-    const [dateDebut, setDateDebut] = useState('');
-    const [dateFin, setDateFin] = useState('');
+    const [dateDebut, setDateDebut] = useState("");
+    const [dateFin, setDateFin] = useState("");
     const [ecraserAffectations, setEcraserAffectations] = useState(false);
     const [maxSessionHours, setMaxSessionHours] = useState(4);
     const [maxHoursPerDayGroup, setMaxHoursPerDayGroup] = useState(6);
     const [maxHoursPerDayCourse, setMaxHoursPerDayCourse] = useState(4);
-    const [allowSameCourseTwicePerDay, setAllowSameCourseTwicePerDay] = useState(false);
+    const [allowSameCourseTwicePerDay, setAllowSameCourseTwicePerDay] =
+        useState(false);
     const [resultat, setResultat] = useState(null);
-    const [error, setError] = useState('');
+    const [error, setError] = useState("");
     const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
@@ -70,24 +75,24 @@ export default function GenerationAutomatique() {
             setCours(coursData.data || coursData || []);
             setGroupes(groupesData.data || groupesData || []);
         } catch (err) {
-            console.error('Erreur lors du chargement des données:', err);
-            setError('Erreur lors du chargement des données');
+            console.error("Erreur lors du chargement des données:", err);
+            setError("Erreur lors du chargement des données");
         }
     };
 
     const handleGenerer = async () => {
         if (!dateDebut || !dateFin) {
-            setError('Veuillez sélectionner les dates de début et de fin');
+            setError("Veuillez sélectionner les dates de début et de fin");
             return;
         }
 
         if (new Date(dateDebut) >= new Date(dateFin)) {
-            setError('La date de début doit être antérieure à la date de fin');
+            setError("La date de début doit être antérieure à la date de fin");
             return;
         }
 
         setLoading(true);
-        setError('');
+        setError("");
         setResultat(null);
 
         try {
@@ -107,16 +112,18 @@ export default function GenerationAutomatique() {
             setResultat(response.resultat);
             setDialogOpen(true);
         } catch (err) {
-            console.error('Erreur lors de la génération:', err);
+            console.error("Erreur lors de la génération:", err);
             // Gérer les erreurs d'authentification
             if (err.status === 401) {
-                setError('Votre session a expiré. Veuillez vous reconnecter.');
+                setError("Votre session a expiré. Veuillez vous reconnecter.");
                 // Optionnel: rediriger vers la page de connexion
                 setTimeout(() => {
-                    window.location.href = '/connexion';
+                    window.location.href = "/connexion";
                 }, 2000);
             } else {
-                setError(err.message || 'Erreur lors de la génération automatique');
+                setError(
+                    err.message || "Erreur lors de la génération automatique",
+                );
             }
         } finally {
             setLoading(false);
@@ -129,13 +136,22 @@ export default function GenerationAutomatique() {
                 <Typography variant="h4" fontWeight="bold" gutterBottom>
                     Génération Automatique d'Affectations
                 </Typography>
-                <Typography variant="body1" color="text.secondary" sx={{ mb: 4 }}>
-                    Générez automatiquement les affectations de cours en fonction des disponibilités des enseignants,
-                    du volume horaire des cours et des contraintes de salles.
+                <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ mb: 4 }}
+                >
+                    Générez automatiquement les affectations de cours en
+                    fonction des disponibilités des enseignants, du volume
+                    horaire des cours et des contraintes de salles.
                 </Typography>
 
                 {error && (
-                    <Alert severity="error" sx={{ mb: 3 }} onClose={() => setError('')}>
+                    <Alert
+                        severity="error"
+                        sx={{ mb: 3 }}
+                        onClose={() => setError("")}
+                    >
                         {error}
                     </Alert>
                 )}
@@ -156,7 +172,9 @@ export default function GenerationAutomatique() {
                                         label="Date de début"
                                         type="date"
                                         value={dateDebut}
-                                        onChange={(e) => setDateDebut(e.target.value)}
+                                        onChange={(e) =>
+                                            setDateDebut(e.target.value)
+                                        }
                                         InputLabelProps={{ shrink: true }}
                                         required
                                     />
@@ -167,7 +185,9 @@ export default function GenerationAutomatique() {
                                         label="Date de fin"
                                         type="date"
                                         value={dateFin}
-                                        onChange={(e) => setDateFin(e.target.value)}
+                                        onChange={(e) =>
+                                            setDateFin(e.target.value)
+                                        }
                                         InputLabelProps={{ shrink: true }}
                                         required
                                     />
@@ -175,19 +195,37 @@ export default function GenerationAutomatique() {
 
                                 <Grid item xs={12}>
                                     <FormControl fullWidth>
-                                        <InputLabel>Cours à planifier</InputLabel>
+                                        <InputLabel>
+                                            Cours à planifier
+                                        </InputLabel>
                                         <Select
                                             multiple
                                             value={selectedCours}
-                                            onChange={(e) => setSelectedCours(e.target.value)}
+                                            onChange={(e) =>
+                                                setSelectedCours(e.target.value)
+                                            }
                                             renderValue={(selected) => (
-                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        flexWrap: "wrap",
+                                                        gap: 0.5,
+                                                    }}
+                                                >
                                                     {selected.map((id) => {
-                                                        const coursItem = cours.find((c) => c.id_cours === id);
+                                                        const coursItem =
+                                                            cours.find(
+                                                                (c) =>
+                                                                    c.id_cours ===
+                                                                    id,
+                                                            );
                                                         return (
                                                             <Chip
                                                                 key={id}
-                                                                label={coursItem?.nom_cours || id}
+                                                                label={
+                                                                    coursItem?.nom_cours ||
+                                                                    id
+                                                                }
                                                                 size="small"
                                                             />
                                                         );
@@ -196,33 +234,68 @@ export default function GenerationAutomatique() {
                                             )}
                                         >
                                             {cours.map((coursItem) => (
-                                                <MenuItem key={coursItem.id_cours} value={coursItem.id_cours}>
-                                                    <Checkbox checked={selectedCours.indexOf(coursItem.id_cours) > -1} />
-                                                    {coursItem.nom_cours} ({coursItem.volume_horaire}h)
+                                                <MenuItem
+                                                    key={coursItem.id_cours}
+                                                    value={coursItem.id_cours}
+                                                >
+                                                    <Checkbox
+                                                        checked={
+                                                            selectedCours.indexOf(
+                                                                coursItem.id_cours,
+                                                            ) > -1
+                                                        }
+                                                    />
+                                                    {coursItem.nom_cours} (
+                                                    {coursItem.volume_horaire}h)
                                                 </MenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
-                                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                                        Laissez vide pour planifier tous les cours
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ mt: 1 }}
+                                    >
+                                        Laissez vide pour planifier tous les
+                                        cours
                                     </Typography>
                                 </Grid>
 
                                 <Grid item xs={12}>
                                     <FormControl fullWidth>
-                                        <InputLabel>Groupes à planifier</InputLabel>
+                                        <InputLabel>
+                                            Groupes à planifier
+                                        </InputLabel>
                                         <Select
                                             multiple
                                             value={selectedGroupes}
-                                            onChange={(e) => setSelectedGroupes(e.target.value)}
+                                            onChange={(e) =>
+                                                setSelectedGroupes(
+                                                    e.target.value,
+                                                )
+                                            }
                                             renderValue={(selected) => (
-                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                <Box
+                                                    sx={{
+                                                        display: "flex",
+                                                        flexWrap: "wrap",
+                                                        gap: 0.5,
+                                                    }}
+                                                >
                                                     {selected.map((id) => {
-                                                        const groupe = groupes.find((g) => g.id_groupe === id);
+                                                        const groupe =
+                                                            groupes.find(
+                                                                (g) =>
+                                                                    g.id_groupe ===
+                                                                    id,
+                                                            );
                                                         return (
                                                             <Chip
                                                                 key={id}
-                                                                label={groupe?.nom_groupe || id}
+                                                                label={
+                                                                    groupe?.nom_groupe ||
+                                                                    id
+                                                                }
                                                                 size="small"
                                                             />
                                                         );
@@ -231,15 +304,30 @@ export default function GenerationAutomatique() {
                                             )}
                                         >
                                             {groupes.map((groupe) => (
-                                                <MenuItem key={groupe.id_groupe} value={groupe.id_groupe}>
-                                                    <Checkbox checked={selectedGroupes.indexOf(groupe.id_groupe) > -1} />
-                                                    {groupe.nom_groupe} ({groupe.effectif} étudiants)
+                                                <MenuItem
+                                                    key={groupe.id_groupe}
+                                                    value={groupe.id_groupe}
+                                                >
+                                                    <Checkbox
+                                                        checked={
+                                                            selectedGroupes.indexOf(
+                                                                groupe.id_groupe,
+                                                            ) > -1
+                                                        }
+                                                    />
+                                                    {groupe.nom_groupe} (
+                                                    {groupe.effectif} étudiants)
                                                 </MenuItem>
                                             ))}
                                         </Select>
                                     </FormControl>
-                                    <Typography variant="caption" color="text.secondary" sx={{ mt: 1 }}>
-                                        Laissez vide pour planifier tous les groupes
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ mt: 1 }}
+                                    >
+                                        Laissez vide pour planifier tous les
+                                        groupes
                                     </Typography>
                                 </Grid>
 
@@ -248,13 +336,23 @@ export default function GenerationAutomatique() {
                                         control={
                                             <Checkbox
                                                 checked={ecraserAffectations}
-                                                onChange={(e) => setEcraserAffectations(e.target.checked)}
+                                                onChange={(e) =>
+                                                    setEcraserAffectations(
+                                                        e.target.checked,
+                                                    )
+                                                }
                                             />
                                         }
                                         label="Écraser les affectations existantes pour ces cours/groupes"
                                     />
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                                        Si coché, les affectations existantes pour les cours/groupes sélectionnés seront supprimées avant la génération
+                                    <Typography
+                                        variant="caption"
+                                        color="text.secondary"
+                                        sx={{ display: "block", mt: 1 }}
+                                    >
+                                        Si coché, les affectations existantes
+                                        pour les cours/groupes sélectionnés
+                                        seront supprimées avant la génération
                                     </Typography>
                                 </Grid>
 
@@ -264,8 +362,14 @@ export default function GenerationAutomatique() {
                                         label="Durée max par séance (h)"
                                         type="number"
                                         value={maxSessionHours}
-                                        onChange={(e) => setMaxSessionHours(e.target.value)}
-                                        inputProps={{ min: 1, max: 6, step: 0.5 }}
+                                        onChange={(e) =>
+                                            setMaxSessionHours(e.target.value)
+                                        }
+                                        inputProps={{
+                                            min: 1,
+                                            max: 6,
+                                            step: 0.5,
+                                        }}
                                         helperText="Ex: 2, 3 ou 4 heures"
                                     />
                                 </Grid>
@@ -275,8 +379,16 @@ export default function GenerationAutomatique() {
                                         label="Max heures/jour (groupe)"
                                         type="number"
                                         value={maxHoursPerDayGroup}
-                                        onChange={(e) => setMaxHoursPerDayGroup(e.target.value)}
-                                        inputProps={{ min: 1, max: 12, step: 0.5 }}
+                                        onChange={(e) =>
+                                            setMaxHoursPerDayGroup(
+                                                e.target.value,
+                                            )
+                                        }
+                                        inputProps={{
+                                            min: 1,
+                                            max: 12,
+                                            step: 0.5,
+                                        }}
                                     />
                                 </Grid>
                                 <Grid item xs={12} sm={4}>
@@ -285,17 +397,29 @@ export default function GenerationAutomatique() {
                                         label="Max heures/jour (module)"
                                         type="number"
                                         value={maxHoursPerDayCourse}
-                                        onChange={(e) => setMaxHoursPerDayCourse(e.target.value)}
-                                        inputProps={{ min: 1, max: 8, step: 0.5 }}
+                                        onChange={(e) =>
+                                            setMaxHoursPerDayCourse(
+                                                e.target.value,
+                                            )
+                                        }
+                                        inputProps={{
+                                            min: 1,
+                                            max: 8,
+                                            step: 0.5,
+                                        }}
                                     />
                                 </Grid>
                                 <Grid item xs={12}>
                                     <FormControlLabel
                                         control={
                                             <Checkbox
-                                                checked={allowSameCourseTwicePerDay}
+                                                checked={
+                                                    allowSameCourseTwicePerDay
+                                                }
                                                 onChange={(e) =>
-                                                    setAllowSameCourseTwicePerDay(e.target.checked)
+                                                    setAllowSameCourseTwicePerDay(
+                                                        e.target.checked,
+                                                    )
                                                 }
                                             />
                                         }
@@ -307,12 +431,22 @@ export default function GenerationAutomatique() {
                                     <Button
                                         variant="contained"
                                         size="large"
-                                        startIcon={loading ? <CircularProgress size={20} /> : <PlayArrow />}
+                                        startIcon={
+                                            loading ? (
+                                                <CircularProgress size={20} />
+                                            ) : (
+                                                <PlayArrow />
+                                            )
+                                        }
                                         onClick={handleGenerer}
-                                        disabled={loading || !dateDebut || !dateFin}
+                                        disabled={
+                                            loading || !dateDebut || !dateFin
+                                        }
                                         fullWidth
                                     >
-                                        {loading ? 'Génération en cours...' : 'Générer les affectations'}
+                                        {loading
+                                            ? "Génération en cours..."
+                                            : "Générer les affectations"}
                                     </Button>
                                 </Grid>
                             </Grid>
@@ -323,12 +457,13 @@ export default function GenerationAutomatique() {
                     <Grid item xs={12} md={4}>
                         <Paper sx={{ p: 3 }}>
                             <Typography variant="h6" gutterBottom>
-                                <Info sx={{ verticalAlign: 'middle', mr: 1 }} />
+                                <Info sx={{ verticalAlign: "middle", mr: 1 }} />
                                 Informations
                             </Typography>
                             <Divider sx={{ mb: 2 }} />
                             <Typography variant="body2" paragraph>
-                                L'algorithme de génération automatique prend en compte :
+                                L'algorithme de génération automatique prend en
+                                compte :
                             </Typography>
                             <Box component="ul" sx={{ pl: 2 }}>
                                 <li>Les disponibilités des enseignants</li>
@@ -338,7 +473,9 @@ export default function GenerationAutomatique() {
                                 <li>Les conflits existants</li>
                             </Box>
                             <Alert severity="info" sx={{ mt: 2 }}>
-                                Les affectations générées auront le statut "planifié" et pourront être modifiées manuellement si nécessaire.
+                                Les affectations générées auront le statut
+                                "planifié" et pourront être modifiées
+                                manuellement si nécessaire.
                             </Alert>
                         </Paper>
                     </Grid>
@@ -361,11 +498,20 @@ export default function GenerationAutomatique() {
                                     <Grid item xs={12} sm={4}>
                                         <Card>
                                             <CardContent>
-                                                <Typography color="textSecondary" gutterBottom>
+                                                <Typography
+                                                    color="textSecondary"
+                                                    gutterBottom
+                                                >
                                                     Séances créées
                                                 </Typography>
-                                                <Typography variant="h4" color="success.main">
-                                                    {resultat.statistiques.totalSeancesPlanifiees}
+                                                <Typography
+                                                    variant="h4"
+                                                    color="success.main"
+                                                >
+                                                    {
+                                                        resultat.statistiques
+                                                            .totalSeancesPlanifiees
+                                                    }
                                                 </Typography>
                                             </CardContent>
                                         </Card>
@@ -373,11 +519,20 @@ export default function GenerationAutomatique() {
                                     <Grid item xs={12} sm={4}>
                                         <Card>
                                             <CardContent>
-                                                <Typography color="textSecondary" gutterBottom>
+                                                <Typography
+                                                    color="textSecondary"
+                                                    gutterBottom
+                                                >
                                                     Séances échouées
                                                 </Typography>
-                                                <Typography variant="h4" color="error.main">
-                                                    {resultat.statistiques.totalSeancesEchouees}
+                                                <Typography
+                                                    variant="h4"
+                                                    color="error.main"
+                                                >
+                                                    {
+                                                        resultat.statistiques
+                                                            .totalSeancesEchouees
+                                                    }
                                                 </Typography>
                                             </CardContent>
                                         </Card>
@@ -385,11 +540,20 @@ export default function GenerationAutomatique() {
                                     <Grid item xs={12} sm={4}>
                                         <Card>
                                             <CardContent>
-                                                <Typography color="textSecondary" gutterBottom>
+                                                <Typography
+                                                    color="textSecondary"
+                                                    gutterBottom
+                                                >
                                                     Conflits détectés
                                                 </Typography>
-                                                <Typography variant="h4" color="warning.main">
-                                                    {resultat.statistiques.conflitsDetectes}
+                                                <Typography
+                                                    variant="h4"
+                                                    color="warning.main"
+                                                >
+                                                    {
+                                                        resultat.statistiques
+                                                            .conflitsDetectes
+                                                    }
                                                 </Typography>
                                             </CardContent>
                                         </Card>
@@ -405,35 +569,69 @@ export default function GenerationAutomatique() {
                                             <Table size="small">
                                                 <TableHead>
                                                     <TableRow>
-                                                        <TableCell>Cours</TableCell>
-                                                        <TableCell>Groupe</TableCell>
-                                                        <TableCell>Date</TableCell>
-                                                        <TableCell>Créneau</TableCell>
-                                                        <TableCell>Raison</TableCell>
+                                                        <TableCell>
+                                                            Cours
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            Groupe
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            Date
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            Créneau
+                                                        </TableCell>
+                                                        <TableCell>
+                                                            Raison
+                                                        </TableCell>
                                                     </TableRow>
                                                 </TableHead>
                                                 <TableBody>
-                                                    {resultat.affectationsEchouees.slice(0, 10).map((aff, index) => (
-                                                        <TableRow key={index}>
-                                                            <TableCell>{aff.cours}</TableCell>
-                                                            <TableCell>{aff.groupe}</TableCell>
-                                                            <TableCell>{aff.date}</TableCell>
-                                                            <TableCell>{aff.creneau}</TableCell>
-                                                            <TableCell>
-                                                                <Chip
-                                                                    label={aff.raison}
-                                                                    size="small"
-                                                                    color="error"
-                                                                />
-                                                            </TableCell>
-                                                        </TableRow>
-                                                    ))}
+                                                    {resultat.affectationsEchouees
+                                                        .slice(0, 10)
+                                                        .map((aff, index) => (
+                                                            <TableRow
+                                                                key={index}
+                                                            >
+                                                                <TableCell>
+                                                                    {aff.cours}
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    {aff.groupe}
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    {aff.date}
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    {
+                                                                        aff.creneau
+                                                                    }
+                                                                </TableCell>
+                                                                <TableCell>
+                                                                    <Chip
+                                                                        label={
+                                                                            aff.raison
+                                                                        }
+                                                                        size="small"
+                                                                        color="error"
+                                                                    />
+                                                                </TableCell>
+                                                            </TableRow>
+                                                        ))}
                                                 </TableBody>
                                             </Table>
                                         </TableContainer>
-                                        {resultat.affectationsEchouees.length > 10 && (
-                                            <Typography variant="caption" color="text.secondary" sx={{ mt: 1, display: 'block' }}>
-                                                ... et {resultat.affectationsEchouees.length - 10} autres
+                                        {resultat.affectationsEchouees.length >
+                                            10 && (
+                                            <Typography
+                                                variant="caption"
+                                                color="text.secondary"
+                                                sx={{ mt: 1, display: "block" }}
+                                            >
+                                                ... et{" "}
+                                                {resultat.affectationsEchouees
+                                                    .length - 10}{" "}
+                                                autres
                                             </Typography>
                                         )}
                                     </Box>
@@ -442,12 +640,13 @@ export default function GenerationAutomatique() {
                         )}
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setDialogOpen(false)}>Fermer</Button>
+                        <Button onClick={() => setDialogOpen(false)}>
+                            Fermer
+                        </Button>
                         <Button
                             variant="contained"
                             onClick={() => {
-                                setDialogOpen(false);
-                                window.location.href = '/gestion/affectations';
+                                window.location.href = "/gestion/affectations";
                             }}
                         >
                             Voir les affectations

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
     Box,
     Paper,
@@ -10,18 +10,21 @@ import {
     IconButton,
     Alert,
     Snackbar,
-} from '@mui/material';
-import { CheckCircle, Notifications as NotificationsIcon } from '@mui/icons-material';
-import DashboardLayout from '../components/layouts/DashboardLayout';
-import { notificationAPI } from '../services/api';
-import { useAuth } from '../contexts/AuthContext';
+} from "@mui/material";
+import {
+    CheckCircle,
+    Notifications as NotificationsIcon,
+} from "@mui/icons-material";
+import DashboardLayout from "../components/layouts/DashboardLayout";
+import { notificationAPI } from "../services/api";
+import { useAuth } from "../contexts/AuthContext";
 
 export default function Notifications() {
     const { user } = useAuth();
     const [notifications, setNotifications] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState("");
 
     useEffect(() => {
         if (user?.id_user) {
@@ -34,8 +37,8 @@ export default function Notifications() {
             const data = await notificationAPI.getByUser(user.id_user);
             setNotifications(data.data || data || []);
         } catch (error) {
-            console.error('Erreur:', error);
-            setError('Erreur lors du chargement des notifications');
+            console.error("Erreur:", error);
+            setError("Erreur lors du chargement des notifications");
         } finally {
             setLoading(false);
         }
@@ -44,11 +47,11 @@ export default function Notifications() {
     const handleMarkAsRead = async (id) => {
         try {
             await notificationAPI.marquerCommeLue(id);
-            setSuccess('Notification marquée comme lue');
+            setSuccess("Notification marquée comme lue");
             loadNotifications();
         } catch (error) {
-            console.error('Erreur:', error);
-            setError('Erreur lors de la mise à jour');
+            console.error("Erreur:", error);
+            setError("Erreur lors de la mise à jour");
         }
     };
 
@@ -57,13 +60,19 @@ export default function Notifications() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+                <Box
+                    sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        mb: 3,
+                    }}
+                >
                     <Typography variant="h5" fontWeight="bold">
                         Mes Notifications
                     </Typography>
                     {unreadCount > 0 && (
                         <Chip
-                            label={`${unreadCount} non lue${unreadCount > 1 ? 's' : ''}`}
+                            label={`${unreadCount} non lue${unreadCount > 1 ? "s" : ""}`}
                             color="primary"
                             icon={<NotificationsIcon />}
                         />
@@ -71,16 +80,27 @@ export default function Notifications() {
                 </Box>
 
                 {error && (
-                    <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
-                        <Alert onClose={() => setError('')} severity="error">
+                    <Snackbar
+                        open={!!error}
+                        autoHideDuration={6000}
+                        onClose={() => setError("")}
+                    >
+                        <Alert onClose={() => setError("")} severity="error">
                             {error}
                         </Alert>
                     </Snackbar>
                 )}
 
                 {success && (
-                    <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess('')}>
-                        <Alert onClose={() => setSuccess('')} severity="success">
+                    <Snackbar
+                        open={!!success}
+                        autoHideDuration={6000}
+                        onClose={() => setSuccess("")}
+                    >
+                        <Alert
+                            onClose={() => setSuccess("")}
+                            severity="success"
+                        >
                             {success}
                         </Alert>
                     </Snackbar>
@@ -88,11 +108,11 @@ export default function Notifications() {
 
                 <Paper>
                     {loading ? (
-                        <Box sx={{ p: 3, textAlign: 'center' }}>
+                        <Box sx={{ p: 3, textAlign: "center" }}>
                             <Typography>Chargement...</Typography>
                         </Box>
                     ) : notifications.length === 0 ? (
-                        <Box sx={{ p: 3, textAlign: 'center' }}>
+                        <Box sx={{ p: 3, textAlign: "center" }}>
                             <Typography variant="body1" color="text.secondary">
                                 Aucune notification
                             </Typography>
@@ -103,15 +123,23 @@ export default function Notifications() {
                                 <ListItem
                                     key={notif.id_notification}
                                     sx={{
-                                        bgcolor: notif.lue ? 'inherit' : 'action.hover',
-                                        borderLeft: notif.lue ? 'none' : '4px solid',
-                                        borderColor: 'primary.main',
+                                        bgcolor: notif.lue
+                                            ? "inherit"
+                                            : "action.hover",
+                                        borderLeft: notif.lue
+                                            ? "none"
+                                            : "4px solid",
+                                        borderColor: "primary.main",
                                     }}
                                     secondaryAction={
                                         !notif.lue && (
                                             <IconButton
                                                 edge="end"
-                                                onClick={() => handleMarkAsRead(notif.id_notification)}
+                                                onClick={() =>
+                                                    handleMarkAsRead(
+                                                        notif.id_notification,
+                                                    )
+                                                }
                                             >
                                                 <CheckCircle />
                                             </IconButton>
@@ -120,30 +148,62 @@ export default function Notifications() {
                                 >
                                     <ListItemText
                                         primary={
-                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                <Typography variant="subtitle1" fontWeight={notif.lue ? 'normal' : 'bold'}>
+                                            <Box
+                                                component="div"
+                                                sx={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 1,
+                                                }}
+                                            >
+                                                <Typography
+                                                    variant="subtitle1"
+                                                    fontWeight={
+                                                        notif.lue
+                                                            ? "normal"
+                                                            : "bold"
+                                                    }
+                                                >
                                                     {notif.titre}
                                                 </Typography>
                                                 <Chip
-                                                    label={notif.type_notification}
+                                                    label={
+                                                        notif.type_notification
+                                                    }
                                                     size="small"
                                                     color={
-                                                        notif.type_notification === 'error'
-                                                            ? 'error'
-                                                            : notif.type_notification === 'warning'
-                                                              ? 'warning'
-                                                              : 'primary'
+                                                        notif.type_notification ===
+                                                        "error"
+                                                            ? "error"
+                                                            : notif.type_notification ===
+                                                                "warning"
+                                                              ? "warning"
+                                                              : "primary"
                                                     }
                                                 />
                                             </Box>
                                         }
                                         secondary={
                                             <>
-                                                <Typography variant="body2" color="text.secondary">
+                                                <Typography
+                                                    variant="body2"
+                                                    color="text.secondary"
+                                                    component="span"
+                                                >
                                                     {notif.message}
                                                 </Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {new Date(notif.date_creation).toLocaleString('fr-FR')}
+                                                <Typography
+                                                    variant="caption"
+                                                    color="text.secondary"
+                                                    component="span"
+                                                    sx={{
+                                                        display: "block",
+                                                        mt: 0.5,
+                                                    }}
+                                                >
+                                                    {new Date(
+                                                        notif.date_creation,
+                                                    ).toLocaleString("fr-FR")}
                                                 </Typography>
                                             </>
                                         }
@@ -157,4 +217,3 @@ export default function Notifications() {
         </DashboardLayout>
     );
 }
-

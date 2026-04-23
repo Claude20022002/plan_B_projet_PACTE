@@ -292,7 +292,6 @@ export default function Connexion() {
                                 onChange={handleChange}
                                 label="Fonction *"
                                 disabled={loading}
-                                disableEnforceFocus
                                 sx={{
                                     borderRadius: 2,
                                 }}
