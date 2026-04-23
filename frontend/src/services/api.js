@@ -220,6 +220,7 @@ export const affectationAPI = {
     create: (data) => request('/affectations', { method: 'POST', body: data }),
     update: (id, data) => request(`/affectations/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/affectations/${id}`, { method: 'DELETE' }),
+    confirmer: (id) => request(`/affectations/${id}/confirmer`, { method: 'PATCH' }),
 };
 
 // ==================== CONFLITS ====================

@@ -5,6 +5,7 @@ import {
     createAffectation,
     updateAffectation,
     deleteAffectation,
+    confirmerAffectation,
     getAffectationsByEnseignant,
     getAffectationsByGroupe,
 } from "../controllers/index.js";
@@ -50,6 +51,13 @@ router.delete(
     authenticateToken,
     requireAdmin,
     asyncHandler(deleteAffectation)
+);
+
+// ✅ Confirmer une affectation (Enseignant propriétaire ou Admin)
+router.patch(
+    "/:id/confirmer",
+    authenticateToken,
+    asyncHandler(confirmerAffectation)
 );
 
 // 🔍 Récupérer les affectations par enseignant (Enseignant propriétaire ou Admin)

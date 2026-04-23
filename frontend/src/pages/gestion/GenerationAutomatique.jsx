@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
     Box,
     Paper,
@@ -45,6 +45,7 @@ import {
 
 export default function GenerationAutomatique() {
     const { user } = useAuth();
+    const isMountedRef = useRef(true);
     const [loading, setLoading] = useState(false);
     const [cours, setCours] = useState([]);
     const [groupes, setGroupes] = useState([]);
@@ -63,6 +64,12 @@ export default function GenerationAutomatique() {
     const [dialogOpen, setDialogOpen] = useState(false);
 
     useEffect(() => {
+        return () => {
+            isMountedRef.current = false;
+        };
+    }, []);
+
+    useEffect(() => {
         loadData();
     }, []);
 
@@ -72,22 +79,32 @@ export default function GenerationAutomatique() {
                 coursAPI.getAll(),
                 groupeAPI.getAll(),
             ]);
-            setCours(coursData.data || coursData || []);
-            setGroupes(groupesData.data || groupesData || []);
+            if (isMountedRef.current) {
+                setCours(coursData.data || coursData || []);
+                setGroupes(groupesData.data || groupesData || []);
+            }
         } catch (err) {
             console.error("Erreur lors du chargement des données:", err);
-            setError("Erreur lors du chargement des données");
+            if (isMountedRef.current) {
+                setError("Erreur lors du chargement des données");
+            }
         }
     };
 
     const handleGenerer = async () => {
         if (!dateDebut || !dateFin) {
-            setError("Veuillez sélectionner les dates de début et de fin");
+            if (isMountedRef.current) {
+                setError("Veuillez sélectionner les dates de début et de fin");
+            }
             return;
         }
 
         if (new Date(dateDebut) >= new Date(dateFin)) {
-            setError("La date de début doit être antérieure à la date de fin");
+            if (isMountedRef.current) {
+                setError(
+                    "La date de début doit être antérieure à la date de fin",
+                );
+            }
             return;
         }
 
@@ -109,24 +126,35 @@ export default function GenerationAutomatique() {
             };
 
             const response = await generationAutomatiqueAPI.generer(data);
-            setResultat(response.resultat);
-            setDialogOpen(true);
+            if (isMountedRef.current) {
+                setResultat(response.resultat);
+                setDialogOpen(true);
+            }
         } catch (err) {
             console.error("Erreur lors de la génération:", err);
             // Gérer les erreurs d'authentification
             if (err.status === 401) {
-                setError("Votre session a expiré. Veuillez vous reconnecter.");
+                if (isMountedRef.current) {
+                    setError(
+                        "Votre session a expiré. Veuillez vous reconnecter.",
+                    );
+                }
                 // Optionnel: rediriger vers la page de connexion
                 setTimeout(() => {
                     window.location.href = "/connexion";
                 }, 2000);
             } else {
-                setError(
-                    err.message || "Erreur lors de la génération automatique",
-                );
+                if (isMountedRef.current) {
+                    setError(
+                        err.message ||
+                            "Erreur lors de la génération automatique",
+                    );
+                }
             }
         } finally {
-            setLoading(false);
+            if (isMountedRef.current) {
+                setLoading(false);
+            }
         }
     };
 
@@ -484,7 +512,11 @@ export default function GenerationAutomatique() {
                 {/* Dialog de résultats */}
                 <Dialog
                     open={dialogOpen}
-                    onClose={() => setDialogOpen(false)}
+                    onClose={() => {
+                        if (isMountedRef.current) {
+                            setDialogOpen(false);
+                        }
+                    }}
                     maxWidth="lg"
                     fullWidth
                 >
@@ -640,7 +672,13 @@ export default function GenerationAutomatique() {
                         )}
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setDialogOpen(false)}>
+                        <Button
+                            onClick={() => {
+                                if (isMountedRef.current) {
+                                    setDialogOpen(false);
+                                }
+                            }}
+                        >
                             Fermer
                         </Button>
                         <Button

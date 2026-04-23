@@ -224,6 +224,31 @@ export const getAffectationsByEnseignant = asyncHandler(async (req, res) => {
     res.json(createPaginationResponse(affectations, count, page, limit));
 });
 
+// ✅ Confirmer une affectation (Enseignant propriétaire seulement)
+export const confirmerAffectation = asyncHandler(async (req, res) => {
+    const affectation = await Affectation.findByPk(req.params.id);
+
+    if (!affectation) {
+        return res.status(404).json({ message: "Affectation non trouvée" });
+    }
+
+    const isOwner = affectation.id_user_enseignant === req.user.id_user;
+    const isAdmin = req.user.role === "admin";
+    if (!isOwner && !isAdmin) {
+        return res.status(403).json({ message: "Accès refusé : cette affectation ne vous appartient pas" });
+    }
+
+    if (affectation.statut !== "planifie") {
+        return res.status(400).json({
+            message: `Impossible de confirmer : statut actuel "${affectation.statut}"`,
+        });
+    }
+
+    await affectation.update({ statut: "confirme" });
+
+    res.json({ message: "Affectation confirmée avec succès", affectation });
+});
+
 // 🔍 Récupérer les affectations par groupe (avec pagination)
 export const getAffectationsByGroupe = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
