@@ -991,7 +991,7 @@ export default function AdminDashboard() {
                                                             </Typography>
                                                         }
                                                         secondary={
-                                                            <Box>
+                                                            <Box component="span">
                                                                 <Typography
                                                                     variant="caption"
                                                                     color="text.secondary"
@@ -1008,7 +1008,8 @@ export default function AdminDashboard() {
                                                                     component="span"
                                                                 >
                                                                     {new Date(
-                                                                        notif.date_envoi || notif.date_creation,
+                                                                        notif.date_envoi ||
+                                                                            notif.date_creation,
                                                                     ).toLocaleString(
                                                                         "fr-FR",
                                                                     )}
