@@ -80,6 +80,7 @@ export const AuthProvider = ({ children }) => {
             console.error('Erreur lors de la déconnexion:', error);
         } finally {
             localStorage.removeItem('token');
+            localStorage.removeItem('themeMode');
             setUser(null);
             setIsAuthenticated(false);
         }
