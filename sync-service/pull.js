@@ -8,8 +8,8 @@
  *  4. Mettre à jour le timestamp de dernière sync
  */
 
-const fetch  = require('node-fetch');
-const log    = require('./logger');
+// fetch est natif dans Node 18+ — pas d'import nécessaire
+const log = require('./logger');
 const { upsertFromServer }       = require('../local-db/queries/affectations');
 const { upsertManyReference, getLastUpdated } = require('../local-db/queries/reference');
 

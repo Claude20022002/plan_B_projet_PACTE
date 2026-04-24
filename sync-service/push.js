@@ -8,8 +8,8 @@
  *  4. En cas d'échec  : incrémenter retry_count
  */
 
-const fetch = require('node-fetch');
-const log   = require('./logger');
+// fetch est natif dans Node 18+ — pas d'import nécessaire
+const log = require('./logger');
 const {
     getPendingSyncLogs,
     markSyncLogDone,

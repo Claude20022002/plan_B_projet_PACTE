@@ -22,6 +22,7 @@ let syncManager  = null;
 const store = new Store({ name: 'hestim-state' });
 
 // ── Importer les services (CommonJS) ─────────────────────────────────────────
+const { initSqlDB }   = require('../local-db/index');
 const { initDB }      = require('../local-db/schema');
 const SyncManager     = require('../sync-service/syncManager');
 const SyncLogger      = require('../sync-service/logger');
@@ -117,7 +118,8 @@ function registerIpcHandlers() {
 // ── 4. Cycle de vie Electron ──────────────────────────────────────────────────
 app.whenReady().then(async () => {
     try {
-        // Initialiser SQLite
+        // Initialiser sql.js (WASM) puis le schéma
+        await initSqlDB();
         initDB();
         console.log('[MAIN] SQLite initialisé');
 

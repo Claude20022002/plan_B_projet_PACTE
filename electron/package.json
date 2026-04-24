@@ -13,9 +13,7 @@
     "build:linux": "electron-builder --linux"
   },
   "dependencies": {
-    "better-sqlite3": "^9.4.3",
-    "electron-store": "^8.2.0",
-    "node-fetch": "^2.7.0"
+    "electron-store": "^8.1.0"
   },
   "devDependencies": {
     "cross-env": "^7.0.3",
