@@ -55,6 +55,8 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', data.token);
             setUser(data.user);
             setIsAuthenticated(true);
+            // Passer le token au SyncManager Electron pour les appels API offline
+            window.electronAPI?.setAuthToken?.(data.token);
             return { success: true, data };
         } catch (error) {
             return { success: false, error: error.message };
@@ -67,6 +69,7 @@ export const AuthProvider = ({ children }) => {
             localStorage.setItem('token', data.token);
             setUser(data.user);
             setIsAuthenticated(true);
+            window.electronAPI?.setAuthToken?.(data.token);
             return { success: true, data };
         } catch (error) {
             return { success: false, error: error.message };
@@ -81,6 +84,7 @@ export const AuthProvider = ({ children }) => {
         } finally {
             localStorage.removeItem('token');
             localStorage.removeItem('themeMode');
+            window.electronAPI?.clearAuthToken?.();
             setUser(null);
             setIsAuthenticated(false);
         }

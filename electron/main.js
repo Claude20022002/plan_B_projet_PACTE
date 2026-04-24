@@ -103,6 +103,10 @@ function registerIpcHandlers() {
     ipcMain.handle('db:affectations:save',   (_, data)    => saveAffectation(data));
     ipcMain.handle('db:affectations:delete', (_, id)      => deleteAffectation(id));
 
+    // Token sync
+    ipcMain.handle('sync:setToken',   (_, token) => syncManager?.setAuthToken(token));
+    ipcMain.handle('sync:clearToken', ()          => syncManager?.clearAuthToken());
+
     // App
     ipcMain.handle('app:version', () => app.getVersion());
     ipcMain.handle('app:openLogs', () => {

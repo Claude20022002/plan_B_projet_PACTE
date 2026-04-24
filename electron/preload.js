@@ -40,6 +40,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
     /** Supprime une affectation localement */
     deleteLocalAffectation: (id) => ipcRenderer.invoke('db:affectations:delete', id),
 
+    // ── Auth (sync token) ─────────────────────────────────────────────────────
+    /** Transmet le token JWT au SyncManager */
+    setAuthToken:   (token) => ipcRenderer.invoke('sync:setToken', token),
+    clearAuthToken: ()      => ipcRenderer.invoke('sync:clearToken'),
+
     // ── Application ───────────────────────────────────────────────────────────
     /** Infos de version */
     getVersion: () => ipcRenderer.invoke('app:version'),

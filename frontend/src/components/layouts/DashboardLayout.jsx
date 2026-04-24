@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import OfflineIndicator from "../common/OfflineIndicator";
 import { useNavigate, useLocation } from "react-router-dom";
 import {
     Box,
@@ -701,6 +702,7 @@ export default function DashboardLayout({ children }) {
                 }}
             >
                 <Toolbar />
+                <OfflineIndicator />
                 {children}
             </Box>
             <GlobalSearch
