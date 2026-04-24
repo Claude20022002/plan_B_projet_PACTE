@@ -6,6 +6,7 @@ import {
     updateEtudiant,
     deleteEtudiant,
     importEtudiants,
+    syncGroupesEtudiants,
 } from "../controllers/index.js";
 import {
     authenticateToken,
@@ -68,6 +69,14 @@ router.post(
     authenticateToken,
     requireAdmin,
     asyncHandler(importEtudiants)
+);
+
+// 🔧 Réparer les liens groupe manquants (Admin seulement)
+router.post(
+    "/sync-groupes",
+    authenticateToken,
+    requireAdmin,
+    asyncHandler(syncGroupesEtudiants)
 );
 
 export default router;

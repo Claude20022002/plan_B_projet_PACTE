@@ -212,6 +212,7 @@ export default function Etudiants() {
         } catch { setError('Erreur lors de l\'export'); }
     };
 
+
     const filteredEtudiants = etudiants.filter(
         (etu) =>
             etu.user?.nom?.toLowerCase().includes(search.toLowerCase()) ||

@@ -11,17 +11,34 @@ import { hashPassword } from "../utils/passwordHelper.js";
 export const getAllEtudiants = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
-    // Filtres optionnels
+    // Filtres optionnels — uniquement les colonnes de la table Etudiants
     const where = {};
-    if (req.query.id_groupe) {
-        where.id_groupe = req.query.id_groupe;
-    }
     if (req.query.niveau) {
         where.niveau = req.query.niveau;
     }
 
+    // Filtre par groupe : via l'association Appartenir (not a direct column)
+    const appartienIncludes = [];
+    if (req.query.id_groupe) {
+        appartienIncludes.push({
+            model: Groupe,
+            as: "groupe",
+            where: { id_groupe: req.query.id_groupe },
+            required: true,
+            include: [{ model: Filiere, as: "filiere" }],
+        });
+    } else {
+        appartienIncludes.push({
+            model: Groupe,
+            as: "groupe",
+            required: false,
+            include: [{ model: Filiere, as: "filiere" }],
+        });
+    }
+
     const { count, rows: etudiantsRaw } = await Etudiant.findAndCountAll({
         where,
+        distinct: true,
         include: [
             {
                 model: Users,
@@ -31,13 +48,8 @@ export const getAllEtudiants = asyncHandler(async (req, res) => {
             {
                 model: Appartenir,
                 as: "appartenance",
-                include: [
-                    {
-                        model: Groupe,
-                        as: "groupe",
-                        include: [{ model: Filiere, as: "filiere" }],
-                    },
-                ],
+                required: false,
+                include: appartienIncludes,
             },
         ],
         limit,
@@ -137,7 +149,18 @@ export const createEtudiant = asyncHandler(async (req, res) => {
         }
     }
 
-    const etudiant = await Etudiant.create(req.body);
+    // Séparer id_groupe (table Appartenir) des champs Etudiant
+    const { id_groupe, ...etudiantData } = req.body;
+
+    const etudiant = await Etudiant.create(etudiantData);
+
+    // Créer le lien Appartenir si un groupe est fourni
+    if (id_groupe) {
+        await Appartenir.findOrCreate({
+            where: { id_user_etudiant: etudiant.id_user, id_groupe },
+            defaults: { id_user_etudiant: etudiant.id_user, id_groupe },
+        });
+    }
 
     const etudiantAvecUser = await Etudiant.findByPk(etudiant.id_user, {
         include: [
@@ -146,12 +169,22 @@ export const createEtudiant = asyncHandler(async (req, res) => {
                 as: "user",
                 attributes: { exclude: ["password_hash"] },
             },
+            {
+                model: Appartenir,
+                as: "appartenance",
+                required: false,
+                include: [{ model: Groupe, as: "groupe" }],
+            },
         ],
     });
 
+    const result = etudiantAvecUser.toJSON();
+    result.groupe    = result.appartenance?.groupe || null;
+    result.id_groupe = result.appartenance?.groupe?.id_groupe || null;
+
     res.status(201).json({
         message: "Étudiant créé avec succès",
-        etudiant: etudiantAvecUser,
+        etudiant: result,
     });
 });
 
@@ -179,7 +212,22 @@ export const updateEtudiant = asyncHandler(async (req, res) => {
         }
     }
 
-    await etudiant.update(req.body);
+    // Séparer id_groupe (table Appartenir) des champs Etudiant
+    const { id_groupe, ...updateData } = req.body;
+
+    await etudiant.update(updateData);
+
+    // Mettre à jour le groupe si fourni
+    if (id_groupe !== undefined) {
+        // Supprimer l'ancien lien puis créer le nouveau
+        await Appartenir.destroy({ where: { id_user_etudiant: etudiant.id_user } });
+        if (id_groupe) {
+            await Appartenir.findOrCreate({
+                where: { id_user_etudiant: etudiant.id_user, id_groupe },
+                defaults: { id_user_etudiant: etudiant.id_user, id_groupe },
+            });
+        }
+    }
 
     const etudiantAvecUser = await Etudiant.findByPk(etudiant.id_user, {
         include: [
@@ -188,12 +236,22 @@ export const updateEtudiant = asyncHandler(async (req, res) => {
                 as: "user",
                 attributes: { exclude: ["password_hash"] },
             },
+            {
+                model: Appartenir,
+                as: "appartenance",
+                required: false,
+                include: [{ model: Groupe, as: "groupe" }],
+            },
         ],
     });
 
+    const result = etudiantAvecUser.toJSON();
+    result.groupe    = result.appartenance?.groupe || null;
+    result.id_groupe = result.appartenance?.groupe?.id_groupe || null;
+
     res.json({
         message: "Étudiant mis à jour avec succès",
-        etudiant: etudiantAvecUser,
+        etudiant: result,
     });
 });
 
@@ -286,23 +344,24 @@ export const importEtudiants = asyncHandler(async (req, res) => {
                 continue;
             }
 
-            // Créer l'étudiant
+            // Créer l'étudiant (sans id_groupe — champ Appartenir)
             const etudiant = await Etudiant.create({
                 id_user: user.id_user,
                 numero_etudiant: etudiantData.numero_etudiant,
                 niveau: etudiantData.niveau,
-                id_groupe: etudiantData.id_groupe || null,
                 date_inscription: etudiantData.date_inscription || new Date(),
             });
 
+            // Créer le lien groupe si fourni
+            if (etudiantData.id_groupe) {
+                await Appartenir.findOrCreate({
+                    where: { id_user_etudiant: etudiant.id_user, id_groupe: etudiantData.id_groupe },
+                    defaults: { id_user_etudiant: etudiant.id_user, id_groupe: etudiantData.id_groupe },
+                });
+            }
+
             const etudiantAvecUser = await Etudiant.findByPk(etudiant.id_user, {
-                include: [
-                    {
-                        model: Users,
-                        as: "user",
-                        attributes: { exclude: ["password_hash"] },
-                    },
-                ],
+                include: [{ model: Users, as: "user", attributes: { exclude: ["password_hash"] } }],
             });
 
             results.success.push(etudiantAvecUser);
@@ -322,5 +381,45 @@ export const importEtudiants = asyncHandler(async (req, res) => {
         total: etudiants.length,
         successCount: results.success.length,
         errorCount: results.errors.length,
+    });
+});
+
+// 🔧 Réparer les liens groupe manquants (Admin)
+// Infer le groupe depuis le pattern du numero_etudiant "ETU-{nom_groupe}-{n}"
+export const syncGroupesEtudiants = asyncHandler(async (req, res) => {
+    const etudiants = await Etudiant.findAll({
+        include: [{ model: Appartenir, as: "appartenance", required: false }],
+    });
+
+    const groupes = await Groupe.findAll();
+    const groupesByNom = {};
+    groupes.forEach((g) => { groupesByNom[g.nom_groupe] = g; });
+
+    let created = 0;
+    let skipped = 0;
+
+    for (const etu of etudiants) {
+        // Si Appartenir existe déjà, on skip
+        if (etu.appartenance) { skipped++; continue; }
+
+        // Pattern: "ETU-IIIA-3A-001" → groupe = "IIIA-3A"
+        const match = etu.numero_etudiant?.match(/^ETU-(.+)-\d+$/);
+        if (!match) { skipped++; continue; }
+
+        const nomGroupe = match[1];
+        const groupe = groupesByNom[nomGroupe];
+        if (!groupe) { skipped++; continue; }
+
+        await Appartenir.findOrCreate({
+            where: { id_user_etudiant: etu.id_user, id_groupe: groupe.id_groupe },
+            defaults: { id_user_etudiant: etu.id_user, id_groupe: groupe.id_groupe },
+        });
+        created++;
+    }
+
+    res.json({
+        message: `Synchronisation terminée : ${created} lien(s) créé(s), ${skipped} ignoré(s)`,
+        created,
+        skipped,
     });
 });

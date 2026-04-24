@@ -136,6 +136,7 @@ export const etudiantAPI = {
     update: (id, data) => request(`/etudiants/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/etudiants/${id}`, { method: 'DELETE' }),
     importEtudiants: (data) => request('/etudiants/import', { method: 'POST', body: { etudiants: data } }),
+    syncGroupes: () => request('/etudiants/sync-groupes', { method: 'POST', body: {} }),
 };
 
 // ==================== FILIÈRES ====================
