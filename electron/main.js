@@ -47,7 +47,7 @@ function startBackend() {
 }
 
 // Attendre que le backend soit prêt (polling)
-function waitForBackend(url = 'http://localhost:5000/api/health', maxRetries = 20) {
+function waitForBackend(url = 'http://localhost:5000/health', maxRetries = 20) {
     return new Promise((resolve, reject) => {
         let retries = 0;
         const check = () => {
@@ -123,10 +123,14 @@ app.whenReady().then(async () => {
         initDB();
         console.log('[MAIN] SQLite initialisé');
 
-        // Démarrer backend
-        startBackend();
+        // En mode dev, le backend est déjà lancé par concurrently — ne pas le redémarrer
+        if (isDev) {
+            console.log('[MAIN] Mode dev : backend externe attendu sur :5000');
+        } else {
+            startBackend();
+        }
 
-        // Attendre que le backend soit prêt (avec timeout)
+        // Attendre que le backend soit prêt
         try {
             await waitForBackend();
             console.log('[MAIN] Backend prêt');
@@ -148,10 +152,8 @@ app.whenReady().then(async () => {
         // Vérifier le réseau toutes les 5 secondes
         setInterval(checkOnlineStatus, 5000);
 
-        // Sync initiale si online
-        if (isOnline) {
-            setTimeout(() => syncManager.sync(), 3000);
-        }
+        // La sync démarre uniquement après login (via IPC sync:setToken)
+        // Ne pas déclencher ici — pas de token disponible au démarrage
     } catch (err) {
         console.error('[MAIN] Erreur démarrage:', err);
     }

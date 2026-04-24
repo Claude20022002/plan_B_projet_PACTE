@@ -39,15 +39,17 @@ class SyncManager {
             return { skipped: true };
         }
 
+        // Vérifier le token avant de démarrer la sync
+        const token = this.store.get('authToken');
+        if (!token) {
+            return { skipped: true, reason: 'not_authenticated' };
+        }
+
         this.syncing = true;
         this._emit('start', { at: new Date().toISOString() });
         log.sync('=== SYNCHRONISATION DÉMARRÉE ===');
 
         try {
-            const token = this.store.get('authToken');
-            if (!token) {
-                throw new Error('Token manquant — utilisateur non connecté');
-            }
 
             // ── 1. PUSH : envoyer les modifs locales ──────────────────────────
             this._emit('push:start');
@@ -106,10 +108,12 @@ class SyncManager {
         this.onEvent({ type, ...data });
     }
 
-    /** Sauvegarde le token JWT pour les appels API */
+    /** Sauvegarde le token JWT pour les appels API et déclenche une sync */
     setAuthToken(token) {
         this.store.set('authToken', token);
-        log.info('Token mis à jour');
+        log.info('Token mis à jour — sync déclenchée');
+        // Petite pause pour laisser le frontend finir le login
+        setTimeout(() => this.sync(), 1500);
     }
 
     /** Efface le token lors de la déconnexion */
