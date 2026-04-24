@@ -1,0 +1,59 @@
+{
+  "name": "hestim-planner-desktop",
+  "version": "1.0.0",
+  "description": "HESTIM Planner — Application desktop offline-first",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start":   "electron .",
+    "dev":     "cross-env NODE_ENV=development electron .",
+    "build":   "electron-builder",
+    "build:win": "electron-builder --win",
+    "build:mac": "electron-builder --mac",
+    "build:linux": "electron-builder --linux"
+  },
+  "dependencies": {
+    "better-sqlite3": "^9.4.3",
+    "electron-store": "^8.2.0",
+    "node-fetch": "^2.7.0"
+  },
+  "devDependencies": {
+    "cross-env": "^7.0.3",
+    "electron": "^29.0.0",
+    "electron-builder": "^24.13.3"
+  },
+  "build": {
+    "appId": "ma.hestim.planner",
+    "productName": "HESTIM Planner",
+    "directories": {
+      "output": "../dist-electron"
+    },
+    "files": [
+      "**/*",
+      "!node_modules/.cache",
+      "../local-db/**/*",
+      "../sync-service/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "../backend",
+        "to": "backend",
+        "filter": ["**/*", "!node_modules/.cache"]
+      },
+      {
+        "from": "../frontend/dist",
+        "to": "frontend-dist"
+      }
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "../frontend/public/favicon.ico"
+    },
+    "linux": {
+      "target": "AppImage"
+    },
+    "mac": {
+      "target": "dmg"
+    }
+  }
+}
