@@ -11,8 +11,8 @@ const http     = require('http');
 const https    = require('https');
 const fs       = require('fs');
 
-const BACKEND_URL = 'http://localhost:5000/health';
-const API_BASE    = 'http://localhost:5000/api';
+const BACKEND_URL = 'http://127.0.0.1:5000/health';
+const API_BASE    = 'http://127.0.0.1:5000/api';
 const AUTH_DIR    = path.join(__dirname, 'auth');
 const CREDS_FILE  = path.join(AUTH_DIR, 'credentials.json');
 

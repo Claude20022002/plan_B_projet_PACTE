@@ -12,7 +12,7 @@ const USERS = {
         role: "enseignant",
     },
     etudiant: {
-        email: "aya.benali0@hestim.ma",
+        email: "hamza.benali0@hestim.ma", // déterministe : etuCount=0 → isMale=(0%2===0)=true → PRENOMS_M[0]='Hamza'
         password: "password123",
         role: "etudiant",
     },
@@ -67,7 +67,7 @@ async function loginViaToken(page, role = "admin", maxRetries = 3) {
             }
 
             const response = await page.request.post(
-                "http://localhost:5000/api/auth/login",
+                "http://127.0.0.1:5000/api/auth/login",
                 {
                     data: { email: user.email, password: user.password },
                 },

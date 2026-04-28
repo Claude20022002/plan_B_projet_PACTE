@@ -13,7 +13,8 @@
       "Bash(sed -i \"s|./helpers/auth.helper|./helpers/auth.helper.cjs|g\" \"c:\\\\Users\\\\clusa\\\\Desktop\\\\Github Project\\\\plan_B_projet_PACTE\\\\frontend\\\\tests\\\\app.spec.cjs\")",
       "Bash(sed -i \"s|../helpers/auth.helper|../helpers/auth.helper.cjs|g\" \"c:\\\\Users\\\\clusa\\\\Desktop\\\\Github Project\\\\plan_B_projet_PACTE\\\\frontend\\\\scripts\\\\test-watcher.cjs\")",
       "Bash(node -e \"require\\('./playwright.config.cjs'\\); console.log\\('Config OK'\\)\")",
-      "Bash(node -e \"require\\('./tests/helpers/auth.helper.cjs'\\); console.log\\('Helper OK'\\)\")"
+      "Bash(node -e \"require\\('./tests/helpers/auth.helper.cjs'\\); console.log\\('Helper OK'\\)\")",
+      "Read(//c/Users/clusa/AppData/Local/Temp/claude/c--Users-clusa-Desktop-Github-Project-plan-B-projet-PACTE/8e868c68-cae8-4846-956e-eedc6b4b4edc/tasks/**)"
     ]
   }
 }

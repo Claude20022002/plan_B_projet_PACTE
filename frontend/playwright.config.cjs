@@ -35,7 +35,7 @@ module.exports = defineConfig({
             // Backend API
             command: "npm start",
             cwd: "../backend",
-            url: "http://localhost:5000/health",
+            url: "http://127.0.0.1:5000/health",
             reuseExistingServer: true,
             timeout: 45_000,
             env: {
