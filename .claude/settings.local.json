@@ -5,7 +5,15 @@
       "Bash(node -e \"JSON.parse\\(require\\('fs'\\).readFileSync\\('c:/Users/clusa/Desktop/Github Project/plan_B_projet_PACTE/package.json','utf8'\\)\\); console.log\\('✓ package.json valide'\\)\")",
       "Bash(node -e \"require\\('sql.js'\\); console.log\\('sql.js OK'\\)\")",
       "Bash(npm list *)",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(mv playwright.config.js playwright.config.cjs)",
+      "Bash(mv tests/helpers/auth.helper.js tests/helpers/auth.helper.cjs)",
+      "Bash(mv tests/app.spec.js tests/app.spec.cjs)",
+      "Bash(mv scripts/test-watcher.js scripts/test-watcher.cjs)",
+      "Bash(sed -i \"s|./helpers/auth.helper|./helpers/auth.helper.cjs|g\" \"c:\\\\Users\\\\clusa\\\\Desktop\\\\Github Project\\\\plan_B_projet_PACTE\\\\frontend\\\\tests\\\\app.spec.cjs\")",
+      "Bash(sed -i \"s|../helpers/auth.helper|../helpers/auth.helper.cjs|g\" \"c:\\\\Users\\\\clusa\\\\Desktop\\\\Github Project\\\\plan_B_projet_PACTE\\\\frontend\\\\scripts\\\\test-watcher.cjs\")",
+      "Bash(node -e \"require\\('./playwright.config.cjs'\\); console.log\\('Config OK'\\)\")",
+      "Bash(node -e \"require\\('./tests/helpers/auth.helper.cjs'\\); console.log\\('Helper OK'\\)\")"
     ]
   }
 }

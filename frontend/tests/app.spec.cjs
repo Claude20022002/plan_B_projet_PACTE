@@ -17,7 +17,7 @@
  */
 
 const { test, expect } = require('@playwright/test');
-const { loginViaToken, login, logout, USERS } = require('./helpers/auth.helper');
+const { loginViaToken, login, logout, USERS } = require('./helpers/auth.helper.cjs');
 
 // ══════════════════════════════════════════════════════════════════════════════
 // 1. AUTHENTIFICATION

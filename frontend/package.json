@@ -7,7 +7,17 @@
     "dev": "vite",
     "build": "vite build",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test":             "playwright test --config=playwright.config.cjs",
+    "test:ui":          "playwright test --config=playwright.config.cjs --ui",
+    "test:debug":       "playwright test --config=playwright.config.cjs --debug",
+    "test:report":      "playwright show-report",
+    "test:headed":      "playwright test --config=playwright.config.cjs --headed",
+    "test:auth":        "playwright test --config=playwright.config.cjs --grep \"Authentification\"",
+    "test:nav":         "playwright test --config=playwright.config.cjs --grep \"Navigation\"",
+    "test:forms":       "playwright test --config=playwright.config.cjs --grep \"Formulaires\"",
+    "test:regression":  "playwright test --config=playwright.config.cjs --grep \"Régression\"",
+    "test:watch":       "node scripts/test-watcher.cjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
