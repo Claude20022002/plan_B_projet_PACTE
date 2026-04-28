@@ -404,20 +404,22 @@ async function seed() {
         for (const gDef of GROUPES_DEF) {
             const groupe = groupesMap[gDef.nom_groupe];
             for (let i = 0; i < gDef.effectif; i++) {
-                const isMale = Math.random() > 0.45;
+                // Déterministe : alternance M/F basée sur la position (pas Math.random)
+                const isMale = (etuCount % 2) === 0;
                 const prenom = isMale ? PRENOMS_M[i % PRENOMS_M.length] : PRENOMS_F[i % PRENOMS_F.length];
                 const nom    = NOMS_ETU[etuCount % NOMS_ETU.length];
                 const slug   = (s) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/\s+/g,'.');
                 const email  = `${slug(prenom)}.${nom.toLowerCase().replace(/\s/g,'')}${etuCount}@hestim.ma`;
+                const num    = `ETU-${gDef.nom_groupe}-${String(i+1).padStart(3,'0')}`;
                 const [user] = await Users.findOrCreate({
                     where: { email },
                     defaults: { nom, prenom, email, password_hash:pwd, role:'etudiant', telephone:`+212 6${String(etuCount).padStart(8,'0')}`, actif:true },
                 });
-                // Idempotent : toujours s'assurer que Etudiant et Appartenir existent
-                const etudiantExists = await Etudiant.findByPk(user.id_user);
-                if (!etudiantExists) {
-                    await Etudiant.create({ id_user:user.id_user, numero_etudiant:`ETU-${gDef.nom_groupe}-${String(i+1).padStart(3,'0')}`, niveau:gDef.niveau });
-                }
+                // Idempotent — findOrCreate sur id_user (PK) évite le conflit numero_etudiant
+                const [, etuCreated] = await Etudiant.findOrCreate({
+                    where: { id_user: user.id_user },
+                    defaults: { id_user: user.id_user, numero_etudiant: num, niveau: gDef.niveau },
+                });
                 await Appartenir.findOrCreate({
                     where: { id_user_etudiant:user.id_user, id_groupe:groupe.id_groupe },
                     defaults: { id_user_etudiant:user.id_user, id_groupe:groupe.id_groupe },
