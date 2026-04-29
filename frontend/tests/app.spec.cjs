@@ -459,37 +459,24 @@ test.describe("🏢 CRUD — Salles", () => {
         await expect(dialog).toBeVisible({ timeout: 5000 });
         await dialog.getByLabel(/nom de la salle/i).fill(nomSalle);
 
-        // Sélectionner le type via MUI Select (chercher le Select par son label)
-        const typeSelect = dialog.locator('[role="combobox"]').first();
-        await expect(typeSelect).toBeVisible({ timeout: 3000 });
-        await typeSelect.click();
-
-        const typeOption = page
-            .locator('[role="listbox"] [role="option"]')
-            .first();
-        if (await typeOption.isVisible({ timeout: 2000 }).catch(() => false)) {
-            await typeOption.click();
-        }
+        // Type de salle via son label MUI
+        await dialog.getByLabel(/type de salle/i).click();
+        await page
+            .locator('[role="option"]')
+            .first()
+            .waitFor({ state: "visible", timeout: 4000 });
+        await page.locator('[role="option"]').first().click();
 
         // Capacité
-        const capaciteField = dialog.getByLabel(/capacité/i);
-        if (await capaciteField.isVisible().catch(() => false)) {
-            await capaciteField.fill("30");
-        }
+        await dialog.getByLabel(/capacité/i).fill("30");
 
-        // Bâtiment via MUI Select - chercher le 2ème combobox
-        const batimentSelect = dialog.locator('[role="combobox"]').nth(1);
-        await expect(batimentSelect).toBeVisible({ timeout: 3000 });
-        await batimentSelect.click();
-
-        const batimentOption = page
-            .locator('[role="listbox"] [role="option"]')
-            .first();
-        if (
-            await batimentOption.isVisible({ timeout: 2000 }).catch(() => false)
-        ) {
-            await batimentOption.click();
-        }
+        // Bâtiment via son label MUI
+        await dialog.getByLabel(/bâtiment/i).click();
+        await page
+            .locator('[role="option"]')
+            .first()
+            .waitFor({ state: "visible", timeout: 4000 });
+        await page.locator('[role="option"]').first().click();
 
         await dialog
             .getByRole("button", { name: /créer|ajouter|enregistrer/i })
@@ -497,7 +484,7 @@ test.describe("🏢 CRUD — Salles", () => {
 
         // Le dialog doit se fermer après succès
         await expect(page.locator(".MuiDialog-paper")).not.toBeVisible({
-            timeout: 8000,
+            timeout: 10000,
         });
     });
 
@@ -880,7 +867,10 @@ test.describe("♿ Accessibilité & UX", () => {
     test("les dialogs ont un titre visible", async ({ page }) => {
         await page.goto("/gestion/salles");
         await page.waitForLoadState("networkidle");
-        await page.waitForTimeout(500); // délai supplémentaire pour le rendu
+        // Attendre que le DashboardLayout soit rendu (preuve que l'auth est complète)
+        await expect(page.locator(".MuiAppBar-root")).toBeVisible({
+            timeout: 10000,
+        });
 
         const addBtn = page.getByRole("button", { name: /ajouter une salle/i });
         await expect(addBtn).toBeVisible({ timeout: 8000 });

@@ -51,9 +51,9 @@ async function login(page, role = "admin") {
         }
     }
 
-    // Attendre que le bouton soit activé et clique
+    // Attendre que le bouton soit visible et cliquable
     const submitBtn = page.getByRole("button", { name: /connexion/i });
-    await submitBtn.waitFor({ state: "enabled", timeout: 5000 });
+    await submitBtn.waitFor({ state: "visible", timeout: 5000 });
 
     // Attendre la navigation après clic
     await submitBtn.click();
