@@ -15,7 +15,9 @@
       "Bash(node -e \"require\\('./playwright.config.cjs'\\); console.log\\('Config OK'\\)\")",
       "Bash(node -e \"require\\('./tests/helpers/auth.helper.cjs'\\); console.log\\('Helper OK'\\)\")",
       "Read(//c/Users/clusa/AppData/Local/Temp/claude/c--Users-clusa-Desktop-Github-Project-plan-B-projet-PACTE/8e868c68-cae8-4846-956e-eedc6b4b4edc/tasks/**)",
-      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; cat \"{}\"')"
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; cat \"{}\"')",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; grep -A 15 \"Error details\" \"{}\"')",
+      "Bash(xargs grep *)"
     ]
   }
 }
