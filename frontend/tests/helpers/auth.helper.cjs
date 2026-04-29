@@ -38,16 +38,27 @@ async function login(page, role = "admin") {
         enseignant: "Professeur",
         etudiant: "Étudiant",
     };
-    const select = page
-        .locator('select, [role="combobox"]')
-        .filter({ hasText: /fonction|rôle/i })
-        .first();
-    if (await select.isVisible().catch(() => false)) {
-        await select.selectOption({ label: fonctionMap[role] });
+
+    // Cliquer sur le Select de fonction
+    const fonctionSelect = page.locator('[role="combobox"]');
+    if (await fonctionSelect.isVisible().catch(() => false)) {
+        await fonctionSelect.click();
+        const fonctionOption = page
+            .locator(`[role="option"]`)
+            .filter({ hasText: new RegExp(fonctionMap[role], "i") });
+        if (await fonctionOption.isVisible().catch(() => false)) {
+            await fonctionOption.click();
+        }
     }
 
-    await page.getByRole("button", { name: /connexion/i }).click();
-    await page.waitForURL(`**/dashboard/${role}`, { timeout: 10_000 });
+    // Attendre que le bouton soit activé et clique
+    const submitBtn = page.getByRole("button", { name: /connexion/i });
+    await submitBtn.waitFor({ state: "enabled", timeout: 5000 });
+
+    // Attendre la navigation après clic
+    await submitBtn.click();
+    await page.waitForURL(`**/dashboard/${role}`, { timeout: 20_000 });
+    await page.waitForLoadState("networkidle");
 }
 
 /**
