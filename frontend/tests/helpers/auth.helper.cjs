@@ -120,7 +120,10 @@ async function logout(page) {
         await page.getByText(/déconnexion/i).click();
     } else {
         // Fallback : vider localStorage
-        await page.evaluate(() => localStorage.removeItem("token"));
+        await page.evaluate(() => {
+            localStorage.removeItem("token");
+            localStorage.removeItem("themeMode");
+        });
         await page.goto("/connexion");
     }
     await page.waitForURL("**/connexion");

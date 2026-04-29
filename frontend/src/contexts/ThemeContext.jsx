@@ -17,12 +17,12 @@ export const ThemeProvider = ({ children }) => {
         return savedMode || 'light';
     });
 
-    useEffect(() => {
-        localStorage.setItem('themeMode', mode);
-    }, [mode]);
-
     const toggleTheme = () => {
-        setMode((prevMode) => (prevMode === 'light' ? 'dark' : 'light'));
+        setMode((prevMode) => {
+            const newMode = prevMode === 'light' ? 'dark' : 'light';
+            localStorage.setItem('themeMode', newMode);
+            return newMode;
+        });
     };
 
     const theme = createTheme({

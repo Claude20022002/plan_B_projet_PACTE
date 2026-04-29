@@ -38,9 +38,15 @@ const JOURS_ORDER = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'
 const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
 
 const validationSchema = yup.object({
-    id_creneau: yup.number().required('Le créneau est requis'),
-    date_debut: yup.string().required('La date de début est requise'),
-    date_fin:   yup.string().required('La date de fin est requise'),
+    id_creneau: yup.number()
+        .min(1, 'Le créneau est requis')
+        .required('Le créneau est requis'),
+    date_debut: yup.string()
+        .min(1, 'La date de début est requise')
+        .required('La date de début est requise'),
+    date_fin: yup.string()
+        .min(1, 'La date de fin est requise')
+        .required('La date de fin est requise'),
     disponible: yup.boolean(),
 });
 

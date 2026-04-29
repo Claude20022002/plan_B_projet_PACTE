@@ -234,9 +234,9 @@ export default function Connexion() {
                         <TextField
                             required
                             fullWidth
-                            label="Nom d'utilisateur ou mail"
+                            label="Email"
                             name="email"
-                            type="text"
+                            type="email"
                             placeholder="Nom d'utilisateur ou mail"
                             value={formData.email}
                             onChange={handleChange}
@@ -343,7 +343,7 @@ export default function Connexion() {
                                 type="submit"
                                 fullWidth
                                 variant="contained"
-                                disabled={loading}
+                                disabled={loading || !formData.email || !formData.password}
                                 sx={{
                                     mt: 2,
                                     py: 1.8,

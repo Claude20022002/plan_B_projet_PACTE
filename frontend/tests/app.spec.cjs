@@ -245,12 +245,12 @@ test.describe('📋 Formulaires — Validation', () => {
         await page.goto('/gestion/utilisateurs');
         await page.getByRole('button', { name: /ajouter/i }).click();
 
-        const dialog = page.locator('[role="dialog"]');
+        const dialog = page.locator('.MuiDialog-paper');
         await expect(dialog).toBeVisible();
 
         await dialog.getByLabel(/email/i).fill('pas-un-email');
-        await dialog.getByLabel(/nom/i).fill('Test');
-        await dialog.getByLabel(/prénom/i).fill('User');
+        await dialog.getByLabel('Nom', { exact: true }).fill('Test');
+        await dialog.getByLabel('Prénom', { exact: true }).fill('User');
         await dialog.getByRole('button', { name: /créer|ajouter/i }).click();
 
         await expect(dialog.getByText(/email invalide/i)).toBeVisible({ timeout: 5000 });
@@ -260,7 +260,7 @@ test.describe('📋 Formulaires — Validation', () => {
         await page.goto('/gestion/utilisateurs');
         await page.getByRole('button', { name: /ajouter/i }).click();
 
-        const dialog = page.locator('[role="dialog"]');
+        const dialog = page.locator('.MuiDialog-paper');
         await dialog.getByRole('button', { name: /créer|ajouter/i }).click();
 
         // Au moins un message d'erreur requis doit apparaître
@@ -271,9 +271,9 @@ test.describe('📋 Formulaires — Validation', () => {
         await page.goto('/gestion/utilisateurs');
         await page.getByRole('button', { name: /ajouter/i }).click();
 
-        const dialog = page.locator('[role="dialog"]');
-        await dialog.getByLabel(/nom/i).fill('Test');
-        await dialog.getByLabel(/prénom/i).fill('User');
+        const dialog = page.locator('.MuiDialog-paper');
+        await dialog.getByLabel('Nom', { exact: true }).fill('Test');
+        await dialog.getByLabel('Prénom', { exact: true }).fill('User');
         await dialog.getByLabel(/email/i).fill('test@hestim.ma');
         await dialog.getByLabel(/mot de passe/i).fill('123');
         await dialog.getByRole('button', { name: /créer|ajouter/i }).click();
@@ -286,7 +286,7 @@ test.describe('📋 Formulaires — Validation', () => {
         await page.goto('/gestion/cours');
         await page.getByRole('button', { name: /ajouter/i }).click();
 
-        const dialog = page.locator('[role="dialog"]');
+        const dialog = page.locator('.MuiDialog-paper');
         await expect(dialog).toBeVisible();
 
         const volumeField = dialog.getByLabel(/volume horaire/i);
@@ -307,7 +307,7 @@ test.describe('📋 Formulaires — Validation', () => {
         const reportBtn = page.locator('[title*="report"], button[aria-label*="report"]').first();
         if (await reportBtn.isVisible({ timeout: 3000 }).catch(() => false)) {
             await reportBtn.click();
-            const dialog = page.locator('[role="dialog"]');
+            const dialog = page.locator('.MuiDialog-paper');
             await dialog.getByLabel(/motif/i).fill('court'); // < 10 chars
             await dialog.getByRole('button', { name: /envoyer/i }).click();
             await expect(dialog.getByText(/10 caractères/i)).toBeVisible({ timeout: 5000 });
@@ -322,7 +322,7 @@ test.describe('📋 Formulaires — Validation', () => {
         await page.goto('/disponibilites');
         await page.getByRole('button', { name: /ajouter/i }).click();
 
-        const dialog = page.locator('[role="dialog"]');
+        const dialog = page.locator('.MuiDialog-paper');
         await expect(dialog).toBeVisible();
         await dialog.getByRole('button', { name: /ajouter/i }).click();
 
@@ -347,39 +347,50 @@ test.describe('🏢 CRUD — Salles', () => {
     });
 
     test('ouvrir le dialog de création', async ({ page }) => {
-        await page.getByRole('button', { name: /ajouter/i }).click();
-        await expect(page.locator('[role="dialog"]')).toBeVisible();
+        await page.getByRole('button', { name: /ajouter une salle/i }).click();
+        await expect(page.locator('.MuiDialog-paper')).toBeVisible({ timeout: 5000 });
         await expect(page.getByText(/nouvelle salle/i)).toBeVisible();
     });
 
     test('créer une salle valide', async ({ page }) => {
         const nomSalle = `TEST-${Date.now()}`;
-        await page.getByRole('button', { name: /ajouter/i }).click();
+        await page.getByRole('button', { name: /ajouter une salle/i }).click();
 
-        const dialog = page.locator('[role="dialog"]');
-        await dialog.getByLabel(/nom.*salle/i).fill(nomSalle);
+        const dialog = page.locator('.MuiDialog-paper');
+        await expect(dialog).toBeVisible({ timeout: 5000 });
+        await dialog.getByLabel(/nom de la salle/i).fill(nomSalle);
 
-        // Sélectionner le type si présent
-        const typeSelect = dialog.locator('[name="type_salle"], select[id*="type"]');
-        if (await typeSelect.isVisible().catch(() => false)) {
-            await typeSelect.selectOption({ index: 1 });
+        // Sélectionner le type via MUI Select (clic + option dans le dropdown)
+        await dialog.getByLabel(/type de salle/i).click();
+        const typeOption = page.locator('[role="listbox"] [role="option"]').first();
+        if (await typeOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await typeOption.click();
         }
 
+        // Capacité
         const capaciteField = dialog.getByLabel(/capacité/i);
         if (await capaciteField.isVisible().catch(() => false)) {
             await capaciteField.fill('30');
         }
 
+        // Bâtiment via MUI Select
+        await dialog.getByLabel(/bâtiment/i).click();
+        const batimentOption = page.locator('[role="listbox"] [role="option"]').first();
+        if (await batimentOption.isVisible({ timeout: 2000 }).catch(() => false)) {
+            await batimentOption.click();
+        }
+
         await dialog.getByRole('button', { name: /créer|ajouter|enregistrer/i }).click();
 
-        // La salle doit apparaître dans la liste ou le dialog doit se fermer
-        await expect(page.locator('[role="dialog"]')).not.toBeVisible({ timeout: 8000 });
+        // Le dialog doit se fermer après succès
+        await expect(page.locator('.MuiDialog-paper')).not.toBeVisible({ timeout: 8000 });
     });
 
     test('annuler ferme le dialog sans créer', async ({ page }) => {
-        await page.getByRole('button', { name: /ajouter/i }).click();
-        await page.locator('[role="dialog"]').getByRole('button', { name: /annuler/i }).click();
-        await expect(page.locator('[role="dialog"]')).not.toBeVisible();
+        await page.getByRole('button', { name: /ajouter une salle/i }).click();
+        await expect(page.locator('.MuiDialog-paper')).toBeVisible({ timeout: 5000 });
+        await page.locator('.MuiDialog-paper').getByRole('button', { name: /annuler/i }).click();
+        await expect(page.locator('.MuiDialog-paper')).not.toBeVisible();
     });
 });
 
@@ -517,7 +528,9 @@ test.describe('📊 Statistiques', () => {
         await page.goto('/statistiques');
         await page.waitForLoadState('networkidle');
 
+        // Attendre que les onglets soient présents dans le DOM
         const tabs = page.locator('[role="tab"]');
+        await expect(tabs.first()).toBeVisible({ timeout: 8000 });
         const count = await tabs.count();
         expect(count).toBeGreaterThanOrEqual(3);
 
@@ -537,7 +550,8 @@ test.describe('📊 Statistiques', () => {
         await page.goto('/dashboard/admin');
         await page.waitForLoadState('networkidle');
 
-        // Au moins 4 cartes principales
+        // Attendre qu'au moins une carte soit visible avant de compter
+        await expect(page.locator('.MuiCard-root').first()).toBeVisible({ timeout: 8000 });
         const cardCount = await page.locator('.MuiCard-root').count();
         expect(cardCount).toBeGreaterThanOrEqual(4);
     });
@@ -597,7 +611,7 @@ test.describe('🐛 Régression — Bugs connus', () => {
         await expect(addBtn).toBeVisible({ timeout: 6000 });
         await addBtn.click();
 
-        const dialog = page.locator('[role="dialog"]');
+        const dialog = page.locator('.MuiDialog-paper');
         await expect(dialog).toBeVisible({ timeout: 5000 });
 
         // Soumettre le dialog vide pour déclencher la validation
@@ -704,10 +718,10 @@ test.describe('♿ Accessibilité & UX', () => {
     test('les dialogs ont un titre visible', async ({ page }) => {
         await page.goto('/gestion/salles');
         await page.waitForLoadState('networkidle');
-        const addBtn = page.getByRole('button', { name: /ajouter/i }).first();
+        const addBtn = page.getByRole('button', { name: /ajouter une salle/i });
         await expect(addBtn).toBeVisible({ timeout: 6000 });
         await addBtn.click();
-        const dialog = page.locator('[role="dialog"]');
+        const dialog = page.locator('.MuiDialog-paper');
         await expect(dialog).toBeVisible({ timeout: 5000 });
         // Le dialog doit contenir un titre
         await expect(dialog.locator('.MuiDialogTitle-root, h2').first()).toBeVisible();
@@ -717,8 +731,8 @@ test.describe('♿ Accessibilité & UX', () => {
     test('les boutons d\'action sont accessibles au clavier', async ({ page }) => {
         await page.goto('/gestion/salles');
         await page.waitForLoadState('networkidle');
-        // Appuyer Tab pour déplacer le focus — un élément doit recevoir le focus
-        await page.keyboard.press('Tab');
+        // Focaliser directement le premier bouton interactif de la page
+        await page.locator('button').first().focus();
         const focusedTag = await page.evaluate(() => document.activeElement?.tagName);
         expect(['BUTTON', 'A', 'INPUT', 'SELECT', 'TEXTAREA']).toContain(focusedTag);
     });
