@@ -459,24 +459,21 @@ test.describe("🏢 CRUD — Salles", () => {
         await expect(dialog).toBeVisible({ timeout: 5000 });
         await dialog.getByLabel(/nom de la salle/i).fill(nomSalle);
 
-        // Type de salle via son label MUI
-        await dialog.getByLabel(/type de salle/i).click();
-        await page
-            .locator('[role="option"]')
-            .first()
-            .waitFor({ state: "visible", timeout: 4000 });
-        await page.locator('[role="option"]').first().click();
+        // Type de salle — 1er combobox dans le dialog
+        const comboboxes = dialog.locator('[role="combobox"]');
+        await comboboxes.nth(0).waitFor({ state: "visible", timeout: 5000 });
+        await comboboxes.nth(0).click();
+        const firstOption = page.locator('[role="option"]').first();
+        await firstOption.waitFor({ state: "visible", timeout: 5000 });
+        await firstOption.click();
 
         // Capacité
         await dialog.getByLabel(/capacité/i).fill("30");
 
-        // Bâtiment via son label MUI
-        await dialog.getByLabel(/bâtiment/i).click();
-        await page
-            .locator('[role="option"]')
-            .first()
-            .waitFor({ state: "visible", timeout: 4000 });
-        await page.locator('[role="option"]').first().click();
+        // Bâtiment — 2ème combobox dans le dialog
+        await comboboxes.nth(1).click();
+        await firstOption.waitFor({ state: "visible", timeout: 5000 });
+        await firstOption.click();
 
         await dialog
             .getByRole("button", { name: /créer|ajouter|enregistrer/i })
@@ -890,8 +887,9 @@ test.describe("♿ Accessibilité & UX", () => {
     }) => {
         await page.goto("/gestion/salles");
         await page.waitForLoadState("networkidle");
-        // Focaliser directement le premier bouton interactif de la page
-        await page.locator("button").first().focus();
+        // getByRole('button') exclut les éléments cachés (aria) contrairement à locator('button')
+        // Le bouton hamburger mobile est display:none sur desktop et ne reçoit pas le focus
+        await page.getByRole("button").first().focus();
         const focusedTag = await page.evaluate(
             () => document.activeElement?.tagName,
         );
