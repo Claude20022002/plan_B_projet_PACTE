@@ -309,8 +309,12 @@ function buildTimetableHTML(affectations, title, role, logoBase64) {
 
     // Facteur d'échelle pour tout tenir sur une page A4 paysage
     const zoom = Math.min(1, Math.max(0.45, 4 / nWeeks));
-    // Taille de police de base (pt) selon le nombre de semaines
-    const fs   = nWeeks <= 1 ? 9 : nWeeks <= 2 ? 8 : nWeeks <= 4 ? 7 : nWeeks <= 6 ? 6 : 5;
+    // Police −23 % (−20 % hauteur cellule × −3 % global)
+    const fs   = nWeeks <= 1 ? 8.2 : nWeeks <= 2 ? 7.8 : nWeeks <= 4 ? 7.3 : nWeeks <= 6 ? 6.3 : 5.3;
+    // Largeur slot : 45mm × 0,97 ≈ 44mm
+    const slotW  = 44;
+    // Largeur exacte du tableau = somme des colonnes déclarées
+    const tableW = 12.6 + 12.6 + 6.8 + 4 * slotW; // ≈ 208mm
 
     /* ── Lignes du tableau ─────────────────────────────────────────── */
     let tbody = '';
@@ -353,7 +357,7 @@ function buildTimetableHTML(affectations, title, role, logoBase64) {
 <title>${esc(title)}</title>
 <style>
 /* ── Reset & Page ─────────────────────────────────────────────── */
-@page { size: A4 landscape; margin: 7mm; }
+@page { size: A4 landscape; margin: 4mm; }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 body {
     font-family: Arial, Helvetica, sans-serif;
@@ -364,103 +368,123 @@ body {
     print-color-adjust: exact;
 }
 /* ── Zoom pour tenir sur une page ────────────────────────────── */
-.wrap { zoom: ${zoom}; width: calc(277mm / ${zoom}); }
-/* ── Header ──────────────────────────────────────────────────── */
+.wrap  { zoom: ${zoom}; width: calc(289mm / ${zoom}); }
+/* Conteneur centré calé exactement sur la largeur du tableau */
+.inner { width: ${tableW}mm; margin: 0 auto; }
+/* ── Header 3 colonnes : logo | filière | classe+année ────────── */
 .hdr {
     display: flex;
     align-items: center;
-    gap: 4mm;
-    margin-bottom: 2.5mm;
-    padding-bottom: 2.5mm;
-    border-bottom: 2px solid #001962;
+    justify-content: space-between;
+    gap: 2mm;
+    margin-bottom: 0.97mm;
+    padding-bottom: 0.97mm;
+    border-bottom: 1.5px solid #001962;
+    width: 100%;
 }
-.logo-zone { flex: 0 0 auto; }
-.logo-img  { height: 14mm; width: auto; object-fit: contain; display: block; }
-.logo-txt  { font-size: 18pt; font-weight: 900; color: #001962; }
-.hdr-center { flex: 1; text-align: center; }
-.hdr-annee {
-    display: block;
-    text-align: right;
-    font-size: ${fs - 0.5}pt;
-    color: #555;
-    margin-bottom: 1mm;
-}
-.hdr-center h2 {
-    font-size: ${fs + 4}pt;
+.hdr-left  { flex: 0 0 auto; display: flex; align-items: center; }
+.hdr-mid   { flex: 1; text-align: center; }
+.hdr-right { flex: 0 0 auto; text-align: right; }
+.logo-img  { height: 8.7mm; width: auto; object-fit: contain; display: block; }
+.logo-txt  { font-size: 12pt; font-weight: 900; color: #001962; }
+.hdr-title {
+    font-size: ${fs + 2}pt;
     font-weight: 700;
     color: #1E90FF;
     text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 1mm;
+    letter-spacing: 0.5px;
+    margin-bottom: 0.2mm;
 }
-.hdr-center p { font-size: ${fs}pt; color: #FF4500; margin-bottom: 1mm; }
-.span-class   { display: block; font-size: ${fs}pt; font-weight: 700; color: #001962; }
-.gold-bar { height: 2px; background: linear-gradient(90deg,#001962,#E8A020); margin-bottom: 2.5mm; }
+.hdr-filiere {
+    font-size: ${fs + 1}pt;
+    font-weight: 700;
+    color: #FF4500;
+}
+.hdr-classe {
+    display: block;
+    font-size: ${fs}pt;
+    font-weight: 700;
+    color: #001962;
+    margin-bottom: 0.2mm;
+}
+.hdr-annee {
+    display: block;
+    font-size: ${fs - 0.5}pt;
+    color: #555;
+}
+.gold-bar { height: 1.5px; background: linear-gradient(90deg,#001962,#E8A020); margin-bottom: 0.97mm; }
 /* ── Table ────────────────────────────────────────────────────── */
 table {
     width: 100%;
     border-collapse: collapse;
-    border: 1.5px solid #001962;
+    border: 1px solid #001962;
     table-layout: fixed;
+    margin: 0;
 }
-th, td { border: 1px solid #001962; padding: 0.8mm 1mm; vertical-align: top; font-size: ${fs}pt; }
+th, td { border: 1px solid #001962; padding: 0.24mm 0.49mm; vertical-align: middle; text-align: center; font-size: ${fs}pt; line-height: 1.07; }
 /* En-têtes colonnes */
 thead th {
     background: #001962;
     color: #fff;
     font-weight: 700;
     text-align: center;
-    padding: 1.5mm 1mm;
+    vertical-align: middle;
+    padding: 0.48mm 0.49mm;
+    line-height: 1.07;
 }
 thead .th-mat  { background: #003087; }
 thead .th-apm  { background: #1a3a8f; }
 thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
 /* Colonnes fixes */
-.td-sem  { width: 14mm; font-size: ${fs - 0.5}pt; font-weight: 700; color: #001962; background: #EEF3FF; text-align: center; vertical-align: middle; }
-.td-jour { width: 14mm; font-weight: 700; color: #001962; background: #F5F7FF; text-align: center; vertical-align: middle; }
+.td-sem  { width: 12.6mm; font-size: ${fs - 0.5}pt; font-weight: 700; color: #001962; background: #EEF3FF; text-align: center; vertical-align: middle; }
+.td-jour { width: 12.6mm; font-weight: 700; color: #001962; background: #F5F7FF; text-align: center; vertical-align: middle; }
 .td-jour small { font-weight: 400; color: #666; display: block; }
-.td-mms  { width: 8mm; font-size: ${fs - 1.5}pt; color: #555; background: #F5F7FF; text-align: center; vertical-align: top; line-height: 1.5; }
-.td-mms hr { border: none; border-top: 0.5px solid #bbb; margin: 0.5mm 0; }
+.td-mms  { width: 6.8mm; font-size: ${fs - 1}pt; color: #555; background: #F5F7FF; text-align: center; vertical-align: middle; line-height: 1.07; }
+.td-mms hr { border: none; border-top: 0.5px solid #bbb; margin: 0.1mm 0; }
 /* Cellules de cours */
 .td-slot {
-    text-align: left;
-    vertical-align: top;
+    width: ${slotW}mm;
+    text-align: center;
+    vertical-align: middle;
     background: #FAFAFE;
     word-break: break-word;
 }
 .td-slot.has-cours { background: #EEF3FF; }
-.td-slot hr { border: none; border-top: 0.5px dotted #aac; margin: 0.4mm 0; }
-.c-mat { display: block; font-weight: 700; color: #001962; }
+.td-slot hr { border: none; border-top: 0.5px dotted #aac; margin: 0.1mm 0; }
+.c-mat { display: block; font-weight: 700; color: #001962; text-align: center; }
 .c-mat em { font-style: normal; font-weight: 400; color: #E8A020; font-size: ${fs - 1}pt; }
-.c-ens { display: block; color: #333; font-size: ${fs - 0.5}pt; }
-.c-sal { display: block; color: #444; font-size: ${fs - 0.5}pt; }
-.c-grp { display: block; color: #E8A020; font-size: ${fs - 1}pt; font-weight: 700; }
+.c-ens { display: block; color: #333; font-size: ${fs - 0.5}pt; text-align: center; }
+.c-sal { display: block; color: #444; font-size: ${fs - 0.5}pt; text-align: center; }
+.c-grp { display: block; color: #E8A020; font-size: ${fs - 1}pt; font-weight: 700; text-align: center; }
 /* Séparateur entre semaines */
-.sep td { height: 1.5mm; background: #E8A020; border: none; padding: 0; }
+.sep td { height: 0.97mm; background: #E8A020; border: none; padding: 0; }
 /* Pied de page */
 .ftr {
-    margin-top: 2mm;
+    margin-top: 0.97mm;
     display: flex;
     justify-content: space-between;
-    font-size: ${fs - 1.5}pt;
+    font-size: ${fs - 1}pt;
     color: #888;
     border-top: 1px solid #ddd;
-    padding-top: 1.5mm;
+    padding-top: 0.97mm;
 }
-.no-data { text-align:center; padding: 8mm; color:#aaa; font-style:italic; }
+.no-data { text-align:center; padding: 4mm; color:#aaa; font-style:italic; }
 </style>
 </head>
 <body>
 <div class="wrap">
+<div class="inner">
 
-  <!-- ── Header ────────────────────────────────────── -->
+  <!-- ── Header 3 colonnes ─────────────────────────── -->
   <div class="hdr">
-    <div class="logo-zone">${logoTag}</div>
-    <div class="hdr-center">
+    <div class="hdr-left">${logoTag}</div>
+    <div class="hdr-mid">
+      <div class="hdr-title">Emploi du Temps</div>
+      <div class="hdr-filiere">${filiere ? esc(filiere) : "École d'Ingénierie &amp; Management"}</div>
+    </div>
+    <div class="hdr-right">
+      ${groupes.length ? `<span class="hdr-classe">${groupes.map(esc).join(' &nbsp;·&nbsp; ')}</span>` : ''}
       <span class="hdr-annee">Année Universitaire ${academicYear()}</span>
-      <h2>Emploi du temps</h2>
-      <p>${filiere ? `Cycle d'ingénieur — ${esc(filiere)}` : "École d'Ingénierie et Management"}</p>
-      ${groupes.length ? `<span class="span-class">${groupes.map(esc).join(' &nbsp;·&nbsp; ')}</span>` : ''}
     </div>
   </div>
   <div class="gold-bar"></div>
@@ -491,7 +515,8 @@ thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
     <span>hestim.ma</span>
   </div>
 
-</div>
+</div><!-- /.inner -->
+</div><!-- /.wrap -->
 </body>
 </html>`;
 }
