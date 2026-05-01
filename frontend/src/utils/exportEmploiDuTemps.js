@@ -422,6 +422,7 @@ table {
     margin: 0;
 }
 th, td { border: 1px solid #001962; padding: 0.24mm 0.49mm; vertical-align: middle; text-align: center; font-size: ${fs}pt; line-height: 1.07; }
+tbody th, tbody td { line-height: 1.08; }
 /* En-têtes colonnes */
 thead th {
     background: #001962;
@@ -439,7 +440,7 @@ thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
 .td-sem  { width: 12.6mm; font-size: ${fs - 0.5}pt; font-weight: 700; color: #001962; background: #EEF3FF; text-align: center; vertical-align: middle; }
 .td-jour { width: 12.6mm; font-weight: 700; color: #001962; background: #F5F7FF; text-align: center; vertical-align: middle; }
 .td-jour small { font-weight: 400; color: #666; display: block; }
-.td-mms  { width: 6.8mm; font-size: ${fs - 1}pt; color: #555; background: #F5F7FF; text-align: center; vertical-align: middle; line-height: 1.07; }
+.td-mms  { width: 6.8mm; font-size: ${fs - 1}pt; color: #555; background: #F5F7FF; text-align: center; vertical-align: middle; line-height: 1.08; }
 .td-mms hr { border: none; border-top: 0.5px solid #bbb; margin: 0.1mm 0; }
 /* Cellules de cours */
 .td-slot {
