@@ -1,5 +1,4 @@
 import * as XLSX from 'xlsx';
-import jsPDF from 'jspdf';
 
 // Couleurs par type de cours
 const TYPE_COLORS = {
@@ -177,365 +176,365 @@ function getCreneauxUniques(affectations) {
     return Array.from(map.values()).sort((a, b) => a.debut.localeCompare(b.debut));
 }
 
-/**
- * Dessine un coin arrondi dans le PDF
- */
-function drawRoundedRect(doc, x, y, w, h, r, fillColor, strokeColor) {
-    if (fillColor) doc.setFillColor(...fillColor);
-    if (strokeColor) doc.setDrawColor(...strokeColor);
-    doc.roundedRect(x, y, w, h, r, r, fillColor ? (strokeColor ? 'FD' : 'F') : 'S');
+
+// ── Créneaux officiels HESTIM (planning.html) ─────────────────────────────────
+const HESTIM_SLOTS = [
+    { label: '09h00 - 10h45', debut: '09:00' },
+    { label: '10h45 - 12h30', debut: '10:45' },
+    { label: '13h30 - 15h15', debut: '13:30' },
+    { label: '15h15 - 17h00', debut: '15:15' },
+];
+
+const HTML_JOURS      = ['lundi', 'mardi', 'mercredi', 'jeudi', 'samedi'];
+const HTML_JOUR_LABEL = { lundi:'Lundi', mardi:'Mardi', mercredi:'Mercredi', jeudi:'Jeudi', samedi:'Samedi' };
+
+/** Mappe heure_debut → index créneau HESTIM (0-3), -1 si hors plage */
+function htmlSlotIdx(heureDebut) {
+    const h = (heureDebut || '').substring(0, 5);
+    if (h >= '09:00' && h < '10:45') return 0;
+    if (h >= '10:45' && h < '13:30') return 1;
+    if (h >= '13:30' && h < '15:15') return 2;
+    if (h >= '15:15')                return 3;
+    return -1;
+}
+
+/** Calcule l'année universitaire courante (ex: 2025/2026) */
+function academicYear() {
+    const n = new Date();
+    const y = n.getFullYear();
+    return n.getMonth() >= 8 ? `${y}/${y + 1}` : `${y - 1}/${y}`;
+}
+
+/** Formate une date ISO en jj/mm/aaaa */
+function fmtDate(d) {
+    if (!d) return '';
+    return new Date(d).toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit', year:'numeric' });
+}
+
+/** Donne la date d'un jour de la semaine à partir du lundi de la semaine */
+function fmtJourDate(mondayStr, jourName) {
+    if (!mondayStr) return '';
+    const off = { lundi:0, mardi:1, mercredi:2, jeudi:3, vendredi:4, samedi:5 };
+    const d = new Date(mondayStr);
+    d.setDate(d.getDate() + (off[jourName] ?? 0));
+    return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' });
+}
+
+/** Échappe le HTML */
+function esc(s) {
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
 /**
- * Dessine l'en-tête du document PDF
+ * Groupe les affectations par semaines → jours → slots [0..3].
+ * Si aucune date_seance, retourne une seule "semaine type" (récurrente).
  */
-function drawPDFHeader(doc, title, subtitle, pageWidth) {
-    // Bande bleue principale
-    doc.setFillColor(26, 58, 143);
-    doc.rect(0, 0, pageWidth, 28, 'F');
+function buildHtmlWeeks(affectations) {
+    const hasDate = affectations.some(a => a.date_seance);
+    const JOUR_MAP = { 1:'lundi', 2:'mardi', 3:'mercredi', 4:'jeudi', 5:'vendredi', 6:'samedi' };
 
-    // Titre principal
-    doc.setTextColor(255, 255, 255);
-    doc.setFontSize(16);
-    doc.setFont('helvetica', 'bold');
-    doc.text('HESTIM — École d\'Ingénierie & Management', pageWidth / 2, 10, { align: 'center' });
-
-    // Sous-titre
-    doc.setFontSize(11);
-    doc.setFont('helvetica', 'normal');
-    doc.text(title, pageWidth / 2, 18, { align: 'center' });
-
-    // Bande jaune décorative
-    doc.setFillColor(232, 160, 32);
-    doc.rect(0, 28, pageWidth, 3, 'F');
-
-    // Infos sous le header
-    doc.setTextColor(60, 60, 60);
-    doc.setFontSize(9);
-    doc.setFont('helvetica', 'normal');
-    if (subtitle) {
-        doc.text(subtitle, 14, 40);
+    if (!hasDate) {
+        // Emploi du temps récurrent (pas de date_seance)
+        const days = {};
+        HTML_JOURS.forEach(j => { days[j] = [null, null, null, null]; });
+        affectations.forEach(aff => {
+            const jour = (aff.creneau?.jour_semaine || '').toLowerCase();
+            if (!days[jour]) return;
+            const idx = htmlSlotIdx(aff.creneau?.heure_debut);
+            if (idx >= 0 && !days[jour][idx]) days[jour][idx] = aff;
+        });
+        return [{ debut: null, fin: null, days }];
     }
-    doc.text(`Généré le : ${new Date().toLocaleDateString('fr-FR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}`, pageWidth - 14, 40, { align: 'right' });
 
-    return 48; // Y après l'en-tête
+    // Emploi du temps daté : grouper par semaine (lundi → samedi)
+    const weekMap = {};
+    affectations.forEach(aff => {
+        if (!aff.date_seance) return;
+        const d   = new Date(aff.date_seance);
+        const day = d.getDay();
+        const mon = new Date(d);
+        mon.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+        const key = mon.toISOString().split('T')[0];
+
+        if (!weekMap[key]) {
+            const sat = new Date(mon);
+            sat.setDate(mon.getDate() + 5);
+            weekMap[key] = {
+                debut: key,
+                fin:   sat.toISOString().split('T')[0],
+                days:  {},
+            };
+            HTML_JOURS.forEach(j => { weekMap[key].days[j] = [null, null, null, null]; });
+        }
+
+        const jour = JOUR_MAP[d.getDay()];
+        if (!jour || !weekMap[key].days[jour]) return;
+        const idx = htmlSlotIdx(aff.creneau?.heure_debut);
+        if (idx >= 0 && !weekMap[key].days[jour][idx]) weekMap[key].days[jour][idx] = aff;
+    });
+
+    return Object.values(weekMap).sort((a, b) => a.debut.localeCompare(b.debut));
+}
+
+/** Génère le contenu HTML d'une cellule (matière / enseignant / salle) */
+function renderCell(aff, role) {
+    if (!aff) return '';
+    const mat  = esc(aff.cours?.nom_cours || '');
+    const type = esc(aff.cours?.type_cours || '');
+    const ens  = aff.enseignant
+        ? esc(`${aff.enseignant.prenom?.[0] || ''}. ${aff.enseignant.nom || ''}`)
+        : '';
+    const sal  = esc(aff.salle?.nom_salle || '');
+    const grp  = role === 'admin' ? esc(aff.groupe?.nom_groupe || '') : '';
+
+    let html = '';
+    if (mat)  html += `<span class="c-mat">${mat}${type ? ` <em>[${type}]</em>` : ''}</span>`;
+    if (ens)  html += `<hr><span class="c-ens">${ens}</span>`;
+    if (sal)  html += `<hr><span class="c-sal">${sal}</span>`;
+    if (grp)  html += `<hr><span class="c-grp">${grp}</span>`;
+    return html;
 }
 
 /**
- * Dessine le pied de page
+ * Construit le document HTML complet du template planning.html
+ * avec les données réelles et les couleurs HESTIM.
  */
-function drawPDFFooter(doc, pageNum, totalPages, pageWidth, pageHeight) {
-    doc.setFillColor(245, 247, 252);
-    doc.rect(0, pageHeight - 12, pageWidth, 12, 'F');
-    doc.setDrawColor(26, 58, 143);
-    doc.setLineWidth(0.3);
-    doc.line(0, pageHeight - 12, pageWidth, pageHeight - 12);
+function buildTimetableHTML(affectations, title, role, logoBase64) {
+    const weeks   = buildHtmlWeeks(affectations);
+    const nWeeks  = weeks.length || 1;
 
-    doc.setTextColor(100, 100, 100);
-    doc.setFontSize(7.5);
-    doc.setFont('helvetica', 'normal');
-    doc.text('HESTIM Planner — Document confidentiel', 14, pageHeight - 4);
-    doc.text(`Page ${pageNum} / ${totalPages}`, pageWidth / 2, pageHeight - 4, { align: 'center' });
-    doc.text('hestim.ma', pageWidth - 14, pageHeight - 4, { align: 'right' });
+    // Infos tirées des affectations
+    const groupes = [...new Set(affectations.map(a => a.groupe?.nom_groupe).filter(Boolean))];
+    const filiere = affectations.find(a => a.cours?.filiere?.nom_filiere)?.cours?.filiere?.nom_filiere || '';
+
+    // Facteur d'échelle pour tout tenir sur une page A4 paysage
+    const zoom = Math.min(1, Math.max(0.45, 4 / nWeeks));
+    // Taille de police de base (pt) selon le nombre de semaines
+    const fs   = nWeeks <= 1 ? 9 : nWeeks <= 2 ? 8 : nWeeks <= 4 ? 7 : nWeeks <= 6 ? 6 : 5;
+
+    /* ── Lignes du tableau ─────────────────────────────────────────── */
+    let tbody = '';
+    weeks.forEach((week, wi) => {
+        HTML_JOURS.forEach((jour, ji) => {
+            const slots     = week.days[jour] || [null, null, null, null];
+            const jourDate  = fmtJourDate(week.debut, jour);
+            const isFirst   = ji === 0;
+
+            const weekCell = isFirst
+                ? `<th rowspan="5" class="td-sem">${
+                    week.debut
+                        ? `Du ${fmtDate(week.debut)}<br>Au ${fmtDate(week.fin)}`
+                        : 'Semaine<br>type'
+                  }</th>`
+                : '';
+
+            tbody += `
+            <tr>
+                ${weekCell}
+                <th class="td-jour">${HTML_JOUR_LABEL[jour]}${jourDate ? `<br><small>${jourDate}</small>` : ''}</th>
+                <th class="td-mms">Matière<hr>Enseignant<hr>Salle</th>
+                ${slots.map(aff => `<th class="td-slot${aff ? ' has-cours' : ''}">${renderCell(aff, role)}</th>`).join('')}
+            </tr>`;
+        });
+        // Séparateur entre semaines
+        if (wi < weeks.length - 1) {
+            tbody += '<tr class="sep"><td colspan="7"></td></tr>';
+        }
+    });
+
+    const logoTag = logoBase64
+        ? `<img src="${logoBase64}" alt="HESTIM" class="logo-img">`
+        : `<span class="logo-txt">HESTIM</span>`;
+
+    return `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>${esc(title)}</title>
+<style>
+/* ── Reset & Page ─────────────────────────────────────────────── */
+@page { size: A4 landscape; margin: 7mm; }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: ${fs}pt;
+    color: #1a1a1a;
+    background: #fff;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+}
+/* ── Zoom pour tenir sur une page ────────────────────────────── */
+.wrap { zoom: ${zoom}; width: calc(277mm / ${zoom}); }
+/* ── Header ──────────────────────────────────────────────────── */
+.hdr {
+    display: flex;
+    align-items: center;
+    gap: 4mm;
+    margin-bottom: 2.5mm;
+    padding-bottom: 2.5mm;
+    border-bottom: 2px solid #001962;
+}
+.logo-zone { flex: 0 0 auto; }
+.logo-img  { height: 14mm; width: auto; object-fit: contain; display: block; }
+.logo-txt  { font-size: 18pt; font-weight: 900; color: #001962; }
+.hdr-center { flex: 1; text-align: center; }
+.hdr-annee {
+    display: block;
+    text-align: right;
+    font-size: ${fs - 0.5}pt;
+    color: #555;
+    margin-bottom: 1mm;
+}
+.hdr-center h2 {
+    font-size: ${fs + 4}pt;
+    font-weight: 700;
+    color: #1E90FF;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1mm;
+}
+.hdr-center p { font-size: ${fs}pt; color: #FF4500; margin-bottom: 1mm; }
+.span-class   { display: block; font-size: ${fs}pt; font-weight: 700; color: #001962; }
+.gold-bar { height: 2px; background: linear-gradient(90deg,#001962,#E8A020); margin-bottom: 2.5mm; }
+/* ── Table ────────────────────────────────────────────────────── */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1.5px solid #001962;
+    table-layout: fixed;
+}
+th, td { border: 1px solid #001962; padding: 0.8mm 1mm; vertical-align: top; font-size: ${fs}pt; }
+/* En-têtes colonnes */
+thead th {
+    background: #001962;
+    color: #fff;
+    font-weight: 700;
+    text-align: center;
+    padding: 1.5mm 1mm;
+}
+thead .th-mat  { background: #003087; }
+thead .th-apm  { background: #1a3a8f; }
+thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
+/* Colonnes fixes */
+.td-sem  { width: 14mm; font-size: ${fs - 0.5}pt; font-weight: 700; color: #001962; background: #EEF3FF; text-align: center; vertical-align: middle; }
+.td-jour { width: 14mm; font-weight: 700; color: #001962; background: #F5F7FF; text-align: center; vertical-align: middle; }
+.td-jour small { font-weight: 400; color: #666; display: block; }
+.td-mms  { width: 8mm; font-size: ${fs - 1.5}pt; color: #555; background: #F5F7FF; text-align: center; vertical-align: top; line-height: 1.5; }
+.td-mms hr { border: none; border-top: 0.5px solid #bbb; margin: 0.5mm 0; }
+/* Cellules de cours */
+.td-slot {
+    text-align: left;
+    vertical-align: top;
+    background: #FAFAFE;
+    word-break: break-word;
+}
+.td-slot.has-cours { background: #EEF3FF; }
+.td-slot hr { border: none; border-top: 0.5px dotted #aac; margin: 0.4mm 0; }
+.c-mat { display: block; font-weight: 700; color: #001962; }
+.c-mat em { font-style: normal; font-weight: 400; color: #E8A020; font-size: ${fs - 1}pt; }
+.c-ens { display: block; color: #333; font-size: ${fs - 0.5}pt; }
+.c-sal { display: block; color: #444; font-size: ${fs - 0.5}pt; }
+.c-grp { display: block; color: #E8A020; font-size: ${fs - 1}pt; font-weight: 700; }
+/* Séparateur entre semaines */
+.sep td { height: 1.5mm; background: #E8A020; border: none; padding: 0; }
+/* Pied de page */
+.ftr {
+    margin-top: 2mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: ${fs - 1.5}pt;
+    color: #888;
+    border-top: 1px solid #ddd;
+    padding-top: 1.5mm;
+}
+.no-data { text-align:center; padding: 8mm; color:#aaa; font-style:italic; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ── Header ────────────────────────────────────── -->
+  <div class="hdr">
+    <div class="logo-zone">${logoTag}</div>
+    <div class="hdr-center">
+      <span class="hdr-annee">Année Universitaire ${academicYear()}</span>
+      <h2>Emploi du temps</h2>
+      <p>${filiere ? `Cycle d'ingénieur — ${esc(filiere)}` : "École d'Ingénierie et Management"}</p>
+      ${groupes.length ? `<span class="span-class">${groupes.map(esc).join(' &nbsp;·&nbsp; ')}</span>` : ''}
+    </div>
+  </div>
+  <div class="gold-bar"></div>
+
+  <!-- ── Tableau ───────────────────────────────────── -->
+  <table>
+    <thead>
+      <tr>
+        <th rowspan="2">Semaine</th>
+        <th rowspan="2">Jour</th>
+        <th rowspan="2">M/E/S</th>
+        <th colspan="2" class="th-mat">Matin</th>
+        <th colspan="2" class="th-apm">Après-midi</th>
+      </tr>
+      <tr>
+        ${HESTIM_SLOTS.map(s => `<th class="th-slot">${s.label}</th>`).join('')}
+      </tr>
+    </thead>
+    <tbody>
+      ${tbody || '<tr><td colspan="7" class="no-data">Aucun cours planifié</td></tr>'}
+    </tbody>
+  </table>
+
+  <!-- ── Pied de page ──────────────────────────────── -->
+  <div class="ftr">
+    <span>HESTIM &mdash; École d&apos;Ingénierie &amp; Management</span>
+    <span>Généré le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</span>
+    <span>hestim.ma</span>
+  </div>
+
+</div>
+</body>
+</html>`;
 }
 
 /**
- * Génère l'emploi du temps en format grille hebdomadaire PDF (paysage)
- * @param {Array} affectations
- * @param {String} filename
- * @param {String} title - Titre affiché (ex: "Prof. Dupont Jean")
- * @param {String} role - 'enseignant' | 'etudiant' | 'admin'
+ * Génère le PDF de l'emploi du temps en suivant la structure de planning.html.
+ * Ouvre une fenêtre avec le rendu HTML et lance le dialogue d'impression.
+ * L'utilisateur choisit "Enregistrer en PDF" dans la boîte de dialogue du navigateur.
+ *
+ * @param {Array}  affectations - liste des affectations complètes
+ * @param {String} filename     - nom suggéré (non utilisé avec l'API print)
+ * @param {String} title        - titre affiché dans le document
+ * @param {String} role         - 'enseignant' | 'etudiant' | 'admin'
  */
 export const exportToPDF = async (affectations, filename = 'emploi-du-temps', title = 'Emploi du Temps', role = 'enseignant') => {
+    // Chargement du logo HESTIM en base64 (évite les problèmes CORS dans la fenêtre print)
+    let logoBase64 = '';
     try {
-        let autoTable;
-        try {
-            const mod = await import('jspdf-autotable');
-            autoTable = mod.default;
-        } catch {
-            alert("Impossible de charger la bibliothèque PDF. Essayez Excel/CSV.");
-            return;
-        }
-        if (typeof autoTable !== 'function') {
-            alert("Bibliothèque PDF non disponible. Essayez Excel/CSV.");
-            return;
-        }
-
-        if (!affectations || affectations.length === 0) {
-            const doc = new jsPDF('landscape', 'mm', 'a4');
-            const pw = doc.internal.pageSize.getWidth();
-            const ph = doc.internal.pageSize.getHeight();
-            drawPDFHeader(doc, title, '', pw);
-            doc.setTextColor(150, 150, 150);
-            doc.setFontSize(14);
-            doc.text('Aucun cours planifié', pw / 2, ph / 2, { align: 'center' });
-            drawPDFFooter(doc, 1, 1, pw, ph);
-            doc.save(`${filename}.pdf`);
-            return;
-        }
-
-        const doc = new jsPDF('landscape', 'mm', 'a4');
-        const pw = doc.internal.pageSize.getWidth();
-        const ph = doc.internal.pageSize.getHeight();
-
-        // ── PAGE 1 : Grille hebdomadaire ──────────────────────────────
-        const parJour = grouperParJour(affectations);
-        const creneaux = getCreneauxUniques(affectations);
-        const joursActifs = JOURS.filter((j) => parJour[j].length > 0);
-
-        const subtitle = role === 'enseignant'
-            ? `Enseignant : ${title.replace('Emploi du Temps - ', '')} | Période : Semestre en cours`
-            : role === 'etudiant'
-            ? `Étudiant : ${title.replace('Emploi du Temps - ', '')} | Période : Semestre en cours`
-            : `Vue consolidée — Tous les groupes`;
-
-        let startY = drawPDFHeader(doc, title, subtitle, pw);
-
-        // Légende des types
-        const types = [...new Set(affectations.map((a) => a.cours?.type_cours).filter(Boolean))];
-        if (types.length > 0) {
-            let lx = 14;
-            doc.setFontSize(7);
-            types.forEach((t) => {
-                const [r, g, b] = getTypeColor(t);
-                doc.setFillColor(r, g, b);
-                doc.roundedRect(lx, startY - 1, 7, 4, 1, 1, 'F');
-                doc.setTextColor(80, 80, 80);
-                doc.text(t, lx + 9, startY + 2);
-                lx += doc.getTextWidth(t) + 16;
+        const res = await fetch('/HESTIM.png');
+        if (res.ok) {
+            const blob = await res.blob();
+            logoBase64 = await new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload  = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
             });
-            startY += 8;
         }
+    } catch { /* logo facultatif */ }
 
-        // Construction de la grille
-        if (creneaux.length > 0 && joursActifs.length > 0) {
-            const colTimeWidth = 24;
-            const colWidth = Math.floor((pw - 14 - 14 - colTimeWidth) / joursActifs.length);
-            const rowHeight = Math.min(18, Math.floor((ph - startY - 16) / Math.max(creneaux.length, 1)));
+    const html = buildTimetableHTML(affectations || [], title, role, logoBase64);
 
-            // En-têtes colonnes
-            const headerH = 8;
-            doc.setFillColor(26, 58, 143);
-            doc.rect(14, startY, colTimeWidth, headerH, 'F');
-            doc.setTextColor(255, 255, 255);
-            doc.setFontSize(7.5);
-            doc.setFont('helvetica', 'bold');
-            doc.text('Horaire', 14 + colTimeWidth / 2, startY + 5.5, { align: 'center' });
-
-            joursActifs.forEach((jour, idx) => {
-                const x = 14 + colTimeWidth + idx * colWidth;
-                doc.setFillColor(26, 58, 143);
-                doc.rect(x, startY, colWidth, headerH, 'F');
-                doc.setTextColor(255, 255, 255);
-                doc.setFontSize(8);
-                doc.setFont('helvetica', 'bold');
-                doc.text(JOURS_LABELS[jour], x + colWidth / 2, startY + 5.5, { align: 'center' });
-            });
-
-            startY += headerH;
-
-            // Lignes de créneaux
-            creneaux.forEach((creneau, ri) => {
-                const rowY = startY + ri * rowHeight;
-                const isAlternate = ri % 2 === 1;
-
-                // Colonne horaire — avec label S1/S2/S3/S4
-                doc.setFillColor(isAlternate ? 240 : 248, isAlternate ? 244 : 250, isAlternate ? 255 : 255);
-                doc.rect(14, rowY, colTimeWidth, rowHeight, 'F');
-                doc.setDrawColor(200, 210, 230);
-                doc.setLineWidth(0.2);
-                doc.rect(14, rowY, colTimeWidth, rowHeight, 'S');
-                doc.setTextColor(40, 40, 100);
-                doc.setFont('helvetica', 'bold');
-                doc.setFontSize(7);
-                const slotLabel = getSlotLabel(creneau.debut) || '';
-                doc.text(slotLabel ? `${slotLabel}` : creneau.debut, 14 + colTimeWidth / 2, rowY + rowHeight / 2 - 3, { align: 'center' });
-                doc.setFont('helvetica', 'normal');
-                doc.setFontSize(6);
-                doc.text(creneau.debut, 14 + colTimeWidth / 2, rowY + rowHeight / 2 + 1, { align: 'center' });
-                doc.text(creneau.fin, 14 + colTimeWidth / 2, rowY + rowHeight / 2 + 4.5, { align: 'center' });
-
-                // Colonnes de jours
-                joursActifs.forEach((jour, ci) => {
-                    const cellX = 14 + colTimeWidth + ci * colWidth;
-                    const affJour = parJour[jour].filter(
-                        (a) => a.creneau?.heure_debut === creneau.debut && a.creneau?.heure_fin === creneau.fin
-                    );
-
-                    // Fond de cellule
-                    doc.setFillColor(isAlternate ? 245 : 252, isAlternate ? 247 : 253, isAlternate ? 255 : 255);
-                    doc.rect(cellX, rowY, colWidth, rowHeight, 'F');
-                    doc.setDrawColor(200, 210, 230);
-                    doc.setLineWidth(0.2);
-                    doc.rect(cellX, rowY, colWidth, rowHeight, 'S');
-
-                    if (affJour.length > 0) {
-                        const aff = affJour[0];
-                        const [r, g, b] = getTypeColor(aff.cours?.type_cours);
-                        const padding = 1.5;
-
-                        // Fond coloré de la carte cours
-                        doc.setFillColor(r, g, b, 0.12);
-                        doc.setFillColor(Math.min(255, r + 200), Math.min(255, g + 200), Math.min(255, b + 200));
-                        doc.roundedRect(cellX + padding, rowY + padding, colWidth - 2 * padding, rowHeight - 2 * padding, 2, 2, 'F');
-
-                        // Barre colorée gauche
-                        doc.setFillColor(r, g, b);
-                        doc.rect(cellX + padding, rowY + padding, 2.5, rowHeight - 2 * padding, 'F');
-
-                        // Texte dans la cellule
-                        const textX = cellX + padding + 4;
-                        const textMaxW = colWidth - padding * 2 - 5;
-                        doc.setTextColor(r > 200 ? 60 : r, g > 200 ? 60 : g, b > 200 ? 60 : b);
-
-                        doc.setFont('helvetica', 'bold');
-                        doc.setFontSize(Math.max(5.5, Math.min(7, rowHeight / 3)));
-                        const nomCours = aff.cours?.nom_cours || 'Cours';
-                        const nomTronque = nomCours.length > 20 ? nomCours.substring(0, 18) + '…' : nomCours;
-                        doc.text(nomTronque, textX, rowY + padding + 4);
-
-                        if (rowHeight > 10) {
-                            doc.setFont('helvetica', 'normal');
-                            doc.setFontSize(Math.max(5, Math.min(6.5, rowHeight / 3.5)));
-                            doc.setTextColor(80, 80, 80);
-                            const salle = aff.salle?.nom_salle ? `📍 ${aff.salle.nom_salle}` : '';
-                            const enseignant = aff.enseignant ? `👤 ${aff.enseignant.prenom?.[0] || ''}. ${aff.enseignant.nom || ''}` : '';
-                            const groupe = aff.groupe?.nom_groupe ? `👥 ${aff.groupe.nom_groupe}` : '';
-
-                            let lineY = rowY + padding + 8;
-                            if (salle && lineY < rowY + rowHeight - 2) {
-                                doc.text(salle, textX, lineY);
-                                lineY += 3.5;
-                            }
-                            if (role !== 'enseignant' && enseignant && lineY < rowY + rowHeight - 2) {
-                                doc.text(enseignant, textX, lineY);
-                                lineY += 3.5;
-                            }
-                            if (role !== 'etudiant' && groupe && lineY < rowY + rowHeight - 2) {
-                                doc.text(groupe, textX, lineY);
-                            }
-                        }
-
-                        // Badge type de cours
-                        if (aff.cours?.type_cours && rowHeight > 8) {
-                            doc.setFillColor(r, g, b);
-                            const badgeW = 10;
-                            doc.roundedRect(cellX + colWidth - padding - badgeW, rowY + padding, badgeW, 4, 1, 1, 'F');
-                            doc.setTextColor(255, 255, 255);
-                            doc.setFontSize(4.5);
-                            doc.setFont('helvetica', 'bold');
-                            doc.text(aff.cours.type_cours.substring(0, 4).toUpperCase(), cellX + colWidth - padding - badgeW / 2, rowY + padding + 2.8, { align: 'center' });
-                        }
-
-                        // Badges flags (DS, Blended, Projet...)
-                        const flags = detectFlags(aff);
-                        if (flags.length > 0 && rowHeight > 10) {
-                            let flagX = cellX + padding + 4;
-                            const flagY = rowY + rowHeight - padding - 4;
-                            flags.slice(0, 3).forEach(flag => {
-                                const [fr, fg, fb] = FLAG_COLORS[flag] || [90, 90, 90];
-                                const flagW = doc.getTextWidth(flag) * 0.55 + 3;
-                                doc.setFillColor(fr, fg, fb);
-                                doc.roundedRect(flagX, flagY, flagW, 3.5, 0.8, 0.8, 'F');
-                                doc.setTextColor(255, 255, 255);
-                                doc.setFontSize(4);
-                                doc.setFont('helvetica', 'bold');
-                                doc.text(flag, flagX + flagW / 2, flagY + 2.5, { align: 'center' });
-                                flagX += flagW + 1.5;
-                            });
-                        }
-
-                        // Plusieurs affectations au même créneau
-                        if (affJour.length > 1) {
-                            doc.setFillColor(198, 40, 40);
-                            doc.circle(cellX + colWidth - padding - 2, rowY + rowHeight - padding - 2, 2.5, 'F');
-                            doc.setTextColor(255, 255, 255);
-                            doc.setFontSize(5);
-                            doc.setFont('helvetica', 'bold');
-                            doc.text(`+${affJour.length - 1}`, cellX + colWidth - padding - 2, rowY + rowHeight - padding - 0.8, { align: 'center' });
-                        }
-                    }
-                });
-            });
-
-            startY += creneaux.length * rowHeight + 4;
-        }
-
-        drawPDFFooter(doc, 1, doc.internal.getNumberOfPages(), pw, ph);
-
-        // ── PAGE 2 : Liste détaillée ─────────────────────────────────
-        doc.addPage('landscape');
-        startY = drawPDFHeader(doc, `${title} — Liste détaillée`, subtitle, pw);
-
-        const tableData = affectations
-            .sort((a, b) => {
-                const jA = JOURS.indexOf(a.creneau?.jour_semaine?.toLowerCase());
-                const jB = JOURS.indexOf(b.creneau?.jour_semaine?.toLowerCase());
-                if (jA !== jB) return jA - jB;
-                return (a.creneau?.heure_debut || '').localeCompare(b.creneau?.heure_debut || '');
-            })
-            .map((aff) => [
-                aff.creneau?.jour_semaine ? JOURS_LABELS[aff.creneau.jour_semaine.toLowerCase()] || aff.creneau.jour_semaine : '—',
-                aff.creneau?.heure_debut || '—',
-                aff.creneau?.heure_fin || '—',
-                aff.cours?.code_cours || '—',
-                aff.cours?.nom_cours || '—',
-                aff.cours?.type_cours || '—',
-                aff.groupe?.nom_groupe || '—',
-                aff.enseignant ? `${aff.enseignant.prenom} ${aff.enseignant.nom}` : '—',
-                aff.salle?.nom_salle || '—',
-                aff.statut || '—',
-            ]);
-
-        autoTable(doc, {
-            head: [['Jour', 'Début', 'Fin', 'Code', 'Cours', 'Type', 'Groupe', 'Enseignant', 'Salle', 'Statut']],
-            body: tableData,
-            startY,
-            styles: { fontSize: 8, cellPadding: 3 },
-            headStyles: {
-                fillColor: [26, 58, 143],
-                textColor: 255,
-                fontStyle: 'bold',
-                halign: 'center',
-            },
-            alternateRowStyles: { fillColor: [245, 247, 252] },
-            columnStyles: {
-                0: { cellWidth: 22, fontStyle: 'bold' },
-                1: { cellWidth: 16, halign: 'center' },
-                2: { cellWidth: 16, halign: 'center' },
-                3: { cellWidth: 18, halign: 'center' },
-                4: { cellWidth: 'auto' },
-                5: { cellWidth: 18, halign: 'center' },
-                6: { cellWidth: 22, halign: 'center' },
-                7: { cellWidth: 36 },
-                8: { cellWidth: 22, halign: 'center' },
-                9: { cellWidth: 20, halign: 'center' },
-            },
-            didDrawCell: (data) => {
-                if (data.section === 'body' && data.column.index === 5) {
-                    const type = data.cell.raw;
-                    const [r, g, b] = getTypeColor(type);
-                    data.doc.setFillColor(r, g, b);
-                    data.doc.roundedRect(data.cell.x + 1, data.cell.y + 1, data.cell.width - 2, data.cell.height - 2, 2, 2, 'F');
-                    data.doc.setTextColor(255, 255, 255);
-                    data.doc.setFontSize(7.5);
-                    data.doc.text(type, data.cell.x + data.cell.width / 2, data.cell.y + data.cell.height / 2 + 0.5, { align: 'center' });
-                }
-            },
-            margin: { left: 14, right: 14 },
-        });
-
-        const totalPages = doc.internal.getNumberOfPages();
-        for (let p = 1; p <= totalPages; p++) {
-            doc.setPage(p);
-            drawPDFFooter(doc, p, totalPages, pw, ph);
-        }
-
-        doc.save(`${filename}.pdf`);
-    } catch (error) {
-        console.error('Erreur génération PDF:', error);
-        alert('Erreur lors de la génération du PDF. Utilisez Excel ou CSV à la place.');
+    const win = window.open('', '_blank');
+    if (!win) {
+        alert('Autorisez les popups pour ce site, puis relancez l\'export PDF.');
+        return;
     }
+    win.document.open();
+    win.document.write(html);
+    win.document.close();
+
+    // Déclenche l'impression après le rendu complet (logo inclus)
+    win.onload = () => setTimeout(() => { try { win.print(); } catch { /* silencieux */ } }, 600);
 };
 
 /**
