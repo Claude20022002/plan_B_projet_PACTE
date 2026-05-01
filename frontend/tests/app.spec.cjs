@@ -463,17 +463,19 @@ test.describe("🏢 CRUD — Salles", () => {
         const comboboxes = dialog.locator('[role="combobox"]');
         await comboboxes.nth(0).waitFor({ state: "visible", timeout: 5000 });
         await comboboxes.nth(0).click();
-        const firstOption = page.locator('[role="option"]').first();
-        await firstOption.waitFor({ state: "visible", timeout: 5000 });
-        await firstOption.click();
+        await page.locator('[role="option"]').first().waitFor({ state: "visible", timeout: 5000 });
+        await page.locator('[role="option"]').first().click();
+        // Attendre que le listbox du type soit fermé avant de continuer
+        await page.locator('[role="listbox"]').waitFor({ state: "hidden", timeout: 4000 }).catch(() => {});
 
         // Capacité
         await dialog.getByLabel(/capacité/i).fill("30");
 
         // Bâtiment — 2ème combobox dans le dialog
         await comboboxes.nth(1).click();
-        await firstOption.waitFor({ state: "visible", timeout: 5000 });
-        await firstOption.click();
+        await page.locator('[role="option"]').first().waitFor({ state: "visible", timeout: 5000 });
+        await page.locator('[role="option"]').first().click();
+        await page.locator('[role="listbox"]').waitFor({ state: "hidden", timeout: 4000 }).catch(() => {});
 
         await dialog
             .getByRole("button", { name: /créer|ajouter|enregistrer/i })
@@ -864,7 +866,13 @@ test.describe("♿ Accessibilité & UX", () => {
     test("les dialogs ont un titre visible", async ({ page }) => {
         await page.goto("/gestion/salles");
         await page.waitForLoadState("networkidle");
-        // Attendre que le DashboardLayout soit rendu (preuve que l'auth est complète)
+        // Race condition : si l'auth n'a pas eu le temps de valider le token,
+        // la page est redirigée vers /connexion → on réauthentifie et on réessaie.
+        if (page.url().includes("connexion")) {
+            await loginViaToken(page, "admin");
+            await page.goto("/gestion/salles");
+            await page.waitForLoadState("networkidle");
+        }
         await expect(page.locator(".MuiAppBar-root")).toBeVisible({
             timeout: 10000,
         });
