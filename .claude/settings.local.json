@@ -19,7 +19,8 @@
       "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; grep -A 15 \"Error details\" \"{}\"')",
       "Bash(xargs grep *)",
       "Read(//c/Users/clusa/.claude/projects/c--Users-clusa-Desktop-Github-Project-plan-B-projet-PACTE/memory/**)",
-      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; grep -A 20 \"Error details\" \"{}\"')"
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; grep -A 20 \"Error details\" \"{}\"')",
+      "Bash(xargs -I{} sh -c 'echo \"=== {} ===\"; grep -A 30 \"Error details\" \"{}\"')"
     ],
     "additionalDirectories": [
       "c:\\Users\\clusa\\.claude\\projects\\c--Users-clusa-Desktop-Github-Project-plan-B-projet-PACTE\\memory"
