@@ -24,9 +24,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download, Groups as GroupsIcon } from '@mui/icons-material';
+import { TableSortLabel } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { groupeAPI, filiereAPI } from '../../services/api';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import SkeletonTable from '../../components/common/SkeletonTable';
+import EmptyState from '../../components/common/EmptyState';
+import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { parseFile, validateGroupeData } from '../../utils/fileImport';
@@ -45,8 +50,11 @@ const validationSchema = yup.object({
 export default function Groupes() {
     const navigate = useNavigate();
     const [groupes, setGroupes] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [filieres, setFilieres] = useState([]);
     const [page, setPage] = useState(0);
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
+    const { sorted, requestSort, getSortDir } = useSortableTable(groupes);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [total, setTotal] = useState(0);
     const [open, setOpen] = useState(false);
@@ -73,16 +81,16 @@ export default function Groupes() {
     };
 
     const loadGroupes = async () => {
+        setLoading(true);
         try {
-            const data = await groupeAPI.getAll({
-                page: page + 1,
-                limit: rowsPerPage,
-            });
+            const data = await groupeAPI.getAll({ page: page + 1, limit: rowsPerPage });
             setGroupes(data.data || []);
             setTotal(data.pagination?.total || 0);
-        } catch (error) {
-            console.error('Erreur:', error);
+        } catch (err) {
+            console.error('Erreur:', err);
             setError('Erreur lors du chargement des groupes');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -132,16 +140,18 @@ export default function Groupes() {
         setOpen(true);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer ce groupe ?')) {
-            try {
-                await groupeAPI.delete(id);
-                setSuccess('Groupe supprimé avec succès');
-                loadGroupes();
-            } catch (error) {
-                console.error('Erreur:', error);
-                setError('Erreur lors de la suppression');
-            }
+    const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
+
+    const handleDeleteConfirm = async () => {
+        const { id } = confirmDialog;
+        setConfirmDialog({ open: false, id: null });
+        try {
+            await groupeAPI.delete(id);
+            setSuccess('Groupe supprimé avec succès');
+            loadGroupes();
+        } catch (err) {
+            console.error('Erreur:', err);
+            setError('Erreur lors de la suppression');
         }
     };
 
@@ -322,10 +332,10 @@ export default function Groupes() {
                                     <TableCell>{groupe.annee_scolaire}</TableCell>
                                     <TableCell>{groupe.filiere?.nom_filiere || '-'}</TableCell>
                                     <TableCell align="right">
-                                        <IconButton size="small" onClick={() => handleEdit(groupe)}>
+                                        <IconButton size="small" onClick={() => handleEdit(groupe)} aria-label={`Modifier ${groupe.nom_groupe}`}>
                                             <Edit />
                                         </IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDelete(groupe.id_groupe)}>
+                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(groupe.id_groupe)} aria-label={`Supprimer ${groupe.nom_groupe}`}>
                                             <Delete />
                                         </IconButton>
                                     </TableCell>
@@ -490,6 +500,14 @@ export default function Groupes() {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
+                <ConfirmDialog
+                    open={confirmDialog.open}
+                    title="Supprimer le groupe"
+                    message="Cette action est irréversible. Le groupe sera définitivement supprimé."
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setConfirmDialog({ open: false, id: null })}
+                />
             </Box>
         </DashboardLayout>
     );

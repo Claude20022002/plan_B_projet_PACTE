@@ -29,9 +29,14 @@ import {
     ListItemText,
     CircularProgress,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, ArrowBack, UploadFile } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, ArrowBack, UploadFile, SupervisedUserCircle } from '@mui/icons-material';
+import { TableSortLabel } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { userAPI } from '../../services/api';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import SkeletonTable from '../../components/common/SkeletonTable';
+import EmptyState from '../../components/common/EmptyState';
+import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
@@ -53,6 +58,7 @@ const validationSchema = yup.object({
 export default function Utilisateurs() {
     const navigate = useNavigate();
     const [utilisateurs, setUtilisateurs] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [total, setTotal] = useState(0);
@@ -61,25 +67,27 @@ export default function Utilisateurs() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
     const [importOpen, setImportOpen] = useState(false);
     const [importLoading, setImportLoading] = useState(false);
     const [importErrors, setImportErrors] = useState([]);
+    const { sorted: sortedUsers, requestSort, getSortDir } = useSortableTable(utilisateurs);
 
     useEffect(() => {
         loadUtilisateurs();
     }, [page, rowsPerPage]);
 
     const loadUtilisateurs = async () => {
+        setLoading(true);
         try {
-            const data = await userAPI.getAll({
-                page: page + 1,
-                limit: rowsPerPage,
-            });
+            const data = await userAPI.getAll({ page: page + 1, limit: rowsPerPage });
             setUtilisateurs(data.data || []);
             setTotal(data.pagination?.total || 0);
-        } catch (error) {
-            console.error('Erreur:', error);
+        } catch (err) {
+            console.error('Erreur:', err);
             setError('Erreur lors du chargement des utilisateurs');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -140,16 +148,18 @@ export default function Utilisateurs() {
         setOpen(true);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cet utilisateur ?')) {
-            try {
-                await userAPI.delete(id);
-                setSuccess('Utilisateur supprimé avec succès');
-                loadUtilisateurs();
-            } catch (error) {
-                console.error('Erreur:', error);
-                setError('Erreur lors de la suppression');
-            }
+    const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
+
+    const handleDeleteConfirm = async () => {
+        const { id } = confirmDialog;
+        setConfirmDialog({ open: false, id: null });
+        try {
+            await userAPI.delete(id);
+            setSuccess('Utilisateur supprimé avec succès');
+            loadUtilisateurs();
+        } catch (err) {
+            console.error('Erreur:', err);
+            setError('Erreur lors de la suppression');
         }
     };
 
@@ -290,13 +300,24 @@ export default function Utilisateurs() {
                     </Box>
                 </Paper>
 
+                {loading ? (
+                    <SkeletonTable columns={7} rows={rowsPerPage} />
+                ) : utilisateurs.length === 0 ? (
+                    <EmptyState
+                        icon={SupervisedUserCircle}
+                        title="Aucun utilisateur enregistré"
+                        description="Ajoutez votre premier utilisateur ou importez un fichier Excel."
+                        actionLabel="Ajouter un utilisateur"
+                        onAction={() => { setEditing(null); setError(''); formik.resetForm(); setOpen(true); }}
+                    />
+                ) : (
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Nom</TableCell>
-                                <TableCell>Prénom</TableCell>
-                                <TableCell>Email</TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('nom') !== undefined} direction={getSortDir('nom') || 'asc'} onClick={() => requestSort('nom')}>Nom</TableSortLabel></TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('prenom') !== undefined} direction={getSortDir('prenom') || 'asc'} onClick={() => requestSort('prenom')}>Prénom</TableSortLabel></TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('email') !== undefined} direction={getSortDir('email') || 'asc'} onClick={() => requestSort('email')}>Email</TableSortLabel></TableCell>
                                 <TableCell>Rôle</TableCell>
                                 <TableCell>Téléphone</TableCell>
                                 <TableCell>Statut</TableCell>
@@ -304,37 +325,27 @@ export default function Utilisateurs() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {filteredUsers.map((user) => (
-                                <TableRow key={user.id_user}>
+                            {sortedUsers.filter(u =>
+                                u.nom?.toLowerCase().includes(search.toLowerCase()) ||
+                                u.prenom?.toLowerCase().includes(search.toLowerCase()) ||
+                                u.email?.toLowerCase().includes(search.toLowerCase())
+                            ).map((user) => (
+                                <TableRow key={user.id_user} hover>
                                     <TableCell>{user.nom}</TableCell>
                                     <TableCell>{user.prenom}</TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>
-                                        <Chip
-                                            label={user.role}
-                                            size="small"
-                                            color={
-                                                user.role === 'admin'
-                                                    ? 'error'
-                                                    : user.role === 'enseignant'
-                                                      ? 'primary'
-                                                      : 'default'
-                                            }
-                                        />
+                                        <Chip label={user.role} size="small" color={user.role === 'admin' ? 'error' : user.role === 'enseignant' ? 'primary' : 'default'} />
                                     </TableCell>
                                     <TableCell>{user.telephone || '-'}</TableCell>
                                     <TableCell>
-                                        <Chip
-                                            label={user.actif ? 'Actif' : 'Inactif'}
-                                            color={user.actif ? 'success' : 'default'}
-                                            size="small"
-                                        />
+                                        <Chip label={user.actif ? 'Actif' : 'Inactif'} color={user.actif ? 'success' : 'default'} size="small" />
                                     </TableCell>
                                     <TableCell align="right">
-                                        <IconButton size="small" onClick={() => handleEdit(user)}>
+                                        <IconButton size="small" onClick={() => handleEdit(user)} aria-label={`Modifier ${user.prenom} ${user.nom}`}>
                                             <Edit />
                                         </IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDelete(user.id_user)}>
+                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(user.id_user)} aria-label={`Supprimer ${user.prenom} ${user.nom}`}>
                                             <Delete />
                                         </IconButton>
                                     </TableCell>
@@ -355,6 +366,15 @@ export default function Utilisateurs() {
                         rowsPerPageOptions={[5, 10, 25, 50]}
                     />
                 </TableContainer>
+                )}
+
+                <ConfirmDialog
+                    open={confirmDialog.open}
+                    title="Supprimer l'utilisateur"
+                    message="Cette action est irréversible. L'utilisateur sera définitivement supprimé."
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setConfirmDialog({ open: false, id: null })}
+                />
 
                 <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
                     <form onSubmit={formik.handleSubmit}>

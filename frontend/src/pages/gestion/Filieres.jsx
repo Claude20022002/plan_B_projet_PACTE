@@ -20,9 +20,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack, AccountTree } from '@mui/icons-material';
+import { TableSortLabel } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { filiereAPI } from '../../services/api';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import SkeletonTable from '../../components/common/SkeletonTable';
+import EmptyState from '../../components/common/EmptyState';
+import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { parseFile, validateFiliereData } from '../../utils/fileImport';
@@ -38,6 +43,9 @@ const validationSchema = yup.object({
 export default function Filieres() {
     const navigate = useNavigate();
     const [filieres, setFilieres] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
+    const { sorted, requestSort, getSortDir } = useSortableTable(filieres);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [total, setTotal] = useState(0);
@@ -55,16 +63,16 @@ export default function Filieres() {
     }, [page, rowsPerPage]);
 
     const loadFilieres = async () => {
+        setLoading(true);
         try {
-            const data = await filiereAPI.getAll({
-                page: page + 1,
-                limit: rowsPerPage,
-            });
+            const data = await filiereAPI.getAll({ page: page + 1, limit: rowsPerPage });
             setFilieres(data.data || []);
             setTotal(data.pagination?.total || 0);
-        } catch (error) {
-            console.error('Erreur:', error);
+        } catch (err) {
+            console.error('Erreur:', err);
             setError('Erreur lors du chargement des filières');
+        } finally {
+            setLoading(false);
         }
     };
 

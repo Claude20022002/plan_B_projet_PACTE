@@ -24,9 +24,14 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download, MenuBook } from '@mui/icons-material';
+import { TableSortLabel } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { coursAPI, filiereAPI } from '../../services/api';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import SkeletonTable from '../../components/common/SkeletonTable';
+import EmptyState from '../../components/common/EmptyState';
+import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { parseFile, validateCoursData } from '../../utils/fileImport';
@@ -48,6 +53,7 @@ const validationSchema = yup.object({
 export default function Cours() {
     const navigate = useNavigate();
     const [cours, setCours] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [filieres, setFilieres] = useState([]);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
@@ -57,9 +63,11 @@ export default function Cours() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
     const [importOpen, setImportOpen] = useState(false);
     const [importLoading, setImportLoading] = useState(false);
     const [importErrors, setImportErrors] = useState([]);
+    const { sorted, requestSort, getSortDir } = useSortableTable(cours);
 
     useEffect(() => {
         loadCours();
@@ -76,16 +84,16 @@ export default function Cours() {
     };
 
     const loadCours = async () => {
+        setLoading(true);
         try {
-            const data = await coursAPI.getAll({
-                page: page + 1,
-                limit: rowsPerPage,
-            });
+            const data = await coursAPI.getAll({ page: page + 1, limit: rowsPerPage });
             setCours(data.data || []);
             setTotal(data.pagination?.total || 0);
-        } catch (error) {
-            console.error('Erreur:', error);
+        } catch (err) {
+            console.error('Erreur:', err);
             setError('Erreur lors du chargement des cours');
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -141,16 +149,18 @@ export default function Cours() {
         setOpen(true);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer ce cours ?')) {
-            try {
-                await coursAPI.delete(id);
-                setSuccess('Cours supprimé avec succès');
-                loadCours();
-            } catch (error) {
-                console.error('Erreur:', error);
-                setError('Erreur lors de la suppression');
-            }
+    const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
+
+    const handleDeleteConfirm = async () => {
+        const { id } = confirmDialog;
+        setConfirmDialog({ open: false, id: null });
+        try {
+            await coursAPI.delete(id);
+            setSuccess('Cours supprimé avec succès');
+            loadCours();
+        } catch (err) {
+            console.error('Erreur:', err);
+            setError('Erreur lors de la suppression');
         }
     };
 
@@ -306,13 +316,24 @@ export default function Cours() {
                     </Box>
                 </Paper>
 
+                {loading ? (
+                    <SkeletonTable columns={8} rows={rowsPerPage} />
+                ) : cours.length === 0 ? (
+                    <EmptyState
+                        icon={MenuBook}
+                        title="Aucun cours enregistré"
+                        description="Ajoutez un premier cours ou importez un fichier Excel."
+                        actionLabel="Ajouter un cours"
+                        onAction={() => { setEditing(null); formik.resetForm(); setOpen(true); }}
+                    />
+                ) : (
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Code</TableCell>
-                                <TableCell>Nom</TableCell>
-                                <TableCell>Niveau</TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('code_cours') !== undefined} direction={getSortDir('code_cours') || 'asc'} onClick={() => requestSort('code_cours')}>Code</TableSortLabel></TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('nom_cours') !== undefined} direction={getSortDir('nom_cours') || 'asc'} onClick={() => requestSort('nom_cours')}>Nom</TableSortLabel></TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('niveau') !== undefined} direction={getSortDir('niveau') || 'asc'} onClick={() => requestSort('niveau')}>Niveau</TableSortLabel></TableCell>
                                 <TableCell>Volume horaire</TableCell>
                                 <TableCell>Type</TableCell>
                                 <TableCell>Semestre</TableCell>
@@ -321,8 +342,8 @@ export default function Cours() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {filteredCours.map((coursItem) => (
-                                <TableRow key={coursItem.id_cours}>
+                            {sorted.map((coursItem) => (
+                                <TableRow key={coursItem.id_cours} hover>
                                     <TableCell>{coursItem.code_cours}</TableCell>
                                     <TableCell>{coursItem.nom_cours}</TableCell>
                                     <TableCell>{coursItem.niveau}</TableCell>
@@ -331,10 +352,10 @@ export default function Cours() {
                                     <TableCell>{coursItem.semestre}</TableCell>
                                     <TableCell>{coursItem.filiere?.nom_filiere || '-'}</TableCell>
                                     <TableCell align="right">
-                                        <IconButton size="small" onClick={() => handleEdit(coursItem)}>
+                                        <IconButton size="small" onClick={() => handleEdit(coursItem)} aria-label={`Modifier ${coursItem.nom_cours}`}>
                                             <Edit />
                                         </IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDelete(coursItem.id_cours)}>
+                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(coursItem.id_cours)} aria-label={`Supprimer ${coursItem.nom_cours}`}>
                                             <Delete />
                                         </IconButton>
                                     </TableCell>
@@ -355,6 +376,7 @@ export default function Cours() {
                         rowsPerPageOptions={[5, 10, 25, 50]}
                     />
                 </TableContainer>
+                )}
 
                 <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
                     <form onSubmit={formik.handleSubmit}>
@@ -533,6 +555,14 @@ export default function Cours() {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
+                <ConfirmDialog
+                    open={confirmDialog.open}
+                    title="Supprimer le cours"
+                    message="Cette action est irréversible. Le cours sera définitivement supprimé."
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setConfirmDialog({ open: false, id: null })}
+                />
             </Box>
         </DashboardLayout>
     );

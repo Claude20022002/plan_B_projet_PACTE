@@ -9,6 +9,7 @@ import {
     TableHead,
     TableRow,
     TablePagination,
+    TableSortLabel,
     Button,
     IconButton,
     Chip,
@@ -23,7 +24,7 @@ import {
     Select,
     MenuItem,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, ArrowBack, UploadFile, Download } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, ArrowBack, UploadFile, Download, MeetingRoom } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { salleAPI } from '../../services/api';
 import { useFormik } from 'formik';
@@ -32,6 +33,10 @@ import { useNavigate } from 'react-router-dom';
 import { parseFile, validateSalleData } from '../../utils/fileImport';
 import { exportToExcel, COLS_SALLES } from '../../utils/exportExcel';
 import { Alert, Snackbar, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import SkeletonTable from '../../components/common/SkeletonTable';
+import EmptyState from '../../components/common/EmptyState';
+import { useSortableTable } from '../../hooks/useSortableTable';
 
 const validationSchema = yup.object({
     nom_salle: yup.string().required('Le nom de la salle est requis'),
@@ -43,6 +48,7 @@ const validationSchema = yup.object({
 export default function Salles() {
     const navigate = useNavigate();
     const [salles, setSalles] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [total, setTotal] = useState(0);
@@ -51,24 +57,26 @@ export default function Salles() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
     const [importOpen, setImportOpen] = useState(false);
     const [importLoading, setImportLoading] = useState(false);
     const [importErrors, setImportErrors] = useState([]);
+    const { sorted, requestSort, getSortDir } = useSortableTable(salles);
 
     useEffect(() => {
         loadSalles();
     }, [page, rowsPerPage, search]);
 
     const loadSalles = async () => {
+        setLoading(true);
         try {
-            const data = await salleAPI.getAll({
-                page: page + 1,
-                limit: rowsPerPage,
-            });
+            const data = await salleAPI.getAll({ page: page + 1, limit: rowsPerPage });
             setSalles(data.data || []);
             setTotal(data.pagination?.total || 0);
-        } catch (error) {
-            console.error('Erreur:', error);
+        } catch (err) {
+            console.error('Erreur:', err);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -114,16 +122,18 @@ export default function Salles() {
         setOpen(true);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cette salle ?')) {
-            try {
-                await salleAPI.delete(id);
-                setSuccess('Salle supprimée avec succès');
-                loadSalles();
-            } catch (error) {
-                console.error('Erreur:', error);
-                setError('Erreur lors de la suppression');
-            }
+    const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
+
+    const handleDeleteConfirm = async () => {
+        const { id } = confirmDialog;
+        setConfirmDialog({ open: false, id: null });
+        try {
+            await salleAPI.delete(id);
+            setSuccess('Salle supprimée avec succès');
+            loadSalles();
+        } catch (err) {
+            console.error('Erreur:', err);
+            setError('Erreur lors de la suppression');
         }
     };
 
@@ -266,22 +276,41 @@ export default function Salles() {
                     </Box>
                 </Paper>
 
+                {loading ? (
+                    <SkeletonTable columns={7} rows={rowsPerPage} />
+                ) : salles.length === 0 ? (
+                    <EmptyState
+                        icon={MeetingRoom}
+                        title="Aucune salle enregistrée"
+                        description="Commencez par ajouter une première salle ou importez un fichier Excel."
+                        actionLabel="Ajouter une salle"
+                        onAction={() => { setEditing(null); formik.resetForm(); setOpen(true); }}
+                    />
+                ) : (
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Nom</TableCell>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Capacité</TableCell>
-                                <TableCell>Bâtiment</TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={getSortDir('nom_salle') !== undefined} direction={getSortDir('nom_salle') || 'asc'} onClick={() => requestSort('nom_salle')}>Nom</TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={getSortDir('type_salle') !== undefined} direction={getSortDir('type_salle') || 'asc'} onClick={() => requestSort('type_salle')}>Type</TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={getSortDir('capacite') !== undefined} direction={getSortDir('capacite') || 'asc'} onClick={() => requestSort('capacite')}>Capacité</TableSortLabel>
+                                </TableCell>
+                                <TableCell>
+                                    <TableSortLabel active={getSortDir('batiment') !== undefined} direction={getSortDir('batiment') || 'asc'} onClick={() => requestSort('batiment')}>Bâtiment</TableSortLabel>
+                                </TableCell>
                                 <TableCell>Étage</TableCell>
                                 <TableCell>Statut</TableCell>
                                 <TableCell align="right">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {salles.map((salle) => (
-                                <TableRow key={salle.id_salle}>
+                            {sorted.map((salle) => (
+                                <TableRow key={salle.id_salle} hover>
                                     <TableCell>{salle.nom_salle}</TableCell>
                                     <TableCell>{salle.type_salle}</TableCell>
                                     <TableCell>{salle.capacite}</TableCell>
@@ -306,13 +335,15 @@ export default function Salles() {
                                         <IconButton
                                             size="small"
                                             onClick={() => handleEdit(salle)}
+                                            aria-label={`Modifier ${salle.nom_salle}`}
                                         >
                                             <Edit />
                                         </IconButton>
                                         <IconButton
                                             size="small"
                                             color="error"
-                                            onClick={() => handleDelete(salle.id_salle)}
+                                            onClick={() => handleDeleteClick(salle.id_salle)}
+                                            aria-label={`Supprimer ${salle.nom_salle}`}
                                         >
                                             <Delete />
                                         </IconButton>
@@ -334,6 +365,7 @@ export default function Salles() {
                         rowsPerPageOptions={[5, 10, 25, 50]}
                     />
                 </TableContainer>
+                )}
 
                 {/* Dialog pour créer/modifier */}
                 <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
@@ -508,6 +540,15 @@ export default function Salles() {
                     </DialogActions>
                 </Dialog>
             </Box>
+
+            {/* Dialog de confirmation de suppression */}
+            <ConfirmDialog
+                open={confirmDialog.open}
+                title="Supprimer la salle"
+                message="Cette action est irréversible. La salle sera définitivement supprimée."
+                onConfirm={handleDeleteConfirm}
+                onCancel={() => setConfirmDialog({ open: false, id: null })}
+            />
         </DashboardLayout>
     );
 }
