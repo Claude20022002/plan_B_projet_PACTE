@@ -11,7 +11,12 @@
       "PowerShell(Get-Process \"Docker Desktop\" -ErrorAction SilentlyContinue)",
       "PowerShell(docker info --format \"Server Version: {{.ServerVersion}} | OS: {{.OSType}}\" 2>&1)",
       "PowerShell(docker compose --env-file .env.docker -f \"c:\\\\Users\\\\clusa\\\\Desktop\\\\Github Project\\\\plan_B_projet_PACTE\\\\docker-compose.yml\" ps 2>&1)",
-      "PowerShell(docker inspect hestim_frontend --format \"{{json .State.Health}}\" 2>&1 | ConvertFrom-Json | Select-Object -ExpandProperty Log | Select-Object -Last 2 | ForEach-Object { Write-Host \"Exit: $\\($_.ExitCode\\) — $\\($_.Output\\)\" })"
+      "PowerShell(docker inspect hestim_frontend --format \"{{json .State.Health}}\" 2>&1 | ConvertFrom-Json | Select-Object -ExpandProperty Log | Select-Object -Last 2 | ForEach-Object { Write-Host \"Exit: $\\($_.ExitCode\\) — $\\($_.Output\\)\" })",
+      "PowerShell(docker info --format \"{{.RegistryConfig.IndexConfigs}}\" 2>&1)",
+      "PowerShell(docker system info --format \"Username: {{.RegistryConfig}}\" 2>$null)",
+      "PowerShell(docker login --help 2>$null)",
+      "PowerShell(cat \"$env:USERPROFILE\\\\.docker\\\\config.json\" 2>$null | ConvertFrom-Json | Select-Object -ExpandProperty auths | ConvertTo-Json 2>&1 | Select-Object -First 10)",
+      "PowerShell(& \"docker-credential-desktop\" get 2>&1)"
     ]
   }
 }

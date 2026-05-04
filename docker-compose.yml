@@ -45,6 +45,7 @@ services:
 
   # ── Backend ──────────────────────────────────────────────────────────────
   backend:
+    image: claude20022002/hestim-backend:latest   # docker.io/claude20022002/hestim-backend
     build:
       context: ./backend
       dockerfile: Dockerfile
@@ -74,6 +75,7 @@ services:
 
   # ── Frontend ─────────────────────────────────────────────────────────────
   frontend:
+    image: claude20022002/hestim-frontend:latest  # docker.io/claude20022002/hestim-frontend
     build:
       context: ./frontend
       dockerfile: Dockerfile
