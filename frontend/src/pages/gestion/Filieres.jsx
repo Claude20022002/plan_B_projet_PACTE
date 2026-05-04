@@ -118,8 +118,12 @@ export default function Filieres() {
         setOpen(true);
     };
 
-    const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cette filière ?')) {
+    const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
+
+    const handleDeleteConfirm = async () => {
+        const { id } = confirmDialog;
+        setConfirmDialog({ open: false, id: null });
+        if (true) {
             try {
                 await filiereAPI.delete(id);
                 setSuccess('Filière supprimée avec succès');
