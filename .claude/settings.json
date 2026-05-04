@@ -9,7 +9,9 @@
       "Bash(docker info *)",
       "PowerShell(docker info --format \"Server Version: {{.ServerVersion}}\" 2>&1)",
       "PowerShell(Get-Process \"Docker Desktop\" -ErrorAction SilentlyContinue)",
-      "PowerShell(docker info --format \"Server Version: {{.ServerVersion}} | OS: {{.OSType}}\" 2>&1)"
+      "PowerShell(docker info --format \"Server Version: {{.ServerVersion}} | OS: {{.OSType}}\" 2>&1)",
+      "PowerShell(docker compose --env-file .env.docker -f \"c:\\\\Users\\\\clusa\\\\Desktop\\\\Github Project\\\\plan_B_projet_PACTE\\\\docker-compose.yml\" ps 2>&1)",
+      "PowerShell(docker inspect hestim_frontend --format \"{{json .State.Health}}\" 2>&1 | ConvertFrom-Json | Select-Object -ExpandProperty Log | Select-Object -Last 2 | ForEach-Object { Write-Host \"Exit: $\\($_.ExitCode\\) — $\\($_.Output\\)\" })"
     ]
   }
 }

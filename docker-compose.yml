@@ -32,12 +32,14 @@ services:
     ports:
       - "${DB_PORT:-3306}:3306"          # accessible depuis l'hôte pour debug
     healthcheck:
+      # MySQL redémarre une fois lors du premier boot pour appliquer la config
+      # → start_period étendu à 90s pour absorber ce cycle
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost",
              "-u", "${DB_USER:-hestim}", "-p${DB_PASSWORD:-hestim_pass_2026}"]
       interval: 10s
       timeout: 5s
-      retries: 10
-      start_period: 30s
+      retries: 12
+      start_period: 90s
     networks:
       - hestim_net
 
@@ -62,11 +64,11 @@ services:
       mysql:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "wget", "-qO-", "http://localhost:5000/api/health"]
-      interval: 30s
+      test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
+      interval: 15s
       timeout: 10s
-      retries: 5
-      start_period: 20s
+      retries: 8
+      start_period: 60s
     networks:
       - hestim_net
 
@@ -85,7 +87,7 @@ services:
       - "${FRONTEND_PORT:-80}:80"
     depends_on:
       backend:
-        condition: service_healthy
+        condition: service_started   # frontend ne bloque pas sur backend healthy
     networks:
       - hestim_net
 
