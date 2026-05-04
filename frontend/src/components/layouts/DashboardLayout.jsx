@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import OfflineIndicator from "../common/OfflineIndicator";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link as RouterLink } from "react-router-dom";
 import {
     Box,
     Drawer,
@@ -19,7 +19,10 @@ import {
     MenuItem,
     Badge,
     Collapse,
+    Breadcrumbs,
+    Link,
 } from "@mui/material";
+import { NavigateNext } from "@mui/icons-material";
 import {
     Menu as MenuIcon,
     Dashboard,
@@ -52,6 +55,55 @@ import { notificationAPI } from "../../services/api";
 import GlobalSearch from "../common/GlobalSearch";
 
 const drawerWidth = 260;
+
+const BREADCRUMBS = {
+    '/dashboard/admin':          [{ label: 'Tableau de bord', path: '/dashboard/admin' }],
+    '/dashboard/enseignant':     [{ label: 'Tableau de bord', path: '/dashboard/enseignant' }],
+    '/dashboard/etudiant':       [{ label: 'Tableau de bord', path: '/dashboard/etudiant' }],
+    '/gestion/utilisateurs':     [{ label: 'Gestion', path: null }, { label: 'Utilisateurs', path: null }],
+    '/gestion/enseignants':      [{ label: 'Gestion', path: null }, { label: 'Enseignants', path: null }],
+    '/gestion/etudiants':        [{ label: 'Gestion', path: null }, { label: 'Étudiants', path: null }],
+    '/gestion/filieres':         [{ label: 'Gestion', path: null }, { label: 'Filières', path: null }],
+    '/gestion/groupes':          [{ label: 'Gestion', path: null }, { label: 'Groupes', path: null }],
+    '/gestion/salles':           [{ label: 'Gestion', path: null }, { label: 'Salles', path: null }],
+    '/gestion/cours':            [{ label: 'Gestion', path: null }, { label: 'Cours', path: null }],
+    '/gestion/creneaux':         [{ label: 'Gestion', path: null }, { label: 'Créneaux', path: null }],
+    '/gestion/affectations':     [{ label: 'Planning', path: null }, { label: 'Affectations', path: null }],
+    '/gestion/conflits':         [{ label: 'Planning', path: null }, { label: 'Conflits', path: null }],
+    '/gestion/demandes-report':  [{ label: 'Planning', path: null }, { label: 'Demandes de report', path: null }],
+    '/statistiques':             [{ label: 'Statistiques', path: null }],
+    '/notifications':            [{ label: 'Notifications', path: null }],
+    '/parametres':               [{ label: 'Paramètres', path: null }],
+    '/mes-affectations':         [{ label: 'Mes affectations', path: null }],
+    '/disponibilites':           [{ label: 'Mes disponibilités', path: null }],
+    '/demandes-report':          [{ label: 'Demandes de report', path: null }],
+    '/emploi-du-temps/admin':    [{ label: 'Emploi du temps', path: null }, { label: 'Vue admin', path: null }],
+    '/emploi-du-temps/enseignant': [{ label: 'Emploi du temps', path: null }],
+    '/emploi-du-temps/etudiant': [{ label: 'Emploi du temps', path: null }],
+};
+
+function PageBreadcrumbs({ pathname }) {
+    const crumbs = BREADCRUMBS[pathname];
+    if (!crumbs || crumbs.length <= 1) return null;
+    return (
+        <Breadcrumbs separator={<NavigateNext fontSize="small" />} sx={{ mb: 1.5, fontSize: 13 }}>
+            {crumbs.map((c, i) => {
+                const isLast = i === crumbs.length - 1;
+                return isLast ? (
+                    <Typography key={i} fontSize={13} fontWeight={600} color="text.primary">
+                        {c.label}
+                    </Typography>
+                ) : c.path ? (
+                    <Link key={i} component={RouterLink} to={c.path} underline="hover" fontSize={13} color="text.secondary">
+                        {c.label}
+                    </Link>
+                ) : (
+                    <Typography key={i} fontSize={13} color="text.secondary">{c.label}</Typography>
+                );
+            })}
+        </Breadcrumbs>
+    );
+}
 
 export default function DashboardLayout({ children }) {
     const { user, logout } = useAuth();
@@ -703,6 +755,7 @@ export default function DashboardLayout({ children }) {
             >
                 <Toolbar />
                 <OfflineIndicator />
+                <PageBreadcrumbs pathname={location.pathname} />
                 {children}
             </Box>
             <GlobalSearch

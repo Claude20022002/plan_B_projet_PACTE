@@ -123,8 +123,7 @@ export default function Filieres() {
     const handleDeleteConfirm = async () => {
         const { id } = confirmDialog;
         setConfirmDialog({ open: false, id: null });
-        if (true) {
-            try {
+        try {
                 await filiereAPI.delete(id);
                 setSuccess('Filière supprimée avec succès');
                 loadFilieres();
@@ -132,7 +131,6 @@ export default function Filieres() {
                 console.error('Erreur:', error);
                 setError('Erreur lors de la suppression');
             }
-        }
     };
 
     const handleFileImport = async (file) => {
@@ -291,7 +289,7 @@ export default function Filieres() {
                                         <IconButton size="small" onClick={() => handleEdit(filiere)}>
                                             <Edit />
                                         </IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDelete(filiere.id_filiere)}>
+                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(filiere.id_filiere)} aria-label={`Supprimer ${filiere.nom_filiere}`}>
                                             <Delete />
                                         </IconButton>
                                     </TableCell>
@@ -430,6 +428,14 @@ export default function Filieres() {
                         </Button>
                     </DialogActions>
                 </Dialog>
+
+                <ConfirmDialog
+                    open={confirmDialog.open}
+                    title="Supprimer la filière"
+                    message="Cette action est irréversible. La filière sera définitivement supprimée."
+                    onConfirm={handleDeleteConfirm}
+                    onCancel={() => setConfirmDialog({ open: false, id: null })}
+                />
             </Box>
         </DashboardLayout>
     );
