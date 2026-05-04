@@ -3,7 +3,13 @@
     "allow": [
       "Bash(npm install:*)",
       "Bash(npx vite:*)",
-      "Bash(node --experimental-vm-modules node_modules/.bin/jest --testPathPattern=\"paginationHelper|passwordHelper|roleMiddleware\" --no-coverage)"
+      "Bash(node --experimental-vm-modules node_modules/.bin/jest --testPathPattern=\"paginationHelper|passwordHelper|roleMiddleware\" --no-coverage)",
+      "Bash(docker version *)",
+      "Bash(Start-Process \"C:\\\\Program Files\\\\Docker\\\\Docker\\\\Docker Desktop.exe\" -WindowStyle Hidden)",
+      "Bash(docker info *)",
+      "PowerShell(docker info --format \"Server Version: {{.ServerVersion}}\" 2>&1)",
+      "PowerShell(Get-Process \"Docker Desktop\" -ErrorAction SilentlyContinue)",
+      "PowerShell(docker info --format \"Server Version: {{.ServerVersion}} | OS: {{.OSType}}\" 2>&1)"
     ]
   }
 }
