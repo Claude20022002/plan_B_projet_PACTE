@@ -6,49 +6,26 @@ import {
     Typography, Alert, Card, CardContent, Grid,
 } from '@mui/material';
 import { CheckCircle, Visibility, ArrowBack, Warning, CheckCircleOutline } from '@mui/icons-material';
-import {
-    PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend,
-} from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { conflitAPI, affectationAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 
-// ── Couleurs du donut ─────────────────────────────────────────────────────────
-const DONUT_COLORS = {
-    'Sans conflit':         '#2e7d32',
-    'Conflits de salle':    '#c62828',
+// ── Palette ───────────────────────────────────────────────────────────────────
+const COLORS = {
+    'Sans conflit':          '#2e7d32',
+    'Conflits de salle':     '#c62828',
     "Conflits d'enseignant": '#e8a020',
 };
 
-// ── Label personnalisé au centre du donut ─────────────────────────────────────
-function CentralLabel({ viewBox, total }) {
-    const { cx, cy } = viewBox;
-    return (
-        <g>
-            <text x={cx} y={cy - 10} textAnchor="middle" fill="#1a1a1a"
-                style={{ fontSize: 28, fontWeight: 700 }}>
-                {total}
-            </text>
-            <text x={cx} y={cy + 14} textAnchor="middle" fill="#666"
-                style={{ fontSize: 11 }}>
-                conflits
-            </text>
-            <text x={cx} y={cy + 28} textAnchor="middle" fill="#666"
-                style={{ fontSize: 11 }}>
-                détectés
-            </text>
-        </g>
-    );
-}
-
-// ── Tooltip personnalisé ──────────────────────────────────────────────────────
+// ── Tooltip ───────────────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload }) {
     if (!active || !payload?.length) return null;
-    const { name, value, payload: p } = payload[0];
+    const d = payload[0];
     return (
-        <Paper sx={{ px: 1.5, py: 1, fontSize: 13 }}>
-            <strong>{name}</strong><br />
-            {value} ({p.pct}%)
+        <Paper sx={{ px: 1.5, py: 1, fontSize: 13, boxShadow: 3 }}>
+            <strong>{d.name}</strong><br />
+            {d.value} ({d.payload.pct} %)
         </Paper>
     );
 }
@@ -56,64 +33,70 @@ function CustomTooltip({ active, payload }) {
 export default function Conflits() {
     const navigate = useNavigate();
 
-    // ── State tableau ─────────────────────────────────────────────────────────
-    const [conflits, setConflits]           = useState([]);
-    const [page, setPage]                   = useState(0);
-    const [rowsPerPage, setRowsPerPage]     = useState(10);
-    const [total, setTotal]                 = useState(0);
-    const [open, setOpen]                   = useState(false);
-    const [selectedConflit, setSelectedConflit] = useState(null);
-    const [filter, setFilter]               = useState('all');
+    // ── Tableau ───────────────────────────────────────────────────────────────
+    const [conflits,       setConflits]       = useState([]);
+    const [page,           setPage]           = useState(0);
+    const [rowsPerPage,    setRowsPerPage]    = useState(10);
+    const [total,          setTotal]          = useState(0);
+    const [filter,         setFilter]         = useState('all');
+    const [dialogOpen,     setDialogOpen]     = useState(false);
+    const [selected,       setSelected]       = useState(null);
 
-    // ── State donut ───────────────────────────────────────────────────────────
-    const [donutData, setDonutData]         = useState([]);
-    const [totalAff, setTotalAff]           = useState(0);
-    const [totalConflits, setTotalConflits] = useState(0);
+    // ── Donut ─────────────────────────────────────────────────────────────────
+    const [donutData,      setDonutData]      = useState([]);
+    const [totalConflits,  setTotalConflits]  = useState(0);
+    const [totalAff,       setTotalAff]       = useState(0);
 
     useEffect(() => { loadConflits(); }, [page, rowsPerPage, filter]);
     useEffect(() => { loadDonutData(); }, []);
 
-    // ── Chargement tableau ────────────────────────────────────────────────────
+    // ── API ───────────────────────────────────────────────────────────────────
     const loadConflits = async () => {
         try {
             const data = filter === 'non-resolus'
                 ? await conflitAPI.getNonResolus({ page: page + 1, limit: rowsPerPage })
                 : await conflitAPI.getAll({
                     page: page + 1, limit: rowsPerPage,
-                    resolu: filter === 'resolus' ? 'true' : undefined,
+                    ...(filter === 'resolus' ? { resolu: 'true' } : {}),
                 });
             setConflits(data.data || []);
             setTotal(data.pagination?.total || 0);
         } catch (err) { console.error(err); }
     };
 
-    // ── Chargement données donut ──────────────────────────────────────────────
     const loadDonutData = async () => {
         try {
-            const [allConflitsRes, allAffRes] = await Promise.all([
+            // Charger TOUS les conflits + total affectations en parallèle
+            const [cRes, aRes] = await Promise.all([
                 conflitAPI.getAll({ limit: 1000 }),
                 affectationAPI.getAll({ limit: 1 }),
             ]);
 
-            const all  = allConflitsRes.data || [];
-            const nAff = allAffRes.pagination?.total || 0;
-            const nConf = all.length;
+            const all  = cRes.data || [];
+            const nAff = aRes.pagination?.total ?? 0;
+            const nTotal = all.length;
 
-            const nSalle = all.filter(c =>
-                (c.type_conflit || '').toLowerCase().includes('salle')).length;
-            const nEns = all.filter(c =>
-                (c.type_conflit || '').toLowerCase().includes('enseignant')).length;
-            const nSans = Math.max(0, nAff - nConf);
+            const nSalle = all.filter(c => (c.type_conflit || '').toLowerCase().includes('salle')).length;
+            const nEns   = all.filter(c => (c.type_conflit || '').toLowerCase().includes('enseignant')).length;
+            const nAutre = nTotal - nSalle - nEns;
+            const nSans  = Math.max(0, nAff - nTotal);
 
+            setTotalConflits(nTotal);
             setTotalAff(nAff);
-            setTotalConflits(nConf);
 
-            const base = nAff || 1;
-            setDonutData([
-                { name: 'Sans conflit',          value: nSans,   pct: ((nSans  / base) * 100).toFixed(1) },
-                { name: 'Conflits de salle',     value: nSalle,  pct: ((nSalle / base) * 100).toFixed(1) },
-                { name: "Conflits d'enseignant", value: nEns,    pct: ((nEns   / base) * 100).toFixed(1) },
-            ].filter(d => d.value > 0));
+            // Construire les segments — toujours inclure "Sans conflit" si nAff > 0
+            const segments = [];
+            if (nSans  > 0) segments.push({ name: 'Sans conflit',          value: nSans  });
+            if (nSalle > 0) segments.push({ name: 'Conflits de salle',     value: nSalle });
+            if (nEns   > 0) segments.push({ name: "Conflits d'enseignant", value: nEns   });
+            if (nAutre > 0) segments.push({ name: 'Autres conflits',       value: nAutre });
+
+            // Fallback si pas d'affectations : afficher uniquement les conflits par type
+            const base = segments.reduce((s, d) => s + d.value, 0) || 1;
+            setDonutData(segments.map(d => ({
+                ...d,
+                pct: ((d.value / base) * 100).toFixed(1),
+            })));
         } catch (err) { console.error(err); }
     };
 
@@ -125,13 +108,12 @@ export default function Conflits() {
         } catch (err) { console.error(err); }
     };
 
-    const handleView = (conflit) => { setSelectedConflit(conflit); setOpen(true); };
-
     // ── Rendu ─────────────────────────────────────────────────────────────────
     return (
         <DashboardLayout>
             <Box>
-                {/* ── Header ─────────────────────────────────────────── */}
+
+                {/* ── En-tête ──────────────────────────────────────────── */}
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Button startIcon={<ArrowBack />}
@@ -149,109 +131,113 @@ export default function Conflits() {
                             { key: 'non-resolus', label: 'Non résolus', color: 'error'   },
                             { key: 'resolus',     label: 'Résolus',     color: 'success' },
                         ].map(({ key, label, color }) => (
-                            <Button key={key}
+                            <Button key={key} size="small"
                                 variant={filter === key ? 'contained' : 'outlined'}
                                 color={color}
-                                onClick={() => setFilter(key)}>
+                                onClick={() => { setFilter(key); setPage(0); }}>
                                 {label}
                             </Button>
                         ))}
                     </Box>
                 </Box>
 
-                {/* ── Donut chart ─────────────────────────────────────── */}
+                {/* ── Donut chart ──────────────────────────────────────── */}
                 {donutData.length > 0 && (
                     <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-                        <CardContent>
-                            <Typography variant="h6" fontWeight="bold" gutterBottom>
+                        <CardContent sx={{ pb: '16px !important' }}>
+                            <Typography variant="h6" fontWeight="bold" mb={2}>
                                 Répartition des conflits
                             </Typography>
-                            <Grid container spacing={2} alignItems="center">
+
+                            {/* MUI v7 Grid — prop `size` obligatoire */}
+                            <Grid container spacing={3} alignItems="center">
 
                                 {/* Donut */}
-                                <Grid item xs={12} md={5}>
-                                    <Box sx={{ position: 'relative', height: 240 }}>
+                                <Grid size={{ xs: 12, md: 5 }}>
+                                    <Box sx={{ position: 'relative', height: 230 }}>
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
                                                     data={donutData}
                                                     cx="50%" cy="50%"
-                                                    innerRadius={70} outerRadius={100}
+                                                    innerRadius={65} outerRadius={95}
                                                     dataKey="value"
                                                     startAngle={90} endAngle={-270}
-                                                    labelLine={false}
+                                                    strokeWidth={2}
                                                 >
                                                     {donutData.map((entry) => (
-                                                        <Cell
-                                                            key={entry.name}
-                                                            fill={DONUT_COLORS[entry.name] || '#999'}
-                                                        />
+                                                        <Cell key={entry.name}
+                                                            fill={COLORS[entry.name] || '#888'} />
                                                     ))}
-                                                    {/* Compteur central */}
-                                                    <text />
                                                 </Pie>
                                                 <Tooltip content={<CustomTooltip />} />
                                             </PieChart>
                                         </ResponsiveContainer>
 
-                                        {/* Compteur central (superposé) */}
+                                        {/* Compteur central HTML — plus fiable que labelContent SVG */}
                                         <Box sx={{
-                                            position: 'absolute', top: '50%', left: '50%',
-                                            transform: 'translate(-50%, -50%)',
-                                            textAlign: 'center', pointerEvents: 'none',
+                                            position: 'absolute', inset: 0,
+                                            display: 'flex', flexDirection: 'column',
+                                            alignItems: 'center', justifyContent: 'center',
+                                            pointerEvents: 'none',
                                         }}>
-                                            <Typography variant="h4" fontWeight="bold" lineHeight={1}>
+                                            <Typography variant="h3" fontWeight={700} lineHeight={1}>
                                                 {totalConflits}
                                             </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                                conflits<br />détectés
+                                            <Typography variant="body2" color="text.secondary" mt={0.5}>
+                                                {totalConflits <= 1 ? 'conflit détecté' : 'conflits détectés'}
                                             </Typography>
                                         </Box>
                                     </Box>
                                 </Grid>
 
-                                {/* Légende détaillée */}
-                                <Grid item xs={12} md={7}>
-                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                                {/* Légende */}
+                                <Grid size={{ xs: 12, md: 7 }}>
+                                    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                         {donutData.map((entry) => (
                                             <Box key={entry.name}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
+                                                <Box sx={{
+                                                    display: 'flex', justifyContent: 'space-between',
+                                                    alignItems: 'center', mb: 0.5,
+                                                }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                         <Box sx={{
                                                             width: 12, height: 12, borderRadius: '50%',
-                                                            bgcolor: DONUT_COLORS[entry.name],
+                                                            bgcolor: COLORS[entry.name] || '#888',
+                                                            flexShrink: 0,
                                                         }} />
                                                         <Typography variant="body2">{entry.name}</Typography>
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-                                                        <Chip label={`${entry.value}`} size="small" variant="outlined" />
-                                                        <Typography variant="body2" fontWeight="bold"
-                                                            color={DONUT_COLORS[entry.name]}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                        <Chip label={entry.value} size="small" variant="outlined" />
+                                                        <Typography variant="body2" fontWeight={700}
+                                                            sx={{ color: COLORS[entry.name] || '#888', minWidth: 48, textAlign: 'right' }}>
                                                             {entry.pct} %
                                                         </Typography>
                                                     </Box>
                                                 </Box>
-                                                <Box sx={{
-                                                    height: 6, borderRadius: 3,
-                                                    bgcolor: `${DONUT_COLORS[entry.name]}22`,
-                                                    overflow: 'hidden',
-                                                }}>
+                                                {/* Barre de progression */}
+                                                <Box sx={{ height: 5, borderRadius: 3, bgcolor: 'action.hover' }}>
                                                     <Box sx={{
                                                         height: '100%',
-                                                        width: `${entry.pct}%`,
-                                                        bgcolor: DONUT_COLORS[entry.name],
+                                                        width: `${Math.min(100, entry.pct)}%`,
+                                                        bgcolor: COLORS[entry.name] || '#888',
                                                         borderRadius: 3,
+                                                        transition: 'width .4s ease',
                                                     }} />
                                                 </Box>
                                             </Box>
                                         ))}
 
-                                        <Box sx={{ mt: 1, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
-                                            <Typography variant="body2" color="text.secondary">
-                                                Sur <strong>{totalAff}</strong> affectation(s) planifiée(s),{' '}
-                                                <strong style={{ color: '#c62828' }}>{totalConflits}</strong> conflit(s) détecté(s)
-                                            </Typography>
-                                        </Box>
+                                        {/* Résumé */}
+                                        {totalAff > 0 && (
+                                            <Box sx={{ mt: 0.5, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
+                                                <Typography variant="body2" color="text.secondary">
+                                                    Sur <strong>{totalAff}</strong> affectation(s) planifiée(s),{' '}
+                                                    <strong style={{ color: '#c62828' }}>{totalConflits}</strong> conflit(s) détecté(s)
+                                                </Typography>
+                                            </Box>
+                                        )}
                                     </Box>
                                 </Grid>
                             </Grid>
@@ -259,62 +245,66 @@ export default function Conflits() {
                     </Card>
                 )}
 
-                {/* ── Alerte ─────────────────────────────────────────── */}
+                {/* ── Alerte filtre ─────────────────────────────────────── */}
                 {filter === 'non-resolus' && conflits.length > 0 && (
                     <Alert severity="warning" sx={{ mb: 2 }}>
                         {conflits.length} conflit(s) non résolu(s) nécessitent votre attention
                     </Alert>
                 )}
 
-                {/* ── Tableau ─────────────────────────────────────────── */}
+                {/* ── Tableau ───────────────────────────────────────────── */}
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Type</TableCell>
-                                <TableCell>Description</TableCell>
-                                <TableCell>Date de détection</TableCell>
-                                <TableCell>Statut</TableCell>
-                                <TableCell align="right">Actions</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Date de détection</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>Statut</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {conflits.map((conflit) => (
-                                <TableRow key={conflit.id_conflit} hover>
+                            {conflits.length === 0 ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} align="center" sx={{ py: 5, color: 'text.secondary' }}>
+                                        Aucun conflit dans cette catégorie
+                                    </TableCell>
+                                </TableRow>
+                            ) : conflits.map((c) => (
+                                <TableRow key={c.id_conflit} hover>
                                     <TableCell>
                                         <Chip
-                                            label={conflit.type_conflit}
-                                            color={
-                                                (conflit.type_conflit || '').includes('salle')
-                                                    ? 'error'
-                                                    : (conflit.type_conflit || '').includes('enseignant')
-                                                      ? 'warning'
-                                                      : 'info'
-                                            }
+                                            label={c.type_conflit}
                                             size="small"
+                                            color={
+                                                (c.type_conflit || '').includes('salle')       ? 'error'
+                                              : (c.type_conflit || '').includes('enseignant')  ? 'warning'
+                                              : 'info'
+                                            }
                                         />
                                     </TableCell>
-                                    <TableCell>{conflit.description}</TableCell>
+                                    <TableCell>{c.description}</TableCell>
                                     <TableCell>
-                                        {new Date(conflit.date_detection).toLocaleDateString('fr-FR')}
+                                        {new Date(c.date_detection).toLocaleDateString('fr-FR')}
                                     </TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={conflit.resolu ? 'Résolu' : 'Non résolu'}
-                                            color={conflit.resolu ? 'success' : 'error'}
+                                            label={c.resolu ? 'Résolu' : 'Non résolu'}
+                                            color={c.resolu ? 'success' : 'error'}
                                             size="small"
-                                            icon={conflit.resolu ? <CheckCircleOutline /> : <Warning />}
+                                            icon={c.resolu ? <CheckCircleOutline /> : <Warning />}
                                         />
                                     </TableCell>
                                     <TableCell align="right">
                                         <IconButton size="small"
-                                            onClick={() => handleView(conflit)}
+                                            onClick={() => { setSelected(c); setDialogOpen(true); }}
                                             aria-label="Voir les détails">
                                             <Visibility />
                                         </IconButton>
-                                        {!conflit.resolu && (
+                                        {!c.resolu && (
                                             <IconButton size="small" color="success"
-                                                onClick={() => handleResoudre(conflit.id_conflit)}
+                                                onClick={() => handleResoudre(c.id_conflit)}
                                                 aria-label="Marquer comme résolu">
                                                 <CheckCircle />
                                             </IconButton>
@@ -335,41 +325,44 @@ export default function Conflits() {
                     />
                 </TableContainer>
 
-                {/* ── Dialog détail ──────────────────────────────────── */}
-                <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
+                {/* ── Dialog détail ─────────────────────────────────────── */}
+                <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
                     <DialogTitle>Détails du conflit</DialogTitle>
-                    <DialogContent>
-                        {selectedConflit && (
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                                <Typography><strong>Type :</strong> {selectedConflit.type_conflit}</Typography>
-                                <Typography><strong>Description :</strong> {selectedConflit.description}</Typography>
+                    <DialogContent dividers>
+                        {selected && (
+                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                                <Typography><strong>Type :</strong> {selected.type_conflit}</Typography>
+                                <Typography><strong>Description :</strong> {selected.description}</Typography>
                                 <Typography>
                                     <strong>Date de détection :</strong>{' '}
-                                    {new Date(selectedConflit.date_detection).toLocaleString('fr-FR')}
+                                    {new Date(selected.date_detection).toLocaleString('fr-FR')}
                                 </Typography>
                                 <Typography>
                                     <strong>Statut :</strong>{' '}
-                                    {selectedConflit.resolu ? 'Résolu' : 'Non résolu'}
+                                    <Chip size="small"
+                                        label={selected.resolu ? 'Résolu' : 'Non résolu'}
+                                        color={selected.resolu ? 'success' : 'error'} />
                                 </Typography>
-                                {selectedConflit.resolu && selectedConflit.date_resolution && (
+                                {selected.resolu && selected.date_resolution && (
                                     <Typography>
-                                        <strong>Date de résolution :</strong>{' '}
-                                        {new Date(selectedConflit.date_resolution).toLocaleString('fr-FR')}
+                                        <strong>Résolu le :</strong>{' '}
+                                        {new Date(selected.date_resolution).toLocaleString('fr-FR')}
                                     </Typography>
                                 )}
                             </Box>
                         )}
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setOpen(false)}>Fermer</Button>
-                        {selectedConflit && !selectedConflit.resolu && (
+                        <Button onClick={() => setDialogOpen(false)}>Fermer</Button>
+                        {selected && !selected.resolu && (
                             <Button variant="contained" color="success"
-                                onClick={() => { handleResoudre(selectedConflit.id_conflit); setOpen(false); }}>
+                                onClick={() => { handleResoudre(selected.id_conflit); setDialogOpen(false); }}>
                                 Marquer comme résolu
                             </Button>
                         )}
                     </DialogActions>
                 </Dialog>
+
             </Box>
         </DashboardLayout>
     );
