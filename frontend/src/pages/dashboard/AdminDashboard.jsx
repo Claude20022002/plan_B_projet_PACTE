@@ -37,7 +37,11 @@ import {
     CheckCircle,
     ErrorOutline,
     Refresh,
+    LightbulbOutlined,
+    ArrowForward,
+    CheckCircleOutline,
 } from "@mui/icons-material";
+import { Alert, AlertTitle, Collapse } from "@mui/material";
 import DashboardLayout from "../../components/layouts/DashboardLayout";
 import { useAuth } from "../../contexts/AuthContext";
 import {
@@ -250,6 +254,176 @@ function SectionCard({ title, subtitle, children, action, minHeight }) {
             </Box>
             <Divider sx={{ mb: 2 }} />
             {children}
+        </Paper>
+    );
+}
+
+// ── Moteur de suggestions ─────────────────────────────────────────────────────
+function generateSuggestions(kpis, stats, conflits) {
+    const s = [];
+
+    // 1. Conflits non résolus
+    if (conflits.length > 0) {
+        s.push({
+            level: 'error',
+            title: `${conflits.length} conflit(s) non résolu(s) — action immédiate requise`,
+            text: 'Des chevauchements de salle ou d\'enseignant bloquent la cohérence du planning. Résolvez-les pour éviter des erreurs dans les emplois du temps.',
+            action: '/gestion/conflits',
+            actionLabel: 'Résoudre les conflits',
+        });
+    }
+
+    // 2. Taux de conflits
+    const tc = kpis?.taux_conflits?.valeur;
+    if (tc > 10) {
+        s.push({
+            level: 'error',
+            title: `Taux de conflits critique : ${tc} %`,
+            text: 'Plus d\'un cours sur dix génère un conflit. Révisez les règles de planification et les créneaux disponibles.',
+            action: '/gestion/creneaux',
+            actionLabel: 'Gérer les créneaux',
+        });
+    } else if (tc > 5) {
+        s.push({
+            level: 'warning',
+            title: `Taux de conflits élevé : ${tc} %`,
+            text: 'Le seuil acceptable est de 5 %. Vérifiez la disponibilité des salles et la charge des enseignants.',
+        });
+    }
+
+    // 3. Occupation des salles
+    const tocc = kpis?.taux_occupation_salles?.valeur;
+    if (tocc >= 85) {
+        s.push({
+            level: 'warning',
+            title: `Salles saturées : ${tocc} % d'occupation`,
+            text: 'La capacité est presque atteinte. Envisagez d\'ajouter des salles ou de redistribuer les cours sur d\'autres créneaux.',
+            action: '/gestion/salles',
+            actionLabel: 'Gérer les salles',
+        });
+    } else if (tocc !== undefined && tocc !== null && tocc < 20) {
+        s.push({
+            level: 'info',
+            title: `Salles sous-utilisées : ${tocc} % d'occupation`,
+            text: 'Une grande partie des salles reste inutilisée. Consolidez les cours pour optimiser les ressources.',
+        });
+    }
+
+    // 4. Charge enseignants
+    const mh  = kpis?.moyenne_heures_enseignant?.valeur;
+    const ensActifs = kpis?.moyenne_heures_enseignant?.detail?.enseignants_actifs ?? 0;
+    if (mh > 25) {
+        s.push({
+            level: 'warning',
+            title: `Surcharge détectée : ${mh} h/enseignant en moyenne`,
+            text: 'La charge horaire moyenne dépasse 25 h. Certains enseignants risquent d\'être surchargés — vérifiez la répartition individuelle.',
+            action: '/statistiques',
+            actionLabel: 'Voir la charge par enseignant',
+        });
+    }
+
+    // 5. Enseignants sans affectation
+    const totalEns = stats?.total_enseignants ?? 0;
+    if (totalEns > 2 && ensActifs < totalEns * 0.5) {
+        s.push({
+            level: 'info',
+            title: `${totalEns - ensActifs} enseignant(s) sans aucune affectation`,
+            text: 'Plus de la moitié du corps enseignant n\'a pas de cours planifié. Vérifiez leur disponibilité et leur affectation.',
+            action: '/gestion/enseignants',
+            actionLabel: 'Voir les enseignants',
+        });
+    }
+
+    // 6. Aucune affectation
+    if ((stats?.total_affectations ?? 0) === 0) {
+        s.push({
+            level: 'info',
+            title: 'Aucune affectation planifiée',
+            text: 'Le planning est vide. Commencez par créer des affectations pour générer les emplois du temps.',
+            action: '/gestion/affectations',
+            actionLabel: 'Créer des affectations',
+        });
+    }
+
+    // 7. Durée des cours hors norme
+    const dur = kpis?.duree_moyenne_cours?.valeur;
+    if (dur && dur < 45) {
+        s.push({
+            level: 'info',
+            title: `Cours très courts détectés : ${dur} min en moyenne`,
+            text: 'Des séances de moins de 45 min sont inhabituelles. Vérifiez la configuration des créneaux.',
+        });
+    } else if (dur && dur > 210) {
+        s.push({
+            level: 'info',
+            title: `Cours très longs détectés : ${dur} min en moyenne`,
+            text: 'Des séances de plus de 3h30 peuvent nuire à l\'attention des étudiants. Envisagez de les découper.',
+        });
+    }
+
+    // 8. Tout va bien
+    if (s.length === 0) {
+        s.push({
+            level: 'success',
+            title: 'Planning en bonne santé',
+            text: 'Tous les indicateurs sont dans les seuils optimaux. Continuez à surveiller les KPIs régulièrement.',
+        });
+    }
+
+    return s;
+}
+
+// ── Panneau de suggestions ────────────────────────────────────────────────────
+function SuggestionsPanel({ kpis, stats, conflits, navigate }) {
+    const suggestions = generateSuggestions(kpis, stats, conflits);
+    const urgentes  = suggestions.filter(s => s.level === 'error');
+    const attention = suggestions.filter(s => s.level === 'warning');
+    const autres    = suggestions.filter(s => s.level === 'info' || s.level === 'success');
+
+    const severityColor = { error: '#c62828', warning: '#e8a020', info: '#0277bd', success: '#2e7d32' };
+
+    return (
+        <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
+                <LightbulbOutlined sx={{ color: '#e8a020' }} />
+                <Typography variant="h6" fontWeight="bold">
+                    Suggestions & Alertes
+                </Typography>
+                <Chip
+                    label={`${urgentes.length} urgente(s) · ${attention.length} attention · ${autres.length} info`}
+                    size="small" variant="outlined" sx={{ ml: 'auto' }}
+                />
+            </Box>
+            <Divider sx={{ mb: 2 }} />
+
+            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
+                {suggestions.map((sug, i) => (
+                    <Alert
+                        key={i}
+                        severity={sug.level === 'success' ? 'success' : sug.level}
+                        icon={sug.level === 'success' ? <CheckCircleOutline /> : undefined}
+                        sx={{ borderRadius: 1.5, alignItems: 'flex-start' }}
+                        action={
+                            sug.action ? (
+                                <Button
+                                    size="small"
+                                    color="inherit"
+                                    endIcon={<ArrowForward fontSize="small" />}
+                                    onClick={() => navigate(sug.action)}
+                                    sx={{ whiteSpace: 'nowrap', mt: 0.5 }}
+                                >
+                                    {sug.actionLabel}
+                                </Button>
+                            ) : null
+                        }
+                    >
+                        <AlertTitle sx={{ fontWeight: 700, mb: 0.25 }}>
+                            {sug.title}
+                        </AlertTitle>
+                        {sug.text}
+                    </Alert>
+                ))}
+            </Box>
         </Paper>
     );
 }
@@ -500,6 +674,16 @@ export default function AdminDashboard() {
                         </Grid>
                     )}
                 </Paper>
+
+                {/* ── SUGGESTIONS ── */}
+                {!loading && (
+                    <SuggestionsPanel
+                        kpis={kpis}
+                        stats={stats}
+                        conflits={conflits}
+                        navigate={navigate}
+                    />
+                )}
 
                 {/* ── MODULE GRAPHIQUES ── */}
                 <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
