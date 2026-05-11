@@ -85,7 +85,7 @@ export default function EmploiDuTempsEnseignant() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToCSV(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`);
+                            await exportToCSVLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -93,7 +93,7 @@ export default function EmploiDuTempsEnseignant() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToiCal(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`);
+                            await exportToiCalLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -101,7 +101,7 @@ export default function EmploiDuTempsEnseignant() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToYAML(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, { etablissement: 'HESTIM-STENDHAL' });
+                            await exportToYAMLLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, { etablissement: 'HESTIM-STENDHAL' });
                             setExportMenuAnchor(null);
                         }}
                     >

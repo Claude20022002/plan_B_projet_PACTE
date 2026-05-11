@@ -87,7 +87,7 @@ export default function EmploiDuTempsEtudiant() {
                 >
                     <MenuItem
                         onClick={async () => {
-                            await exportToPDF(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`, 'etudiant');
+                            await exportToPDFLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`, 'etudiant');
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -95,7 +95,7 @@ export default function EmploiDuTempsEtudiant() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToExcel(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`);
+                            await exportToExcelLazy(affectationsData, [], 'EmploiDuTemps', `emploi-du-temps-${user?.prenom}-${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -103,7 +103,7 @@ export default function EmploiDuTempsEtudiant() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToCSV(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`);
+                            await exportToCSVLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -111,7 +111,7 @@ export default function EmploiDuTempsEtudiant() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToiCal(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`);
+                            await exportToiCalLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -119,7 +119,7 @@ export default function EmploiDuTempsEtudiant() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToYAML(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, { etablissement: 'HESTIM-STENDHAL' });
+                            await exportToYAMLLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, { etablissement: 'HESTIM-STENDHAL' });
                             setExportMenuAnchor(null);
                         }}
                     >
