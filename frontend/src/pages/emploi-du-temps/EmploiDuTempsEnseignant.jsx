@@ -77,7 +77,7 @@ export default function EmploiDuTempsEnseignant() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToExcel(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`);
+                            await exportToExcelLazy(affectationsData, [], 'EmploiDuTemps', `emploi-du-temps-${user?.prenom}-${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
                     >
