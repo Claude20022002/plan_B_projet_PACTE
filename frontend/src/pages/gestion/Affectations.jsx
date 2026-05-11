@@ -28,7 +28,8 @@ import {
 import { Add, Edit, Delete, Visibility, ArrowBack, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI } from '../../services/api';
-import { exportToExcel, COLS_AFFECTATIONS } from '../../utils/exportExcel';
+import { exportToExcelLazy } from '../../utils/lazyExports';
+import { COLS_AFFECTATIONS } from '../../utils/exportColumns';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -236,7 +237,7 @@ export default function Affectations() {
     const handleExport = async () => {
         try {
             const data = await affectationAPI.getAll({ page: 1, limit: 10000 });
-            exportToExcel(data.data || [], COLS_AFFECTATIONS, 'Affectations', 'Affectations');
+            await exportToExcelLazy(data.data || [], COLS_AFFECTATIONS, 'Affectations', 'Affectations');
         } catch { setError('Erreur lors de l\'export'); }
     };
 

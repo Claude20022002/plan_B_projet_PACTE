@@ -35,7 +35,8 @@ import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { parseFile, validateCoursData } from '../../utils/fileImport';
-import { exportToExcel, COLS_COURS } from '../../utils/exportExcel';
+import { exportToExcelLazy } from '../../utils/lazyExports';
+import { COLS_COURS } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -228,7 +229,7 @@ export default function Cours() {
     const handleExport = async () => {
         try {
             const data = await coursAPI.getAll({ page: 1, limit: 10000 });
-            exportToExcel(data.data || [], COLS_COURS, 'Cours', 'Cours');
+            await exportToExcelLazy(data.data || [], COLS_COURS, 'Cours', 'Cours');
         } catch { setError('Erreur lors de l\'export'); }
     };
 

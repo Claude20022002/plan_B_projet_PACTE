@@ -35,7 +35,8 @@ import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { parseFile, validateGroupeData } from '../../utils/fileImport';
-import { exportToExcel, COLS_GROUPES } from '../../utils/exportExcel';
+import { exportToExcelLazy } from '../../utils/lazyExports';
+import { COLS_GROUPES } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 

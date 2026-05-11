@@ -199,7 +199,7 @@ export default function Salles() {
     };
 
     const handleExport = () => {
-        exportToExcel(salles, COLS_SALLES, 'Salles', 'Salles');
+        exportToExcelLazy(salles, COLS_SALLES, 'Salles', 'Salles');
     };
 
     return (

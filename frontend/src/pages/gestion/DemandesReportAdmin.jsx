@@ -24,7 +24,8 @@ import {
 import { Check, Close, Visibility, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { demandeReportAPI } from '../../services/api';
-import { exportToExcel, COLS_DEMANDES_REPORT } from '../../utils/exportExcel';
+import { exportToExcelLazy } from '../../utils/lazyExports';
+import { COLS_DEMANDES_REPORT } from '../../utils/exportColumns';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function DemandesReportAdmin() {
@@ -99,7 +100,7 @@ export default function DemandesReportAdmin() {
     };
 
     const handleExport = () => {
-        exportToExcel(demandes, COLS_DEMANDES_REPORT, 'Demandes_Report', 'Demandes de report');
+        exportToExcelLazy(demandes, COLS_DEMANDES_REPORT, 'Demandes_Report', 'Demandes de report');
     };
 
     return (

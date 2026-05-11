@@ -31,7 +31,8 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { parseFile, validateEnseignantData } from '../../utils/fileImport';
-import { exportToExcel, COLS_ENSEIGNANTS } from '../../utils/exportExcel';
+import { exportToExcelLazy } from '../../utils/lazyExports';
+import { COLS_ENSEIGNANTS } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 
 const validationSchema = yup.object({
@@ -200,7 +201,7 @@ export default function Enseignants() {
     const handleExport = async () => {
         try {
             const data = await enseignantAPI.getAll({ page: 1, limit: 10000 });
-            exportToExcel(data.data || [], COLS_ENSEIGNANTS, 'Enseignants', 'Enseignants');
+            await exportToExcelLazy(data.data || [], COLS_ENSEIGNANTS, 'Enseignants', 'Enseignants');
         } catch { setError('Erreur lors de l\'export'); }
     };
 
