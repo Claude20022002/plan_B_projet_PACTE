@@ -14,7 +14,7 @@ import { ArrowBack, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, groupeAPI, enseignantAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
-import { exportToExcel, exportToPDF, exportToCSV, exportToiCal, exportToYAML } from '../../utils/exportEmploiDuTemps';
+import { exportToExcelLazy, exportToPDFLazy, exportToCSVLazy, exportToiCalLazy, exportToYAMLLazy } from '../../utils/lazyExports';
 import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetable';
 
 export default function EmploiDuTempsAdmin() {
@@ -164,7 +164,7 @@ export default function EmploiDuTempsAdmin() {
                 >
                     <MenuItem
                         onClick={async () => {
-                            await exportToPDF(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps — Vue consolidée', 'admin');
+                            await exportToPDFLazy(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps — Vue consolidée', 'admin');
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -172,7 +172,7 @@ export default function EmploiDuTempsAdmin() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToExcel(affectationsData, 'emploi-du-temps-admin');
+                            await exportToExcelLazy(affectationsData, [], 'EmploiDuTemps', 'emploi-du-temps-admin');
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -180,7 +180,7 @@ export default function EmploiDuTempsAdmin() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToCSV(affectationsData, 'emploi-du-temps-admin');
+                            await exportToCSVLazy(affectationsData, 'emploi-du-temps-admin');
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -188,7 +188,7 @@ export default function EmploiDuTempsAdmin() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToiCal(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps - Administrateur');
+                            await exportToiCalLazy(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps - Administrateur');
                             setExportMenuAnchor(null);
                         }}
                     >
@@ -196,7 +196,7 @@ export default function EmploiDuTempsAdmin() {
                     </MenuItem>
                     <MenuItem
                         onClick={() => {
-                            exportToYAML(affectationsData, 'emploi-du-temps-admin', { etablissement: 'HESTIM-STENDHAL' });
+                            await exportToYAMLLazy(affectationsData, 'emploi-du-temps-admin', { etablissement: 'HESTIM-STENDHAL' });
                             setExportMenuAnchor(null);
                         }}
                     >

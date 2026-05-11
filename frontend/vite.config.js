@@ -1,4 +1,4 @@
-import { defineConfig, splitVendorChunkPlugin } from 'vite';
+import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 
@@ -88,7 +88,6 @@ export default defineConfig({
       // Babel plugin pour React 19 compiler (décommenter si installé)
       // babel: { plugins: ['babel-plugin-react-compiler'] },
     }),
-    splitVendorChunkPlugin(), // Fallback pour les modules non mappés
   ],
 
   // ── Alias pour imports propres ─────────────────────────────────────────

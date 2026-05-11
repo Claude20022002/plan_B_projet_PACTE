@@ -5,7 +5,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, etudiantAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { exportToExcel, exportToPDF, exportToCSV, exportToiCal, exportToYAML } from '../../utils/exportEmploiDuTemps';
+import { exportToExcelLazy, exportToPDFLazy, exportToCSVLazy, exportToiCalLazy, exportToYAMLLazy } from '../../utils/lazyExports';
 import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetable';
 
 export default function EmploiDuTempsEtudiant() {

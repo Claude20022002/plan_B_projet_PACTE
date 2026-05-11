@@ -5,7 +5,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { exportToExcel, exportToPDF, exportToCSV, exportToiCal, exportToYAML } from '../../utils/exportEmploiDuTemps';
+import { exportToExcelLazy, exportToPDFLazy, exportToCSVLazy, exportToiCalLazy, exportToYAMLLazy } from '../../utils/lazyExports';
 import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetable';
 
 export default function EmploiDuTempsEnseignant() {
@@ -69,7 +69,7 @@ export default function EmploiDuTempsEnseignant() {
                 >
                     <MenuItem
                         onClick={async () => {
-                            await exportToPDF(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`, 'enseignant');
+                            await exportToPDFLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`, 'enseignant');
                             setExportMenuAnchor(null);
                         }}
                     >
