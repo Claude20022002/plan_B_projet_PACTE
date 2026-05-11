@@ -171,7 +171,7 @@ export default function EmploiDuTempsAdmin() {
                         Télécharger en PDF
                     </MenuItem>
                     <MenuItem
-                        onClick={() => {
+                        onClick={async () => {
                             await exportToExcelLazy(affectationsData, [], 'EmploiDuTemps', 'emploi-du-temps-admin');
                             setExportMenuAnchor(null);
                         }}
@@ -179,7 +179,7 @@ export default function EmploiDuTempsAdmin() {
                         Télécharger en Excel
                     </MenuItem>
                     <MenuItem
-                        onClick={() => {
+                        onClick={async () => {
                             await exportToCSVLazy(affectationsData, 'emploi-du-temps-admin');
                             setExportMenuAnchor(null);
                         }}
@@ -187,7 +187,7 @@ export default function EmploiDuTempsAdmin() {
                         Télécharger en CSV
                     </MenuItem>
                     <MenuItem
-                        onClick={() => {
+                        onClick={async () => {
                             await exportToiCalLazy(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps - Administrateur');
                             setExportMenuAnchor(null);
                         }}
@@ -195,7 +195,7 @@ export default function EmploiDuTempsAdmin() {
                         Télécharger en iCal (.ics)
                     </MenuItem>
                     <MenuItem
-                        onClick={() => {
+                        onClick={async () => {
                             await exportToYAMLLazy(affectationsData, 'emploi-du-temps-admin', { etablissement: 'HESTIM-STENDHAL' });
                             setExportMenuAnchor(null);
                         }}
