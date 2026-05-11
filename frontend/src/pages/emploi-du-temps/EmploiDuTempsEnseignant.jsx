@@ -76,7 +76,7 @@ export default function EmploiDuTempsEnseignant() {
                         Télécharger en PDF
                     </MenuItem>
                     <MenuItem
-                        onClick={() => {
+                        onClick={async () => {
                             await exportToExcelLazy(affectationsData, [], 'EmploiDuTemps', `emploi-du-temps-${user?.prenom}-${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
@@ -84,7 +84,7 @@ export default function EmploiDuTempsEnseignant() {
                         Télécharger en Excel
                     </MenuItem>
                     <MenuItem
-                        onClick={() => {
+                        onClick={async () => {
                             await exportToCSVLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
@@ -92,7 +92,7 @@ export default function EmploiDuTempsEnseignant() {
                         Télécharger en CSV
                     </MenuItem>
                     <MenuItem
-                        onClick={() => {
+                        onClick={async () => {
                             await exportToiCalLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, `Emploi du Temps - ${user?.prenom} ${user?.nom}`);
                             setExportMenuAnchor(null);
                         }}
@@ -100,7 +100,7 @@ export default function EmploiDuTempsEnseignant() {
                         Télécharger en iCal (.ics)
                     </MenuItem>
                     <MenuItem
-                        onClick={() => {
+                        onClick={async () => {
                             await exportToYAMLLazy(affectationsData, `emploi-du-temps-${user?.prenom}-${user?.nom}`, { etablissement: 'HESTIM-STENDHAL' });
                             setExportMenuAnchor(null);
                         }}

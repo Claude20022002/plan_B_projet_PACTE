@@ -17,7 +17,8 @@
       "PowerShell(docker login --help 2>$null)",
       "PowerShell(cat \"$env:USERPROFILE\\\\.docker\\\\config.json\" 2>$null | ConvertFrom-Json | Select-Object -ExpandProperty auths | ConvertTo-Json 2>&1 | Select-Object -First 10)",
       "PowerShell(& \"docker-credential-desktop\" get 2>&1)",
-      "Bash(node --input-type=module --eval ' *)"
+      "Bash(node --input-type=module --eval ' *)",
+      "Bash(npm run *)"
     ]
   }
 }

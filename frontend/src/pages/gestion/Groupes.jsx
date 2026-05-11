@@ -218,7 +218,7 @@ export default function Groupes() {
     };
 
     const handleExport = () => {
-        exportToExcel(groupes, COLS_GROUPES, 'Groupes', 'Groupes');
+        exportToExcelLazy(groupes, COLS_GROUPES, 'Groupes', 'Groupes');
     };
 
     const filteredGroupes = groupes.filter(
