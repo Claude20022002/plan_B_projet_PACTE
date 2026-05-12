@@ -1,5 +1,4 @@
 import * as XLSX from "xlsx";
-import Papa from "papaparse";
 
 /**
  * Parse un fichier Excel ou CSV et retourne les données
@@ -7,12 +6,14 @@ import Papa from "papaparse";
  * @returns {Promise<Array>} - Les données parsées
  */
 export const parseFile = async (file) => {
-    return new Promise((resolve, reject) => {
+    return new Promise(async (resolve, reject) => {
         const fileName = file.name.toLowerCase();
         const fileExtension = fileName.split(".").pop();
 
         if (fileExtension === "csv") {
-            // Parser CSV avec PapaParse
+            // Import dynamique pour éviter les problèmes d'export avec Vite
+            const Papa = await import("papaparse").then((m) => m.default || m);
+
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
