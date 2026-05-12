@@ -9,6 +9,10 @@ const Conflit = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        id_institution: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         type_conflit: {
             type: DataTypes.ENUM("salle", "enseignant", "groupe"),
             allowNull: false,

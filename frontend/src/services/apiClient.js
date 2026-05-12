@@ -54,6 +54,10 @@ function getCookie(name) {
     .join('=');
 }
 
+function getTenantSlug() {
+  return localStorage.getItem('currentTenantSlug');
+}
+
 async function ensureCsrfToken() {
   let token = getCookie(CSRF_COOKIE);
   if (!token) {
@@ -75,6 +79,10 @@ apiClient.interceptors.request.use(
         if (csrfToken) {
           nextConfig.headers['X-CSRF-Token'] = csrfToken;
         }
+      }
+      const tenantSlug = getTenantSlug();
+      if (tenantSlug) {
+        nextConfig.headers['X-Institution-Slug'] = tenantSlug;
       }
       return nextConfig;
     });

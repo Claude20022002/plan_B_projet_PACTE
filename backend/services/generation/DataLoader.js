@@ -19,10 +19,14 @@ export class DataLoader {
             dateFin,
             coursIds = [],
             groupeIds = [],
+            idInstitution,
         } = params;
 
         const groupes = await Groupe.findAll({
-            where: groupeIds.length ? { id_groupe: { [Op.in]: groupeIds } } : {},
+            where: {
+                ...(idInstitution && { id_institution: idInstitution }),
+                ...(groupeIds.length ? { id_groupe: { [Op.in]: groupeIds } } : {}),
+            },
             include: [{ model: Filiere, as: "filiere" }],
         });
 
@@ -35,6 +39,7 @@ export class DataLoader {
             const where = {
                 id_filiere: groupe.id_filiere,
                 niveau: groupe.niveau,
+                ...(idInstitution && { id_institution: idInstitution }),
             };
 
             if (coursIds.length) {
@@ -51,8 +56,11 @@ export class DataLoader {
         }
 
         const [creneaux, salles, enseignants] = await Promise.all([
-            Creneau.findAll({ order: [["jour_semaine", "ASC"], ["heure_debut", "ASC"]] }),
-            Salle.findAll({ where: { disponible: true }, order: [["capacite", "ASC"]] }),
+            Creneau.findAll({
+                where: { ...(idInstitution && { id_institution: idInstitution }) },
+                order: [["jour_semaine", "ASC"], ["heure_debut", "ASC"]],
+            }),
+            Salle.findAll({ where: { disponible: true, ...(idInstitution && { id_institution: idInstitution }) }, order: [["capacite", "ASC"]] }),
             Users.findAll({ where: { role: "enseignant", actif: true } }),
         ]);
 
@@ -65,6 +73,7 @@ export class DataLoader {
                 id_user_enseignant: { [Op.in]: enseignants.map((teacher) => teacher.id_user) },
                 date_debut: { [Op.lte]: dateFin },
                 date_fin: { [Op.gte]: dateDebut },
+                ...(idInstitution && { id_institution: idInstitution }),
             },
         });
 
@@ -74,6 +83,7 @@ export class DataLoader {
                 where: {
                     date_debut: { [Op.lte]: dateFin },
                     date_fin: { [Op.gte]: dateDebut },
+                    ...(idInstitution && { id_institution: idInstitution }),
                 },
             });
         } catch (error) {
@@ -85,6 +95,7 @@ export class DataLoader {
             where: {
                 date_seance: { [Op.between]: [dateDebut, dateFin] },
                 statut: { [Op.ne]: "annule" },
+                ...(idInstitution && { id_institution: idInstitution }),
             },
         });
 

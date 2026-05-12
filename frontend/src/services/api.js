@@ -42,6 +42,9 @@ async function request(endpoint, options = {}) {
         headers: {
             'Content-Type': 'application/json',
             ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
+            ...(localStorage.getItem('currentTenantSlug') && {
+                'X-Institution-Slug': localStorage.getItem('currentTenantSlug'),
+            }),
             ...options.headers,
         },
     };

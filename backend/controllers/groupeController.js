@@ -1,6 +1,7 @@
 import { Groupe, Filiere } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
+import { tenantWhere, withTenant } from "../utils/tenantHelper.js";
 
 /**
  * Contrôleur pour les groupes
@@ -11,7 +12,7 @@ export const getAllGroupes = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
     // Filtres optionnels
-    const where = {};
+    const where = tenantWhere(req);
     if (req.query.id_filiere) {
         where.id_filiere = req.query.id_filiere;
     }
@@ -35,7 +36,8 @@ export const getAllGroupes = asyncHandler(async (req, res) => {
 
 // 🔍 Récupérer un groupe par ID
 export const getGroupeById = asyncHandler(async (req, res) => {
-    const groupe = await Groupe.findByPk(req.params.id, {
+    const groupe = await Groupe.findOne({
+        where: tenantWhere(req, { id_groupe: req.params.id }),
         include: [{ model: Filiere, as: "filiere" }],
     });
 
@@ -57,6 +59,7 @@ export const createGroupe = asyncHandler(async (req, res) => {
             where: {
                 nom_groupe: req.body.nom_groupe,
                 annee_scolaire: req.body.annee_scolaire,
+                id_institution: req.tenant.id_institution,
             },
         });
         if (existingGroupe) {
@@ -67,7 +70,7 @@ export const createGroupe = asyncHandler(async (req, res) => {
         }
     }
 
-    const groupe = await Groupe.create(req.body);
+    const groupe = await Groupe.create(withTenant(req, req.body));
 
     const groupeAvecFiliere = await Groupe.findByPk(groupe.id_groupe, {
         include: [{ model: Filiere, as: "filiere" }],
@@ -81,7 +84,7 @@ export const createGroupe = asyncHandler(async (req, res) => {
 
 // ✏️ Mettre à jour un groupe
 export const updateGroupe = asyncHandler(async (req, res) => {
-    const groupe = await Groupe.findByPk(req.params.id);
+    const groupe = await Groupe.findOne({ where: tenantWhere(req, { id_groupe: req.params.id }) });
 
     if (!groupe) {
         return res.status(404).json({
@@ -100,6 +103,7 @@ export const updateGroupe = asyncHandler(async (req, res) => {
             where: {
                 nom_groupe: req.body.nom_groupe || groupe.nom_groupe,
                 annee_scolaire: req.body.annee_scolaire || groupe.annee_scolaire,
+                id_institution: req.tenant.id_institution,
             },
         });
         if (existingGroupe && existingGroupe.id_groupe !== groupe.id_groupe) {
@@ -110,7 +114,7 @@ export const updateGroupe = asyncHandler(async (req, res) => {
         }
     }
 
-    await groupe.update(req.body);
+    await groupe.update(withTenant(req, req.body));
 
     const groupeAvecFiliere = await Groupe.findByPk(groupe.id_groupe, {
         include: [{ model: Filiere, as: "filiere" }],
@@ -124,7 +128,7 @@ export const updateGroupe = asyncHandler(async (req, res) => {
 
 // 🗑️ Supprimer un groupe
 export const deleteGroupe = asyncHandler(async (req, res) => {
-    const groupe = await Groupe.findByPk(req.params.id);
+    const groupe = await Groupe.findOne({ where: tenantWhere(req, { id_groupe: req.params.id }) });
 
     if (!groupe) {
         return res.status(404).json({

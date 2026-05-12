@@ -1,6 +1,7 @@
 import { Creneau } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
+import { tenantWhere, withTenant } from "../utils/tenantHelper.js";
 
 /**
  * Contrôleur pour les créneaux
@@ -11,7 +12,7 @@ export const getAllCreneaux = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 20);
 
     // Filtres optionnels
-    const where = {};
+    const where = tenantWhere(req);
     if (req.query.jour_semaine) {
         where.jour_semaine = req.query.jour_semaine;
     }
@@ -31,7 +32,7 @@ export const getAllCreneaux = asyncHandler(async (req, res) => {
 
 // 🔍 Récupérer un créneau par ID
 export const getCreneauById = asyncHandler(async (req, res) => {
-    const creneau = await Creneau.findByPk(req.params.id);
+    const creneau = await Creneau.findOne({ where: tenantWhere(req, { id_creneau: req.params.id }) });
 
     if (!creneau) {
         return res.status(404).json({
@@ -52,6 +53,7 @@ export const createCreneau = asyncHandler(async (req, res) => {
                 jour_semaine: req.body.jour_semaine,
                 heure_debut: req.body.heure_debut,
                 heure_fin: req.body.heure_fin,
+                id_institution: req.tenant.id_institution,
             },
         });
         if (existingCreneau) {
@@ -62,7 +64,7 @@ export const createCreneau = asyncHandler(async (req, res) => {
         }
     }
 
-    const creneau = await Creneau.create(req.body);
+    const creneau = await Creneau.create(withTenant(req, req.body));
 
     res.status(201).json({
         message: "Créneau créé avec succès",
@@ -72,7 +74,7 @@ export const createCreneau = asyncHandler(async (req, res) => {
 
 // ✏️ Mettre à jour un créneau
 export const updateCreneau = asyncHandler(async (req, res) => {
-    const creneau = await Creneau.findByPk(req.params.id);
+    const creneau = await Creneau.findOne({ where: tenantWhere(req, { id_creneau: req.params.id }) });
 
     if (!creneau) {
         return res.status(404).json({
@@ -93,6 +95,7 @@ export const updateCreneau = asyncHandler(async (req, res) => {
                 jour_semaine: req.body.jour_semaine || creneau.jour_semaine,
                 heure_debut: req.body.heure_debut || creneau.heure_debut,
                 heure_fin: req.body.heure_fin || creneau.heure_fin,
+                id_institution: req.tenant.id_institution,
             },
         });
         if (existingCreneau && existingCreneau.id_creneau !== creneau.id_creneau) {
@@ -103,7 +106,7 @@ export const updateCreneau = asyncHandler(async (req, res) => {
         }
     }
 
-    await creneau.update(req.body);
+    await creneau.update(withTenant(req, req.body));
 
     res.json({
         message: "Créneau mis à jour avec succès",
@@ -113,7 +116,7 @@ export const updateCreneau = asyncHandler(async (req, res) => {
 
 // 🗑️ Supprimer un créneau
 export const deleteCreneau = asyncHandler(async (req, res) => {
-    const creneau = await Creneau.findByPk(req.params.id);
+    const creneau = await Creneau.findOne({ where: tenantWhere(req, { id_creneau: req.params.id }) });
 
     if (!creneau) {
         return res.status(404).json({

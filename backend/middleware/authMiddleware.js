@@ -1,6 +1,7 @@
 import jwt from "jsonwebtoken";
 import { AuthSession, Users } from "../models/index.js";
 import { ACCESS_COOKIE } from "../config/authCookies.js";
+import { resolveTenantForUser } from "../utils/tenantHelper.js";
 
 // Validation critique au démarrage : JWT_SECRET doit être défini explicitement.
 // Un secret par défaut ("secret_key_default") serait devinable et compromettrait tous les tokens.
@@ -81,6 +82,24 @@ const attachUserFromToken = async (req, decoded) => {
 
     if (!user.actif) {
         return { status: 403, message: "Compte désactivé", error: "Votre compte a été désactivé" };
+    }
+
+    try {
+        const { institution, membership } = await resolveTenantForUser(req, user);
+        req.tenant = institution;
+        req.membership = membership;
+        req.auth = {
+            ...(req.auth || {}),
+            institutionId: institution.id_institution,
+            institutionSlug: institution.slug,
+            tenantRole: membership.role,
+        };
+    } catch (error) {
+        return {
+            status: error.status || 403,
+            message: error.message,
+            code: error.code || "TENANT_ACCESS_DENIED",
+        };
     }
 
     req.user = user;

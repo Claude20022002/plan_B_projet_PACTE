@@ -83,6 +83,7 @@ export const genererAffectations = asyncHandler(async (req, res) => {
             maxHoursPerDayGroup,
             maxHoursPerDayCourse,
             allowSameCourseTwicePerDay,
+            idInstitution: req.tenant?.id_institution,
         });
 
         // Vérifier les conflits pour les nouvelles affectations

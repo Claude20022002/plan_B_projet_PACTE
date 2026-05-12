@@ -9,6 +9,10 @@ const Creneau = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        id_institution: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         jour_semaine: {
             type: DataTypes.ENUM(
                 "lundi",

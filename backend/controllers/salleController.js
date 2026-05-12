@@ -1,6 +1,7 @@
 import { Salle } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
+import { tenantWhere, withTenant } from "../utils/tenantHelper.js";
 
 /**
  * Contrôleur pour les salles
@@ -11,7 +12,7 @@ export const getAllSalles = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
     // Filtres optionnels
-    const where = {};
+    const where = tenantWhere(req);
     if (req.query.type_salle) {
         where.type_salle = req.query.type_salle;
     }
@@ -34,7 +35,7 @@ export const getAllSalles = asyncHandler(async (req, res) => {
 
 // 🔍 Récupérer une salle par ID
 export const getSalleById = asyncHandler(async (req, res) => {
-    const salle = await Salle.findByPk(req.params.id);
+    const salle = await Salle.findOne({ where: tenantWhere(req, { id_salle: req.params.id }) });
 
     if (!salle) {
         return res.status(404).json({
@@ -49,7 +50,7 @@ export const getSalleById = asyncHandler(async (req, res) => {
 // ➕ Créer une salle
 export const createSalle = asyncHandler(async (req, res) => {
     // Vérifier si le nom de salle existe déjà
-    const existingSalle = await Salle.findOne({ where: { nom_salle: req.body.nom_salle } });
+    const existingSalle = await Salle.findOne({ where: tenantWhere(req, { nom_salle: req.body.nom_salle }) });
     if (existingSalle) {
         return res.status(409).json({
             message: "Salle déjà existante",
@@ -57,7 +58,7 @@ export const createSalle = asyncHandler(async (req, res) => {
         });
     }
 
-    const salle = await Salle.create(req.body);
+    const salle = await Salle.create(withTenant(req, req.body));
 
     res.status(201).json({
         message: "Salle créée avec succès",
@@ -67,7 +68,7 @@ export const createSalle = asyncHandler(async (req, res) => {
 
 // ✏️ Mettre à jour une salle
 export const updateSalle = asyncHandler(async (req, res) => {
-    const salle = await Salle.findByPk(req.params.id);
+    const salle = await Salle.findOne({ where: tenantWhere(req, { id_salle: req.params.id }) });
 
     if (!salle) {
         return res.status(404).json({
@@ -78,7 +79,7 @@ export const updateSalle = asyncHandler(async (req, res) => {
 
     // Si le nom est modifié, vérifier qu'il n'existe pas déjà
     if (req.body.nom_salle && req.body.nom_salle !== salle.nom_salle) {
-        const existingSalle = await Salle.findOne({ where: { nom_salle: req.body.nom_salle } });
+        const existingSalle = await Salle.findOne({ where: tenantWhere(req, { nom_salle: req.body.nom_salle }) });
         if (existingSalle) {
             return res.status(409).json({
                 message: "Nom de salle déjà utilisé",
@@ -87,7 +88,7 @@ export const updateSalle = asyncHandler(async (req, res) => {
         }
     }
 
-    await salle.update(req.body);
+    await salle.update(withTenant(req, req.body));
 
     res.json({
         message: "Salle mise à jour avec succès",
@@ -97,7 +98,7 @@ export const updateSalle = asyncHandler(async (req, res) => {
 
 // 🗑️ Supprimer une salle
 export const deleteSalle = asyncHandler(async (req, res) => {
-    const salle = await Salle.findByPk(req.params.id);
+    const salle = await Salle.findOne({ where: tenantWhere(req, { id_salle: req.params.id }) });
 
     if (!salle) {
         return res.status(404).json({
@@ -118,7 +119,7 @@ export const getSallesDisponibles = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
     const { count, rows: salles } = await Salle.findAndCountAll({
-        where: { disponible: true },
+        where: tenantWhere(req, { disponible: true }),
         limit,
         offset,
         order: [["nom_salle", "ASC"]],

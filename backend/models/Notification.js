@@ -9,6 +9,10 @@ const Notification = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        id_institution: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         titre: {
             type: DataTypes.STRING,
             allowNull: false,

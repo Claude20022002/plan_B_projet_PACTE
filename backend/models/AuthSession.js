@@ -9,6 +9,10 @@ const AuthSession = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        id_institution: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         id_user: {
             type: DataTypes.INTEGER,
             allowNull: false,

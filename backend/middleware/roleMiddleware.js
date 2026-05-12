@@ -16,12 +16,15 @@ export const requireRole = (...roles) => {
             });
         }
 
-        if (!roles.includes(req.user.role)) {
+        const currentRole = req.membership?.role || req.user.role;
+        const normalizedRoles = roles.includes("admin") ? [...roles, "owner"] : roles;
+
+        if (!normalizedRoles.includes(currentRole)) {
             return res.status(403).json({
                 message: "Accès interdit",
                 error: `Accès réservé aux rôles: ${roles.join(
                     ", "
-                )}. Votre rôle: ${req.user.role}`,
+                )}. Votre rôle: ${currentRole}`,
             });
         }
 

@@ -9,6 +9,10 @@ const PlanningSnapshot = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        id_institution: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         label: DataTypes.STRING,
         date_debut: {
             type: DataTypes.DATEONLY,

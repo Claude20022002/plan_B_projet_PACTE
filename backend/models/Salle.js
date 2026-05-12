@@ -9,6 +9,10 @@ const Salle = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        id_institution: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         nom_salle: {
             type: DataTypes.STRING,
             allowNull: false,

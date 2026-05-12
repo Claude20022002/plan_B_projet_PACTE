@@ -1,5 +1,5 @@
-import * as XLSX from 'xlsx';
-import Papa from 'papaparse';
+import * as XLSX from "xlsx";
+import Papa from "papaparse";
 
 /**
  * Parse un fichier Excel ou CSV et retourne les données
@@ -9,64 +9,89 @@ import Papa from 'papaparse';
 export const parseFile = async (file) => {
     return new Promise((resolve, reject) => {
         const fileName = file.name.toLowerCase();
-        const fileExtension = fileName.split('.').pop();
+        const fileExtension = fileName.split(".").pop();
 
-        if (fileExtension === 'csv') {
+        if (fileExtension === "csv") {
             // Parser CSV avec PapaParse
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
                 complete: (results) => {
                     if (results.errors.length > 0) {
-                        reject(new Error(`Erreurs lors du parsing CSV: ${results.errors.map(e => e.message).join(', ')}`));
+                        reject(
+                            new Error(
+                                `Erreurs lors du parsing CSV: ${results.errors.map((e) => e.message).join(", ")}`,
+                            ),
+                        );
                     } else {
                         resolve(results.data);
                     }
                 },
                 error: (error) => {
-                    reject(new Error(`Erreur lors du parsing CSV: ${error.message}`));
+                    reject(
+                        new Error(
+                            `Erreur lors du parsing CSV: ${error.message}`,
+                        ),
+                    );
                 },
             });
-        } else if (['xlsx', 'xls'].includes(fileExtension)) {
+        } else if (["xlsx", "xls"].includes(fileExtension)) {
             // Parser Excel avec XLSX
             const reader = new FileReader();
             reader.onload = (e) => {
                 try {
                     const data = new Uint8Array(e.target.result);
-                    const workbook = XLSX.read(data, { type: 'array' });
+                    const workbook = XLSX.read(data, { type: "array" });
                     const firstSheetName = workbook.SheetNames[0];
                     const worksheet = workbook.Sheets[firstSheetName];
-                    
+
                     // Convertir en JSON avec header: true pour utiliser la première ligne comme en-têtes
                     // raw: false pour convertir les valeurs (dates, nombres, etc.)
-                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { 
-                        defval: '', 
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, {
+                        defval: "",
                         raw: false,
-                        blankrows: false // Ignorer les lignes vides
+                        blankrows: false, // Ignorer les lignes vides
                     });
-                    
+
                     // Filtrer les lignes complètement vides
-                    const filteredData = jsonData.filter(row => {
-                        return Object.values(row).some(value => value !== '' && value !== null && value !== undefined);
+                    const filteredData = jsonData.filter((row) => {
+                        return Object.values(row).some(
+                            (value) =>
+                                value !== "" &&
+                                value !== null &&
+                                value !== undefined,
+                        );
                     });
-                    
+
                     if (filteredData.length === 0) {
-                        reject(new Error('Le fichier Excel est vide ou ne contient pas de données valides'));
+                        reject(
+                            new Error(
+                                "Le fichier Excel est vide ou ne contient pas de données valides",
+                            ),
+                        );
                         return;
                     }
-                    
-                    console.log('Données parsées depuis Excel:', filteredData);
+
+                    console.log("Données parsées depuis Excel:", filteredData);
                     resolve(filteredData);
                 } catch (error) {
-                    reject(new Error(`Erreur lors du parsing Excel: ${error.message}`));
+                    reject(
+                        new Error(
+                            `Erreur lors du parsing Excel: ${error.message}`,
+                        ),
+                    );
                 }
             };
             reader.onerror = () => {
-                reject(new Error('Erreur lors de la lecture du fichier'));
+                reject(new Error("Erreur lors de la lecture du fichier"));
             };
             reader.readAsArrayBuffer(file);
         } else {
-            reject(new Error('Format de fichier non supporté. Utilisez CSV ou Excel (.xlsx, .xls)'));
+            reject(
+                new Error(
+                    "Format de fichier non supporté. Utilisez CSV ou Excel (.xlsx, .xls)",
+                ),
+            );
         }
     });
 };
@@ -77,19 +102,22 @@ export const parseFile = async (file) => {
  * @param {Array} requiredFields - Les champs requis
  * @returns {Object} - { valid: boolean, errors: Array }
  */
-export const validateUserData = (data, requiredFields = ['nom', 'prenom', 'email', 'role']) => {
+export const validateUserData = (
+    data,
+    requiredFields = ["nom", "prenom", "email", "role"],
+) => {
     const errors = [];
-    
+
     if (!Array.isArray(data) || data.length === 0) {
-        errors.push('Le fichier est vide ou invalide');
+        errors.push("Le fichier est vide ou invalide");
         return { valid: false, errors };
     }
 
     data.forEach((row, index) => {
         const rowNum = index + 2; // +2 car index commence à 0 et on compte l'en-tête
-        
+
         requiredFields.forEach((field) => {
-            if (!row[field] || row[field].toString().trim() === '') {
+            if (!row[field] || row[field].toString().trim() === "") {
                 errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
             }
         });
@@ -100,8 +128,15 @@ export const validateUserData = (data, requiredFields = ['nom', 'prenom', 'email
         }
 
         // Validation rôle
-        if (row.role && !['admin', 'enseignant', 'etudiant'].includes(row.role.toLowerCase())) {
-            errors.push(`Ligne ${rowNum}: Rôle invalide (${row.role}). Doit être: admin, enseignant ou etudiant`);
+        if (
+            row.role &&
+            !["admin", "enseignant", "etudiant"].includes(
+                row.role.toLowerCase(),
+            )
+        ) {
+            errors.push(
+                `Ligne ${rowNum}: Rôle invalide (${row.role}). Doit être: admin, enseignant ou etudiant`,
+            );
         }
     });
 
@@ -118,19 +153,19 @@ export const validateUserData = (data, requiredFields = ['nom', 'prenom', 'email
  */
 export const validateEnseignantData = (data) => {
     const errors = [];
-    
+
     if (!Array.isArray(data) || data.length === 0) {
-        errors.push('Le fichier est vide ou invalide');
+        errors.push("Le fichier est vide ou invalide");
         return { valid: false, errors };
     }
 
-    const requiredFields = ['email', 'specialite', 'departement'];
-    
+    const requiredFields = ["email", "specialite", "departement"];
+
     data.forEach((row, index) => {
         const rowNum = index + 2;
-        
+
         requiredFields.forEach((field) => {
-            if (!row[field] || row[field].toString().trim() === '') {
+            if (!row[field] || row[field].toString().trim() === "") {
                 errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
             }
         });
@@ -154,19 +189,19 @@ export const validateEnseignantData = (data) => {
  */
 export const validateEtudiantData = (data) => {
     const errors = [];
-    
+
     if (!Array.isArray(data) || data.length === 0) {
-        errors.push('Le fichier est vide ou invalide');
+        errors.push("Le fichier est vide ou invalide");
         return { valid: false, errors };
     }
 
-    const requiredFields = ['email', 'numero_etudiant', 'niveau'];
-    
+    const requiredFields = ["email", "numero_etudiant", "niveau"];
+
     data.forEach((row, index) => {
         const rowNum = index + 2;
-        
+
         requiredFields.forEach((field) => {
-            if (!row[field] || row[field].toString().trim() === '') {
+            if (!row[field] || row[field].toString().trim() === "") {
                 errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
             }
         });
@@ -190,19 +225,19 @@ export const validateEtudiantData = (data) => {
  */
 export const validateFiliereData = (data) => {
     const errors = [];
-    
+
     if (!Array.isArray(data) || data.length === 0) {
-        errors.push('Le fichier est vide ou invalide');
+        errors.push("Le fichier est vide ou invalide");
         return { valid: false, errors };
     }
 
-    const requiredFields = ['nom_filiere', 'code_filiere'];
-    
+    const requiredFields = ["nom_filiere", "code_filiere"];
+
     data.forEach((row, index) => {
         const rowNum = index + 2;
-        
+
         requiredFields.forEach((field) => {
-            if (!row[field] || row[field].toString().trim() === '') {
+            if (!row[field] || row[field].toString().trim() === "") {
                 errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
             }
         });
@@ -221,19 +256,19 @@ export const validateFiliereData = (data) => {
  */
 export const validateGroupeData = (data) => {
     const errors = [];
-    
+
     if (!Array.isArray(data) || data.length === 0) {
-        errors.push('Le fichier est vide ou invalide');
+        errors.push("Le fichier est vide ou invalide");
         return { valid: false, errors };
     }
 
-    const requiredFields = ['nom_groupe', 'id_filiere', 'niveau'];
-    
+    const requiredFields = ["nom_groupe", "id_filiere", "niveau"];
+
     data.forEach((row, index) => {
         const rowNum = index + 2;
-        
+
         requiredFields.forEach((field) => {
-            if (!row[field] || row[field].toString().trim() === '') {
+            if (!row[field] || row[field].toString().trim() === "") {
                 errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
             }
         });
@@ -257,32 +292,48 @@ export const validateGroupeData = (data) => {
  */
 export const validateSalleData = (data) => {
     const errors = [];
-    
+
     if (!Array.isArray(data) || data.length === 0) {
-        errors.push('Le fichier est vide ou invalide');
+        errors.push("Le fichier est vide ou invalide");
         return { valid: false, errors };
     }
 
-    const requiredFields = ['nom_salle', 'type_salle', 'capacite', 'batiment'];
-    
+    const requiredFields = ["nom_salle", "type_salle", "capacite", "batiment"];
+
     data.forEach((row, index) => {
         const rowNum = index + 2;
-        
+
         requiredFields.forEach((field) => {
-            if (!row[field] || row[field].toString().trim() === '') {
+            if (!row[field] || row[field].toString().trim() === "") {
                 errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
             }
         });
 
         // Validation capacite
-        if (row.capacite && (isNaN(Number(row.capacite)) || Number(row.capacite) <= 0)) {
-            errors.push(`Ligne ${rowNum}: capacite doit être un nombre positif`);
+        if (
+            row.capacite &&
+            (isNaN(Number(row.capacite)) || Number(row.capacite) <= 0)
+        ) {
+            errors.push(
+                `Ligne ${rowNum}: capacite doit être un nombre positif`,
+            );
         }
 
         // Validation type_salle
-        const validTypes = ['amphi', 'informatique', 'standard', 'labo', 'atelier'];
-        if (row.type_salle && !validTypes.includes(row.type_salle.toLowerCase())) {
-            errors.push(`Ligne ${rowNum}: type_salle invalide. Doit être: ${validTypes.join(', ')}`);
+        const validTypes = [
+            "amphi",
+            "informatique",
+            "standard",
+            "labo",
+            "atelier",
+        ];
+        if (
+            row.type_salle &&
+            !validTypes.includes(row.type_salle.toLowerCase())
+        ) {
+            errors.push(
+                `Ligne ${rowNum}: type_salle invalide. Doit être: ${validTypes.join(", ")}`,
+            );
         }
     });
 
@@ -299,19 +350,19 @@ export const validateSalleData = (data) => {
  */
 export const validateCoursData = (data) => {
     const errors = [];
-    
+
     if (!Array.isArray(data) || data.length === 0) {
-        errors.push('Le fichier est vide ou invalide');
+        errors.push("Le fichier est vide ou invalide");
         return { valid: false, errors };
     }
 
-    const requiredFields = ['nom_cours', 'code_cours', 'id_filiere'];
-    
+    const requiredFields = ["nom_cours", "code_cours", "id_filiere"];
+
     data.forEach((row, index) => {
         const rowNum = index + 2;
-        
+
         requiredFields.forEach((field) => {
-            if (!row[field] || row[field].toString().trim() === '') {
+            if (!row[field] || row[field].toString().trim() === "") {
                 errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
             }
         });
@@ -335,27 +386,40 @@ export const validateCoursData = (data) => {
  */
 export const validateCreneauData = (data) => {
     const errors = [];
-    
+
     if (!Array.isArray(data) || data.length === 0) {
-        errors.push('Le fichier est vide ou invalide');
+        errors.push("Le fichier est vide ou invalide");
         return { valid: false, errors };
     }
 
-    const requiredFields = ['jour_semaine', 'heure_debut', 'heure_fin'];
-    const validJours = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
-    
+    const requiredFields = ["jour_semaine", "heure_debut", "heure_fin"];
+    const validJours = [
+        "lundi",
+        "mardi",
+        "mercredi",
+        "jeudi",
+        "vendredi",
+        "samedi",
+        "dimanche",
+    ];
+
     data.forEach((row, index) => {
         const rowNum = index + 2;
-        
+
         requiredFields.forEach((field) => {
-            if (!row[field] || row[field].toString().trim() === '') {
+            if (!row[field] || row[field].toString().trim() === "") {
                 errors.push(`Ligne ${rowNum}: Le champ "${field}" est requis`);
             }
         });
 
         // Validation jour_semaine
-        if (row.jour_semaine && !validJours.includes(row.jour_semaine.toLowerCase())) {
-            errors.push(`Ligne ${rowNum}: jour_semaine invalide. Doit être: ${validJours.join(', ')}`);
+        if (
+            row.jour_semaine &&
+            !validJours.includes(row.jour_semaine.toLowerCase())
+        ) {
+            errors.push(
+                `Ligne ${rowNum}: jour_semaine invalide. Doit être: ${validJours.join(", ")}`,
+            );
         }
     });
 

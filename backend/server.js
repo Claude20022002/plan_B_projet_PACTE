@@ -24,11 +24,16 @@ import {
     PasswordResetToken,
     Evenement,
     AuthSession,
+    Institution,
+    InstitutionUser,
+    Plan,
+    Subscription,
     GenerationSession,
     PlanningSnapshot,
 } from "./models/index.js";
 import { parseCookies } from "./middleware/cookieMiddleware.js";
 import { csrfProtection } from "./middleware/csrfMiddleware.js";
+import { getDefaultInstitution, TENANT_MODELS, ensureUserMembership } from "./utils/tenantHelper.js";
 
 // Import des routes
 import userRoutes from "./routes/userRoutes.js";
@@ -50,6 +55,7 @@ import authRoutes from "./routes/authRoutes.js";
 import emploiDuTempsRoutes from "./routes/emploiDuTempsRoutes.js";
 import statistiquesRoutes from "./routes/statistiquesRoutes.js";
 import generationAutomatiqueRoutes from "./routes/generationAutomatiqueRoutes.js";
+import institutionRoutes from "./routes/institutionRoutes.js";
 
 // Import des middlewares
 import {
@@ -123,6 +129,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/emplois-du-temps", emploiDuTempsRoutes);
 app.use("/api/statistiques", statistiquesRoutes);
 app.use("/api/generation-automatique", generationAutomatiqueRoutes);
+app.use("/api/institutions", institutionRoutes);
 
 app.get("/", (req, res) => {
     res.json({
@@ -253,6 +260,9 @@ const PORT = process.env.PORT || 5000;
                 }
             }
         };
+
+        await syncTableSafe(Institution, "Institution");
+        await syncTableSafe(Plan, "Plan");
         
         // Synchroniser les autres tables avec gestion d'erreur
         await syncTableSafe(Filiere, "Filiere");
@@ -266,6 +276,8 @@ const PORT = process.env.PORT || 5000;
         await syncTableSafe(Notification, "Notification");
         await syncTableSafe(PasswordResetToken, "PasswordResetToken");
         await syncTableSafe(Evenement, "Evenement");
+        await syncTableSafe(InstitutionUser, "InstitutionUser");
+        await syncTableSafe(Subscription, "Subscription");
         await syncTableSafe(AuthSession, "AuthSession");
         await syncTableSafe(GenerationSession, "GenerationSession");
         await syncTableSafe(PlanningSnapshot, "PlanningSnapshot");
@@ -337,6 +349,35 @@ const PORT = process.env.PORT || 5000;
             }
         } catch (error) {
             console.warn("Migration snapshots Affectations ignoree:", error.message);
+        }
+
+        try {
+            const queryInterface = sequelize.getQueryInterface();
+            const defaultInstitution = await getDefaultInstitution();
+
+            for (const tableName of TENANT_MODELS) {
+                const columns = await queryInterface.describeTable(tableName).catch(() => null);
+                if (!columns) continue;
+
+                if (!columns.id_institution) {
+                    await queryInterface.addColumn(tableName, "id_institution", {
+                        type: DataTypes.INTEGER,
+                        allowNull: true,
+                    });
+                }
+
+                await sequelize.query(
+                    `UPDATE ${tableName} SET id_institution = :idInstitution WHERE id_institution IS NULL`,
+                    { replacements: { idInstitution: defaultInstitution.id_institution } }
+                ).catch(() => null);
+            }
+
+            const users = await Users.findAll();
+            for (const user of users) {
+                await ensureUserMembership(user, defaultInstitution);
+            }
+        } catch (error) {
+            console.warn("Migration multi-tenant ignoree:", error.message);
         }
 
         // Démarrage du serveur

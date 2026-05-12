@@ -9,6 +9,10 @@ const Groupe = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
+        id_institution: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
         nom_groupe: {
             type: DataTypes.STRING,
             allowNull: false,

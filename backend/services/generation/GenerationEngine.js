@@ -194,6 +194,7 @@ export class GenerationEngine {
                 id_groupe: { [Op.in]: groupIds },
                 date_seance: { [Op.between]: [params.dateDebut, params.dateFin] },
                 is_generated: false,
+                ...(params.idInstitution && { id_institution: params.idInstitution }),
             },
         });
     }

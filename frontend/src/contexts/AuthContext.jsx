@@ -26,6 +26,7 @@ export const AuthProvider = ({ children }) => {
             const data = await authAPI.getMe();
             setUser(data.user);
             setIsAuthenticated(true);
+            window.dispatchEvent(new CustomEvent('auth:payload', { detail: data }));
         } catch (error) {
             // Ne pas logger les erreurs de connexion pour éviter le spam
             if (!error.isConnectionError) {
@@ -49,6 +50,7 @@ export const AuthProvider = ({ children }) => {
             const data = await authAPI.login({ email, password });
             setUser(data.user);
             setIsAuthenticated(true);
+            window.dispatchEvent(new CustomEvent('auth:payload', { detail: data }));
             return { success: true, data };
         } catch (error) {
             return { success: false, error: error.message };
@@ -60,6 +62,7 @@ export const AuthProvider = ({ children }) => {
             const data = await authAPI.register(userData);
             setUser(data.user);
             setIsAuthenticated(true);
+            window.dispatchEvent(new CustomEvent('auth:payload', { detail: data }));
             return { success: true, data };
         } catch (error) {
             return { success: false, error: error.message };
@@ -74,6 +77,7 @@ export const AuthProvider = ({ children }) => {
         } finally {
             localStorage.removeItem('token');
             window.electronAPI?.clearAuthToken?.();
+            window.dispatchEvent(new CustomEvent('auth:logout'));
             setUser(null);
             setIsAuthenticated(false);
         }

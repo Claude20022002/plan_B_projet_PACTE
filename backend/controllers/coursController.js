@@ -1,6 +1,7 @@
 import { Cours, Filiere } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
+import { tenantWhere, withTenant } from "../utils/tenantHelper.js";
 
 /**
  * Contrôleur pour les cours
@@ -11,7 +12,7 @@ export const getAllCours = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
     // Filtres optionnels
-    const where = {};
+    const where = tenantWhere(req);
     if (req.query.id_filiere) {
         where.id_filiere = req.query.id_filiere;
     }
@@ -35,7 +36,8 @@ export const getAllCours = asyncHandler(async (req, res) => {
 
 // 🔍 Récupérer un cours par ID
 export const getCoursById = asyncHandler(async (req, res) => {
-    const cours = await Cours.findByPk(req.params.id, {
+    const cours = await Cours.findOne({
+        where: tenantWhere(req, { id_cours: req.params.id }),
         include: [{ model: Filiere, as: "filiere" }],
     });
 
@@ -53,7 +55,7 @@ export const getCoursById = asyncHandler(async (req, res) => {
 export const createCours = asyncHandler(async (req, res) => {
     // Vérifier si le code cours existe déjà
     if (req.body.code_cours) {
-        const existingCours = await Cours.findOne({ where: { code_cours: req.body.code_cours } });
+        const existingCours = await Cours.findOne({ where: tenantWhere(req, { code_cours: req.body.code_cours }) });
         if (existingCours) {
             return res.status(409).json({
                 message: "Code cours déjà utilisé",
@@ -62,7 +64,7 @@ export const createCours = asyncHandler(async (req, res) => {
         }
     }
 
-    const cours = await Cours.create(req.body);
+    const cours = await Cours.create(withTenant(req, req.body));
 
     const coursAvecFiliere = await Cours.findByPk(cours.id_cours, {
         include: [{ model: Filiere, as: "filiere" }],
@@ -76,7 +78,7 @@ export const createCours = asyncHandler(async (req, res) => {
 
 // ✏️ Mettre à jour un cours
 export const updateCours = asyncHandler(async (req, res) => {
-    const cours = await Cours.findByPk(req.params.id);
+    const cours = await Cours.findOne({ where: tenantWhere(req, { id_cours: req.params.id }) });
 
     if (!cours) {
         return res.status(404).json({
@@ -87,7 +89,7 @@ export const updateCours = asyncHandler(async (req, res) => {
 
     // Si le code est modifié, vérifier qu'il n'existe pas déjà
     if (req.body.code_cours && req.body.code_cours !== cours.code_cours) {
-        const existingCours = await Cours.findOne({ where: { code_cours: req.body.code_cours } });
+        const existingCours = await Cours.findOne({ where: tenantWhere(req, { code_cours: req.body.code_cours }) });
         if (existingCours) {
             return res.status(409).json({
                 message: "Code cours déjà utilisé",
@@ -96,7 +98,7 @@ export const updateCours = asyncHandler(async (req, res) => {
         }
     }
 
-    await cours.update(req.body);
+    await cours.update(withTenant(req, req.body));
 
     const coursAvecFiliere = await Cours.findByPk(cours.id_cours, {
         include: [{ model: Filiere, as: "filiere" }],
@@ -110,7 +112,7 @@ export const updateCours = asyncHandler(async (req, res) => {
 
 // 🗑️ Supprimer un cours
 export const deleteCours = asyncHandler(async (req, res) => {
-    const cours = await Cours.findByPk(req.params.id);
+    const cours = await Cours.findOne({ where: tenantWhere(req, { id_cours: req.params.id }) });
 
     if (!cours) {
         return res.status(404).json({

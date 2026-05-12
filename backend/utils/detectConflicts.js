@@ -64,6 +64,9 @@ export const detecterConflitsPourAffectation = async (nouvelleAffectation) => {
     const affectationsExistantes = await Affectation.findAll({
         where: {
             date_seance: nouvelleAffectation.date_seance,
+            ...(nouvelleAffectation.id_institution && {
+                id_institution: nouvelleAffectation.id_institution,
+            }),
             statut: {
                 [Op.in]: ["planifie", "confirme"], // Ignorer les annulées/reportées
             },
