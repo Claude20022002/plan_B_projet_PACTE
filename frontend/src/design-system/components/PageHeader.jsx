@@ -36,7 +36,11 @@ export default function PageHeader({ title, subtitle, eyebrow, actions = [] }) {
       {actions.length > 0 && (
         <Stack direction="row" spacing={1} sx={{ width: { xs: '100%', sm: 'auto' }, justifyContent: 'flex-end' }}>
           {actions.map((action) => (
-            <Button key={action.label} {...action} sx={{ whiteSpace: 'nowrap', ...action.sx }}>
+            <Button
+              key={action.label}
+              {...Object.fromEntries(Object.entries(action).filter(([key]) => key !== 'label'))}
+              sx={{ whiteSpace: 'nowrap', ...action.sx }}
+            >
               {action.label}
             </Button>
           ))}
@@ -45,4 +49,3 @@ export default function PageHeader({ title, subtitle, eyebrow, actions = [] }) {
     </MotionBox>
   );
 }
-
