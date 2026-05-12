@@ -1,6 +1,7 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
+import { DataTypes } from "sequelize";
 import sequelize, { testConnection, cleanupOldTables } from "./config/db.js";
 import "./models/index.js"; // Import pour initialiser les relations
 import {
@@ -304,25 +305,25 @@ const PORT = process.env.PORT || 5000;
 
             if (!affectationColumns.id_snapshot) {
                 await queryInterface.addColumn("Affectations", "id_snapshot", {
-                    type: sequelize.Sequelize.INTEGER,
+                    type: DataTypes.INTEGER,
                     allowNull: true,
                 });
             }
             if (!affectationColumns.id_generation_session) {
                 await queryInterface.addColumn("Affectations", "id_generation_session", {
-                    type: sequelize.Sequelize.INTEGER,
+                    type: DataTypes.INTEGER,
                     allowNull: true,
                 });
             }
             if (!affectationColumns.is_generated) {
                 await queryInterface.addColumn("Affectations", "is_generated", {
-                    type: sequelize.Sequelize.BOOLEAN,
+                    type: DataTypes.BOOLEAN,
                     defaultValue: false,
                 });
             }
             if (!affectationColumns.score_contrib) {
                 await queryInterface.addColumn("Affectations", "score_contrib", {
-                    type: sequelize.Sequelize.FLOAT,
+                    type: DataTypes.FLOAT,
                     allowNull: true,
                 });
             }
