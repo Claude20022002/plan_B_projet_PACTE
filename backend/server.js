@@ -102,14 +102,20 @@ app.use(parseCookies);
 // Rate limiting global
 app.use(apiRateLimiter);
 app.use(optionalAuth);
-app.use(csrfProtection);
+// CSRF protection sera appliquée après les routes d'authentification
 
 // Logging
 app.use(logger);
 
 // ==================== ROUTES ====================
 
-// Routes
+// Routes d'authentification (sans CSRF protection)
+app.use("/api/auth", authRoutes);
+
+// Appliquer CSRF protection après les routes d'authentification
+app.use(csrfProtection);
+
+// Autres routes (avec CSRF protection)
 app.use("/api/users", userRoutes);
 app.use("/api/enseignants", enseignantRoutes);
 app.use("/api/etudiants", etudiantRoutes);
@@ -125,7 +131,6 @@ app.use("/api/notifications", notificationRoutes);
 // /api/historiques désactivé — HistoriqueAffectation non utilisé côté frontend
 app.use("/api/disponibilites", disponibiliteRoutes);
 app.use("/api/appartenances", appartenirRoutes);
-app.use("/api/auth", authRoutes);
 app.use("/api/emplois-du-temps", emploiDuTempsRoutes);
 app.use("/api/statistiques", statistiquesRoutes);
 app.use("/api/generation-automatique", generationAutomatiqueRoutes);
