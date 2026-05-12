@@ -24,7 +24,11 @@ import {
     MenuItem,
     Alert,
     Snackbar,
+    TextField,
+    Stack,
+    useMediaQuery,
 } from '@mui/material';
+import { useTheme } from '@mui/material/styles';
 import { Add, Edit, Delete, Visibility, ArrowBack, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI } from '../../services/api';
@@ -34,6 +38,11 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
+import PageHeader from '../../design-system/components/PageHeader';
+import DataToolbar from '../../design-system/components/DataToolbar';
+import EmptyState from '../../design-system/components/EmptyState';
+import StatusBadge from '../../design-system/components/StatusBadge';
+import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 
 const validationSchema = yup.object({
     date_seance: yup.date().required('La date est requise'),
@@ -47,8 +56,12 @@ const validationSchema = yup.object({
 export default function Affectations() {
     const { user } = useAuth();
     const navigate = useNavigate();
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [searchParams, setSearchParams] = useSearchParams();
     const [affectations, setAffectations] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [search, setSearch] = useState('');
     const [page, setPage] = useState(0);
     const [rowsPerPage, setRowsPerPage] = useState(10);
     const [total, setTotal] = useState(0);
@@ -93,6 +106,7 @@ export default function Affectations() {
     };
 
     const loadAffectations = async () => {
+        setLoading(true);
         try {
             const data = await affectationAPI.getAll({
                 page: page + 1,
@@ -102,6 +116,8 @@ export default function Affectations() {
             setTotal(data.pagination?.total || 0);
         } catch (error) {
             console.error('Erreur:', error);
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -252,54 +268,61 @@ export default function Affectations() {
         }
     };
 
+    const filteredAffectations = affectations.filter((aff) => {
+        const q = search.trim().toLowerCase();
+        if (!q) return true;
+        return [
+            aff.cours?.nom_cours,
+            aff.groupe?.nom_groupe,
+            aff.enseignant?.prenom,
+            aff.enseignant?.nom,
+            aff.salle?.nom_salle,
+            aff.statut,
+        ].filter(Boolean).join(' ').toLowerCase().includes(q);
+    });
+
+    const openCreateDialog = () => {
+        setEditing(null);
+        setError('');
+        setSuccess('');
+        formik.resetForm({
+            values: {
+                date_seance: '',
+                statut: 'planifie',
+                commentaire: '',
+                id_cours: '',
+                id_groupe: '',
+                id_user_enseignant: '',
+                id_salle: '',
+                id_creneau: '',
+                id_user_admin: user?.id_user || '',
+            },
+        });
+        setOpen(true);
+    };
+
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined"
-                            size="small"
-                        >
-                            Retour
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            Gestion des Affectations
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
-                            Exporter Excel
-                        </Button>
-                        <Button
-                            variant="contained"
-                            startIcon={<Add />}
-                            onClick={() => {
-                                setEditing(null);
-                                setError('');
-                                setSuccess('');
-                                formik.resetForm({
-                                    values: {
-                                        date_seance: '',
-                                        statut: 'planifie',
-                                        commentaire: '',
-                                        id_cours: '',
-                                        id_groupe: '',
-                                        id_user_enseignant: '',
-                                        id_salle: '',
-                                        id_creneau: '',
-                                        id_user_admin: user?.id_user || '',
-                                    },
-                                });
-                                setOpen(true);
-                            }}
-                        >
-                            Nouvelle affectation
-                        </Button>
-                    </Box>
-                </Box>
+                <PageHeader
+                    eyebrow="Planning"
+                    title="Affectations"
+                    subtitle="Pilotez les cours, enseignants, groupes, salles et créneaux depuis une vue dense et fiable."
+                    actions={[
+                        {
+                            label: 'Retour',
+                            variant: 'outlined',
+                            startIcon: <ArrowBack />,
+                            onClick: () => navigate('/dashboard/admin'),
+                        },
+                        {
+                            label: 'Nouvelle affectation',
+                            variant: 'contained',
+                            startIcon: <Add />,
+                            onClick: openCreateDialog,
+                        },
+                    ]}
+                />
 
                 <Snackbar
                     open={!!error}
@@ -323,72 +346,99 @@ export default function Affectations() {
                     </Alert>
                 </Snackbar>
 
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Cours</TableCell>
-                                <TableCell>Groupe</TableCell>
-                                <TableCell>Enseignant</TableCell>
-                                <TableCell>Salle</TableCell>
-                                <TableCell>Date</TableCell>
-                                <TableCell>Créneau</TableCell>
-                                <TableCell>Statut</TableCell>
-                                <TableCell align="right">Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {affectations.map((aff) => (
-                                <TableRow key={aff.id_affectation}>
-                                    <TableCell>{aff.cours?.nom_cours || '-'}</TableCell>
-                                    <TableCell>{aff.groupe?.nom_groupe || '-'}</TableCell>
-                                    <TableCell>
-                                        {aff.enseignant?.prenom || ''} {aff.enseignant?.nom || '-'}
-                                    </TableCell>
-                                    <TableCell>{aff.salle?.nom_salle || '-'}</TableCell>
-                                    <TableCell>
-                                        {new Date(aff.date_seance).toLocaleDateString('fr-FR')}
-                                    </TableCell>
-                                    <TableCell>
-                                        {aff.creneau?.heure_debut} - {aff.creneau?.heure_fin}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={
-                                                aff.statut === 'planifie'  ? 'Planifié'  :
-                                                aff.statut === 'confirme'  ? 'Confirmé'  :
-                                                aff.statut === 'annule'    ? 'Annulé'    :
-                                                aff.statut === 'reporte'   ? 'Reporté'   :
-                                                aff.statut
-                                            }
-                                            size="small"
-                                            color={
-                                                aff.statut === 'confirme' ? 'success' :
-                                                aff.statut === 'annule'   ? 'error'   :
-                                                aff.statut === 'reporte'  ? 'warning' :
-                                                'default'
-                                            }
-                                        />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleEdit(aff)}
-                                        >
-                                            <Edit />
-                                        </IconButton>
-                                        <IconButton
-                                            size="small"
-                                            color="error"
-                                            onClick={() => handleDelete(aff.id_affectation)}
-                                        >
-                                            <Delete />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
+                <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
+                    <DataToolbar search={search} onSearchChange={setSearch} onExport={handleExport}>
+                        <Button variant="contained" startIcon={<Add />} onClick={openCreateDialog}>
+                            Nouvelle
+                        </Button>
+                    </DataToolbar>
+
+                    {loading ? (
+                        <TableSkeleton rows={8} />
+                    ) : filteredAffectations.length === 0 ? (
+                        <EmptyState
+                            title="Aucune affectation trouvée"
+                            description="Créez une première affectation ou ajustez votre recherche pour retrouver un cours planifié."
+                            actionLabel="Nouvelle affectation"
+                            onAction={openCreateDialog}
+                        />
+                    ) : isMobile ? (
+                        <Stack spacing={1.25}>
+                            {filteredAffectations.map((aff) => (
+                                <Paper
+                                    key={aff.id_affectation}
+                                    variant="outlined"
+                                    sx={{ p: 1.5, borderRadius: 2 }}
+                                >
+                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
+                                        <Box sx={{ minWidth: 0 }}>
+                                            <Typography variant="body2" fontWeight={800} noWrap>
+                                                {aff.cours?.nom_cours || '-'}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                                {aff.groupe?.nom_groupe || '-'} · {aff.salle?.nom_salle || '-'}
+                                            </Typography>
+                                        </Box>
+                                        <StatusBadge status={aff.statut} />
+                                    </Box>
+                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
+                                        {aff.enseignant?.prenom || ''} {aff.enseignant?.nom || '-'} · {new Date(aff.date_seance).toLocaleDateString('fr-FR')} · {aff.creneau?.heure_debut} - {aff.creneau?.heure_fin}
+                                    </Typography>
+                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, mt: 1 }}>
+                                        <IconButton size="small" onClick={() => handleEdit(aff)}><Edit fontSize="small" /></IconButton>
+                                        <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)}><Delete fontSize="small" /></IconButton>
+                                    </Box>
+                                </Paper>
                             ))}
-                        </TableBody>
-                    </Table>
+                        </Stack>
+                    ) : (
+                        <TableContainer>
+                            <Table size="small" stickyHeader>
+                                <TableHead>
+                                    <TableRow>
+                                        <TableCell>Cours</TableCell>
+                                        <TableCell>Groupe</TableCell>
+                                        <TableCell>Enseignant</TableCell>
+                                        <TableCell>Salle</TableCell>
+                                        <TableCell>Date</TableCell>
+                                        <TableCell>Créneau</TableCell>
+                                        <TableCell>Statut</TableCell>
+                                        <TableCell align="right">Actions</TableCell>
+                                    </TableRow>
+                                </TableHead>
+                                <TableBody>
+                                    {filteredAffectations.map((aff) => (
+                                        <TableRow key={aff.id_affectation}>
+                                            <TableCell sx={{ fontWeight: 700 }}>{aff.cours?.nom_cours || '-'}</TableCell>
+                                            <TableCell>{aff.groupe?.nom_groupe || '-'}</TableCell>
+                                            <TableCell>
+                                                {aff.enseignant?.prenom || ''} {aff.enseignant?.nom || '-'}
+                                            </TableCell>
+                                            <TableCell>{aff.salle?.nom_salle || '-'}</TableCell>
+                                            <TableCell>
+                                                {new Date(aff.date_seance).toLocaleDateString('fr-FR')}
+                                            </TableCell>
+                                            <TableCell>
+                                                {aff.creneau?.heure_debut} - {aff.creneau?.heure_fin}
+                                            </TableCell>
+                                            <TableCell>
+                                                <StatusBadge status={aff.statut} />
+                                            </TableCell>
+                                            <TableCell align="right">
+                                                <IconButton size="small" onClick={() => handleEdit(aff)}>
+                                                    <Edit fontSize="small" />
+                                                </IconButton>
+                                                <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)}>
+                                                    <Delete fontSize="small" />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))}
+                                </TableBody>
+                            </Table>
+                        </TableContainer>
+                    )}
+
                     <TablePagination
                         component="div"
                         count={total}
@@ -401,7 +451,7 @@ export default function Affectations() {
                         }}
                         rowsPerPageOptions={[5, 10, 25, 50]}
                     />
-                </TableContainer>
+                </Paper>
 
                 {/* Dialog pour créer/modifier */}
                 <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
@@ -491,16 +541,16 @@ export default function Affectations() {
                                     </Select>
                                 </FormControl>
 
-                                <input
+                                <TextField
                                     type="date"
                                     name="date_seance"
+                                    label="Date"
                                     value={formik.values.date_seance}
                                     onChange={formik.handleChange}
-                                    style={{
-                                        padding: '16.5px 14px',
-                                        border: '1px solid rgba(0, 0, 0, 0.23)',
-                                        borderRadius: '4px',
+                                    InputLabelProps={{
+                                        shrink: true,
                                     }}
+                                    fullWidth
                                 />
 
                                 <FormControl fullWidth>
