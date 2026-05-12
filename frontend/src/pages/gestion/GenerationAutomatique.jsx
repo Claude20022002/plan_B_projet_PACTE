@@ -75,18 +75,39 @@ export default function GenerationAutomatique() {
 
     const loadData = async () => {
         try {
+            console.log("Chargement des données...");
             const [coursData, groupesData] = await Promise.all([
-                coursAPI.getAll(),
-                groupeAPI.getAll(),
+                coursAPI.getAll({ limit: 1000 }),
+                groupeAPI.getAll({ limit: 1000 }),
             ]);
+            console.log("Données reçues - Cours:", coursData);
+            console.log("Données reçues - Groupes:", groupesData);
+            
             if (isMountedRef.current) {
-                setCours(coursData.data || coursData || []);
-                setGroupes(groupesData.data || groupesData || []);
+                // Gérer différentes structures de réponses possibles
+                const coursList = Array.isArray(coursData) ? coursData : 
+                                (coursData.data && Array.isArray(coursData.data)) ? coursData.data : [];
+                const groupesList = Array.isArray(groupesData) ? groupesData : 
+                                  (groupesData.data && Array.isArray(groupesData.data)) ? groupesData.data : [];
+                
+                console.log("Listes traitées - Cours:", coursList.length, "Groupes:", groupesList.length);
+                setCours(coursList);
+                setGroupes(groupesList);
+                
+                if (coursList.length === 0 || groupesList.length === 0) {
+                    console.warn("Attention: Une des listes est vide");
+                }
             }
         } catch (err) {
             console.error("Erreur lors du chargement des données:", err);
             if (isMountedRef.current) {
-                setError("Erreur lors du chargement des données");
+                if (err.status === 401) {
+                    setError("Erreur d'authentification. Veuillez vous reconnecter.");
+                } else if (err.isConnectionError) {
+                    setError("Impossible de se connecter au serveur. Vérifiez que le backend est démarré.");
+                } else {
+                    setError(`Erreur lors du chargement des données: ${err.message || 'Erreur inconnue'}`);
+                }
             }
         }
     };
@@ -184,6 +205,25 @@ export default function GenerationAutomatique() {
                     </Alert>
                 )}
 
+                {/* Indicateurs de chargement et état des données */}
+                {cours.length === 0 && groupes.length === 0 && !error && (
+                    <Alert severity="info" sx={{ mb: 3 }}>
+                        Chargement des données en cours...
+                    </Alert>
+                )}
+
+                {cours.length === 0 && !error && (
+                    <Alert severity="warning" sx={{ mb: 3 }}>
+                        Aucun cours trouvé. Veuillez d'abord créer des cours avant de générer les emplois du temps.
+                    </Alert>
+                )}
+
+                {groupes.length === 0 && !error && (
+                    <Alert severity="warning" sx={{ mb: 3 }}>
+                        Aucun groupe trouvé. Veuillez d'abord créer des groupes avant de générer les emplois du temps.
+                    </Alert>
+                )}
+
                 <Grid container spacing={3}>
                     {/* Formulaire de configuration */}
                     <Grid item xs={12} md={8}>
@@ -232,6 +272,7 @@ export default function GenerationAutomatique() {
                                             onChange={(e) =>
                                                 setSelectedCours(e.target.value)
                                             }
+                                            disabled={cours.length === 0}
                                             renderValue={(selected) => (
                                                 <Box
                                                     sx={{
@@ -261,22 +302,28 @@ export default function GenerationAutomatique() {
                                                 </Box>
                                             )}
                                         >
-                                            {cours.map((coursItem) => (
-                                                <MenuItem
-                                                    key={coursItem.id_cours}
-                                                    value={coursItem.id_cours}
-                                                >
-                                                    <Checkbox
-                                                        checked={
-                                                            selectedCours.indexOf(
-                                                                coursItem.id_cours,
-                                                            ) > -1
-                                                        }
-                                                    />
-                                                    {coursItem.nom_cours} (
-                                                    {coursItem.volume_horaire}h)
+                                            {cours.length === 0 ? (
+                                                <MenuItem disabled>
+                                                    Aucun cours disponible
                                                 </MenuItem>
-                                            ))}
+                                            ) : (
+                                                cours.map((coursItem) => (
+                                                    <MenuItem
+                                                        key={coursItem.id_cours}
+                                                        value={coursItem.id_cours}
+                                                    >
+                                                        <Checkbox
+                                                            checked={
+                                                                selectedCours.indexOf(
+                                                                    coursItem.id_cours,
+                                                                ) > -1
+                                                            }
+                                                        />
+                                                        {coursItem.nom_cours} (
+                                                        {coursItem.volume_horaire || 0}h)
+                                                    </MenuItem>
+                                                ))
+                                            )}
                                         </Select>
                                     </FormControl>
                                     <Typography
@@ -302,6 +349,7 @@ export default function GenerationAutomatique() {
                                                     e.target.value,
                                                 )
                                             }
+                                            disabled={groupes.length === 0}
                                             renderValue={(selected) => (
                                                 <Box
                                                     sx={{
@@ -331,22 +379,28 @@ export default function GenerationAutomatique() {
                                                 </Box>
                                             )}
                                         >
-                                            {groupes.map((groupe) => (
-                                                <MenuItem
-                                                    key={groupe.id_groupe}
-                                                    value={groupe.id_groupe}
-                                                >
-                                                    <Checkbox
-                                                        checked={
-                                                            selectedGroupes.indexOf(
-                                                                groupe.id_groupe,
-                                                            ) > -1
-                                                        }
-                                                    />
-                                                    {groupe.nom_groupe} (
-                                                    {groupe.effectif} étudiants)
+                                            {groupes.length === 0 ? (
+                                                <MenuItem disabled>
+                                                    Aucun groupe disponible
                                                 </MenuItem>
-                                            ))}
+                                            ) : (
+                                                groupes.map((groupe) => (
+                                                    <MenuItem
+                                                        key={groupe.id_groupe}
+                                                        value={groupe.id_groupe}
+                                                    >
+                                                        <Checkbox
+                                                            checked={
+                                                                selectedGroupes.indexOf(
+                                                                    groupe.id_groupe,
+                                                                ) > -1
+                                                            }
+                                                        />
+                                                        {groupe.nom_groupe} (
+                                                        {groupe.effectif || 0} étudiants)
+                                                    </MenuItem>
+                                                ))
+                                            )}
                                         </Select>
                                     </FormControl>
                                     <Typography
