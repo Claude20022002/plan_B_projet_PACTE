@@ -75,13 +75,21 @@ export default function GenerationAutomatique() {
 
     const loadData = async () => {
         try {
-            console.log("Chargement des données...");
+            console.log("🔄 Début du chargement des données...");
+            console.log("🔐 Vérification de l'authentification...");
+            
+            // Vérifier si l'utilisateur est bien connecté
+            const token = localStorage.getItem('token');
+            console.log("Token présent:", !!token);
+            
+            console.log("📡 Appel des APIs...");
             const [coursData, groupesData] = await Promise.all([
                 coursAPI.getAll({ limit: 1000 }),
                 groupeAPI.getAll({ limit: 1000 }),
             ]);
-            console.log("Données reçues - Cours:", coursData);
-            console.log("Données reçues - Groupes:", groupesData);
+            
+            console.log("✅ Données reçues - Cours:", coursData);
+            console.log("✅ Données reçues - Groupes:", groupesData);
             
             if (isMountedRef.current) {
                 // Gérer différentes structures de réponses possibles
@@ -90,16 +98,25 @@ export default function GenerationAutomatique() {
                 const groupesList = Array.isArray(groupesData) ? groupesData : 
                                   (groupesData.data && Array.isArray(groupesData.data)) ? groupesData.data : [];
                 
-                console.log("Listes traitées - Cours:", coursList.length, "Groupes:", groupesList.length);
+                console.log("📊 Listes traitées - Cours:", coursList.length, "Groupes:", groupesList.length);
                 setCours(coursList);
                 setGroupes(groupesList);
                 
                 if (coursList.length === 0 || groupesList.length === 0) {
-                    console.warn("Attention: Une des listes est vide");
+                    console.warn("⚠️ Attention: Une des listes est vide");
+                    console.warn("📋 Structure coursData:", JSON.stringify(coursData, null, 2));
+                    console.warn("📋 Structure groupesData:", JSON.stringify(groupesData, null, 2));
                 }
             }
         } catch (err) {
-            console.error("Erreur lors du chargement des données:", err);
+            console.error("❌ Erreur lors du chargement des données:", err);
+            console.error("📋 Détails de l'erreur:", {
+                status: err.status,
+                message: err.message,
+                isConnectionError: err.isConnectionError,
+                response: err.response
+            });
+            
             if (isMountedRef.current) {
                 if (err.status === 401) {
                     setError("Erreur d'authentification. Veuillez vous reconnecter.");

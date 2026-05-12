@@ -87,4 +87,5 @@ export const cleanupOldTables = async () => {
     }
 };
 
+export { sequelize };
 export default sequelize;
