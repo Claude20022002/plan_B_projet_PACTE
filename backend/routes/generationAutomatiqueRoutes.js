@@ -1,5 +1,11 @@
 import express from "express";
-import { genererAffectations } from "../controllers/generationAutomatiqueController.js";
+import {
+    activerSnapshot,
+    genererAffectations,
+    getSnapshot,
+    listerSnapshots,
+    rollbackSnapshot,
+} from "../controllers/generationAutomatiqueController.js";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { requireRole } from "../middleware/roleMiddleware.js";
 
@@ -14,5 +20,10 @@ router.use(requireRole("admin"));
  * Génère automatiquement les affectations pour un semestre
  */
 router.post("/generer", genererAffectations);
+
+router.get("/snapshots", listerSnapshots);
+router.get("/snapshots/:id", getSnapshot);
+router.post("/snapshots/:id/activate", activerSnapshot);
+router.post("/snapshots/:id/rollback", rollbackSnapshot);
 
 export default router;

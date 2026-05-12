@@ -3,6 +3,7 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { genererAffectationsAutomatiques } from "../utils/generateAffectations.js";
 import { verifierEtCreerConflits } from "../utils/detectConflicts.js";
 import { Affectation } from "../models/index.js";
+import { SnapshotService } from "../services/generation/SnapshotService.js";
 
 /**
  * POST /api/generation-automatique/generer
@@ -113,4 +114,57 @@ export const genererAffectations = asyncHandler(async (req, res) => {
             error: error.message,
         });
     }
+});
+
+/**
+ * GET /api/generation-automatique/snapshots
+ * Liste les snapshots de planning disponibles.
+ */
+export const listerSnapshots = asyncHandler(async (req, res) => {
+    const snapshotService = new SnapshotService();
+    const snapshots = await snapshotService.listSnapshots(req.query);
+
+    res.json({
+        snapshots,
+        total: snapshots.length,
+    });
+});
+
+/**
+ * GET /api/generation-automatique/snapshots/:id
+ * Recupere le detail d'un snapshot avec ses affectations.
+ */
+export const getSnapshot = asyncHandler(async (req, res) => {
+    const snapshotService = new SnapshotService();
+    const snapshot = await snapshotService.getSnapshotResult(req.params.id);
+
+    res.json({ snapshot });
+});
+
+/**
+ * POST /api/generation-automatique/snapshots/:id/activate
+ * Active un snapshot et desactive les autres snapshots de la meme periode.
+ */
+export const activerSnapshot = asyncHandler(async (req, res) => {
+    const snapshotService = new SnapshotService();
+    const snapshot = await snapshotService.activateSnapshot(req.params.id);
+
+    res.json({
+        message: "Snapshot active avec succes",
+        snapshot,
+    });
+});
+
+/**
+ * POST /api/generation-automatique/snapshots/:id/rollback
+ * Alias metier de activate : rollback vers un snapshot precedent.
+ */
+export const rollbackSnapshot = asyncHandler(async (req, res) => {
+    const snapshotService = new SnapshotService();
+    const snapshot = await snapshotService.activateSnapshot(req.params.id);
+
+    res.json({
+        message: "Rollback effectue avec succes",
+        snapshot,
+    });
 });

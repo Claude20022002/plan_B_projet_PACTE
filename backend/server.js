@@ -299,19 +299,36 @@ const PORT = process.env.PORT || 5000;
         } catch (_) { /* colonne déjà présente ou MySQL < 8 — ignoré */ }
 
         try {
-            await sequelize.query(
-                "ALTER TABLE Affectations ADD COLUMN IF NOT EXISTS id_snapshot INT NULL"
-            );
-            await sequelize.query(
-                "ALTER TABLE Affectations ADD COLUMN IF NOT EXISTS id_generation_session INT NULL"
-            );
-            await sequelize.query(
-                "ALTER TABLE Affectations ADD COLUMN IF NOT EXISTS is_generated BOOLEAN DEFAULT FALSE"
-            );
-            await sequelize.query(
-                "ALTER TABLE Affectations ADD COLUMN IF NOT EXISTS score_contrib FLOAT NULL"
-            );
-        } catch (_) { /* colonnes déjà présentes ou MySQL < 8 — ignoré */ }
+            const queryInterface = sequelize.getQueryInterface();
+            const affectationColumns = await queryInterface.describeTable("Affectations");
+
+            if (!affectationColumns.id_snapshot) {
+                await queryInterface.addColumn("Affectations", "id_snapshot", {
+                    type: sequelize.Sequelize.INTEGER,
+                    allowNull: true,
+                });
+            }
+            if (!affectationColumns.id_generation_session) {
+                await queryInterface.addColumn("Affectations", "id_generation_session", {
+                    type: sequelize.Sequelize.INTEGER,
+                    allowNull: true,
+                });
+            }
+            if (!affectationColumns.is_generated) {
+                await queryInterface.addColumn("Affectations", "is_generated", {
+                    type: sequelize.Sequelize.BOOLEAN,
+                    defaultValue: false,
+                });
+            }
+            if (!affectationColumns.score_contrib) {
+                await queryInterface.addColumn("Affectations", "score_contrib", {
+                    type: sequelize.Sequelize.FLOAT,
+                    allowNull: true,
+                });
+            }
+        } catch (error) {
+            console.warn("Migration snapshots Affectations ignoree:", error.message);
+        }
 
         // Démarrage du serveur
         app.listen(PORT, () => {

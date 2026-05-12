@@ -1,4 +1,3 @@
-import sequelize from "../../config/db.js";
 import { Op } from "sequelize";
 import { Affectation } from "../../models/index.js";
 import { AvailabilityMatrix } from "./AvailabilityMatrix.js";
@@ -9,73 +8,87 @@ import { LocalSearchOptimizer } from "./LocalSearchOptimizer.js";
 import { RepairSolver } from "./RepairSolver.js";
 import { ScoreCalculator } from "./ScoreCalculator.js";
 import { SessionBuilder } from "./SessionBuilder.js";
+import { SnapshotService } from "./SnapshotService.js";
 
 export class GenerationEngine {
     constructor() {
         this.loader = new DataLoader();
+        this.snapshots = new SnapshotService();
     }
 
     async generate(params) {
         const startedAt = Date.now();
-        const data = await this.loader.load(params);
+        const session = await this.snapshots.createSession(params);
 
-        if (params.ecraserAffectations) {
-            await this.deleteExistingAffectations(params, data);
-            data.affectationsExistantes = data.affectationsExistantes.filter((affectation) => {
-                const selectedCourse = !params.coursIds?.length || params.coursIds.includes(affectation.id_cours);
-                const selectedGroup = !params.groupeIds?.length || params.groupeIds.includes(affectation.id_groupe);
-                return !(selectedCourse && selectedGroup);
+        try {
+            const data = await this.loader.load(params);
+
+            if (params.ecraserAffectations) {
+                await this.deleteExistingAffectations(params, data);
+            }
+
+            data.affectationsExistantes = this.filterBlockingAffectations(data.affectationsExistantes, params, data);
+
+            const slotsByDateAndCreneau = new Map(data.slots.map((slot) => [`${slot.date}:${slot.id_creneau}`, slot]));
+            const teacherAvailability = this.buildTeacherAvailability(data, slotsByDateAndCreneau, params);
+            const matrix = new AvailabilityMatrix({
+                slots: data.slots,
+                teacherAvailability,
+                requireTeacherAvailability: params.requireTeacherAvailability !== false,
+                options: {
+                    maxHoursPerDayGroup: params.maxHoursPerDayGroup,
+                    maxHoursPerDayCourse: params.maxHoursPerDayCourse,
+                    allowSameCourseTwicePerDay: params.allowSameCourseTwicePerDay === true,
+                },
             });
+
+            matrix.seedExisting(data.affectationsExistantes, slotsByDateAndCreneau);
+
+            const sessions = SessionBuilder.build(data, params);
+            const domains = new DomainBuilder(data, params).build(sessions, matrix);
+            const greedy = GreedyScheduler.run(sessions, domains, matrix);
+
+            let repair = { solved: true, placed: [] };
+            if (greedy.failed.length) {
+                repair = RepairSolver.solve(greedy.failed, domains, matrix, params);
+            }
+
+            const assignments = LocalSearchOptimizer.optimize(
+                [...greedy.placed, ...repair.placed],
+                domains,
+                matrix,
+                params
+            );
+            const hardConflicts = this.detectHardConflicts(assignments);
+            const score = ScoreCalculator.calculate(assignments, sessions, hardConflicts);
+            const failedSessions = sessions.filter((sessionItem) => (
+                !assignments.some((assignment) => assignment.session.id === sessionItem.id)
+            ));
+            const durationMs = Date.now() - startedAt;
+            const { snapshot, created } = await this.snapshots.commitGeneration({
+                session,
+                assignments,
+                score,
+                conflicts: hardConflicts,
+                failedSessions,
+                durationMs,
+                params,
+            });
+
+            return this.formatResult({
+                snapshot,
+                session,
+                created,
+                assignments,
+                failedSessions,
+                score,
+                hardConflicts,
+                durationMs,
+            });
+        } catch (error) {
+            await this.snapshots.failSession(session, error);
+            throw error;
         }
-
-        const slotsByDateAndCreneau = new Map(data.slots.map((slot) => [`${slot.date}:${slot.id_creneau}`, slot]));
-        const teacherAvailability = this.buildTeacherAvailability(data, slotsByDateAndCreneau, params);
-        const matrix = new AvailabilityMatrix({
-            slots: data.slots,
-            teacherAvailability,
-            requireTeacherAvailability: params.requireTeacherAvailability !== false,
-            options: {
-                maxHoursPerDayGroup: params.maxHoursPerDayGroup,
-                maxHoursPerDayCourse: params.maxHoursPerDayCourse,
-                allowSameCourseTwicePerDay: params.allowSameCourseTwicePerDay === true,
-            },
-        });
-
-        matrix.seedExisting(data.affectationsExistantes, slotsByDateAndCreneau);
-
-        const sessions = SessionBuilder.build(data, params);
-        const domains = new DomainBuilder(data, params).build(sessions, matrix);
-        const greedy = GreedyScheduler.run(sessions, domains, matrix);
-
-        let repair = { solved: true, placed: [] };
-        if (greedy.failed.length) {
-            repair = RepairSolver.solve(greedy.failed, domains, matrix, params);
-        }
-
-        const assignments = LocalSearchOptimizer.optimize(
-            [...greedy.placed, ...repair.placed],
-            domains,
-            matrix,
-            params
-        );
-        const hardConflicts = this.detectHardConflicts(assignments);
-        const score = ScoreCalculator.calculate(assignments, sessions, hardConflicts);
-
-        const created = await this.commitAssignments(assignments, params.idUserAdmin);
-
-        const failedSessionIds = new Set(greedy.failed.map((session) => session.id));
-        for (const assignment of repair.placed) {
-            failedSessionIds.delete(assignment.session.id);
-        }
-
-        return this.formatResult({
-            created,
-            assignments,
-            failedSessions: sessions.filter((session) => !assignments.some((assignment) => assignment.session.id === session.id)),
-            score,
-            hardConflicts,
-            durationMs: Date.now() - startedAt,
-        });
     }
 
     buildTeacherAvailability(data, slotsByDateAndCreneau, params) {
@@ -107,6 +120,36 @@ export class GenerationEngine {
         }
 
         return availability;
+    }
+
+    filterBlockingAffectations(affectations, params, data) {
+        const generatedScope = this.buildScope(params, data);
+
+        return affectations.filter((affectation) => {
+            if (!affectation.is_generated) {
+                return true;
+            }
+
+            const inScope =
+                generatedScope.courseIds.has(affectation.id_cours) &&
+                generatedScope.groupIds.has(affectation.id_groupe);
+
+            return !inScope;
+        });
+    }
+
+    buildScope(params, data) {
+        const courseIds = params.coursIds?.length
+            ? params.coursIds
+            : [...data.coursParGroupe.values()].flat().map((course) => course.id_cours);
+        const groupIds = params.groupeIds?.length
+            ? params.groupeIds
+            : data.groupes.map((group) => group.id_groupe);
+
+        return {
+            courseIds: new Set(courseIds),
+            groupIds: new Set(groupIds),
+        };
     }
 
     detectHardConflicts(assignments) {
@@ -150,35 +193,22 @@ export class GenerationEngine {
                 id_cours: { [Op.in]: courseIds },
                 id_groupe: { [Op.in]: groupIds },
                 date_seance: { [Op.between]: [params.dateDebut, params.dateFin] },
+                is_generated: false,
             },
         });
     }
 
-    async commitAssignments(assignments, idUserAdmin) {
-        return sequelize.transaction(async (transaction) => {
-            const created = [];
-
-            for (const assignment of assignments) {
-                const affectation = await Affectation.create({
-                    date_seance: assignment.slot.date,
-                    statut: "planifie",
-                    id_cours: assignment.session.course.id_cours,
-                    id_groupe: assignment.session.group.id_groupe,
-                    id_user_enseignant: assignment.teacher.id_user,
-                    id_salle: assignment.room.id_salle,
-                    id_creneau: assignment.slot.id_creneau,
-                    id_user_admin: idUserAdmin,
-                }, { transaction });
-
-                created.push({ affectation, assignment });
-            }
-
-            return created;
-        });
-    }
-
-    formatResult({ created, assignments, failedSessions, score, hardConflicts, durationMs }) {
+    formatResult({ snapshot, session, created, assignments, failedSessions, score, hardConflicts, durationMs }) {
         return {
+            session: {
+                id: session.id_generation_session,
+                status: session.status,
+            },
+            snapshot: {
+                id: snapshot.id_snapshot,
+                label: snapshot.label,
+                is_active: snapshot.is_active,
+            },
             affectationsCreees: created.map(({ affectation, assignment }) => ({
                 id: affectation.id_affectation,
                 cours: assignment.session.course.nom_cours,

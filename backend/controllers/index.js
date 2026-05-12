@@ -52,3 +52,6 @@ export * from "./emploiDuTempsController.js";
 
 // Statistiques
 export * from "./statistiquesController.js";
+
+// Generation automatique
+export * from "./generationAutomatiqueController.js";
