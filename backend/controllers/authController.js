@@ -1,21 +1,102 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
-import { Users, Enseignant, Etudiant, PasswordResetToken } from "../models/index.js";
+import { Op } from "sequelize";
+import { AuthSession, Users, Enseignant, Etudiant, PasswordResetToken } from "../models/index.js";
 import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import {
+    ACCESS_TOKEN_TTL_SECONDS,
+    clearAuthCookies,
+    makeRefreshExpiry,
+    randomToken,
+    REFRESH_COOKIE,
+    setAuthCookies,
+    setCsrfCookie,
+    sha256,
+} from "../config/authCookies.js";
 
 /**
  * Génère un token JWT pour un utilisateur
  */
-const generateToken = (userId) => {
+const generateToken = (user, sessionId, familyId) => {
     return jwt.sign(
-        { userId, id_user: userId },
-        process.env.JWT_SECRET || "dev_secret_temporaire_non_securise",
         {
-            expiresIn: process.env.JWT_EXPIRES_IN || "7d",
+            sub: String(user.id_user),
+            userId: user.id_user,
+            id_user: user.id_user,
+            role: user.role,
+            sid: sessionId,
+            fid: familyId,
+            jti: crypto.randomUUID(),
+        },
+        process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "dev_secret_temporaire_non_securise",
+        {
+            expiresIn: ACCESS_TOKEN_TTL_SECONDS,
+            issuer: process.env.JWT_ISSUER || "hestim-planner-api",
+            audience: process.env.JWT_AUDIENCE || "hestim-planner-spa",
+            algorithm: "HS256",
         }
     );
+};
+
+const getClientIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+
+const sanitizeUser = (user, additionalInfo = {}) => {
+    const userResponse = user.toJSON();
+    delete userResponse.password_hash;
+    return {
+        ...userResponse,
+        ...additionalInfo,
+    };
+};
+
+const getAdditionalInfo = async (user) => {
+    if (user.role === "enseignant") {
+        const enseignant = await Enseignant.findByPk(user.id_user);
+        if (enseignant) {
+            return {
+                specialite: enseignant.specialite,
+                departement: enseignant.departement,
+                grade: enseignant.grade,
+                bureau: enseignant.bureau,
+            };
+        }
+    }
+
+    if (user.role === "etudiant") {
+        const etudiant = await Etudiant.findByPk(user.id_user);
+        if (etudiant) {
+            return {
+                numero_etudiant: etudiant.numero_etudiant,
+                niveau: etudiant.niveau,
+                date_inscription: etudiant.date_inscription,
+            };
+        }
+    }
+
+    return {};
+};
+
+const createAuthSession = async (req, res, user, familyId = crypto.randomUUID()) => {
+    const sessionId = crypto.randomUUID();
+    const refreshToken = randomToken();
+
+    await AuthSession.create({
+        id_user: user.id_user,
+        session_id: sessionId,
+        family_id: familyId,
+        refresh_token_hash: sha256(refreshToken),
+        user_agent: req.get("user-agent"),
+        ip_address: getClientIp(req),
+        expires_at: makeRefreshExpiry(),
+    });
+
+    const accessToken = generateToken(user, sessionId, familyId);
+    setAuthCookies(res, { accessToken, refreshToken });
+    setCsrfCookie(res, sessionId);
+
+    return { sessionId, familyId };
 };
 
 /**
@@ -65,17 +146,12 @@ export const register = asyncHandler(async (req, res) => {
         actif: true,
     });
 
-    // Générer le token
-    const token = generateToken(user.id_user);
+    await createAuthSession(req, res, user);
 
     // Retourner l'utilisateur sans le mot de passe
-    const userResponse = user.toJSON();
-    delete userResponse.password_hash;
-
     res.status(201).json({
         message: "Inscription réussie",
-        user: userResponse,
-        token,
+        user: sanitizeUser(user),
     });
 });
 
@@ -120,43 +196,13 @@ export const login = asyncHandler(async (req, res) => {
         });
     }
 
-    // Générer le token
-    const token = generateToken(user.id_user);
-
     // Récupérer les informations complémentaires selon le rôle
-    let additionalInfo = {};
-    if (user.role === "enseignant") {
-        const enseignant = await Enseignant.findByPk(user.id_user);
-        if (enseignant) {
-            additionalInfo = {
-                specialite: enseignant.specialite,
-                departement: enseignant.departement,
-                grade: enseignant.grade,
-                bureau: enseignant.bureau,
-            };
-        }
-    } else if (user.role === "etudiant") {
-        const etudiant = await Etudiant.findByPk(user.id_user);
-        if (etudiant) {
-            additionalInfo = {
-                numero_etudiant: etudiant.numero_etudiant,
-                niveau: etudiant.niveau,
-                date_inscription: etudiant.date_inscription,
-            };
-        }
-    }
-
-    // Retourner l'utilisateur sans le mot de passe
-    const userResponse = user.toJSON();
-    delete userResponse.password_hash;
+    const additionalInfo = await getAdditionalInfo(user);
+    await createAuthSession(req, res, user);
 
     res.json({
         message: "Connexion réussie",
-        user: {
-            ...userResponse,
-            ...additionalInfo,
-        },
-        token,
+        user: sanitizeUser(user, additionalInfo),
     });
 });
 
@@ -178,36 +224,10 @@ export const getMe = asyncHandler(async (req, res) => {
     }
 
     // Récupérer les informations complémentaires selon le rôle
-    let additionalInfo = {};
-    if (user.role === "enseignant") {
-        const enseignant = await Enseignant.findByPk(user.id_user);
-        if (enseignant) {
-            additionalInfo = {
-                specialite: enseignant.specialite,
-                departement: enseignant.departement,
-                grade: enseignant.grade,
-                bureau: enseignant.bureau,
-            };
-        }
-    } else if (user.role === "etudiant") {
-        const etudiant = await Etudiant.findByPk(user.id_user);
-        if (etudiant) {
-            additionalInfo = {
-                numero_etudiant: etudiant.numero_etudiant,
-                niveau: etudiant.niveau,
-                date_inscription: etudiant.date_inscription,
-            };
-        }
-    }
-
-    // Retourner l'utilisateur sans le mot de passe
-    const userResponse = user.toJSON();
+    const additionalInfo = await getAdditionalInfo(user);
 
     res.json({
-        user: {
-            ...userResponse,
-            ...additionalInfo,
-        },
+        user: sanitizeUser(user, additionalInfo),
     });
 });
 
@@ -217,8 +237,31 @@ export const getMe = asyncHandler(async (req, res) => {
  * Cette route peut être utilisée pour logger la déconnexion
  */
 export const logout = asyncHandler(async (req, res) => {
-    // En JWT stateless, la déconnexion se fait côté client en supprimant le token
-    // On peut logger la déconnexion ici si nécessaire
+    const refreshToken = req.cookies?.[REFRESH_COOKIE];
+    const where = {};
+
+    if (refreshToken) {
+        where.refresh_token_hash = sha256(refreshToken);
+    } else if (req.auth?.sessionId) {
+        where.session_id = req.auth.sessionId;
+    }
+
+    if (Object.keys(where).length) {
+        await AuthSession.update(
+            {
+                revoked_at: new Date(),
+                revoked_reason: "logout",
+            },
+            {
+                where: {
+                    ...where,
+                    revoked_at: null,
+                },
+            }
+        );
+    }
+
+    clearAuthCookies(res);
     res.json({
         message: "Déconnexion réussie",
     });
@@ -229,24 +272,168 @@ export const logout = asyncHandler(async (req, res) => {
  * Rafraîchir le token (optionnel)
  */
 export const refreshToken = asyncHandler(async (req, res) => {
-    // L'utilisateur est déjà dans req.user grâce au middleware authenticateToken
-    const user = req.user;
+    const oldRefreshToken = req.cookies?.[REFRESH_COOKIE];
+    if (!oldRefreshToken) {
+        clearAuthCookies(res);
+        return res.status(401).json({
+            message: "Refresh token manquant",
+            code: "REFRESH_MISSING",
+        });
+    }
 
-    // Vérifier que le compte est actif
-    if (!user.actif) {
+    const tokenHash = sha256(oldRefreshToken);
+    const tokenRecord = await AuthSession.findOne({
+        where: { refresh_token_hash: tokenHash },
+    });
+
+    if (!tokenRecord) {
+        clearAuthCookies(res);
+        return res.status(403).json({
+            message: "Refresh token invalide",
+            code: "REFRESH_INVALID",
+        });
+    }
+
+    if (tokenRecord.revoked_at) {
+        await AuthSession.update(
+            {
+                revoked_at: new Date(),
+                revoked_reason: "refresh_reuse_detected",
+            },
+            {
+                where: {
+                    family_id: tokenRecord.family_id,
+                    revoked_at: null,
+                },
+            }
+        );
+
+        clearAuthCookies(res);
+        return res.status(403).json({
+            message: "Alerte de sécurité: session révoquée, veuillez vous reconnecter",
+            code: "REFRESH_REUSE_DETECTED",
+        });
+    }
+
+    if (new Date(tokenRecord.expires_at) <= new Date()) {
+        await tokenRecord.update({
+            revoked_at: new Date(),
+            revoked_reason: "expired",
+        });
+        clearAuthCookies(res);
+        return res.status(403).json({
+            message: "Session expirée",
+            code: "REFRESH_EXPIRED",
+        });
+    }
+
+    const user = await Users.findByPk(tokenRecord.id_user);
+    if (!user || !user.actif) {
+        await AuthSession.update(
+            {
+                revoked_at: new Date(),
+                revoked_reason: "user_inactive",
+            },
+            { where: { family_id: tokenRecord.family_id, revoked_at: null } }
+        );
+        clearAuthCookies(res);
         return res.status(403).json({
             message: "Compte désactivé",
             error: "Votre compte a été désactivé",
         });
     }
 
-    // Générer un nouveau token
-    const token = generateToken(user.id_user);
+    const newRefreshToken = randomToken();
+    const newSessionId = crypto.randomUUID();
+    const newRecord = await AuthSession.create({
+        id_user: user.id_user,
+        session_id: newSessionId,
+        family_id: tokenRecord.family_id,
+        refresh_token_hash: sha256(newRefreshToken),
+        user_agent: req.get("user-agent"),
+        ip_address: getClientIp(req),
+        expires_at: makeRefreshExpiry(),
+        last_used_at: new Date(),
+    });
+
+    await tokenRecord.update({
+        revoked_at: new Date(),
+        revoked_reason: "rotated",
+        last_used_at: new Date(),
+        replaced_by_token_id: newRecord.id_auth_session,
+    });
+
+    const accessToken = generateToken(user, newSessionId, tokenRecord.family_id);
+    setAuthCookies(res, { accessToken, refreshToken: newRefreshToken });
+    setCsrfCookie(res, newSessionId);
 
     res.json({
         message: "Token rafraîchi",
-        token,
     });
+});
+
+export const logoutAllDevices = asyncHandler(async (req, res) => {
+    await AuthSession.update(
+        {
+            revoked_at: new Date(),
+            revoked_reason: "logout_all",
+        },
+        {
+            where: {
+                id_user: req.user.id_user,
+                revoked_at: null,
+            },
+        }
+    );
+
+    clearAuthCookies(res);
+    res.json({ message: "Déconnexion de tous les appareils réussie" });
+});
+
+export const listSessions = asyncHandler(async (req, res) => {
+    const sessions = await AuthSession.findAll({
+        where: {
+            id_user: req.user.id_user,
+            revoked_at: null,
+            expires_at: { [Op.gt]: new Date() },
+        },
+        attributes: [
+            "session_id",
+            "family_id",
+            "user_agent",
+            "ip_address",
+            "createdAt",
+            "last_used_at",
+            "expires_at",
+        ],
+        order: [["createdAt", "DESC"]],
+    });
+
+    res.json({ sessions });
+});
+
+export const revokeSession = asyncHandler(async (req, res) => {
+    const { sessionId } = req.params;
+
+    await AuthSession.update(
+        {
+            revoked_at: new Date(),
+            revoked_reason: "manual_revoke",
+        },
+        {
+            where: {
+                id_user: req.user.id_user,
+                family_id: sessionId,
+                revoked_at: null,
+            },
+        }
+    );
+
+    if (req.auth?.familyId === sessionId) {
+        clearAuthCookies(res);
+    }
+
+    res.json({ message: "Session révoquée" });
 });
 
 /**

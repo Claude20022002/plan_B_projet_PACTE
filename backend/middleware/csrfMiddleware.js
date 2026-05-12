@@ -3,6 +3,7 @@ import { CSRF_COOKIE, setCsrfCookie, verifyCsrfToken } from "../config/authCooki
 const unsafeMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 const csrfExemptPaths = new Set([
     "/api/auth/csrf-token",
+    "/api/auth/refresh",
 ]);
 
 export const issueCsrfToken = (req, res) => {
@@ -29,7 +30,7 @@ export const csrfProtection = (req, res, next) => {
 
     const cookieToken = req.cookies?.[CSRF_COOKIE];
     const headerToken = req.get("X-CSRF-Token");
-    const sessionId = req.auth?.sessionId || "anonymous";
+    const sessionId = req.auth?.sessionId || null;
 
     if (!cookieToken || !headerToken || cookieToken !== headerToken || !verifyCsrfToken(headerToken, sessionId)) {
         return res.status(403).json({

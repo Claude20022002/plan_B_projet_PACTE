@@ -18,12 +18,7 @@ export const AuthProvider = ({ children }) => {
 
     // Vérifier si l'utilisateur est connecté au chargement
     useEffect(() => {
-        const token = localStorage.getItem('token');
-        if (token) {
-            checkAuth();
-        } else {
-            setLoading(false);
-        }
+        checkAuth();
     }, []);
 
     const checkAuth = async () => {
@@ -52,11 +47,8 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             const data = await authAPI.login({ email, password });
-            localStorage.setItem('token', data.token);
             setUser(data.user);
             setIsAuthenticated(true);
-            // Passer le token au SyncManager Electron pour les appels API offline
-            window.electronAPI?.setAuthToken?.(data.token);
             return { success: true, data };
         } catch (error) {
             return { success: false, error: error.message };
@@ -66,10 +58,8 @@ export const AuthProvider = ({ children }) => {
     const register = async (userData) => {
         try {
             const data = await authAPI.register(userData);
-            localStorage.setItem('token', data.token);
             setUser(data.user);
             setIsAuthenticated(true);
-            window.electronAPI?.setAuthToken?.(data.token);
             return { success: true, data };
         } catch (error) {
             return { success: false, error: error.message };
@@ -83,7 +73,6 @@ export const AuthProvider = ({ children }) => {
             console.error('Erreur lors de la déconnexion:', error);
         } finally {
             localStorage.removeItem('token');
-            localStorage.removeItem('themeMode');
             window.electronAPI?.clearAuthToken?.();
             setUser(null);
             setIsAuthenticated(false);

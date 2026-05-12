@@ -3,7 +3,8 @@
  * Instance Axios centralisée — source unique de vérité pour toutes les requêtes.
  *
  * Responsabilités :
- *   - Injection automatique du token JWT (Bearer ou httpOnly cookie)
+ *   - Envoi automatique des cookies httpOnly
+ *   - Protection CSRF cookie-to-header
  *   - Refresh token automatique sur 401 TOKEN_EXPIRED
  *   - Retry intelligent sur erreurs réseau transitoires
  *   - Annulation de requêtes via AbortController
@@ -15,6 +16,7 @@ import { AppError, ERROR_CODES } from './errors.js';
 
 // ── Configuration de base ──────────────────────────────────────────────────
 const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const CSRF_COOKIE = import.meta.env.PROD ? '__Host-csrf_token' : 'csrf_token';
 
 /** Nombre max de tentatives sur erreur réseau */
 const MAX_RETRIES = 2;
@@ -27,8 +29,7 @@ const apiClient = axios.create({
   baseURL: BASE_URL,
   timeout: 15_000,
   headers: { 'Content-Type': 'application/json' },
-  // Activer lorsque JWT sera en httpOnly cookie :
-  // withCredentials: true,
+  withCredentials: true,
 });
 
 // ── Gestion du refresh token (queue anti-concurrence) ─────────────────────
@@ -36,23 +37,47 @@ let isRefreshing = false;
 let failedQueue = [];
 
 /** Résout ou rejette toutes les requêtes mises en attente pendant le refresh */
-function processQueue(error, token = null) {
+function processQueue(error) {
   failedQueue.forEach(({ resolve, reject }) => {
     if (error) reject(error);
-    else resolve(token);
+    else resolve();
   });
   failedQueue = [];
+}
+
+function getCookie(name) {
+  return document.cookie
+    .split('; ')
+    .find((row) => row.startsWith(`${name}=`))
+    ?.split('=')
+    .slice(1)
+    .join('=');
+}
+
+async function ensureCsrfToken() {
+  let token = getCookie(CSRF_COOKIE);
+  if (!token) {
+    const response = await axios.get(`${BASE_URL}/auth/csrf-token`, {
+      withCredentials: true,
+    });
+    token = response.data?.csrfToken || getCookie(CSRF_COOKIE);
+  }
+  return token ? decodeURIComponent(token) : null;
 }
 
 // ── Intercepteur de requête : injecter le token ────────────────────────────
 apiClient.interceptors.request.use(
   (config) => {
-    // Lecture depuis localStorage (migrer vers cookie httpOnly en prod)
-    const token = localStorage.getItem('token');
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+    return Promise.resolve(config).then(async (nextConfig) => {
+      const method = nextConfig.method?.toUpperCase();
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method) && nextConfig.url !== '/auth/csrf-token') {
+        const csrfToken = await ensureCsrfToken();
+        if (csrfToken) {
+          nextConfig.headers['X-CSRF-Token'] = csrfToken;
+        }
+      }
+      return nextConfig;
+    });
   },
   (error) => Promise.reject(normalizeError(error)),
 );
@@ -68,7 +93,7 @@ apiClient.interceptors.response.use(
     // ── Refresh token automatique sur 401 TOKEN_EXPIRED ──────────────────
     if (
       error.response?.status === 401 &&
-      error.response?.data?.code === 'TOKEN_EXPIRED' &&
+      !['/auth/login', '/auth/register', '/auth/forgot-password', '/auth/reset-password', '/auth/refresh'].includes(originalRequest?.url) &&
       !originalRequest._retry
     ) {
       if (isRefreshing) {
@@ -76,8 +101,7 @@ apiClient.interceptors.response.use(
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
         })
-          .then((newToken) => {
-            originalRequest.headers.Authorization = `Bearer ${newToken}`;
+          .then(() => {
             return apiClient(originalRequest);
           })
           .catch(Promise.reject);
@@ -87,14 +111,11 @@ apiClient.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const { token } = await apiClient.post('/auth/refresh');
-        localStorage.setItem('token', token);
-        processQueue(null, token);
-        originalRequest.headers.Authorization = `Bearer ${token}`;
+        await apiClient.post('/auth/refresh');
+        processQueue(null);
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        localStorage.removeItem('token');
         // Émettre un événement global pour que AuthContext redirige
         window.dispatchEvent(new CustomEvent('auth:logout'));
         return Promise.reject(normalizeError(refreshError));

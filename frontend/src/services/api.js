@@ -3,19 +3,45 @@
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+const CSRF_COOKIE = import.meta.env.PROD ? '__Host-csrf_token' : 'csrf_token';
+
+function getCookie(name) {
+    return document.cookie
+        .split('; ')
+        .find((row) => row.startsWith(`${name}=`))
+        ?.split('=')
+        .slice(1)
+        .join('=');
+}
+
+async function ensureCsrfToken() {
+    let token = getCookie(CSRF_COOKIE);
+    if (!token) {
+        const response = await fetch(`${API_BASE_URL}/auth/csrf-token`, {
+            credentials: 'include',
+        });
+        const data = await response.json();
+        token = data.csrfToken || getCookie(CSRF_COOKIE);
+    }
+    return token ? decodeURIComponent(token) : null;
+}
 
 /**
  * Fonction utilitaire pour faire des requêtes HTTP
  */
 async function request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
-    const token = localStorage.getItem('token');
+    const method = options.method || 'GET';
+    const csrfToken = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())
+        ? await ensureCsrfToken()
+        : null;
 
     const config = {
-        method: options.method || 'GET',
+        method,
+        credentials: 'include',
         headers: {
             'Content-Type': 'application/json',
-            ...(token && { Authorization: `Bearer ${token}` }),
+            ...(csrfToken && { 'X-CSRF-Token': csrfToken }),
             ...options.headers,
         },
     };
@@ -45,6 +71,18 @@ async function request(endpoint, options = {}) {
         if (!response.ok) {
             // Si erreur 401 (non autorisé), ne pas rediriger automatiquement
             // Laisser le composant gérer la redirection
+            if (response.status === 401 && endpoint !== '/auth/refresh') {
+                try {
+                    await request('/auth/refresh', { method: 'POST' });
+                    return request(endpoint, options);
+                } catch (_) {
+                    const error = new Error(data.message || data.error || 'Non autorisé');
+                    error.status = 401;
+                    error.response = { data };
+                    throw error;
+                }
+            }
+
             if (response.status === 401) {
                 const error = new Error(data.message || data.error || 'Non autorisé');
                 error.status = 401;

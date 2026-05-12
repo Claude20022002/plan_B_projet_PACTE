@@ -8,7 +8,6 @@
  *
  * @typedef {Object} AuthResponse
  * @property {boolean} success
- * @property {string}  token
  * @property {User}    user
  *
  * @typedef {Object} User
@@ -49,9 +48,13 @@ export const authAPI = {
 
   /**
    * Échange le refresh token contre un nouvel access token.
-   * @returns {Promise<{ token: string }>}
+   * @returns {Promise<{ message: string }>}
    */
   refreshToken: () => apiClient.post('/auth/refresh'),
+
+  sessions: () => apiClient.get('/auth/sessions'),
+  revokeSession: (sessionId) => apiClient.delete(`/auth/sessions/${sessionId}`),
+  logoutAll: () => apiClient.post('/auth/logout-all'),
 
   /**
    * @param {string} email

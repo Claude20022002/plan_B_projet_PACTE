@@ -73,11 +73,15 @@ export const verifyCsrfToken = (token, sessionId = "anonymous") => {
     if (parts.length !== 3) return false;
 
     const [tokenSessionId, nonce, signature] = parts;
-    if (tokenSessionId !== sessionId || !nonce || !signature) return false;
+    if (sessionId && tokenSessionId !== sessionId) return false;
+    if (!tokenSessionId || !nonce || !signature) return false;
 
     const payload = `${tokenSessionId}.${nonce}`;
     const expected = hmac(payload);
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    const signatureBuffer = Buffer.from(signature);
+    const expectedBuffer = Buffer.from(expected);
+    if (signatureBuffer.length !== expectedBuffer.length) return false;
+    return crypto.timingSafeEqual(signatureBuffer, expectedBuffer);
 };
 
 export const setCsrfCookie = (res, sessionId = "anonymous") => {

@@ -26,11 +26,24 @@ const extractToken = (req) => {
     return authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 };
 
-const verifyAccessToken = (token) => jwt.verify(token, JWT_SECRET, {
-    issuer: JWT_ISSUER,
-    audience: JWT_AUDIENCE,
-    algorithms: ["HS256"],
-});
+const verifyAccessToken = (token) => {
+    try {
+        return jwt.verify(token, JWT_SECRET, {
+            issuer: JWT_ISSUER,
+            audience: JWT_AUDIENCE,
+            algorithms: ["HS256"],
+        });
+    } catch (error) {
+        if (error.name !== "JsonWebTokenError") {
+            throw error;
+        }
+
+        // Compatibilite temporaire avec les anciens Bearer tokens sans issuer/audience.
+        return jwt.verify(token, JWT_SECRET, {
+            algorithms: ["HS256"],
+        });
+    }
+};
 
 const attachUserFromToken = async (req, decoded) => {
     const userId = decoded.sub || decoded.userId || decoded.id_user;
