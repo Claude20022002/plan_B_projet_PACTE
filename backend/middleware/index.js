@@ -4,6 +4,8 @@
 
 // Authentification
 export { authenticateToken, optionalAuth } from "./authMiddleware.js";
+export { csrfProtection, issueCsrfToken } from "./csrfMiddleware.js";
+export { parseCookies } from "./cookieMiddleware.js";
 
 // Rôles et permissions
 export {

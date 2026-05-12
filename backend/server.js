@@ -23,9 +23,12 @@ import {
     ConflitAffectation,
     PasswordResetToken,
     Evenement,
+    AuthSession,
     GenerationSession,
     PlanningSnapshot,
 } from "./models/index.js";
+import { parseCookies } from "./middleware/cookieMiddleware.js";
+import { csrfProtection } from "./middleware/csrfMiddleware.js";
 
 // Import des routes
 import userRoutes from "./routes/userRoutes.js";
@@ -57,6 +60,7 @@ import {
     apiRateLimiter,
     errorHandler,
     notFound,
+    optionalAuth,
 } from "./middleware/index.js";
 
 dotenv.config();
@@ -87,9 +91,12 @@ app.use(cors({
 // Body parser - Augmenter la limite pour permettre l'upload d'images en base64
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(parseCookies);
 
 // Rate limiting global
 app.use(apiRateLimiter);
+app.use(optionalAuth);
+app.use(csrfProtection);
 
 // Logging
 app.use(logger);
@@ -259,6 +266,7 @@ const PORT = process.env.PORT || 5000;
         await syncTableSafe(Notification, "Notification");
         await syncTableSafe(PasswordResetToken, "PasswordResetToken");
         await syncTableSafe(Evenement, "Evenement");
+        await syncTableSafe(AuthSession, "AuthSession");
         await syncTableSafe(GenerationSession, "GenerationSession");
         await syncTableSafe(PlanningSnapshot, "PlanningSnapshot");
         console.log("--> Niveau 2 : Tables dépendantes de Users synchronisées");

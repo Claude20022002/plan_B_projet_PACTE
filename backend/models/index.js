@@ -16,6 +16,7 @@ import ConflitAffectation from "./ConflitAffectation.js";
 import Appartenir from "./Appartenir.js";
 import PasswordResetToken from "./PasswordResetToken.js";
 import Evenement from "./Evenement.js";
+import AuthSession from "./AuthSession.js";
 import GenerationSession from "./GenerationSession.js";
 import PlanningSnapshot from "./PlanningSnapshot.js";
 
@@ -68,6 +69,17 @@ Users.hasMany(GenerationSession, {
     foreignKey: "id_user_admin",
     as: "generation_sessions",
     onDelete: "RESTRICT",
+});
+
+Users.hasMany(AuthSession, {
+    foreignKey: "id_user",
+    as: "auth_sessions",
+    onDelete: "CASCADE",
+});
+AuthSession.belongsTo(Users, {
+    foreignKey: "id_user",
+    as: "user",
+    targetKey: "id_user",
 });
 GenerationSession.belongsTo(Users, {
     foreignKey: "id_user_admin",
@@ -360,6 +372,7 @@ export {
     Appartenir,
     PasswordResetToken,
     Evenement,
+    AuthSession,
     GenerationSession,
     PlanningSnapshot,
 };

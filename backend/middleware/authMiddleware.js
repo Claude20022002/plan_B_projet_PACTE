@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
-import { Users } from "../models/index.js";
+import { AuthSession, Users } from "../models/index.js";
+import { ACCESS_COOKIE } from "../config/authCookies.js";
 
 // Validation critique au démarrage : JWT_SECRET doit être défini explicitement.
 // Un secret par défaut ("secret_key_default") serait devinable et compromettrait tous les tokens.
@@ -12,7 +13,76 @@ if (!process.env.JWT_SECRET) {
     }
 }
 
-const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_temporaire_non_securise";
+const JWT_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "dev_secret_temporaire_non_securise";
+const JWT_ISSUER = process.env.JWT_ISSUER || "hestim-planner-api";
+const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "hestim-planner-spa";
+
+const extractToken = (req) => {
+    if (req.cookies?.[ACCESS_COOKIE]) {
+        return req.cookies[ACCESS_COOKIE];
+    }
+
+    const authHeader = req.headers.authorization;
+    return authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
+};
+
+const verifyAccessToken = (token) => jwt.verify(token, JWT_SECRET, {
+    issuer: JWT_ISSUER,
+    audience: JWT_AUDIENCE,
+    algorithms: ["HS256"],
+});
+
+const attachUserFromToken = async (req, decoded) => {
+    const userId = decoded.sub || decoded.userId || decoded.id_user;
+    if (!userId) {
+        return { status: 401, message: "Token invalide", error: "Le token ne contient pas d'identifiant utilisateur" };
+    }
+
+    if (decoded.sid) {
+        const session = await AuthSession.findOne({
+            where: {
+                session_id: decoded.sid,
+                id_user: Number(userId),
+                revoked_at: null,
+            },
+        });
+
+        if (!session || new Date(session.expires_at) <= new Date()) {
+            return { status: 401, message: "Session invalide", error: "Votre session a expire", code: "SESSION_INVALID" };
+        }
+
+        req.auth = {
+            userId: Number(userId),
+            role: decoded.role,
+            sessionId: decoded.sid,
+            familyId: decoded.fid,
+            jti: decoded.jti,
+        };
+    }
+
+    const user = await Users.findByPk(userId);
+
+    if (!user) {
+        return { status: 401, message: "Utilisateur non trouvé", error: "Token invalide - utilisateur introuvable" };
+    }
+
+    if (!user.actif) {
+        return { status: 403, message: "Compte désactivé", error: "Votre compte a été désactivé" };
+    }
+
+    req.user = user;
+    req.userId = user.id_user;
+    if (!req.auth) {
+        req.auth = {
+            userId: user.id_user,
+            role: user.role,
+            sessionId: decoded.sid || null,
+            jti: decoded.jti || null,
+        };
+    }
+
+    return null;
+};
 
 /**
  * Middleware d'authentification JWT
@@ -20,9 +90,7 @@ const JWT_SECRET = process.env.JWT_SECRET || "dev_secret_temporaire_non_securise
  */
 export const authenticateToken = async (req, res, next) => {
     try {
-        // Récupérer le token depuis l'en-tête Authorization
-        const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(" ")[1]; // Format: "Bearer TOKEN"
+        const token = extractToken(req);
 
         if (!token) {
             return res.status(401).json({
@@ -34,10 +102,7 @@ export const authenticateToken = async (req, res, next) => {
         // Vérifier et décoder le token
         let decoded;
         try {
-            decoded = jwt.verify(
-                token,
-                JWT_SECRET
-            );
+            decoded = verifyAccessToken(token);
         } catch (jwtError) {
             if (jwtError.name === "JsonWebTokenError") {
                 return res.status(401).json({
@@ -49,41 +114,16 @@ export const authenticateToken = async (req, res, next) => {
                 return res.status(401).json({
                     message: "Token expiré",
                     error: "Votre session a expiré, veuillez vous reconnecter",
+                    code: "TOKEN_EXPIRED",
                 });
             }
             throw jwtError;
         }
 
-        // Récupérer l'utilisateur depuis la base de données
-        const userId = decoded.userId || decoded.id_user;
-        if (!userId) {
-            return res.status(401).json({
-                message: "Token invalide",
-                error: "Le token ne contient pas d'identifiant utilisateur",
-            });
+        const attachError = await attachUserFromToken(req, decoded);
+        if (attachError) {
+            return res.status(attachError.status).json(attachError);
         }
-
-        const user = await Users.findByPk(userId);
-
-        if (!user) {
-            console.error(`Utilisateur non trouvé pour l'ID: ${userId} (token: ${token.substring(0, 20)}...)`);
-            return res.status(401).json({
-                message: "Utilisateur non trouvé",
-                error: "Token invalide - utilisateur introuvable. Veuillez vous reconnecter.",
-            });
-        }
-
-        // Vérifier que l'utilisateur est actif
-        if (!user.actif) {
-            return res.status(403).json({
-                message: "Compte désactivé",
-                error: "Votre compte a été désactivé",
-            });
-        }
-
-        // Ajouter l'utilisateur à la requête pour utilisation dans les routes
-        req.user = user;
-        req.userId = user.id_user;
 
         next();
     } catch (error) {
@@ -97,6 +137,7 @@ export const authenticateToken = async (req, res, next) => {
             return res.status(401).json({
                 message: "Token expiré",
                 error: "Votre session a expiré, veuillez vous reconnecter",
+                code: "TOKEN_EXPIRED",
             });
         }
         return res.status(500).json({
@@ -112,22 +153,11 @@ export const authenticateToken = async (req, res, next) => {
  */
 export const optionalAuth = async (req, res, next) => {
     try {
-        const authHeader = req.headers.authorization;
-        const token = authHeader && authHeader.split(" ")[1];
+        const token = extractToken(req);
 
         if (token) {
-            const decoded = jwt.verify(
-                token,
-                JWT_SECRET
-            );
-            const user = await Users.findByPk(
-                decoded.userId || decoded.id_user
-            );
-
-            if (user && user.actif) {
-                req.user = user;
-                req.userId = user.id_user;
-            }
+            const decoded = verifyAccessToken(token);
+            await attachUserFromToken(req, decoded);
         }
         next();
     } catch (error) {
