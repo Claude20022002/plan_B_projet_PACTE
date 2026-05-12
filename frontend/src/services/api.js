@@ -344,4 +344,11 @@ export const statistiquesAPI = {
 // ==================== GÉNÉRATION AUTOMATIQUE ====================
 export const generationAutomatiqueAPI = {
     generer: (data) => request('/generation-automatique/generer', { method: 'POST', body: data }),
+    snapshots: (params) => {
+        const query = new URLSearchParams(params || {}).toString();
+        return request(`/generation-automatique/snapshots${query ? `?${query}` : ''}`);
+    },
+    snapshot: (id) => request(`/generation-automatique/snapshots/${id}`),
+    activerSnapshot: (id) => request(`/generation-automatique/snapshots/${id}/activate`, { method: 'POST' }),
+    rollbackSnapshot: (id) => request(`/generation-automatique/snapshots/${id}/rollback`, { method: 'POST' }),
 };
