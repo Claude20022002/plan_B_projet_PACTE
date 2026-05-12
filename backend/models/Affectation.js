@@ -48,6 +48,19 @@ const Affectation = sequelize.define(
             allowNull: false,
             // Les relations sont gérées via les associations dans models/index.js
         },
+        id_snapshot: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        id_generation_session: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+        },
+        is_generated: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
+        score_contrib: DataTypes.FLOAT,
     },
     {
         tableName: "Affectations",

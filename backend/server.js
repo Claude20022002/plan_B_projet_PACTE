@@ -22,6 +22,8 @@ import {
     ConflitAffectation,
     PasswordResetToken,
     Evenement,
+    GenerationSession,
+    PlanningSnapshot,
 } from "./models/index.js";
 
 // Import des routes
@@ -256,6 +258,8 @@ const PORT = process.env.PORT || 5000;
         await syncTableSafe(Notification, "Notification");
         await syncTableSafe(PasswordResetToken, "PasswordResetToken");
         await syncTableSafe(Evenement, "Evenement");
+        await syncTableSafe(GenerationSession, "GenerationSession");
+        await syncTableSafe(PlanningSnapshot, "PlanningSnapshot");
         console.log("--> Niveau 2 : Tables dépendantes de Users synchronisées");
 
         // Niveau 3 : Tables qui dépendent de Filiere
@@ -293,6 +297,21 @@ const PORT = process.env.PORT || 5000;
                 "ALTER TABLE Notifications ADD COLUMN IF NOT EXISTS lien VARCHAR(500) NULL DEFAULT NULL"
             );
         } catch (_) { /* colonne déjà présente ou MySQL < 8 — ignoré */ }
+
+        try {
+            await sequelize.query(
+                "ALTER TABLE Affectations ADD COLUMN IF NOT EXISTS id_snapshot INT NULL"
+            );
+            await sequelize.query(
+                "ALTER TABLE Affectations ADD COLUMN IF NOT EXISTS id_generation_session INT NULL"
+            );
+            await sequelize.query(
+                "ALTER TABLE Affectations ADD COLUMN IF NOT EXISTS is_generated BOOLEAN DEFAULT FALSE"
+            );
+            await sequelize.query(
+                "ALTER TABLE Affectations ADD COLUMN IF NOT EXISTS score_contrib FLOAT NULL"
+            );
+        } catch (_) { /* colonnes déjà présentes ou MySQL < 8 — ignoré */ }
 
         // Démarrage du serveur
         app.listen(PORT, () => {

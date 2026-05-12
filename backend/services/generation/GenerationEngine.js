@@ -5,6 +5,7 @@ import { AvailabilityMatrix } from "./AvailabilityMatrix.js";
 import { DataLoader } from "./DataLoader.js";
 import { DomainBuilder } from "./DomainBuilder.js";
 import { GreedyScheduler } from "./GreedyScheduler.js";
+import { LocalSearchOptimizer } from "./LocalSearchOptimizer.js";
 import { RepairSolver } from "./RepairSolver.js";
 import { ScoreCalculator } from "./ScoreCalculator.js";
 import { SessionBuilder } from "./SessionBuilder.js";
@@ -33,6 +34,11 @@ export class GenerationEngine {
             slots: data.slots,
             teacherAvailability,
             requireTeacherAvailability: params.requireTeacherAvailability !== false,
+            options: {
+                maxHoursPerDayGroup: params.maxHoursPerDayGroup,
+                maxHoursPerDayCourse: params.maxHoursPerDayCourse,
+                allowSameCourseTwicePerDay: params.allowSameCourseTwicePerDay === true,
+            },
         });
 
         matrix.seedExisting(data.affectationsExistantes, slotsByDateAndCreneau);
@@ -46,7 +52,12 @@ export class GenerationEngine {
             repair = RepairSolver.solve(greedy.failed, domains, matrix, params);
         }
 
-        const assignments = [...greedy.placed, ...repair.placed];
+        const assignments = LocalSearchOptimizer.optimize(
+            [...greedy.placed, ...repair.placed],
+            domains,
+            matrix,
+            params
+        );
         const hardConflicts = this.detectHardConflicts(assignments);
         const score = ScoreCalculator.calculate(assignments, sessions, hardConflicts);
 

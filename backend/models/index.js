@@ -16,6 +16,8 @@ import ConflitAffectation from "./ConflitAffectation.js";
 import Appartenir from "./Appartenir.js";
 import PasswordResetToken from "./PasswordResetToken.js";
 import Evenement from "./Evenement.js";
+import GenerationSession from "./GenerationSession.js";
+import PlanningSnapshot from "./PlanningSnapshot.js";
 
 // ==================== RELATIONS USER ====================
 
@@ -60,6 +62,38 @@ Users.hasMany(Affectation, {
     foreignKey: "id_user_admin",
     as: "affectations_creees",
     onDelete: "RESTRICT",
+});
+
+Users.hasMany(GenerationSession, {
+    foreignKey: "id_user_admin",
+    as: "generation_sessions",
+    onDelete: "RESTRICT",
+});
+GenerationSession.belongsTo(Users, {
+    foreignKey: "id_user_admin",
+    as: "admin_createur",
+    targetKey: "id_user",
+});
+
+Users.hasMany(PlanningSnapshot, {
+    foreignKey: "id_user_admin",
+    as: "planning_snapshots",
+    onDelete: "RESTRICT",
+});
+PlanningSnapshot.belongsTo(Users, {
+    foreignKey: "id_user_admin",
+    as: "admin_createur",
+    targetKey: "id_user",
+});
+
+GenerationSession.hasOne(PlanningSnapshot, {
+    foreignKey: "id_generation_session",
+    as: "snapshot",
+    onDelete: "SET NULL",
+});
+PlanningSnapshot.belongsTo(GenerationSession, {
+    foreignKey: "id_generation_session",
+    as: "generation_session",
 });
 Affectation.belongsTo(Users, {
     foreignKey: "id_user_admin",
@@ -212,6 +246,26 @@ Creneau.hasMany(Affectation, {
     as: "affectations",
     onDelete: "RESTRICT",
 });
+
+PlanningSnapshot.hasMany(Affectation, {
+    foreignKey: "id_snapshot",
+    as: "affectations",
+    onDelete: "SET NULL",
+});
+Affectation.belongsTo(PlanningSnapshot, {
+    foreignKey: "id_snapshot",
+    as: "snapshot",
+});
+
+GenerationSession.hasMany(Affectation, {
+    foreignKey: "id_generation_session",
+    as: "affectations",
+    onDelete: "SET NULL",
+});
+Affectation.belongsTo(GenerationSession, {
+    foreignKey: "id_generation_session",
+    as: "generation_session",
+});
 Affectation.belongsTo(Creneau, {
     foreignKey: "id_creneau",
     as: "creneau",
@@ -306,4 +360,6 @@ export {
     Appartenir,
     PasswordResetToken,
     Evenement,
+    GenerationSession,
+    PlanningSnapshot,
 };
