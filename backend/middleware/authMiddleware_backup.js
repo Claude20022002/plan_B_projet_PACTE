@@ -87,7 +87,7 @@ const attachUserFromToken = async (req, decoded) => {
     try {
         const { institution, membership } = await resolveTenantForUser(req, user);
         req.tenant = institution;
-        req.membership = membership; // CORRECTION : membership au lieu de membership
+        req.membership = membership;
         req.auth = {
             ...(req.auth || {}),
             institutionId: institution.id_institution,
