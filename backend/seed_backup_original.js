@@ -3,17 +3,16 @@ import sequelize, { testConnection } from './config/db.js';
 import './models/index.js';
 import {
     Users, Enseignant, Etudiant, Filiere, Groupe, Salle, Cours, Creneau,
-    Affectation, DemandeReport, Disponibilite, Notification, Conflit, Appartenir,
-    Institution
+    Affectation, DemandeReport, Disponibilite, Notification, Conflit, Appartenir
 } from './models/index.js';
 import { hashPassword } from './utils/passwordHelper.js';
 
 dotenv.config();
 
-// ════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 //  HESTIM_CONFIG — Modifier ici pour personnaliser l'école
 //  Bâtiments, filières, cours, départements — tout est ici.
-// ════════════════════════════════════════════════════════════════════════════
+// ══════════════════════════════════════════════════════════════════════════════
 const HESTIM_CONFIG = {
 
     admins: [
@@ -21,7 +20,7 @@ const HESTIM_CONFIG = {
         { nom:'ALAOUI',  prenom:'Leila', email:'admin2@hestim.ma', telephone:'+212 522 000 002' },
     ],
 
-    // ── Bâtiments ─────────────────────────────────────────────────────
+    // ── Bâtiments ─────────────────────────────────────────────────────────────
     // Ajouter un bâtiment : copier un bloc { code, nom, salles:[...] }
     // Chaque groupe de salles : { type, noms:[], capacites: number|number[], etages:number[] }
     batiments: [
@@ -47,7 +46,7 @@ const HESTIM_CONFIG = {
         },
     ],
 
-    // ── Filières ──────────────────────────────────────────────────────
+    // ── Filières ──────────────────────────────────────────────────────────────
     // Ajouter une filière : copier un bloc { code, nom, abrege, cycle, niveaux:[...] }
     // niveaux : { label, semestre, effectif, nb_groupes }
     filieres: [
@@ -308,30 +307,17 @@ const STATUTS_POOL = [
 // ── seed() ────────────────────────────────────────────────────────────────────
 async function seed() {
     try {
-        console.log('🌱 Seed HESTIM (config-driven) FINAL...');
+        console.log('🌱 Seed HESTIM (config-driven)...');
         await testConnection();
 
         const models = [Users,Filiere,Salle,Creneau,Groupe,Cours,Enseignant,
                         Etudiant,Affectation,DemandeReport,Disponibilite,
-                        Notification,Conflit,Appartenir,Institution];
+                        Notification,Conflit,Appartenir];
         for (const M of models) {
             try { await M.sync({ force:false }); } catch(e) { console.warn('⚠️', e.message); }
         }
 
         const pwd = await hashPassword('password123');
-
-        // Récupérer ou créer l'institution par défaut
-        const [defaultInstitution] = await Institution.findOrCreate({
-            where: { slug: 'default' },
-            defaults: {
-                nom: 'Institution par défaut',
-                slug: 'default',
-                statut: 'active',
-                timezone: 'Africa/Lagos',
-            },
-        });
-
-        console.log(`✅ Institution par défaut: ${defaultInstitution.id_institution}`);
 
         // Dates dynamiques : 1er jour du mois courant → dernier jour du mois prochain
         const _now   = new Date();
@@ -347,18 +333,8 @@ async function seed() {
         for (const d of HESTIM_CONFIG.admins) {
             const [u] = await Users.findOrCreate({
                 where: { email: d.email },
-                defaults: { 
-                    nom:d.nom, 
-                    prenom:d.prenom, 
-                    email:d.email, 
-                    password_hash:pwd, 
-                    role:'admin', 
-                    telephone:d.telephone, 
-                    actif:true 
-                },
+                defaults: { nom:d.nom, prenom:d.prenom, email:d.email, password_hash:pwd, role:'admin', telephone:d.telephone, actif:true },
             });
-            // Mettre à jour l'institution après création
-            await u.update({ id_institution: defaultInstitution.id_institution });
             admins.push(u);
         }
         const admin = admins[0];
@@ -369,14 +345,8 @@ async function seed() {
         for (const f of HESTIM_CONFIG.filieres) {
             const [rec] = await Filiere.findOrCreate({
                 where: { code_filiere: f.code },
-                defaults: { 
-                    code_filiere:f.code, 
-                    nom_filiere:f.nom, 
-                    description:`${f.cycle} — ${f.nom}`
-                },
+                defaults: { code_filiere:f.code, nom_filiere:f.nom, description:`${f.cycle} — ${f.nom}` },
             });
-            // Mettre à jour l'institution après création
-            await rec.update({ id_institution: defaultInstitution.id_institution });
             filieresMap[f.code] = rec;
         }
         console.log(`✅ ${Object.keys(filieresMap).length} filières`);
@@ -394,8 +364,6 @@ async function seed() {
                     annee_scolaire: gDef.annee_scolaire,
                 },
             });
-            // Mettre à jour l'institution après création
-            await g.update({ id_institution: defaultInstitution.id_institution });
             groupesMap[gDef.nom_groupe] = g;
         }
         console.log(`✅ ${GROUPES_DEF.length} groupes`);
@@ -414,19 +382,8 @@ async function seed() {
                 const email  = `${slug(prenom)}.${slug(nom)}${ensIdx}@hestim.ma`;
                 const [user, created] = await Users.findOrCreate({
                     where: { email },
-                    defaults: { 
-                        nom, 
-                        prenom, 
-                        email, 
-                        password_hash:pwd, 
-                        role:'enseignant', 
-                        telephone:`+212 6${String(ensIdx).padStart(8,'0')}`, 
-                        actif:true 
-                    },
+                    defaults: { nom, prenom, email, password_hash:pwd, role:'enseignant', telephone:`+212 6${String(ensIdx).padStart(8,'0')}`, actif:true },
                 });
-                // Mettre à jour l'institution après création
-                await user.update({ id_institution: defaultInstitution.id_institution });
-                
                 if (created) {
                     await Enseignant.create({ id_user:user.id_user, specialite:dCfg.nom, departement:dCfg.nom, grade:dCfg.grade });
                 }
@@ -456,19 +413,8 @@ async function seed() {
                 const num    = `ETU-${gDef.nom_groupe}-${String(i+1).padStart(3,'0')}`;
                 const [user] = await Users.findOrCreate({
                     where: { email },
-                    defaults: { 
-                        nom, 
-                        prenom, 
-                        email, 
-                        password_hash:pwd, 
-                        role:'etudiant', 
-                        telephone:`+212 6${String(etuCount).padStart(8,'0')}`, 
-                        actif:true 
-                    },
+                    defaults: { nom, prenom, email, password_hash:pwd, role:'etudiant', telephone:`+212 6${String(etuCount).padStart(8,'0')}`, actif:true },
                 });
-                // Mettre à jour l'institution après création
-                await user.update({ id_institution: defaultInstitution.id_institution });
-                
                 // Idempotent — findOrCreate sur id_user (PK) évite le conflit numero_etudiant
                 const [, etuCreated] = await Etudiant.findOrCreate({
                     where: { id_user: user.id_user },
@@ -491,8 +437,6 @@ async function seed() {
                 where: { nom_salle: d.nom_salle },
                 defaults: { ...d, disponible:true },
             });
-            // Mettre à jour l'institution après création
-            await s.update({ id_institution: defaultInstitution.id_institution });
             sallesList.push(s);
         }
         console.log(`✅ ${sallesList.length} salles (${HESTIM_CONFIG.batiments.map(b => b.nom).join(' + ')})`);
@@ -506,8 +450,6 @@ async function seed() {
                     where: { jour_semaine:jour, heure_debut:slot.heure_debut, heure_fin:slot.heure_fin },
                     defaults: { jour_semaine:jour, ...slot },
                 });
-                // Mettre à jour l'institution après création
-                await c.update({ id_institution: defaultInstitution.id_institution });
                 creneauxList.push(c);
                 creneauxMap[`${jour}_${slot.heure_debut}`] = c;
             }
@@ -535,40 +477,156 @@ async function seed() {
                     coefficient:    d.coef,
                 },
             });
-            // Mettre à jour l'institution après création
-            await c.update({ id_institution: defaultInstitution.id_institution });
             coursMap[d.code] = c;
         }
-        console.log(`✅ ${HESTIM_CONFIG.cours.length} cours`);
+        console.log(`✅ ${Object.keys(coursMap).length} cours`);
 
-        console.log('\n🏫 Structure école :né !');
-        console.log(`   ${HESTIM_CONFIG.filieres.map(f => `[${f.cycle.padEnd(12)}] ${f.code.padEnd(8)} ${f.niveaux.map(n => n.label).join(', ')}`).join('\n   ')}`);
-        console.log(`\n🏢 Bâtiments :`);
-        console.log(`   ${HESTIM_CONFIG.batiments.map(b => `${b.nom.padEnd(12)} — ${b.salles.reduce((sum, s) => sum + s.noms.length, 0)} salles (${b.code}-*)`).join('\n   ')}`);
-        
+        // ── 9. Disponibilités ─────────────────────────────────────────────────
+        let dispoCount = 0;
+        for (const { user } of enseignantsList) {
+            for (const cr of creneauxList) {
+                const [, created] = await Disponibilite.findOrCreate({
+                    where: { id_user_enseignant:user.id_user, id_creneau:cr.id_creneau, date_debut:DISPO_START, date_fin:DISPO_END },
+                    defaults: { id_user_enseignant:user.id_user, id_creneau:cr.id_creneau, disponible:true, date_debut:DISPO_START, date_fin:DISPO_END },
+                });
+                if (created) dispoCount++;
+            }
+        }
+        console.log(`✅ ${dispoCount} disponibilités`);
+
+        // ── 10. Affectations (mois courant → mois prochain) ───────────────────
+        // Mapping groupe → codes cours disponibles
+        const coursByGroupe = {};
+        for (const gDef of GROUPES_DEF) {
+            coursByGroupe[gDef.nom_groupe] = HESTIM_CONFIG.cours
+                .filter(c => c.filiere === gDef.filiere_code && c.niveau === gDef.niveau)
+                .map(c => c.code)
+                .filter(code => coursMap[code]);
+        }
+
+        // Enseignant selon département du cours
+        const ensForCours = (code) => {
+            const cDef = HESTIM_CONFIG.cours.find(c => c.code === code);
+            const pool = cDef ? (ensByDept[cDef.dept] || fallbackPool) : fallbackPool;
+            return pick(pool.length ? pool : fallbackPool);
+        };
+
+        const mondays = getMondays(PERIOD_START, PERIOD_END);
+        let affCount  = 0;
+
+        for (const monday of mondays) {
+            for (const [gNom, groupe] of Object.entries(groupesMap)) {
+                const gCours = coursByGroupe[gNom] || [];
+                if (!gCours.length) continue;
+
+                for (const jour of JOURS) {
+                    for (const slot of SLOTS_DEF) {
+                        // Vendredi 14h30 : créneau dominant (p=0.88)
+                        const p = (jour === 'vendredi' && slot.heure_debut === '14:30') ? 0.88 : 0.46;
+                        if (Math.random() > p) continue;
+
+                        const cr = creneauxMap[`${jour}_${slot.heure_debut}`];
+                        if (!cr) continue;
+
+                        const code  = pick(gCours);
+                        const cours = coursMap[code];
+                        if (!cours) continue;
+
+                        const [, created] = await Affectation.findOrCreate({
+                            where: {
+                                date_seance: weekDate(monday, jour),
+                                id_cours:    cours.id_cours,
+                                id_groupe:   groupe.id_groupe,
+                                id_creneau:  cr.id_creneau,
+                            },
+                            defaults: {
+                                date_seance:        weekDate(monday, jour),
+                                statut:             pick(STATUTS_POOL),
+                                id_cours:           cours.id_cours,
+                                id_groupe:          groupe.id_groupe,
+                                id_user_enseignant: ensForCours(code).id_user,
+                                id_salle:           pick(sallesList).id_salle,
+                                id_creneau:         cr.id_creneau,
+                                id_user_admin:      admin.id_user,
+                                commentaire:        null,
+                            },
+                        });
+                        if (created) affCount++;
+                    }
+                }
+            }
+        }
+        console.log(`✅ ${affCount} affectations (${PERIOD_START} → ${PERIOD_END})`);
+
+        // ── 11. Conflits ──────────────────────────────────────────────────────
+        const conflitsRaw = [
+            { type_conflit:'chevauchement_salle',      description:`G-S01 doublement réservée le ${PERIOD_START} à 13h30`,    resolu:false },
+            { type_conflit:'chevauchement_enseignant', description:`Enseignant doublement affecté le ${PERIOD_START} à 09h00`, resolu:true  },
+            { type_conflit:'chevauchement_groupe',     description:`Groupe doublement planifié le ${PERIOD_START}`,            resolu:true  },
+        ];
+        for (const d of conflitsRaw) {
+            await Conflit.findOrCreate({
+                where: { description: d.description },
+                defaults: { ...d, date_detection:new Date(), date_resolution:d.resolu ? new Date() : null },
+            });
+        }
+        console.log('✅ Conflits créés');
+
+        // ── 12. Demande de report ─────────────────────────────────────────────
+        const premAff = await Affectation.findOne({ where:{ id_user_enseignant:enseignantsList[0].user.id_user } });
+        if (premAff) {
+            await DemandeReport.findOrCreate({
+                where: { id_user_enseignant:enseignantsList[0].user.id_user, id_affectation:premAff.id_affectation },
+                defaults: {
+                    id_user_enseignant: enseignantsList[0].user.id_user,
+                    id_affectation:     premAff.id_affectation,
+                    motif:              'Participation au jury de soutenance',
+                    nouvelle_date:      DISPO_END,
+                    statut_demande:     'en_attente',
+                },
+            });
+        }
+        console.log('✅ Demande de report créée');
+
+        // ── 13. Notifications ─────────────────────────────────────────────────
+        const notifsRaw = [
+            { id_user:admin.id_user, titre:'HESTIM Planner opérationnel', message:`Planning ${PERIOD_START} → ${PERIOD_END} disponible.`, type_notification:'success', lue:true,  lien:null },
+            { id_user:admin.id_user, titre:'Conflits détectés',            message:'3 conflits détectés — à traiter.',                      type_notification:'warning', lue:false, lien:'/gestion/conflits' },
+            { id_user:enseignantsList[0].user.id_user, titre:'Planning disponible',     message:'Votre emploi du temps est consultable.',         type_notification:'info',    lue:false, lien:'/mes-affectations' },
+            { id_user:firstEtu[0]?.id_user,            titre:'Emploi du temps',         message:'Consultez votre emploi du temps sur Planner.',   type_notification:'info',    lue:false, lien:'/emploi-du-temps/etudiant' },
+        ].filter(n => n.id_user);
+
+        for (const d of notifsRaw) {
+            await Notification.findOrCreate({ where:{ id_user:d.id_user, titre:d.titre }, defaults:d });
+        }
+        console.log(`✅ ${notifsRaw.length} notifications`);
+
+        // ── Résumé ────────────────────────────────────────────────────────────
+        console.log('\n🎉 Seed HESTIM terminé !\n');
+        console.log('🏫 Structure école :');
+        for (const fil of HESTIM_CONFIG.filieres) {
+            const gs = GROUPES_DEF.filter(g => g.filiere_code === fil.code);
+            console.log(`   [${fil.cycle.padEnd(15)}] ${fil.abrege.padEnd(10)} ${gs.map(g => g.nom_groupe).join(', ')}`);
+        }
+        console.log('\n🏢 Bâtiments :');
+        for (const bat of HESTIM_CONFIG.batiments) {
+            const nb = SALLES_DEF.filter(s => s.batiment === bat.nom).length;
+            console.log(`   ${bat.nom.padEnd(12)} — ${nb} salles (${bat.code}-*)`);
+        }
         console.log('\n📦 Volumes :');
         console.log(`   Filières: ${Object.keys(filieresMap).length}  |  Groupes: ${GROUPES_DEF.length}  |  Salles: ${sallesList.length}  |  Créneaux: ${creneauxList.length}`);
-        console.log(`   Enseignants: ${enseignantsList.length}  |  Étudiants: ${etuCount}  |  Cours: ${HESTIM_CONFIG.cours.length}`);
-        console.log(`   Affectations: (non générées dans cette version finale)  |  Période: ${PERIOD_START} → ${PERIOD_END}`);
-        
+        console.log(`   Enseignants: ${enseignantsList.length}  |  Étudiants: ${etuCount}  |  Cours: ${Object.keys(coursMap).length}`);
+        console.log(`   Affectations: ${affCount}  |  Période: ${PERIOD_START} → ${PERIOD_END}`);
         console.log('\n📋 Comptes de test :');
-        console.log(`   👨‍💼 Admin : ${HESTIM_CONFIG.admins[0].email}  (password123)`);
-        console.log(`   👨‍🏫 Prof  : ${enseignantsList[0]?.user?.email || 'N/A'}  (password123)`);
-        console.log(`   👨‍🎓 Étud  : ${firstEtu[0]?.email || 'N/A'}  (password123)`);
-        
+        console.log(`   👨‍💼 Admin : admin@hestim.ma  (password123)`);
+        console.log(`   👨‍🏫 Prof  : ${enseignantsList[0].user.email}  (password123)`);
+        console.log(`   👨‍🎓 Étud  : ${firstEtu[0]?.email ?? 'N/A'}  (password123)`);
         console.log('\n💡 Pour modifier l\'école : éditer HESTIM_CONFIG en haut du fichier.');
-        console.log('✅ Seed terminé avec succès !');
-
+        process.exit(0);
     } catch (error) {
-        console.error('❌ Erreur lors du seed:', error.message);
-        console.error('Stack:', error.stack);
+        console.error('❌ Erreur seed:', error);
         process.exit(1);
     }
 }
 
-// Exécuter le seed si ce fichier est appelé directement
-if (import.meta.url === `file://${process.argv[1]}`) {
-    seed();
-}
-
-export default seed;
+seed();
