@@ -312,6 +312,25 @@ const PORT = process.env.PORT || 5000;
         // en utilisant les noms de tables définis avec freezeTableName
         console.log("--> Toutes les tables synchronisées avec succès !");
 
+        // Exécuter le seed automatiquement si les tables sont vides
+        try {
+            // Utiliser le module déjà importé au début du fichier
+            const userCount = await Users.count();
+            
+            if (userCount === 0) {
+                console.log("🌱 Aucune donnée détectée, exécution automatique du seed...");
+                // Exécuter le seed en utilisant le module ES
+                await import('./seed.js').then(async (seedModule) => {
+                    await seedModule.default();
+                });
+                console.log("✅ Seed exécuté avec succès !");
+            } else {
+                console.log(`✅ Données existantes (${userCount} utilisateurs), seed non nécessaire`);
+            }
+        } catch (seedError) {
+            console.warn("⚠️ Erreur lors du seed automatique:", seedError.message);
+        }
+
         // Migration incrémentale : ajout de la colonne lien si absente
         try {
             await sequelize.query(
