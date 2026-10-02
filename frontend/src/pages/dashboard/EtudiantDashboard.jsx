@@ -97,7 +97,6 @@ export default function EtudiantDashboard() {
             loading={loading}
             spotlight={spotlight}
             columns={['time', 'course', 'room', 'teacher', 'status']}
-            caption={boardTitle}
             renderSpotlight={(s, phase) => <SessionSpotlight session={s} phase={phase} />}
             empty={
               <Box sx={{ color: ds.board.letter, maxWidth: 520 }}>

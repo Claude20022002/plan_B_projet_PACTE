@@ -141,8 +141,8 @@ const bottomTabsFor = (role) => {
 
 const TITLE_KEYS = {
   '/dashboard/admin': 'nav.dashboard',
-  '/dashboard/enseignant': 'board.titleTeacher',
-  '/dashboard/etudiant': 'board.title',
+  '/dashboard/enseignant': 'nav.board',
+  '/dashboard/etudiant': 'nav.board',
   '/gestion/utilisateurs': 'nav.users',
   '/gestion/enseignants': 'nav.teachers',
   '/gestion/etudiants': 'nav.students',

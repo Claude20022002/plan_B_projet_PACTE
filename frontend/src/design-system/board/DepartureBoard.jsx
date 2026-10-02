@@ -1,5 +1,6 @@
 import { Fragment, useEffect, useState } from 'react';
 import { Box, Skeleton, useMediaQuery } from '@mui/material';
+import { visuallyHidden } from '@mui/utils';
 import { useTranslation } from 'react-i18next';
 import { ds, lineColor } from '../tokens';
 import { formatDayLabel, toLocalISODate } from '../../utils/session';
@@ -52,8 +53,8 @@ export default function DepartureBoard({
   const today = toLocalISODate();
   const tomorrow = toLocalISODate(new Date(Date.now() + 86400000));
 
-  // Sur téléphone, groupe et enseignant passent sous le nom du cours
-  const visibleColumns = compact ? columns.filter((c) => c !== 'group' && c !== 'teacher') : columns;
+  // Sur téléphone : HEURE | COURS | STATUT, et salle, bâtiment, groupe, enseignant passent sous le cours
+  const visibleColumns = compact ? columns.filter((c) => !['group', 'teacher', 'room'].includes(c)) : columns;
   const colCount = visibleColumns.length + 1; // + colonne de lampe
 
   const palette = isBoard
@@ -110,10 +111,13 @@ export default function DepartureBoard({
                   fontWeight: 600,
                   fontSize: compact ? '0.95rem' : '1.05rem',
                   letterSpacing: '0.04em',
+                  lineHeight: 1.2,
                   textTransform: 'uppercase',
-                  whiteSpace: 'nowrap',
                   overflow: 'hidden',
-                  textOverflow: 'ellipsis',
+                  // Desktop : une ligne ; téléphone : deux lignes au plus, le nom reste lisible
+                  ...(compact
+                    ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }
+                    : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' }),
                   color: dimmed ? palette.dim : palette.text,
                   textDecoration: s.status === 'annule' ? 'line-through' : 'none',
                   textDecorationColor: ds.board.cancelled,
@@ -122,20 +126,35 @@ export default function DepartureBoard({
                 {s.course}
               </Box>
             </Box>
-            {(compact || !columns.includes('teacher')) && (s.teacher || s.group) && (
-              <Box
-                sx={{
-                  mt: 0.25,
-                  pl: '18px',
-                  fontSize: '0.8125rem',
-                  color: palette.dim,
-                  whiteSpace: 'nowrap',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                }}
-              >
-                {[columns.includes('group') ? s.group : null, s.teacher].filter(Boolean).join(' · ')}
+            {compact ? (
+              <Box sx={{ mt: 0.5, pl: '18px', fontSize: '0.8125rem', color: palette.dim, lineHeight: 1.4 }}>
+                {columns.includes('room') && s.room && (
+                  <Box component="span" sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.04em', color: dimmed ? palette.dim : palette.text }}>
+                    {s.room}
+                  </Box>
+                )}
+                {[columns.includes('room') ? s.building : null, columns.includes('group') ? s.group : null, columns.includes('teacher') ? s.teacher : null]
+                  .filter(Boolean)
+                  .map((part) => ` · ${part}`)
+                  .join('')}
               </Box>
+            ) : (
+              !columns.includes('teacher') &&
+              (s.teacher || s.group) && (
+                <Box
+                  sx={{
+                    mt: 0.25,
+                    pl: '18px',
+                    fontSize: '0.8125rem',
+                    color: palette.dim,
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    textOverflow: 'ellipsis',
+                  }}
+                >
+                  {[columns.includes('group') ? s.group : null, s.teacher].filter(Boolean).join(' · ')}
+                </Box>
+              )
             )}
           </Box>
         );
@@ -173,11 +192,11 @@ export default function DepartureBoard({
   };
 
   const columnWidth = {
-    time: compact ? 62 : 84,
-    room: compact ? 74 : 120,
+    time: compact ? 64 : 84,
+    room: 120,
     group: 110,
     teacher: 190,
-    status: compact ? 92 : 132,
+    status: compact ? 96 : 132,
   };
 
   const groups = groupDays
@@ -237,7 +256,7 @@ export default function DepartureBoard({
           sx={{ width: '100%', borderCollapse: 'collapse', tableLayout: 'fixed', minWidth: compact ? 0 : 560 }}
         >
           {caption && (
-            <Box component="caption" sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+            <Box component="caption" sx={visuallyHidden}>
               {caption}
             </Box>
           )}
@@ -250,7 +269,7 @@ export default function DepartureBoard({
           <thead>
             <tr>
               <Box component="th" scope="col" sx={{ ...cellBase, py: 1 }}>
-                <Box component="span" sx={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+                <Box component="span" sx={visuallyHidden}>
                   {t('board.status')}
                 </Box>
               </Box>
