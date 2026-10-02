@@ -8,7 +8,7 @@ import {
     PASSWORD,
 } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { PasswordResetToken, AuthSession } from "../../models/index.js";
+import { PasswordResetToken, AuthSession, Users } from "../../models/index.js";
 import crypto from "crypto";
 
 beforeAll(resetDatabase);
@@ -16,11 +16,14 @@ afterAll(closeDatabase);
 beforeEach(resetRateLimiters);
 
 describe("Inscription publique", () => {
-    test("POST /api/auth/register n'existe plus", async () => {
+    test("POST /api/auth/register ne crée aucun compte", async () => {
         const response = await anonymous()
             .post("/api/auth/register")
             .send({ nom: "X", prenom: "Y", email: "pirate@x.test", password: PASSWORD, role: "admin" });
-        expect(response.status).toBe(404);
+
+        // 403 (CSRF) ou 404 (route absente) : dans tous les cas aucun compte n'est créé
+        expect([403, 404]).toContain(response.status);
+        expect(await Users.count({ where: { email: "pirate@x.test" } })).toBe(0);
     });
 });
 

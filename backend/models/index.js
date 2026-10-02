@@ -75,6 +75,18 @@ Users.hasMany(GenerationSession, {
     onDelete: "RESTRICT",
 });
 
+// User -> PasswordResetToken (1:n) — utilisé par POST /api/auth/reset-password
+Users.hasMany(PasswordResetToken, {
+    foreignKey: "id_user",
+    as: "password_reset_tokens",
+    onDelete: "CASCADE",
+});
+PasswordResetToken.belongsTo(Users, {
+    foreignKey: "id_user",
+    as: "user",
+    targetKey: "id_user",
+});
+
 Users.hasMany(AuthSession, {
     foreignKey: "id_user",
     as: "auth_sessions",

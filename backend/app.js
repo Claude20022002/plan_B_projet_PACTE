@@ -65,12 +65,10 @@ const allowedOrigins = process.env.ALLOWED_ORIGINS
 
 app.use(
     cors({
+        // Origine inconnue : pas d'en-têtes CORS (le navigateur bloque la lecture) plutôt
+        // qu'une erreur 500 ; les écritures sont de plus refusées par la protection CSRF.
         origin: (origin, callback) => {
-            // Autoriser les requêtes sans origine (ex: Postman, curl)
-            if (!origin || allowedOrigins.includes(origin)) {
-                return callback(null, true);
-            }
-            callback(new Error(`Origine CORS non autorisée: ${origin}`));
+            callback(null, !origin || allowedOrigins.includes(origin));
         },
         credentials: true,
     })
