@@ -99,7 +99,7 @@ export const anonymous = () => request(app);
  * Jeu de données minimal de planification : une filière, deux groupes,
  * une salle, un créneau, un cours et une séance pour l'enseignant fourni.
  */
-export const createPlanningFixture = async ({ enseignant, etudiant } = {}) => {
+export const createPlanningFixture = async ({ admin, enseignant, etudiant } = {}) => {
     const filiere = await Filiere.create({ code_filiere: `IIA${userCounter}`, nom_filiere: "Informatique & IA" });
     const groupe = await Groupe.create({
         nom_groupe: `IIA-3A-${userCounter}`,
@@ -147,6 +147,7 @@ export const createPlanningFixture = async ({ enseignant, etudiant } = {}) => {
             id_user_enseignant: enseignant.id_user,
             id_salle: salle.id_salle,
             id_creneau: creneau.id_creneau,
+            id_user_admin: admin.id_user,
         });
     }
     if (etudiant) {
