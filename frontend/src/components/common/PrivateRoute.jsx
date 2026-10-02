@@ -2,6 +2,10 @@ import { Navigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { CircularProgress, Box } from '@mui/material';
 
+/**
+ * Route protégée.
+ * @param {string|string[]|null} requiredRole - rôle(s) autorisé(s) ; null = tout utilisateur connecté
+ */
 export default function PrivateRoute({ children, requiredRole = null }) {
     const { isAuthenticated, loading, user } = useAuth();
 
@@ -24,10 +28,11 @@ export default function PrivateRoute({ children, requiredRole = null }) {
         return <Navigate to="/connexion" replace />;
     }
 
-    if (requiredRole && user?.role !== requiredRole) {
-        return <Navigate to="/" replace />;
+    const allowed = requiredRole === null || [].concat(requiredRole).includes(user?.role);
+    if (!allowed) {
+        // Mauvais rôle : retour à son propre tableau plutôt qu'à la page publique
+        return <Navigate to={user?.role ? `/dashboard/${user.role}` : '/'} replace />;
     }
 
     return children;
 }
-

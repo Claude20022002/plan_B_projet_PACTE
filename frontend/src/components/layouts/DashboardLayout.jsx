@@ -1,367 +1,372 @@
-import React, { useEffect, useMemo, useState } from 'react';
-import OfflineIndicator from '../common/OfflineIndicator';
-import { useNavigate, useLocation, Link as RouterLink } from 'react-router-dom';
+import { useEffect, useMemo, useState } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
   AppBar,
   Avatar,
   Badge,
+  BottomNavigation,
+  BottomNavigationAction,
   Box,
-  Breadcrumbs,
-  Collapse,
-  Divider,
   Drawer,
   IconButton,
-  Link,
   List,
-  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  Menu,
-  MenuItem,
+  Paper,
+  ToggleButton,
+  ToggleButtonGroup,
   Toolbar,
   Tooltip,
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import { useTheme as useMuiTheme } from '@mui/material/styles';
-import { motion } from 'motion/react';
 import {
-  AccountTree,
-  AdminPanelSettings,
   Assignment,
+  AutoAwesome,
   Book,
-  Brightness4,
-  Brightness7,
-  Business,
-  CalendarToday,
+  CalendarMonth,
   Category,
-  Dashboard,
+  DarkModeOutlined,
+  DepartureBoard as BoardIcon,
   EventAvailable,
-  ExpandLess,
-  ExpandMore,
+  EventRepeat,
   Groups,
+  Insights,
+  LightModeOutlined,
   Logout,
+  ManageAccounts,
   Menu as MenuIcon,
-  NavigateNext,
+  MeetingRoom,
   Notifications,
   People,
-  Room,
+  PersonOutline,
   Schedule,
   School,
   Search,
-  Settings,
-  Warning,
+  ViewWeek,
+  WarningAmber,
 } from '@mui/icons-material';
+import OfflineIndicator from '../common/OfflineIndicator';
+import GlobalSearch from '../common/GlobalSearch';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { notificationAPI } from '../../services/api';
-import GlobalSearch from '../common/GlobalSearch';
+import { LANGUAGES } from '../../i18n';
+import { ds } from '../../design-system/tokens';
 
-const drawerWidth = 268;
-const MotionBox = motion(Box);
+const RAIL_WIDTH = 248;
 
-const BREADCRUMBS = {
-  '/dashboard/admin': [{ label: 'Tableau de bord', path: '/dashboard/admin' }],
-  '/dashboard/enseignant': [{ label: 'Tableau de bord', path: '/dashboard/enseignant' }],
-  '/dashboard/etudiant': [{ label: 'Tableau de bord', path: '/dashboard/etudiant' }],
-  '/gestion/utilisateurs': [{ label: 'Gestion' }, { label: 'Utilisateurs' }],
-  '/gestion/enseignants': [{ label: 'Gestion' }, { label: 'Enseignants' }],
-  '/gestion/etudiants': [{ label: 'Gestion' }, { label: 'Étudiants' }],
-  '/gestion/filieres': [{ label: 'Gestion académique' }, { label: 'Filières' }],
-  '/gestion/groupes': [{ label: 'Gestion académique' }, { label: 'Groupes' }],
-  '/gestion/salles': [{ label: 'Ressources' }, { label: 'Salles' }],
-  '/gestion/cours': [{ label: 'Gestion académique' }, { label: 'Cours' }],
-  '/gestion/creneaux': [{ label: 'Planning' }, { label: 'Créneaux' }],
-  '/gestion/affectations': [{ label: 'Planning' }, { label: 'Affectations' }],
-  '/gestion/conflits': [{ label: 'Planning' }, { label: 'Conflits' }],
-  '/gestion/demandes-report': [{ label: 'Planning' }, { label: 'Demandes de report' }],
-  '/gestion/generation-automatique': [{ label: 'Planning' }, { label: 'Génération automatique' }],
-  '/statistiques': [{ label: 'Statistiques' }],
-  '/notifications': [{ label: 'Notifications' }],
-  '/parametres': [{ label: 'Paramètres' }],
-  '/mes-affectations': [{ label: 'Mes affectations' }],
-  '/disponibilites': [{ label: 'Mes disponibilités' }],
-  '/demandes-report': [{ label: 'Demandes de report' }],
-  '/emploi-du-temps/admin': [{ label: 'Emploi du temps' }, { label: 'Vue admin' }],
-  '/emploi-du-temps/enseignant': [{ label: 'Emploi du temps' }],
-  '/emploi-du-temps/etudiant': [{ label: 'Emploi du temps' }],
+/** Navigation par rôle : sections (libellé) et entrées (icône, chemin, clé de traduction) */
+const navigationFor = (role) => {
+  if (role === 'admin') {
+    return [
+      { items: [{ key: 'nav.dashboard', icon: <BoardIcon />, path: '/dashboard/admin' }] },
+      {
+        section: 'nav.planning',
+        items: [
+          { key: 'nav.sessions', icon: <Schedule />, path: '/gestion/affectations' },
+          { key: 'nav.timetables', icon: <ViewWeek />, path: '/gestion/emplois-du-temps' },
+          { key: 'nav.reports', icon: <EventRepeat />, path: '/gestion/demandes-report' },
+          { key: 'nav.conflicts', icon: <WarningAmber />, path: '/gestion/conflits' },
+          { key: 'nav.generation', icon: <AutoAwesome />, path: '/gestion/generation-automatique' },
+        ],
+      },
+      {
+        section: 'nav.academic',
+        items: [
+          { key: 'nav.programs', icon: <Category />, path: '/gestion/filieres' },
+          { key: 'nav.groups', icon: <Groups />, path: '/gestion/groupes' },
+          { key: 'nav.courses', icon: <Book />, path: '/gestion/cours' },
+          { key: 'nav.slots', icon: <CalendarMonth />, path: '/gestion/creneaux' },
+        ],
+      },
+      {
+        section: 'nav.people',
+        items: [
+          { key: 'nav.users', icon: <ManageAccounts />, path: '/gestion/utilisateurs' },
+          { key: 'nav.teachers', icon: <School />, path: '/gestion/enseignants' },
+          { key: 'nav.students', icon: <People />, path: '/gestion/etudiants' },
+        ],
+      },
+      {
+        section: 'nav.resources',
+        items: [
+          { key: 'nav.rooms', icon: <MeetingRoom />, path: '/gestion/salles' },
+          { key: 'nav.availableRooms', icon: <EventAvailable />, path: '/salles-disponibles' },
+          { key: 'nav.statistics', icon: <Insights />, path: '/statistiques' },
+        ],
+      },
+    ];
+  }
+  if (role === 'enseignant') {
+    return [
+      {
+        items: [
+          { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
+          { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
+          { key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' },
+          { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },
+          { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
+          { key: 'nav.availableRooms', icon: <MeetingRoom />, path: '/salles-disponibles' },
+        ],
+      },
+    ];
+  }
+  return [
+    {
+      items: [
+        { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/etudiant' },
+        { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/etudiant' },
+      ],
+    },
+  ];
 };
 
-function PageBreadcrumbs({ pathname }) {
-  const crumbs = BREADCRUMBS[pathname];
-  if (!crumbs || crumbs.length <= 1) return null;
-
-  return (
-    <Breadcrumbs separator={<NavigateNext fontSize="small" />} sx={{ mb: 2 }}>
-      {crumbs.map((crumb, index) => {
-        const isLast = index === crumbs.length - 1;
-        if (isLast) {
-          return (
-            <Typography key={crumb.label} variant="caption" color="text.primary" fontWeight={800}>
-              {crumb.label}
-            </Typography>
-          );
-        }
-        return crumb.path ? (
-          <Link key={crumb.label} component={RouterLink} to={crumb.path} underline="hover" variant="caption" color="text.secondary">
-            {crumb.label}
-          </Link>
-        ) : (
-          <Typography key={crumb.label} variant="caption" color="text.secondary">
-            {crumb.label}
-          </Typography>
-        );
-      })}
-    </Breadcrumbs>
+/** Onglets du bas sur téléphone (étudiant et enseignant) */
+const bottomTabsFor = (role) => {
+  const base = role === 'enseignant' ? 'enseignant' : 'etudiant';
+  const tabs = [
+    { key: 'nav.board', icon: <BoardIcon />, path: `/dashboard/${base}` },
+    { key: 'nav.week', icon: <ViewWeek />, path: `/emploi-du-temps/${base}` },
+  ];
+  if (role === 'enseignant') tabs.push({ key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' });
+  tabs.push(
+    { key: 'nav.alerts', icon: <Notifications />, path: '/notifications', badge: true },
+    { key: 'nav.account', icon: <PersonOutline />, path: '/parametres' }
   );
-}
+  return tabs;
+};
 
-function Brand({ role }) {
+const TITLE_KEYS = {
+  '/dashboard/admin': 'nav.dashboard',
+  '/dashboard/enseignant': 'board.titleTeacher',
+  '/dashboard/etudiant': 'board.title',
+  '/gestion/utilisateurs': 'nav.users',
+  '/gestion/enseignants': 'nav.teachers',
+  '/gestion/etudiants': 'nav.students',
+  '/gestion/filieres': 'nav.programs',
+  '/gestion/groupes': 'nav.groups',
+  '/gestion/salles': 'nav.rooms',
+  '/gestion/cours': 'nav.courses',
+  '/gestion/creneaux': 'nav.slots',
+  '/gestion/affectations': 'nav.sessions',
+  '/gestion/conflits': 'nav.conflicts',
+  '/gestion/demandes-report': 'nav.reports',
+  '/gestion/generation-automatique': 'nav.generation',
+  '/gestion/emplois-du-temps': 'nav.timetables',
+  '/statistiques': 'nav.statistics',
+  '/notifications': 'nav.notifications',
+  '/parametres': 'nav.settings',
+  '/mes-affectations': 'nav.mySessions',
+  '/disponibilites': 'nav.myAvailability',
+  '/demandes-report': 'nav.myReports',
+  '/salles-disponibles': 'nav.availableRooms',
+  '/emploi-du-temps/enseignant': 'nav.timetable',
+  '/emploi-du-temps/etudiant': 'nav.timetable',
+};
+
+function LanguageSwitch({ onDark = false }) {
+  const { i18n, t } = useTranslation();
   return (
-    <Box sx={{ px: 2, py: 2, display: 'flex', alignItems: 'center', gap: 1.25 }}>
-      <Box
-        sx={{
-          width: 34,
-          height: 34,
-          borderRadius: 2,
-          bgcolor: 'primary.main',
-          color: 'primary.contrastText',
-          display: 'grid',
-          placeItems: 'center',
-          fontWeight: 900,
-        }}
-      >
-        H
-      </Box>
-      <Box sx={{ minWidth: 0 }}>
-        <Typography variant="h3" noWrap>
-          HESTIM Planner
-        </Typography>
-        <Typography variant="caption" color="text.secondary" noWrap>
-          {role === 'admin' ? 'Console administrateur' : role === 'enseignant' ? 'Espace enseignant' : 'Espace étudiant'}
-        </Typography>
-      </Box>
-    </Box>
+    <ToggleButtonGroup
+      size="small"
+      exclusive
+      value={i18n.language}
+      onChange={(_, value) => value && i18n.changeLanguage(value)}
+      aria-label={t('common.language')}
+      sx={{
+        '& .MuiToggleButton-root': {
+          fontFamily: ds.font.board,
+          fontWeight: 600,
+          letterSpacing: '0.08em',
+          px: 1.25,
+          py: 0.25,
+          lineHeight: 1.6,
+          color: onDark ? '#B9C3E6' : 'text.secondary',
+          borderColor: onDark ? 'rgba(255,255,255,0.22)' : 'divider',
+          '&.Mui-selected': {
+            color: onDark ? '#FFFFFF' : 'primary.main',
+            bgcolor: onDark ? 'rgba(255,255,255,0.14)' : 'action.selected',
+          },
+        },
+      }}
+    >
+      {LANGUAGES.map((lang) => (
+        <ToggleButton key={lang.code} value={lang.code} aria-label={lang.label}>
+          {lang.short}
+        </ToggleButton>
+      ))}
+    </ToggleButtonGroup>
   );
 }
 
 export default function DashboardLayout({ children }) {
+  const { t } = useTranslation();
   const { user, logout } = useAuth();
   const { mode, toggleTheme } = useTheme();
-  const muiTheme = useMuiTheme();
-  const isMobile = useMediaQuery(muiTheme.breakpoints.down('sm'));
   const navigate = useNavigate();
   const location = useLocation();
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [anchorEl, setAnchorEl] = useState(null);
-  const [unreadNotifications, setUnreadNotifications] = useState(0);
+  const isDesktop = useMediaQuery('(min-width:900px)');
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [unread, setUnread] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
-  const [openMenus, setOpenMenus] = useState({
-    utilisateurs: false,
-    academique: false,
-    ressources: false,
-    planning: false,
-  });
 
-  const menuItems = useMemo(() => {
-    const baseItems = [
-      {
-        text: 'Tableau de bord',
-        icon: <Dashboard />,
-        path: `/dashboard/${user?.role}`,
-        type: 'item',
-      },
-    ];
-
-    if (user?.role === 'admin') {
-      return [
-        ...baseItems,
-        {
-          text: 'Utilisateurs',
-          icon: <AdminPanelSettings />,
-          type: 'group',
-          key: 'utilisateurs',
-          items: [
-            { text: 'Utilisateurs', icon: <People />, path: '/gestion/utilisateurs' },
-            { text: 'Enseignants', icon: <School />, path: '/gestion/enseignants' },
-            { text: 'Étudiants', icon: <People />, path: '/gestion/etudiants' },
-          ],
-        },
-        {
-          text: 'Académique',
-          icon: <AccountTree />,
-          type: 'group',
-          key: 'academique',
-          items: [
-            { text: 'Filières', icon: <Category />, path: '/gestion/filieres' },
-            { text: 'Groupes', icon: <Groups />, path: '/gestion/groupes' },
-            { text: 'Cours', icon: <Book />, path: '/gestion/cours' },
-            { text: 'Créneaux', icon: <Schedule />, path: '/gestion/creneaux' },
-          ],
-        },
-        {
-          text: 'Ressources',
-          icon: <Business />,
-          type: 'group',
-          key: 'ressources',
-          items: [{ text: 'Salles', icon: <Room />, path: '/gestion/salles' }],
-        },
-        {
-          text: 'Planning',
-          icon: <CalendarToday />,
-          type: 'group',
-          key: 'planning',
-          items: [
-            { text: 'Affectations', icon: <Schedule />, path: '/gestion/affectations' },
-            { text: 'Emplois du temps', icon: <Schedule />, path: '/gestion/emplois-du-temps' },
-            { text: 'Demandes de report', icon: <Assignment />, path: '/gestion/demandes-report' },
-            { text: 'Génération automatique', icon: <EventAvailable />, path: '/gestion/generation-automatique' },
-          ],
-        },
-        { text: 'Conflits', icon: <Warning />, path: '/gestion/conflits', type: 'item' },
-        { text: 'Statistiques', icon: <Dashboard />, path: '/statistiques', type: 'item' },
-      ];
-    }
-
-    if (user?.role === 'enseignant') {
-      return [
-        ...baseItems,
-        { text: 'Mon emploi du temps', icon: <CalendarToday />, path: '/emploi-du-temps/enseignant', type: 'item' },
-        { text: 'Mes affectations', icon: <Assignment />, path: '/mes-affectations', type: 'item' },
-        { text: 'Mes disponibilités', icon: <EventAvailable />, path: '/disponibilites', type: 'item' },
-      ];
-    }
-
-    return [
-      ...baseItems,
-      { text: 'Mon emploi du temps', icon: <Schedule />, path: '/emploi-du-temps/etudiant', type: 'item' },
-    ];
-  }, [user?.role]);
-
-  const isPathInGroup = (items, currentPath) => items.some((item) => item.path === currentPath);
+  const role = user?.role;
+  const navigation = useMemo(() => navigationFor(role), [role]);
+  const bottomTabs = useMemo(() => bottomTabsFor(role), [role]);
+  const showBottomTabs = !isDesktop && (role === 'etudiant' || role === 'enseignant');
 
   useEffect(() => {
     if (!user?.id_user) return undefined;
-    const loadUnreadNotifications = async () => {
+    const load = async () => {
       try {
         const data = await notificationAPI.getNonLues(user.id_user);
-        const notifications = data.data || data || [];
-        setUnreadNotifications(notifications.length);
+        setUnread((data?.data || data || []).length);
       } catch {
-        setUnreadNotifications(0);
+        setUnread(0);
       }
     };
-    loadUnreadNotifications();
-    const interval = setInterval(loadUnreadNotifications, 30000);
-    return () => clearInterval(interval);
+    load();
+    const id = setInterval(load, 30000);
+    return () => clearInterval(id);
   }, [user?.id_user]);
-
-  useEffect(() => {
-    const next = { ...openMenus };
-    menuItems.forEach((item) => {
-      if (item.type === 'group' && isPathInGroup(item.items, location.pathname)) {
-        next[item.key] = true;
-      }
-    });
-    setOpenMenus(next);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.pathname, menuItems]);
 
   const handleLogout = async () => {
     await logout();
     navigate('/connexion');
   };
 
-  const navItemSx = (selected) => ({
-    mx: 1.25,
-    my: 0.25,
-    borderRadius: 2,
-    color: selected ? 'primary.main' : 'text.secondary',
-    '& .MuiListItemIcon-root': {
-      color: selected ? 'primary.main' : 'text.secondary',
-    },
-  });
+  const go = (path) => {
+    navigate(path);
+    setDrawerOpen(false);
+  };
 
-  const drawer = (
-    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: 'background.paper' }}>
-      <Brand role={user?.role} />
-      <Divider />
-      <List sx={{ flexGrow: 1, py: 1 }}>
-        {menuItems.map((item) => {
-          if (item.type === 'group') {
-            const selected = isPathInGroup(item.items, location.pathname);
-            const isOpen = openMenus[item.key];
-            return (
-              <React.Fragment key={item.text}>
-                <ListItem disablePadding>
-                  <ListItemButton
-                    selected={selected}
-                    onClick={() => setOpenMenus((prev) => ({ ...prev, [item.key]: !prev[item.key] }))}
-                    sx={navItemSx(selected)}
-                  >
-                    <ListItemIcon sx={{ minWidth: 34 }}>{item.icon}</ListItemIcon>
-                    <ListItemText primary={item.text} primaryTypographyProps={{ fontSize: 13, fontWeight: selected ? 800 : 650 }} />
-                    {isOpen ? <ExpandLess fontSize="small" /> : <ExpandMore fontSize="small" />}
-                  </ListItemButton>
-                </ListItem>
-                <Collapse in={isOpen} timeout={180} unmountOnExit>
-                  <List disablePadding>
-                    {item.items.map((subItem) => {
-                      const subSelected = location.pathname === subItem.path;
-                      return (
-                        <ListItem key={subItem.text} disablePadding>
-                          <ListItemButton
-                            selected={subSelected}
-                            onClick={() => {
-                              navigate(subItem.path);
-                              setMobileOpen(false);
-                            }}
-                            sx={{ ...navItemSx(subSelected), pl: 4.75 }}
-                          >
-                            <ListItemIcon sx={{ minWidth: 30 }}>{subItem.icon}</ListItemIcon>
-                            <ListItemText primary={subItem.text} primaryTypographyProps={{ fontSize: 12.5, fontWeight: subSelected ? 800 : 600 }} />
-                          </ListItemButton>
-                        </ListItem>
-                      );
-                    })}
-                  </List>
-                </Collapse>
-              </React.Fragment>
-            );
-          }
+  const title = t(TITLE_KEYS[location.pathname] || 'app.name');
+  const initials = `${user?.prenom?.[0] || ''}${user?.nom?.[0] || ''}`.toUpperCase();
 
-          const selected = location.pathname === item.path;
-          return (
-            <ListItem key={item.text} disablePadding>
-              <ListItemButton
-                selected={selected}
-                onClick={() => {
-                  navigate(item.path);
-                  setMobileOpen(false);
+  const rail = (
+    <Box
+      component="nav"
+      aria-label={t('nav.menu')}
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: ds.brand.navy, color: '#FFFFFF' }}
+    >
+      <Box sx={{ px: 2, pt: 2.5, pb: 2 }}>
+        <Box sx={{ bgcolor: '#FFFFFF', borderRadius: `${ds.radius.md}px`, px: 1.5, py: 1, display: 'inline-flex' }}>
+          <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: 26, display: 'block' }} />
+        </Box>
+        <Box
+          sx={{
+            mt: 1.5,
+            fontFamily: ds.font.board,
+            fontWeight: 700,
+            fontSize: '1.0625rem',
+            letterSpacing: '0.16em',
+            textTransform: 'uppercase',
+          }}
+        >
+          Planner
+        </Box>
+        <Box sx={{ fontSize: '0.8125rem', color: '#B9C3E6' }}>{role ? t(`roles.${role}`) : ''}</Box>
+      </Box>
+
+      <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1.25, pb: 2 }}>
+        {navigation.map((group, index) => (
+          <Box key={group.section || index} sx={{ mt: index === 0 ? 0 : 2 }}>
+            {group.section && (
+              <Box
+                sx={{
+                  px: 1.25,
+                  pb: 0.5,
+                  fontFamily: ds.font.board,
+                  fontWeight: 600,
+                  fontSize: '0.75rem',
+                  letterSpacing: '0.16em',
+                  textTransform: 'uppercase',
+                  color: '#8D9BCF',
                 }}
-                sx={navItemSx(selected)}
               >
-                <ListItemIcon sx={{ minWidth: 34 }}>{item.icon}</ListItemIcon>
-                <ListItemText primary={item.text} primaryTypographyProps={{ fontSize: 13, fontWeight: selected ? 800 : 650 }} />
-              </ListItemButton>
-            </ListItem>
-          );
-        })}
-      </List>
-      <Box sx={{ p: 1.5, borderTop: '1px solid', borderColor: 'divider' }}>
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.25, p: 1, borderRadius: 2, bgcolor: 'action.hover' }}>
-          <Avatar src={user?.avatar_url} sx={{ width: 34, height: 34, bgcolor: 'primary.main', fontSize: 14 }}>
-            {!user?.avatar_url && user?.prenom?.[0]?.toUpperCase()}
+                {t(group.section)}
+              </Box>
+            )}
+            <List disablePadding>
+              {group.items.map((item) => {
+                const selected = location.pathname === item.path;
+                return (
+                  <ListItemButton
+                    key={item.path}
+                    selected={selected}
+                    aria-current={selected ? 'page' : undefined}
+                    onClick={() => go(item.path)}
+                    sx={{
+                      my: 0.25,
+                      px: 1.25,
+                      color: selected ? '#FFFFFF' : '#D3DAF1',
+                      '& .MuiListItemIcon-root': { color: selected ? ds.brand.orange : '#8D9BCF', minWidth: 34 },
+                      '&.Mui-selected, &.Mui-selected:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
+                      '&:hover': { bgcolor: 'rgba(255,255,255,0.07)' },
+                      '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: -2 },
+                    }}
+                  >
+                    <ListItemIcon>{item.icon}</ListItemIcon>
+                    <ListItemText
+                      primary={t(item.key)}
+                      primaryTypographyProps={{ fontSize: '0.9375rem', fontWeight: selected ? 600 : 500 }}
+                    />
+                  </ListItemButton>
+                );
+              })}
+            </List>
+          </Box>
+        ))}
+      </Box>
+
+      <Box sx={{ px: 2, py: 1.75, borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+        <Box
+          component="button"
+          type="button"
+          onClick={() => go('/parametres')}
+          sx={{
+            all: 'unset',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.25,
+            width: '100%',
+            borderRadius: `${ds.radius.sm}px`,
+            '&:focus-visible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 2 },
+          }}
+        >
+          <Avatar src={user?.avatar_url} sx={{ width: 34, height: 34, bgcolor: ds.brand.orange, color: '#1A0A02', fontSize: '0.875rem', fontWeight: 700 }}>
+            {!user?.avatar_url && initials}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={800} noWrap>
+            <Typography variant="body2" fontWeight={600} noWrap sx={{ color: '#FFFFFF' }}>
               {user?.prenom} {user?.nom}
             </Typography>
-            <Typography variant="caption" color="text.secondary" noWrap>
+            <Typography variant="caption" noWrap sx={{ color: '#B9C3E6', display: 'block' }}>
               {user?.email}
             </Typography>
           </Box>
+        </Box>
+        <Box sx={{ mt: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
+          <LanguageSwitch onDark />
+          <Box sx={{ flexGrow: 1 }} />
+          <Tooltip title={mode === 'dark' ? t('common.themeLight') : t('common.themeDark')}>
+            <IconButton
+              onClick={toggleTheme}
+              aria-label={mode === 'dark' ? t('common.themeLight') : t('common.themeDark')}
+              sx={{ color: '#D3DAF1' }}
+            >
+              {mode === 'dark' ? <LightModeOutlined /> : <DarkModeOutlined />}
+            </IconButton>
+          </Tooltip>
+          <Tooltip title={t('common.logout')}>
+            <IconButton onClick={handleLogout} aria-label={t('common.logout')} sx={{ color: '#D3DAF1' }}>
+              <Logout />
+            </IconButton>
+          </Tooltip>
         </Box>
       </Box>
     </Box>
@@ -369,118 +374,144 @@ export default function DashboardLayout({ children }) {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
-      <AppBar
-        position="fixed"
-        color="inherit"
-        sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
-          bgcolor: 'rgba(255,255,255,0.82)',
-          backdropFilter: 'blur(16px)',
-          color: 'text.primary',
-        }}
-      >
-        <Toolbar sx={{ minHeight: '64px !important', px: { xs: 2, sm: 3 } }}>
-          <IconButton aria-label="open drawer" edge="start" onClick={() => setMobileOpen(true)} sx={{ mr: 1, display: { sm: 'none' } }}>
-            <MenuIcon />
-          </IconButton>
-          <Box sx={{ flexGrow: 1, minWidth: 0 }}>
-            <Typography variant="h3" noWrap>
-              {BREADCRUMBS[location.pathname]?.at(-1)?.label || 'HESTIM Planner'}
-            </Typography>
-            {!isMobile && (
-              <Typography variant="caption" color="text.secondary" noWrap>
-                Gestion académique, planning et ressources
-              </Typography>
-            )}
-          </Box>
-          {/* La recherche mène aux écrans de gestion : réservée à l'administration */}
-          {user?.role === 'admin' && (
-            <Tooltip title="Recherche globale">
-              <IconButton onClick={() => setSearchOpen(true)} aria-label="Recherche globale">
-                <Search />
-              </IconButton>
-            </Tooltip>
-          )}
-          <Tooltip title="Notifications">
-            <IconButton onClick={() => navigate('/notifications')}>
-              <Badge badgeContent={unreadNotifications} color="error">
-                <Notifications />
-              </Badge>
-            </IconButton>
-          </Tooltip>
-          <Tooltip title="Changer le thème">
-            <IconButton onClick={toggleTheme}>
-              {mode === 'dark' ? <Brightness7 /> : <Brightness4 />}
-            </IconButton>
-          </Tooltip>
-          <IconButton onClick={(event) => setAnchorEl(event.currentTarget)} sx={{ ml: 0.5 }}>
-            <Avatar src={user?.avatar_url} sx={{ width: 32, height: 32, bgcolor: 'primary.main' }}>
-              {!user?.avatar_url && user?.prenom?.[0]?.toUpperCase()}
-            </Avatar>
-          </IconButton>
-          <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)} PaperProps={{ sx: { mt: 1, minWidth: 210 } }}>
-            <MenuItem onClick={() => navigate('/parametres')}>
-              <ListItemIcon>
-                <Settings fontSize="small" />
-              </ListItemIcon>
-              Paramètres
-            </MenuItem>
-            <MenuItem onClick={handleLogout}>
-              <ListItemIcon>
-                <Logout fontSize="small" />
-              </ListItemIcon>
-              Déconnexion
-            </MenuItem>
-          </Menu>
-        </Toolbar>
-      </AppBar>
-
-      <Box component="nav" sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}>
+      {isDesktop ? (
+        <Box sx={{ width: RAIL_WIDTH, flexShrink: 0 }}>
+          <Box sx={{ position: 'fixed', top: 0, bottom: 0, left: 0, width: RAIL_WIDTH }}>{rail}</Box>
+        </Box>
+      ) : (
         <Drawer
-          variant="temporary"
-          open={mobileOpen}
-          onClose={() => setMobileOpen(false)}
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
           ModalProps={{ keepMounted: true }}
-          sx={{
-            display: { xs: 'block', sm: 'none' },
-            '& .MuiDrawer-paper': { boxSizing: 'border-box', width: drawerWidth },
-          }}
+          PaperProps={{ sx: { width: RAIL_WIDTH, bgcolor: ds.brand.navy } }}
         >
-          {drawer}
+          {rail}
         </Drawer>
-        <Drawer
-          variant="permanent"
-          sx={{
-            display: { xs: 'none', sm: 'block' },
-            '& .MuiDrawer-paper': {
-              boxSizing: 'border-box',
-              width: drawerWidth,
-              borderRight: '1px solid',
-              borderColor: 'divider',
-            },
-          }}
-          open
-        >
-          {drawer}
-        </Drawer>
-      </Box>
+      )}
 
-      <Box component="main" sx={{ flexGrow: 1, width: { sm: `calc(100% - ${drawerWidth}px)` }, minWidth: 0 }}>
-        <Toolbar />
-        <MotionBox
-          initial={{ opacity: 0, y: 8 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-          sx={{ px: { xs: 2, md: 3 }, py: { xs: 2, md: 3 }, maxWidth: 1480, mx: 'auto' }}
+      <Box sx={{ flexGrow: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
+        <AppBar
+          position="sticky"
+          sx={{
+            top: 0,
+            zIndex: (theme) => theme.zIndex.appBar,
+            bgcolor: isDesktop ? 'background.paper' : ds.brand.navy,
+            color: isDesktop ? 'text.primary' : '#FFFFFF',
+            borderBottomColor: isDesktop ? 'divider' : ds.brand.navy,
+          }}
+        >
+          <Toolbar sx={{ minHeight: { xs: 56, md: 64 }, px: { xs: 1, sm: 2, md: 3 }, gap: 0.5 }}>
+            {!isDesktop && (
+              <IconButton aria-label={t('nav.menu')} onClick={() => setDrawerOpen(true)} sx={{ color: 'inherit' }}>
+                <MenuIcon />
+              </IconButton>
+            )}
+            <Typography
+              component="h1"
+              noWrap
+              sx={{
+                flexGrow: 1,
+                ml: isDesktop ? 0 : 0.5,
+                fontFamily: ds.font.board,
+                fontWeight: 700,
+                fontSize: { xs: '1.125rem', md: '1.5rem' },
+                letterSpacing: { xs: '0.1em', md: '0.02em' },
+                textTransform: isDesktop ? 'none' : 'uppercase',
+              }}
+            >
+              {title}
+            </Typography>
+            {role === 'admin' && (
+              <Tooltip title={t('nav.search')}>
+                <IconButton onClick={() => setSearchOpen(true)} aria-label={t('nav.search')} sx={{ color: 'inherit' }}>
+                  <Search />
+                </IconButton>
+              </Tooltip>
+            )}
+            {!showBottomTabs && (
+              <Tooltip title={t('nav.notifications')}>
+                <IconButton onClick={() => go('/notifications')} aria-label={t('nav.notifications')} sx={{ color: 'inherit' }}>
+                  <Badge badgeContent={unread} color="secondary">
+                    <Notifications />
+                  </Badge>
+                </IconButton>
+              </Tooltip>
+            )}
+          </Toolbar>
+        </AppBar>
+
+        <Box
+          component="main"
+          sx={{
+            flexGrow: 1,
+            px: { xs: 1.5, sm: 2, md: 3 },
+            pt: { xs: 1.5, md: 3 },
+            pb: showBottomTabs ? 'calc(72px + env(safe-area-inset-bottom))' : { xs: 2, md: 4 },
+            width: '100%',
+            maxWidth: 1480,
+            mx: 'auto',
+          }}
         >
           <OfflineIndicator />
-          <PageBreadcrumbs pathname={location.pathname} />
           {children}
-        </MotionBox>
+        </Box>
       </Box>
-      {user?.role === 'admin' && <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />}
+
+      {showBottomTabs && (
+        <Paper
+          component="nav"
+          aria-label={t('nav.menu')}
+          square
+          sx={{
+            position: 'fixed',
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: (theme) => theme.zIndex.appBar,
+            borderTop: '1px solid',
+            borderColor: 'divider',
+            pb: 'env(safe-area-inset-bottom)',
+          }}
+        >
+          <BottomNavigation
+            showLabels
+            value={bottomTabs.findIndex((tab) => tab.path === location.pathname)}
+            onChange={(_, index) => go(bottomTabs[index].path)}
+            sx={{
+              height: 64,
+              '& .MuiBottomNavigationAction-root': { minWidth: 0, px: 0.5, color: 'text.secondary' },
+              '& .MuiBottomNavigationAction-root.Mui-selected': { color: 'primary.main' },
+              '& .MuiBottomNavigationAction-label': {
+                fontFamily: ds.font.board,
+                fontWeight: 600,
+                fontSize: '0.75rem',
+                letterSpacing: '0.08em',
+                textTransform: 'uppercase',
+                mt: 0.25,
+              },
+              '& .MuiBottomNavigationAction-label.Mui-selected': { fontSize: '0.75rem' },
+            }}
+          >
+            {bottomTabs.map((tab) => (
+              <BottomNavigationAction
+                key={tab.path}
+                label={t(tab.key)}
+                icon={
+                  tab.badge ? (
+                    <Badge badgeContent={unread} color="secondary">
+                      {tab.icon}
+                    </Badge>
+                  ) : (
+                    tab.icon
+                  )
+                }
+              />
+            ))}
+          </BottomNavigation>
+        </Paper>
+      )}
+
+      {role === 'admin' && <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />}
     </Box>
   );
 }
-

@@ -64,6 +64,7 @@ const Statistiques   = lazy(() => import('./pages/Statistiques'));
 const MesAffectations= lazy(() => import('./pages/MesAffectations'));
 const DemandesReport = lazy(() => import('./pages/DemandesReport'));
 const Disponibilites = lazy(() => import('./pages/Disponibilites'));
+const SallesDisponibles = lazy(() => import('./pages/SallesDisponibles'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -248,6 +249,12 @@ export default function App() {
           <Route path="/disponibilites" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><Disponibilites /></AppPage>
+            </PrivateRoute>
+          } />
+
+          <Route path="/salles-disponibles" element={
+            <PrivateRoute requiredRole={['enseignant', 'admin']}>
+              <AppPage><SallesDisponibles /></AppPage>
             </PrivateRoute>
           } />
 
