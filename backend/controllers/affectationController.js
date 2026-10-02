@@ -13,6 +13,8 @@ import { getPaginationParams, createPaginationResponse } from "../utils/paginati
 import { verifierEtCreerConflits } from "../utils/detectConflicts.js";
 import { notifierNouvelleAffectation } from "../utils/notificationHelper.js";
 import { tenantWhere, withTenant } from "../utils/tenantHelper.js";
+import { pick } from "../utils/validationHelper.js";
+import { etudiantAppartientAuGroupe } from "../middleware/accessMiddleware.js";
 
 /**
  * Contrôleur pour les affectations
@@ -83,7 +85,16 @@ export const getAffectationById = asyncHandler(async (req, res) => {
         ],
     });
 
-    if (!affectation) {
+    // Admin : tout ; enseignant : ses séances ; étudiant : les séances de son groupe.
+    // Une séance inaccessible répond 404 pour ne pas révéler son existence.
+    const canRead =
+        affectation &&
+        (req.user.role === "admin" ||
+            affectation.id_user_enseignant === req.user.id_user ||
+            (req.user.role === "etudiant" &&
+                (await etudiantAppartientAuGroupe(req.user.id_user, affectation.id_groupe))));
+
+    if (!canRead) {
         return res.status(404).json({
             message: "Affectation non trouvée",
             error: `Aucune affectation trouvée avec l'ID ${req.params.id}`,
@@ -93,9 +104,23 @@ export const getAffectationById = asyncHandler(async (req, res) => {
     res.json(affectation);
 });
 
+// Champs qu'un administrateur peut renseigner ; id_user_admin vient toujours de la session.
+const AFFECTATION_FIELDS = [
+    "date_seance",
+    "statut",
+    "commentaire",
+    "id_cours",
+    "id_groupe",
+    "id_user_enseignant",
+    "id_salle",
+    "id_creneau",
+];
+
 // ➕ Créer une affectation
 export const createAffectation = asyncHandler(async (req, res) => {
-    const affectation = await Affectation.create(withTenant(req, req.body));
+    const affectation = await Affectation.create(
+        withTenant(req, { ...pick(req.body, AFFECTATION_FIELDS), id_user_admin: req.user.id_user })
+    );
 
     // Détecter les conflits automatiquement
     const conflits = await verifierEtCreerConflits(affectation);
@@ -154,7 +179,7 @@ export const updateAffectation = asyncHandler(async (req, res) => {
         });
     }
 
-    await affectation.update(withTenant(req, req.body));
+    await affectation.update(withTenant(req, pick(req.body, AFFECTATION_FIELDS)));
 
     // Re-vérifier les conflits après modification
     const conflits = await verifierEtCreerConflits(affectation);

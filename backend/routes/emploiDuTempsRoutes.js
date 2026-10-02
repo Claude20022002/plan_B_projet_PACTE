@@ -7,29 +7,33 @@ import {
     getEmploiDuTempsConsolide,
     genererEmploiDuTemps,
 } from "../controllers/emploiDuTempsController.js";
-import { authenticateToken, requireAdmin } from "../middleware/index.js";
+import { authenticateToken, requireAdmin, requireOwnResourceOrAdmin } from "../middleware/index.js";
+import { requireGroupAccess, requireSelfOrStaff } from "../middleware/accessMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
 
-// 📅 GET /api/emplois-du-temps/enseignant/:id - Emploi du temps d'un enseignant
+// 📅 GET /api/emplois-du-temps/enseignant/:id - Emploi du temps d'un enseignant (lui-même ou admin)
 router.get(
     "/enseignant/:id",
     authenticateToken,
+    requireOwnResourceOrAdmin("id"),
     asyncHandler(getEmploiDuTempsEnseignant)
 );
 
-// 📅 GET /api/emplois-du-temps/groupe/:id - Emploi du temps d'un groupe
+// 📅 GET /api/emplois-du-temps/groupe/:id - Emploi du temps d'un groupe (personnel ou membre du groupe)
 router.get(
     "/groupe/:id",
     authenticateToken,
+    requireGroupAccess("id"),
     asyncHandler(getEmploiDuTempsGroupe)
 );
 
-// 📅 GET /api/emplois-du-temps/etudiant/:id - Emploi du temps d'un étudiant
+// 📅 GET /api/emplois-du-temps/etudiant/:id - Emploi du temps d'un étudiant (lui-même ou personnel)
 router.get(
     "/etudiant/:id",
     authenticateToken,
+    requireSelfOrStaff("id"),
     asyncHandler(getEmploiDuTempsEtudiant)
 );
 

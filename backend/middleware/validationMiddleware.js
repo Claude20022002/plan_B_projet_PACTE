@@ -254,9 +254,7 @@ export const validateAffectationCreation = [
         .withMessage("ID enseignant invalide"),
     body("id_salle").isInt({ min: 1 }).withMessage("ID salle invalide"),
     body("id_creneau").isInt({ min: 1 }).withMessage("ID créneau invalide"),
-    body("id_user_admin")
-        .isInt({ min: 1 })
-        .withMessage("ID administrateur invalide"),
+    // id_user_admin n'est plus attendu du client : il est pris dans la session
     handleValidationErrors,
 ];
 
