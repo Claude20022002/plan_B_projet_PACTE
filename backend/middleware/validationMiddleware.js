@@ -25,9 +25,10 @@ export const validateUserCreation = [
     body("nom").trim().notEmpty().withMessage("Le nom est requis"),
     body("prenom").trim().notEmpty().withMessage("Le prénom est requis"),
     body("email").isEmail().withMessage("L'email doit être valide"),
-    body("password_hash")
-        .isLength({ min: 6 })
-        .withMessage("Le mot de passe doit contenir au moins 6 caractères"),
+    body("password")
+        .isString()
+        .isLength({ min: 8 })
+        .withMessage("Le mot de passe doit contenir au moins 8 caractères"),
     body("role")
         .optional()
         .isIn(["admin", "enseignant", "etudiant"])

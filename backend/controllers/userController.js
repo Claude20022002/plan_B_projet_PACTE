@@ -1,11 +1,17 @@
 import { Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
-import { hashPassword } from "../utils/passwordHelper.js";
+import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
+import { pick } from "../utils/validationHelper.js";
 
 /**
  * Contrôleur pour les utilisateurs
  */
+
+// Champs modifiables par l'utilisateur sur son propre profil
+const SELF_EDITABLE_FIELDS = ["nom", "prenom", "telephone", "avatar_url"];
+// Champs modifiables par un administrateur
+const ADMIN_EDITABLE_FIELDS = [...SELF_EDITABLE_FIELDS, "email", "role", "actif"];
 
 // 🔍 Récupérer tous les utilisateurs (avec pagination)
 export const getAllUsers = asyncHandler(async (req, res) => {
@@ -48,7 +54,19 @@ export const createUser = asyncHandler(async (req, res) => {
         });
     }
 
-    const user = await Users.create(req.body);
+    const passwordValidation = validatePasswordStrength(req.body.password);
+    if (!passwordValidation.valid) {
+        return res.status(400).json({
+            message: "Mot de passe invalide",
+            errors: passwordValidation.errors,
+        });
+    }
+
+    // Seuls les champs connus sont acceptés ; le mot de passe est toujours haché ici
+    const user = await Users.create({
+        ...pick(req.body, ["nom", "prenom", "email", "role", "telephone", "actif"]),
+        password_hash: await hashPassword(req.body.password),
+    });
 
     // Retourner l'utilisateur sans le mot de passe
     const userResponse = user.toJSON();
@@ -71,9 +89,14 @@ export const updateUser = asyncHandler(async (req, res) => {
         });
     }
 
+    // Liste blanche selon le rôle : un utilisateur ne peut jamais modifier
+    // son propre rôle, son statut actif ou son email (identifiant de connexion).
+    const isAdmin = req.user.role === "admin";
+    const updateData = pick(req.body, isAdmin ? ADMIN_EDITABLE_FIELDS : SELF_EDITABLE_FIELDS);
+
     // Si l'email est modifié, vérifier qu'il n'existe pas déjà
-    if (req.body.email && req.body.email !== user.email) {
-        const existingUser = await Users.findOne({ where: { email: req.body.email } });
+    if (updateData.email && updateData.email !== user.email) {
+        const existingUser = await Users.findOne({ where: { email: updateData.email } });
         if (existingUser) {
             return res.status(409).json({
                 message: "Email déjà utilisé",
@@ -82,11 +105,32 @@ export const updateUser = asyncHandler(async (req, res) => {
         }
     }
 
-    // Si un mot de passe est fourni, le hasher
-    const updateData = { ...req.body };
-    if (updateData.password) {
-        updateData.password_hash = await hashPassword(updateData.password);
-        delete updateData.password; // Supprimer le champ password non hashé
+    if (req.body.password) {
+        const passwordValidation = validatePasswordStrength(String(req.body.password));
+        if (!passwordValidation.valid) {
+            return res.status(400).json({
+                message: "Mot de passe invalide",
+                errors: passwordValidation.errors,
+            });
+        }
+
+        // Changer son propre mot de passe exige l'actuel (session volée ≠ compte volé).
+        // L'administrateur qui réinitialise le mot de passe d'un autre compte n'en a pas besoin.
+        const isOwnAccount = user.id_user === req.user.id_user;
+        if (isOwnAccount) {
+            const withHash = await Users.scope("withPassword").findByPk(user.id_user);
+            const currentOk =
+                typeof req.body.current_password === "string" &&
+                (await comparePassword(req.body.current_password, withHash.password_hash));
+            if (!currentOk) {
+                return res.status(400).json({
+                    message: "Mot de passe actuel incorrect",
+                    error: "Saisissez votre mot de passe actuel pour en définir un nouveau",
+                });
+            }
+        }
+
+        updateData.password_hash = await hashPassword(String(req.body.password));
     }
 
     await user.update(updateData);
