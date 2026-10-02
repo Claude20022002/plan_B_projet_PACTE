@@ -72,7 +72,10 @@ export const createEnseignant = asyncHandler(async (req, res) => {
         });
     }
 
-    const enseignant = await Enseignant.create(req.body);
+    const enseignant = await Enseignant.create({
+        ...pick(req.body, ENSEIGNANT_FIELDS),
+        id_user: user.id_user,
+    });
 
     const enseignantAvecUser = await Enseignant.findByPk(enseignant.id_user, {
         include: [
@@ -101,7 +104,7 @@ export const updateEnseignant = asyncHandler(async (req, res) => {
         });
     }
 
-    await enseignant.update(req.body);
+    await enseignant.update(pick(req.body, ENSEIGNANT_FIELDS));
 
     const enseignantAvecUser = await Enseignant.findByPk(enseignant.id_user, {
         include: [
