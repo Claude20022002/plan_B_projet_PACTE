@@ -118,6 +118,8 @@ const en = {
   teacher: {
     toConfirm_one: 'session to confirm',
     toConfirm_other: 'sessions to confirm',
+    pendingReports_one: 'pending reschedule request',
+    pendingReports_other: 'pending reschedule requests',
   },
   admin: {
     planSession: 'Schedule a session',

@@ -118,6 +118,8 @@ const fr = {
   teacher: {
     toConfirm_one: 'séance à confirmer',
     toConfirm_other: 'séances à confirmer',
+    pendingReports_one: 'demande de report en attente',
+    pendingReports_other: 'demandes de report en attente',
   },
   admin: {
     planSession: 'Planifier une séance',

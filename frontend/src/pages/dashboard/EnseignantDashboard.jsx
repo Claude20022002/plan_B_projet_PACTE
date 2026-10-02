@@ -18,7 +18,7 @@ function TodoPanel({ toConfirm, pendingReports, onOpenSessions, onOpenReports })
   const { t } = useTranslation();
   const rows = [
     { label: t('teacher.toConfirm', { count: toConfirm }), value: toConfirm, action: onOpenSessions },
-    { label: t('admin.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports },
+    { label: t('teacher.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports },
   ];
   return (
     <Box
