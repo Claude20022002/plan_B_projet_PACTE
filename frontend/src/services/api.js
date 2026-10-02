@@ -88,7 +88,7 @@ async function request(endpoint, options = {}) {
                 try {
                     await request('/auth/refresh', { method: 'POST' });
                     return request(endpoint, { ...options, _retried: true });
-                } catch (_) {
+                } catch {
                     const error = new Error(data.message || data.error || 'Non autorisé');
                     error.status = 401;
                     error.response = { data };
