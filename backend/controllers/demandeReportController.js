@@ -1,6 +1,7 @@
 import { DemandeReport, Affectation, Users, Cours, Groupe, Salle, Creneau, Appartenir, Etudiant } from "../models/index.js";
 import { notifierAdministrateurs } from "../utils/notificationHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { pick } from "../utils/validationHelper.js";
 
 /**
  * Contrôleur pour les demandes de report
@@ -73,9 +74,64 @@ export const getDemandeReportById = asyncHandler(async (req, res) => {
     res.json(demande);
 });
 
+const EDITABLE_FIELDS = ["motif", "nouvelle_date"];
+
+/**
+ * Charge une demande modifiable par l'utilisateur courant :
+ * l'admin peut tout gérer, un enseignant seulement ses demandes encore en attente.
+ * Envoie la réponse d'erreur et renvoie null si l'accès est refusé.
+ */
+const loadEditableDemande = async (req, res) => {
+    const demande = await DemandeReport.findByPk(req.params.id);
+    const isAdmin = req.user.role === "admin";
+
+    if (!demande || (!isAdmin && demande.id_user_enseignant !== req.user.id_user)) {
+        res.status(404).json({ message: "Demande de report non trouvée" });
+        return null;
+    }
+    if (!isAdmin && demande.statut_demande !== "en_attente") {
+        res.status(400).json({
+            message: "Demande déjà traitée",
+            error: "Une demande approuvée ou refusée ne peut plus être modifiée",
+        });
+        return null;
+    }
+    return demande;
+};
+
 // ➕ Créer une demande de report
 export const createDemandeReport = asyncHandler(async (req, res) => {
-    const demande = await DemandeReport.create(req.body);
+    const data = pick(req.body, [...EDITABLE_FIELDS, "id_affectation"]);
+
+    const affectation = await Affectation.findByPk(data.id_affectation);
+    if (!affectation) {
+        return res.status(404).json({ message: "Affectation non trouvée" });
+    }
+
+    // L'enseignant et le statut sont déterminés par le serveur, jamais par le client
+    const isAdmin = req.user.role === "admin";
+    if (!isAdmin && affectation.id_user_enseignant !== req.user.id_user) {
+        return res.status(403).json({
+            message: "Accès interdit",
+            error: "Vous ne pouvez demander le report que de vos propres séances",
+        });
+    }
+
+    const demandeEnCours = await DemandeReport.findOne({
+        where: { id_affectation: affectation.id_affectation, statut_demande: "en_attente" },
+    });
+    if (demandeEnCours) {
+        return res.status(409).json({
+            message: "Demande déjà en cours",
+            error: "Une demande de report est déjà en attente pour cette séance",
+        });
+    }
+
+    const demande = await DemandeReport.create({
+        ...data,
+        id_user_enseignant: affectation.id_user_enseignant,
+        statut_demande: "en_attente",
+    });
 
     const demandeComplete = await DemandeReport.findByPk(demande.id_demande, {
         include: [
@@ -145,15 +201,11 @@ export const createDemandeReport = asyncHandler(async (req, res) => {
 
 // ✏️ Mettre à jour une demande de report
 export const updateDemandeReport = asyncHandler(async (req, res) => {
-    const demande = await DemandeReport.findByPk(req.params.id);
+    const demande = await loadEditableDemande(req, res);
+    if (!demande) return;
 
-    if (!demande) {
-        return res
-            .status(404)
-            .json({ message: "Demande de report non trouvée" });
-    }
-
-    await demande.update(req.body);
+    // Le statut ne change que via PATCH /:id/traiter (qui applique le report)
+    await demande.update(pick(req.body, EDITABLE_FIELDS));
 
     const demandeComplete = await DemandeReport.findByPk(demande.id_demande, {
         include: [
@@ -412,13 +464,8 @@ export const traiterDemandeReport = asyncHandler(async (req, res) => {
 
 // 🗑️ Supprimer une demande de report
 export const deleteDemandeReport = asyncHandler(async (req, res) => {
-    const demande = await DemandeReport.findByPk(req.params.id);
-
-    if (!demande) {
-        return res
-            .status(404)
-            .json({ message: "Demande de report non trouvée" });
-    }
+    const demande = await loadEditableDemande(req, res);
+    if (!demande) return;
 
     await demande.destroy();
 
