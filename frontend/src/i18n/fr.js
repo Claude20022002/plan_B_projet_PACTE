@@ -94,6 +94,10 @@ const fr = {
     confirmed: 'Confirmée',
     requestReport: 'Demander un report',
     openTimetable: "Voir l'emploi du temps",
+    changesTitle: 'Changements récents',
+    noChanges: "Aucun changement depuis votre dernière visite.",
+    confirmDone: 'Séance confirmée.',
+    confirmError: 'La confirmation a échoué. Réessayez.',
   },
   login: {
     title: 'Connexion',

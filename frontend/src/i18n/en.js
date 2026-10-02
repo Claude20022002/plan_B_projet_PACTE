@@ -94,6 +94,10 @@ const en = {
     confirmed: 'Confirmed',
     requestReport: 'Request a reschedule',
     openTimetable: 'Open timetable',
+    changesTitle: 'Recent changes',
+    noChanges: 'Nothing has changed since your last visit.',
+    confirmDone: 'Session confirmed.',
+    confirmError: 'Confirmation failed. Please try again.',
   },
   login: {
     title: 'Sign in',
