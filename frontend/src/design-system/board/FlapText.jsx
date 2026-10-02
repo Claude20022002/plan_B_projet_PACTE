@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import { keyframes } from '@mui/system';
+import { visuallyHidden } from '@mui/utils';
 import { ds } from '../tokens';
 
 /**
@@ -69,17 +70,7 @@ export default function FlapText({ value, sx, component = 'span' }) {
 
   return (
     <Box component={component} sx={{ display: 'inline-block', perspective: '400px', ...sx }}>
-      <Box
-        component="span"
-        sx={{
-          position: 'absolute',
-          width: 1,
-          height: 1,
-          overflow: 'hidden',
-          clip: 'rect(0 0 0 0)',
-          whiteSpace: 'nowrap',
-        }}
-      >
+      <Box component="span" sx={visuallyHidden}>
         {text}
       </Box>
       <span aria-hidden="true">

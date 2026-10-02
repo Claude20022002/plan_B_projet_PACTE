@@ -44,18 +44,12 @@ export default function FlapTiles({ value, size = '1rem', variant = 'board', col
               px: isSeparator ? 0 : '0.06em',
               borderRadius: '2px',
               bgcolor: isSeparator ? 'transparent' : isBoard ? ds.board.cell : ds.colors.bg.subtle,
-              // Charnière horizontale du volet
-              '&::after': isSeparator
-                ? undefined
-                : {
-                    content: '""',
-                    position: 'absolute',
-                    left: 0,
-                    right: 0,
-                    top: '50%',
-                    height: '1px',
-                    bgcolor: isBoard ? ds.board.cellHinge : 'rgba(13, 19, 38, 0.08)',
-                  },
+              // Charnière horizontale du volet, peinte DERRIÈRE le caractère (le « 0 » reste un 0)
+              backgroundImage: isSeparator
+                ? 'none'
+                : `linear-gradient(to bottom, transparent calc(50% - 0.5px), ${
+                    isBoard ? ds.board.cellHinge : 'rgba(13, 19, 38, 0.10)'
+                  } calc(50% - 0.5px), ${isBoard ? ds.board.cellHinge : 'rgba(13, 19, 38, 0.10)'} calc(50% + 0.5px), transparent calc(50% + 0.5px))`,
             }}
           >
             {char}
