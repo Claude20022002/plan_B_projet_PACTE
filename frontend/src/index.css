@@ -1,0 +1,84 @@
+/* Surfaces du navigateur thémées depuis la palette HESTIM (panneau à volets). */
+
+:root {
+  --hp-navy: #001861;
+  --hp-orange: #F26322;
+  --hp-red: #DB1F26;
+  --hp-green: #137D3F;
+  --hp-board: #0B0D14;
+  --hp-letter: #F2F1EC;
+  --hp-focus: #F26322;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  margin: 0;
+  font-family: "Barlow", "Segoe UI", system-ui, sans-serif;
+  /* Chiffres tabulaires partout : horaires, salles et dates s'alignent en colonnes */
+  font-variant-numeric: tabular-nums;
+  caret-color: var(--hp-orange);
+}
+
+::selection {
+  background: var(--hp-navy);
+  color: var(--hp-letter);
+}
+
+/* Focus clavier visible et cohérent sur tout élément interactif */
+:focus-visible {
+  outline: 2px solid var(--hp-focus);
+  outline-offset: 2px;
+}
+
+a {
+  text-underline-offset: 0.18em;
+}
+
+/* Barres de défilement fines aux couleurs du système */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #B9BECB transparent;
+}
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-thumb {
+  background: #B9BECB;
+  border-radius: 10px;
+  border: 3px solid transparent;
+  background-clip: padding-box;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+[data-theme="dark"] *,
+.hp-board * {
+  scrollbar-color: #3A4152 transparent;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  nav,
+  header,
+  .hp-no-print {
+    display: none !important;
+  }
+  body {
+    background: #FFFFFF !important;
+  }
+}
