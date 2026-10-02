@@ -1,5 +1,22 @@
 *.log
 node_modules
 
-
+# Secrets et configuration locale (les modèles *.example restent versionnés)
+.env
 .env.*
+!.env.example
+!.env.*.example
+
+# Identifiants générés par les tests Playwright et rapports de test
+frontend/auth/
+playwright-report/
+test-results/
+coverage/
+
+# Cookies exportés par curl lors de tests manuels
+csrf_token=*
+*.cookies
+
+# Fichiers système
+.DS_Store
+Thumbs.db

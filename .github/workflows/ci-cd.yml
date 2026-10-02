@@ -88,15 +88,16 @@ jobs:
         run: npm test --if-present
         env:
           NODE_ENV: test
+          JWT_SECRET: test-secret-ci-not-production
+
+      - name: Tests d'intégration (API + MySQL)
+        run: npm run test:integration
+        env:
           DB_HOST: 127.0.0.1
           DB_PORT: 3306
           DB_NAME: hestim_test
           DB_USER: root
           DB_PASSWORD: root
-          DB_DIALECT: mysql
-          JWT_SECRET: test-secret-ci-not-production
-          JWT_EXPIRES_IN: 1h
-          PORT: 5000
 
   # ── 3. Déploiement Railway (backend) ────────────────────────────────────
   deploy-backend:
