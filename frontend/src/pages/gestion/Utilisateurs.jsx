@@ -48,11 +48,18 @@ const validationSchema = yup.object({
     email: yup.string().email('Email invalide').required('L\'email est requis'),
     role: yup.string().oneOf(['admin', 'enseignant', 'etudiant']).required('Le rôle est requis'),
     telephone: yup.string(),
-    password: yup.string().when('editing', {
-        is: false,
-        then: (schema) => schema.min(6, 'Le mot de passe doit contenir au moins 6 caractères').required('Le mot de passe est requis'),
-        otherwise: (schema) => schema.min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
-    }),
+    // Mêmes règles que le serveur (validatePasswordStrength) ; facultatif en modification
+    password: yup
+        .string()
+        .min(8, 'Au moins 8 caractères')
+        .matches(/[a-z]/, 'Au moins une minuscule')
+        .matches(/[A-Z]/, 'Au moins une majuscule')
+        .matches(/[0-9]/, 'Au moins un chiffre')
+        .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Au moins un caractère spécial')
+        .when('$editing', {
+            is: false,
+            then: (schema) => schema.required('Le mot de passe est requis'),
+        }),
 });
 
 export default function Utilisateurs() {

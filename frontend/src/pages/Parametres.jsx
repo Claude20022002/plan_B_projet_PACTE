@@ -251,8 +251,12 @@ export default function Parametres() {
                                 type="email"
                                 value={formik.values.email}
                                 onChange={formik.handleChange}
+                                disabled={!isAdmin}
                                 error={formik.touched.email && Boolean(formik.errors.email)}
-                                helperText={formik.touched.email && formik.errors.email}
+                                helperText={
+                                    (formik.touched.email && formik.errors.email) ||
+                                    (!isAdmin && "Pour changer d'adresse, contactez l'administration")
+                                }
                             />
                             <TextField
                                 fullWidth
