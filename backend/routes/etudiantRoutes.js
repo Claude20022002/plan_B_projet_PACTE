@@ -46,11 +46,11 @@ router.post(
     asyncHandler(createEtudiant)
 );
 
-// ✏️ Mettre à jour un étudiant (Admin ou propriétaire)
+// ✏️ Mettre à jour un étudiant (Admin seulement : numéro, niveau et groupe relèvent de la scolarité)
 router.put(
     "/:id",
     authenticateToken,
-    requireOwnResourceOrAdmin("id"),
+    requireAdmin,
     handleValidationErrors,
     asyncHandler(updateEtudiant)
 );

@@ -45,11 +45,11 @@ router.post(
     asyncHandler(createEnseignant)
 );
 
-// ✏️ Mettre à jour un enseignant (Admin ou propriétaire)
+// ✏️ Mettre à jour un enseignant (Admin seulement — le profil personnel passe par /api/users)
 router.put(
     "/:id",
     authenticateToken,
-    requireOwnResourceOrAdmin("id"),
+    requireAdmin,
     handleValidationErrors,
     asyncHandler(updateEnseignant)
 );
