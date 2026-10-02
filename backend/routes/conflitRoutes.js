@@ -3,11 +3,17 @@ import { Op } from "sequelize";
 import { Conflit, ConflitAffectation, Affectation } from "../models/index.js";
 import { authenticateToken, requireAdmin } from "../middleware/index.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
+import { pick } from "../utils/validationHelper.js";
 
 const router = express.Router();
 
+// La gestion des conflits est réservée à l'administration
+router.use(authenticateToken, requireAdmin);
+
+const CONFLIT_FIELDS = ["type_conflit", "description", "resolu", "date_resolution"];
+
 // 🔍 Récupérer tous les conflits (paginé) — admin uniquement
-router.get("/", authenticateToken, requireAdmin, async (req, res) => {
+router.get("/", async (req, res) => {
     try {
         const { page, limit, offset } = getPaginationParams(req, 10);
 
@@ -37,7 +43,7 @@ router.get("/", authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // 🔍 Récupérer les conflits non résolus (paginé) — avant /:id pour éviter le shadowing
-router.get("/non-resolus/liste", authenticateToken, async (req, res) => {
+router.get("/non-resolus/liste", async (req, res) => {
     try {
         const { page, limit, offset } = getPaginationParams(req, 10);
 
@@ -62,7 +68,7 @@ router.get("/non-resolus/liste", authenticateToken, async (req, res) => {
 });
 
 // 🔍 Récupérer un conflit par ID
-router.get("/:id", authenticateToken, async (req, res) => {
+router.get("/:id", async (req, res) => {
     try {
         const conflit = await Conflit.findByPk(req.params.id, {
             include: [
@@ -83,9 +89,9 @@ router.get("/:id", authenticateToken, async (req, res) => {
 });
 
 // ➕ Créer un conflit — admin uniquement
-router.post("/", authenticateToken, requireAdmin, async (req, res) => {
+router.post("/", async (req, res) => {
     try {
-        const conflit = await Conflit.create(req.body);
+        const conflit = await Conflit.create(pick(req.body, CONFLIT_FIELDS));
         const conflitComplete = await Conflit.findByPk(conflit.id_conflit, {
             include: [
                 {
@@ -102,13 +108,13 @@ router.post("/", authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // ✏️ Mettre à jour un conflit (résolution) — admin uniquement
-router.put("/:id", authenticateToken, requireAdmin, async (req, res) => {
+router.put("/:id", async (req, res) => {
     try {
         const conflit = await Conflit.findByPk(req.params.id);
         if (!conflit) {
             return res.status(404).json({ message: "Conflit non trouvé" });
         }
-        await conflit.update(req.body);
+        await conflit.update(pick(req.body, CONFLIT_FIELDS));
         const conflitComplete = await Conflit.findByPk(conflit.id_conflit, {
             include: [
                 {
@@ -125,7 +131,7 @@ router.put("/:id", authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // 🗑️ Supprimer un conflit — admin uniquement
-router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
+router.delete("/:id", async (req, res) => {
     try {
         const conflit = await Conflit.findByPk(req.params.id);
         if (!conflit) {
@@ -139,7 +145,7 @@ router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
 });
 
 // ➕ Associer une affectation à un conflit — admin uniquement
-router.post("/:id_conflit/affectation/:id_affectation", authenticateToken, requireAdmin, async (req, res) => {
+router.post("/:id_conflit/affectation/:id_affectation", async (req, res) => {
     try {
         const conflitAffectation = await ConflitAffectation.create({
             id_conflit: req.params.id_conflit,
@@ -152,7 +158,7 @@ router.post("/:id_conflit/affectation/:id_affectation", authenticateToken, requi
 });
 
 // 🗑️ Dissocier une affectation d'un conflit — admin uniquement
-router.delete("/:id_conflit/affectation/:id_affectation", authenticateToken, requireAdmin, async (req, res) => {
+router.delete("/:id_conflit/affectation/:id_affectation", async (req, res) => {
     try {
         const conflitAffectation = await ConflitAffectation.findOne({
             where: {

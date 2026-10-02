@@ -1,18 +1,13 @@
 import express from "express";
 import { Appartenir, Etudiant, Groupe, Users } from "../models/index.js";
 import { authenticateToken, requireAdmin, requireEnseignant } from "../middleware/index.js";
+import { requireSelfOrStaff } from "../middleware/accessMiddleware.js";
 import { pick } from "../utils/validationHelper.js";
 
 const router = express.Router();
 
 // Lecture : personnel (enseignant/admin). Écriture : admin. Un étudiant ne voit que son propre groupe.
 router.use(authenticateToken);
-
-const requireSelfOrStaff = (req, res, next) => {
-    const isStaff = ["admin", "enseignant"].includes(req.user.role);
-    if (isStaff || Number(req.params.id_etudiant) === req.user.id_user) return next();
-    return res.status(403).json({ message: "Accès interdit" });
-};
 
 // 🔍 Récupérer toutes les appartenances
 router.get("/", requireEnseignant, async (req, res) => {
@@ -88,7 +83,7 @@ router.delete("/etudiant/:id_etudiant/groupe/:id_groupe", requireAdmin, async (r
 });
 
 // 🔍 Récupérer le groupe d'un étudiant
-router.get("/etudiant/:id_etudiant", requireSelfOrStaff, async (req, res) => {
+router.get("/etudiant/:id_etudiant", requireSelfOrStaff("id_etudiant"), async (req, res) => {
     try {
         const appartenance = await Appartenir.findOne({
             where: { id_user_etudiant: req.params.id_etudiant },

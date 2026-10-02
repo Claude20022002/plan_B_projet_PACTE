@@ -17,19 +17,31 @@ import {
     validateAffectationCreation,
     handleValidationErrors,
 } from "../middleware/index.js";
+import { requireGroupAccess } from "../middleware/accessMiddleware.js";
 
 const router = express.Router();
 
-// 🔍 Récupérer toutes les affectations (Tous les utilisateurs authentifiés)
-router.get("/", authenticateToken, asyncHandler(getAllAffectations));
+router.use(authenticateToken);
 
-// 🔍 Récupérer une affectation par ID (Tous les utilisateurs authentifiés)
-router.get("/:id", authenticateToken, asyncHandler(getAffectationById));
+// 🔍 Récupérer toutes les affectations (Admin — vue de planification globale)
+router.get("/", requireAdmin, asyncHandler(getAllAffectations));
+
+// 🔍 Récupérer les affectations par enseignant (Enseignant propriétaire ou Admin)
+router.get(
+    "/enseignant/:id_enseignant",
+    requireOwnResourceOrAdmin("id_enseignant"),
+    asyncHandler(getAffectationsByEnseignant)
+);
+
+// 🔍 Récupérer les affectations par groupe (personnel, ou étudiant membre du groupe)
+router.get("/groupe/:id_groupe", requireGroupAccess("id_groupe"), asyncHandler(getAffectationsByGroupe));
+
+// 🔍 Récupérer une affectation par ID (accès vérifié dans le contrôleur)
+router.get("/:id", asyncHandler(getAffectationById));
 
 // ➕ Créer une affectation (Admin seulement)
 router.post(
     "/",
-    authenticateToken,
     requireAdmin,
     validateAffectationCreation,
     handleValidationErrors,
@@ -37,42 +49,12 @@ router.post(
 );
 
 // ✏️ Mettre à jour une affectation (Admin seulement)
-router.put(
-    "/:id",
-    authenticateToken,
-    requireAdmin,
-    handleValidationErrors,
-    asyncHandler(updateAffectation)
-);
+router.put("/:id", requireAdmin, asyncHandler(updateAffectation));
 
 // 🗑️ Supprimer une affectation (Admin seulement)
-router.delete(
-    "/:id",
-    authenticateToken,
-    requireAdmin,
-    asyncHandler(deleteAffectation)
-);
+router.delete("/:id", requireAdmin, asyncHandler(deleteAffectation));
 
-// ✅ Confirmer une affectation (Enseignant propriétaire ou Admin)
-router.patch(
-    "/:id/confirmer",
-    authenticateToken,
-    asyncHandler(confirmerAffectation)
-);
-
-// 🔍 Récupérer les affectations par enseignant (Enseignant propriétaire ou Admin)
-router.get(
-    "/enseignant/:id_enseignant",
-    authenticateToken,
-    requireOwnResourceOrAdmin("id_enseignant"),
-    asyncHandler(getAffectationsByEnseignant)
-);
-
-// 🔍 Récupérer les affectations par groupe (Tous les utilisateurs authentifiés)
-router.get(
-    "/groupe/:id_groupe",
-    authenticateToken,
-    asyncHandler(getAffectationsByGroupe)
-);
+// ✅ Confirmer une affectation (Enseignant propriétaire ou Admin, vérifié dans le contrôleur)
+router.patch("/:id/confirmer", asyncHandler(confirmerAffectation));
 
 export default router;
