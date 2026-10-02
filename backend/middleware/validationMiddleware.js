@@ -21,6 +21,14 @@ export const handleValidationErrors = (req, res, next) => {
 
 // ==================== VALIDATIONS USER ====================
 
+// Téléphone facultatif : vide accepté, sinon chiffres et séparateurs usuels (+212 522 000 001)
+const telephoneOptionnel = () =>
+    body("telephone")
+        .optional({ values: "falsy" })
+        .isString()
+        .matches(/^[\d\s\-+()]{6,20}$/)
+        .withMessage("Numéro de téléphone invalide");
+
 export const validateUserCreation = [
     body("nom").trim().notEmpty().withMessage("Le nom est requis"),
     body("prenom").trim().notEmpty().withMessage("Le prénom est requis"),
@@ -33,10 +41,7 @@ export const validateUserCreation = [
         .optional()
         .isIn(["admin", "enseignant", "etudiant"])
         .withMessage("Rôle invalide"),
-    body("telephone")
-        .optional()
-        .isMobilePhone()
-        .withMessage("Numéro de téléphone invalide"),
+    telephoneOptionnel(),
     handleValidationErrors,
 ];
 
@@ -56,29 +61,17 @@ export const validateUserUpdate = [
         .optional()
         .isIn(["admin", "enseignant", "etudiant"])
         .withMessage("Rôle invalide"),
-    body("telephone")
-        .optional({ nullable: true, checkFalsy: true })
-        .custom((value) => {
-            if (!value || value.trim() === '') {
-                return true; // Permettre les valeurs vides
-            }
-            // Utiliser une regex simple pour valider le format du téléphone
-            const phoneRegex = /^[\d\s\-\+\(\)]+$/;
-            if (!phoneRegex.test(value)) {
-                throw new Error("Numéro de téléphone invalide");
-            }
-            return true;
-        })
-        .withMessage("Numéro de téléphone invalide"),
+    telephoneOptionnel(),
     body("avatar_url")
         .optional({ nullable: true })
         .isString()
         .isLength({ max: 10000000 }) // Limite de ~10MB pour les images base64
         .withMessage("L'avatar doit être une chaîne de caractères valide"),
     body("password")
-        .optional()
-        .isLength({ min: 6 })
-        .withMessage("Le mot de passe doit contenir au moins 6 caractères"),
+        .optional({ values: "falsy" })
+        .isString()
+        .isLength({ min: 8 })
+        .withMessage("Le mot de passe doit contenir au moins 8 caractères"),
     body("actif")
         .optional()
         .isBoolean()

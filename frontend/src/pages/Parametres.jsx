@@ -23,12 +23,24 @@ const validationSchema = yup.object({
     prenom: yup.string().required('Le prénom est requis'),
     email: yup.string().email('Email invalide').required('L\'email est requis'),
     telephone: yup.string(),
-    password: yup.string().min(6, 'Le mot de passe doit contenir au moins 6 caractères'),
+    // Mêmes règles que le serveur (validatePasswordStrength)
+    password: yup
+        .string()
+        .min(8, 'Au moins 8 caractères')
+        .matches(/[a-z]/, 'Au moins une minuscule')
+        .matches(/[A-Z]/, 'Au moins une majuscule')
+        .matches(/[0-9]/, 'Au moins un chiffre')
+        .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Au moins un caractère spécial'),
     confirmPassword: yup.string().oneOf([yup.ref('password'), null], 'Les mots de passe ne correspondent pas'),
+    currentPassword: yup.string().when('password', {
+        is: (value) => Boolean(value),
+        then: (schema) => schema.required('Saisissez votre mot de passe actuel'),
+    }),
 });
 
 export default function Parametres() {
     const { user, checkAuth } = useAuth();
+    const isAdmin = user?.role === 'admin';
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [avatarPreview, setAvatarPreview] = useState(user?.avatar_url || '');
@@ -48,6 +60,7 @@ export default function Parametres() {
             telephone: user?.telephone || '',
             password: '',
             confirmPassword: '',
+            currentPassword: '',
             avatar_url: user?.avatar_url || '',
         },
         validationSchema,
@@ -56,14 +69,16 @@ export default function Parametres() {
             try {
                 setError('');
                 setSuccess('');
+                // L'email est l'identifiant de connexion : seul un administrateur peut le changer
                 const dataToSend = {
                     nom: values.nom,
                     prenom: values.prenom,
-                    email: values.email,
                     telephone: values.telephone,
+                    ...(isAdmin && { email: values.email }),
                 };
                 if (values.password) {
                     dataToSend.password = values.password;
+                    dataToSend.current_password = values.currentPassword;
                 }
                 if (values.avatar_url) {
                     dataToSend.avatar_url = values.avatar_url;
@@ -73,6 +88,7 @@ export default function Parametres() {
                 await checkAuth();
                 formik.setFieldValue('password', '');
                 formik.setFieldValue('confirmPassword', '');
+                formik.setFieldValue('currentPassword', '');
             } catch (error) {
                 console.error('Erreur:', error);
                 console.error('Détails de l\'erreur:', error.response?.data);
@@ -257,7 +273,20 @@ export default function Parametres() {
                         <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                             <TextField
                                 fullWidth
+                                label="Mot de passe actuel"
+                                name="currentPassword"
+                                type="password"
+                                autoComplete="current-password"
+                                value={formik.values.currentPassword}
+                                onChange={formik.handleChange}
+                                onBlur={formik.handleBlur}
+                                error={formik.touched.currentPassword && Boolean(formik.errors.currentPassword)}
+                                helperText={formik.touched.currentPassword && formik.errors.currentPassword}
+                            />
+                            <TextField
+                                fullWidth
                                 label="Nouveau mot de passe"
+                                autoComplete="new-password"
                                 name="password"
                                 type="password"
                                 value={formik.values.password}
