@@ -25,6 +25,24 @@ import {
     Schedule,
     Person,
 } from '@mui/icons-material';
+import { salleAPI, enseignantAPI, coursAPI, groupeAPI, etudiantAPI } from '../../services/api';
+
+// Insensible à la casse et aux accents (« etudiant » trouve « Étudiant »)
+const normalize = (value) =>
+    String(value).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+
+const personLabel = (item) => {
+    const person = item.user || item;
+    return [person.prenom, person.nom].filter(Boolean).join(' ');
+};
+
+const SEARCH_SOURCES = [
+    { type: 'salle', load: salleAPI.getAll, label: (item) => item.nom_salle },
+    { type: 'enseignant', load: enseignantAPI.getAll, label: personLabel },
+    { type: 'cours', load: coursAPI.getAll, label: (item) => item.nom_cours },
+    { type: 'groupe', load: groupeAPI.getAll, label: (item) => item.nom_groupe },
+    { type: 'etudiant', load: etudiantAPI.getAll, label: personLabel },
+];
 
 const getEntityIcon = (type) => {
     const icons = {
@@ -78,48 +96,26 @@ export default function GlobalSearch({ open, onClose }) {
     const performSearch = async (term) => {
         setLoading(true);
         try {
-            // Recherche dans toutes les entités
-            const [sallesRes, enseignantsRes, coursRes, groupesRes, affectationsRes, etudiantsRes] = await Promise.allSettled([
-                fetch(`http://localhost:5000/api/salles?search=${encodeURIComponent(term)}`).then(r => r.json()),
-                fetch(`http://localhost:5000/api/enseignants?search=${encodeURIComponent(term)}`).then(r => r.json()),
-                fetch(`http://localhost:5000/api/cours?search=${encodeURIComponent(term)}`).then(r => r.json()),
-                fetch(`http://localhost:5000/api/groupes?search=${encodeURIComponent(term)}`).then(r => r.json()),
-                fetch(`http://localhost:5000/api/affectations?search=${encodeURIComponent(term)}`).then(r => r.json()),
-                fetch(`http://localhost:5000/api/etudiants?search=${encodeURIComponent(term)}`).then(r => r.json()),
-            ]);
+            // Passe par le client API commun (même origine, cookies, CSRF).
+            // L'API ne filtre pas encore par texte : on charge une page et on filtre ici.
+            const params = { limit: 100 };
+            const settled = await Promise.allSettled(
+                SEARCH_SOURCES.map((source) => source.load(params))
+            );
 
+            const needle = normalize(term);
             const allResults = [];
-            
-            if (sallesRes.status === 'fulfilled' && sallesRes.value.data) {
-                sallesRes.value.data.forEach(item => {
-                    allResults.push({ ...item, type: 'salle', label: item.nom_salle });
+            settled.forEach((outcome, index) => {
+                if (outcome.status !== 'fulfilled') return;
+                const { type, label } = SEARCH_SOURCES[index];
+                const items = outcome.value?.data || outcome.value || [];
+                items.forEach((item) => {
+                    const text = label(item);
+                    if (text && normalize(text).includes(needle)) {
+                        allResults.push({ ...item, type, label: text });
+                    }
                 });
-            }
-            if (enseignantsRes.status === 'fulfilled' && enseignantsRes.value.data) {
-                enseignantsRes.value.data.forEach(item => {
-                    allResults.push({ ...item, type: 'enseignant', label: `${item.prenom} ${item.nom}` });
-                });
-            }
-            if (coursRes.status === 'fulfilled' && coursRes.value.data) {
-                coursRes.value.data.forEach(item => {
-                    allResults.push({ ...item, type: 'cours', label: item.nom_cours });
-                });
-            }
-            if (groupesRes.status === 'fulfilled' && groupesRes.value.data) {
-                groupesRes.value.data.forEach(item => {
-                    allResults.push({ ...item, type: 'groupe', label: item.nom_groupe });
-                });
-            }
-            if (affectationsRes.status === 'fulfilled' && affectationsRes.value.data) {
-                affectationsRes.value.data.forEach(item => {
-                    allResults.push({ ...item, type: 'affectation', label: `Affectation ${item.id_affectation}` });
-                });
-            }
-            if (etudiantsRes.status === 'fulfilled' && etudiantsRes.value.data) {
-                etudiantsRes.value.data.forEach(item => {
-                    allResults.push({ ...item, type: 'etudiant', label: `${item.prenom} ${item.nom}` });
-                });
-            }
+            });
 
             setResults(allResults.slice(0, 10)); // Limiter à 10 résultats
         } catch (error) {

@@ -8,7 +8,8 @@
         "dev": "nodemon server.js",
         "seed": "node seed.js",
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
-        "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
+        "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
+        "test:coverage":"node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
         "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"
     },
     "keywords": [],

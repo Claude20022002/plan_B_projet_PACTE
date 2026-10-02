@@ -394,11 +394,14 @@ export default function DashboardLayout({ children }) {
               </Typography>
             )}
           </Box>
-          <Tooltip title="Recherche globale">
-            <IconButton onClick={() => setSearchOpen(true)}>
-              <Search />
-            </IconButton>
-          </Tooltip>
+          {/* La recherche mène aux écrans de gestion : réservée à l'administration */}
+          {user?.role === 'admin' && (
+            <Tooltip title="Recherche globale">
+              <IconButton onClick={() => setSearchOpen(true)} aria-label="Recherche globale">
+                <Search />
+              </IconButton>
+            </Tooltip>
+          )}
           <Tooltip title="Notifications">
             <IconButton onClick={() => navigate('/notifications')}>
               <Badge badgeContent={unreadNotifications} color="error">
@@ -476,7 +479,7 @@ export default function DashboardLayout({ children }) {
           {children}
         </MotionBox>
       </Box>
-      <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {user?.role === 'admin' && <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />}
     </Box>
   );
 }

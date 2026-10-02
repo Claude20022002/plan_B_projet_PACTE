@@ -7,6 +7,8 @@ export default {
     // Pas de transform : Jest utilise le loader ESM natif de Node
     transform: {},
     testMatch: ['**/tests/**/*.test.js'],
+    // Les tests d'intégration (base MySQL requise) ont leur propre config : jest.integration.config.js
+    testPathIgnorePatterns: ['/node_modules/', '/tests/integration/'],
     coverageDirectory: 'coverage',
     collectCoverageFrom: [
         'utils/passwordHelper.js',
