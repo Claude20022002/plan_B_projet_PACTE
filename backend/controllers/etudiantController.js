@@ -2,10 +2,13 @@ import { Etudiant, Users, Groupe, Appartenir, Filiere } from "../models/index.js
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { hashPassword } from "../utils/passwordHelper.js";
+import { pick } from "../utils/validationHelper.js";
 
 /**
  * Contrôleur pour les étudiants
  */
+
+const ETUDIANT_FIELDS = ["numero_etudiant", "niveau", "date_inscription"];
 
 // 🔍 Récupérer tous les étudiants (avec pagination)
 export const getAllEtudiants = asyncHandler(async (req, res) => {
@@ -150,9 +153,12 @@ export const createEtudiant = asyncHandler(async (req, res) => {
     }
 
     // Séparer id_groupe (table Appartenir) des champs Etudiant
-    const { id_groupe, ...etudiantData } = req.body;
+    const { id_groupe } = req.body;
 
-    const etudiant = await Etudiant.create(etudiantData);
+    const etudiant = await Etudiant.create({
+        ...pick(req.body, ETUDIANT_FIELDS),
+        id_user: user.id_user,
+    });
 
     // Créer le lien Appartenir si un groupe est fourni
     if (id_groupe) {
@@ -212,8 +218,9 @@ export const updateEtudiant = asyncHandler(async (req, res) => {
         }
     }
 
-    // Séparer id_groupe (table Appartenir) des champs Etudiant
-    const { id_groupe, ...updateData } = req.body;
+    // Séparer id_groupe (table Appartenir) des champs Etudiant ; id_user (clé) n'est jamais modifiable
+    const { id_groupe } = req.body;
+    const updateData = pick(req.body, ETUDIANT_FIELDS);
 
     await etudiant.update(updateData);
 

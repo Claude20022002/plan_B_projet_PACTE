@@ -2,10 +2,13 @@ import { Enseignant, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { hashPassword } from "../utils/passwordHelper.js";
+import { pick } from "../utils/validationHelper.js";
 
 /**
  * Contrôleur pour les enseignants
  */
+
+const ENSEIGNANT_FIELDS = ["specialite", "departement", "grade", "bureau"];
 
 // 🔍 Récupérer tous les enseignants (avec pagination)
 export const getAllEnseignants = asyncHandler(async (req, res) => {
