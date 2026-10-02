@@ -115,6 +115,10 @@ const en = {
     errorGeneric: 'Sign-in is unavailable right now. Please try again shortly.',
     boardTitle: 'Live schedule',
   },
+  teacher: {
+    toConfirm_one: 'session to confirm',
+    toConfirm_other: 'sessions to confirm',
+  },
   admin: {
     planSession: 'Schedule a session',
     toHandle: 'To handle',

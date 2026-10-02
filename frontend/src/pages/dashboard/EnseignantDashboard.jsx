@@ -1,505 +1,219 @@
-import React, { useState, useEffect } from "react";
-import {
-    Box,
-    Grid,
-    Card,
-    CardContent,
-    Typography,
-    Button,
-    Paper,
-    List,
-    ListItem,
-    ListItemText,
-    Chip,
-    Avatar,
-    Divider,
-    LinearProgress,
-} from "@mui/material";
-import {
-    Schedule,
-    Assignment,
-    CalendarToday,
-    School,
-    Event,
-    AccessTime,
-    LocationOn,
-    Person,
-    ArrowBack,
-} from "@mui/icons-material";
-import DashboardLayout from "../../components/layouts/DashboardLayout";
-import { useAuth } from "../../contexts/AuthContext";
-import { affectationAPI, demandeReportAPI } from "../../services/api";
-import { useNavigate } from "react-router-dom";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Alert, Box, Button, Typography } from '@mui/material';
+import { CheckCircleOutline, EventRepeat, ViewWeek } from '@mui/icons-material';
+import DashboardLayout from '../../components/layouts/DashboardLayout';
+import { useAuth } from '../../contexts/AuthContext';
+import { useToast } from '../../contexts/ToastContext';
+import { affectationAPI, demandeReportAPI, notificationAPI } from '../../services/api';
+import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
+import ChangesList from '../../design-system/board/ChangesList';
+import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
+import { ds } from '../../design-system/tokens';
+
+const HORIZON_DAYS = 14;
+
+function TodoPanel({ toConfirm, pendingReports, onOpenSessions, onOpenReports }) {
+  const { t } = useTranslation();
+  const rows = [
+    { label: t('teacher.toConfirm', { count: toConfirm }), value: toConfirm, action: onOpenSessions },
+    { label: t('admin.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports },
+  ];
+  return (
+    <Box
+      component="section"
+      aria-labelledby="todo-title"
+      sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px` }}
+    >
+      <Typography
+        id="todo-title"
+        component="h2"
+        sx={{
+          px: 2,
+          py: 1.5,
+          borderBottom: '1px solid',
+          borderColor: 'divider',
+          fontFamily: ds.font.board,
+          fontWeight: 700,
+          fontSize: '1rem',
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {t('admin.toHandle')}
+      </Typography>
+      {rows.map((row) => (
+        <Box
+          key={row.label}
+          sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider', '&:last-of-type': { borderBottom: 0 } }}
+        >
+          <Box
+            component="span"
+            sx={{
+              minWidth: 40,
+              fontFamily: ds.font.board,
+              fontWeight: 700,
+              fontSize: '1.75rem',
+              lineHeight: 1,
+              color: row.value > 0 ? 'text.primary' : 'text.secondary',
+            }}
+          >
+            {row.value}
+          </Box>
+          <Typography sx={{ flexGrow: 1, fontSize: '0.9375rem' }}>{row.label}</Typography>
+          <Button size="small" onClick={row.action}>
+            {t('common.seeAll')}
+          </Button>
+        </Box>
+      ))}
+    </Box>
+  );
+}
 
 export default function EnseignantDashboard() {
-    const { user } = useAuth();
-    const navigate = useNavigate();
-    const [affectations, setAffectations] = useState([]);
-    const [demandes, setDemandes] = useState([]);
-    const [stats, setStats] = useState({
-        totalCours: 0,
-        coursAujourdhui: 0,
-        demandesEnAttente: 0,
-    });
-    const [loading, setLoading] = useState(true);
+  const { t } = useTranslation();
+  const { user } = useAuth();
+  const toast = useToast();
+  const navigate = useNavigate();
+  const [sessions, setSessions] = useState([]);
+  const [reports, setReports] = useState([]);
+  const [changes, setChanges] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [confirmingId, setConfirmingId] = useState(null);
+  const [now, setNow] = useState(() => new Date());
 
-    useEffect(() => {
-        if (user?.id_user) {
-            loadDashboardData();
-        }
-    }, [user]);
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
 
-    const loadDashboardData = async () => {
-        try {
-            const today = new Date().toISOString().slice(0, 10);
-            const [affectationsData, demandesData] = await Promise.all([
-                affectationAPI.getByEnseignant(user.id_user, { date_from: today, limit: 200 }),
-                demandeReportAPI.getByEnseignant(user.id_user),
-            ]);
+  const load = useCallback(async () => {
+    if (!user?.id_user) return;
+    setLoading(true);
+    setError(false);
+    try {
+      const [affectations, demandes, notifications] = await Promise.all([
+        affectationAPI.getByEnseignant(user.id_user, {
+          date_from: toLocalISODate(),
+          date_to: toLocalISODate(new Date(Date.now() + HORIZON_DAYS * 86400000)),
+          limit: 200,
+        }),
+        demandeReportAPI.getByEnseignant(user.id_user).catch(() => []),
+        notificationAPI.getNonLues(user.id_user).catch(() => []),
+      ]);
+      setSessions((affectations?.data || []).map(toBoardSession).sort(byStart));
+      setReports(demandes?.data || demandes || []);
+      setChanges((notifications?.data || notifications || []).slice(0, 5));
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [user?.id_user]);
 
-            const affs = affectationsData.data || [];
-            setAffectations(affs);
-            setDemandes(demandesData.data || demandesData || []);
+  useEffect(() => {
+    load();
+  }, [load]);
 
-            // Calculer les statistiques
-            const coursAujourdhui = affs.filter(
-                (aff) => aff.date_seance?.slice(0, 10) === today,
-            ).length;
+  const upcoming = useMemo(() => sessions.filter((s) => !s.end || s.end > now), [sessions, now]);
+  const spotlight = useMemo(() => findSpotlight(upcoming, now), [upcoming, now]);
+  const toConfirm = upcoming.filter((s) => s.status === 'planifie').length;
+  const pendingReports = reports.filter((r) => r.statut_demande === 'en_attente').length;
 
-            setStats({
-                totalCours: affs.length,
-                coursAujourdhui,
-                demandesEnAttente: (
-                    demandesData.data ||
-                    demandesData ||
-                    []
-                ).filter((d) => d.statut_demande === "en_attente").length,
-            });
-        } catch (error) {
-            console.error("Erreur lors du chargement:", error);
-        } finally {
-            setLoading(false);
-        }
-    };
+  const confirm = async (session) => {
+    setConfirmingId(session.id);
+    try {
+      await affectationAPI.confirmer(session.id);
+      // Mise à jour locale : le statut bascule sur le panneau sans recharger la page
+      setSessions((current) => current.map((s) => (s.id === session.id ? { ...s, status: 'confirme' } : s)));
+      toast.success(t('board.confirmDone'));
+    } catch {
+      toast.error(t('board.confirmError'));
+    } finally {
+      setConfirmingId(null);
+    }
+  };
 
-    const quickActions = [
-        {
-            label: "Mon emploi du temps",
-            path: "/emploi-du-temps/enseignant",
-            icon: <CalendarToday />,
-            variant: "contained",
-        },
-        {
-            label: "Mes affectations",
-            path: "/mes-affectations",
-            icon: <Schedule />,
-            variant: "outlined",
-        },
-    ];
+  const spotlightActions = (s) => (
+    <>
+      {s.status === 'planifie' && (
+        <Button
+          variant="contained"
+          color="secondary"
+          startIcon={<CheckCircleOutline />}
+          disabled={confirmingId === s.id}
+          onClick={() => confirm(s)}
+        >
+          {t('board.confirm')}
+        </Button>
+      )}
+      {s.status !== 'annule' && (
+        <Button
+          variant="outlined"
+          startIcon={<EventRepeat />}
+          onClick={() => navigate('/mes-affectations')}
+          sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
+        >
+          {t('board.requestReport')}
+        </Button>
+      )}
+    </>
+  );
 
-    const statCards = [
-        {
-            title: "Total cours",
-            value: stats.totalCours,
-            icon: <School />,
-            color: "#1976d2",
-        },
-        {
-            title: "Cours aujourd'hui",
-            value: stats.coursAujourdhui,
-            icon: <Event />,
-            color: "#388e3c",
-        },
-        {
-            title: "Demandes en attente",
-            value: stats.demandesEnAttente,
-            icon: <Assignment />,
-            color: "#f57c00",
-        },
-    ];
-
-    return (
-        <DashboardLayout>
-            <Box
-                sx={{
-                    flexGrow: 1,
-                    bgcolor: "background.default",
-                    minHeight: "100vh",
-                }}
+  return (
+    <DashboardLayout>
+      <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 2fr) minmax(280px, 1fr)' } }}>
+        <Box sx={{ minWidth: 0 }}>
+          {error && (
+            <Alert
+              severity="error"
+              sx={{ mb: 2 }}
+              action={
+                <Button color="inherit" size="small" onClick={load}>
+                  {t('common.retry')}
+                </Button>
+              }
             >
-                {/* Barre d'actions rapides en haut */}
-                <Paper
-                    elevation={2}
-                    sx={{
-                        p: 2,
-                        mb: 3,
-                        bgcolor: "background.paper",
-                        borderRadius: 2,
-                    }}
-                >
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            flexWrap: "wrap",
-                            gap: 2,
-                        }}
-                    >
-                        <Box>
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                gutterBottom
-                            >
-                                Tableau de bord Enseignant
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Bienvenue, {user?.prenom} {user?.nom} •{" "}
-                                {new Date().toLocaleDateString("fr-FR", {
-                                    weekday: "long",
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                })}
-                            </Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                            {quickActions.map((action, index) => (
-                                <Button
-                                    key={index}
-                                    variant={action.variant}
-                                    startIcon={action.icon}
-                                    onClick={() => navigate(action.path)}
-                                    size="small"
-                                >
-                                    {action.label}
-                                </Button>
-                            ))}
-                        </Box>
-                    </Box>
-                </Paper>
+              {t('common.errorLoad')}
+            </Alert>
+          )}
+          <DepartureBoard
+            title={t('board.titleTeacher')}
+            sessions={upcoming}
+            loading={loading}
+            spotlight={spotlight}
+            columns={['time', 'course', 'group', 'room', 'status']}
+            renderSpotlight={(s, phase) => <SessionSpotlight session={s} phase={phase} actions={spotlightActions(s)} />}
+            empty={
+              <Box sx={{ color: ds.board.letter, maxWidth: 520 }}>
+                <Typography component="p" sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '1.125rem' }}>
+                  {t('board.noSessionsTitle')}
+                </Typography>
+                <Typography component="p" sx={{ mt: 1, color: ds.board.letterDim }}>
+                  {t('board.noSessionsBody')}
+                </Typography>
+              </Box>
+            }
+          />
+          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+            <Button variant="outlined" startIcon={<ViewWeek />} onClick={() => navigate('/emploi-du-temps/enseignant')}>
+              {t('board.openTimetable')}
+            </Button>
+          </Box>
+        </Box>
 
-                {loading && <LinearProgress sx={{ mb: 2 }} />}
-
-                {/* Statistiques */}
-                <Grid container spacing={3} sx={{ mb: 3 }}>
-                    {statCards.map((card, index) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 4 }} key={index}>
-                            <Card
-                                sx={{
-                                    height: "100%",
-                                    transition: "all 0.3s ease",
-                                    border: "1px solid",
-                                    borderColor: "divider",
-                                    "&:hover": {
-                                        transform: "translateY(-8px)",
-                                        boxShadow: 6,
-                                        borderColor: card.color,
-                                    },
-                                }}
-                            >
-                                <CardContent>
-                                    <Box
-                                        sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            justifyContent: "space-between",
-                                        }}
-                                    >
-                                        <Box sx={{ flex: 1 }}>
-                                            <Typography
-                                                variant="h3"
-                                                fontWeight="bold"
-                                                sx={{
-                                                    color: card.color,
-                                                    mb: 1,
-                                                }}
-                                            >
-                                                {card.value}
-                                            </Typography>
-                                            <Typography
-                                                variant="body1"
-                                                color="text.secondary"
-                                                fontWeight="medium"
-                                            >
-                                                {card.title}
-                                            </Typography>
-                                        </Box>
-                                        <Avatar
-                                            sx={{
-                                                bgcolor: `${card.color}15`,
-                                                color: card.color,
-                                                width: 64,
-                                                height: 64,
-                                            }}
-                                        >
-                                            {card.icon}
-                                        </Avatar>
-                                    </Box>
-                                </CardContent>
-                            </Card>
-                        </Grid>
-                    ))}
-                </Grid>
-
-                <Grid container spacing={3}>
-                    {/* Mes prochains cours */}
-                    <Grid size={{ xs: 12 }}>
-                        <Paper
-                            elevation={2}
-                            sx={{
-                                p: 3,
-                                borderRadius: 2,
-                            }}
-                        >
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "space-between",
-                                    mb: 3,
-                                }}
-                            >
-                                <Typography variant="h6" fontWeight="bold">
-                                    Mes prochains cours
-                                </Typography>
-                                <Button
-                                    size="small"
-                                    variant="outlined"
-                                    onClick={() =>
-                                        navigate("/emploi-du-temps/enseignant")
-                                    }
-                                >
-                                    Voir tout
-                                </Button>
-                            </Box>
-                            <Divider sx={{ mb: 2 }} />
-                            {affectations.length > 0 ? (
-                                <List sx={{ p: 0 }}>
-                                    {affectations
-                                        .slice(0, 5)
-                                        .map((aff, index) => (
-                                            <React.Fragment
-                                                key={aff.id_affectation}
-                                            >
-                                                <ListItem
-                                                    sx={{
-                                                        border: "1px solid",
-                                                        borderColor: "divider",
-                                                        borderRadius: 2,
-                                                        mb: 2,
-                                                        bgcolor:
-                                                            "background.paper",
-                                                        "&:hover": {
-                                                            bgcolor:
-                                                                "action.hover",
-                                                            borderColor:
-                                                                "primary.main",
-                                                        },
-                                                    }}
-                                                >
-                                                    <Avatar
-                                                        sx={{
-                                                            bgcolor:
-                                                                "primary.main",
-                                                            mr: 2,
-                                                        }}
-                                                    >
-                                                        <School />
-                                                    </Avatar>
-                                                    <ListItemText
-                                                        primary={
-                                                            <Box
-                                                                component="div"
-                                                                sx={{
-                                                                    display:
-                                                                        "flex",
-                                                                    alignItems:
-                                                                        "center",
-                                                                    gap: 1,
-                                                                    mb: 0.5,
-                                                                }}
-                                                            >
-                                                                <Typography
-                                                                    variant="subtitle1"
-                                                                    fontWeight="bold"
-                                                                >
-                                                                    {aff.cours
-                                                                        ?.nom_cours ||
-                                                                        "Cours"}
-                                                                </Typography>
-                                                                <Chip
-                                                                    label={
-                                                                        aff.statut === 'planifie' ? 'Planifié'  :
-                                                                        aff.statut === 'confirme' ? 'Confirmé'  :
-                                                                        aff.statut === 'annule'   ? 'Annulé'    :
-                                                                        aff.statut === 'reporte'  ? 'Reporté'   :
-                                                                        aff.statut
-                                                                    }
-                                                                    size="small"
-                                                                    color={
-                                                                        aff.statut === 'confirme' ? 'success' :
-                                                                        aff.statut === 'annule'   ? 'error'   :
-                                                                        aff.statut === 'reporte'  ? 'warning' :
-                                                                        'default'
-                                                                    }
-                                                                />
-                                                            </Box>
-                                                        }
-                                                        secondary={
-                                                            <Box
-                                                                component="div"
-                                                                sx={{
-                                                                    display:
-                                                                        "flex",
-                                                                    flexDirection:
-                                                                        "column",
-                                                                    gap: 0.5,
-                                                                    mt: 1,
-                                                                }}
-                                                            >
-                                                                <Box
-                                                                    sx={{
-                                                                        display:
-                                                                            "flex",
-                                                                        alignItems:
-                                                                            "center",
-                                                                        gap: 1,
-                                                                    }}
-                                                                >
-                                                                    <Person
-                                                                        fontSize="small"
-                                                                        color="action"
-                                                                    />
-                                                                    <Typography
-                                                                        variant="body2"
-                                                                        color="text.secondary"
-                                                                    >
-                                                                        Groupe:{" "}
-                                                                        {aff
-                                                                            .groupe
-                                                                            ?.nom_groupe ||
-                                                                            "N/A"}
-                                                                    </Typography>
-                                                                </Box>
-                                                                <Box
-                                                                    sx={{
-                                                                        display:
-                                                                            "flex",
-                                                                        alignItems:
-                                                                            "center",
-                                                                        gap: 1,
-                                                                    }}
-                                                                >
-                                                                    <CalendarToday
-                                                                        fontSize="small"
-                                                                        color="action"
-                                                                    />
-                                                                    <Typography
-                                                                        variant="body2"
-                                                                        color="text.secondary"
-                                                                    >
-                                                                        {new Date(
-                                                                            aff.date_seance,
-                                                                        ).toLocaleDateString(
-                                                                            "fr-FR",
-                                                                            {
-                                                                                weekday:
-                                                                                    "long",
-                                                                                year: "numeric",
-                                                                                month: "long",
-                                                                                day: "numeric",
-                                                                            },
-                                                                        )}
-                                                                    </Typography>
-                                                                </Box>
-                                                                <Box
-                                                                    sx={{
-                                                                        display:
-                                                                            "flex",
-                                                                        alignItems:
-                                                                            "center",
-                                                                        gap: 1,
-                                                                    }}
-                                                                >
-                                                                    <AccessTime
-                                                                        fontSize="small"
-                                                                        color="action"
-                                                                    />
-                                                                    <Typography
-                                                                        variant="body2"
-                                                                        color="text.secondary"
-                                                                    >
-                                                                        {
-                                                                            aff
-                                                                                .creneau
-                                                                                ?.heure_debut
-                                                                        }{" "}
-                                                                        -{" "}
-                                                                        {
-                                                                            aff
-                                                                                .creneau
-                                                                                ?.heure_fin
-                                                                        }
-                                                                    </Typography>
-                                                                </Box>
-                                                                <Box
-                                                                    sx={{
-                                                                        display:
-                                                                            "flex",
-                                                                        alignItems:
-                                                                            "center",
-                                                                        gap: 1,
-                                                                    }}
-                                                                >
-                                                                    <LocationOn
-                                                                        fontSize="small"
-                                                                        color="action"
-                                                                    />
-                                                                    <Typography
-                                                                        variant="body2"
-                                                                        color="text.secondary"
-                                                                    >
-                                                                        Salle:{" "}
-                                                                        {aff
-                                                                            .salle
-                                                                            ?.nom_salle ||
-                                                                            "N/A"}
-                                                                    </Typography>
-                                                                </Box>
-                                                            </Box>
-                                                        }
-                                                    />
-                                                </ListItem>
-                                                {index <
-                                                    affectations.slice(0, 5)
-                                                        .length -
-                                                        1 && <Divider />}
-                                            </React.Fragment>
-                                        ))}
-                                </List>
-                            ) : (
-                                <Box sx={{ textAlign: "center", py: 4 }}>
-                                    <Schedule
-                                        sx={{
-                                            fontSize: 48,
-                                            color: "text.disabled",
-                                            mb: 2,
-                                        }}
-                                    />
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                    >
-                                        Aucun cours programmé
-                                    </Typography>
-                                </Box>
-                            )}
-                        </Paper>
-                    </Grid>
-                </Grid>
-            </Box>
-        </DashboardLayout>
-    );
+        <Box sx={{ display: 'grid', gap: 2, alignContent: 'start' }}>
+          <TodoPanel
+            toConfirm={toConfirm}
+            pendingReports={pendingReports}
+            onOpenSessions={() => navigate('/mes-affectations')}
+            onOpenReports={() => navigate('/demandes-report')}
+          />
+          <ChangesList items={changes} onSeeAll={() => navigate('/notifications')} />
+        </Box>
+      </Box>
+    </DashboardLayout>
+  );
 }

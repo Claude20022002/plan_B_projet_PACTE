@@ -115,6 +115,10 @@ const fr = {
     errorGeneric: 'Connexion impossible pour le moment. Réessayez dans un instant.',
     boardTitle: 'Planning en direct',
   },
+  teacher: {
+    toConfirm_one: 'séance à confirmer',
+    toConfirm_other: 'séances à confirmer',
+  },
   admin: {
     planSession: 'Planifier une séance',
     toHandle: 'À traiter',
