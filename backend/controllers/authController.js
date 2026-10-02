@@ -41,7 +41,16 @@ const generateToken = (user, sessionId, familyId) => {
     );
 };
 
-const getClientIp = (req) => req.headers["x-forwarded-for"]?.split(",")[0]?.trim() || req.ip;
+// req.ip tient compte de "trust proxy" (app.js) ; X-Forwarded-For brut serait falsifiable par le client.
+const getClientIp = (req) => req.ip;
+
+const escapeHtml = (value = "") =>
+    String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
 
 const sanitizeUser = (user, additionalInfo = {}) => {
     const userResponse = user.toJSON();
@@ -131,63 +140,20 @@ const getTenantPayload = async (user, currentInstitution = null) => {
     };
 };
 
-/**
- * POST /api/auth/register
- * Inscription d'un nouvel utilisateur
- */
-export const register = asyncHandler(async (req, res) => {
-    const { nom, prenom, email, password, role, telephone } = req.body;
+// Pas d'inscription publique : les comptes sont créés par l'administration (POST /api/users).
 
-    // Validation des champs requis
-    if (!nom || !prenom || !email || !password) {
-        return res.status(400).json({
-            message: "Champs manquants",
-            error: "Les champs nom, prenom, email et password sont requis",
-        });
-    }
+// Hash factice comparé quand l'email est inconnu : le temps de réponse ne révèle pas
+// si un compte existe (calculé une seule fois, à la première tentative).
+let dummyHashPromise = null;
+const getDummyHash = () => {
+    dummyHashPromise ??= hashPassword(randomToken(16));
+    return dummyHashPromise;
+};
 
-    // Validation du mot de passe
-    const passwordValidation = validatePasswordStrength(password);
-    if (!passwordValidation.valid) {
-        return res.status(400).json({
-            message: "Mot de passe invalide",
-            errors: passwordValidation.errors,
-        });
-    }
-
-    // Vérifier si l'email existe déjà
-    const existingUser = await Users.findOne({ where: { email } });
-    if (existingUser) {
-        return res.status(409).json({
-            message: "Email déjà utilisé",
-            error: "Un compte avec cet email existe déjà",
-        });
-    }
-
-    // Hasher le mot de passe
-    const password_hash = await hashPassword(password);
-
-    // Créer l'utilisateur
-    const user = await Users.create({
-        nom,
-        prenom,
-        email,
-        password_hash,
-        role: role || "etudiant",
-        telephone: telephone || null,
-        actif: true,
-    });
-
-    const session = await createAuthSession(req, res, user);
-    const tenantPayload = await getTenantPayload(user, session.institution);
-
-    // Retourner l'utilisateur sans le mot de passe
-    res.status(201).json({
-        message: "Inscription réussie",
-        user: sanitizeUser(user),
-        ...tenantPayload,
-    });
-});
+const INVALID_CREDENTIALS = {
+    message: "Identifiants invalides",
+    error: "Email ou mot de passe incorrect",
+};
 
 /**
  * POST /api/auth/login
@@ -196,37 +162,27 @@ export const register = asyncHandler(async (req, res) => {
 export const login = asyncHandler(async (req, res) => {
     const { email, password } = req.body;
 
-    // Validation des champs
-    if (!email || !password) {
+    // Validation des champs (types stricts : un tableau deviendrait une clause IN)
+    if (typeof email !== "string" || typeof password !== "string" || !email.trim() || !password) {
         return res.status(400).json({
             message: "Champs manquants",
             error: "L'email et le mot de passe sont requis",
         });
     }
 
-    // Trouver l'utilisateur par email
-    const user = await Users.findOne({ where: { email } });
-    if (!user) {
-        return res.status(401).json({
-            message: "Identifiants invalides",
-            error: "Email ou mot de passe incorrect",
-        });
+    const user = await Users.scope("withPassword").findOne({ where: { email: email.trim() } });
+
+    // Toujours exécuter bcrypt, même si l'utilisateur n'existe pas
+    const isPasswordValid = await comparePassword(password, user?.password_hash || (await getDummyHash()));
+    if (!user || !isPasswordValid) {
+        return res.status(401).json(INVALID_CREDENTIALS);
     }
 
-    // Vérifier que le compte est actif
+    // Le statut du compte n'est révélé qu'à quelqu'un qui connaît le mot de passe
     if (!user.actif) {
         return res.status(403).json({
             message: "Compte désactivé",
             error: "Votre compte a été désactivé. Contactez l'administrateur.",
-        });
-    }
-
-    // Vérifier le mot de passe
-    const isPasswordValid = await comparePassword(password, user.password_hash);
-    if (!isPasswordValid) {
-        return res.status(401).json({
-            message: "Identifiants invalides",
-            error: "Email ou mot de passe incorrect",
         });
     }
 
@@ -482,30 +438,22 @@ export const revokeSession = asyncHandler(async (req, res) => {
 export const forgotPassword = asyncHandler(async (req, res) => {
     const { email } = req.body;
 
-    if (!email) {
+    if (typeof email !== "string" || !email.trim()) {
         return res.status(400).json({
             message: "Email requis",
             error: "Veuillez fournir votre adresse email",
         });
     }
 
-    // Trouver l'utilisateur
-    const user = await Users.findOne({ where: { email } });
-    
-    // Pour la sécurité, on ne révèle pas si l'email existe ou non
-    if (!user) {
-        // Retourner un succès même si l'utilisateur n'existe pas (sécurité)
-        return res.json({
-            message: "Si cet email existe, un lien de réinitialisation a été envoyé",
-        });
-    }
+    const genericResponse = {
+        message: "Si cet email existe, un lien de réinitialisation a été envoyé",
+    };
 
-    // Vérifier que le compte est actif
-    if (!user.actif) {
-        return res.status(403).json({
-            message: "Compte désactivé",
-            error: "Votre compte a été désactivé. Contactez l'administrateur.",
-        });
+    // Même réponse pour un email inconnu ou un compte désactivé :
+    // on ne révèle ni l'existence ni le statut d'un compte.
+    const user = await Users.findOne({ where: { email: email.trim() } });
+    if (!user || !user.actif) {
+        return res.json(genericResponse);
     }
 
     // Générer un token unique
@@ -543,7 +491,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #1976d2;">Réinitialisation de mot de passe</h2>
-                    <p>Bonjour ${user.prenom} ${user.nom},</p>
+                    <p>Bonjour ${escapeHtml(user.prenom)} ${escapeHtml(user.nom)},</p>
                     <p>Vous avez demandé à réinitialiser votre mot de passe. Cliquez sur le lien ci-dessous pour procéder :</p>
                     <p style="margin: 30px 0;">
                         <a href="${resetUrl}" 
@@ -594,7 +542,7 @@ L'équipe HESTIM Planner
 export const resetPassword = asyncHandler(async (req, res) => {
     const { token, id_user, password } = req.body;
 
-    if (!token || !id_user || !password) {
+    if (typeof token !== "string" || !token || !id_user || typeof password !== "string" || !password) {
         return res.status(400).json({
             message: "Champs manquants",
             error: "Le token, l'ID utilisateur et le nouveau mot de passe sont requis",
@@ -651,6 +599,13 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
     // Marquer le token comme utilisé
     await resetToken.update({ used: true });
+
+    // Un mot de passe réinitialisé invalide toutes les sessions ouvertes
+    // (cas typique : compte compromis dont le propriétaire reprend le contrôle).
+    await AuthSession.update(
+        { revoked_at: new Date(), revoked_reason: "password_reset" },
+        { where: { id_user: user.id_user, revoked_at: null } }
+    );
 
     res.json({
         message: "Mot de passe réinitialisé avec succès",

@@ -9,7 +9,8 @@ export const CSRF_COOKIE = isProduction ? "__Host-csrf_token" : "csrf_token";
 export const ACCESS_TOKEN_TTL_SECONDS = Number(process.env.JWT_ACCESS_TTL_SECONDS || 15 * 60);
 export const REFRESH_TOKEN_TTL_DAYS = Number(process.env.JWT_REFRESH_TTL_DAYS || 7);
 
-const sameSite = process.env.COOKIE_SAMESITE || "lax";
+// strict : frontend et API sont servis par la même origine (nginx proxifie /api).
+const sameSite = process.env.COOKIE_SAMESITE || "strict";
 
 export const accessCookieOptions = {
     httpOnly: true,

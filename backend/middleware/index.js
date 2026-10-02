@@ -14,7 +14,6 @@ export {
     requireEnseignant,
     requireEtudiant,
     requireOwnResourceOrAdmin,
-    requireOwnCreationOrAdmin,
 } from "./roleMiddleware.js";
 
 // Gestion des erreurs

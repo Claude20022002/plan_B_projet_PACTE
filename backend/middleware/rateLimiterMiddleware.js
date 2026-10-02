@@ -3,8 +3,16 @@
  * Protège l'API contre les abus et les attaques par force brute
  */
 
-// Store simple en mémoire (en production, utiliser Redis)
-const requestCounts = new Map();
+// Stores en mémoire, un par limiteur (en multi-instances, utiliser Redis).
+// Partager une seule Map ferait compter une requête de login dans le quota global et inversement.
+const allStores = new Set();
+
+/**
+ * Vide tous les compteurs — réservé aux tests automatisés.
+ */
+export const resetRateLimiters = () => {
+    for (const store of allStores) store.clear();
+};
 
 /**
  * Configuration par défaut du rate limiter
@@ -23,9 +31,11 @@ const defaultOptions = {
  */
 export const createRateLimiter = (options = {}) => {
     const config = { ...defaultOptions, ...options };
+    const requestCounts = new Map();
+    allStores.add(requestCounts);
 
     return (req, res, next) => {
-        const key = req.ip || req.connection.remoteAddress;
+        const key = req.ip || req.socket?.remoteAddress;
         const now = Date.now();
         const windowStart = now - config.windowMs;
 

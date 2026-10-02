@@ -143,6 +143,25 @@ export const isValidName = (nom) => {
 };
 
 /**
+ * Ne conserve que les champs autorisés d'un objet (protection contre l'assignation de masse :
+ * un client ne doit pas pouvoir écrire role, actif, statut, id_* ... en les ajoutant au body).
+ * Les clés absentes ou undefined sont ignorées pour permettre les mises à jour partielles.
+ * @param {Object} source - Objet d'origine (ex: req.body)
+ * @param {string[]} allowedKeys - Liste blanche des champs
+ * @returns {Object} - Nouvel objet ne contenant que les champs autorisés
+ */
+export const pick = (source, allowedKeys) => {
+    const result = {};
+    if (!source || typeof source !== "object") return result;
+    for (const key of allowedKeys) {
+        if (Object.prototype.hasOwnProperty.call(source, key) && source[key] !== undefined) {
+            result[key] = source[key];
+        }
+    }
+    return result;
+};
+
+/**
  * Valide un rôle utilisateur
  * @param {string} role - Rôle à valider
  * @returns {boolean} - True si le rôle est valide

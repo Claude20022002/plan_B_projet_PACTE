@@ -27,24 +27,12 @@ const extractToken = (req) => {
     return authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 };
 
-const verifyAccessToken = (token) => {
-    try {
-        return jwt.verify(token, JWT_SECRET, {
-            issuer: JWT_ISSUER,
-            audience: JWT_AUDIENCE,
-            algorithms: ["HS256"],
-        });
-    } catch (error) {
-        if (error.name !== "JsonWebTokenError") {
-            throw error;
-        }
-
-        // Compatibilite temporaire avec les anciens Bearer tokens sans issuer/audience.
-        return jwt.verify(token, JWT_SECRET, {
-            algorithms: ["HS256"],
-        });
-    }
-};
+const verifyAccessToken = (token) =>
+    jwt.verify(token, JWT_SECRET, {
+        issuer: JWT_ISSUER,
+        audience: JWT_AUDIENCE,
+        algorithms: ["HS256"],
+    });
 
 const attachUserFromToken = async (req, decoded) => {
     const userId = decoded.sub || decoded.userId || decoded.id_user;
@@ -52,27 +40,31 @@ const attachUserFromToken = async (req, decoded) => {
         return { status: 401, message: "Token invalide", error: "Le token ne contient pas d'identifiant utilisateur" };
     }
 
-    if (decoded.sid) {
-        const session = await AuthSession.findOne({
-            where: {
-                session_id: decoded.sid,
-                id_user: Number(userId),
-                revoked_at: null,
-            },
-        });
-
-        if (!session || new Date(session.expires_at) <= new Date()) {
-            return { status: 401, message: "Session invalide", error: "Votre session a expire", code: "SESSION_INVALID" };
-        }
-
-        req.auth = {
-            userId: Number(userId),
-            role: decoded.role,
-            sessionId: decoded.sid,
-            familyId: decoded.fid,
-            jti: decoded.jti,
-        };
+    // Tout jeton doit être rattaché à une session serveur : c'est ce qui rend
+    // effectifs la déconnexion, la révocation d'appareil et la réinitialisation de mot de passe.
+    if (!decoded.sid) {
+        return { status: 401, message: "Token invalide", error: "Session absente du token", code: "SESSION_INVALID" };
     }
+
+    const session = await AuthSession.findOne({
+        where: {
+            session_id: decoded.sid,
+            id_user: Number(userId),
+            revoked_at: null,
+        },
+    });
+
+    if (!session || new Date(session.expires_at) <= new Date()) {
+        return { status: 401, message: "Session invalide", error: "Votre session a expire", code: "SESSION_INVALID" };
+    }
+
+    req.auth = {
+        userId: Number(userId),
+        role: decoded.role,
+        sessionId: decoded.sid,
+        familyId: decoded.fid,
+        jti: decoded.jti,
+    };
 
     const user = await Users.findByPk(userId);
 
@@ -104,14 +96,6 @@ const attachUserFromToken = async (req, decoded) => {
 
     req.user = user;
     req.userId = user.id_user;
-    if (!req.auth) {
-        req.auth = {
-            userId: user.id_user,
-            role: user.role,
-            sessionId: decoded.sid || null,
-            jti: decoded.jti || null,
-        };
-    }
 
     return null;
 };
@@ -172,9 +156,10 @@ export const authenticateToken = async (req, res, next) => {
                 code: "TOKEN_EXPIRED",
             });
         }
+        console.error("Erreur d'authentification:", error);
         return res.status(500).json({
             message: "Erreur d'authentification",
-            error: error.message,
+            error: "Une erreur interne est survenue",
         });
     }
 };

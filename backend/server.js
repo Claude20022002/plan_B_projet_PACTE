@@ -1,9 +1,7 @@
-import express from "express";
 import dotenv from "dotenv";
-import cors from "cors";
 import { DataTypes } from "sequelize";
+import app from "./app.js";
 import sequelize, { testConnection, cleanupOldTables } from "./config/db.js";
-import "./models/index.js"; // Import pour initialiser les relations
 import {
     Users,
     Filiere,
@@ -18,7 +16,6 @@ import {
     Disponibilite,
     Appartenir,
     DemandeReport,
-
     Conflit,
     ConflitAffectation,
     PasswordResetToken,
@@ -31,383 +28,140 @@ import {
     GenerationSession,
     PlanningSnapshot,
 } from "./models/index.js";
-import { parseCookies } from "./middleware/cookieMiddleware.js";
-import { csrfProtection } from "./middleware/csrfMiddleware.js";
 import { getDefaultInstitution, TENANT_MODELS, ensureUserMembership } from "./utils/tenantHelper.js";
 
-// Import des routes
-import userRoutes from "./routes/userRoutes.js";
-import enseignantRoutes from "./routes/enseignantRoutes.js";
-import etudiantRoutes from "./routes/etudiantRoutes.js";
-import filiereRoutes from "./routes/filiereRoutes.js";
-import groupeRoutes from "./routes/groupeRoutes.js";
-import salleRoutes from "./routes/salleRoutes.js";
-import coursRoutes from "./routes/coursRoutes.js";
-import creneauRoutes from "./routes/creneauRoutes.js";
-import affectationRoutes from "./routes/affectationRoutes.js";
-import demandeReportRoutes from "./routes/demandeReportRoutes.js";
-import conflitRoutes from "./routes/conflitRoutes.js";
-import notificationRoutes from "./routes/notificationRoutes.js";
-// historiqueAffectationRoutes désactivé — fonctionnalité non utilisée par le frontend
-import disponibiliteRoutes from "./routes/disponibiliteRoutes.js";
-import appartenirRoutes from "./routes/appartenirRoutes.js";
-import authRoutes from "./routes/authRoutes.js";
-import emploiDuTempsRoutes from "./routes/emploiDuTempsRoutes.js";
-import statistiquesRoutes from "./routes/statistiquesRoutes.js";
-import generationAutomatiqueRoutes from "./routes/generationAutomatiqueRoutes.js";
-import institutionRoutes from "./routes/institutionRoutes.js";
-
-// Import des middlewares
-import {
-    logger,
-    errorLogger,
-    securityHeaders,
-    customSecurityHeaders,
-    apiRateLimiter,
-    errorHandler,
-    notFound,
-    optionalAuth,
-} from "./middleware/index.js";
-
 dotenv.config();
-const app = express();
-
-// ==================== MIDDLEWARES GLOBAUX ====================
-
-// Sécurité
-app.use(securityHeaders);
-app.use(customSecurityHeaders);
-
-// CORS — restreindre aux origines connues (frontend dev + prod via ALLOWED_ORIGINS)
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ? process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim())
-    : ['http://localhost:5173', 'http://localhost:3000'];
-
-app.use(cors({
-    origin: (origin, callback) => {
-        // Autoriser les requêtes sans origine (ex: Postman, curl)
-        if (!origin || allowedOrigins.includes(origin)) {
-            return callback(null, true);
-        }
-        callback(new Error(`Origine CORS non autorisée: ${origin}`));
-    },
-    credentials: true,
-}));
-
-// Body parser - Augmenter la limite pour permettre l'upload d'images en base64
-app.use(express.json({ limit: '10mb' }));
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
-app.use(parseCookies);
-
-// Rate limiting global
-app.use(apiRateLimiter);
-app.use(optionalAuth);
-// CSRF protection sera appliquée après les routes d'authentification
-
-// Logging
-app.use(logger);
-
-// ==================== ROUTES ====================
-
-// Routes d'authentification (sans CSRF protection)
-app.use("/api/auth", authRoutes);
-
-// Appliquer CSRF protection après les routes d'authentification
-app.use(csrfProtection);
-
-// Autres routes (avec CSRF protection)
-app.use("/api/users", userRoutes);
-app.use("/api/enseignants", enseignantRoutes);
-app.use("/api/etudiants", etudiantRoutes);
-app.use("/api/filieres", filiereRoutes);
-app.use("/api/groupes", groupeRoutes);
-app.use("/api/salles", salleRoutes);
-app.use("/api/cours", coursRoutes);
-app.use("/api/creneaux", creneauRoutes);
-app.use("/api/affectations", affectationRoutes);
-app.use("/api/demandes-report", demandeReportRoutes);
-app.use("/api/conflits", conflitRoutes);
-app.use("/api/notifications", notificationRoutes);
-// /api/historiques désactivé — HistoriqueAffectation non utilisé côté frontend
-app.use("/api/disponibilites", disponibiliteRoutes);
-app.use("/api/appartenances", appartenirRoutes);
-app.use("/api/emplois-du-temps", emploiDuTempsRoutes);
-app.use("/api/statistiques", statistiquesRoutes);
-app.use("/api/generation-automatique", generationAutomatiqueRoutes);
-app.use("/api/institutions", institutionRoutes);
-
-app.get("/", (req, res) => {
-    res.json({
-        message: "HESTIM Planner Backend 🚀",
-        version: "1.0.0",
-        status: "running",
-    });
-});
-
-// Route de santé (health check)
-app.get("/health", (req, res) => {
-    res.json({
-        status: "healthy",
-        timestamp: new Date().toISOString(),
-        uptime: process.uptime(),
-    });
-});
-
-// ==================== GESTION DES ERREURS ====================
-
-// Route non trouvée (404)
-app.use(notFound);
-
-// Logger d'erreurs
-app.use(errorLogger);
-
-// Gestionnaire d'erreurs global
-app.use(errorHandler);
-
-// ==================== DÉMARRAGE DU SERVEUR ====================
 
 const PORT = process.env.PORT || 5000;
+const isProduction = process.env.NODE_ENV === "production";
+
+/**
+ * Ordre de synchronisation : tables sans dépendance d'abord, puis tables qui les référencent.
+ * Aucune table n'est jamais supprimée automatiquement : une erreur de schéma arrête le démarrage
+ * pour qu'un humain la traite (les migrations versionnées remplaceront ce bloc).
+ */
+const MODELS_IN_SYNC_ORDER = [
+    Users,
+    Institution,
+    Plan,
+    Filiere,
+    Salle,
+    Creneau,
+    Enseignant,
+    Etudiant,
+    Notification,
+    PasswordResetToken,
+    Evenement,
+    InstitutionUser,
+    Subscription,
+    AuthSession,
+    GenerationSession,
+    PlanningSnapshot,
+    Groupe,
+    Cours,
+    Affectation,
+    Disponibilite,
+    Appartenir,
+    DemandeReport,
+    Conflit,
+    ConflitAffectation,
+];
+
+const runIncrementalMigrations = async () => {
+    // Migration incrémentale : ajout de la colonne lien si absente
+    try {
+        await sequelize.query(
+            "ALTER TABLE Notifications ADD COLUMN IF NOT EXISTS lien VARCHAR(500) NULL DEFAULT NULL"
+        );
+    } catch (_) { /* colonne déjà présente ou MySQL < 8 — ignoré */ }
+
+    try {
+        const queryInterface = sequelize.getQueryInterface();
+        const affectationColumns = await queryInterface.describeTable("Affectations");
+        const missingColumns = {
+            id_snapshot: { type: DataTypes.INTEGER, allowNull: true },
+            id_generation_session: { type: DataTypes.INTEGER, allowNull: true },
+            is_generated: { type: DataTypes.BOOLEAN, defaultValue: false },
+            score_contrib: { type: DataTypes.FLOAT, allowNull: true },
+        };
+        for (const [column, definition] of Object.entries(missingColumns)) {
+            if (!affectationColumns[column]) {
+                await queryInterface.addColumn("Affectations", column, definition);
+            }
+        }
+    } catch (error) {
+        console.warn("Migration snapshots Affectations ignoree:", error.message);
+    }
+
+    try {
+        const queryInterface = sequelize.getQueryInterface();
+        const defaultInstitution = await getDefaultInstitution();
+
+        for (const tableName of TENANT_MODELS) {
+            const columns = await queryInterface.describeTable(tableName).catch(() => null);
+            if (!columns) continue;
+
+            if (!columns.id_institution) {
+                await queryInterface.addColumn(tableName, "id_institution", {
+                    type: DataTypes.INTEGER,
+                    allowNull: true,
+                });
+            }
+
+            await sequelize.query(
+                `UPDATE ${tableName} SET id_institution = :idInstitution WHERE id_institution IS NULL`,
+                { replacements: { idInstitution: defaultInstitution.id_institution } }
+            ).catch(() => null);
+        }
+
+        const users = await Users.findAll();
+        for (const user of users) {
+            await ensureUserMembership(user, defaultInstitution);
+        }
+    } catch (error) {
+        console.warn("Migration multi-tenant ignoree:", error.message);
+    }
+};
+
+/**
+ * Seed automatique d'une base vide : uniquement en développement et sur demande explicite
+ * (SEED_ON_EMPTY=true). En production, les comptes de démonstration ne doivent jamais exister.
+ */
+const seedIfRequested = async () => {
+    if (isProduction || process.env.SEED_ON_EMPTY !== "true") return;
+
+    const userCount = await Users.count();
+    if (userCount > 0) {
+        console.log(`✅ Données existantes (${userCount} utilisateurs), seed non nécessaire`);
+        return;
+    }
+
+    console.log("🌱 Base vide et SEED_ON_EMPTY=true : exécution du seed de démonstration...");
+    const seedModule = await import("./seed.js");
+    await seedModule.default();
+    console.log("✅ Seed exécuté avec succès !");
+};
 
 (async () => {
     try {
-        // Test de connexion à la base de données
-        await testConnection();
+        const connected = await testConnection();
+        if (!connected) {
+            throw new Error("Connexion à la base de données impossible");
+        }
 
-        // Nettoyer les anciennes tables avec mauvais noms
         await cleanupOldTables();
 
-        // Synchronisation des modèles dans l'ordre correct
         console.log("🔄 Synchronisation des tables...");
-
-        // Option : Supprimer toutes les tables existantes pour recréer avec la bonne structure
-        // Décommenter la ligne suivante si vous voulez forcer la recréation de toutes les tables
-        // ATTENTION : Cela supprimera toutes les données !
-        /*
-        if (process.env.FORCE_RECREATE_TABLES === "true") {
-            console.log("⚠️ Suppression de toutes les tables existantes...");
-            await sequelize.drop({ cascade: true });
-            console.log("🗑️ Anciennes tables supprimées");
+        for (const model of MODELS_IN_SYNC_ORDER) {
+            await model.sync();
         }
-        */
-
-        // Synchronisation séquentielle : créer les tables sans FK, puis Sequelize ajoutera les FK via les associations
-        // Niveau 1 : Tables sans dépendances
-        // Gestion spéciale : si erreur de trop d'index, supprimer toutes les tables et les recréer
-        let tablesRecreated = false;
-        
-        // Fonction helper pour synchroniser avec gestion d'erreur
-        // Utilise force: false pour éviter les problèmes de trop d'index
-        const safeSync = async (model, modelName) => {
-            try {
-                // Utiliser force: false (créer si n'existe pas, ne pas modifier si existe)
-                await model.sync({ force: false });
-            } catch (error) {
-                if (
-                    error.name === "SequelizeDatabaseError" &&
-                    error.parent?.code === "ER_TOO_MANY_KEYS"
-                ) {
-                    if (!tablesRecreated) {
-                        console.log(
-                            "⚠️ Trop d'index détecté, suppression de toutes les tables..."
-                        );
-                        console.log(
-                            "⚠️ ATTENTION : Toutes les données seront supprimées !"
-                        );
-                        // Désactiver les vérifications de contraintes FK avant suppression
-                        await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-                        // Supprimer toutes les tables
-                        await sequelize.drop({ cascade: true });
-                        // Réactiver les vérifications de contraintes FK
-                        await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
-                        console.log("🗑️ Toutes les tables supprimées");
-                        console.log("🔄 Recréation de toutes les tables...");
-                        tablesRecreated = true;
-                    }
-                    // Recréer la table sans alter
-                    await model.sync({ force: false });
-                    console.log(`✅ Table ${modelName} recréée`);
-                } else {
-                    throw error;
-                }
-            }
-        };
-
-        // Synchroniser Users en premier
-        await safeSync(Users, "Users");
-        
-        // Fonction helper pour synchroniser avec gestion d'erreur ER_TOO_MANY_KEYS
-        // Utilise force: false pour éviter les problèmes de trop d'index
-        const syncTableSafe = async (model, modelName) => {
-            try {
-                // Essayer d'abord avec force: false (créer si n'existe pas, ne pas modifier si existe)
-                await model.sync({ force: false });
-            } catch (error) {
-                // Si erreur de trop d'index, supprimer toutes les tables et les recréer
-                if (error.parent?.code === "ER_TOO_MANY_KEYS") {
-                    if (!tablesRecreated) {
-                        console.log(
-                            "⚠️ Trop d'index détecté, suppression de toutes les tables..."
-                        );
-                        console.log(
-                            "⚠️ ATTENTION : Toutes les données seront supprimées !"
-                        );
-                        await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-                        await sequelize.drop({ cascade: true });
-                        await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
-                        console.log("🗑️ Toutes les tables supprimées");
-                        console.log("🔄 Recréation de toutes les tables...");
-                        tablesRecreated = true;
-                    }
-                    await model.sync({ force: false });
-                    console.log(`✅ Table ${modelName} recréée`);
-                } else {
-                    throw error;
-                }
-            }
-        };
-
-        await syncTableSafe(Institution, "Institution");
-        await syncTableSafe(Plan, "Plan");
-        
-        // Synchroniser les autres tables avec gestion d'erreur
-        await syncTableSafe(Filiere, "Filiere");
-        await syncTableSafe(Salle, "Salle");
-        await syncTableSafe(Creneau, "Creneau");
-        console.log("--> Niveau 1 : Tables de base synchronisées");
-
-        // Niveau 2 : Tables qui dépendent de Users
-        await syncTableSafe(Enseignant, "Enseignant");
-        await syncTableSafe(Etudiant, "Etudiant");
-        await syncTableSafe(Notification, "Notification");
-        await syncTableSafe(PasswordResetToken, "PasswordResetToken");
-        await syncTableSafe(Evenement, "Evenement");
-        await syncTableSafe(InstitutionUser, "InstitutionUser");
-        await syncTableSafe(Subscription, "Subscription");
-        await syncTableSafe(AuthSession, "AuthSession");
-        await syncTableSafe(GenerationSession, "GenerationSession");
-        await syncTableSafe(PlanningSnapshot, "PlanningSnapshot");
-        console.log("--> Niveau 2 : Tables dépendantes de Users synchronisées");
-
-        // Niveau 3 : Tables qui dépendent de Filiere
-        await syncTableSafe(Groupe, "Groupe");
-        await syncTableSafe(Cours, "Cours");
-        console.log(
-            "--> Niveau 3 : Tables dépendantes de Filiere synchronisées"
-        );
-
-        // Niveau 4 : Tables qui dépendent de plusieurs tables
-        await syncTableSafe(Affectation, "Affectation");
-        await syncTableSafe(Disponibilite, "Disponibilite");
-        await syncTableSafe(Appartenir, "Appartenir");
-        console.log("--> Niveau 4 : Tables complexes synchronisées");
-
-        // Niveau 5 : Tables qui dépendent d'Affectation
-        await syncTableSafe(DemandeReport, "DemandeReport");
-
-        console.log(
-            "--> Niveau 5 : Tables dépendantes d'Affectation synchronisées"
-        );
-
-        // Niveau 6 : Tables de liaison
-        await syncTableSafe(Conflit, "Conflit");
-        await syncTableSafe(ConflitAffectation, "ConflitAffectation");
-        console.log("--> Niveau 6 : Tables de liaison synchronisées");
-
-        // Maintenant, Sequelize va ajouter les clés étrangères via les associations
-        // en utilisant les noms de tables définis avec freezeTableName
         console.log("--> Toutes les tables synchronisées avec succès !");
 
-        // Exécuter le seed automatiquement si les tables sont vides
-        try {
-            // Utiliser le module déjà importé au début du fichier
-            const userCount = await Users.count();
-            
-            if (userCount === 0) {
-                console.log("🌱 Aucune donnée détectée, exécution automatique du seed...");
-                // Exécuter le seed en utilisant le module ES
-                await import('./seed.js').then(async (seedModule) => {
-                    await seedModule.default();
-                });
-                console.log("✅ Seed exécuté avec succès !");
-            } else {
-                console.log(`✅ Données existantes (${userCount} utilisateurs), seed non nécessaire`);
-            }
-        } catch (seedError) {
-            console.warn("⚠️ Erreur lors du seed automatique:", seedError.message);
-        }
+        await seedIfRequested();
+        await runIncrementalMigrations();
 
-        // Migration incrémentale : ajout de la colonne lien si absente
-        try {
-            await sequelize.query(
-                "ALTER TABLE Notifications ADD COLUMN IF NOT EXISTS lien VARCHAR(500) NULL DEFAULT NULL"
-            );
-        } catch (_) { /* colonne déjà présente ou MySQL < 8 — ignoré */ }
-
-        try {
-            const queryInterface = sequelize.getQueryInterface();
-            const affectationColumns = await queryInterface.describeTable("Affectations");
-
-            if (!affectationColumns.id_snapshot) {
-                await queryInterface.addColumn("Affectations", "id_snapshot", {
-                    type: DataTypes.INTEGER,
-                    allowNull: true,
-                });
-            }
-            if (!affectationColumns.id_generation_session) {
-                await queryInterface.addColumn("Affectations", "id_generation_session", {
-                    type: DataTypes.INTEGER,
-                    allowNull: true,
-                });
-            }
-            if (!affectationColumns.is_generated) {
-                await queryInterface.addColumn("Affectations", "is_generated", {
-                    type: DataTypes.BOOLEAN,
-                    defaultValue: false,
-                });
-            }
-            if (!affectationColumns.score_contrib) {
-                await queryInterface.addColumn("Affectations", "score_contrib", {
-                    type: DataTypes.FLOAT,
-                    allowNull: true,
-                });
-            }
-        } catch (error) {
-            console.warn("Migration snapshots Affectations ignoree:", error.message);
-        }
-
-        try {
-            const queryInterface = sequelize.getQueryInterface();
-            const defaultInstitution = await getDefaultInstitution();
-
-            for (const tableName of TENANT_MODELS) {
-                const columns = await queryInterface.describeTable(tableName).catch(() => null);
-                if (!columns) continue;
-
-                if (!columns.id_institution) {
-                    await queryInterface.addColumn(tableName, "id_institution", {
-                        type: DataTypes.INTEGER,
-                        allowNull: true,
-                    });
-                }
-
-                await sequelize.query(
-                    `UPDATE ${tableName} SET id_institution = :idInstitution WHERE id_institution IS NULL`,
-                    { replacements: { idInstitution: defaultInstitution.id_institution } }
-                ).catch(() => null);
-            }
-
-            const users = await Users.findAll();
-            for (const user of users) {
-                await ensureUserMembership(user, defaultInstitution);
-            }
-        } catch (error) {
-            console.warn("Migration multi-tenant ignoree:", error.message);
-        }
-
-        // Démarrage du serveur
         app.listen(PORT, () => {
             console.log(`--> Serveur lancé sur http://localhost:${PORT}`);
-            //console.log(`--> Documentation API: http://localhost:${PORT}/api`);
         });
     } catch (error) {
         console.error("--> Erreur serveur :", error);

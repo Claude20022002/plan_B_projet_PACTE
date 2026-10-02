@@ -1,10 +1,21 @@
 import express from "express";
 import { Appartenir, Etudiant, Groupe, Users } from "../models/index.js";
+import { authenticateToken, requireAdmin, requireEnseignant } from "../middleware/index.js";
+import { pick } from "../utils/validationHelper.js";
 
 const router = express.Router();
 
+// Lecture : personnel (enseignant/admin). Écriture : admin. Un étudiant ne voit que son propre groupe.
+router.use(authenticateToken);
+
+const requireSelfOrStaff = (req, res, next) => {
+    const isStaff = ["admin", "enseignant"].includes(req.user.role);
+    if (isStaff || Number(req.params.id_etudiant) === req.user.id_user) return next();
+    return res.status(403).json({ message: "Accès interdit" });
+};
+
 // 🔍 Récupérer toutes les appartenances
-router.get("/", async (req, res) => {
+router.get("/", requireEnseignant, async (req, res) => {
     try {
         const appartenances = await Appartenir.findAll({
             include: [
@@ -26,9 +37,9 @@ router.get("/", async (req, res) => {
 });
 
 // ➕ Ajouter un étudiant à un groupe
-router.post("/", async (req, res) => {
+router.post("/", requireAdmin, async (req, res) => {
     try {
-        const appartenance = await Appartenir.create(req.body);
+        const appartenance = await Appartenir.create(pick(req.body, ["id_user_etudiant", "id_groupe"]));
         const appartenanceComplete = await Appartenir.findOne({
             where: {
                 id_user_etudiant: appartenance.id_user_etudiant,
@@ -53,7 +64,7 @@ router.post("/", async (req, res) => {
 });
 
 // 🗑️ Retirer un étudiant d'un groupe
-router.delete("/etudiant/:id_etudiant/groupe/:id_groupe", async (req, res) => {
+router.delete("/etudiant/:id_etudiant/groupe/:id_groupe", requireAdmin, async (req, res) => {
     try {
         const appartenance = await Appartenir.findOne({
             where: {
@@ -77,7 +88,7 @@ router.delete("/etudiant/:id_etudiant/groupe/:id_groupe", async (req, res) => {
 });
 
 // 🔍 Récupérer le groupe d'un étudiant
-router.get("/etudiant/:id_etudiant", async (req, res) => {
+router.get("/etudiant/:id_etudiant", requireSelfOrStaff, async (req, res) => {
     try {
         const appartenance = await Appartenir.findOne({
             where: { id_user_etudiant: req.params.id_etudiant },
@@ -98,7 +109,7 @@ router.get("/etudiant/:id_etudiant", async (req, res) => {
 });
 
 // 🔍 Récupérer tous les étudiants d'un groupe
-router.get("/groupe/:id_groupe", async (req, res) => {
+router.get("/groupe/:id_groupe", requireEnseignant, async (req, res) => {
     try {
         const appartenances = await Appartenir.findAll({
             where: { id_groupe: req.params.id_groupe },

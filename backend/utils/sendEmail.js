@@ -50,6 +50,11 @@ const createTransporter = async () => {
  */
 export const sendEmail = async ({ to, subject, text, html }) => {
     try {
+        // Jamais d'envoi réel pendant les tests automatisés
+        if (process.env.NODE_ENV === "test") {
+            return { success: true, message: "Email ignoré (tests)" };
+        }
+
         // Si l'envoi d'email n'est pas configuré, logger seulement
         if (!process.env.EMAIL_USER && !process.env.SMTP_USER) {
             console.log("📧 Email (mode développement):", {

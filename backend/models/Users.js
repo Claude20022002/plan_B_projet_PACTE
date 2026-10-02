@@ -40,7 +40,24 @@ const Users = sequelize.define(
     {
         tableName: "Users",
         freezeTableName: true,
+        // Le hash ne sort jamais par défaut, y compris via les `include` d'autres modèles.
+        // Seul le login le charge explicitement : Users.scope("withPassword").
+        defaultScope: {
+            attributes: { exclude: ["password_hash"] },
+        },
+        scopes: {
+            withPassword: {
+                attributes: { include: ["password_hash"] },
+            },
+        },
     }
 );
+
+// Filet de sécurité : même une instance chargée avec le hash ne le sérialise jamais en JSON.
+Users.prototype.toJSON = function toJSON() {
+    const values = { ...this.get() };
+    delete values.password_hash;
+    return values;
+};
 
 export default Users;

@@ -149,4 +149,13 @@ describe('requireOwnResourceOrAdmin', () => {
         middleware(makeReq(null, { id: '1' }), res, makeNext());
         expect(res.status).toHaveBeenCalledWith(401);
     });
+
+    test('ignore un identifiant fourni dans le corps de la requête', () => {
+        const middleware = requireOwnResourceOrAdmin('id_enseignant');
+        const res = makeRes();
+        const req = makeReq({ role: 'enseignant', id_user: 5 }, {});
+        req.body = { id_enseignant: 5, id_user: 5 };
+        middleware(req, res, makeNext());
+        expect(res.status).toHaveBeenCalledWith(403);
+    });
 });

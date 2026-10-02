@@ -1,6 +1,5 @@
 import express from "express";
 import {
-    register,
     login,
     logout,
     logoutAllDevices,
@@ -14,17 +13,17 @@ import {
 import { authenticateToken, optionalAuth } from "../middleware/authMiddleware.js";
 import { issueCsrfToken } from "../middleware/csrfMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { authRateLimiter } from "../middleware/rateLimiterMiddleware.js";
 
 const router = express.Router();
 
-// 🔐 POST /api/auth/register - Inscription
-router.post("/register", asyncHandler(register));
+// Pas de route d'inscription publique : les comptes sont créés par l'administration.
 
 // 🔐 GET /api/auth/csrf-token - Jeton CSRF SPA
 router.get("/csrf-token", issueCsrfToken);
 
 // 🔐 POST /api/auth/login - Connexion
-router.post("/login", asyncHandler(login));
+router.post("/login", authRateLimiter, asyncHandler(login));
 
 // 🔐 POST /api/auth/logout - Déconnexion
 router.post("/logout", optionalAuth, asyncHandler(logout));
@@ -45,10 +44,10 @@ router.get("/sessions", authenticateToken, asyncHandler(listSessions));
 router.delete("/sessions/:sessionId", authenticateToken, asyncHandler(revokeSession));
 
 // 🔐 POST /api/auth/forgot-password - Demande de réinitialisation
-router.post("/forgot-password", asyncHandler(forgotPassword));
+router.post("/forgot-password", authRateLimiter, asyncHandler(forgotPassword));
 
 // 🔐 POST /api/auth/reset-password - Réinitialisation avec token
-router.post("/reset-password", asyncHandler(resetPassword));
+router.post("/reset-password", authRateLimiter, asyncHandler(resetPassword));
 
 export default router;
 

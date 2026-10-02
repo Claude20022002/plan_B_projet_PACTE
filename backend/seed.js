@@ -1,4 +1,5 @@
 import dotenv from 'dotenv';
+import { pathToFileURL } from 'url';
 import sequelize, { testConnection } from './config/db.js';
 import './models/index.js';
 import {
@@ -307,6 +308,10 @@ const STATUTS_POOL = [
 
 // ── seed() ────────────────────────────────────────────────────────────────────
 async function seed() {
+    // Le seed crée des comptes de démonstration au mot de passe connu : interdit en production.
+    if (process.env.NODE_ENV === 'production') {
+        throw new Error('Seed interdit en production (NODE_ENV=production)');
+    }
     try {
         console.log('🌱 Seed HESTIM (config-driven) FINAL...');
         await testConnection();
@@ -567,8 +572,12 @@ async function seed() {
 }
 
 // Exécuter le seed si ce fichier est appelé directement
-if (import.meta.url === `file://${process.argv[1]}`) {
-    seed();
+// (pathToFileURL : sous Windows l'URL est file:///C:/..., une concaténation naïve ne correspond jamais)
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+    seed().catch((error) => {
+        console.error('❌', error.message);
+        process.exit(1);
+    });
 }
 
 export default seed;

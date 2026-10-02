@@ -322,6 +322,7 @@ export const notificationAPI = {
     create: (data) => request('/notifications', { method: 'POST', body: data }),
     update: (id, data) => request(`/notifications/${id}`, { method: 'PUT', body: data }),
     marquerCommeLue: (id) => request(`/notifications/${id}/lire`, { method: 'PATCH' }),
+    marquerToutesLues: (userId) => request(`/notifications/user/${userId}/tout-lire`, { method: 'PATCH' }),
     delete: (id) => request(`/notifications/${id}`, { method: 'DELETE' }),
 };
 

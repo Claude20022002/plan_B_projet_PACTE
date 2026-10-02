@@ -75,8 +75,7 @@ export default function Notifications() {
 
     const handleMarkAllRead = async () => {
         try {
-            const unread = notifications.filter((n) => !n.lue);
-            await Promise.all(unread.map((n) => notificationAPI.marquerCommeLue(n.id_notification)));
+            await notificationAPI.marquerToutesLues(user.id_user);
             setSuccess("Toutes les notifications marquées comme lues");
             loadNotifications();
         } catch {
