@@ -65,7 +65,8 @@ export const getDemandeReportById = asyncHandler(async (req, res) => {
         ],
     });
 
-    if (!demande) {
+    const isOwner = demande?.id_user_enseignant === req.user.id_user;
+    if (!demande || (req.user.role !== "admin" && !isOwner)) {
         return res
             .status(404)
             .json({ message: "Demande de report non trouvée" });
