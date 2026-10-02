@@ -57,18 +57,6 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
-    const register = async (userData) => {
-        try {
-            const data = await authAPI.register(userData);
-            setUser(data.user);
-            setIsAuthenticated(true);
-            window.dispatchEvent(new CustomEvent('auth:payload', { detail: data }));
-            return { success: true, data };
-        } catch (error) {
-            return { success: false, error: error.message };
-        }
-    };
-
     const logout = async () => {
         try {
             await authAPI.logout();
@@ -88,7 +76,6 @@ export const AuthProvider = ({ children }) => {
         loading,
         isAuthenticated,
         login,
-        register,
         logout,
         checkAuth,
     };

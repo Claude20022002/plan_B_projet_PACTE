@@ -2,7 +2,8 @@
  * Service API centralisé pour communiquer avec le backend
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
+// Même origine que le frontend : proxy Vite en dev, nginx en production
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const CSRF_COOKIE = import.meta.env.PROD ? '__Host-csrf_token' : 'csrf_token';
 
 function getCookie(name) {
@@ -25,6 +26,14 @@ async function ensureCsrfToken() {
     }
     return token ? decodeURIComponent(token) : null;
 }
+
+const NO_REFRESH_ENDPOINTS = new Set([
+    '/auth/login',
+    '/auth/refresh',
+    '/auth/logout',
+    '/auth/forgot-password',
+    '/auth/reset-password',
+]);
 
 /**
  * Fonction utilitaire pour faire des requêtes HTTP
@@ -72,12 +81,13 @@ async function request(endpoint, options = {}) {
         }
 
         if (!response.ok) {
-            // Si erreur 401 (non autorisé), ne pas rediriger automatiquement
-            // Laisser le composant gérer la redirection
-            if (response.status === 401 && endpoint !== '/auth/refresh') {
+            // 401 : le jeton d'accès (15 min) a expiré → un seul renouvellement puis une seule
+            // nouvelle tentative. Jamais pour les routes d'auth (un mauvais mot de passe au login
+            // ne doit pas déclencher de refresh), ni pour une requête déjà rejouée (évite la boucle).
+            if (response.status === 401 && !NO_REFRESH_ENDPOINTS.has(endpoint) && !options._retried) {
                 try {
                     await request('/auth/refresh', { method: 'POST' });
-                    return request(endpoint, options);
+                    return request(endpoint, { ...options, _retried: true });
                 } catch (_) {
                     const error = new Error(data.message || data.error || 'Non autorisé');
                     error.status = 401;
@@ -133,7 +143,6 @@ async function request(endpoint, options = {}) {
 export const authAPI = {
     forgotPassword: (email) => request('/auth/forgot-password', { method: 'POST', body: { email } }),
     resetPassword: (token, id_user, password) => request('/auth/reset-password', { method: 'POST', body: { token, id_user, password } }),
-    register: (data) => request('/auth/register', { method: 'POST', body: data }),
     login: (data) => request('/auth/login', { method: 'POST', body: data }),
     logout: () => request('/auth/logout', { method: 'POST' }),
     getMe: () => request('/auth/me'),

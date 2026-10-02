@@ -153,5 +153,13 @@ export default defineConfig({
   server: {
     port: 5173,
     hmr: { overlay: true },
+    // Même origine qu'en production (nginx proxifie /api) : cookies SameSite=strict
+    // et jeton CSRF lisible par le frontend.
+    proxy: {
+      '/api': {
+        target: process.env.VITE_PROXY_TARGET || 'http://localhost:5000',
+        changeOrigin: false,
+      },
+    },
   },
 });
