@@ -15,6 +15,7 @@ import {
 } from "../../../models/index.js";
 import { hashPassword } from "../../../utils/passwordHelper.js";
 import { resetRateLimiters } from "../../../middleware/rateLimiterMiddleware.js";
+import { getDefaultInstitution } from "../../../utils/tenantHelper.js";
 
 export const PASSWORD = "Hestim@2026";
 
@@ -100,34 +101,38 @@ export const anonymous = () => request(app);
  * une salle, un créneau, un cours et une séance pour l'enseignant fourni.
  */
 export const createPlanningFixture = async ({ admin, enseignant, etudiant } = {}) => {
-    const filiere = await Filiere.create({ code_filiere: `IIA${userCounter}`, nom_filiere: "Informatique & IA" });
-    const groupe = await Groupe.create({
+    // Multi-tenant (retiré en phase 2) : les contrôleurs filtrent sur l'institution de la session
+    const { id_institution } = await getDefaultInstitution();
+    const scoped = (Model, data) => Model.create({ ...data, id_institution });
+
+    const filiere = await scoped(Filiere, { code_filiere: `IIA${userCounter}`, nom_filiere: "Informatique & IA" });
+    const groupe = await scoped(Groupe, {
         nom_groupe: `IIA-3A-${userCounter}`,
         niveau: "3A",
         effectif: 25,
         annee_scolaire: "2026-2027",
         id_filiere: filiere.id_filiere,
     });
-    const autreGroupe = await Groupe.create({
+    const autreGroupe = await scoped(Groupe, {
         nom_groupe: `IIA-3B-${userCounter}`,
         niveau: "3A",
         effectif: 25,
         annee_scolaire: "2026-2027",
         id_filiere: filiere.id_filiere,
     });
-    const salle = await Salle.create({
+    const salle = await scoped(Salle, {
         nom_salle: `G-10${userCounter}`,
         type_salle: "Salle de cours",
         capacite: 40,
         batiment: "Gandhi",
     });
-    const creneau = await Creneau.create({
+    const creneau = await scoped(Creneau, {
         jour_semaine: "lundi",
         heure_debut: "09:00:00",
         heure_fin: "10:45:00",
         duree_minutes: 105,
     });
-    const cours = await Cours.create({
+    const cours = await scoped(Cours, {
         code_cours: `INF${userCounter}`,
         nom_cours: "Algorithmique",
         niveau: "3A",
@@ -139,7 +144,7 @@ export const createPlanningFixture = async ({ admin, enseignant, etudiant } = {}
 
     let affectation = null;
     if (enseignant) {
-        affectation = await Affectation.create({
+        affectation = await scoped(Affectation, {
             date_seance: "2027-01-04", // un lundi
             statut: "planifie",
             id_cours: cours.id_cours,
