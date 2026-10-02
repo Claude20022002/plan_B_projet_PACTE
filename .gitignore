@@ -12,6 +12,7 @@ frontend/auth/
 playwright-report/
 test-results/
 coverage/
+.playwright-mcp/
 
 # Cookies exportés par curl lors de tests manuels
 csrf_token=*
