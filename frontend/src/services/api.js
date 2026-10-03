@@ -214,6 +214,11 @@ export const groupeAPI = {
     create: (data) => request('/groupes', { method: 'POST', body: data }),
     update: (id, data) => request(`/groupes/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/groupes/${id}`, { method: 'DELETE' }),
+    // Arbre promotions → TD → TP
+    getArbre: (params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/groupes/arbre${query ? `?${query}` : ''}`);
+    },
 };
 
 // ==================== SALLES ====================
@@ -287,6 +292,28 @@ export const coursAPI = {
     create: (data) => request('/cours', { method: 'POST', body: data }),
     update: (id, data) => request(`/cours/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/cours/${id}`, { method: 'DELETE' }),
+    // Composantes d'un module (CM, TD, TP, Projet)
+    getComposantes: (idCours) => request(`/cours/${idCours}/composantes`),
+    createComposante: (idCours, data) => request(`/cours/${idCours}/composantes`, { method: 'POST', body: data }),
+};
+
+// ==================== COMPOSANTES DE MODULE ====================
+export const composanteAPI = {
+    update: (id, data) => request(`/composantes/${id}`, { method: 'PUT', body: data }),
+    delete: (id) => request(`/composantes/${id}`, { method: 'DELETE' }),
+};
+
+// ==================== ENSEIGNEMENTS (composante × groupes) ====================
+export const enseignementAPI = {
+    getAll: (params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/enseignements${query ? `?${query}` : ''}`);
+    },
+    generer: (data) => request('/enseignements/generer', { method: 'POST', body: data }),
+    fusionner: (ids) => request('/enseignements/fusionner', { method: 'POST', body: { ids } }),
+    scinder: (id) => request(`/enseignements/${id}/scinder`, { method: 'POST' }),
+    update: (id, data) => request(`/enseignements/${id}`, { method: 'PUT', body: data }),
+    delete: (id) => request(`/enseignements/${id}`, { method: 'DELETE' }),
 };
 
 // ==================== CRÉNEAUX ====================

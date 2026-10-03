@@ -1,6 +1,12 @@
 import { campusCodeFromBatiment } from "../../utils/campus.js";
 import { evenementsCalendrierMaroc } from "../../utils/feriesMaroc.js";
-import { normaliserTypeSalle, TYPES_SALLE } from "../../config/referentiel.js";
+import {
+    normaliserTypeSalle,
+    TYPES_SALLE,
+    normaliserTypeComposante,
+    anneeDepuisNiveau,
+    periodeDuSemestre,
+} from "../../config/referentiel.js";
 import { PARAMETRES_PLANNING } from "../../config/parametresPlanning.js";
 
 describe("campusCodeFromBatiment (migration de Salles.batiment)", () => {
@@ -58,6 +64,39 @@ describe("evenementsCalendrierMaroc (année 2026-2027)", () => {
     test("rien hors des bornes de l'année", () => {
         expect(evenements.every((e) => e.date_fin >= "2026-09-01" && e.date_debut <= "2027-07-15")).toBe(true);
         expect(trouver("Fête du Trône", "2027-07-30")).toBeUndefined();
+    });
+});
+
+describe("Maquette : conversions de l'existant (phase P2)", () => {
+    test.each([
+        ["CM", "CM"],
+        ["Cours magistral", "CM"],
+        ["td", "TD"],
+        ["Travaux pratiques", "TP"],
+        ["Projet", "Projet"],
+        ["PFE", "Projet"],
+        ["", "CM"],
+    ])("type_cours « %s » → composante %s", (ancien, type) => {
+        expect(normaliserTypeComposante(ancien)).toBe(type);
+    });
+
+    test.each([
+        ["4ème année", 4],
+        ["4A", 4],
+        ["1ère année Prépa", 1],
+        ["Master", null],
+    ])("niveau « %s » → année %s", (niveau, annee) => {
+        expect(anneeDepuisNiveau(niveau)).toBe(annee);
+    });
+
+    test.each([
+        ["S7", "S1"],
+        ["S1", "S1"],
+        ["S8", "S2"],
+        ["S10", "S2"],
+        ["Annuel", null],
+    ])("semestre %s → période %s", (semestre, periode) => {
+        expect(periodeDuSemestre(semestre)).toBe(periode);
     });
 });
 

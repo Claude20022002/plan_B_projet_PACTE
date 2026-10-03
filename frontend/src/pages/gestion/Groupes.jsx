@@ -1,516 +1,374 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    MenuItem,
     Paper,
+    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    TablePagination,
-    Button,
-    IconButton,
     TextField,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
+    Tooltip,
     Typography,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Alert,
-    Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download, Groups as GroupsIcon } from '@mui/icons-material';
-import { TableSortLabel } from '@mui/material';
+import { Add, Delete, Edit, SubdirectoryArrowRight, UploadFile } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { groupeAPI, filiereAPI } from '../../services/api';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import SkeletonTable from '../../components/common/SkeletonTable';
-import EmptyState from '../../components/common/EmptyState';
-import { useSortableTable } from '../../hooks/useSortableTable';
-import { useFormik } from 'formik';
-import * as yup from 'yup';
-import { parseFile, validateGroupeData } from '../../utils/fileImport';
+import ImportCsvDialog from '../../components/common/ImportCsvDialog';
+import EmptyState from '../../design-system/components/EmptyState';
+import StateChip from '../../design-system/components/StateChip';
+import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
+import { filiereAPI, groupeAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
+import { fetchAll } from '../../utils/fetchAll';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_GROUPES } from '../../utils/exportColumns';
-import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
-import { useNavigate } from 'react-router-dom';
+import { ds, lineColor } from '../../design-system/tokens';
 
-const validationSchema = yup.object({
-    nom_groupe: yup.string().required('Le nom du groupe est requis'),
-    niveau: yup.string().required('Le niveau est requis'),
-    effectif: yup.number().min(0, 'L\'effectif doit être positif'),
-    annee_scolaire: yup.string().required('L\'année scolaire est requise'),
-    id_filiere: yup.number().required('La filière est requise'),
-});
+// Type d'un sous-groupe selon son parent : promotion → TD → TP
+const ENFANT_DE = { promotion: 'td', td: 'tp' };
 
+const anneeScolaireCourante = () => {
+    const d = new Date();
+    const debut = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1;
+    return `${debut}-${debut + 1}`;
+};
+
+const GROUPE_VIDE = { nom_groupe: '', niveau: '', effectif: 0, annee_scolaire: anneeScolaireCourante(), id_filiere: '', type_groupe: 'promotion', id_groupe_parent: null, annee: '' };
+
+const MODELE_CSV = [
+    'nom_groupe;code_filiere;niveau;annee;effectif;annee_scolaire;type_groupe;parent',
+    '4A IIIA;IIIA;4ème année;4;44;2026-2027;promotion;',
+    'IIIA-4A;IIIA;4ème année;4;22;2026-2027;td;4A IIIA',
+].join('\n');
+
+/** Aplatit l'arbre en lignes avec leur profondeur (affichage en retrait). */
+const aplatir = (noeuds, profondeur = 0) =>
+    noeuds.flatMap((n) => [{ ...n, profondeur }, ...aplatir(n.sous_groupes || [], profondeur + 1)]);
+
+/**
+ * Groupes emboîtés : promotion ⊃ groupes de TD ⊃ demi-groupes de TP. Un étudiant est inscrit
+ * dans son groupe le plus fin ; il suit aussi les séances de ses groupes parents.
+ */
 export default function Groupes() {
-    const navigate = useNavigate();
-    const [groupes, setGroupes] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const { t } = useTranslation();
+    const toast = useToast();
     const [filieres, setFilieres] = useState([]);
-    const [page, setPage] = useState(0);
-    const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
-    const { sorted, requestSort, getSortDir } = useSortableTable(groupes);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [total, setTotal] = useState(0);
-    const [open, setOpen] = useState(false);
-    const [editing, setEditing] = useState(null);
-    const [search, setSearch] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [importOpen, setImportOpen] = useState(false);
-    const [importLoading, setImportLoading] = useState(false);
-    const [importErrors, setImportErrors] = useState([]);
+    const [filiere, setFiliere] = useState('');
+    const [annees, setAnnees] = useState([]);
+    const [anneeScolaire, setAnneeScolaire] = useState(anneeScolaireCourante());
+    const [arbre, setArbre] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [dialog, setDialog] = useState({ open: false, editing: null, form: GROUPE_VIDE });
+    const [aSupprimer, setASupprimer] = useState(null);
+    const [importOuvert, setImportOuvert] = useState(false);
 
+    // Filières et années scolaires disponibles
     useEffect(() => {
-        loadGroupes();
-        loadFilieres();
-    }, [page, rowsPerPage]);
+        (async () => {
+            try {
+                const [listeFilieres, groupes] = await Promise.all([fetchAll(filiereAPI.getAll), fetchAll(groupeAPI.getAll)]);
+                setFilieres(listeFilieres);
+                setFiliere((f) => f || listeFilieres[0]?.id_filiere || '');
+                const liste = [...new Set([anneeScolaireCourante(), ...groupes.map((g) => g.annee_scolaire)])].sort().reverse();
+                setAnnees(liste);
+            } catch {
+                toast.error(t('common.errorLoad'));
+            }
+        })();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
-    const loadFilieres = async () => {
-        try {
-            const data = await filiereAPI.getAll({ limit: 1000 });
-            setFilieres(data.data || []);
-        } catch (error) {
-            console.error('Erreur:', error);
+    const chargerArbre = useCallback(async () => {
+        if (!filiere) {
+            setLoading(false);
+            return;
         }
-    };
-
-    const loadGroupes = async () => {
         setLoading(true);
         try {
-            const data = await groupeAPI.getAll({ page: page + 1, limit: rowsPerPage });
-            setGroupes(data.data || []);
-            setTotal(data.pagination?.total || 0);
-        } catch (err) {
-            console.error('Erreur:', err);
-            setError('Erreur lors du chargement des groupes');
+            setArbre(await groupeAPI.getArbre({ id_filiere: filiere, annee_scolaire: anneeScolaire }));
+        } catch {
+            toast.error(t('common.errorLoad'));
         } finally {
             setLoading(false);
         }
-    };
+    }, [filiere, anneeScolaire, t, toast]);
 
-    const formik = useFormik({
-        initialValues: {
-            nom_groupe: '',
-            niveau: '',
-            effectif: 0,
-            annee_scolaire: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
-            id_filiere: '',
-        },
-        validationSchema,
-        enableReinitialize: true,
-        onSubmit: async (values, { setSubmitting }) => {
-            try {
-                setError('');
-                setSuccess('');
-                if (editing) {
-                    await groupeAPI.update(editing.id_groupe, values);
-                    setSuccess('Groupe modifié avec succès');
-                } else {
-                    await groupeAPI.create(values);
-                    setSuccess('Groupe créé avec succès');
-                }
-                formik.resetForm();
-                setOpen(false);
-                setEditing(null);
-                loadGroupes();
-            } catch (error) {
-                console.error('Erreur:', error);
-                setError(error.message || 'Erreur lors de la sauvegarde');
-            } finally {
-                setSubmitting(false);
-            }
-        },
-    });
+    useEffect(() => {
+        chargerArbre();
+    }, [chargerArbre]);
 
-    const handleEdit = (groupe) => {
-        setEditing(groupe);
-        formik.setValues({
-            nom_groupe: groupe.nom_groupe,
-            niveau: groupe.niveau,
-            effectif: groupe.effectif || 0,
-            annee_scolaire: groupe.annee_scolaire,
-            id_filiere: groupe.id_filiere,
+    const lignes = useMemo(() => aplatir(arbre), [arbre]);
+    const erreur = (error) => toast.error(error.response?.data?.error || error.response?.data?.errors?.[0]?.message || error.message);
+
+    const ouvrir = ({ groupe = null, parent = null } = {}) => {
+        if (groupe) {
+            setDialog({ open: true, editing: groupe, form: { ...GROUPE_VIDE, ...groupe, annee: groupe.annee ?? '' } });
+            return;
+        }
+        setDialog({
+            open: true,
+            editing: null,
+            form: parent
+                ? {
+                      ...GROUPE_VIDE,
+                      id_filiere: parent.id_filiere,
+                      niveau: parent.niveau,
+                      annee: parent.annee ?? '',
+                      annee_scolaire: parent.annee_scolaire,
+                      type_groupe: ENFANT_DE[parent.type_groupe],
+                      id_groupe_parent: parent.id_groupe,
+                      nom_groupe: `${parent.nom_groupe}-`,
+                  }
+                : { ...GROUPE_VIDE, id_filiere: filiere, annee_scolaire: anneeScolaire },
         });
-        setOpen(true);
     };
 
-    const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
+    const champ = (nom) => (e) => setDialog((d) => ({ ...d, form: { ...d.form, [nom]: e.target.value } }));
 
-    const handleDeleteConfirm = async () => {
-        const { id } = confirmDialog;
-        setConfirmDialog({ open: false, id: null });
+    const enregistrer = async (event) => {
+        event.preventDefault();
+        const f = dialog.form;
+        const data = {
+            nom_groupe: f.nom_groupe.trim(),
+            niveau: f.niveau.trim(),
+            effectif: Number(f.effectif) || 0,
+            annee_scolaire: f.annee_scolaire.trim(),
+            id_filiere: Number(f.id_filiere),
+            type_groupe: f.type_groupe,
+            id_groupe_parent: f.id_groupe_parent || null,
+            annee: f.annee === '' ? null : Number(f.annee),
+        };
         try {
-            await groupeAPI.delete(id);
-            setSuccess('Groupe supprimé avec succès');
-            loadGroupes();
-        } catch (err) {
-            console.error('Erreur:', err);
-            setError('Erreur lors de la suppression');
-        }
-    };
-
-    const handleFileImport = async (file) => {
-        setImportLoading(true);
-        setImportErrors([]);
-        try {
-            const data = await parseFile(file);
-            console.log('Données parsées depuis le fichier:', data);
-            
-            if (!data || data.length === 0) {
-                setError('Le fichier est vide ou ne contient pas de données valides');
-                setImportLoading(false);
-                return;
-            }
-            
-            const validation = validateGroupeData(data);
-            
-            if (!validation.valid) {
-                setImportErrors(validation.errors);
-                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
-                return;
-            }
-
-            const currentYear = new Date().getFullYear();
-            const defaultAnneeScolaire = `${currentYear}-${currentYear + 1}`;
-
-            // Préparer les données pour l'import
-            const groupesToImport = data.map((row) => ({
-                nom_groupe: row.nom_groupe?.trim() || '',
-                niveau: row.niveau?.trim() || '',
-                effectif: row.effectif ? Number(row.effectif) : 0,
-                annee_scolaire: row.annee_scolaire?.trim() || defaultAnneeScolaire,
-                id_filiere: row.id_filiere ? Number(row.id_filiere) : null,
-            }));
-
-            // Importer les groupes une par une
-            const results = { success: 0, errors: [] };
-            for (const groupe of groupesToImport) {
-                try {
-                    await groupeAPI.create(groupe);
-                    results.success++;
-                } catch (error) {
-                    results.errors.push({
-                        nom: groupe.nom_groupe,
-                        error: error.message || 'Erreur lors de la création',
-                    });
-                }
-            }
-
-            setSuccess(`${results.success} groupe(s) importé(s) avec succès`);
-            if (results.errors.length > 0) {
-                setImportErrors(results.errors.map(e => `${e.nom}: ${e.error}`));
-            }
-            setImportOpen(false);
-            loadGroupes();
+            if (dialog.editing) await groupeAPI.update(dialog.editing.id_groupe, data);
+            else await groupeAPI.create(data);
+            toast.success(t('ref.groups.saved'));
+            setDialog({ open: false, editing: null, form: GROUPE_VIDE });
+            chargerArbre();
         } catch (error) {
-            console.error('Erreur lors de l\'import:', error);
-            setError(error.message || 'Erreur lors de l\'import du fichier');
-        } finally {
-            setImportLoading(false);
+            erreur(error);
         }
     };
 
-    const handleExport = () => {
-        exportToExcelLazy(groupes, COLS_GROUPES, 'Groupes', 'Groupes');
+    const supprimer = async () => {
+        const groupe = aSupprimer;
+        setASupprimer(null);
+        try {
+            await groupeAPI.delete(groupe.id_groupe);
+            toast.success(t('ref.groups.deleted'));
+            chargerArbre();
+        } catch (error) {
+            erreur(error);
+        }
     };
 
-    const filteredGroupes = groupes.filter(
-        (g) =>
-            g.nom_groupe?.toLowerCase().includes(search.toLowerCase()) ||
-            g.filiere?.nom_filiere?.toLowerCase().includes(search.toLowerCase())
-    );
+    // Import : les parents doivent précéder leurs sous-groupes dans le fichier
+    const importer = async (lignesFichier) => {
+        const parCode = new Map(filieres.map((f) => [f.code_filiere.toLowerCase(), f.id_filiere]));
+        const crees = new Map();
+        const erreurs = [];
+        let reussies = 0;
+        for (const [index, ligne] of lignesFichier.entries()) {
+            try {
+                const idFiliere = parCode.get(String(ligne.code_filiere || '').trim().toLowerCase());
+                if (!idFiliere) throw new Error(t('ref.curriculum.unknownProgram', { code: ligne.code_filiere || '' }));
+                const nomParent = String(ligne.parent || '').trim();
+                const idParent = nomParent ? crees.get(nomParent) : null;
+                if (nomParent && !idParent) throw new Error(t('ref.groups.parentNotFound', { name: nomParent }));
+                const reponse = await groupeAPI.create({
+                    nom_groupe: String(ligne.nom_groupe || '').trim(),
+                    id_filiere: idFiliere,
+                    niveau: String(ligne.niveau || '').trim(),
+                    annee: ligne.annee ? Number(ligne.annee) : null,
+                    effectif: Number(ligne.effectif) || 0,
+                    annee_scolaire: String(ligne.annee_scolaire || anneeScolaire).trim(),
+                    type_groupe: String(ligne.type_groupe || 'td').trim().toLowerCase(),
+                    id_groupe_parent: idParent,
+                });
+                crees.set(reponse.groupe.nom_groupe, reponse.groupe.id_groupe);
+                reussies += 1;
+            } catch (error) {
+                erreurs.push({
+                    ligne: index + 2,
+                    libelle: ligne.nom_groupe,
+                    message: error.response?.data?.error || error.response?.data?.errors?.[0]?.message || error.message,
+                });
+            }
+        }
+        if (reussies) chargerArbre();
+        return { reussies, erreurs };
+    };
+
+    // Effectif d'un groupe face à la somme de ses sous-groupes : signale l'écart, sans bloquer
+    const ecartEffectif = (groupe) => {
+        if (!groupe.sous_groupes?.length) return null;
+        const somme = groupe.sous_groupes.reduce((total, g) => total + (Number(g.effectif) || 0), 0);
+        return somme === Number(groupe.effectif) ? null : somme;
+    };
+
+    const filiereCourante = filieres.find((f) => f.id_filiere === filiere);
 
     return (
         <DashboardLayout>
-            <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined"
-                            size="small"
-                        >
-                            Retour
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            Gestion des Groupes
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                            variant="outlined"
-                            startIcon={<UploadFile />}
-                            onClick={() => {
-                                setImportOpen(true);
-                                setImportErrors([]);
-                            }}
-                        >
-                            Importer (Excel/CSV)
-                        </Button>
-                        <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
-                            Exporter Excel
-                        </Button>
-                        <Button
-                            variant="contained"
-                            startIcon={<Add />}
-                            onClick={() => {
-                                setEditing(null);
-                                setError('');
-                                setSuccess('');
-                                formik.resetForm({
-                                    values: {
-                                        nom_groupe: '',
-                                        niveau: '',
-                                        effectif: 0,
-                                        annee_scolaire: `${new Date().getFullYear()}-${new Date().getFullYear() + 1}`,
-                                        id_filiere: '',
-                                    },
-                                });
-                                setOpen(true);
-                            }}
-                        >
-                            Ajouter un groupe
-                        </Button>
-                    </Box>
-                </Box>
-
-                {error && (
-                    <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
-                        <Alert onClose={() => setError('')} severity="error">
-                            {error}
-                        </Alert>
-                    </Snackbar>
-                )}
-
-                {success && (
-                    <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess('')}>
-                        <Alert onClose={() => setSuccess('')} severity="success">
-                            {success}
-                        </Alert>
-                    </Snackbar>
-                )}
-
-                <Paper sx={{ mb: 2 }}>
-                    <Box sx={{ p: 2 }}>
-                        <TextField
-                            fullWidth
-                            placeholder="Rechercher un groupe..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            InputProps={{
-                                startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
-                            }}
-                        />
-                    </Box>
-                </Paper>
-
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>Nom</TableCell>
-                                <TableCell>Niveau</TableCell>
-                                <TableCell>Effectif</TableCell>
-                                <TableCell>Année scolaire</TableCell>
-                                <TableCell>Filière</TableCell>
-                                <TableCell align="right">Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredGroupes.map((groupe) => (
-                                <TableRow key={groupe.id_groupe}>
-                                    <TableCell>{groupe.nom_groupe}</TableCell>
-                                    <TableCell>{groupe.niveau}</TableCell>
-                                    <TableCell>{groupe.effectif}</TableCell>
-                                    <TableCell>{groupe.annee_scolaire}</TableCell>
-                                    <TableCell>{groupe.filiere?.nom_filiere || '-'}</TableCell>
-                                    <TableCell align="right">
-                                        <IconButton size="small" onClick={() => handleEdit(groupe)} aria-label={`Modifier ${groupe.nom_groupe}`}>
-                                            <Edit />
-                                        </IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(groupe.id_groupe)} aria-label={`Supprimer ${groupe.nom_groupe}`}>
-                                            <Delete />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
+            <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                        <TextField select size="small" label={t('ref.curriculum.program')} value={filiere} onChange={(e) => setFiliere(e.target.value)} sx={{ minWidth: 240 }}>
+                            {filieres.map((f) => (
+                                <MenuItem key={f.id_filiere} value={f.id_filiere}>
+                                    {f.code_filiere} · {f.nom_filiere}
+                                </MenuItem>
                             ))}
-                        </TableBody>
-                    </Table>
-                    <TablePagination
-                        component="div"
-                        count={total}
-                        page={page}
-                        onPageChange={(e, newPage) => setPage(newPage)}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={(e) => {
-                            setRowsPerPage(parseInt(e.target.value, 10));
-                            setPage(0);
-                        }}
-                        rowsPerPageOptions={[5, 10, 25, 50]}
+                        </TextField>
+                        <TextField select size="small" label={t('ref.groups.schoolYear')} value={anneeScolaire} onChange={(e) => setAnneeScolaire(e.target.value)} sx={{ minWidth: 150 }}>
+                            {annees.map((a) => (
+                                <MenuItem key={a} value={a}>
+                                    {a}
+                                </MenuItem>
+                            ))}
+                        </TextField>
+                    </Stack>
+                    <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+                        <Button variant="outlined" onClick={async () => exportToExcelLazy(await fetchAll(groupeAPI.getAll, { id_filiere: filiere }), COLS_GROUPES, 'Groupes', 'Groupes')}>
+                            {t('ref.import.export')}
+                        </Button>
+                        <Button variant="outlined" startIcon={<UploadFile />} onClick={() => setImportOuvert(true)}>
+                            {t('ref.import.button')}
+                        </Button>
+                        <Button variant="contained" startIcon={<Add />} onClick={() => ouvrir()} disabled={!filiere}>
+                            {t('ref.groups.addPromotion')}
+                        </Button>
+                    </Stack>
+                </Box>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 760 }}>
+                    {t('ref.groups.intro')}
+                </Typography>
+
+                {loading ? (
+                    <TableSkeleton rows={6} />
+                ) : lignes.length === 0 ? (
+                    <EmptyState
+                        title={t('ref.groups.emptyTitle', { program: filiereCourante?.code_filiere || '', year: anneeScolaire })}
+                        description={t('ref.groups.emptyBody')}
+                        actionLabel={t('ref.groups.addPromotion')}
+                        onAction={() => ouvrir()}
                     />
-                </TableContainer>
+                ) : (
+                    <TableContainer>
+                        <Table size="small">
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>{t('ref.groups.cols.group')}</TableCell>
+                                    <TableCell>{t('ref.groups.cols.type')}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.groups.cols.level')}</TableCell>
+                                    <TableCell align="right">{t('ref.groups.cols.size')}</TableCell>
+                                    <TableCell align="right">{t('ref.rooms.cols.actions')}</TableCell>
+                                </TableRow>
+                            </TableHead>
+                            <TableBody>
+                                {lignes.map((groupe) => {
+                                    const somme = ecartEffectif(groupe);
+                                    const typeEnfant = ENFANT_DE[groupe.type_groupe];
+                                    return (
+                                        <TableRow key={groupe.id_groupe} hover>
+                                            <TableCell>
+                                                <Stack direction="row" spacing={1} alignItems="center" sx={{ pl: groupe.profondeur * 3 }}>
+                                                    {groupe.profondeur > 0 ? (
+                                                        <SubdirectoryArrowRight fontSize="small" sx={{ color: 'text.disabled' }} aria-hidden />
+                                                    ) : (
+                                                        <Box component="span" aria-hidden sx={{ width: 9, height: 9, borderRadius: '2px', bgcolor: lineColor(groupe.id_filiere) }} />
+                                                    )}
+                                                    <Typography variant="body2" sx={{ fontWeight: groupe.profondeur === 0 ? 700 : 600, fontFamily: groupe.profondeur === 0 ? ds.font.board : undefined, letterSpacing: groupe.profondeur === 0 ? '0.04em' : undefined }}>
+                                                        {groupe.nom_groupe}
+                                                    </Typography>
+                                                </Stack>
+                                            </TableCell>
+                                            <TableCell>{t(`ref.groupTypes.${groupe.type_groupe}`)}</TableCell>
+                                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{groupe.niveau}</TableCell>
+                                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                                                {somme !== null && (
+                                                    <Tooltip title={t('ref.groups.sizeGap', { sum: somme })}>
+                                                        <Box component="span" sx={{ mr: 1 }}>
+                                                            <StateChip tone="warning">{t('ref.groups.gap')}</StateChip>
+                                                        </Box>
+                                                    </Tooltip>
+                                                )}
+                                                {groupe.effectif}
+                                            </TableCell>
+                                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                                                {typeEnfant && (
+                                                    <Button size="small" startIcon={<Add />} onClick={() => ouvrir({ parent: groupe })} sx={{ mr: 0.5 }}>
+                                                        {t(`ref.groups.add.${typeEnfant}`)}
+                                                    </Button>
+                                                )}
+                                                <IconButton size="small" onClick={() => ouvrir({ groupe })} aria-label={t('ref.common.editItem', { name: groupe.nom_groupe })}>
+                                                    <Edit fontSize="small" />
+                                                </IconButton>
+                                                <IconButton size="small" color="error" onClick={() => setASupprimer(groupe)} aria-label={t('ref.common.deleteItem', { name: groupe.nom_groupe })}>
+                                                    <Delete fontSize="small" />
+                                                </IconButton>
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
+                )}
+            </Paper>
 
-                <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-                    <form onSubmit={formik.handleSubmit}>
-                        <DialogTitle>{editing ? 'Modifier le groupe' : 'Nouveau groupe'}</DialogTitle>
-                        <DialogContent>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                                <TextField
-                                    fullWidth
-                                    label="Nom du groupe"
-                                    name="nom_groupe"
-                                    value={formik.values.nom_groupe}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.nom_groupe && Boolean(formik.errors.nom_groupe)}
-                                    helperText={formik.touched.nom_groupe && formik.errors.nom_groupe}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Niveau"
-                                    name="niveau"
-                                    value={formik.values.niveau}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.niveau && Boolean(formik.errors.niveau)}
-                                    helperText={formik.touched.niveau && formik.errors.niveau}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Effectif"
-                                    name="effectif"
-                                    type="number"
-                                    value={formik.values.effectif}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.effectif && Boolean(formik.errors.effectif)}
-                                    helperText={formik.touched.effectif && formik.errors.effectif}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label="Année scolaire (ex: 2024-2025)"
-                                    name="annee_scolaire"
-                                    value={formik.values.annee_scolaire}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.annee_scolaire && Boolean(formik.errors.annee_scolaire)}
-                                    helperText={formik.touched.annee_scolaire && formik.errors.annee_scolaire}
-                                />
-                                <FormControl fullWidth>
-                                    <InputLabel>Filière</InputLabel>
-                                    <Select
-                                        name="id_filiere"
-                                        value={formik.values.id_filiere}
-                                        onChange={formik.handleChange}
-                                        label="Filière"
-                                        error={formik.touched.id_filiere && Boolean(formik.errors.id_filiere)}
-                                    >
-                                        {filieres.map((filiere) => (
-                                            <MenuItem key={filiere.id_filiere} value={filiere.id_filiere}>
-                                                {filiere.nom_filiere} ({filiere.code_filiere})
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setOpen(false)}>Annuler</Button>
-                            <Button type="submit" variant="contained">
-                                {editing ? 'Modifier' : 'Créer'}
-                            </Button>
-                        </DialogActions>
-                    </form>
-                </Dialog>
-
-                {/* Dialog d'import */}
-                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
-                    <DialogTitle>Importer des groupes (Excel/CSV)</DialogTitle>
+            <Dialog open={dialog.open} onClose={() => setDialog({ open: false, editing: null, form: GROUPE_VIDE })} maxWidth="sm" fullWidth>
+                <form onSubmit={enregistrer}>
+                    <DialogTitle>
+                        {dialog.editing ? t('ref.groups.edit') : t(`ref.groups.create.${dialog.form.type_groupe}`)}
+                    </DialogTitle>
                     <DialogContent>
-                        <Box sx={{ mt: 2 }}>
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                                <Typography variant="body2" gutterBottom>
-                                    <strong>Format du fichier requis :</strong>
-                                </Typography>
-                                <Typography variant="body2" component="div">
-                                    Les colonnes requises sont : <strong>nom_groupe</strong>, <strong>id_filiere</strong>, <strong>niveau</strong>
-                                </Typography>
-                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
-                                    Colonnes optionnelles : <strong>effectif</strong>, <strong>annee_scolaire</strong>
-                                </Typography>
-                            </Alert>
-                            
-                            <input
-                                accept=".csv,.xlsx,.xls"
-                                style={{ display: 'none' }}
-                                id="import-groupe-file-input"
-                                type="file"
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        handleFileImport(file);
-                                    }
-                                }}
-                            />
-                            <label htmlFor="import-groupe-file-input">
-                                <Button
-                                    variant="outlined"
-                                    component="span"
-                                    startIcon={<UploadFile />}
-                                    fullWidth
-                                    disabled={importLoading}
-                                >
-                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
-                                </Button>
-                            </label>
-
-                            {importLoading && (
-                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                                    <CircularProgress />
-                                </Box>
-                            )}
-
-                            {importErrors.length > 0 && (
-                                <Box sx={{ mt: 2 }}>
-                                    <Alert severity="error">
-                                        <Typography variant="subtitle2" gutterBottom>
-                                            Erreurs détectées ({importErrors.length}) :
-                                        </Typography>
-                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
-                                            {importErrors.map((err, index) => (
-                                                <ListItem key={index}>
-                                                    <ListItemText primary={err} />
-                                                </ListItem>
-                                            ))}
-                                        </List>
-                                    </Alert>
-                                </Box>
-                            )}
-                        </Box>
+                        <Stack spacing={2} sx={{ mt: 1 }}>
+                            <TextField label={t('ref.groups.fields.name')} value={dialog.form.nom_groupe} onChange={champ('nom_groupe')} helperText={t('ref.groups.fields.nameHelp')} required autoFocus />
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                <TextField fullWidth label={t('ref.groups.fields.level')} value={dialog.form.niveau} onChange={champ('niveau')} placeholder="4ème année" required />
+                                <TextField type="number" label={t('ref.groups.fields.year')} value={dialog.form.annee} onChange={champ('annee')} inputProps={{ min: 1, max: 6 }} sx={{ minWidth: 130 }} />
+                                <TextField type="number" label={t('ref.groups.fields.size')} value={dialog.form.effectif} onChange={champ('effectif')} inputProps={{ min: 0 }} sx={{ minWidth: 120 }} />
+                            </Stack>
+                            <TextField label={t('ref.groups.fields.schoolYear')} value={dialog.form.annee_scolaire} onChange={champ('annee_scolaire')} placeholder="2026-2027" required />
+                        </Stack>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => {
-                            setImportOpen(false);
-                            setImportErrors([]);
-                        }}>
-                            Fermer
+                        <Button onClick={() => setDialog({ open: false, editing: null, form: GROUPE_VIDE })}>{t('common.cancel')}</Button>
+                        <Button type="submit" variant="contained">
+                            {t('common.save')}
                         </Button>
                     </DialogActions>
-                </Dialog>
+                </form>
+            </Dialog>
 
-                <ConfirmDialog
-                    open={confirmDialog.open}
-                    title="Supprimer le groupe"
-                    message="Cette action est irréversible. Le groupe sera définitivement supprimé."
-                    onConfirm={handleDeleteConfirm}
-                    onCancel={() => setConfirmDialog({ open: false, id: null })}
-                />
-            </Box>
+            <ImportCsvDialog
+                open={importOuvert}
+                onClose={() => setImportOuvert(false)}
+                titre={t('ref.groups.importTitle')}
+                intro={t('ref.groups.importIntro')}
+                modele={MODELE_CSV}
+                nomModele="modele-groupes.csv"
+                onImport={importer}
+            />
+
+            <ConfirmDialog
+                open={Boolean(aSupprimer)}
+                title={t('ref.groups.deleteTitle')}
+                message={t('ref.groups.deleteBody', { name: aSupprimer?.nom_groupe })}
+                onConfirm={supprimer}
+                onCancel={() => setASupprimer(null)}
+            />
         </DashboardLayout>
     );
 }
-
