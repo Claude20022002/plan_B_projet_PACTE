@@ -127,7 +127,14 @@ export default function DepartureBoard({
                   overflow: 'hidden',
                   // Desktop : une ligne ; téléphone : deux lignes au plus, le nom reste lisible
                   ...(compact
-                    ? { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }
+                    ? {
+                        display: '-webkit-box',
+                        WebkitLineClamp: 2,
+                        WebkitBoxOrient: 'vertical',
+                        // Colonne étroite : césure selon la langue de la page plutôt qu'un mot coupé net
+                        hyphens: 'auto',
+                        overflowWrap: 'anywhere',
+                      }
                     : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' }),
                   color: dimmed ? palette.dim : palette.text,
                   textDecoration: s.status === 'annule' ? 'line-through' : 'none',
