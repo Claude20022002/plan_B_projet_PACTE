@@ -9,10 +9,6 @@ const Disponibilite = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
-        id_institution: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
         disponible: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,

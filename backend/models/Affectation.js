@@ -9,10 +9,6 @@ const Affectation = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
-        id_institution: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
         date_seance: {
             type: DataTypes.DATEONLY,
             allowNull: false,

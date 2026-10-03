@@ -9,10 +9,6 @@ const Cours = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
-        id_institution: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
         code_cours: {
             type: DataTypes.STRING,
             unique: true,

@@ -9,10 +9,6 @@ const DemandeReport = sequelize.define(
             autoIncrement: true,
             primaryKey: true,
         },
-        id_institution: {
-            type: DataTypes.INTEGER,
-            allowNull: true,
-        },
         date_demande: {
             type: DataTypes.DATE,
             defaultValue: DataTypes.NOW,

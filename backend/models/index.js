@@ -17,10 +17,6 @@ import Appartenir from "./Appartenir.js";
 import PasswordResetToken from "./PasswordResetToken.js";
 import Evenement from "./Evenement.js";
 import AuthSession from "./AuthSession.js";
-import Institution from "./Institution.js";
-import InstitutionUser from "./InstitutionUser.js";
-import Plan from "./Plan.js";
-import Subscription from "./Subscription.js";
 import GenerationSession from "./GenerationSession.js";
 import PlanningSnapshot from "./PlanningSnapshot.js";
 
