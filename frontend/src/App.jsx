@@ -54,6 +54,7 @@ const GenerationAuto     = lazy(() => import('./pages/gestion/GenerationAutomati
 const Campus             = lazy(() => import('./pages/gestion/Campus'));
 const Calendrier         = lazy(() => import('./pages/gestion/Calendrier'));
 const ParametresPlanning = lazy(() => import('./pages/gestion/ParametresPlanning'));
+const Enseignements      = lazy(() => import('./pages/gestion/Enseignements'));
 
 // ── Emplois du temps (chunk "calendar" — FullCalendar isolé) ─────────────
 const EmploiDuTempsAdmin     = lazy(() => import('./pages/emploi-du-temps/EmploiDuTempsAdmin'));
@@ -211,6 +212,11 @@ export default function App() {
           <Route path="/gestion/calendrier" element={
             <PrivateRoute requiredRole="admin">
               <AppPage><Calendrier /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/enseignements" element={
+            <PrivateRoute requiredRole="admin">
+              <AppPage><Enseignements /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/gestion/parametres-planning" element={

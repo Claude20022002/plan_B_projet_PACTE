@@ -46,7 +46,11 @@ const EVENEMENT_VIDE = {
     portee: 'etablissement',
     id_cible: '',
     niveau: '',
+    heure_debut: '',
+    heure_fin: '',
 };
+
+const hhmm = (heure) => (heure ? String(heure).slice(0, 5) : '');
 
 // Le type est une catégorie, pas un état : pastille neutre (le rouge et l'orange restent aux états).
 // Seul le Ramadan se distingue, en marine voilé, car il change la grille horaire.
@@ -176,6 +180,8 @@ export default function Calendrier() {
                       description: evenement.description || '',
                       id_cible: evenement.id_cible ?? '',
                       niveau: evenement.niveau || '',
+                      heure_debut: hhmm(evenement.heure_debut),
+                      heure_fin: hhmm(evenement.heure_fin),
                   }
                 : { ...EVENEMENT_VIDE, date_debut: annee?.date_debut || '', date_fin: annee?.date_debut || '' },
         });
@@ -196,6 +202,8 @@ export default function Calendrier() {
             portee: form.portee,
             id_cible: form.portee === 'etablissement' ? null : Number(form.id_cible) || null,
             niveau: form.portee === 'niveau' ? form.niveau : null,
+            heure_debut: form.heure_debut || null,
+            heure_fin: form.heure_fin || null,
         };
         try {
             if (evenementDialog.editing) await evenementAPI.update(evenementDialog.editing.id_evenement, data);
@@ -417,7 +425,14 @@ export default function Calendrier() {
                                     <TableBody>
                                         {evenementsAffiches.map((evenement) => (
                                             <TableRow key={evenement.id_evenement} hover>
-                                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{plage(evenement.date_debut, evenement.date_fin)}</TableCell>
+                                                <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                                    {plage(evenement.date_debut, evenement.date_fin)}
+                                                    {evenement.heure_debut && (
+                                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
+                                                            {hhmm(evenement.heure_debut)} – {hhmm(evenement.heure_fin)}
+                                                        </Typography>
+                                                    )}
+                                                </TableCell>
                                                 <TableCell sx={{ fontWeight: 600 }}>{evenement.titre}</TableCell>
                                                 <TableCell>
                                                     <StateChip tone={toneType(evenement.type_evenement)}>{t(`ref.eventTypes.${evenement.type_evenement}`)}</StateChip>
@@ -581,6 +596,10 @@ export default function Calendrier() {
                                         ))}
                                     </TextField>
                                 )}
+                            </Stack>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                <TextField fullWidth type="time" label={t('ref.calendar.fields.timeStart')} value={evenementDialog.form.heure_debut} onChange={champEvenement('heure_debut')} InputLabelProps={{ shrink: true }} helperText={t('ref.calendar.fields.timeHelp')} />
+                                <TextField fullWidth type="time" label={t('ref.calendar.fields.timeEnd')} value={evenementDialog.form.heure_fin} onChange={champEvenement('heure_fin')} InputLabelProps={{ shrink: true }} />
                             </Stack>
                             <TextField label={t('ref.calendar.fields.description')} value={evenementDialog.form.description} onChange={champEvenement('description')} multiline minRows={2} />
                             <FormControlLabel

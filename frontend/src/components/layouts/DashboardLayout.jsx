@@ -82,6 +82,7 @@ const navigationFor = (role) => {
           { key: 'nav.programs', icon: <Category />, path: '/gestion/filieres' },
           { key: 'nav.groups', icon: <Groups />, path: '/gestion/groupes' },
           { key: 'nav.courses', icon: <Book />, path: '/gestion/cours' },
+          { key: 'nav.teaching', icon: <Hub />, path: '/gestion/enseignements' },
         ],
       },
       {
