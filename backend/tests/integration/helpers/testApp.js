@@ -12,6 +12,7 @@ import {
     Cours,
     Affectation,
     Appartenir,
+    Campus,
 } from "../../../models/index.js";
 import { hashPassword } from "../../../utils/passwordHelper.js";
 import { resetRateLimiters } from "../../../middleware/rateLimiterMiddleware.js";
@@ -125,11 +126,13 @@ export const createPlanningFixture = async ({ admin, enseignant, etudiant } = {}
         annee_scolaire: "2026-2027",
         id_filiere: filiere.id_filiere,
     });
+    // Campus Gandhi : donnée de référence insérée par la migration 0003
+    const gandhi = await Campus.findOne({ where: { code: "G" } });
     const salle = await scoped(Salle, {
         nom_salle: `G-10${userCounter}`,
         type_salle: "Salle de cours",
         capacite: 40,
-        batiment: "Gandhi",
+        id_campus: gandhi.id_campus,
     });
     const creneau = await scoped(Creneau, {
         jour_semaine: "lundi",
