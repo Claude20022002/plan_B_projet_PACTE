@@ -32,9 +32,10 @@ export const AuthProvider = ({ children }) => {
             if (!error.isConnectionError) {
                 console.error('Erreur de vérification auth:', error);
             }
-            // Ne pas déconnecter automatiquement si c'est juste une erreur réseau
+            // Pas de session : on vide l'état local, sans appel de déconnexion inutile au serveur
             if (error.status === 401 || error.message?.includes('401')) {
-                logout();
+                setUser(null);
+                setIsAuthenticated(false);
             } else if (error.isConnectionError) {
                 // Si erreur de connexion, garder le token mais marquer comme non authentifié
                 // L'utilisateur pourra réessayer quand le serveur sera disponible

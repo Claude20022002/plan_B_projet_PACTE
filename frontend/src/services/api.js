@@ -15,14 +15,20 @@ function getCookie(name) {
         .join('=');
 }
 
+// Une seule demande de jeton à la fois : deux requêtes simultanées obtiendraient sinon
+// deux jetons différents, et le cookie ne garderait que le second (→ 403 CSRF).
+let csrfRequest = null;
+
 async function ensureCsrfToken() {
     let token = getCookie(CSRF_COOKIE);
     if (!token) {
-        const response = await fetch(`${API_BASE_URL}/auth/csrf-token`, {
-            credentials: 'include',
-        });
-        const data = await response.json();
-        token = data.csrfToken || getCookie(CSRF_COOKIE);
+        csrfRequest ??= fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' })
+            .then((response) => response.json())
+            .finally(() => {
+                csrfRequest = null;
+            });
+        const data = await csrfRequest;
+        token = getCookie(CSRF_COOKIE) || data.csrfToken;
     }
     return token ? decodeURIComponent(token) : null;
 }

@@ -1,383 +1,239 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from 'react';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import {
-    Box,
-    Typography,
-    TextField,
-    Button,
-    FormControlLabel,
-    Checkbox,
-    Link,
-    Alert,
-    CircularProgress,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    InputAdornment,
-    IconButton,
-    Divider,
-} from "@mui/material";
-import { Visibility, VisibilityOff } from "@mui/icons-material";
-import { motion } from "motion/react";
-import { useAuth } from "../contexts/AuthContext";
-import engFormImg from "../assets/img/eng-form.webp";
+  Alert,
+  Box,
+  Button,
+  CircularProgress,
+  IconButton,
+  InputAdornment,
+  Link,
+  TextField,
+  ToggleButton,
+  ToggleButtonGroup,
+  Typography,
+} from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { useAuth } from '../contexts/AuthContext';
+import { LANGUAGES } from '../i18n';
+import { ds } from '../design-system/tokens';
+import { FlapText, FlapTiles } from '../design-system/board';
+
+const prefersReducedMotion = () =>
+  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+/** Panneau de présentation : une ligne qui bascule pour montrer ce que l'outil affiche */
+function LiveBoard() {
+  const { t } = useTranslation();
+  const lines = t('login.boardLines', { returnObjects: true });
+  const [index, setIndex] = useState(0);
+  const reduced = prefersReducedMotion();
+
+  useEffect(() => {
+    if (reduced) return undefined;
+    const id = setInterval(() => setIndex((i) => (i + 1) % lines.length), 3200);
+    return () => clearInterval(id);
+  }, [reduced, lines.length]);
+
+  return (
+    <Box sx={{ bgcolor: ds.board.frame, p: '10px', borderRadius: `${ds.radius.lg}px`, width: '100%', maxWidth: 560 }}>
+      <Box sx={{ px: 1, pb: 1.25, display: 'flex', justifyContent: 'space-between', color: '#FFFFFF', fontFamily: ds.font.board, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+        <span>{t('login.boardTitle')}</span>
+        <span>HESTIM</span>
+      </Box>
+      <Box sx={{ bgcolor: ds.board.ground, borderRadius: `${ds.radius.md}px`, px: { md: 3, lg: 4 }, py: 4 }}>
+        <FlapTiles value="HESTIM" size="clamp(2.25rem, 4.4vw, 3.75rem)" />
+        <Box sx={{ mt: 1.25 }}>
+          <FlapTiles value="PLANNER" size="clamp(2.25rem, 4.4vw, 3.75rem)" color={ds.brand.orange} />
+        </Box>
+        <Box
+          sx={{
+            mt: 4,
+            pt: 2,
+            borderTop: `1px solid ${ds.board.seam}`,
+            fontFamily: ds.font.board,
+            fontWeight: 600,
+            fontSize: { md: '1.375rem', lg: '1.625rem' },
+            letterSpacing: '0.1em',
+            textTransform: 'uppercase',
+            color: ds.board.letter,
+            display: 'flex',
+            alignItems: 'center',
+            gap: 1.5,
+            minHeight: '2.4em',
+          }}
+          aria-live="off"
+        >
+          <Box component="span" aria-hidden="true" sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: ds.board.live, flexShrink: 0 }} />
+          {reduced ? (
+            <Box component="span" sx={{ fontSize: '1rem', letterSpacing: '0.06em', lineHeight: 1.6 }}>
+              {lines.join(' · ')}
+            </Box>
+          ) : (
+            <FlapText value={lines[index]} />
+          )}
+        </Box>
+        <Typography sx={{ mt: 3, color: ds.board.letterDim, fontSize: '0.9375rem' }}>
+          {t('app.school')}
+        </Typography>
+      </Box>
+    </Box>
+  );
+}
+
+const errorKeyFor = (message = '') => {
+  if (/identifiants|invalid|incorrect/i.test(message)) return 'login.errorInvalid';
+  if (/désactivé|disabled/i.test(message)) return 'login.errorDisabled';
+  if (/trop de|too many/i.test(message)) return 'login.errorTooMany';
+  return 'login.errorGeneric';
+};
 
 export default function Connexion() {
-    const navigate = useNavigate();
-    const { login } = useAuth();
-    const [formData, setFormData] = useState({
-        email: "",
-        password: "",
-        fonction: "",
-    });
-    const [showPassword, setShowPassword] = useState(false);
-    const [error, setError] = useState("");
-    const [loading, setLoading] = useState(false);
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [errorKey, setErrorKey] = useState('');
+  const [loading, setLoading] = useState(false);
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-        setError("");
-    };
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    setErrorKey('');
+    setLoading(true);
+    try {
+      const result = await login(email.trim(), password);
+      if (result.success) {
+        // Le rôle vient du compte : aucune saisie de « fonction » n'est demandée
+        const role = result.data?.user?.role;
+        navigate(role ? `/dashboard/${role}` : '/');
+      } else {
+        setErrorKey(errorKeyFor(result.error));
+      }
+    } catch {
+      setErrorKey('login.errorGeneric');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setError("");
-        setLoading(true);
+  return (
+    <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, bgcolor: 'background.paper' }}>
+      <Box
+        sx={{
+          display: { xs: 'none', md: 'flex' },
+          alignItems: 'center',
+          justifyContent: 'center',
+          bgcolor: ds.board.ground,
+          px: { md: 5, lg: 8 },
+          py: 6,
+        }}
+      >
+        <LiveBoard />
+      </Box>
 
-        try {
-            const result = await login(formData.email, formData.password);
-            if (result.success) {
-                // Rediriger selon le rôle (le rôle vient du backend, mais on peut aussi utiliser le champ fonction)
-                const role =
-                    result.data.user.role || formData.fonction.toLowerCase();
-                if (
-                    role === "admin" ||
-                    formData.fonction === "Administrateur"
-                ) {
-                    navigate("/dashboard/admin");
-                } else if (
-                    role === "enseignant" ||
-                    formData.fonction === "Professeur"
-                ) {
-                    navigate("/dashboard/enseignant");
-                } else {
-                    navigate("/dashboard/etudiant");
-                }
-            } else {
-                setError(result.error || "Erreur de connexion");
-            }
-        } catch (err) {
-            setError("Une erreur est survenue. Veuillez réessayer.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <Box
-            sx={{
-                width: "100%",
-                minHeight: "100vh",
-                display: "flex",
-                borderRadius: 4,
-                p: { xs: 2, sm: 0 },
-                boxShadow: "0 10px 40px rgba(0, 0, 0, 0.15)",
-            }}
-        >
-            {/* Section gauche - Image */}
-            <Box
-                sx={{
-                    width: { xs: "0%", sm: "40%" },
-                    bgcolor: "#001962",
-                    display: { xs: "none", sm: "flex" },
-                    flexDirection: "column",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    position: "relative",
-                    p: 4,
-                }}
-            >
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.6 }}
-                >
-                    <Box
-                        component="img"
-                        src={engFormImg}
-                        alt="Illustration HESTIM"
-                        sx={{
-                            width: "100%",
-                            height: "auto",
-                            borderRadius: 2,
-                        }}
-                    />
-                </motion.div>
-                <Typography
-                    variant="h6"
-                    sx={{
-                        color: "white",
-                        mt: 3,
-                        textAlign: "center",
-                        fontWeight: 600,
-                    }}
-                >
-                    HESTIM Planner
-                </Typography>
-                <Typography
-                    variant="body2"
-                    sx={{
-                        color: "rgba(255, 255, 255, 0.8)",
-                        mt: 1,
-                        textAlign: "center",
-                    }}
-                >
-                    Votre plateforme de gestion de planning
-                </Typography>
-            </Box>
-
-            {/* Divider vertical */}
-            <Divider
-                orientation="vertical"
-                flexItem
-                sx={{ display: { xs: "none", sm: "block" } }}
-            />
-
-            {/* Section droite - Formulaire */}
-            <Box
-                sx={{
-                    flex: 1,
-                    p: { xs: 4, sm: 6 },
-                    display: "flex",
-                    flexDirection: "column",
-                    justifyContent: "center",
-                    bgcolor: "white",
-                }}
-                component="form"
-                onSubmit={handleSubmit}
-            >
-                {/* Logo HESTIM */}
-                <Box
-                    sx={{
-                        display: "flex",
-                        justifyContent: "center",
-                        mb: 4,
-                    }}
-                >
-                    <Box
-                        component="img"
-                        src="/HESTIM.png"
-                        alt="HESTIM Logo"
-                        sx={{
-                            width: { xs: "180px", sm: "220px" },
-                            height: { xs: "45px", sm: "55px" },
-                            objectFit: "contain",
-                        }}
-                    />
-                </Box>
-                <motion.div
-                    initial={{ opacity: 0, x: 20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ duration: 0.6 }}
-                >
-                    <Typography
-                        variant="h4"
-                        fontWeight={700}
-                        sx={{
-                            mb: 1,
-                            color: "#000",
-                            fontSize: { xs: "1.75rem", sm: "2rem" },
-                        }}
-                    >
-                        Bienvenue à HESTIM
-                    </Typography>
-                    <Typography
-                        variant="body1"
-                        sx={{
-                            mb: 4,
-                            color: "text.secondary",
-                            fontSize: "1rem",
-                        }}
-                    >
-                        Accédez à votre compte pour consulter les emplois du
-                        temps
-                    </Typography>
-
-                    <Divider sx={{ mb: 4 }} />
-
-                    <Typography
-                        variant="h5"
-                        fontWeight={700}
-                        sx={{
-                            mb: 3,
-                            color: "#000",
-                            fontSize: "1.5rem",
-                        }}
-                    >
-                        Connexion
-                    </Typography>
-
-                    {error && (
-                        <Alert severity="error" sx={{ mb: 2 }}>
-                            {error}
-                        </Alert>
-                    )}
-
-                    <Box
-                        sx={{
-                            display: "flex",
-                            flexDirection: "column",
-                            gap: 2.5,
-                        }}
-                    >
-                        <TextField
-                            required
-                            fullWidth
-                            label="Email"
-                            name="email"
-                            type="email"
-                            placeholder="Nom d'utilisateur ou mail"
-                            value={formData.email}
-                            onChange={handleChange}
-                            disabled={loading}
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: 2,
-                                },
-                            }}
-                        />
-
-                        <TextField
-                            required
-                            fullWidth
-                            label="Mot de passe"
-                            name="password"
-                            type={showPassword ? "text" : "password"}
-                            placeholder="Mot de passe"
-                            value={formData.password}
-                            onChange={handleChange}
-                            disabled={loading}
-                            sx={{
-                                "& .MuiOutlinedInput-root": {
-                                    borderRadius: 2,
-                                },
-                            }}
-                            InputProps={{
-                                endAdornment: (
-                                    <InputAdornment position="end">
-                                        <IconButton
-                                            aria-label="toggle password visibility"
-                                            onClick={() =>
-                                                setShowPassword(!showPassword)
-                                            }
-                                            edge="end"
-                                        >
-                                            {showPassword ? (
-                                                <VisibilityOff />
-                                            ) : (
-                                                <Visibility />
-                                            )}
-                                        </IconButton>
-                                    </InputAdornment>
-                                ),
-                            }}
-                        />
-
-                        <FormControl fullWidth required>
-                            <InputLabel>Fonction *</InputLabel>
-                            <Select
-                                name="fonction"
-                                value={formData.fonction}
-                                onChange={handleChange}
-                                label="Fonction *"
-                                disabled={loading}
-                                sx={{
-                                    borderRadius: 2,
-                                }}
-                            >
-                                <MenuItem value="Administrateur">
-                                    Administrateur
-                                </MenuItem>
-                                <MenuItem value="Professeur">
-                                    Professeur
-                                </MenuItem>
-                                <MenuItem value="Etudiant">Étudiant</MenuItem>
-                            </Select>
-                        </FormControl>
-
-                        <Box
-                            sx={{
-                                display: "flex",
-                                justifyContent: "space-between",
-                                alignItems: "center",
-                                mt: 1,
-                            }}
-                        >
-                            <FormControlLabel
-                                control={<Checkbox size="small" />}
-                                label="Se rappeler de moi"
-                                sx={{ fontSize: "0.875rem" }}
-                            />
-                            <Link
-                                component={Link}
-                                to="/forgot-password"
-                                sx={{
-                                    fontSize: "0.875rem",
-                                    color: "#1976d2",
-                                    textDecoration: "none",
-                                    "&:hover": {
-                                        textDecoration: "underline",
-                                    },
-                                }}
-                            >
-                                Mot de passe oublié ?
-                            </Link>
-                        </Box>
-
-                        <motion.div
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                        >
-                            <Button
-                                type="submit"
-                                fullWidth
-                                variant="contained"
-                                disabled={loading || !formData.email || !formData.password}
-                                sx={{
-                                    mt: 2,
-                                    py: 1.8,
-                                    textTransform: "none",
-                                    fontSize: "1rem",
-                                    fontWeight: 600,
-                                    bgcolor: "#001962",
-                                    borderRadius: 2,
-                                    boxShadow:
-                                        "0 4px 14px rgba(0, 25, 98, 0.3)",
-                                    "&:hover": {
-                                        bgcolor: "#002d7a",
-                                        boxShadow:
-                                            "0 6px 20px rgba(0, 25, 98, 0.4)",
-                                    },
-                                    "&:disabled": {
-                                        bgcolor: "#001962",
-                                        opacity: 0.6,
-                                    },
-                                }}
-                            >
-                                {loading ? (
-                                    <CircularProgress
-                                        size={24}
-                                        sx={{ color: "white" }}
-                                    />
-                                ) : (
-                                    "Connexion"
-                                )}
-                            </Button>
-                        </motion.div>
-                    </Box>
-                </motion.div>
-            </Box>
+      <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: { xs: 2, sm: 4 }, pt: { xs: 2, sm: 3 } }}>
+          <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: { xs: 32, sm: 38 } }} />
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={i18n.language}
+            onChange={(_, value) => value && i18n.changeLanguage(value)}
+            aria-label={t('common.language')}
+            sx={{ '& .MuiToggleButton-root': { fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.08em', px: 1.25, py: 0.25 } }}
+          >
+            {LANGUAGES.map((lang) => (
+              <ToggleButton key={lang.code} value={lang.code} aria-label={lang.label}>
+                {lang.short}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
         </Box>
-    );
+
+        <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', px: { xs: 2, sm: 4 }, py: { xs: 4, sm: 6 } }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%', maxWidth: 400 }}>
+            <Typography component="h1" sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: { xs: '2rem', sm: '2.25rem' }, lineHeight: 1.1 }}>
+              {t('login.title')}
+            </Typography>
+            <Typography sx={{ mt: 1, mb: 3.5, color: 'text.secondary', fontSize: '1rem' }}>{t('login.subtitle')}</Typography>
+
+            {errorKey && (
+              <Alert severity="error" sx={{ mb: 2.5 }}>
+                {t(errorKey)}
+              </Alert>
+            )}
+
+            <Box sx={{ display: 'grid', gap: 2.5 }}>
+              <TextField
+                required
+                fullWidth
+                size="medium"
+                label={t('login.email')}
+                name="email"
+                type="email"
+                autoComplete="username"
+                inputMode="email"
+                value={email}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErrorKey('');
+                }}
+                disabled={loading}
+              />
+              <TextField
+                required
+                fullWidth
+                size="medium"
+                label={t('login.password')}
+                name="password"
+                type={showPassword ? 'text' : 'password'}
+                autoComplete="current-password"
+                value={password}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  setErrorKey('');
+                }}
+                disabled={loading}
+                InputProps={{
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      <IconButton
+                        aria-label={showPassword ? t('login.hidePassword') : t('login.showPassword')}
+                        onClick={() => setShowPassword((v) => !v)}
+                        edge="end"
+                      >
+                        {showPassword ? <VisibilityOff /> : <Visibility />}
+                      </IconButton>
+                    </InputAdornment>
+                  ),
+                }}
+              />
+            </Box>
+
+            <Box sx={{ mt: 1.5, display: 'flex', justifyContent: 'flex-end' }}>
+              <Link component={RouterLink} to="/forgot-password" sx={{ fontSize: '0.9375rem', fontWeight: 500 }}>
+                {t('login.forgot')}
+              </Link>
+            </Box>
+
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              size="large"
+              disabled={loading || !email || !password}
+              sx={{ mt: 3, minHeight: 48, fontSize: '1rem' }}
+            >
+              {loading ? <CircularProgress size={22} color="inherit" aria-label={t('login.submitting')} /> : t('login.submit')}
+            </Button>
+
+            <Typography sx={{ mt: 3, color: 'text.secondary', fontSize: '0.875rem' }}>{t('login.accountsByAdmin')}</Typography>
+          </Box>
+        </Box>
+      </Box>
+    </Box>
+  );
 }
