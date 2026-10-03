@@ -343,17 +343,17 @@ const HESTIM_CONFIG = {
 
     // ── Départements : permanents (service annuel dû) et vacataires (heures à la carte) ──
     departements: [
-        { nom:'Informatique',             permanents:9, vacataires:6, grade:'Professeur' },
-        { nom:'IA & Data',                permanents:4, vacataires:4, grade:'Professeur' },
-        { nom:'Cybersécurité',            permanents:3, vacataires:4, grade:'Professeur' },
-        { nom:'Mathématiques',            permanents:5, vacataires:2, grade:'Professeur' },
-        { nom:'Sciences',                 permanents:3, vacataires:1, grade:'Professeur' },
+        { nom:'Informatique',             permanents:8, vacataires:4, grade:'Professeur' },
+        { nom:'IA & Data',                permanents:2, vacataires:3, grade:'Professeur' },
+        { nom:'Cybersécurité',            permanents:2, vacataires:3, grade:'Professeur' },
+        { nom:'Mathématiques',            permanents:4, vacataires:2, grade:'Professeur' },
+        { nom:'Sciences',                 permanents:1, vacataires:1, grade:'Professeur' },
         { nom:'Génie industriel',         permanents:5, vacataires:4, grade:'Professeur' },
         { nom:'Génie civil',              permanents:5, vacataires:4, grade:'Professeur' },
-        { nom:'Management',               permanents:6, vacataires:5, grade:'Professeur' },
+        { nom:'Management',               permanents:5, vacataires:4, grade:'Professeur' },
         { nom:'Finance & Comptabilité',   permanents:4, vacataires:4, grade:'Professeur' },
-        { nom:'Marketing',                permanents:3, vacataires:4, grade:'Professeur' },
-        { nom:'Langues & Communication',  permanents:4, vacataires:3, grade:'Maître de conférences' },
+        { nom:'Marketing',                permanents:2, vacataires:3, grade:'Professeur' },
+        { nom:'Langues & Communication',  permanents:3, vacataires:3, grade:'Maître de conférences' },
     ],
 };
 
@@ -789,37 +789,44 @@ async function seed() {
         };
         const enseignements = await Enseignement.findAll({
             where: { id_periode: periodes.S1.id_periode },
-            include: [{ model: CoursComposante, as: 'composante' }],
+            include: [
+                { model: CoursComposante, as: 'composante' },
+                { model: EnseignementEnseignant, as: 'services' },
+            ],
             order: [['id_enseignement', 'ASC']],
         });
+        const parUser = new Map(enseignantsList.map(e => [e.user.id_user, e]));
+        const servir = (ens, enseignement, statut) => {
+            if (statut !== 'refuse') ens.heures += enseignement.heures_prevues;
+            ens.cours.add(enseignement.composante.id_cours);
+        };
         let nbServices = 0;
         const proposes = [];
         for (const [i, enseignement] of enseignements.entries()) {
             const idCours = enseignement.composante.id_cours;
+            // Seed relancé : les services déjà en place sont comptés, jamais réattribués
+            if (enseignement.services.length) {
+                enseignement.services.forEach(s => parUser.has(s.id_user) && servir(parUser.get(s.id_user), enseignement, s.statut_service));
+                continue;
+            }
             const dept = deptDuCours[idCours];
             const principal = choisir(dept, idCours);
             // Quelques services restent à accepter, un est refusé (motif obligatoire)
             const statut = i % 9 === 4 ? 'propose' : i === 7 ? 'refuse' : 'accepte';
-            const [, cree] = await EnseignementEnseignant.findOrCreate({
-                where: { id_enseignement: enseignement.id_enseignement, id_user: principal.user.id_user },
-                defaults: {
-                    id_enseignement: enseignement.id_enseignement, id_user: principal.user.id_user, role: 'principal', statut_service: statut,
-                    motif_refus: statut === 'refuse' ? 'Indisponible sur les créneaux de ce module ce semestre' : null,
-                },
+            await EnseignementEnseignant.create({
+                id_enseignement: enseignement.id_enseignement, id_user: principal.user.id_user, role: 'principal', statut_service: statut,
+                motif_refus: statut === 'refuse' ? 'Indisponible sur les créneaux de ce module ce semestre' : null,
             });
-            if (statut !== 'refuse') principal.heures += enseignement.heures_prevues;
-            principal.cours.add(idCours);
-            if (cree) nbServices++;
-            if (cree && statut === 'propose') proposes.push({ principal, enseignement });
+            servir(principal, enseignement, statut);
+            nbServices++;
+            if (statut === 'propose') proposes.push({ principal, enseignement });
 
             if (optionsDuCours[idCours].co) {
                 const co = choisir(dept, idCours, [principal]);
-                await EnseignementEnseignant.findOrCreate({
-                    where: { id_enseignement: enseignement.id_enseignement, id_user: co.user.id_user },
-                    defaults: { id_enseignement: enseignement.id_enseignement, id_user: co.user.id_user, role: 'co_enseignant', statut_service: 'accepte' },
+                await EnseignementEnseignant.create({
+                    id_enseignement: enseignement.id_enseignement, id_user: co.user.id_user, role: 'co_enseignant', statut_service: 'accepte',
                 });
-                co.heures += enseignement.heures_prevues;
-                co.cours.add(idCours);
+                servir(co, enseignement, 'accepte');
                 nbServices++;
             }
         }
