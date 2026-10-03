@@ -12,7 +12,6 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { verifierEtCreerConflits } from "../utils/detectConflicts.js";
 import { notifierNouvelleAffectation } from "../utils/notificationHelper.js";
-import { tenantWhere, withTenant } from "../utils/tenantHelper.js";
 import { pick } from "../utils/validationHelper.js";
 import { etudiantAppartientAuGroupe } from "../middleware/accessMiddleware.js";
 
@@ -25,7 +24,7 @@ export const getAllAffectations = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
     // Filtres optionnels
-    const where = tenantWhere(req);
+    const where = {};
     if (req.query.statut) {
         where.statut = req.query.statut;
     }
@@ -70,7 +69,7 @@ export const getAllAffectations = asyncHandler(async (req, res) => {
 // 🔍 Récupérer une affectation par ID
 export const getAffectationById = asyncHandler(async (req, res) => {
     const affectation = await Affectation.findOne({
-        where: tenantWhere(req, { id_affectation: req.params.id }),
+        where: { id_affectation: req.params.id },
         include: [
             { model: Cours, as: "cours" },
             { model: Groupe, as: "groupe" },
@@ -123,7 +122,7 @@ const AFFECTATION_FIELDS = [
 // ➕ Créer une affectation
 export const createAffectation = asyncHandler(async (req, res) => {
     const affectation = await Affectation.create(
-        withTenant(req, { ...pick(req.body, AFFECTATION_FIELDS), id_user_admin: req.user.id_user })
+        { ...pick(req.body, AFFECTATION_FIELDS), id_user_admin: req.user.id_user }
     );
 
     // Détecter les conflits automatiquement
@@ -174,7 +173,7 @@ export const createAffectation = asyncHandler(async (req, res) => {
 
 // ✏️ Mettre à jour une affectation
 export const updateAffectation = asyncHandler(async (req, res) => {
-    const affectation = await Affectation.findOne({ where: tenantWhere(req, { id_affectation: req.params.id }) });
+    const affectation = await Affectation.findOne({ where: { id_affectation: req.params.id } });
 
     if (!affectation) {
         return res.status(404).json({
@@ -183,7 +182,7 @@ export const updateAffectation = asyncHandler(async (req, res) => {
         });
     }
 
-    await affectation.update(withTenant(req, pick(req.body, AFFECTATION_FIELDS)));
+    await affectation.update(pick(req.body, AFFECTATION_FIELDS));
 
     // Re-vérifier les conflits après modification
     const conflits = await verifierEtCreerConflits(affectation);
@@ -220,7 +219,7 @@ export const updateAffectation = asyncHandler(async (req, res) => {
 
 // 🗑️ Supprimer une affectation
 export const deleteAffectation = asyncHandler(async (req, res) => {
-    const affectation = await Affectation.findOne({ where: tenantWhere(req, { id_affectation: req.params.id }) });
+    const affectation = await Affectation.findOne({ where: { id_affectation: req.params.id } });
 
     if (!affectation) {
         return res.status(404).json({
@@ -240,7 +239,7 @@ export const deleteAffectation = asyncHandler(async (req, res) => {
 export const getAffectationsByEnseignant = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
-    const where = tenantWhere(req, { id_user_enseignant: req.params.id_enseignant });
+    const where = { id_user_enseignant: req.params.id_enseignant };
     if (req.query.date_from && req.query.date_to) {
         where.date_seance = { [Op.between]: [req.query.date_from, req.query.date_to] };
     } else if (req.query.date_from) {
@@ -270,7 +269,7 @@ export const getAffectationsByEnseignant = asyncHandler(async (req, res) => {
 
 // ✅ Confirmer une affectation (Enseignant propriétaire seulement)
 export const confirmerAffectation = asyncHandler(async (req, res) => {
-    const affectation = await Affectation.findOne({ where: tenantWhere(req, { id_affectation: req.params.id }) });
+    const affectation = await Affectation.findOne({ where: { id_affectation: req.params.id } });
 
     if (!affectation) {
         return res.status(404).json({ message: "Affectation non trouvée" });
@@ -297,7 +296,7 @@ export const confirmerAffectation = asyncHandler(async (req, res) => {
 export const getAffectationsByGroupe = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
-    const where = tenantWhere(req, { id_groupe: req.params.id_groupe });
+    const where = { id_groupe: req.params.id_groupe };
     if (req.query.date_from && req.query.date_to) {
         where.date_seance = { [Op.between]: [req.query.date_from, req.query.date_to] };
     } else if (req.query.date_from) {

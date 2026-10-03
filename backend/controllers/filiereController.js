@@ -1,7 +1,6 @@
 import { Filiere } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
-import { tenantWhere, withTenant } from "../utils/tenantHelper.js";
 
 /**
  * Contrôleur pour les filières
@@ -12,7 +11,7 @@ export const getAllFilieres = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
     const { count, rows: filieres } = await Filiere.findAndCountAll({
-        where: tenantWhere(req),
+        where: {},
         limit,
         offset,
         order: [["code_filiere", "ASC"]],
@@ -23,7 +22,7 @@ export const getAllFilieres = asyncHandler(async (req, res) => {
 
 // 🔍 Récupérer une filière par ID
 export const getFiliereById = asyncHandler(async (req, res) => {
-    const filiere = await Filiere.findOne({ where: tenantWhere(req, { id_filiere: req.params.id }) });
+    const filiere = await Filiere.findOne({ where: { id_filiere: req.params.id } });
 
     if (!filiere) {
         return res.status(404).json({
@@ -40,7 +39,7 @@ export const createFiliere = asyncHandler(async (req, res) => {
     // Vérifier si le code filière existe déjà
     if (req.body.code_filiere) {
         const existingFiliere = await Filiere.findOne({
-            where: tenantWhere(req, { code_filiere: req.body.code_filiere }),
+            where: { code_filiere: req.body.code_filiere },
         });
         if (existingFiliere) {
             return res.status(409).json({
@@ -50,7 +49,7 @@ export const createFiliere = asyncHandler(async (req, res) => {
         }
     }
 
-    const filiere = await Filiere.create(withTenant(req, req.body));
+    const filiere = await Filiere.create(req.body);
 
     res.status(201).json({
         message: "Filière créée avec succès",
@@ -60,7 +59,7 @@ export const createFiliere = asyncHandler(async (req, res) => {
 
 // ✏️ Mettre à jour une filière
 export const updateFiliere = asyncHandler(async (req, res) => {
-    const filiere = await Filiere.findOne({ where: tenantWhere(req, { id_filiere: req.params.id }) });
+    const filiere = await Filiere.findOne({ where: { id_filiere: req.params.id } });
 
     if (!filiere) {
         return res.status(404).json({
@@ -72,7 +71,7 @@ export const updateFiliere = asyncHandler(async (req, res) => {
     // Si le code est modifié, vérifier qu'il n'existe pas déjà
     if (req.body.code_filiere && req.body.code_filiere !== filiere.code_filiere) {
         const existingFiliere = await Filiere.findOne({
-            where: tenantWhere(req, { code_filiere: req.body.code_filiere }),
+            where: { code_filiere: req.body.code_filiere },
         });
         if (existingFiliere) {
             return res.status(409).json({
@@ -82,7 +81,7 @@ export const updateFiliere = asyncHandler(async (req, res) => {
         }
     }
 
-    await filiere.update(withTenant(req, req.body));
+    await filiere.update(req.body);
 
     res.json({
         message: "Filière mise à jour avec succès",
@@ -92,7 +91,7 @@ export const updateFiliere = asyncHandler(async (req, res) => {
 
 // 🗑️ Supprimer une filière
 export const deleteFiliere = asyncHandler(async (req, res) => {
-    const filiere = await Filiere.findOne({ where: tenantWhere(req, { id_filiere: req.params.id }) });
+    const filiere = await Filiere.findOne({ where: { id_filiere: req.params.id } });
 
     if (!filiere) {
         return res.status(404).json({
