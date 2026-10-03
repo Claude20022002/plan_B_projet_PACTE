@@ -159,7 +159,8 @@ export const scinderEnseignement = async (id) =>
         if (!enseignement) throw new ErreurMetier("Enseignement introuvable", 404);
         if (enseignement.groupes.length < 2) throw new ErreurMetier("Cet enseignement ne concerne qu'un groupe");
 
-        const [garde, ...detaches] = [...enseignement.groupes].sort((a, b) => a.id_groupe - b.id_groupe);
+        // Le premier groupe reste sur l'enseignement d'origine, les autres en reçoivent un chacun
+        const [, ...detaches] = [...enseignement.groupes].sort((a, b) => a.id_groupe - b.id_groupe);
         const crees = [enseignement.id_enseignement];
         for (const groupe of detaches) {
             const nouveau = await Enseignement.create(
@@ -182,7 +183,6 @@ export const scinderEnseignement = async (id) =>
             );
             crees.push(nouveau.id_enseignement);
         }
-        void garde;
         return crees;
     });
 
