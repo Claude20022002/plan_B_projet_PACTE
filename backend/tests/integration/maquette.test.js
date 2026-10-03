@@ -257,6 +257,25 @@ describe("Enseignements : génération depuis la maquette, mutualisation, décou
         expect(response.status).toBe(400);
     });
 
+    test("un enseignement repris sans période est rattaché au lieu d'être recréé", async () => {
+        const repris = await clients.admin.send("post", "/api/cours", {
+            code_cours: "ENS-REPRISE", nom_cours: "Module repris", niveau: "4ème année",
+            volume_horaire: 18, type_cours: "CM", semestre: "S7", id_filiere: filiere.id_filiere,
+        });
+        const composante = repris.body.cours.composantes[0];
+        await CoursComposante.update({ niveau_groupe: "promotion" }, { where: { id_composante: composante.id_composante } });
+        // Comme après la migration 0008 : enseignement existant, sans période
+        const ancien = await Enseignement.create({ id_composante: composante.id_composante, heures_prevues: 18 });
+        await ancien.setGroupes([promo.id_groupe]);
+
+        const response = await clients.admin.send("post", "/api/enseignements/generer", { id_periode: periode.id_periode, id_filiere: filiere.id_filiere });
+        // Les 3 enseignements de NoSQL déjà générés restent « déjà présents » ; le repris n'y est pas compté
+        expect(response.body).toMatchObject({ crees: 0, rattaches: 1, existants: 3 });
+        await ancien.reload();
+        expect(ancien.id_periode).toBe(periode.id_periode);
+        expect(await Enseignement.count({ where: { id_composante: composante.id_composante } })).toBe(1);
+    });
+
     test("réservé à l'administration", async () => {
         expect((await clients.enseignant.get("/api/enseignements")).status).toBe(403);
     });

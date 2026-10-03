@@ -65,7 +65,7 @@ export default function Groupes() {
     const toast = useToast();
     const [filieres, setFilieres] = useState([]);
     const [filiere, setFiliere] = useState('');
-    const [annees, setAnnees] = useState([]);
+    const [annees, setAnnees] = useState(() => [anneeScolaireCourante()]);
     const [anneeScolaire, setAnneeScolaire] = useState(anneeScolaireCourante());
     const [arbre, setArbre] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -307,7 +307,13 @@ export default function Groupes() {
                                             </TableCell>
                                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                                                 {typeEnfant && (
-                                                    <Button size="small" startIcon={<Add />} onClick={() => ouvrir({ parent: groupe })} sx={{ mr: 0.5 }}>
+                                                    <Button
+                                                        size="small"
+                                                        startIcon={<Add />}
+                                                        onClick={() => ouvrir({ parent: groupe })}
+                                                        aria-label={t('ref.groups.addChild', { type: t(`ref.groupTypes.${typeEnfant}`), name: groupe.nom_groupe })}
+                                                        sx={{ mr: 0.5 }}
+                                                    >
                                                         {t(`ref.groups.add.${typeEnfant}`)}
                                                     </Button>
                                                 )}

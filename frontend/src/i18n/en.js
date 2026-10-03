@@ -619,6 +619,7 @@ const en = {
         td: 'Tutorial',
         tp: 'Lab',
       },
+      addChild: 'Add: {{type}} in {{name}}',
       cols: {
         group: 'Group',
         type: 'Type',
@@ -649,7 +650,7 @@ const en = {
       merge_one: 'Merge',
       merge_other: 'Merge ({{count}})',
       intro: 'A teaching unit is what gets scheduled: one module component taken by one or more groups. Generation creates the missing ones without touching existing ones; tick several rows of the same type to share one class between groups.',
-      report: '{{created}} unit(s) created, {{existing}} already there · {{year}} groups',
+      report: '{{created}} unit(s) created, {{attached}} carried over and attached, {{existing}} already there · {{year}} groups',
       withoutGroup_one: '{{count}} component with no matching group:',
       withoutGroup_other: '{{count}} components with no matching group:',
       shared: 'Shared',

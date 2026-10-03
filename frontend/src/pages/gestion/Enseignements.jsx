@@ -210,7 +210,7 @@ export default function Enseignements() {
                 {rapport && (
                     <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1, p: 1.5, mb: 2 }}>
                         <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                            {t('ref.teaching.report', { created: rapport.crees, existing: rapport.existants, year: rapport.annee_scolaire })}
+                            {t('ref.teaching.report', { created: rapport.crees, attached: rapport.rattaches ?? 0, existing: rapport.existants, year: rapport.annee_scolaire })}
                         </Typography>
                         {rapport.sans_groupe.length > 0 && (
                             <>

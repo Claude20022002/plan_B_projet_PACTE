@@ -52,8 +52,39 @@ export const genererEnseignements = async ({ id_periode, id_filiere = null }) =>
         existants.flatMap((e) => e.groupes.map((g) => `${e.id_composante}|${g.id_groupe}`))
     );
 
-    const rapport = { crees: 0, existants: 0, sans_groupe: [], annee_scolaire: anneeScolaire };
+    // Enseignements repris de l'existant (migration) sans période : ils sont rattachés à
+    // celle-ci quand leurs séances y tombent, au lieu d'être recréés en double.
+    const sansPeriode = await Enseignement.findAll({
+        where: { id_periode: null },
+        include: [
+            { model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } },
+            { model: Affectation, as: "seances", attributes: ["date_seance"] },
+            { model: CoursComposante, as: "composante", include: [{ model: Cours, as: "cours", attributes: ["id_filiere", "semestre"] }] },
+        ],
+    });
+    const aRattacher = sansPeriode.filter((e) => {
+        if (id_filiere && e.composante.cours.id_filiere !== Number(id_filiere)) return false;
+        // Avec des séances : elles doivent toutes tomber dans la période ; sans séance : le semestre du module décide
+        return e.seances.length
+            ? e.seances.every((s) => s.date_seance >= periode.date_debut && s.date_seance <= periode.date_fin)
+            : periodeDuSemestre(e.composante.cours.semestre) === periode.code;
+    });
+
+    const rapport = { crees: 0, existants: 0, rattaches: 0, sans_groupe: [], annee_scolaire: anneeScolaire };
+    // Couples rattachés pendant cet appel : ni recréés, ni comptés comme « déjà présents »
+    const rattachees = new Set();
     await sequelize.transaction(async (transaction) => {
+        for (const enseignement of aRattacher) {
+            const cles = enseignement.groupes.map((g) => `${enseignement.id_composante}|${g.id_groupe}`);
+            if (cles.length === 0 || cles.some((cle) => couverts.has(cle))) continue;
+            await enseignement.update({ id_periode }, { transaction });
+            cles.forEach((cle) => {
+                couverts.add(cle);
+                rattachees.add(cle);
+            });
+            rapport.rattaches += 1;
+        }
+
         for (const module of coursDeLaPeriode) {
             const annee = anneeDepuisNiveau(module.niveau);
             for (const composante of module.composantes) {
@@ -74,8 +105,9 @@ export const genererEnseignements = async ({ id_periode, id_filiere = null }) =>
                     continue;
                 }
                 for (const groupe of cibles) {
-                    if (couverts.has(`${composante.id_composante}|${groupe.id_groupe}`)) {
-                        rapport.existants += 1;
+                    const cle = `${composante.id_composante}|${groupe.id_groupe}`;
+                    if (couverts.has(cle)) {
+                        if (!rattachees.has(cle)) rapport.existants += 1;
                         continue;
                     }
                     const enseignement = await Enseignement.create(

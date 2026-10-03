@@ -619,6 +619,7 @@ const fr = {
         td: 'TD',
         tp: 'TP',
       },
+      addChild: 'Ajouter : {{type}} dans {{name}}',
       cols: {
         group: 'Groupe',
         type: 'Type',
@@ -649,7 +650,7 @@ const fr = {
       merge_one: 'Mutualiser',
       merge_other: 'Mutualiser ({{count}})',
       intro: 'Un enseignement est ce qui sera planifié : une composante de module suivie par un ou plusieurs groupes. La génération crée ceux qui manquent sans toucher aux existants ; cochez plusieurs lignes du même type pour un cours commun (mutualisation).',
-      report: '{{created}} enseignement(s) créé(s), {{existing}} déjà présent(s) · groupes de {{year}}',
+      report: '{{created}} enseignement(s) créé(s), {{attached}} repris et rattaché(s), {{existing}} déjà présent(s) · groupes de {{year}}',
       withoutGroup_one: '{{count}} composante sans groupe correspondant :',
       withoutGroup_other: '{{count}} composantes sans groupe correspondant :',
       shared: 'Commun',
