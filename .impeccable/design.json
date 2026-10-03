@@ -1,0 +1,766 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-03T09:37:00.702Z",
+  "title": "Design System: HESTIM Planner",
+  "extensions": {
+    "colorMeta": {
+      "hestim-navy": {
+        "role": "primary",
+        "displayName": "Bleu Marine HESTIM",
+        "canonical": "#001861",
+        "tonalRamp": [
+          "#00134D",
+          "#002185",
+          "#002FBD",
+          "#003DF5",
+          "#2E62FF",
+          "#668CFF",
+          "#A3BAFF",
+          "#E5ECFF"
+        ]
+      },
+      "hestim-navy-deep": {
+        "role": "primary",
+        "displayName": "Marine Profond",
+        "canonical": "#000E3D",
+        "tonalRamp": [
+          "#00124D",
+          "#001E85",
+          "#002BBD",
+          "#0038F5",
+          "#2E5EFF",
+          "#6689FF",
+          "#A3B8FF",
+          "#E5EBFF"
+        ]
+      },
+      "hestim-navy-soft": {
+        "role": "primary",
+        "displayName": "Marine Voilé",
+        "canonical": "#E8ECF7",
+        "tonalRamp": [
+          "#141E39",
+          "#223362",
+          "#31498C",
+          "#3F5FB6",
+          "#647FC9",
+          "#8DA1D8",
+          "#BBC7E7",
+          "#ECEFF8"
+        ]
+      },
+      "night-primary": {
+        "role": "primary",
+        "displayName": "Bleu Pervenche de Nuit",
+        "canonical": "#8FA6F0",
+        "tonalRamp": [
+          "#091743",
+          "#102875",
+          "#1638A6",
+          "#1D49D8",
+          "#476CE6",
+          "#7894ED",
+          "#AEBFF4",
+          "#E9EDFC"
+        ]
+      },
+      "hestim-orange": {
+        "role": "secondary",
+        "displayName": "Orange HESTIM",
+        "canonical": "#F26322",
+        "tonalRamp": [
+          "#481904",
+          "#7D2C07",
+          "#B23F0A",
+          "#E7520E",
+          "#F3743A",
+          "#F7996E",
+          "#FAC2A8",
+          "#FEEEE7"
+        ]
+      },
+      "hestim-green": {
+        "role": "tertiary",
+        "displayName": "Vert HESTIM (logo)",
+        "canonical": "#137D3F",
+        "tonalRamp": [
+          "#0A4221",
+          "#11733A",
+          "#19A453",
+          "#20D46B",
+          "#49E389",
+          "#7AEBA9",
+          "#AFF3CB",
+          "#E9FCF1"
+        ]
+      },
+      "lamp-live": {
+        "role": "tertiary",
+        "displayName": "Vert Lampe",
+        "canonical": "#3FCB74",
+        "tonalRamp": [
+          "#103C21",
+          "#1C6839",
+          "#289451",
+          "#34C169",
+          "#5AD288",
+          "#87DEA8",
+          "#B7EBCB",
+          "#EBFAF0"
+        ]
+      },
+      "lamp-cancelled": {
+        "role": "tertiary",
+        "displayName": "Rouge Signal",
+        "canonical": "#FF5A5F",
+        "tonalRamp": [
+          "#4D0002",
+          "#850004",
+          "#BD0006",
+          "#F50007",
+          "#FF2E34",
+          "#FF666B",
+          "#FFA3A6",
+          "#FFE5E6"
+        ]
+      },
+      "board-ground": {
+        "role": "neutral",
+        "displayName": "Noir de Panneau",
+        "canonical": "#0B0B0D",
+        "tonalRamp": [
+          "#232329",
+          "#3D3D48",
+          "#565666",
+          "#707085",
+          "#8E8E9F",
+          "#ACACB9",
+          "#CDCDD5",
+          "#F1F1F3"
+        ]
+      },
+      "board-cell": {
+        "role": "neutral",
+        "displayName": "Face de Volet",
+        "canonical": "#212124",
+        "tonalRamp": [
+          "#252528",
+          "#3F3F45",
+          "#5A5A62",
+          "#757580",
+          "#92929B",
+          "#AFAFB6",
+          "#CFCFD3",
+          "#F2F2F3"
+        ]
+      },
+      "board-hinge": {
+        "role": "neutral",
+        "displayName": "Charnière",
+        "canonical": "#000000",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#5E5E5E",
+          "#7A7A7A",
+          "#969696",
+          "#B3B3B3",
+          "#D1D1D1",
+          "#F2F2F2"
+        ]
+      },
+      "board-seam": {
+        "role": "neutral",
+        "displayName": "Filet de Colonne",
+        "canonical": "#2C2C30",
+        "tonalRamp": [
+          "#252528",
+          "#3F3F45",
+          "#5A5A62",
+          "#757580",
+          "#92929B",
+          "#AFAFB6",
+          "#CFCFD3",
+          "#F2F2F3"
+        ]
+      },
+      "board-letter": {
+        "role": "neutral",
+        "displayName": "Blanc Cassé",
+        "canonical": "#F2F1EC",
+        "tonalRamp": [
+          "#2D2B1F",
+          "#4F4B36",
+          "#706A4D",
+          "#918A63",
+          "#AAA483",
+          "#C1BCA4",
+          "#DAD7C8",
+          "#F5F4F0"
+        ]
+      },
+      "board-letter-dim": {
+        "role": "neutral",
+        "displayName": "Gris Quai",
+        "canonical": "#A6A6AC",
+        "tonalRamp": [
+          "#252528",
+          "#404045",
+          "#5B5B62",
+          "#76767F",
+          "#93939A",
+          "#B0B0B5",
+          "#CFCFD3",
+          "#F2F2F3"
+        ]
+      },
+      "bureau-app": {
+        "role": "neutral",
+        "displayName": "Fond Bureau",
+        "canonical": "#F3F4F7",
+        "tonalRamp": [
+          "#1F222E",
+          "#353C50",
+          "#4B5571",
+          "#626E93",
+          "#828CAB",
+          "#A3ABC2",
+          "#C8CDDA",
+          "#F0F1F5"
+        ]
+      },
+      "bureau-surface": {
+        "role": "neutral",
+        "displayName": "Papier",
+        "canonical": "#FFFFFF",
+        "tonalRamp": [
+          "#262626",
+          "#424242",
+          "#5E5E5E",
+          "#7A7A7A",
+          "#969696",
+          "#B3B3B3",
+          "#D1D1D1",
+          "#F2F2F2"
+        ]
+      },
+      "bureau-subtle": {
+        "role": "neutral",
+        "displayName": "Gris Réglé",
+        "canonical": "#EEF0F5",
+        "tonalRamp": [
+          "#1C2230",
+          "#313B53",
+          "#465477",
+          "#5B6D9A",
+          "#7B8BB2",
+          "#9FAAC6",
+          "#C5CCDD",
+          "#EFF1F6"
+        ]
+      },
+      "bureau-head": {
+        "role": "neutral",
+        "displayName": "Gris Réglé (en-tête)",
+        "canonical": "#F6F7FA",
+        "tonalRamp": [
+          "#1B2131",
+          "#2F3955",
+          "#435179",
+          "#57699D",
+          "#7988B4",
+          "#9DA8C8",
+          "#C4CBDE",
+          "#EFF0F6"
+        ]
+      },
+      "ink": {
+        "role": "neutral",
+        "displayName": "Encre",
+        "canonical": "#0D1326",
+        "tonalRamp": [
+          "#141D39",
+          "#223163",
+          "#30468D",
+          "#3E5BB6",
+          "#637CCA",
+          "#8D9FD8",
+          "#BBC5E8",
+          "#ECEFF9"
+        ]
+      },
+      "ink-secondary": {
+        "role": "neutral",
+        "displayName": "Encre Seconde",
+        "canonical": "#3F4759",
+        "tonalRamp": [
+          "#20242D",
+          "#373E4E",
+          "#4E586E",
+          "#65728F",
+          "#8590A8",
+          "#A5ADC0",
+          "#C9CED9",
+          "#F0F1F4"
+        ]
+      },
+      "ink-muted": {
+        "role": "neutral",
+        "displayName": "Encre Effacée",
+        "canonical": "#5F6778",
+        "tonalRamp": [
+          "#22252B",
+          "#3B404A",
+          "#535A69",
+          "#6C7589",
+          "#8A92A3",
+          "#AAAFBB",
+          "#CCCFD6",
+          "#F1F2F4"
+        ]
+      },
+      "rule": {
+        "role": "neutral",
+        "displayName": "Filet",
+        "canonical": "#DADDE5",
+        "tonalRamp": [
+          "#20232D",
+          "#373D4E",
+          "#4E576F",
+          "#657190",
+          "#848EA9",
+          "#A5ACC0",
+          "#C9CDD9",
+          "#F0F1F4"
+        ]
+      },
+      "rule-strong": {
+        "role": "neutral",
+        "displayName": "Filet Appuyé",
+        "canonical": "#B9BECB",
+        "tonalRamp": [
+          "#21242C",
+          "#393E4C",
+          "#50586C",
+          "#68728C",
+          "#8790A6",
+          "#A7ADBE",
+          "#CACED8",
+          "#F0F1F4"
+        ]
+      },
+      "success-bg": {
+        "role": "status",
+        "displayName": "Vert Pâle (confirmée, bureau)",
+        "canonical": "#E7F4EC",
+        "tonalRamp": [
+          "#183423",
+          "#2A5B3D",
+          "#3B8156",
+          "#4DA870",
+          "#70BD8D",
+          "#96CFAC",
+          "#C0E2CD",
+          "#EEF7F1"
+        ]
+      },
+      "warning-text": {
+        "role": "status",
+        "displayName": "Orange Brûlé (reportée, bureau)",
+        "canonical": "#B4410C",
+        "tonalRamp": [
+          "#481A05",
+          "#7C2D08",
+          "#B1400C",
+          "#E6530F",
+          "#F2753B",
+          "#F59A70",
+          "#F9C2A9",
+          "#FDEEE7"
+        ]
+      },
+      "warning-bg": {
+        "role": "status",
+        "displayName": "Pêche Pâle (reportée, bureau)",
+        "canonical": "#FDEFE7",
+        "tonalRamp": [
+          "#471D06",
+          "#7A330A",
+          "#AE490F",
+          "#E25E13",
+          "#EF7E3E",
+          "#F3A172",
+          "#F8C7AA",
+          "#FDEFE7"
+        ]
+      },
+      "danger-text": {
+        "role": "status",
+        "displayName": "Rouge Sombre (annulée, bureau)",
+        "canonical": "#B5161C",
+        "tonalRamp": [
+          "#44080B",
+          "#760E12",
+          "#A8141A",
+          "#DA1B22",
+          "#E8454B",
+          "#EE777B",
+          "#F5ADB0",
+          "#FCE8E9"
+        ]
+      },
+      "danger-bg": {
+        "role": "status",
+        "displayName": "Rose Pâle (annulée, bureau)",
+        "canonical": "#FCE8E9",
+        "tonalRamp": [
+          "#44090C",
+          "#750F14",
+          "#A7161D",
+          "#D91C26",
+          "#E7464E",
+          "#ED787E",
+          "#F4AEB1",
+          "#FCE8E9"
+        ]
+      },
+      "line-1": {
+        "role": "line",
+        "displayName": "Ligne Bleue",
+        "canonical": "#3B63E0",
+        "tonalRamp": [
+          "#0A1842",
+          "#122972",
+          "#1A3BA3",
+          "#214DD3",
+          "#4A6FE2",
+          "#7B96EA",
+          "#B0C0F2",
+          "#E9EDFC"
+        ]
+      },
+      "line-2": {
+        "role": "line",
+        "displayName": "Ligne Azur",
+        "canonical": "#1592C9",
+        "tonalRamp": [
+          "#073245",
+          "#0D5778",
+          "#127CAB",
+          "#17A1DE",
+          "#42B7EB",
+          "#74CBF1",
+          "#ACE0F6",
+          "#E8F6FD"
+        ]
+      },
+      "line-3": {
+        "role": "line",
+        "displayName": "Ligne Sarcelle",
+        "canonical": "#0F8A7E",
+        "tonalRamp": [
+          "#08453F",
+          "#0D786D",
+          "#13AA9B",
+          "#18DDCA",
+          "#42EBDA",
+          "#75F0E4",
+          "#ACF6EF",
+          "#E8FDFB"
+        ]
+      },
+      "line-4": {
+        "role": "line",
+        "displayName": "Ligne Violette",
+        "canonical": "#7048C9",
+        "tonalRamp": [
+          "#1E113B",
+          "#351E66",
+          "#4B2B92",
+          "#6138BD",
+          "#815ECF",
+          "#A389DC",
+          "#C8B8EA",
+          "#F0EBF9"
+        ]
+      },
+      "line-5": {
+        "role": "line",
+        "displayName": "Ligne Prune",
+        "canonical": "#B03A8C",
+        "tonalRamp": [
+          "#3A132E",
+          "#64214F",
+          "#8E2F71",
+          "#B83D92",
+          "#CB62AB",
+          "#D98CC2",
+          "#E8BADA",
+          "#F9ECF5"
+        ]
+      },
+      "line-6": {
+        "role": "line",
+        "displayName": "Ligne Ardoise",
+        "canonical": "#46508F",
+        "tonalRamp": [
+          "#191D33",
+          "#2C3259",
+          "#3E477F",
+          "#505CA4",
+          "#737CBA",
+          "#989FCD",
+          "#C1C6E1",
+          "#EEEFF7"
+        ]
+      },
+      "line-unknown": {
+        "role": "line",
+        "displayName": "Gris Inconnu",
+        "canonical": "#6B6B72",
+        "tonalRamp": [
+          "#252527",
+          "#404044",
+          "#5B5B61",
+          "#77777E",
+          "#93939A",
+          "#B0B0B5",
+          "#D0D0D3",
+          "#F2F2F3"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Display (salle monumentale)",
+        "purpose": "Code de salle de la séance en vedette, sur tuiles de volet ; « PLANNER » en tuiles orange sur l'accueil."
+      },
+      "headline": {
+        "displayName": "Headline",
+        "purpose": "Titre de page (h1) et titre de la connexion."
+      },
+      "title": {
+        "displayName": "Title",
+        "purpose": "Titres de section ; titres de panneau en capitales 0.12em."
+      },
+      "board-row": {
+        "displayName": "Ligne de panneau",
+        "purpose": "Heure, nom du cours, code de salle dans une ligne du panneau (0.875rem sur téléphone)."
+      },
+      "body": {
+        "displayName": "Body",
+        "purpose": "Texte courant et avis de changement, en Barlow casse normale."
+      },
+      "label": {
+        "displayName": "Label",
+        "purpose": "En-têtes de colonnes, pastilles d'état, bandeaux de jour, groupes du rail : capitales condensées espacées."
+      },
+      "button": {
+        "displayName": "Button",
+        "purpose": "Boutons et onglets, capitales condensées."
+      }
+    },
+    "shadows": [
+      {
+        "name": "none",
+        "value": "none",
+        "purpose": "Surfaces au repos (papiers, cartes, tables, panneau) : aucune ombre, la profondeur vient du cadre marine et des filets."
+      },
+      {
+        "name": "mui-overlay",
+        "value": "MUI default elevation",
+        "purpose": "Uniquement les calques flottants (dialogues, menus, infobulles de graphique)."
+      }
+    ],
+    "motion": [
+      {
+        "name": "flap-step",
+        "value": "28ms",
+        "purpose": "Décalage entre deux caractères dans la cascade des volets."
+      },
+      {
+        "name": "flap-flip",
+        "value": "220ms cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Bascule d'un caractère : rotateX(-88deg) puis 12deg puis 0, opacité 0.35 vers 1. Unique animation signature, réservée aux changements d'état ; instantanée sous prefers-reduced-motion."
+      },
+      {
+        "name": "fast",
+        "value": "120ms",
+        "purpose": "Transitions d'état rapides."
+      },
+      {
+        "name": "normal",
+        "value": "180ms",
+        "purpose": "Transitions d'état par défaut."
+      },
+      {
+        "name": "slow",
+        "value": "280ms",
+        "purpose": "Transitions plus amples."
+      },
+      {
+        "name": "ease",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Courbe commune du système."
+      },
+      {
+        "name": "live-refresh",
+        "value": "60000ms + visibilitychange",
+        "purpose": "Rafraîchissement silencieux du panneau ; les changements arrivent par la bascule des volets."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "phone",
+        "value": "600px",
+        "purpose": "En dessous : panneau compact, groupe et enseignant sous le cours, statut en petit corps."
+      },
+      {
+        "name": "rail",
+        "value": "900px",
+        "purpose": "Au-dessus : rail marine fixe de 248 px ; en dessous : bandeau, tiroir et onglets bas."
+      },
+      {
+        "name": "content-max",
+        "value": "1480px",
+        "purpose": "Largeur maximale du contenu."
+      }
+    ],
+    "focus": {
+      "value": "outline: 2px solid #F26322; outline-offset: 2px",
+      "purpose": "Focus clavier global, identique partout (rail : décalage -2px)."
+    }
+  },
+  "components": [
+    {
+      "name": "Bouton primaire",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Action primaire (Planifier une séance, Se connecter) : marine, capitales condensées.",
+      "html": "<button class=\"ds-btn-primary\">Planifier une séance</button>",
+      "css": ".ds-btn-primary { font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; font-size:0.9375rem; letter-spacing:0.06em; text-transform:uppercase; min-height:40px; padding:0 16px; border-radius:3px; cursor:pointer; transition:background-color 180ms cubic-bezier(0.16,1,0.3,1), border-color 180ms; background:#001861; color:#FFFFFF; border:none; } .ds-btn-primary:hover { background:#000E3D; } .ds-btn-primary:focus-visible { outline:2px solid #F26322; outline-offset:2px; }"
+    },
+    {
+      "name": "Bouton contouré",
+      "kind": "button",
+      "refersTo": "button-outlined",
+      "description": "Actions secondaires : navigation de semaine, téléchargement, bascules.",
+      "html": "<button class=\"ds-btn-outlined\">Cette semaine</button>",
+      "css": ".ds-btn-outlined { font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; font-size:0.9375rem; letter-spacing:0.06em; text-transform:uppercase; min-height:40px; padding:0 16px; border-radius:3px; cursor:pointer; transition:background-color 180ms cubic-bezier(0.16,1,0.3,1), border-color 180ms; background:transparent; color:#001861; border:1px solid #B9BECB; } .ds-btn-outlined:hover { background:#EEF0F5; border-color:#001861; } .ds-btn-outlined:focus-visible { outline:2px solid #F26322; outline-offset:2px; }"
+    },
+    {
+      "name": "Pastilles d'état (bureau)",
+      "kind": "chip",
+      "refersTo": "status-pill",
+      "description": "Statut d'une séance sur le bureau : petit volet clair, une teinte par état.",
+      "html": "<div class=\"ds-pills\"><span class=\"ds-pill p\">Planifiée</span><span class=\"ds-pill c\">Confirmée</span><span class=\"ds-pill r\">Reportée</span><span class=\"ds-pill a\">Annulée</span></div>",
+      "css": ".ds-pills { display:flex; gap:8px; flex-wrap:wrap; } .ds-pill { display:inline-flex; align-items:center; height:24px; padding:0 8px; border-radius:2px; font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; font-size:0.75rem; letter-spacing:0.1em; text-transform:uppercase; } .ds-pill.p{background:#EEF0F5;color:#3F4759} .ds-pill.c{background:#E7F4EC;color:#137D3F} .ds-pill.r{background:#FDEFE7;color:#B4410C} .ds-pill.a{background:#FCE8E9;color:#B5161C}"
+    },
+    {
+      "name": "Champ texte",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Champ contouré petite taille, curseur orange.",
+      "html": "<label class=\"ds-field\"><span>Groupe</span><input value=\"MGT-1A\"></label>",
+      "css": ".ds-field { display:inline-flex; flex-direction:column; gap:4px; font-family:'Barlow','Segoe UI',system-ui,sans-serif; } .ds-field span { font-size:0.8125rem; color:#3F4759; } .ds-field input { height:40px; padding:0 12px; border:1px solid #B9BECB; border-radius:3px; background:#FFFFFF; color:#0D1326; font:inherit; font-size:0.9375rem; caret-color:#F26322; transition:border-color 180ms; } .ds-field input:hover { border-color:#0D1326; } .ds-field input:focus-visible { outline:none; border:2px solid #001861; padding:0 11px; }"
+    },
+    {
+      "name": "Rail de navigation",
+      "kind": "nav",
+      "refersTo": "nav-rail",
+      "description": "Rail marine desktop : groupes en capitales condensées, rubrique active à icône orange.",
+      "html": "<nav class=\"ds-rail\"><div class=\"ds-rail-g\">Planning</div><a href=\"#\">Séances</a><a href=\"#\" class=\"on\"><svg width=\"18\" height=\"18\" viewBox=\"0 0 24 24\" fill=\"currentColor\" aria-hidden=\"true\"><path d=\"M4 5h4v14H4zM10 5h4v14h-4zM16 5h4v14h-4z\"/></svg>Emplois du temps</a><a href=\"#\">Demandes de report</a><div class=\"ds-rail-g\">Scolarité</div><a href=\"#\">Filières</a></nav>",
+      "css": ".ds-rail { width:248px; background:#001861; padding:12px 10px; font-family:'Barlow','Segoe UI',system-ui,sans-serif; display:flex; flex-direction:column; gap:2px; } .ds-rail-g { font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase; color:#8D9BCF; padding:14px 10px 6px; } .ds-rail a { display:flex; align-items:center; gap:12px; min-height:40px; padding:0 10px 0 40px; border-radius:3px; color:#D3DAF1; text-decoration:none; font-size:0.9375rem; font-weight:500; } .ds-rail a.on { padding-left:10px; background:rgba(255,255,255,0.12); color:#FFFFFF; } .ds-rail a.on svg { color:#F26322; } .ds-rail a:hover { background:rgba(255,255,255,0.07); } .ds-rail a:focus-visible { outline:2px solid #F26322; outline-offset:-2px; }"
+    },
+    {
+      "name": "Panneau des départs",
+      "kind": "custom",
+      "refersTo": "board-frame",
+      "description": "Signature : chaque séance est une ligne à colonnes fixes, lampe d'état et carré de filière, dans un cadre marine.",
+      "html": "<div class=\"ds-board\"><div class=\"ds-board-head\"><span>Mes séances · IIIA-3A</span><span>09:29</span></div><table><colgroup><col style=\"width:26px\"><col style=\"width:84px\"><col><col style=\"width:110px\"><col style=\"width:110px\"></colgroup><thead><tr><th></th><th>Heure</th><th>Cours</th><th>Salle</th><th style=\"text-align:right\">Statut</th></tr></thead><tbody><tr><th colspan=\"5\" class=\"day\">Lundi 5 octobre</th></tr><tr class=\"spot\"><td><span class=\"lamp\" style=\"background:#3FCB74\"></span></td><td class=\"cond\">09:00</td><td><span class=\"sq\" style=\"background:#1592C9\"></span><span class=\"cond\">Projet PACTE</span><div class=\"sub\">Éric Renaud</div></td><td class=\"cond\">G-LAB003</td><td class=\"st\" style=\"color:#3FCB74\">Prochaine</td></tr><tr><td><span class=\"lamp\" style=\"background:#F26322\"></span></td><td class=\"cond\">13:30</td><td><span class=\"sq\" style=\"background:#7048C9\"></span><span class=\"cond\">Droit des affaires</span><div class=\"sub\">Younes Faure</div></td><td class=\"cond\">ST-S06</td><td class=\"st\" style=\"color:#F26322\">Reportée</td></tr><tr><td><span class=\"lamp\" style=\"background:#FF5A5F\"></span></td><td class=\"cond\" style=\"color:#A6A6AC\">15:30</td><td><span class=\"sq\" style=\"background:#0F8A7E\"></span><span class=\"cond\" style=\"color:#A6A6AC;text-decoration:line-through;text-decoration-color:#FF5A5F\">Économie générale</span></td><td class=\"cond\" style=\"color:#A6A6AC\">ST-S06</td><td class=\"st\" style=\"color:#FF5A5F\">Annulée</td></tr></tbody></table></div>",
+      "css": ".ds-board { background:#001861; padding:8px; border-radius:6px; font-family:'Barlow','Segoe UI',system-ui,sans-serif; font-variant-numeric:tabular-nums; max-width:560px; } .ds-board-head { display:flex; justify-content:space-between; padding:4px 12px 8px; color:#fff; font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; font-size:1.125rem; } .ds-board table { width:100%; border-collapse:collapse; table-layout:fixed; background:#0B0B0D; border-radius:4px; } .ds-board th, .ds-board td { border-bottom:1px solid #2C2C30; padding:12px; color:#F2F1EC; text-align:left; } .ds-board th { padding:8px 12px; font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; font-size:0.75rem; letter-spacing:0.14em; text-transform:uppercase; color:#A6A6AC; } .ds-board th.day { padding:6px 12px; font-size:0.8125rem; background:rgba(242,241,236,0.03); color:#fff; } .ds-board .cond { font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; font-size:1.05rem; letter-spacing:0.04em; text-transform:uppercase; } .ds-board .sub { font-size:0.8125rem; color:#A6A6AC; padding-left:18px; } .ds-board .sq { display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:8px; } .ds-board .lamp { display:inline-block; width:8px; height:8px; border-radius:50%; } .ds-board tr.spot { background:rgba(63,203,116,0.07); } .ds-board tbody tr:hover { background:rgba(242,241,236,0.05); } .ds-board .st { text-align:right; font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; }"
+    },
+    {
+      "name": "Tuiles de volet",
+      "kind": "custom",
+      "refersTo": "flap-tile",
+      "description": "Caractères sur volets à charnière ; bascule en cascade de 28 ms (ici au survol).",
+      "html": "<span class=\"ds-flap\" aria-label=\"G-LAB003\"><span>G</span><span class=\"sep\">-</span><span>L</span><span>A</span><span>B</span><span>0</span><span>0</span><span>3</span></span>",
+      "css": ".ds-flap { display:inline-flex; gap:0.08em; font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; font-size:2rem; line-height:1; text-transform:uppercase; color:#F2F1EC; padding:12px; background:#0B0B0D; font-variant-numeric:tabular-nums; perspective:400px; } .ds-flap span { display:inline-grid; place-items:center; min-width:0.72em; height:1.32em; padding:0 0.06em; border-radius:2px; background:#212124 linear-gradient(to bottom, transparent calc(50% - 0.5px), #000 calc(50% - 0.5px), #000 calc(50% + 0.5px), transparent calc(50% + 0.5px)); } .ds-flap span.sep { min-width:0.32em; background:none; padding:0; } .ds-flap:hover span { animation: ds-flip 220ms cubic-bezier(0.16,1,0.3,1) both; } .ds-flap:hover span:nth-child(2){animation-delay:28ms} .ds-flap:hover span:nth-child(3){animation-delay:56ms} .ds-flap:hover span:nth-child(4){animation-delay:84ms} .ds-flap:hover span:nth-child(5){animation-delay:112ms} .ds-flap:hover span:nth-child(6){animation-delay:140ms} .ds-flap:hover span:nth-child(7){animation-delay:168ms} .ds-flap:hover span:nth-child(8){animation-delay:196ms} @keyframes ds-flip { 0%{transform:rotateX(-88deg);opacity:.35} 60%{transform:rotateX(12deg);opacity:1} 100%{transform:rotateX(0);opacity:1} } @media (prefers-reduced-motion: reduce){ .ds-flap:hover span{animation:none} }"
+    },
+    {
+      "name": "Légende de quai",
+      "kind": "card",
+      "refersTo": "board-frame",
+      "description": "Photo réelle du campus encadrée de marine, étalonnée vers le panneau, légendée d'une plaque noire.",
+      "html": "<figure class=\"ds-photo\"><div class=\"ds-photo-img\"></div><figcaption>Séance en salle</figcaption></figure>",
+      "css": ".ds-photo { position:relative; margin:0; width:360px; height:220px; background:#001861; padding:6px; border-radius:6px; } .ds-photo-img { width:100%; height:100%; border-radius:4px; background:#3A3F4A; filter:saturate(0.72) brightness(0.78) contrast(1.06); } .ds-photo figcaption { position:absolute; left:18px; bottom:18px; padding:6px 12px; background:#0B0B0D; color:#F2F1EC; border-radius:3px; font-family:'Barlow Condensed','Arial Narrow',sans-serif; font-weight:600; font-size:1rem; letter-spacing:0.12em; text-transform:uppercase; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "Le Hall des Départs",
+    "overview": "Chaque séance est une ligne d'un panneau de départs de gare : heure, cours, salle, statut, dans des colonnes qui ne bougent jamais. Le panneau est noir mat, encadré du bleu marine HESTIM, ses lettres blanc cassé posées sur des volets à charnière. Quand une séance est reportée, déplacée ou annulée, son statut ou sa salle bascule caractère par caractère, et la lampe de ligne change de couleur. Le reste du produit se tait pour que ce changement se voie.\n\nLe système a deux sols pour une seule grammaire. Le **panneau** (sombre) porte le direct : tableau de l'étudiant et de l'enseignant sur téléphone, accueil public, connexion, cellules de la grille hebdomadaire. Le **bureau** (clair) porte la gestion dense de l'administration : fond gris très clair, tables réglées, en-têtes de colonnes en capitales condensées, statuts en pastilles-volets. Les deux partagent la même famille (Barlow), les mêmes couleurs d'état et la même couleur de ligne par filière. Un mode nuit réutilise les matières du panneau pour les écrans de gestion.\n\nLa densité est celle d'un horaire : beaucoup d'information, alignée sur des chiffres tabulaires, séparée par des filets d'un pixel plutôt que par des cartes. Les photos réelles du campus (hestim.ma) sont étalonnées vers la nuit du hall et légendées comme des panneaux de quai.",
+    "keyCharacteristics": [
+      "Panneau noir mat dans un cadre bleu marine, filets d'un pixel entre lignes.",
+      "Barlow Condensed en capitales espacées pour tout ce qu'on lit en colonne ; Barlow pour les phrases.",
+      "Chiffres tabulaires partout.",
+      "Une couleur par état (vert en cours, orange reporté, rouge annulé), une couleur par filière, jamais mélangées.",
+      "Une seule animation signature : la bascule des volets, réservée aux changements d'état.",
+      "Surfaces plates ; la profondeur vient du cadre et du contraste noir/blanc, pas des ombres."
+    ],
+    "rules": [
+      {
+        "name": "The One Signal Per State Rule",
+        "body": "Vert = en cours / prochaine / confirmée, orange = reportée / modifiée, rouge = annulée, blanc = à l'heure. Ces trois teintes ne servent jamais à autre chose qu'un état (exception unique : l'orange signale aussi le focus clavier et la rubrique active, qui sont des états d'interface).",
+        "section": "colors"
+      },
+      {
+        "name": "The Line Is Not A Status Rule",
+        "body": "Les couleurs de ligne restent hors de l'orange, du rouge et du vert. Une filière ne doit jamais pouvoir être lue comme un report ou une annulation.",
+        "section": "colors"
+      },
+      {
+        "name": "The Two Grounds Rule",
+        "body": "Chaque teinte d'état a une valeur « panneau » (éclaircie, lisible sur le noir) et une valeur « bureau » (assombrie, lisible sur le blanc), tirées de `ds.status`. Ne jamais poser la valeur d'un sol sur l'autre.",
+        "section": "colors"
+      },
+      {
+        "name": "The Tabular Everywhere Rule",
+        "body": "`font-variant-numeric: tabular-nums` est posé sur le corps et sur chaque cellule de table : horaires, dates et codes de salle s'alignent en colonnes. Ne jamais l'annuler localement.",
+        "section": "typography"
+      },
+      {
+        "name": "The Condensed Caps Rule",
+        "body": "Tout ce qu'on lit en colonne (en-têtes, horaires, codes de salle, statuts, boutons, onglets, rubriques du rail) est en Barlow Condensed capitales espacées. Les phrases (messages, descriptions, noms de personnes) restent en Barlow casse normale.",
+        "section": "typography"
+      },
+      {
+        "name": "The Frame Not Shadow Rule",
+        "body": "Un élément se détache par son cadre ou par un filet, jamais par une ombre. Les jetons `ds.shadow` existent mais ne sont pas employés ; ne pas les introduire sur des surfaces au repos.",
+        "section": "elevation"
+      },
+      {
+        "name": "The No Nested Cards Rule",
+        "body": "Une ligne de panneau ou de table n'est jamais une carte, et une carte ne contient jamais une autre carte.",
+        "section": "elevation"
+      }
+    ],
+    "dos": [
+      "Do afficher toute liste de séances comme une ligne de panneau à colonnes fixes (lampe | heure | cours | salle | statut), dans un tableau sémantique.",
+      "Do tirer chaque couleur d'état de `ds.status` avec la valeur du sol courant (board ou bureau).",
+      "Do marquer chaque filière par sa couleur `lineColor(id)` en carré de 8 à 10 px, à l'identique sur le panneau, la grille et les graphiques.",
+      "Do faire basculer en volets (28 ms par caractère) un statut, une salle ou une horloge qui change, et rien d'autre.",
+      "Do écrire en-têtes, horaires, codes de salle, statuts et boutons en Barlow Condensed capitales espacées, et garder les phrases en Barlow.",
+      "Do séparer par des filets de 1 px et détacher par le cadre marine, avec des angles de 2 à 6 px.",
+      "Do étalonner les photos du campus vers le ton du panneau et les légender d'une plaque noire en capitales."
+    ],
+    "donts": [
+      "Don't construire un tableau de bord SaaS de cartes KPI identiques, ni écraser la grille hebdomadaire sur téléphone : sur téléphone, c'est le panneau.",
+      "Don't utiliser l'orange, le rouge ou le vert pour une filière, une décoration ou un graphique sans signification d'état.",
+      "Don't poser de dégradé décoratif, d'effet de verre ou de carte imbriquée sur une surface ; la seule exception native est la charnière d'un pixel des tuiles de volet.",
+      "Don't ajouter d'ombre à une surface au repos.",
+      "Don't animer pour décorer : pas d'autre mouvement que la bascule des volets et les transitions d'état MUI, et aucun mouvement sous `prefers-reduced-motion`.",
+      "Don't ajouter de surtitre au-dessus d'un titre de page : le titre porte seul la hiérarchie."
+    ]
+  }
+}

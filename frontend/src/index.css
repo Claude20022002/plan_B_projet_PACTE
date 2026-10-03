@@ -5,7 +5,7 @@
   --hp-orange: #F26322;
   --hp-red: #DB1F26;
   --hp-green: #137D3F;
-  --hp-board: #0B0D14;
+  --hp-board: #0B0B0D;
   --hp-letter: #F2F1EC;
   --hp-focus: #F26322;
 }
@@ -58,7 +58,7 @@ a {
 }
 [data-theme="dark"] *,
 .hp-board * {
-  scrollbar-color: #3A4152 transparent;
+  scrollbar-color: #3A3A40 transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {
