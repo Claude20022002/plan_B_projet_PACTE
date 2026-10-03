@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
+import { REGIMES } from "../config/referentiel.js";
 
 const Filiere = sequelize.define(
     "Filiere",
@@ -19,6 +20,12 @@ const Filiere = sequelize.define(
             allowNull: false,
         },
         description: DataTypes.TEXT,
+        // Temps plein, horaires aménagés ou executive : détermine la grille horaire utilisée
+        regime: {
+            type: DataTypes.ENUM(...REGIMES),
+            allowNull: false,
+            defaultValue: "initiale",
+        },
     },
     {
         tableName: "Filiere",

@@ -6,13 +6,15 @@ import {
     updateSalle,
     deleteSalle,
     getSallesDisponibles,
+    getReferentielSalles,
+    importSalles,
 } from "../controllers/index.js";
 import {
     authenticateToken,
     requireAdmin,
     asyncHandler,
     validateSalleCreation,
-    handleValidationErrors,
+    validateSalleUpdate,
 } from "../middleware/index.js";
 
 const router = express.Router();
@@ -20,12 +22,18 @@ const router = express.Router();
 // 🔍 Récupérer toutes les salles (Tous les utilisateurs authentifiés)
 router.get("/", authenticateToken, asyncHandler(getAllSalles));
 
+// 🔍 Listes fermées des formulaires : types de salle, droits de réservation
+router.get("/referentiel", authenticateToken, asyncHandler(getReferentielSalles));
+
 // 🔍 Récupérer les salles disponibles (Tous les utilisateurs authentifiés)
 router.get(
     "/disponibles/liste",
     authenticateToken,
     asyncHandler(getSallesDisponibles)
 );
+
+// 📥 Importer l'inventaire des salles (Admin seulement, tout ou rien)
+router.post("/import", authenticateToken, requireAdmin, asyncHandler(importSalles));
 
 // 🔍 Récupérer une salle par ID (Tous les utilisateurs authentifiés)
 router.get("/:id", authenticateToken, asyncHandler(getSalleById));
@@ -36,7 +44,6 @@ router.post(
     authenticateToken,
     requireAdmin,
     validateSalleCreation,
-    handleValidationErrors,
     asyncHandler(createSalle)
 );
 
@@ -45,7 +52,7 @@ router.put(
     "/:id",
     authenticateToken,
     requireAdmin,
-    handleValidationErrors,
+    validateSalleUpdate,
     asyncHandler(updateSalle)
 );
 

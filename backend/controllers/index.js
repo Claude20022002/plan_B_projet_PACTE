@@ -55,3 +55,9 @@ export * from "./statistiquesController.js";
 
 // Generation automatique
 export * from "./generationAutomatiqueController.js";
+
+// Référentiel de l'établissement (phase P1)
+export * from "./campusController.js";
+export * from "./calendrierController.js";
+export * from "./evenementController.js";
+export * from "./parametrePlanningController.js";

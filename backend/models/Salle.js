@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
+import { TYPES_SALLE, RESERVABLE_PAR } from "../config/referentiel.js";
 
 const Salle = sequelize.define(
     "Salle",
@@ -16,20 +17,38 @@ const Salle = sequelize.define(
         type_salle: {
             type: DataTypes.STRING,
             allowNull: false,
+            validate: { isIn: [TYPES_SALLE] },
         },
         capacite: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        batiment: {
-            type: DataTypes.STRING,
+        // Places utilisables en examen (≈ moitié de la capacité si non renseigné)
+        capacite_examen: DataTypes.INTEGER,
+        id_campus: {
+            type: DataTypes.INTEGER,
             allowNull: false,
         },
         etage: DataTypes.INTEGER,
-        equipements: DataTypes.TEXT,
+        // Liste de libellés : ["Vidéoprojecteur", "30 postes", "AutoCAD"]
+        equipements: {
+            type: DataTypes.JSON,
+            defaultValue: [],
+        },
+        reservable_par: {
+            type: DataTypes.ENUM(...RESERVABLE_PAR),
+            defaultValue: "admin",
+        },
         disponible: {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
+        },
+        // Compatibilité lecture seule : ancien champ libre, remplacé par le campus
+        batiment: {
+            type: DataTypes.VIRTUAL,
+            get() {
+                return this.get("campus")?.nom ?? null;
+            },
         },
     },
     {

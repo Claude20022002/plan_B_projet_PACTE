@@ -19,6 +19,11 @@ import Evenement from "./Evenement.js";
 import AuthSession from "./AuthSession.js";
 import GenerationSession from "./GenerationSession.js";
 import PlanningSnapshot from "./PlanningSnapshot.js";
+import Campus from "./Campus.js";
+import TrajetCampus from "./TrajetCampus.js";
+import AnneeUniversitaire from "./AnneeUniversitaire.js";
+import Periode from "./Periode.js";
+import ParametrePlanning from "./ParametrePlanning.js";
 
 // ==================== RELATIONS USER ====================
 
@@ -307,6 +312,29 @@ Disponibilite.belongsTo(Creneau, {
     as: "creneau",
 });
 
+// ==================== RÉFÉRENTIEL ÉTABLISSEMENT (phase P1) ====================
+
+// Campus -> Salle (1:n). Une salle n'existe que sur un campus : suppression refusée tant qu'il a des salles.
+Campus.hasMany(Salle, { foreignKey: "id_campus", as: "salles", onDelete: "RESTRICT" });
+Salle.belongsTo(Campus, { foreignKey: "id_campus", as: "campus" });
+
+// Le campus accompagne toute salle chargée (y compris dans les include des séances) :
+// c'est lui qui alimente salle.batiment pour le frontend existant.
+Salle.addScope(
+    "defaultScope",
+    { include: [{ model: Campus, as: "campus", attributes: ["id_campus", "code", "nom"] }] },
+    { override: true }
+);
+
+TrajetCampus.belongsTo(Campus, { foreignKey: "id_campus_a", as: "campus_a" });
+TrajetCampus.belongsTo(Campus, { foreignKey: "id_campus_b", as: "campus_b" });
+
+// Année universitaire -> Période (1:n)
+AnneeUniversitaire.hasMany(Periode, { foreignKey: "id_annee", as: "periodes", onDelete: "CASCADE" });
+Periode.belongsTo(AnneeUniversitaire, { foreignKey: "id_annee", as: "annee" });
+
+Evenement.belongsTo(Users, { foreignKey: "id_user_createur", as: "createur", targetKey: "id_user" });
+
 // ==================== RELATIONS AFFECTATION ====================
 
 // Affectation -> DemandeReport (1:n)
@@ -388,4 +416,9 @@ export {
     AuthSession,
     GenerationSession,
     PlanningSnapshot,
+    Campus,
+    TrajetCampus,
+    AnneeUniversitaire,
+    Periode,
+    ParametrePlanning,
 };

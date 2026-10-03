@@ -4,10 +4,11 @@ import sequelize, { testConnection } from './config/db.js';
 import './models/index.js';
 import {
     Users, Enseignant, Etudiant, Filiere, Groupe, Salle, Cours, Creneau,
-    Affectation, DemandeReport, Disponibilite, Notification, Conflit, Appartenir,
+    Affectation, DemandeReport, Disponibilite, Notification, Conflit, Appartenir, Campus,
 } from './models/index.js';
 import { hashPassword } from './utils/passwordHelper.js';
 import { runMigrations } from './migrations/migrator.js';
+import { recalculerRangs } from './services/planning/referentiel.js';
 
 dotenv.config();
 
@@ -32,7 +33,7 @@ const HESTIM_CONFIG = {
             salles: [
                 { type:'Amphithéâtre',            noms:['AMPHI1','AMPHI2'],                                       capacites:[200,150], etages:[0,1] },
                 { type:'Salle de cours',           noms:['S01','S02','S03','S04','S05','S06','S07','S08'],         capacites:38,        etages:[1,1,1,2,2,2,3,3] },
-                { type:'Laboratoire informatique', noms:['LABO01','LABO02','LABO03'],                              capacites:28,        etages:[1,1,2] },
+                { type:'Labo informatique', noms:['LABO01','LABO02','LABO03'],                              capacites:28,        etages:[1,1,2] },
                 { type:'Salle TD',                 noms:['TD01','TD02','TD03','TD04'],                             capacites:24,        etages:[1,1,2,2] },
             ],
         },
@@ -42,7 +43,7 @@ const HESTIM_CONFIG = {
             salles: [
                 { type:'Amphithéâtre',            noms:['AMPHI1'],                                                capacites:[120],     etages:[0] },
                 { type:'Salle de cours',           noms:['S01','S02','S03','S04','S05','S06','S07'],               capacites:36,        etages:[1,1,2,2,2,3,3] },
-                { type:'Laboratoire informatique', noms:['LABO01','LABO02'],                                       capacites:28,        etages:[1,2] },
+                { type:'Labo informatique', noms:['LABO01','LABO02'],                                       capacites:28,        etages:[1,2] },
                 { type:'Salle TD',                 noms:['TD01','TD02','TD03','TD04','TD05','TD06','TD07','TD08'], capacites:24,        etages:[1,1,1,1,2,2,2,2] },
             ],
         },
@@ -240,7 +241,7 @@ for (const bat of HESTIM_CONFIG.batiments) {
                 nom_salle:  `${bat.code}-${suffix}`,
                 type_salle: grp.type,
                 capacite:   Array.isArray(grp.capacites) ? grp.capacites[i] : grp.capacites,
-                batiment:   bat.nom,
+                code_campus: bat.code,
                 etage:      grp.etages[i],
             });
         });
@@ -464,10 +465,11 @@ async function seed() {
 
         // ── 6. Salles ─────────────────────────────────────────────────────────
         const sallesList = [];
-        for (const d of SALLES_DEF) {
+        const campusParCode = Object.fromEntries((await Campus.findAll()).map(c => [c.code, c.id_campus]));
+        for (const { code_campus, ...d } of SALLES_DEF) {
             const [s] = await Salle.findOrCreate({
                 where: { nom_salle: d.nom_salle },
-                defaults: { ...d, disponible:true },
+                defaults: { ...d, id_campus: campusParCode[code_campus], capacite_examen: Math.floor(d.capacite / 2), disponible:true },
             });
             sallesList.push(s);
         }
@@ -485,6 +487,7 @@ async function seed() {
                 creneauxList.push(c);
                 creneauxMap[`${jour}_${slot.heure_debut}`] = c;
             }
+            await recalculerRangs({ jour_semaine: jour, regime: 'initiale', variante: 'normale' });
         }
         console.log(`✅ ${creneauxList.length} créneaux`);
 

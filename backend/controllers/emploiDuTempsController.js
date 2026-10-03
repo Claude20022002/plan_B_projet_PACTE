@@ -56,6 +56,7 @@ const formatEmploiDuTemps = (affectations) => {
                             nom_salle: aff.salle.nom_salle,
                             type_salle: aff.salle.type_salle,
                             batiment: aff.salle.batiment,
+                            campus: aff.salle.campus,
                             etage: aff.salle.etage,
                         }
                         : null,
@@ -377,6 +378,7 @@ export const getEmploiDuTempsSalle = asyncHandler(async (req, res) => {
                   type_salle: salle.type_salle,
                   capacite: salle.capacite,
                   batiment: salle.batiment,
+                  campus: salle.campus,
                   etage: salle.etage,
               }
             : null,

@@ -11,6 +11,7 @@ import {
     requireAdmin,
     asyncHandler,
     validateCreneauCreation,
+    validateCreneauUpdate,
     handleValidationErrors,
 } from "../middleware/index.js";
 
@@ -37,7 +38,7 @@ router.put(
     "/:id",
     authenticateToken,
     requireAdmin,
-    handleValidationErrors,
+    validateCreneauUpdate,
     asyncHandler(updateCreneau)
 );
 

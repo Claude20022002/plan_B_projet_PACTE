@@ -1,4 +1,15 @@
 import { body, param, query, validationResult } from "express-validator";
+import {
+    TYPES_SALLE,
+    RESERVABLE_PAR,
+    REGIMES,
+    VARIANTES_GRILLE,
+    JOURS_SEMAINE,
+    TYPES_EVENEMENT,
+    PORTEES_EVENEMENT,
+    CODES_PERIODE,
+    normaliserTypeSalle,
+} from "../config/referentiel.js";
 
 /**
  * Middleware pour gérer les résultats de validation
@@ -152,25 +163,96 @@ export const validateGroupeCreation = [
 
 // ==================== VALIDATIONS SALLE ====================
 
-export const validateSalleCreation = [
-    body("nom_salle")
+// Champs communs création / modification ; `requis` rend obligatoires ceux d'une création
+const champsSalle = (requis) => {
+    const champ = (nom) => (requis ? body(nom) : body(nom).optional());
+    return [
+        champ("nom_salle").isString().trim().notEmpty().withMessage("Le nom de la salle est requis"),
+        champ("type_salle")
+            .customSanitizer(normaliserTypeSalle)
+            .isIn(TYPES_SALLE)
+            .withMessage(`Type de salle invalide (${TYPES_SALLE.join(", ")})`),
+        champ("capacite").isInt({ min: 1 }).withMessage("La capacité doit être un entier positif"),
+        champ("id_campus").isInt({ min: 1 }).withMessage("Le campus est requis"),
+        body("capacite_examen")
+            .optional({ nullable: true })
+            .isInt({ min: 0 })
+            .withMessage("La capacité d'examen doit être un entier positif"),
+        body("etage").optional({ nullable: true }).isInt().withMessage("L'étage doit être un entier"),
+        body("equipements")
+            .optional({ nullable: true })
+            .custom((v) => typeof v === "string" || (Array.isArray(v) && v.every((item) => typeof item === "string")))
+            .withMessage("Les équipements sont une liste de libellés"),
+        body("reservable_par").optional().isIn(RESERVABLE_PAR).withMessage("reservable_par : admin ou enseignants"),
+        body("disponible").optional().isBoolean().withMessage("Le champ disponible doit être un booléen"),
+        handleValidationErrors,
+    ];
+};
+
+export const validateSalleCreation = champsSalle(true);
+export const validateSalleUpdate = champsSalle(false);
+
+// ==================== VALIDATIONS RÉFÉRENTIEL (phase P1) ====================
+
+const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
+
+export const validateCampus = (requis) => [
+    (requis ? body("code") : body("code").optional())
+        .isString()
         .trim()
-        .notEmpty()
-        .withMessage("Le nom de la salle est requis"),
-    body("type_salle")
-        .trim()
-        .notEmpty()
-        .withMessage("Le type de salle est requis"),
-    body("capacite")
-        .isInt({ min: 1 })
-        .withMessage("La capacité doit être un entier positif"),
-    body("batiment").trim().notEmpty().withMessage("Le bâtiment est requis"),
-    body("etage").optional().isInt().withMessage("L'étage doit être un entier"),
-    body("equipements").optional().trim(),
-    body("disponible")
-        .optional()
-        .isBoolean()
-        .withMessage("Le champ disponible doit être un booléen"),
+        .matches(/^[A-Za-z0-9]{1,10}$/)
+        .withMessage("Code campus : 1 à 10 lettres ou chiffres"),
+    (requis ? body("nom") : body("nom").optional()).isString().trim().notEmpty().withMessage("Le nom du campus est requis"),
+    body("adresse").optional({ nullable: true }).isString().trim(),
+    body("actif").optional().isBoolean(),
+    handleValidationErrors,
+];
+
+export const validateTrajet = [
+    body("id_campus_a").isInt({ min: 1 }).withMessage("Premier campus requis"),
+    body("id_campus_b").isInt({ min: 1 }).withMessage("Second campus requis"),
+    body("minutes").isInt({ min: 0, max: 240 }).withMessage("Minutes : entier entre 0 et 240"),
+    handleValidationErrors,
+];
+
+export const validateAnnee = (requis) => [
+    (requis ? body("libelle") : body("libelle").optional())
+        .matches(/^\d{4}-\d{4}$/)
+        .withMessage("Libellé au format 2026-2027"),
+    (requis ? body("date_debut") : body("date_debut").optional()).matches(DATE_ISO).withMessage("Date de début AAAA-MM-JJ"),
+    (requis ? body("date_fin") : body("date_fin").optional()).matches(DATE_ISO).withMessage("Date de fin AAAA-MM-JJ"),
+    body("active").optional().isBoolean(),
+    handleValidationErrors,
+];
+
+export const validatePeriode = (requis) => [
+    (requis ? body("code") : body("code").optional()).isIn(CODES_PERIODE).withMessage("Code de semestre : S1 ou S2"),
+    body("libelle").optional({ nullable: true }).isString().trim(),
+    (requis ? body("date_debut") : body("date_debut").optional()).matches(DATE_ISO).withMessage("Date de début AAAA-MM-JJ"),
+    (requis ? body("date_fin") : body("date_fin").optional()).matches(DATE_ISO).withMessage("Date de fin AAAA-MM-JJ"),
+    (requis ? body("nb_semaines") : body("nb_semaines").optional())
+        .isInt({ min: 1, max: 30 })
+        .withMessage("Nombre de semaines : entre 1 et 30"),
+    handleValidationErrors,
+];
+
+export const validateEvenement = (requis) => [
+    (requis ? body("titre") : body("titre").optional()).isString().trim().notEmpty().withMessage("Le titre est requis"),
+    body("description").optional({ nullable: true }).isString(),
+    (requis ? body("date_debut") : body("date_debut").optional()).matches(DATE_ISO).withMessage("Date de début AAAA-MM-JJ"),
+    (requis ? body("date_fin") : body("date_fin").optional()).matches(DATE_ISO).withMessage("Date de fin AAAA-MM-JJ"),
+    body("type_evenement").optional().isIn(TYPES_EVENEMENT).withMessage("Type d'événement invalide"),
+    body("bloque_affectations").optional().isBoolean(),
+    body("portee").optional().isIn(PORTEES_EVENEMENT).withMessage("Portée invalide"),
+    body("id_cible").optional({ nullable: true }).isInt({ min: 1 }),
+    body("niveau").optional({ nullable: true }).isString().trim(),
+    body("date_confirmee").optional().isBoolean(),
+    handleValidationErrors,
+];
+
+export const validateConfirmationEvenement = [
+    body("date_debut").optional().matches(DATE_ISO).withMessage("Date de début AAAA-MM-JJ"),
+    body("date_fin").optional().matches(DATE_ISO).withMessage("Date de fin AAAA-MM-JJ"),
     handleValidationErrors,
 ];
 
@@ -223,9 +305,29 @@ export const validateCreneauCreation = [
         .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$/)
         .withMessage("Format d'heure de fin invalide (HH:MM)"),
     body("periode").optional().trim(),
+    // Calculée à partir des heures si elle est absente
     body("duree_minutes")
+        .optional()
         .isInt({ min: 1 })
         .withMessage("La durée doit être un entier positif"),
+    body("regime").optional().isIn(REGIMES).withMessage(`Régime invalide (${REGIMES.join(", ")})`),
+    body("variante").optional().isIn(VARIANTES_GRILLE).withMessage("Variante : normale ou ramadan"),
+    handleValidationErrors,
+];
+
+export const validateCreneauUpdate = [
+    body("jour_semaine").optional().isIn(JOURS_SEMAINE).withMessage("Jour de la semaine invalide"),
+    body("heure_debut")
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:00)?$/)
+        .withMessage("Format d'heure de début invalide (HH:MM)"),
+    body("heure_fin")
+        .optional()
+        .matches(/^([0-1]?[0-9]|2[0-3]):[0-5][0-9](:00)?$/)
+        .withMessage("Format d'heure de fin invalide (HH:MM)"),
+    body("duree_minutes").optional().isInt({ min: 1 }),
+    body("regime").optional().isIn(REGIMES).withMessage("Régime invalide"),
+    body("variante").optional().isIn(VARIANTES_GRILLE).withMessage("Variante : normale ou ramadan"),
     handleValidationErrors,
 ];
 
