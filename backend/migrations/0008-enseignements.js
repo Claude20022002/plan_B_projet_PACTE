@@ -6,7 +6,7 @@
  *   sont rattachées. La période reste vide : à préciser lors de la préparation du semestre.
  */
 export const up = async ({ sequelize, queryInterface }) => {
-    const { DataTypes } = await import("sequelize");
+    const { DataTypes, QueryTypes } = await import("sequelize");
 
     await queryInterface.createTable("Enseignements", {
         id_enseignement: { type: DataTypes.INTEGER, autoIncrement: true, primaryKey: true },
@@ -65,10 +65,15 @@ export const up = async ({ sequelize, queryInterface }) => {
     );
     const now = new Date();
     for (const couple of couples) {
-        await queryInterface.bulkInsert("Enseignements", [
-            { id_composante: couple.id_composante, heures_prevues: couple.volume_heures, createdAt: now, updatedAt: now },
-        ]);
-        const [[{ id }]] = await sequelize.query("SELECT LAST_INSERT_ID() AS id");
+        // L'identifiant inséré est rendu par la requête elle-même (LAST_INSERT_ID dépend de la connexion du pool)
+        const [id] = await sequelize.query(
+            `INSERT INTO Enseignements (id_composante, heures_prevues, createdAt, updatedAt)
+             VALUES (:composante, :heures, :now, :now)`,
+            {
+                type: QueryTypes.INSERT,
+                replacements: { composante: couple.id_composante, heures: couple.volume_heures, now },
+            }
+        );
         await queryInterface.bulkInsert("EnseignementGroupes", [
             { id_enseignement: id, id_groupe: couple.id_groupe, createdAt: now, updatedAt: now },
         ]);

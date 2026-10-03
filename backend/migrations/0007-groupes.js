@@ -8,7 +8,7 @@ import { anneeDepuisNiveau } from "../config/referentiel.js";
  *   la somme de ses groupes. Les étudiants restent dans leur groupe.
  */
 export const up = async ({ sequelize, queryInterface }) => {
-    const { DataTypes } = await import("sequelize");
+    const { DataTypes, QueryTypes } = await import("sequelize");
 
     await queryInterface.addColumn("Groupes", "type_groupe", {
         type: DataTypes.ENUM("promotion", "td", "tp"),
@@ -48,20 +48,23 @@ export const up = async ({ sequelize, queryInterface }) => {
         if (nomsPris.has(`${nom}|${promotion.annee_scolaire}`)) nom = `${nom} (promotion)`;
         nomsPris.add(`${nom}|${promotion.annee_scolaire}`);
 
-        await queryInterface.bulkInsert("Groupes", [
+        // L'identifiant inséré est rendu par la requête elle-même (LAST_INSERT_ID dépend de la connexion du pool)
+        const [id] = await sequelize.query(
+            `INSERT INTO Groupes (nom_groupe, niveau, effectif, annee_scolaire, id_filiere, type_groupe, annee, createdAt, updatedAt)
+             VALUES (:nom, :niveau, :effectif, :anneeScolaire, :idFiliere, 'promotion', :annee, :now, :now)`,
             {
-                nom_groupe: nom,
-                niveau: promotion.niveau,
-                effectif: promotion.effectif_total,
-                annee_scolaire: promotion.annee_scolaire,
-                id_filiere: promotion.id_filiere,
-                type_groupe: "promotion",
-                annee,
-                createdAt: now,
-                updatedAt: now,
-            },
-        ]);
-        const [[{ id }]] = await sequelize.query("SELECT LAST_INSERT_ID() AS id");
+                type: QueryTypes.INSERT,
+                replacements: {
+                    nom,
+                    niveau: promotion.niveau,
+                    effectif: promotion.effectif_total,
+                    anneeScolaire: promotion.annee_scolaire,
+                    idFiliere: promotion.id_filiere,
+                    annee,
+                    now,
+                },
+            }
+        );
         await sequelize.query("UPDATE Groupes SET id_groupe_parent = :parent, annee = :annee WHERE id_groupe IN (:enfants)", {
             replacements: { parent: id, annee, enfants: promotion.enfants },
         });
