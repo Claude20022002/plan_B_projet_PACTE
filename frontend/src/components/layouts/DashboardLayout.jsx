@@ -338,7 +338,7 @@ export default function DashboardLayout({ children }) {
             '&:focus-visible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 2 },
           }}
         >
-          <Avatar src={user?.avatar_url} sx={{ width: 34, height: 34, bgcolor: ds.brand.orange, color: '#1A0A02', fontSize: '0.875rem', fontWeight: 700 }}>
+          <Avatar src={user?.avatar_url} sx={{ width: 34, height: 34, bgcolor: '#FFFFFF', color: ds.brand.navy, fontSize: '0.875rem', fontWeight: 700 }}>
             {!user?.avatar_url && initials}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>

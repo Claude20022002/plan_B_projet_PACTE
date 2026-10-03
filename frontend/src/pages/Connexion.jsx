@@ -133,6 +133,13 @@ export default function Connexion() {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
+        {/* Téléphone : le panneau en bandeau, première chose que voit un étudiant */}
+        <Box sx={{ display: { xs: 'block', md: 'none' }, bgcolor: ds.board.frame, p: '6px' }}>
+          <Box sx={{ bgcolor: ds.board.ground, borderRadius: `${ds.radius.md}px`, px: 2, py: 1.75, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+            <FlapTiles value="HESTIM" size="1.5rem" />
+            <FlapTiles value="PLANNER" size="1.5rem" color={ds.brand.orange} />
+          </Box>
+        </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: { xs: 2, sm: 4 }, pt: { xs: 2, sm: 3 } }}>
           <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: { xs: 32, sm: 38 } }} />
           <ToggleButtonGroup
