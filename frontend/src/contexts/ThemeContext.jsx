@@ -6,6 +6,8 @@ import { ds } from '../design-system/tokens';
 
 const ThemeContext = createContext(null);
 
+// Le hook vit avec son provider (même convention que AuthContext)
+// eslint-disable-next-line react-refresh/only-export-components
 export const useTheme = () => {
     const context = useContext(ThemeContext);
     if (!context) {

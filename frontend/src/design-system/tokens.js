@@ -51,13 +51,13 @@ export const ds = {
 
   // Sol « panneau » (sombre) — séances en direct, accueil, connexion
   board: {
-    ground: '#0B0D14', // noir mat légèrement bleuté
+    ground: '#0B0B0D', // noir mat neutre (volets)
     frame: brand.navy, // cadre : bleu marine HESTIM (remplace l'acier)
-    cell: '#151925', // face d'un volet
-    cellHinge: '#05060A', // charnière horizontale au milieu du volet
-    seam: '#262B3A', // filet d'un pixel entre colonnes
+    cell: '#212124', // face d'un volet, nettement détachée du fond
+    cellHinge: '#000000', // charnière horizontale au milieu du volet
+    seam: '#2C2C30', // filet d'un pixel entre colonnes
     letter: '#F2F1EC', // lettres blanc cassé
-    letterDim: '#9EA4B4', // en-têtes de colonnes, libellés
+    letterDim: '#A6A6AC', // en-têtes de colonnes, libellés (contraste ≥ 7:1 sur le fond)
     // États lisibles sur le panneau (contraste ≥ 4.5:1 sur ground)
     onTime: '#F2F1EC',
     live: '#3FCB74', // lampe « en cours / prochaine » (vert logo éclairci)
@@ -75,7 +75,9 @@ export const ds = {
 
   // Couleur de ligne par filière : identique partout (panneau, calendrier, graphiques).
   // Hors orange/rouge/vert, réservés aux statuts.
-  lines: ['#3B63E0', '#1592C9', '#0F8A7E', '#7048C9', '#B03A8C', '#5C6B8A'],
+  lines: ['#3B63E0', '#1592C9', '#0F8A7E', '#7048C9', '#B03A8C', '#46508F'],
+  // Filière inconnue : gris neutre, jamais attribué à une vraie filière
+  lineUnknown: '#6B6B72',
 
   font: {
     // Une seule famille : Barlow (signalétique) — condensée pour le panneau et les en-têtes
@@ -109,7 +111,7 @@ export const ds = {
  * @param {string|number|undefined} key - code ou identifiant de filière
  */
 export const lineColor = (key) => {
-  if (key === undefined || key === null) return ds.lines[ds.lines.length - 1];
+  if (key === undefined || key === null || key === '') return ds.lineUnknown;
   const text = String(key);
   let hash = 0;
   for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;

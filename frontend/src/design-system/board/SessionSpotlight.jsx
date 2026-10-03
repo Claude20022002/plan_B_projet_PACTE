@@ -83,6 +83,11 @@ export default function SessionSpotlight({ session: s, phase, variant = 'board',
             .filter(Boolean)
             .join(' · ')}
         </Box>
+        {s.previousLabel && (
+          <Box component="del" sx={{ display: 'block', mt: 0.5, fontSize: '0.875rem', color: dim }}>
+            {t('board.previously', { value: s.previousLabel })}
+          </Box>
+        )}
         {actions && <Box sx={{ mt: 2, display: 'flex', flexWrap: 'wrap', gap: 1 }}>{actions}</Box>}
       </Box>
     </Box>

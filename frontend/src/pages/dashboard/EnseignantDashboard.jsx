@@ -11,6 +11,7 @@ import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
 import ChangesList from '../../design-system/board/ChangesList';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
+import useLiveRefresh from '../../hooks/useLiveRefresh';
 
 const HORIZON_DAYS = 14;
 
@@ -89,9 +90,9 @@ export default function EnseignantDashboard() {
     return () => clearInterval(id);
   }, []);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async ({ silent = false } = {}) => {
     if (!user?.id_user) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(false);
     try {
       const [affectations, demandes, notifications] = await Promise.all([
@@ -116,9 +117,15 @@ export default function EnseignantDashboard() {
   useEffect(() => {
     load();
   }, [load]);
+  useLiveRefresh(() => load({ silent: true }));
 
   const upcoming = useMemo(() => sessions.filter((s) => !s.end || s.end > now), [sessions, now]);
-  const spotlight = useMemo(() => findSpotlight(upcoming, now), [upcoming, now]);
+  // Le Tableau montre aujourd'hui et le prochain jour de cours ; la semaine est dans l'onglet Semaine
+  const boardSessions = useMemo(() => {
+    const days = [...new Set(upcoming.map((s) => s.date))].slice(0, 2);
+    return upcoming.filter((s) => days.includes(s.date));
+  }, [upcoming]);
+  const spotlight = useMemo(() => findSpotlight(boardSessions, now), [boardSessions, now]);
   const toConfirm = upcoming.filter((s) => s.status === 'planifie').length;
   const pendingReports = reports.filter((r) => r.statut_demande === 'en_attente').length;
 
@@ -141,10 +148,11 @@ export default function EnseignantDashboard() {
       {s.status === 'planifie' && (
         <Button
           variant="contained"
-          color="secondary"
           startIcon={<CheckCircleOutline />}
           disabled={confirmingId === s.id}
           onClick={() => confirm(s)}
+          // Bouton du panneau : lettres noires sur volet clair (l'orange reste réservé aux reports)
+          sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: '#FFFFFF' } }}
         >
           {t('board.confirm')}
         </Button>
@@ -171,7 +179,7 @@ export default function EnseignantDashboard() {
               severity="error"
               sx={{ mb: 2 }}
               action={
-                <Button color="inherit" size="small" onClick={load}>
+                <Button color="inherit" size="small" onClick={() => load()}>
                   {t('common.retry')}
                 </Button>
               }
@@ -181,7 +189,7 @@ export default function EnseignantDashboard() {
           )}
           <DepartureBoard
             title={t('board.titleTeacher')}
-            sessions={upcoming}
+            sessions={boardSessions}
             loading={loading}
             spotlight={spotlight}
             columns={['time', 'course', 'group', 'room', 'status']}

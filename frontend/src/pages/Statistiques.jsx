@@ -14,11 +14,12 @@ import {
     ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 import DashboardLayout from '../components/layouts/DashboardLayout';
+import { ds } from '../design-system/tokens';
 import { statistiquesAPI } from '../services/api';
 import { exportMultiSheet, COLS_CHARGE_ENSEIGNANTS, COLS_OCCUPATION_GROUPES } from '../utils/exportExcel';
 
-// ── Palette couleurs ──────────────────────────────────────────────────────────
-const PALETTE = ['#1a3a8f','#e8a020','#2e7d32','#c62828','#0277bd','#7b1fa2','#00796b','#5d4037'];
+// ── Palette couleurs : bleu marine HESTIM puis couleurs de ligne du système ───
+const PALETTE = [ds.brand.navy, ...ds.lines];
 
 const RADIAN = Math.PI / 180;
 const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -32,43 +33,31 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
     );
 };
 
-function KPICard({ title, value, unit, subtitle, icon, color, trend, status }) {
+const numberFr = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
+
+/** Bande réglée d'indicateurs (une rangée, des filets) — même vocabulaire que le tableau de bord */
+function KpiStrip({ items }) {
     return (
-        <Card sx={{
-            height: '100%', border: '1px solid', borderColor: 'divider',
-            position: 'relative', overflow: 'hidden',
-            '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, height: 3, background: color },
+        <Box component="dl" sx={{
+            m: 0, mb: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider',
+            borderRadius: `${ds.radius.lg}px`, display: 'grid',
+            gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' },
         }}>
-            <CardContent sx={{ pt: 2.5 }}>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" color="text.secondary" fontWeight={500} gutterBottom>
-                            {title}
-                        </Typography>
-                        <Box sx={{ display: 'flex', alignItems: 'baseline', gap: 0.5 }}>
-                            <Typography variant="h4" fontWeight="bold" sx={{ color }}>{value ?? '—'}</Typography>
-                            {unit && <Typography variant="body1" color="text.secondary">{unit}</Typography>}
+            {items.map((item) => (
+                <Box key={item.title} sx={{ px: 2, py: 1.75, borderRight: '1px solid', borderBottom: { xs: '1px solid', lg: 0 }, borderColor: 'divider', '&:last-of-type': { borderRight: 0 } }}>
+                    <Box component="dt" sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>
+                        {item.title}
+                    </Box>
+                    <Box component="dd" sx={{ m: 0, mt: 0.5 }}>
+                        <Box component="span" sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.75rem', lineHeight: 1.1, color: item.tone || 'text.primary' }}>
+                            {item.value === undefined || item.value === null ? '—' : numberFr.format(item.value)}
                         </Box>
-                        {subtitle && (
-                            <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.5 }}>
-                                {subtitle}
-                            </Typography>
-                        )}
-                        {status && (
-                            <Chip label={status.label} size="small" color={status.color}
-                                sx={{ mt: 1, fontWeight: 'bold' }} />
-                        )}
+                        {item.unit && <Box component="span" sx={{ ml: 0.5, color: 'text.secondary' }}>{item.unit}</Box>}
+                        {item.subtitle && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>{item.subtitle}</Typography>}
                     </Box>
-                    <Avatar sx={{ bgcolor: `${color}18`, color, width: 52, height: 52, ml: 1 }}>{icon}</Avatar>
                 </Box>
-                {trend !== undefined && (
-                    <Box sx={{ mt: 1.5 }}>
-                        <LinearProgress variant="determinate" value={Math.min(100, trend || 0)}
-                            sx={{ bgcolor: `${color}20`, '& .MuiLinearProgress-bar': { bgcolor: color } }} />
-                    </Box>
-                )}
-            </CardContent>
-        </Card>
+            ))}
+        </Box>
     );
 }
 
@@ -116,59 +105,38 @@ export default function Statistiques() {
     const creneauData = kpis?.creneaux_les_plus_demandes?.top || [];
     const sallesGraph = kpis?.taux_occupation_salles?.graphique || [];
 
-    const kpiCards = [
+    const kpiItems = [
         {
-            title:    "Taux d'occupation des salles",
+            title:    'Occupation des salles',
             value:    kpis?.taux_occupation_salles?.valeur,
             unit:     '%',
-            icon:     <Room />,
-            color:    '#0277bd',
-            subtitle: `${kpis?.taux_occupation_salles?.detail?.salles_occupees || 0} / ${kpis?.taux_occupation_salles?.detail?.total_salles || 0} salles`,
-            trend:    kpis?.taux_occupation_salles?.valeur,
-            status:   kpis?.taux_occupation_salles?.valeur >= 70
-                ? { label: 'Élevé',  color: 'error'   }
-                : kpis?.taux_occupation_salles?.valeur >= 40
-                ? { label: 'Moyen',  color: 'warning' }
-                : { label: 'Faible', color: 'success' },
+            subtitle: `${kpis?.taux_occupation_salles?.detail?.salles_occupees || 0} / ${kpis?.taux_occupation_salles?.detail?.total_salles || 0} salles utilisées`,
         },
         {
-            title:    'Moy. heures / enseignant',
+            title:    'Heures / enseignant',
             value:    kpis?.moyenne_heures_enseignant?.valeur,
             unit:     'h',
-            icon:     <School />,
-            color:    '#7b1fa2',
             subtitle: `${kpis?.moyenne_heures_enseignant?.detail?.enseignants_actifs || 0} enseignants actifs`,
         },
         {
-            title:    'Moy. heures / étudiant',
+            title:    'Heures / étudiant',
             value:    kpis?.moyenne_heures_etudiant?.valeur,
             unit:     'h',
-            icon:     <People />,
-            color:    '#00796b',
             subtitle: `${kpis?.moyenne_heures_etudiant?.detail?.etudiants_concernes || 0} étudiants concernés`,
         },
         {
             title:    'Taux de conflits',
             value:    kpis?.taux_conflits?.valeur,
             unit:     '%',
-            icon:     kpis?.taux_conflits?.valeur > 5 ? <Warning /> : <CheckCircle />,
-            color:    kpis?.taux_conflits?.valeur > 5 ? '#c62828' : '#2e7d32',
+            tone:     kpis?.taux_conflits?.valeur > 5 ? ds.colors.danger.text : undefined,
             subtitle: `${kpis?.taux_conflits?.detail?.conflits_non_resolus || 0} conflits non résolus`,
-            trend:    kpis?.taux_conflits?.valeur,
-            status:   kpis?.taux_conflits?.valeur > 10
-                ? { label: 'Critique', color: 'error'   }
-                : kpis?.taux_conflits?.valeur > 5
-                ? { label: 'Élevé',    color: 'warning' }
-                : { label: 'Normal',   color: 'success' },
         },
         {
-            title:    'Durée moyenne des cours',
+            title:    'Durée moyenne',
             value:    kpis?.duree_moyenne_cours?.valeur,
             unit:     'min',
-            icon:     <Timer />,
-            color:    '#e8a020',
             subtitle: kpis?.duree_moyenne_cours?.valeur_heures
-                ? `≈ ${kpis.duree_moyenne_cours.valeur_heures} h par séance` : '',
+                ? `≈ ${numberFr.format(kpis.duree_moyenne_cours.valeur_heures)} h par séance` : '',
         },
     ];
 
@@ -176,19 +144,8 @@ export default function Statistiques() {
         <DashboardLayout>
             <Box>
                 {/* ── Header ─────────────────────────────────────────────────── */}
-                <Paper elevation={2} sx={{ p: 2.5, mb: 3, borderRadius: 2 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 2 }}>
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
-                            <Avatar sx={{ bgcolor: '#1a3a8f18', color: '#1a3a8f' }}>
-                                <BarChartIcon />
-                            </Avatar>
-                            <Box>
-                                <Typography variant="h5" fontWeight="bold">Statistiques & KPIs</Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                    Indicateurs de performance du planning HESTIM
-                                </Typography>
-                            </Box>
-                        </Box>
+                <Box sx={{ mb: 3 }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
                             <TextField size="small" type="date" label="Début"
                                 value={dateDebut} onChange={e => setDateDebut(e.target.value)}
@@ -210,19 +167,13 @@ export default function Statistiques() {
                             </Button>
                         </Box>
                     </Box>
-                </Paper>
+                </Box>
 
                 {loading && <LinearProgress sx={{ mb: 2 }} />}
                 {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
 
                 {/* ── KPI Cards ──────────────────────────────────────────────── */}
-                <Grid container spacing={2.5} sx={{ mb: 3 }}>
-                    {kpiCards.map((card, i) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 4, lg: 2.4 }} key={i}>
-                            <KPICard {...card} />
-                        </Grid>
-                    ))}
-                </Grid>
+                <KpiStrip items={kpiItems} />
 
                 {/* ── Graphiques ─────────────────────────────────────────────── */}
                 <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>

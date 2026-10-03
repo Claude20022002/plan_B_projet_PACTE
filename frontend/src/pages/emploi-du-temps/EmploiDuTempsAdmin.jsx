@@ -1,216 +1,126 @@
-import React, { useState, useEffect } from 'react';
-import {
-    Box,
-    Typography,
-    Select,
-    MenuItem,
-    FormControl,
-    InputLabel,
-    Button,
-    Menu,
-    IconButton,
-} from '@mui/material';
-import { ArrowBack, Download } from '@mui/icons-material';
+import { useCallback, useEffect, useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Alert, Autocomplete, Box, Button, TextField, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { affectationAPI, groupeAPI, enseignantAPI } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
-import { exportToExcelLazy, exportToPDFLazy, exportToCSVLazy, exportToiCalLazy, exportToYAMLLazy } from '../../utils/lazyExports';
 import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetable';
+import TimetableExportMenu from '../../components/emploi-du-temps/TimetableExportMenu';
+import { affectationAPI, enseignantAPI, groupeAPI } from '../../services/api';
+import { ds } from '../../design-system/tokens';
 
+/**
+ * Vue admin : par défaut l'emploi du temps d'un groupe (comme les plannings PDF diffusés par l'école),
+ * ou celui d'un enseignant, ou tout le campus.
+ */
 export default function EmploiDuTempsAdmin() {
-    const navigate = useNavigate();
-    const [view, setView] = useState('timeGridWeek');
-    const [filterType, setFilterType] = useState('all'); // all, groupe, enseignant
-    const [filterId, setFilterId] = useState('');
-    const [groupes, setGroupes] = useState([]);
-    const [enseignants, setEnseignants] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [affectationsData, setAffectationsData] = useState([]);
-    const [exportMenuAnchor, setExportMenuAnchor] = useState(null);
+  const { t } = useTranslation();
+  const [scope, setScope] = useState('groupe');
+  const [groupes, setGroupes] = useState([]);
+  const [enseignants, setEnseignants] = useState([]);
+  const [groupe, setGroupe] = useState(null);
+  const [enseignant, setEnseignant] = useState(null);
+  const [affectations, setAffectations] = useState([]);
+  const [error, setError] = useState(false);
 
-    useEffect(() => {
-        loadOptions();
-        loadEmploiDuTemps();
-    }, []);
+  useEffect(() => {
+    (async () => {
+      try {
+        const [g, e, latest] = await Promise.all([
+          groupeAPI.getAll({ limit: 1000 }),
+          enseignantAPI.getAll({ limit: 1000 }),
+          // Pour ouvrir directement sur un groupe qui a des séances planifiées
+          affectationAPI.getAll({ limit: 1 }).catch(() => ({ data: [] })),
+        ]);
+        const groupList = (g?.data || []).sort((a, b) => a.nom_groupe.localeCompare(b.nom_groupe));
+        const withSessions = groupList.find((item) => item.id_groupe === latest?.data?.[0]?.id_groupe);
+        setGroupes(groupList);
+        setEnseignants(e?.data || []);
+        setGroupe((current) => current || withSessions || groupList[0] || null);
+      } catch {
+        setError(true);
+      }
+    })();
+  }, []);
 
-    useEffect(() => {
-        if (filterType === 'all' || (filterType !== 'all' && filterId)) {
-            loadEmploiDuTemps();
+  const load = useCallback(async () => {
+    setError(false);
+    try {
+      let response = { data: [] };
+      if (scope === 'groupe' && groupe) response = await affectationAPI.getByGroupe(groupe.id_groupe, { limit: 1000 });
+      else if (scope === 'enseignant' && enseignant) response = await affectationAPI.getByEnseignant(enseignant.id_user, { limit: 1000 });
+      else if (scope === 'all') response = await affectationAPI.getAll({ limit: 1000 });
+      setAffectations(response?.data || []);
+    } catch {
+      setError(true);
+    }
+  }, [scope, groupe, enseignant]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const teacherName = (ens) => [ens?.user?.prenom, ens?.user?.nom].filter(Boolean).join(' ');
+  const subject = scope === 'groupe' ? groupe?.nom_groupe : scope === 'enseignant' ? teacherName(enseignant) : t('timetable.filterAll');
+
+  return (
+    <DashboardLayout>
+      <Box className="hp-no-print" sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mb: 2 }}>
+        <ToggleButtonGroup
+          size="small"
+          exclusive
+          value={scope}
+          onChange={(_, value) => value && setScope(value)}
+          aria-label={t('timetable.filterBy')}
+          sx={{ '& .MuiToggleButton-root': { fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.06em', px: 1.5 } }}
+        >
+          <ToggleButton value="groupe">{t('timetable.filterGroup')}</ToggleButton>
+          <ToggleButton value="enseignant">{t('timetable.filterTeacher')}</ToggleButton>
+          <ToggleButton value="all">{t('timetable.filterAll')}</ToggleButton>
+        </ToggleButtonGroup>
+        {scope === 'groupe' && (
+          <Autocomplete
+            size="small"
+            sx={{ minWidth: 220 }}
+            options={groupes}
+            value={groupe}
+            onChange={(_, value) => setGroupe(value)}
+            getOptionLabel={(g) => g.nom_groupe}
+            isOptionEqualToValue={(a, b) => a.id_groupe === b.id_groupe}
+            renderInput={(params) => <TextField {...params} label={t('timetable.chooseGroup')} />}
+          />
+        )}
+        {scope === 'enseignant' && (
+          <Autocomplete
+            size="small"
+            sx={{ minWidth: 260 }}
+            options={enseignants}
+            value={enseignant}
+            onChange={(_, value) => setEnseignant(value)}
+            getOptionLabel={teacherName}
+            isOptionEqualToValue={(a, b) => a.id_user === b.id_user}
+            renderInput={(params) => <TextField {...params} label={t('timetable.chooseTeacher')} />}
+          />
+        )}
+      </Box>
+
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }} action={<Button color="inherit" size="small" onClick={load}>{t('common.retry')}</Button>}>
+          {t('common.errorLoad')}
+        </Alert>
+      )}
+
+      <EnhancedTimetable
+        key={`${scope}-${groupe?.id_groupe ?? ''}-${enseignant?.id_user ?? ''}`}
+        affectations={affectations}
+        columns={['time', 'course', 'group', 'room', 'teacher', 'status']}
+        actions={
+          <TimetableExportMenu
+            affectations={affectations}
+            fileBase={`emploi-du-temps-${(subject || 'campus').toLowerCase().replace(/\s+/g, '-')}`}
+            title={`${t('nav.timetable')} — ${subject || ''}`}
+            role="admin"
+          />
         }
-    }, [filterType, filterId]);
-
-    const loadOptions = async () => {
-        try {
-            const [groupesData, enseignantsData] = await Promise.all([
-                groupeAPI.getAll({ limit: 1000 }),
-                enseignantAPI.getAll({ limit: 1000 }),
-            ]);
-            setGroupes(groupesData.data || []);
-            setEnseignants(enseignantsData.data || []);
-        } catch (error) {
-            console.error('Erreur:', error);
-        }
-    };
-
-    const loadEmploiDuTemps = async () => {
-        setLoading(true);
-        try {
-            let data = [];
-            if (filterType === 'groupe' && filterId) {
-                const result = await affectationAPI.getByGroupe(Number(filterId));
-                data = result.data || [];
-            } else if (filterType === 'enseignant' && filterId) {
-                const result = await affectationAPI.getByEnseignant(Number(filterId));
-                data = result.data || [];
-            } else {
-                const result = await affectationAPI.getAll({ limit: 1000 });
-                data = result.data || [];
-            }
-
-            // Sauvegarder les données brutes pour l'export
-            setAffectationsData(data);
-        } catch (error) {
-            console.error('Erreur:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <DashboardLayout>
-            <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined"
-                        >
-                            Retour
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            Emplois du Temps
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 2 }}>
-                        <FormControl size="small" sx={{ minWidth: 150 }}>
-                            <InputLabel>Filtrer par</InputLabel>
-                            <Select
-                                value={filterType}
-                                onChange={(e) => {
-                                    setFilterType(e.target.value);
-                                    setFilterId('');
-                                }}
-                                label="Filtrer par"
-                            >
-                                <MenuItem value="all">Tous</MenuItem>
-                                <MenuItem value="groupe">Groupe</MenuItem>
-                                <MenuItem value="enseignant">Enseignant</MenuItem>
-                            </Select>
-                        </FormControl>
-                        {filterType === 'groupe' && (
-                            <FormControl size="small" sx={{ minWidth: 200 }}>
-                                <InputLabel>Groupe</InputLabel>
-                                <Select
-                                    value={filterId || ''}
-                                    onChange={(e) => setFilterId(e.target.value)}
-                                    label="Groupe"
-                                >
-                                    <MenuItem value="">
-                                        <em>Sélectionner un groupe</em>
-                                    </MenuItem>
-                                    {groupes.map((groupe) => (
-                                        <MenuItem key={groupe.id_groupe} value={String(groupe.id_groupe)}>
-                                            {groupe.nom_groupe}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        )}
-                        {filterType === 'enseignant' && (
-                            <FormControl size="small" sx={{ minWidth: 200 }}>
-                                <InputLabel>Enseignant</InputLabel>
-                                <Select
-                                    value={filterId || ''}
-                                    onChange={(e) => setFilterId(e.target.value)}
-                                    label="Enseignant"
-                                >
-                                    <MenuItem value="">
-                                        <em>Sélectionner un enseignant</em>
-                                    </MenuItem>
-                                    {enseignants.map((ens) => (
-                                        <MenuItem key={ens.id_user} value={String(ens.id_user)}>
-                                            {ens.user?.prenom} {ens.user?.nom}
-                                        </MenuItem>
-                                    ))}
-                                </Select>
-                            </FormControl>
-                        )}
-                        <IconButton
-                            color="primary"
-                            onClick={(e) => setExportMenuAnchor(e.currentTarget)}
-                            title="Télécharger l'emploi du temps"
-                        >
-                            <Download />
-                        </IconButton>
-                    </Box>
-                </Box>
-
-                {/* Menu d'export */}
-                <Menu
-                    anchorEl={exportMenuAnchor}
-                    open={Boolean(exportMenuAnchor)}
-                    onClose={() => setExportMenuAnchor(null)}
-                >
-                    <MenuItem
-                        onClick={async () => {
-                            await exportToPDFLazy(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps — Vue consolidée', 'admin');
-                            setExportMenuAnchor(null);
-                        }}
-                    >
-                        Télécharger en PDF
-                    </MenuItem>
-                    <MenuItem
-                        onClick={async () => {
-                            await exportToExcelLazy(affectationsData, [], 'EmploiDuTemps', 'emploi-du-temps-admin');
-                            setExportMenuAnchor(null);
-                        }}
-                    >
-                        Télécharger en Excel
-                    </MenuItem>
-                    <MenuItem
-                        onClick={async () => {
-                            await exportToCSVLazy(affectationsData, 'emploi-du-temps-admin');
-                            setExportMenuAnchor(null);
-                        }}
-                    >
-                        Télécharger en CSV
-                    </MenuItem>
-                    <MenuItem
-                        onClick={async () => {
-                            await exportToiCalLazy(affectationsData, 'emploi-du-temps-admin', 'Emploi du Temps - Administrateur');
-                            setExportMenuAnchor(null);
-                        }}
-                    >
-                        Télécharger en iCal (.ics)
-                    </MenuItem>
-                    <MenuItem
-                        onClick={async () => {
-                            await exportToYAMLLazy(affectationsData, 'emploi-du-temps-admin', { etablissement: 'HESTIM-STENDHAL' });
-                            setExportMenuAnchor(null);
-                        }}
-                    >
-                        Télécharger en YAML (weekly_blocks)
-                    </MenuItem>
-                </Menu>
-
-                <EnhancedTimetable
-                    affectations={affectationsData}
-                    view={view}
-                    onViewChange={setView}
-                />
-            </Box>
-        </DashboardLayout>
-    );
+      />
+    </DashboardLayout>
+  );
 }
-

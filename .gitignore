@@ -13,6 +13,10 @@ playwright-report/
 test-results/
 coverage/
 .playwright-mcp/
+.impeccable/review/
+.impeccable/questions/
+.impeccable/mocks/
+.impeccable/build/
 
 # Cookies exportés par curl lors de tests manuels
 csrf_token=*

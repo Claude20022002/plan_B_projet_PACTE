@@ -29,7 +29,7 @@ import {
     useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Add, Edit, Delete, Visibility, ArrowBack, Download } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI } from '../../services/api';
 import { exportToExcelLazy } from '../../utils/lazyExports';
@@ -37,8 +37,7 @@ import { COLS_AFFECTATIONS } from '../../utils/exportColumns';
 import { useAuth } from '../../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
-import PageHeader from '../../design-system/components/PageHeader';
+import { formatHeure } from '../../utils/session';
 import DataToolbar from '../../design-system/components/DataToolbar';
 import EmptyState from '../../design-system/components/EmptyState';
 import StatusBadge from '../../design-system/components/StatusBadge';
@@ -55,7 +54,6 @@ const validationSchema = yup.object({
 
 export default function Affectations() {
     const { user } = useAuth();
-    const navigate = useNavigate();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [searchParams, setSearchParams] = useSearchParams();
@@ -161,13 +159,12 @@ export default function Affectations() {
                     id_user_admin: user?.id_user || Number(values.id_user_admin),
                 };
 
-                let response;
                 if (editing) {
-                    response = await affectationAPI.update(editing.id_affectation, dataToSend);
-                    setSuccess('Affectation modifiée avec succès');
+                    await affectationAPI.update(editing.id_affectation, dataToSend);
+                    setSuccess('Séance modifiée avec succès');
                 } else {
-                    response = await affectationAPI.create(dataToSend);
-                    setSuccess('Affectation créée avec succès');
+                    await affectationAPI.create(dataToSend);
+                    setSuccess('Séance planifiée avec succès');
                 }
                 
                 // Fermer le dialog et réinitialiser
@@ -304,26 +301,6 @@ export default function Affectations() {
     return (
         <DashboardLayout>
             <Box>
-                <PageHeader
-                    eyebrow="Planning"
-                    title="Affectations"
-                    subtitle="Pilotez les cours, enseignants, groupes, salles et créneaux depuis une vue dense et fiable."
-                    actions={[
-                        {
-                            label: 'Retour',
-                            variant: 'outlined',
-                            startIcon: <ArrowBack />,
-                            onClick: () => navigate('/dashboard/admin'),
-                        },
-                        {
-                            label: 'Nouvelle affectation',
-                            variant: 'contained',
-                            startIcon: <Add />,
-                            onClick: openCreateDialog,
-                        },
-                    ]}
-                />
-
                 <Snackbar
                     open={!!error}
                     autoHideDuration={6000}
@@ -349,7 +326,7 @@ export default function Affectations() {
                 <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                     <DataToolbar search={search} onSearchChange={setSearch} onExport={handleExport}>
                         <Button variant="contained" startIcon={<Add />} onClick={openCreateDialog}>
-                            Nouvelle
+                            Planifier une séance
                         </Button>
                     </DataToolbar>
 
@@ -382,7 +359,7 @@ export default function Affectations() {
                                         <StatusBadge status={aff.statut} />
                                     </Box>
                                     <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                                        {aff.enseignant?.prenom || ''} {aff.enseignant?.nom || '-'} · {new Date(aff.date_seance).toLocaleDateString('fr-FR')} · {aff.creneau?.heure_debut} - {aff.creneau?.heure_fin}
+                                        {aff.enseignant?.prenom || ''} {aff.enseignant?.nom || '-'} · {new Date(aff.date_seance).toLocaleDateString('fr-FR')} · {formatHeure(aff.creneau?.heure_debut)} – {formatHeure(aff.creneau?.heure_fin)}
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, mt: 1 }}>
                                         <IconButton size="small" onClick={() => handleEdit(aff)}><Edit fontSize="small" /></IconButton>
@@ -418,8 +395,8 @@ export default function Affectations() {
                                             <TableCell>
                                                 {new Date(aff.date_seance).toLocaleDateString('fr-FR')}
                                             </TableCell>
-                                            <TableCell>
-                                                {aff.creneau?.heure_debut} - {aff.creneau?.heure_fin}
+                                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                                {formatHeure(aff.creneau?.heure_debut)} – {formatHeure(aff.creneau?.heure_fin)}
                                             </TableCell>
                                             <TableCell>
                                                 <StatusBadge status={aff.statut} />
@@ -535,7 +512,7 @@ export default function Affectations() {
                                     >
                                         {options.creneaux.map((creneau) => (
                                             <MenuItem key={creneau.id_creneau} value={creneau.id_creneau}>
-                                                {creneau.jour_semaine} {creneau.heure_debut} - {creneau.heure_fin}
+                                                {creneau.jour_semaine} {formatHeure(creneau.heure_debut)} – {formatHeure(creneau.heure_fin)}
                                             </MenuItem>
                                         ))}
                                     </Select>

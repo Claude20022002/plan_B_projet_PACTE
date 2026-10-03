@@ -42,7 +42,15 @@ const personName = (user) => (user ? [user.prenom, user.nom].filter(Boolean).joi
 export const toBoardSession = (a) => {
   const start = combine(a.date_seance, a.creneau?.heure_debut);
   const end = combine(a.date_seance, a.creneau?.heure_fin);
+  // Séance reportée : date d'origine, affichée barrée à côté de la nouvelle.
+  // Renseignée par l'API dès que la colonne date_seance_initiale existe (règles métier, phase 3).
+  const initialDate = a.date_seance_initiale ? String(a.date_seance_initiale).slice(0, 10) : null;
+  const previousLabel =
+    initialDate && initialDate !== String(a.date_seance || '').slice(0, 10)
+      ? initialDate.split('-').reverse().slice(0, 2).join('/')
+      : null;
   return {
+    previousLabel,
     id: a.id_affectation,
     date: String(a.date_seance || '').slice(0, 10),
     start,

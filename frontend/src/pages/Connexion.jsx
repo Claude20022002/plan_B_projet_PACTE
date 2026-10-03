@@ -102,9 +102,18 @@ export default function Connexion() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setErrorKey('');
+    // Lecture directe du formulaire : le remplissage automatique du navigateur
+    // ne déclenche pas toujours onChange
+    const form = new FormData(event.currentTarget);
+    const emailValue = String(form.get('email') || email).trim();
+    const passwordValue = String(form.get('password') || password);
+    if (!emailValue || !passwordValue) {
+      setErrorKey('login.errorMissing');
+      return;
+    }
     setLoading(true);
     try {
-      const result = await login(email.trim(), password);
+      const result = await login(emailValue, passwordValue);
       if (result.success) {
         // Le rôle vient du compte : aucune saisie de « fonction » n'est demandée
         const role = result.data?.user?.role;
@@ -224,7 +233,7 @@ export default function Connexion() {
               fullWidth
               variant="contained"
               size="large"
-              disabled={loading || !email || !password}
+              disabled={loading}
               sx={{ mt: 3, minHeight: 48, fontSize: '1rem' }}
             >
               {loading ? <CircularProgress size={22} color="inherit" aria-label={t('login.submitting')} /> : t('login.submit')}

@@ -10,6 +10,7 @@ import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
 import ChangesList from '../../design-system/board/ChangesList';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
+import useLiveRefresh from '../../hooks/useLiveRefresh';
 
 const HORIZON_DAYS = 7;
 
@@ -30,9 +31,9 @@ export default function EtudiantDashboard() {
     return () => clearInterval(id);
   }, []);
 
-  const load = useCallback(async () => {
+  const load = useCallback(async ({ silent = false } = {}) => {
     if (!user?.id_user) return;
-    setLoading(true);
+    if (!silent) setLoading(true);
     setError(false);
     try {
       const [etudiant, notifications] = await Promise.all([
@@ -66,10 +67,16 @@ export default function EtudiantDashboard() {
   useEffect(() => {
     load();
   }, [load]);
+  useLiveRefresh(() => load({ silent: true }));
 
   // Seules les séances pas encore terminées restent au panneau
   const upcoming = useMemo(() => sessions.filter((s) => !s.end || s.end > now), [sessions, now]);
-  const spotlight = useMemo(() => findSpotlight(upcoming, now), [upcoming, now]);
+  // Le Tableau répond à « aujourd'hui et le prochain jour de cours » ; la semaine est dans l'onglet Semaine
+  const boardSessions = useMemo(() => {
+    const days = [...new Set(upcoming.map((s) => s.date))].slice(0, 2);
+    return upcoming.filter((s) => days.includes(s.date));
+  }, [upcoming]);
+  const spotlight = useMemo(() => findSpotlight(boardSessions, now), [boardSessions, now]);
 
   const boardTitle = group?.nom_groupe ? `${t('board.title')} · ${group.nom_groupe}` : t('board.title');
 
@@ -82,7 +89,7 @@ export default function EtudiantDashboard() {
               severity="error"
               sx={{ mb: 2 }}
               action={
-                <Button color="inherit" size="small" onClick={load}>
+                <Button color="inherit" size="small" onClick={() => load()}>
                   {t('common.retry')}
                 </Button>
               }
@@ -93,7 +100,7 @@ export default function EtudiantDashboard() {
 
           <DepartureBoard
             title={boardTitle}
-            sessions={upcoming}
+            sessions={boardSessions}
             loading={loading}
             spotlight={spotlight}
             columns={['time', 'course', 'room', 'teacher', 'status']}

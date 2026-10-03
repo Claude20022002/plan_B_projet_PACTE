@@ -1,14 +1,12 @@
 import { Box, Button, Stack, Typography } from '@mui/material';
-import { motion } from 'motion/react';
 
-const MotionBox = motion(Box);
-
-export default function PageHeader({ title, subtitle, eyebrow, actions = [] }) {
+/**
+ * En-tête de page de gestion : titre, phrase d'aide facultative, actions.
+ * Pas de surtitre : le titre porte seul la hiérarchie (la prop `eyebrow` est ignorée).
+ */
+export default function PageHeader({ title, subtitle, actions = [] }) {
   return (
-    <MotionBox
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
+    <Box
       sx={{
         display: 'flex',
         alignItems: { xs: 'flex-start', sm: 'center' },
@@ -19,12 +17,7 @@ export default function PageHeader({ title, subtitle, eyebrow, actions = [] }) {
       }}
     >
       <Box sx={{ minWidth: 0 }}>
-        {eyebrow && (
-          <Typography variant="caption" color="text.secondary" fontWeight={700} sx={{ textTransform: 'uppercase' }}>
-            {eyebrow}
-          </Typography>
-        )}
-        <Typography variant="h1" sx={{ mt: eyebrow ? 0.25 : 0 }}>
+        <Typography variant="h1" component="h2">
           {title}
         </Typography>
         {subtitle && (
@@ -46,6 +39,6 @@ export default function PageHeader({ title, subtitle, eyebrow, actions = [] }) {
           ))}
         </Stack>
       )}
-    </MotionBox>
+    </Box>
   );
 }

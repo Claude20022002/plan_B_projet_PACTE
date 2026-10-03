@@ -8,6 +8,7 @@ import { affectationAPI, conflitAPI, demandeReportAPI, statistiquesAPI } from '.
 import { DepartureBoard } from '../../design-system/board';
 import { byStart, findSpotlight, formatDayLabel, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
+import useLiveRefresh from '../../hooks/useLiveRefresh';
 
 const sectionTitleSx = {
   fontFamily: ds.font.board,
@@ -101,7 +102,9 @@ function QueuePanel({ conflicts, conflictsTotal, reports, loading }) {
 
 /** Bande réglée d'indicateurs : quatre chiffres lisibles d'un coup d'œil, qui mènent aux statistiques */
 function IndicatorsStrip({ kpis, loading }) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
+  // Format de nombre de la langue (« 10,9 » en français, « 10.9 » en anglais)
+  const number = new Intl.NumberFormat(i18n.language, { maximumFractionDigits: 1 });
   const navigate = useNavigate();
   const items = [
     { label: t('admin.occupancy'), value: kpis?.taux_occupation_salles?.valeur, unit: '%' },
@@ -120,32 +123,25 @@ function IndicatorsStrip({ kpis, loading }) {
           {t('nav.statistics')}
         </Button>
       </Box>
-      <Box component="dl" sx={{ m: 0, display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' } }}>
-        {items.map((item, i) => (
-          <Box
-            key={item.label}
-            sx={{
-              px: 2,
-              py: 1.75,
-              borderLeft: { md: i === 0 ? 0 : '1px solid' },
-              borderTop: { xs: i >= 2 ? '1px solid' : 0, md: 0 },
-              borderRight: { xs: i % 2 === 0 ? '1px solid' : 0, md: 0 },
-              borderColor: { xs: 'divider', md: 'divider' },
-            }}
-          >
-            <Box component="dt" sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>
-              {item.label}
+      {/* Lignes réglées libellé | valeur, comme une ligne de panneau (pas de chiffres géants) */}
+      <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+        <tbody>
+          {items.map((item) => (
+            <Box component="tr" key={item.label} sx={{ borderBottom: '1px solid', borderColor: 'divider', '&:last-of-type': { borderBottom: 0 } }}>
+              <Box component="th" scope="row" sx={{ textAlign: 'left', px: 2, py: 1.25, fontWeight: 500, fontSize: '0.9375rem', color: 'text.secondary' }}>
+                {item.label}
+              </Box>
+              <Box component="td" sx={{ textAlign: 'right', px: 2, py: 1.25, fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.125rem', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
+                {loading ? <Skeleton width={48} sx={{ ml: 'auto' }} /> : item.value === undefined || item.value === null ? '—' : number.format(item.value)}
+                {!loading && item.value !== undefined && item.value !== null && item.unit && (
+                  <Box component="span" sx={{ ml: 0.25, fontSize: '0.875rem', color: 'text.secondary' }}>
+                    {item.unit}
+                  </Box>
+                )}
+              </Box>
             </Box>
-            <Box component="dd" sx={{ m: 0, mt: 0.5, fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.75rem', lineHeight: 1.1 }}>
-              {loading ? <Skeleton width={64} /> : item.value ?? '—'}
-              {!loading && item.value !== undefined && item.value !== null && item.unit && (
-                <Box component="span" sx={{ ml: 0.25, fontSize: '1rem', color: 'text.secondary' }}>
-                  {item.unit}
-                </Box>
-              )}
-            </Box>
-          </Box>
-        ))}
+          ))}
+        </tbody>
       </Box>
     </Box>
   );
@@ -171,8 +167,8 @@ export default function AdminDashboard() {
     return () => clearInterval(id);
   }, []);
 
-  const load = useCallback(async () => {
-    setLoading(true);
+  const load = useCallback(async ({ silent = false } = {}) => {
+    if (!silent) setLoading(true);
     setError(false);
     try {
       const [affectations, nonResolus, demandes, stats] = await Promise.all([
@@ -200,6 +196,7 @@ export default function AdminDashboard() {
   useEffect(() => {
     load();
   }, [load]);
+  useLiveRefresh(() => load({ silent: true }));
 
   const buildings = useMemo(() => [...new Set(sessions.map((s) => s.building).filter(Boolean))].sort(), [sessions]);
   const upcoming = useMemo(
@@ -240,7 +237,7 @@ export default function AdminDashboard() {
           severity="error"
           sx={{ mb: 2 }}
           action={
-            <Button color="inherit" size="small" onClick={load}>
+            <Button color="inherit" size="small" onClick={() => load()}>
               {t('common.retry')}
             </Button>
           }
@@ -256,7 +253,7 @@ export default function AdminDashboard() {
             sessions={upcoming}
             loading={loading}
             spotlight={spotlight}
-            columns={['time', 'course', 'group', 'room', 'teacher', 'status']}
+            columns={['time', 'course', 'group', 'room', 'status']}
             empty={
               <Box sx={{ color: ds.board.letter }}>
                 <Typography component="p" sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '1.125rem' }}>
@@ -269,11 +266,10 @@ export default function AdminDashboard() {
             }
           />
         </Box>
-        <QueuePanel conflicts={conflicts} conflictsTotal={conflictsTotal} reports={reports} loading={loading} />
-      </Box>
-
-      <Box sx={{ mt: { xs: 2, md: 3 } }}>
-        <IndicatorsStrip kpis={kpis} loading={loading} />
+        <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, alignContent: 'start' }}>
+          <QueuePanel conflicts={conflicts} conflictsTotal={conflictsTotal} reports={reports} loading={loading} />
+          <IndicatorsStrip kpis={kpis} loading={loading} />
+        </Box>
       </Box>
     </DashboardLayout>
   );
