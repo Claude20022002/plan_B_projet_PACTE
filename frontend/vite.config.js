@@ -112,13 +112,15 @@ export default defineConfig({
       '@mui/material',
       '@tanstack/react-query',
       'axios',
+      // UMD sans export ESM : servi brut par Vite, il plante (« this » indéfini).
+      // optimizeDeps ne concerne que le serveur de dev : le bundle de production
+      // garde papaparse dans le chunk on-demand « excel-export ».
+      'papaparse',
     ],
     exclude: [
-      // NE PAS pré-bundler les libs on-demand (elles seraient dans le bundle initial)
       'jspdf',
       'jspdf-autotable',
       'xlsx',
-      'papaparse',
     ],
     esbuildOptions: { target: 'esnext' },
   },

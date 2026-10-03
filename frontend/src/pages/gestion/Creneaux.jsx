@@ -223,7 +223,11 @@ export default function Creneaux() {
                                                         <Typography component="span" variant="caption" color="text.secondary">
                                                             {t('ref.grids.minutes', { n: creneau.duree_minutes })}
                                                         </Typography>
-                                                        {chevauchePrecedent(creneau) && <StateChip tone="warning">{t('ref.grids.overlap')}</StateChip>}
+                                                        {chevauchePrecedent(creneau) && (
+                                                            <StateChip tone="warning" title={t('ref.grids.overlapHelp')}>
+                                                                {t('ref.grids.overlap')}
+                                                            </StateChip>
+                                                        )}
                                                     </ButtonBase>
                                                 </TableCell>
                                             );

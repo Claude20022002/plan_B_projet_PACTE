@@ -48,8 +48,9 @@ const EVENEMENT_VIDE = {
     niveau: '',
 };
 
-// Teinte d'un type d'événement : bloquants en danger, Ramadan en info, le reste neutre
-const toneType = (type) => ({ ferie: 'danger', vacances: 'danger', examen: 'warning', ramadan: 'info' })[type] || 'neutral';
+// Le type est une catégorie, pas un état : pastille neutre (le rouge et l'orange restent aux états).
+// Seul le Ramadan se distingue, en marine voilé, car il change la grille horaire.
+const toneType = (type) => (type === 'ramadan' ? 'info' : 'neutral');
 
 export default function Calendrier() {
     const { t, i18n } = useTranslation();
@@ -421,13 +422,16 @@ export default function Calendrier() {
                                                 <TableCell>
                                                     <StateChip tone={toneType(evenement.type_evenement)}>{t(`ref.eventTypes.${evenement.type_evenement}`)}</StateChip>
                                                 </TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{libelleCible(evenement)}</TableCell>
+                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, whiteSpace: 'nowrap' }}>{libelleCible(evenement)}</TableCell>
                                                 <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                                                     {evenement.bloque_affectations ? t('ref.calendar.blocking') : t('ref.calendar.notBlocking')}
                                                 </TableCell>
                                                 <TableCell>
+                                                    {/* Seule la date à confirmer appelle une action : elle seule est signalée */}
                                                     {evenement.date_confirmee ? (
-                                                        <StateChip tone="neutral">{t('ref.calendar.confirmed')}</StateChip>
+                                                        <Typography variant="body2" color="text.secondary">
+                                                            {t('ref.calendar.confirmed')}
+                                                        </Typography>
                                                     ) : (
                                                         <StateChip tone="warning">{t('ref.calendar.toConfirm')}</StateChip>
                                                     )}

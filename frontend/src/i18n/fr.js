@@ -315,7 +315,7 @@ const fr = {
       line: 'Ligne {{n}}',
     },
     campus: {
-      title: 'Campus',
+      intro: 'Chaque salle appartient à un campus. Un campus inactif ne reçoit plus de séances.',
       add: 'Ajouter un campus',
       cols: {
         code: 'Code',
@@ -430,7 +430,8 @@ const fr = {
       addSlot: 'Ajouter un créneau',
       rank: 'Rang',
       minutes: '{{n}} min',
-      overlap: 'Chevauche le précédent',
+      overlap: 'Chevauchement',
+      overlapHelp: 'Commence avant la fin du créneau précédent : une séance ne peut pas occuper les deux.',
       editSlot: 'Modifier le créneau du {{day}}, {{start}} – {{end}}',
       emptyTitle: 'Grille vide',
       emptyBody: 'Ajoutez les créneaux de cette grille, jour par jour (ex. 09:00 – 10:30).',

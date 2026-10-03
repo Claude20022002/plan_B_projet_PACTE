@@ -137,8 +137,8 @@ export default function Campus() {
             <Stack spacing={3}>
                 <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 2, mb: 2, flexWrap: 'wrap' }}>
-                        <Typography variant="h2" component="h2">
-                            {t('ref.campus.title')}
+                        <Typography variant="body2" color="text.secondary">
+                            {t('ref.campus.intro')}
                         </Typography>
                         <Button variant="contained" startIcon={<Add />} onClick={() => ouvrir()}>
                             {t('ref.campus.add')}
@@ -169,9 +169,13 @@ export default function Campus() {
                                             </TableCell>
                                             <TableCell align="right">{item.nb_salles}</TableCell>
                                             <TableCell>
-                                                <StateChip tone={item.actif ? 'success' : 'neutral'}>
-                                                    {item.actif ? t('ref.campus.active') : t('ref.campus.inactive')}
-                                                </StateChip>
+                                                {item.actif ? (
+                                                    <Typography variant="body2" color="text.secondary">
+                                                        {t('ref.campus.active')}
+                                                    </Typography>
+                                                ) : (
+                                                    <StateChip tone="warning">{t('ref.campus.inactive')}</StateChip>
+                                                )}
                                             </TableCell>
                                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                                                 <IconButton size="small" onClick={() => ouvrir(item)} aria-label={t('ref.common.editItem', { name: item.nom })}>

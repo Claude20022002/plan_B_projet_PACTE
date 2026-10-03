@@ -6,14 +6,15 @@ import * as XLSX from "xlsx";
  * @returns {Promise<Array>} - Les données parsées
  */
 export const parseFile = async (file) => {
-    return new Promise(async (resolve, reject) => {
-        const fileName = file.name.toLowerCase();
-        const fileExtension = fileName.split(".").pop();
+    const fileName = file.name.toLowerCase();
+    const fileExtension = fileName.split(".").pop();
 
+    // Chargé avant la promesse : un échec d'import rejette parseFile au lieu de la laisser
+    // en suspens (un exécuteur async avalerait l'erreur et l'écran resterait « en cours »).
+    const Papa = fileExtension === "csv" ? await import("papaparse").then((m) => m.default || m) : null;
+
+    return new Promise((resolve, reject) => {
         if (fileExtension === "csv") {
-            // Import dynamique pour éviter les problèmes d'export avec Vite
-            const Papa = await import("papaparse").then((m) => m.default || m);
-
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,

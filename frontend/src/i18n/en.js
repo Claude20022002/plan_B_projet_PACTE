@@ -315,7 +315,7 @@ const en = {
       line: 'Line {{n}}',
     },
     campus: {
-      title: 'Campuses',
+      intro: 'Every room belongs to a campus. An inactive campus no longer receives sessions.',
       add: 'Add a campus',
       cols: {
         code: 'Code',
@@ -430,7 +430,8 @@ const en = {
       addSlot: 'Add a slot',
       rank: 'Rank',
       minutes: '{{n}} min',
-      overlap: 'Overlaps the previous one',
+      overlap: 'Overlap',
+      overlapHelp: 'Starts before the previous slot ends: one session cannot use both.',
       editSlot: 'Edit the {{day}} slot, {{start}} – {{end}}',
       emptyTitle: 'Empty grid',
       emptyBody: 'Add the slots of this grid, day by day (e.g. 09:00 – 10:30).',
