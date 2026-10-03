@@ -31,6 +31,10 @@ export const getAllAffectations = asyncHandler(async (req, res) => {
     }
     if (req.query.date_seance) {
         where.date_seance = req.query.date_seance;
+    } else if (req.query.date_from && req.query.date_to) {
+        where.date_seance = { [Op.between]: [req.query.date_from, req.query.date_to] };
+    } else if (req.query.date_from) {
+        where.date_seance = { [Op.gte]: req.query.date_from };
     }
     // Filtre incrémental pour la sync offline (updated_after)
     if (req.query.updated_after) {

@@ -29,7 +29,8 @@ export const AuthProvider = ({ children }) => {
             window.dispatchEvent(new CustomEvent('auth:payload', { detail: data }));
         } catch (error) {
             // Ne pas logger les erreurs de connexion pour éviter le spam
-            if (!error.isConnectionError) {
+            // Un visiteur non connecté (401) n'est pas une erreur
+            if (!error.isConnectionError && error.status !== 401) {
                 console.error('Erreur de vérification auth:', error);
             }
             // Pas de session : on vide l'état local, sans appel de déconnexion inutile au serveur
