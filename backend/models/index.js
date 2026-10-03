@@ -89,42 +89,6 @@ Users.hasMany(AuthSession, {
     onDelete: "CASCADE",
 });
 
-Institution.hasMany(InstitutionUser, {
-    foreignKey: "id_institution",
-    as: "memberships",
-    onDelete: "CASCADE",
-});
-InstitutionUser.belongsTo(Institution, {
-    foreignKey: "id_institution",
-    as: "institution",
-});
-Users.hasMany(InstitutionUser, {
-    foreignKey: "id_user",
-    as: "institution_memberships",
-    onDelete: "CASCADE",
-});
-InstitutionUser.belongsTo(Users, {
-    foreignKey: "id_user",
-    as: "user",
-    targetKey: "id_user",
-});
-Institution.hasMany(Subscription, {
-    foreignKey: "id_institution",
-    as: "subscriptions",
-    onDelete: "CASCADE",
-});
-Subscription.belongsTo(Institution, {
-    foreignKey: "id_institution",
-    as: "institution",
-});
-Plan.hasMany(Subscription, {
-    foreignKey: "id_plan",
-    as: "subscriptions",
-});
-Subscription.belongsTo(Plan, {
-    foreignKey: "id_plan",
-    as: "plan",
-});
 AuthSession.belongsTo(Users, {
     foreignKey: "id_user",
     as: "user",
@@ -308,17 +272,6 @@ Creneau.hasMany(Affectation, {
     onDelete: "RESTRICT",
 });
 
-Institution.hasMany(Filiere, { foreignKey: "id_institution", as: "filieres" });
-Filiere.belongsTo(Institution, { foreignKey: "id_institution", as: "institution" });
-Institution.hasMany(Groupe, { foreignKey: "id_institution", as: "groupes" });
-Groupe.belongsTo(Institution, { foreignKey: "id_institution", as: "institution" });
-Institution.hasMany(Cours, { foreignKey: "id_institution", as: "cours" });
-Cours.belongsTo(Institution, { foreignKey: "id_institution", as: "institution" });
-Institution.hasMany(Salle, { foreignKey: "id_institution", as: "salles" });
-Salle.belongsTo(Institution, { foreignKey: "id_institution", as: "institution" });
-Institution.hasMany(Creneau, { foreignKey: "id_institution", as: "creneaux" });
-Creneau.belongsTo(Institution, { foreignKey: "id_institution", as: "institution" });
-
 PlanningSnapshot.hasMany(Affectation, {
     foreignKey: "id_snapshot",
     as: "affectations",
@@ -433,10 +386,6 @@ export {
     PasswordResetToken,
     Evenement,
     AuthSession,
-    Institution,
-    InstitutionUser,
-    Plan,
-    Subscription,
     GenerationSession,
     PlanningSnapshot,
 };
