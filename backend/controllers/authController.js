@@ -1,7 +1,7 @@
 import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { Op } from "sequelize";
-import { AuthSession, Institution, InstitutionUser, Users, Enseignant, Etudiant, PasswordResetToken } from "../models/index.js";
+import { AuthSession, Users, Enseignant, Etudiant, PasswordResetToken } from "../models/index.js";
 import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
@@ -15,7 +15,6 @@ import {
     setCsrfCookie,
     sha256,
 } from "../config/authCookies.js";
-import { resolveTenantForUser } from "../utils/tenantHelper.js";
 
 /**
  * Génère un token JWT pour un utilisateur
@@ -89,12 +88,10 @@ const getAdditionalInfo = async (user) => {
 };
 
 const createAuthSession = async (req, res, user, familyId = crypto.randomUUID()) => {
-    const { institution } = await resolveTenantForUser(req, user);
     const sessionId = crypto.randomUUID();
     const refreshToken = randomToken();
 
     await AuthSession.create({
-        id_institution: institution?.id_institution || null,
         id_user: user.id_user,
         session_id: sessionId,
         family_id: familyId,
@@ -108,36 +105,7 @@ const createAuthSession = async (req, res, user, familyId = crypto.randomUUID())
     setAuthCookies(res, { accessToken, refreshToken });
     setCsrfCookie(res, sessionId);
 
-    return { sessionId, familyId, institution };
-};
-
-const getTenantPayload = async (user, currentInstitution = null) => {
-    const memberships = await InstitutionUser.findAll({
-        where: {
-            id_user: user.id_user,
-            statut: "active",
-        },
-        include: [{ model: Institution, as: "institution" }],
-        order: [["createdAt", "ASC"]],
-    });
-
-    return {
-        institutions: memberships.map((membership) => ({
-            id_institution: membership.id_institution,
-            slug: membership.institution?.slug,
-            nom: membership.institution?.nom,
-            statut: membership.institution?.statut,
-            role: membership.role,
-        })),
-        currentInstitution: currentInstitution
-            ? {
-                  id_institution: currentInstitution.id_institution,
-                  slug: currentInstitution.slug,
-                  nom: currentInstitution.nom,
-                  role: memberships.find((item) => item.id_institution === currentInstitution.id_institution)?.role,
-              }
-            : null,
-    };
+    return { sessionId, familyId };
 };
 
 // Pas d'inscription publique : les comptes sont créés par l'administration (POST /api/users).
@@ -188,13 +156,11 @@ export const login = asyncHandler(async (req, res) => {
 
     // Récupérer les informations complémentaires selon le rôle
     const additionalInfo = await getAdditionalInfo(user);
-    const session = await createAuthSession(req, res, user);
-    const tenantPayload = await getTenantPayload(user, session.institution);
+    await createAuthSession(req, res, user);
 
     res.json({
         message: "Connexion réussie",
         user: sanitizeUser(user, additionalInfo),
-        ...tenantPayload,
     });
 });
 
@@ -217,11 +183,9 @@ export const getMe = asyncHandler(async (req, res) => {
 
     // Récupérer les informations complémentaires selon le rôle
     const additionalInfo = await getAdditionalInfo(user);
-    const tenantPayload = await getTenantPayload(user, req.tenant);
 
     res.json({
         user: sanitizeUser(user, additionalInfo),
-        ...tenantPayload,
     });
 });
 
@@ -340,7 +304,6 @@ export const refreshToken = asyncHandler(async (req, res) => {
     const newRefreshToken = randomToken();
     const newSessionId = crypto.randomUUID();
     const newRecord = await AuthSession.create({
-        id_institution: tokenRecord.id_institution,
         id_user: user.id_user,
         session_id: newSessionId,
         family_id: tokenRecord.family_id,
