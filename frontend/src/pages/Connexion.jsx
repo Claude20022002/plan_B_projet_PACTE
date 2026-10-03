@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
@@ -18,23 +18,15 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { LANGUAGES } from '../i18n';
 import { ds } from '../design-system/tokens';
-import { FlapText, FlapTiles } from '../design-system/board';
+import { FlapTiles } from '../design-system/board';
 
-const prefersReducedMotion = () =>
-  typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
-
-/** Panneau de présentation : une ligne qui bascule pour montrer ce que l'outil affiche */
+/**
+ * Panneau de présentation : ce que l'outil affiche, en lignes fixes de panneau.
+ * Pas de rotation automatique (la bascule signale un vrai changement, jamais une décoration).
+ */
 function LiveBoard() {
   const { t } = useTranslation();
   const lines = t('login.boardLines', { returnObjects: true });
-  const [index, setIndex] = useState(0);
-  const reduced = prefersReducedMotion();
-
-  useEffect(() => {
-    if (reduced) return undefined;
-    const id = setInterval(() => setIndex((i) => (i + 1) % lines.length), 3200);
-    return () => clearInterval(id);
-  }, [reduced, lines.length]);
 
   return (
     <Box sx={{ bgcolor: ds.board.frame, p: '10px', borderRadius: `${ds.radius.lg}px`, width: '100%', maxWidth: 560 }}>
@@ -47,32 +39,29 @@ function LiveBoard() {
         <Box sx={{ mt: 1.25 }}>
           <FlapTiles value="PLANNER" size="clamp(2.25rem, 4.4vw, 3.75rem)" color={ds.brand.orange} />
         </Box>
-        <Box
-          sx={{
-            mt: 4,
-            pt: 2,
-            borderTop: `1px solid ${ds.board.seam}`,
-            fontFamily: ds.font.board,
-            fontWeight: 600,
-            fontSize: { md: '1.375rem', lg: '1.625rem' },
-            letterSpacing: '0.1em',
-            textTransform: 'uppercase',
-            color: ds.board.letter,
-            display: 'flex',
-            alignItems: 'center',
-            gap: 1.5,
-            minHeight: '2.4em',
-          }}
-          aria-live="off"
-        >
-          <Box component="span" aria-hidden="true" sx={{ width: 10, height: 10, borderRadius: '50%', bgcolor: ds.board.live, flexShrink: 0 }} />
-          {reduced ? (
-            <Box component="span" sx={{ fontSize: '1rem', letterSpacing: '0.06em', lineHeight: 1.6 }}>
-              {lines.join(' · ')}
+        <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 4, p: 0, borderTop: `1px solid ${ds.board.seam}` }}>
+          {lines.map((line, i) => (
+            <Box
+              component="li"
+              key={line}
+              sx={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1.5,
+                py: 1.25,
+                borderBottom: `1px solid ${ds.board.seam}`,
+                fontFamily: ds.font.board,
+                fontWeight: 600,
+                fontSize: { md: '1.125rem', lg: '1.25rem' },
+                letterSpacing: '0.1em',
+                textTransform: 'uppercase',
+                color: ds.board.letter,
+              }}
+            >
+              <Box component="span" aria-hidden="true" sx={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, bgcolor: i === 0 ? ds.board.live : ds.board.letterDim }} />
+              {line}
             </Box>
-          ) : (
-            <FlapText value={lines[index]} />
-          )}
+          ))}
         </Box>
         <Typography sx={{ mt: 3, color: ds.board.letterDim, fontSize: '0.9375rem' }}>
           {t('app.school')}
