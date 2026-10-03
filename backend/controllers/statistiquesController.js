@@ -648,6 +648,7 @@ export const getKPIs = asyncHandler(async (req, res) => {
     const repartitionParFiliere = {};
     filieres.forEach((f) => {
         repartitionParFiliere[f.nom_filiere] = {
+            id_filiere: f.id_filiere, // permet au frontend d'utiliser la même couleur de ligne partout
             nom: f.nom_filiere,
             nombre_seances: 0,
             nombre_heures: 0,
@@ -657,7 +658,7 @@ export const getKPIs = asyncHandler(async (req, res) => {
         if (aff.cours?.filiere) {
             const nom = aff.cours.filiere.nom_filiere;
             if (!repartitionParFiliere[nom]) {
-                repartitionParFiliere[nom] = { nom, nombre_seances: 0, nombre_heures: 0 };
+                repartitionParFiliere[nom] = { id_filiere: aff.cours.filiere.id_filiere, nom, nombre_seances: 0, nombre_heures: 0 };
             }
             repartitionParFiliere[nom].nombre_seances++;
             if (aff.creneau?.duree_minutes) {

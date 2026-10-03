@@ -205,8 +205,8 @@ export default function Statistiques() {
                                                 dataKey="nombre_seances" nameKey="nom"
                                                 cx="50%" cy="50%" outerRadius={110}
                                                 labelLine={false} label={renderPieLabel}>
-                                                {filiereData.map((_, i) => (
-                                                    <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
+                                                {filiereData.filter(f => f.nombre_seances > 0).map((f) => (
+                                                    <Cell key={f.nom} fill={lineColor(f.id_filiere)} />
                                                 ))}
                                             </Pie>
                                             <ReTooltip formatter={(v, n) => [`${v} séances`, n]} />
@@ -218,28 +218,26 @@ export default function Statistiques() {
                                         Détail par filière
                                     </Typography>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        {filiereData.map((f, i) => (
+                                        {filiereData.map((f) => (
                                             <Box key={f.nom}>
                                                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <Box sx={{ width: 10, height: 10, borderRadius: '50%',
-                                                            bgcolor: PALETTE[i % PALETTE.length] }} />
+                                                        <Box sx={{ width: 10, height: 10, borderRadius: '2px',
+                                                            bgcolor: lineColor(f.id_filiere) }} />
                                                         <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
                                                             {f.nom}
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={{ display: 'flex', gap: 0.5 }}>
                                                         <Chip label={`${f.nombre_seances} séances`} size="small" variant="outlined" />
-                                                        <Chip label={`${f.nombre_heures}h`} size="small"
-                                                            sx={{ bgcolor: `${PALETTE[i % PALETTE.length]}18`,
-                                                                  color: PALETTE[i % PALETTE.length] }} />
+                                                        <Chip label={`${numberFr.format(f.nombre_heures)} h`} size="small" variant="outlined" />
                                                     </Box>
                                                 </Box>
                                                 <LinearProgress variant="determinate"
                                                     value={filiereData[0]?.nombre_seances > 0
                                                         ? (f.nombre_seances / filiereData[0].nombre_seances) * 100 : 0}
-                                                    sx={{ bgcolor: `${PALETTE[i % PALETTE.length]}18`,
-                                                          '& .MuiLinearProgress-bar': { bgcolor: PALETTE[i % PALETTE.length] } }} />
+                                                    sx={{ bgcolor: ds.colors.bg.subtle,
+                                                          '& .MuiLinearProgress-bar': { bgcolor: lineColor(f.id_filiere) } }} />
                                             </Box>
                                         ))}
                                     </Box>
@@ -264,11 +262,8 @@ export default function Statistiques() {
                                     <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
                                     <ReTooltip formatter={v => [`${v} affectation(s)`, 'Demandes']}
                                         labelFormatter={l => `Créneau : ${l}`} />
-                                    <Bar dataKey="count" radius={[6, 6, 0, 0]}>
-                                        {creneauData.map((_, i) => (
-                                            <Cell key={i} fill={PALETTE[i % PALETTE.length]} />
-                                        ))}
-                                    </Bar>
+                                    {/* Une seule couleur : les couleurs de ligne sont réservées aux filières */}
+                                    <Bar dataKey="count" radius={[3, 3, 0, 0]} fill={ds.brand.navy} />
                                 </BarChart>
                             </ResponsiveContainer>
                         )
@@ -295,13 +290,13 @@ export default function Statistiques() {
                                         <Bar dataKey="taux" radius={[0, 6, 6, 0]}>
                                             {sallesGraph.map((e, i) => (
                                                 <Cell key={i}
-                                                    fill={e.taux >= 70 ? '#c62828' : e.taux >= 40 ? '#e8a020' : '#2e7d32'} />
+                                                    fill={e.taux >= 70 ? ds.colors.danger.text : e.taux >= 40 ? ds.colors.warning.text : ds.colors.success.text} />
                                             ))}
                                         </Bar>
                                     </BarChart>
                                 </ResponsiveContainer>
                                 <Box sx={{ display: 'flex', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
-                                    {[['#2e7d32','< 40% — Faible'],['#e8a020','40–70% — Moyen'],['#c62828','> 70% — Élevé']].map(([c, l]) => (
+                                    {[[ds.colors.success.text,'< 40 % — Faible'],[ds.colors.warning.text,'40–70 % — Moyen'],[ds.colors.danger.text,'> 70 % — Élevé']].map(([c, l]) => (
                                         <Box key={l} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                             <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: c }} />
                                             <Typography variant="caption" color="text.secondary">{l}</Typography>
@@ -348,7 +343,7 @@ export default function Statistiques() {
                                                         <TableCell>
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                                 <Avatar sx={{ width: 28, height: 28, fontSize: 12,
-                                                                    bgcolor: PALETTE[i % PALETTE.length] }}>
+                                                                    bgcolor: ds.brand.navySoft, color: ds.brand.navy, fontWeight: 600 }}>
                                                                     {e.prenom?.[0]}{e.nom?.[0]}
                                                                 </Avatar>
                                                                 <Typography variant="body2">
@@ -407,10 +402,7 @@ export default function Statistiques() {
                                                 return (
                                                     <TableRow key={g.id_groupe} hover>
                                                         <TableCell>
-                                                            <Chip label={g.nom_groupe} size="small"
-                                                                sx={{ bgcolor: `${PALETTE[i % PALETTE.length]}18`,
-                                                                      color: PALETTE[i % PALETTE.length],
-                                                                      fontWeight: 'bold' }} />
+                                                            <Chip label={g.nom_groupe} size="small" variant="outlined" />
                                                         </TableCell>
                                                         <TableCell>
                                                             <Typography variant="caption" color="text.secondary">
@@ -421,8 +413,8 @@ export default function Statistiques() {
                                                         <TableCell align="right">
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
                                                                 <LinearProgress variant="determinate" value={pct}
-                                                                    sx={{ width: 50, bgcolor: `${PALETTE[i % PALETTE.length]}20`,
-                                                                          '& .MuiLinearProgress-bar': { bgcolor: PALETTE[i % PALETTE.length] } }} />
+                                                                    sx={{ width: 50, bgcolor: ds.colors.bg.subtle,
+                                                                          '& .MuiLinearProgress-bar': { bgcolor: ds.brand.navy } }} />
                                                                 <Typography variant="body2" fontWeight="bold">
                                                                     {g.total_heures}h
                                                                 </Typography>
