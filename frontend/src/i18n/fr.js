@@ -135,7 +135,7 @@ const fr = {
     footer: 'Projet PACTE · HESTIM Engineering & Business School',
     photos: {
       galleryLabel: "Photos de l'école",
-      session: 'Une séance à HESTIM',
+      session: 'Une salle de HESTIM',
       sessionAlt: "Une salle de HESTIM pendant une conférence : le public assis face à l'intervenant et à l'écran.",
       incubator: 'Incubateur CIEL',
       incubatorAlt: "Atelier à l'incubateur CIEL de HESTIM, devant la kakémono « Centre d'innovation, entrepreneuriat et leadership ».",

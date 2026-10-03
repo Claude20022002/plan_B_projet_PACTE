@@ -125,8 +125,10 @@ export default function Connexion() {
           alignItems: 'center',
           justifyContent: 'center',
           bgcolor: ds.board.ground,
-          // Une vraie salle de HESTIM derrière le panneau, sous un voile uniforme qui garde le contraste
-          backgroundImage: 'linear-gradient(rgba(11, 11, 13, 0.82), rgba(11, 11, 13, 0.82)), url(/img/hestim/seance-salle.jpg)',
+          // Une vraie salle de HESTIM derrière le panneau : voile léger au centre (la salle se voit),
+          // plus dense vers les bords ; le panneau garde son propre fond noir, donc son contraste
+          backgroundImage:
+            'radial-gradient(ellipse at 50% 55%, rgba(11, 11, 13, 0.35) 0%, rgba(11, 11, 13, 0.55) 55%, rgba(11, 11, 13, 0.85) 100%), url(/img/hestim/seance-salle.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: '50% 60%',
           px: { md: 5, lg: 8 },

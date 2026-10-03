@@ -120,8 +120,8 @@ export default function DepartureBoard({
                 sx={{
                   fontFamily: ds.font.board,
                   fontWeight: 600,
-                  fontSize: compact ? '0.95rem' : '1.05rem',
-                  letterSpacing: '0.04em',
+                  fontSize: compact ? '0.875rem' : '1.05rem',
+                  letterSpacing: compact ? '0.02em' : '0.04em',
                   lineHeight: 1.2,
                   textTransform: 'uppercase',
                   overflow: 'hidden',
@@ -129,11 +129,11 @@ export default function DepartureBoard({
                   ...(compact
                     ? {
                         display: '-webkit-box',
-                        WebkitLineClamp: 2,
+                        WebkitLineClamp: 3,
                         WebkitBoxOrient: 'vertical',
-                        // Colonne étroite : césure selon la langue de la page plutôt qu'un mot coupé net
-                        hyphens: 'auto',
-                        overflowWrap: 'anywhere',
+                        // Mots entiers uniquement : jamais de coupure nue au milieu d'un mot
+                        overflowWrap: 'normal',
+                        wordBreak: 'normal',
                       }
                     : { whiteSpace: 'nowrap', textOverflow: 'ellipsis' }),
                   color: dimmed ? palette.dim : palette.text,
@@ -200,7 +200,8 @@ export default function DepartureBoard({
         return <Box sx={{ fontSize: '0.875rem', whiteSpace: 'nowrap' }}>{s.teacher}</Box>;
       case 'status':
         return (
-          <Box sx={{ fontSize: compact ? '0.875rem' : '0.95rem', textAlign: 'right' }}>
+          // Téléphone : statut en petit corps, la place va au nom du cours
+          <Box sx={{ fontSize: compact ? '0.6875rem' : '0.95rem', textAlign: 'right', '& > span': compact ? { letterSpacing: '0.04em' } : undefined }}>
             <StatusFlap
               status={s.status}
               variant={variant}
@@ -214,11 +215,11 @@ export default function DepartureBoard({
   };
 
   const columnWidth = {
-    time: compact ? 56 : 84,
-    room: compact ? 78 : 120,
+    time: compact ? 54 : 84,
+    room: compact ? 68 : 120,
     group: 110,
     teacher: 190,
-    status: compact ? 84 : 132,
+    status: compact ? 62 : 132,
   };
 
   const groups = groupDays

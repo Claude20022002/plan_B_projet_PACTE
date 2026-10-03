@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Box, Button, Typography } from '@mui/material';
+import { Alert, Box, Button, Typography, useMediaQuery } from '@mui/material';
 import { ViewWeek } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
@@ -24,6 +24,7 @@ export default function EtudiantDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [now, setNow] = useState(() => new Date());
+  const compact = useMediaQuery('(max-width:599.95px)');
 
   // La séance « en cours / prochaine » se recalcule chaque minute
   useEffect(() => {
@@ -104,7 +105,15 @@ export default function EtudiantDashboard() {
             loading={loading}
             spotlight={spotlight}
             columns={['time', 'course', 'room', 'teacher', 'status']}
-            renderSpotlight={(s, phase) => <SessionSpotlight session={s} phase={phase} />}
+            renderSpotlight={(s, phase) => (
+              <>
+                <SessionSpotlight session={s} phase={phase} />
+                {/* Téléphone : « qu'est-ce qui a changé ? » juste sous la prochaine séance */}
+                {compact && changes.length > 0 && (
+                  <ChangesList items={changes} variant="board" onSeeAll={() => navigate('/notifications')} />
+                )}
+              </>
+            )}
             empty={
               <Box sx={{ color: ds.board.letter, maxWidth: 520 }}>
                 <Typography component="p" sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '1.125rem' }}>
@@ -124,7 +133,9 @@ export default function EtudiantDashboard() {
           </Box>
         </Box>
 
-        <ChangesList items={changes} onSeeAll={() => navigate('/notifications')} />
+        {!(compact && changes.length > 0 && spotlight) && (
+          <ChangesList items={changes} onSeeAll={() => navigate('/notifications')} />
+        )}
       </Box>
     </DashboardLayout>
   );

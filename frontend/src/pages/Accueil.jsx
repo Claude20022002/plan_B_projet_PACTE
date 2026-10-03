@@ -19,7 +19,16 @@ function PhotoWithCaption({ src, alt, caption, sx, objectPosition = '50% 50%', e
         src={src}
         alt={alt}
         loading={eager ? 'eager' : 'lazy'}
-        sx={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover', objectPosition, borderRadius: `${ds.radius.md}px` }}
+        sx={{
+          display: 'block',
+          width: '100%',
+          height: '100%',
+          objectFit: 'cover',
+          objectPosition,
+          borderRadius: `${ds.radius.md}px`,
+          // Étalonnage vers le ton du panneau : photos de jour ramenées dans la nuit du hall
+          filter: 'saturate(0.72) brightness(0.78) contrast(1.06)',
+        }}
       />
       <Box
         component="figcaption"
