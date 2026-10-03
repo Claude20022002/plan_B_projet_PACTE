@@ -5,6 +5,7 @@ import {
     Cours,
     CoursComposante,
     Enseignement,
+    EnseignementEnseignant,
     EnseignementGroupe,
     Groupe,
     Periode,
@@ -146,6 +147,9 @@ const chargerAvecGroupes = (ids, transaction) =>
  * Mutualise plusieurs enseignements en un seul (ex. l'anglais du tronc commun pour trois
  * promotions) : mêmes période et type de composante, groupes réunis sur le premier,
  * séances déjà planifiées rattachées à lui, volume = le plus grand des volumes.
+ * Chaque groupe garde la composante de son propre module (mutualisation entre modules
+ * différents) ; les enseignants des enseignements absorbés rejoignent l'enseignement
+ * mutualisé, en co-enseignants s'il a déjà un principal.
  */
 export const fusionnerEnseignements = async (ids) => {
     const uniques = [...new Set(ids.map(Number))];
@@ -161,7 +165,13 @@ export const fusionnerEnseignements = async (ids) => {
             throw new ErreurMetier("Seules des composantes du même type (CM, TD, TP…) peuvent être mutualisées");
         }
 
-        const groupes = [...new Map(enseignements.flatMap((e) => e.groupes).map((g) => [g.id_groupe, g])).values()];
+        const suivis = enseignements.flatMap((e) =>
+            e.groupes.map((groupe) => ({ groupe, origine: origineDuGroupe(groupe) ?? e.id_composante }))
+        );
+        if (new Set(suivis.map((s) => s.groupe.id_groupe)).size !== suivis.length) {
+            throw new ErreurMetier("Un même groupe figure dans plusieurs de ces enseignements : il ne peut pas suivre deux modules en une séance");
+        }
+        const groupes = suivis.map((s) => s.groupe);
         const tousLesGroupes = await Groupe.findAll({
             where: { id_filiere: [...new Set(groupes.map((g) => g.id_filiere))] },
             transaction,
@@ -172,12 +182,44 @@ export const fusionnerEnseignements = async (ids) => {
 
         const [cible, ...autres] = enseignements;
         const idsAutres = autres.map((e) => e.id_enseignement);
-        for (const groupe of groupes) {
-            await EnseignementGroupe.findOrCreate({
+        for (const { groupe, origine } of suivis) {
+            const id_composante_origine = origine === cible.id_composante ? null : origine;
+            const [lien, cree] = await EnseignementGroupe.findOrCreate({
                 where: { id_enseignement: cible.id_enseignement, id_groupe: groupe.id_groupe },
+                defaults: { id_composante_origine },
                 transaction,
             });
+            if (!cree && lien.id_composante_origine !== id_composante_origine) {
+                await lien.update({ id_composante_origine }, { transaction });
+            }
         }
+
+        // Équipe pédagogique : celle des enseignements absorbés rejoint la cible
+        const services = await EnseignementEnseignant.findAll({
+            where: { id_enseignement: uniques },
+            order: [["id_enseignement", "ASC"]],
+            transaction,
+        });
+        const dansLaCible = services.filter((s) => s.id_enseignement === cible.id_enseignement);
+        const presents = new Set(dansLaCible.map((s) => s.id_user));
+        let aUnPrincipal = dansLaCible.some((s) => s.role === "principal");
+        for (const service of services.filter((s) => s.id_enseignement !== cible.id_enseignement && !presents.has(s.id_user))) {
+            const role = service.role === "principal" && !aUnPrincipal ? "principal" : "co_enseignant";
+            if (role === "principal") aUnPrincipal = true;
+            await EnseignementEnseignant.create(
+                {
+                    id_enseignement: cible.id_enseignement,
+                    id_user: service.id_user,
+                    role,
+                    statut_service: service.statut_service,
+                    heures: service.heures,
+                    motif_refus: service.motif_refus,
+                },
+                { transaction }
+            );
+            presents.add(service.id_user);
+        }
+
         await Affectation.update({ id_enseignement: cible.id_enseignement }, { where: { id_enseignement: idsAutres }, transaction });
         await cible.update({ heures_prevues: Math.max(...enseignements.map((e) => e.heures_prevues)) }, { transaction });
         await Enseignement.destroy({ where: { id_enseignement: idsAutres }, transaction });
@@ -186,8 +228,9 @@ export const fusionnerEnseignements = async (ids) => {
 };
 
 /**
- * Défait une mutualisation : un enseignement par groupe, chacun gardant le volume prévu.
- * Les séances déjà planifiées suivent leur groupe.
+ * Défait une mutualisation : un enseignement par groupe, sur le module que suit chaque groupe.
+ * Les séances déjà planifiées suivent leur groupe ; l'équipe pédagogique est reprise sur chaque
+ * nouvel enseignement, au statut « proposé » puisque la charge de chacun change.
  */
 export const scinderEnseignement = async (id) =>
     sequelize.transaction(async (transaction) => {
@@ -195,16 +238,29 @@ export const scinderEnseignement = async (id) =>
         if (!enseignement) throw new ErreurMetier("Enseignement introuvable", 404);
         if (enseignement.groupes.length < 2) throw new ErreurMetier("Cet enseignement ne concerne qu'un groupe");
 
-        // Le premier groupe reste sur l'enseignement d'origine, les autres en reçoivent un chacun
-        const [, ...detaches] = [...enseignement.groupes].sort((a, b) => a.id_groupe - b.id_groupe);
+        // Reste sur l'enseignement d'origine : le premier groupe qui suit sa composante
+        const tries = [...enseignement.groupes].sort((a, b) => a.id_groupe - b.id_groupe);
+        const garde = tries.find((g) => !origineDuGroupe(g)) ?? tries[0];
+        const composanteInitiale = enseignement.composante;
+        if (origineDuGroupe(garde)) {
+            await enseignement.update({ id_composante: origineDuGroupe(garde) }, { transaction });
+            await EnseignementGroupe.update(
+                { id_composante_origine: null },
+                { where: { id_enseignement: enseignement.id_enseignement, id_groupe: garde.id_groupe }, transaction }
+            );
+        }
+
+        const services = await EnseignementEnseignant.findAll({ where: { id_enseignement: enseignement.id_enseignement }, transaction });
         const crees = [enseignement.id_enseignement];
-        for (const groupe of detaches) {
+        for (const groupe of tries.filter((g) => g !== garde)) {
+            const autreModule = origineDuGroupe(groupe) && origineDuGroupe(groupe) !== composanteInitiale.id_composante;
+            const composante = autreModule ? await CoursComposante.findByPk(origineDuGroupe(groupe), { transaction }) : composanteInitiale;
             const nouveau = await Enseignement.create(
                 {
-                    id_composante: enseignement.id_composante,
+                    id_composante: composante.id_composante,
                     id_periode: enseignement.id_periode,
                     libelle: enseignement.libelle,
-                    heures_prevues: enseignement.heures_prevues,
+                    heures_prevues: autreModule ? composante.volume_heures : enseignement.heures_prevues,
                 },
                 { transaction }
             );
@@ -217,6 +273,18 @@ export const scinderEnseignement = async (id) =>
                 { id_enseignement: nouveau.id_enseignement },
                 { where: { id_enseignement: enseignement.id_enseignement, id_groupe: groupe.id_groupe }, transaction }
             );
+            for (const service of services) {
+                await EnseignementEnseignant.create(
+                    {
+                        id_enseignement: nouveau.id_enseignement,
+                        id_user: service.id_user,
+                        role: service.role,
+                        heures: service.heures,
+                        statut_service: "propose",
+                    },
+                    { transaction }
+                );
+            }
             crees.push(nouveau.id_enseignement);
         }
         return crees;

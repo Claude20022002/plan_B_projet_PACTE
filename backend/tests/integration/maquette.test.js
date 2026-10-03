@@ -276,6 +276,47 @@ describe("Enseignements : génération depuis la maquette, mutualisation, décou
         expect(await Enseignement.count({ where: { id_composante: composante.id_composante } })).toBe(1);
     });
 
+    test("mutualisation entre modules de deux filières : ni recréée par la génération, ni perdue au découpage", async () => {
+        // « Gestion de projet » : un module par filière, un seul cours en commun
+        const autre = await creerFiliere("ENS2");
+        await creerGroupe({ nom_groupe: "4A ENS2", niveau: "4ème année", type_groupe: "promotion", id_filiere: autre.id_filiere, effectif: 18 });
+        const modules = [];
+        for (const [code, idFiliere] of [["ENS-PMI", filiere.id_filiere], ["ENS2-PMI", autre.id_filiere]]) {
+            const cree = await clients.admin.send("post", "/api/cours", {
+                code_cours: code, nom_cours: "Gestion de projet", niveau: "4ème année", volume_horaire: 21, type_cours: "CM", semestre: "S7", id_filiere: idFiliere,
+            });
+            await CoursComposante.update({ niveau_groupe: "promotion" }, { where: { id_cours: cree.body.cours.id_cours } });
+            modules.push(cree.body.cours);
+        }
+        await clients.admin.send("post", "/api/enseignements/generer", { id_periode: periode.id_periode });
+        const [ens1, ens2] = await Promise.all(modules.map((m) => Enseignement.findOne({ include: [{ model: CoursComposante, as: "composante", where: { id_cours: m.id_cours } }] })));
+        // L'enseignant proposé sur le module absorbé rejoint l'enseignement mutualisé
+        await clients.admin.send("post", `/api/enseignements/${ens2.id_enseignement}/enseignants`, { id_user: enseignant.id_user });
+
+        const fusion = await clients.admin.send("post", "/api/enseignements/fusionner", { ids: [ens1.id_enseignement, ens2.id_enseignement] });
+        expect(fusion.status).toBe(200);
+        expect(fusion.body.enseignement.effectif).toBe(62);
+        expect(fusion.body.enseignement.services).toEqual([expect.objectContaining({ id_user: enseignant.id_user, role: "principal" })]);
+
+        const relance = await clients.admin.send("post", "/api/enseignements/generer", { id_periode: periode.id_periode });
+        expect(relance.body.crees).toBe(0);
+
+        const decoupe = await clients.admin.send("post", `/api/enseignements/${ens1.id_enseignement}/scinder`);
+        expect(decoupe.status).toBe(200);
+        const apres = await Enseignement.findAll({ where: { id_enseignement: decoupe.body.ids }, include: ["composante", "groupes", "services"] });
+        expect(apres.map((e) => [e.composante.id_cours, e.groupes.map((g) => g.nom_groupe)]).sort()).toEqual(
+            [[modules[0].id_cours, ["4A ENS"]], [modules[1].id_cours, ["4A ENS2"]]].sort()
+        );
+        expect(apres.flatMap((e) => e.services.map((s) => s.statut_service))).toEqual(["propose", "propose"]);
+    });
+
+    test("un même groupe ne peut pas être mutualisé avec lui-même sur deux modules", async () => {
+        const liste = await clients.admin.get(`/api/enseignements?id_periode=${periode.id_periode}&id_filiere=${filiere.id_filiere}`);
+        const cmsPromo = liste.body.filter((e) => e.composante.type === "CM" && e.groupes.some((g) => g.id_groupe === promo.id_groupe));
+        const response = await clients.admin.send("post", "/api/enseignements/fusionner", { ids: cmsPromo.slice(0, 2).map((e) => e.id_enseignement) });
+        expect(response.status).toBe(400);
+    });
+
     test("réservé à l'administration", async () => {
         expect((await clients.enseignant.get("/api/enseignements")).status).toBe(403);
     });
