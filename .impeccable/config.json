@@ -8,6 +8,11 @@
         "value": "arial",
         "createdAt": "2026-10-02T23:13:44.116Z",
         "reason": "Claude: Arial dans les gabarits d'email HTML (backend/utils/sendEmail.js) — les clients mail ne chargent pas les polices web, une police systeme est requise"
+      },
+      {
+        "rule": "design-system-font",
+        "value": "arial",
+        "createdAt": "2026-10-03T09:43:24.537Z"
       }
     ]
   }
