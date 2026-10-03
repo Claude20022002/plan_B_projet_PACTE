@@ -41,6 +41,9 @@ const Evenement = sequelize.define(
         // id du campus, de la filière ou du groupe selon la portée (filière pour la portée « niveau »)
         id_cible: DataTypes.INTEGER,
         niveau: DataTypes.STRING,
+        // Plage horaire facultative (null = journées entières), ex. activités d'intégration l'après-midi
+        heure_debut: DataTypes.TIME,
+        heure_fin: DataTypes.TIME,
         // Faux pour une fête religieuse dont la date reste à confirmer (observation du croissant)
         date_confirmee: {
             type: DataTypes.BOOLEAN,

@@ -43,6 +43,15 @@ const Cours = sequelize.define(
             allowNull: false,
             // Les relations sont gérées via les associations dans models/index.js
         },
+        ects: {
+            type: DataTypes.DECIMAL(4, 1),
+            get() {
+                const valeur = this.getDataValue("ects");
+                return valeur === null || valeur === undefined ? valeur : Number(valeur);
+            },
+        },
+        // Enseignant responsable du module (coordonne ses composantes)
+        id_responsable: DataTypes.INTEGER,
     },
     {
         tableName: "Cours",

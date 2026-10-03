@@ -33,10 +33,15 @@ const Affectation = sequelize.define(
             allowNull: false,
             // Les relations sont gérées via les associations dans models/index.js
         },
+        // Facultative : une séance en distanciel n'occupe aucune salle
         id_salle: {
             type: DataTypes.INTEGER,
-            allowNull: false,
-            // Les relations sont gérées via les associations dans models/index.js
+            allowNull: true,
+        },
+        // Enseignement planifié (composante × groupes) dont cette séance fait partie
+        id_enseignement: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
         },
         id_creneau: {
             type: DataTypes.INTEGER,

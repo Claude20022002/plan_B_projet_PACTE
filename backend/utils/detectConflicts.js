@@ -165,7 +165,7 @@ export const detecterTousLesConflits = async () => {
                 )
             ) {
                 // Conflit de salle
-                if (affectation1.id_salle === affectation2.id_salle) {
+                if (affectation1.id_salle != null && affectation1.id_salle === affectation2.id_salle) {
                     conflits.push({
                         type: "salle",
                         affectation1: affectation1.id_affectation,
