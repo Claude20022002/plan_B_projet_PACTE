@@ -86,7 +86,7 @@ export default function ResetPassword() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                    background: '#0B0B0D', // fond du panneau (charte HESTIM)
                     padding: 2,
                 }}
             >
@@ -111,7 +111,7 @@ export default function ResetPassword() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                background: '#0B0B0D', // fond du panneau (charte HESTIM)
                 padding: 2,
             }}
         >
