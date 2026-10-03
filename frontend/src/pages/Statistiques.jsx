@@ -14,12 +14,10 @@ import {
     ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
 import DashboardLayout from '../components/layouts/DashboardLayout';
-import { ds } from '../design-system/tokens';
+import { ds, lineColor } from '../design-system/tokens';
 import { statistiquesAPI } from '../services/api';
 import { exportMultiSheet, COLS_CHARGE_ENSEIGNANTS, COLS_OCCUPATION_GROUPES } from '../utils/exportExcel';
 
-// ── Palette couleurs : bleu marine HESTIM puis couleurs de ligne du système ───
-const PALETTE = [ds.brand.navy, ...ds.lines];
 
 const RADIAN = Math.PI / 180;
 const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
@@ -35,28 +33,31 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 
 const numberFr = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
 
-/** Bande réglée d'indicateurs (une rangée, des filets) — même vocabulaire que le tableau de bord */
+/** Indicateurs en lignes réglées libellé | valeur | détail — même vocabulaire que le panneau */
 function KpiStrip({ items }) {
     return (
-        <Box component="dl" sx={{
-            m: 0, mb: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider',
-            borderRadius: `${ds.radius.lg}px`, display: 'grid',
-            gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(3, 1fr)', lg: 'repeat(5, 1fr)' },
-        }}>
-            {items.map((item) => (
-                <Box key={item.title} sx={{ px: 2, py: 1.75, borderRight: '1px solid', borderBottom: { xs: '1px solid', lg: 0 }, borderColor: 'divider', '&:last-of-type': { borderRight: 0 } }}>
-                    <Box component="dt" sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>
-                        {item.title}
-                    </Box>
-                    <Box component="dd" sx={{ m: 0, mt: 0.5 }}>
-                        <Box component="span" sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.75rem', lineHeight: 1.1, color: item.tone || 'text.primary' }}>
-                            {item.value === undefined || item.value === null ? '—' : numberFr.format(item.value)}
+        <Box sx={{ mb: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px`, overflowX: 'auto' }}>
+            <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
+                <caption style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
+                    Indicateurs de la période
+                </caption>
+                <tbody>
+                    {items.map((item) => (
+                        <Box component="tr" key={item.title} sx={{ borderBottom: '1px solid', borderColor: 'divider', '&:last-of-type': { borderBottom: 0 } }}>
+                            <Box component="th" scope="row" sx={{ textAlign: 'left', px: 2, py: 1.25, fontWeight: 500, fontSize: '0.9375rem', color: 'text.secondary', whiteSpace: 'nowrap' }}>
+                                {item.title}
+                            </Box>
+                            <Box component="td" sx={{ px: 2, py: 1.25, textAlign: 'right', whiteSpace: 'nowrap', fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.125rem', letterSpacing: '0.04em', color: item.tone || 'text.primary' }}>
+                                {item.value === undefined || item.value === null ? '—' : numberFr.format(item.value)}
+                                {item.unit && <Box component="span" sx={{ ml: 0.5, fontSize: '0.875rem', color: 'text.secondary' }}>{item.unit}</Box>}
+                            </Box>
+                            <Box component="td" sx={{ px: 2, py: 1.25, color: 'text.secondary', fontSize: '0.875rem', display: { xs: 'none', sm: 'table-cell' } }}>
+                                {item.subtitle}
+                            </Box>
                         </Box>
-                        {item.unit && <Box component="span" sx={{ ml: 0.5, color: 'text.secondary' }}>{item.unit}</Box>}
-                        {item.subtitle && <Typography variant="body2" color="text.secondary" sx={{ mt: 0.25 }}>{item.subtitle}</Typography>}
-                    </Box>
-                </Box>
-            ))}
+                    ))}
+                </tbody>
+            </Box>
         </Box>
     );
 }
@@ -334,7 +335,7 @@ export default function Statistiques() {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {charge.slice(0, 25).map((e, i) => {
+                                            {charge.slice(0, 25).map((e) => {
                                                 const avg = charge.length
                                                     ? charge.reduce((s, x) => s + x.total_heures, 0) / charge.length : 0;
                                                 const surcharge = e.total_heures > avg * 1.3;
@@ -396,7 +397,7 @@ export default function Statistiques() {
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
-                                            {groupes.map((g, i) => {
+                                            {groupes.map((g) => {
                                                 const maxH = groupes[0]?.total_heures || 1;
                                                 const pct  = Math.round((g.total_heures / maxH) * 100);
                                                 return (
