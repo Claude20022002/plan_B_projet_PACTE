@@ -1,5 +1,5 @@
 import sequelize from "../config/db.js";
-import { Creneau } from "../models/index.js";
+import { Affectation, Creneau } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { pick } from "../utils/validationHelper.js";
@@ -160,6 +160,14 @@ export const deleteCreneau = asyncHandler(async (req, res) => {
         return res.status(404).json({
             message: "Créneau non trouvé",
             error: `Aucun créneau trouvé avec l'ID ${req.params.id}`,
+        });
+    }
+
+    const seances = await Affectation.count({ where: { id_creneau: creneau.id_creneau } });
+    if (seances > 0) {
+        return res.status(409).json({
+            message: "Créneau utilisé",
+            error: `${seances} séance(s) utilisent ce créneau : déplacez-les avant de le supprimer`,
         });
     }
 

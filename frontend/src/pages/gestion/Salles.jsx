@@ -1,556 +1,502 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
+    Autocomplete,
     Box,
+    Button,
+    Chip,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    FormControlLabel,
+    IconButton,
+    MenuItem,
     Paper,
+    Stack,
+    Switch,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    TablePagination,
-    TableSortLabel,
-    Button,
-    IconButton,
-    Chip,
     TextField,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
+    ToggleButton,
+    ToggleButtonGroup,
     Typography,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, ArrowBack, UploadFile, Download, MeetingRoom } from '@mui/icons-material';
+import { Add, Delete, Edit, FileDownloadOutlined, UploadFile, MeetingRoom } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { salleAPI } from '../../services/api';
-import { useFormik } from 'formik';
-import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
-import { parseFile, validateSalleData } from '../../utils/fileImport';
+import ConfirmDialog from '../../components/common/ConfirmDialog';
+import DataToolbar from '../../design-system/components/DataToolbar';
+import EmptyState from '../../design-system/components/EmptyState';
+import StateChip from '../../design-system/components/StateChip';
+import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
+import { campusAPI, parametrePlanningAPI, salleAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
+import { parseFile } from '../../utils/fileImport';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_SALLES } from '../../utils/exportColumns';
-import { Alert, Snackbar, List, ListItem, ListItemText, CircularProgress } from '@mui/material';
-import ConfirmDialog from '../../components/common/ConfirmDialog';
-import SkeletonTable from '../../components/common/SkeletonTable';
-import EmptyState from '../../components/common/EmptyState';
-import { useSortableTable } from '../../hooks/useSortableTable';
 
-const validationSchema = yup.object({
-    nom_salle: yup.string().required('Le nom de la salle est requis'),
-    type_salle: yup.string().required('Le type de salle est requis'),
-    capacite: yup.number().min(1, 'La capacité doit être supérieure à 0').required(),
-    batiment: yup.string().required('Le bâtiment est requis'),
-});
+const EMPTY_FORM = {
+    nom_salle: '',
+    type_salle: '',
+    id_campus: '',
+    capacite: '',
+    capacite_examen: '',
+    etage: '',
+    equipements: [],
+    reservable_par: 'admin',
+    disponible: true,
+};
+
+const MODELE_CSV = [
+    'nom_salle;type_salle;capacite;campus;etage;equipements;capacite_examen;reservable_par',
+    'G-S01;Salle de cours;38;G;1;Vidéoprojecteur, Tableau blanc;19;admin',
+    'ST-LABO01;Labo informatique;28;ST;1;28 postes, AutoCAD;;enseignants',
+].join('\n');
+
+const telechargerModele = () => {
+    const blob = new Blob([`﻿${MODELE_CSV}`], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const lien = Object.assign(document.createElement('a'), { href: url, download: 'modele-inventaire-salles.csv' });
+    lien.click();
+    URL.revokeObjectURL(url);
+};
 
 export default function Salles() {
-    const navigate = useNavigate();
+    const { t } = useTranslation();
+    const toast = useToast();
     const [salles, setSalles] = useState([]);
+    const [campus, setCampus] = useState([]);
+    const [types, setTypes] = useState([]);
+    const [ratioExamen, setRatioExamen] = useState(0.5);
     const [loading, setLoading] = useState(true);
-    const [page, setPage] = useState(0);
-    const [rowsPerPage, setRowsPerPage] = useState(10);
-    const [total, setTotal] = useState(0);
-    const [open, setOpen] = useState(false);
-    const [editing, setEditing] = useState(null);
+    const [campusFiltre, setCampusFiltre] = useState('tous');
     const [search, setSearch] = useState('');
-    const [error, setError] = useState('');
-    const [success, setSuccess] = useState('');
-    const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
-    const [importOpen, setImportOpen] = useState(false);
-    const [importLoading, setImportLoading] = useState(false);
-    const [importErrors, setImportErrors] = useState([]);
-    const { sorted, requestSort, getSortDir } = useSortableTable(salles);
+    const [dialog, setDialog] = useState({ open: false, editing: null });
+    const [form, setForm] = useState(EMPTY_FORM);
+    const [formErrors, setFormErrors] = useState({});
+    const [saving, setSaving] = useState(false);
+    const [aSupprimer, setASupprimer] = useState(null);
+    const [importState, setImportState] = useState({ open: false, loading: false, erreurs: [] });
 
-    useEffect(() => {
-        loadSalles();
-    }, [page, rowsPerPage, search]);
-
-    const loadSalles = async () => {
+    const charger = useCallback(async () => {
         setLoading(true);
         try {
-            const data = await salleAPI.getAll({ page: page + 1, limit: rowsPerPage });
-            setSalles(data.data || []);
-            setTotal(data.pagination?.total || 0);
-        } catch (err) {
-            console.error('Erreur:', err);
+            const [listeSalles, listeCampus, referentiel, parametres] = await Promise.all([
+                salleAPI.getAll({ limit: 100 }),
+                campusAPI.getAll(),
+                salleAPI.getReferentiel(),
+                parametrePlanningAPI.getAll().catch(() => null),
+            ]);
+            setSalles(listeSalles.data || []);
+            setCampus(listeCampus || []);
+            setTypes(referentiel.types_salle || []);
+            if (parametres?.ratio_capacite_examen) setRatioExamen(parametres.ratio_capacite_examen.valeur);
+        } catch {
+            toast.error(t('common.errorLoad'));
         } finally {
             setLoading(false);
         }
+    }, [t, toast]);
+
+    useEffect(() => {
+        charger();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    const sallesAffichees = useMemo(() => {
+        const terme = search.trim().toLowerCase();
+        return salles
+            .filter((s) => campusFiltre === 'tous' || s.campus?.code === campusFiltre)
+            .filter((s) => {
+                if (!terme) return true;
+                return [s.nom_salle, s.type_salle, s.campus?.nom, ...(s.equipements || [])]
+                    .filter(Boolean)
+                    .some((valeur) => String(valeur).toLowerCase().includes(terme));
+            });
+    }, [salles, campusFiltre, search]);
+
+    const ouvrir = (salle = null) => {
+        setFormErrors({});
+        setForm(
+            salle
+                ? {
+                      nom_salle: salle.nom_salle,
+                      type_salle: salle.type_salle,
+                      id_campus: salle.id_campus,
+                      capacite: salle.capacite,
+                      capacite_examen: salle.capacite_examen ?? '',
+                      etage: salle.etage ?? '',
+                      equipements: salle.equipements || [],
+                      reservable_par: salle.reservable_par || 'admin',
+                      disponible: salle.disponible,
+                  }
+                : { ...EMPTY_FORM, id_campus: campus[0]?.id_campus ?? '' }
+        );
+        setDialog({ open: true, editing: salle });
     };
 
-    const formik = useFormik({
-        initialValues: {
-            nom_salle: '',
-            type_salle: '',
-            capacite: '',
-            batiment: '',
-            etage: '',
-            equipements: '',
-            disponible: true,
-        },
-        validationSchema,
-        onSubmit: async (values) => {
-            try {
-                if (editing) {
-                    await salleAPI.update(editing.id_salle, values);
-                } else {
-                    await salleAPI.create(values);
-                }
-                formik.resetForm();
-                setOpen(false);
-                setEditing(null);
-                loadSalles();
-            } catch (error) {
-                console.error('Erreur:', error);
-            }
-        },
-    });
+    const champ = (nom) => (event) => setForm((f) => ({ ...f, [nom]: event.target.value }));
 
-    const handleEdit = (salle) => {
-        setEditing(salle);
-        formik.setValues({
-            nom_salle: salle.nom_salle,
-            type_salle: salle.type_salle,
-            capacite: salle.capacite,
-            batiment: salle.batiment,
-            etage: salle.etage || '',
-            equipements: salle.equipements || '',
-            disponible: salle.disponible,
-        });
-        setOpen(true);
-    };
-
-    const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
-
-    const handleDeleteConfirm = async () => {
-        const { id } = confirmDialog;
-        setConfirmDialog({ open: false, id: null });
-        try {
-            await salleAPI.delete(id);
-            setSuccess('Salle supprimée avec succès');
-            loadSalles();
-        } catch (err) {
-            console.error('Erreur:', err);
-            setError('Erreur lors de la suppression');
+    const valider = () => {
+        const erreurs = {};
+        if (!form.nom_salle.trim()) erreurs.nom_salle = t('ref.rooms.required');
+        if (!form.type_salle) erreurs.type_salle = t('ref.rooms.required');
+        if (!form.id_campus) erreurs.id_campus = t('ref.rooms.required');
+        if (!(Number(form.capacite) >= 1)) erreurs.capacite = t('ref.rooms.capacityInvalid');
+        if (form.capacite_examen !== '' && Number(form.capacite_examen) > Number(form.capacite)) {
+            erreurs.capacite_examen = t('ref.rooms.examTooHigh');
         }
+        setFormErrors(erreurs);
+        return Object.keys(erreurs).length === 0;
     };
 
-    const handleFileImport = async (file) => {
-        setImportLoading(true);
-        setImportErrors([]);
+    const enregistrer = async (event) => {
+        event.preventDefault();
+        if (!valider()) return;
+        setSaving(true);
+        const data = {
+            ...form,
+            nom_salle: form.nom_salle.trim(),
+            capacite: Number(form.capacite),
+            id_campus: Number(form.id_campus),
+            capacite_examen: form.capacite_examen === '' ? null : Number(form.capacite_examen),
+            etage: form.etage === '' ? null : Number(form.etage),
+        };
         try {
-            const data = await parseFile(file);
-            console.log('Données parsées depuis le fichier:', data);
-            
-            if (!data || data.length === 0) {
-                setError('Le fichier est vide ou ne contient pas de données valides');
-                setImportLoading(false);
-                return;
+            if (dialog.editing) {
+                await salleAPI.update(dialog.editing.id_salle, data);
+                toast.success(t('ref.rooms.updated'));
+            } else {
+                await salleAPI.create(data);
+                toast.success(t('ref.rooms.created'));
             }
-            
-            const validation = validateSalleData(data);
-            
-            if (!validation.valid) {
-                setImportErrors(validation.errors);
-                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
-                return;
-            }
-
-            // Préparer les données pour l'import
-            const sallesToImport = data.map((row) => ({
-                nom_salle: row.nom_salle?.trim() || '',
-                type_salle: row.type_salle?.trim().toLowerCase() || '',
-                capacite: row.capacite ? Number(row.capacite) : 0,
-                batiment: row.batiment?.trim() || '',
-                etage: row.etage !== undefined && row.etage !== '' ? Number(row.etage) : null,
-                equipements: row.equipements?.trim() || '',
-                disponible: row.disponible !== undefined ? Boolean(row.disponible) : true,
-            }));
-
-            // Importer les salles une par une
-            const results = { success: 0, errors: [] };
-            for (const salle of sallesToImport) {
-                try {
-                    await salleAPI.create(salle);
-                    results.success++;
-                } catch (error) {
-                    results.errors.push({
-                        nom: salle.nom_salle,
-                        error: error.message || 'Erreur lors de la création',
-                    });
-                }
-            }
-
-            setSuccess(`${results.success} salle(s) importée(s) avec succès`);
-            if (results.errors.length > 0) {
-                setImportErrors(results.errors.map(e => `${e.nom}: ${e.error}`));
-            }
-            setImportOpen(false);
-            loadSalles();
+            setDialog({ open: false, editing: null });
+            charger();
         } catch (error) {
-            console.error('Erreur lors de l\'import:', error);
-            setError(error.message || 'Erreur lors de l\'import du fichier');
+            toast.error(error.response?.data?.error || error.message);
         } finally {
-            setImportLoading(false);
+            setSaving(false);
         }
     };
 
-    const handleExport = () => {
-        exportToExcelLazy(salles, COLS_SALLES, 'Salles', 'Salles');
+    const supprimer = async () => {
+        const salle = aSupprimer;
+        setASupprimer(null);
+        try {
+            await salleAPI.delete(salle.id_salle);
+            toast.success(t('ref.rooms.deleted'));
+            charger();
+        } catch (error) {
+            toast.error(error.response?.data?.error || error.message);
+        }
+    };
+
+    const importer = async (fichier) => {
+        setImportState((s) => ({ ...s, loading: true, erreurs: [] }));
+        try {
+            const lignes = await parseFile(fichier);
+            const resultat = await salleAPI.importBulk(lignes);
+            toast.success(t('ref.rooms.importDone', { crees: resultat.crees, maj: resultat.mises_a_jour }));
+            setImportState({ open: false, loading: false, erreurs: [] });
+            charger();
+        } catch (error) {
+            const erreurs = error.response?.data?.erreurs;
+            if (erreurs) {
+                setImportState((s) => ({ ...s, loading: false, erreurs }));
+            } else {
+                setImportState((s) => ({ ...s, loading: false }));
+                toast.error(error.response?.data?.error || error.message);
+            }
+        }
+    };
+
+    const libelleType = (type) => t(`ref.roomTypes.${type}`, { defaultValue: type });
+    const libelleEtage = (etage) => {
+        if (etage === null || etage === undefined) return '—';
+        if (etage === 0) return t('ref.rooms.groundFloor');
+        if (etage < 0) return t('ref.rooms.basement');
+        return t('ref.rooms.floorN', { n: etage });
     };
 
     return (
         <DashboardLayout>
-            <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined"
-                            size="small"
-                        >
-                            Retour
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            Gestion des Salles
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                            variant="outlined"
-                            startIcon={<UploadFile />}
-                            onClick={() => {
-                                setImportOpen(true);
-                                setImportErrors([]);
-                            }}
-                        >
-                            Importer (Excel/CSV)
-                        </Button>
-                        <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
-                            Exporter Excel
-                        </Button>
-                        <Button
-                            variant="contained"
-                            startIcon={<Add />}
-                            onClick={() => {
-                                setEditing(null);
-                                formik.resetForm();
-                                setOpen(true);
-                            }}
-                        >
-                            Ajouter une salle
-                        </Button>
-                    </Box>
+            <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
+                    <ToggleButtonGroup
+                        size="small"
+                        exclusive
+                        value={campusFiltre}
+                        onChange={(_, valeur) => valeur && setCampusFiltre(valeur)}
+                        aria-label={t('ref.rooms.cols.campus')}
+                    >
+                        <ToggleButton value="tous">{t('ref.rooms.allCampuses')}</ToggleButton>
+                        {campus.map((c) => (
+                            <ToggleButton key={c.id_campus} value={c.code}>
+                                {c.nom}
+                            </ToggleButton>
+                        ))}
+                    </ToggleButtonGroup>
+                    <Typography variant="body2" color="text.secondary">
+                        {t('ref.rooms.count', { count: sallesAffichees.length })}
+                    </Typography>
                 </Box>
 
-                {error && (
-                    <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
-                        <Alert onClose={() => setError('')} severity="error">
-                            {error}
-                        </Alert>
-                    </Snackbar>
-                )}
-
-                {success && (
-                    <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess('')}>
-                        <Alert onClose={() => setSuccess('')} severity="success">
-                            {success}
-                        </Alert>
-                    </Snackbar>
-                )}
-
-                <Paper sx={{ mb: 2 }}>
-                    <Box sx={{ p: 2 }}>
-                        <TextField
-                            fullWidth
-                            placeholder="Rechercher une salle..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
-                            InputProps={{
-                                startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
-                            }}
-                        />
-                    </Box>
-                </Paper>
+                <DataToolbar search={search} onSearchChange={setSearch} onExport={() => exportToExcelLazy(sallesAffichees, COLS_SALLES, 'Salles', 'Salles')}>
+                    <Button variant="outlined" startIcon={<UploadFile />} onClick={() => setImportState({ open: true, loading: false, erreurs: [] })}>
+                        {t('ref.rooms.import')}
+                    </Button>
+                    <Button variant="contained" startIcon={<Add />} onClick={() => ouvrir()} disabled={campus.length === 0}>
+                        {t('ref.rooms.add')}
+                    </Button>
+                </DataToolbar>
 
                 {loading ? (
-                    <SkeletonTable columns={7} rows={rowsPerPage} />
+                    <TableSkeleton rows={8} />
                 ) : salles.length === 0 ? (
                     <EmptyState
-                        icon={MeetingRoom}
-                        title="Aucune salle enregistrée"
-                        description="Commencez par ajouter une première salle ou importez un fichier Excel."
-                        actionLabel="Ajouter une salle"
-                        onAction={() => { setEditing(null); formik.resetForm(); setOpen(true); }}
+                        icon={<MeetingRoom />}
+                        title={t('ref.rooms.emptyTitle')}
+                        description={t('ref.rooms.emptyBody')}
+                        actionLabel={t('ref.rooms.import')}
+                        onAction={() => setImportState({ open: true, loading: false, erreurs: [] })}
                     />
+                ) : sallesAffichees.length === 0 ? (
+                    <Typography variant="body2" color="text.secondary" sx={{ py: 4, textAlign: 'center' }}>
+                        {t('ref.rooms.noMatch')}
+                    </Typography>
                 ) : (
-                <TableContainer component={Paper}>
-                    <Table>
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>
-                                    <TableSortLabel active={getSortDir('nom_salle') !== undefined} direction={getSortDir('nom_salle') || 'asc'} onClick={() => requestSort('nom_salle')}>Nom</TableSortLabel>
-                                </TableCell>
-                                <TableCell>
-                                    <TableSortLabel active={getSortDir('type_salle') !== undefined} direction={getSortDir('type_salle') || 'asc'} onClick={() => requestSort('type_salle')}>Type</TableSortLabel>
-                                </TableCell>
-                                <TableCell>
-                                    <TableSortLabel active={getSortDir('capacite') !== undefined} direction={getSortDir('capacite') || 'asc'} onClick={() => requestSort('capacite')}>Capacité</TableSortLabel>
-                                </TableCell>
-                                <TableCell>
-                                    <TableSortLabel active={getSortDir('batiment') !== undefined} direction={getSortDir('batiment') || 'asc'} onClick={() => requestSort('batiment')}>Bâtiment</TableSortLabel>
-                                </TableCell>
-                                <TableCell>Étage</TableCell>
-                                <TableCell>Statut</TableCell>
-                                <TableCell align="right">Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {sorted.map((salle) => (
-                                <TableRow key={salle.id_salle} hover>
-                                    <TableCell>{salle.nom_salle}</TableCell>
-                                    <TableCell>{salle.type_salle}</TableCell>
-                                    <TableCell>{salle.capacite}</TableCell>
-                                    <TableCell>{salle.batiment}</TableCell>
-                                    <TableCell>
-                                        {salle.etage === null || salle.etage === undefined
-                                            ? '-'
-                                            : salle.etage === -1
-                                              ? 'Sous-sol'
-                                              : salle.etage === 0
-                                                ? 'Rez-de-chaussée'
-                                                : `${salle.etage}ème étage`}
-                                    </TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={salle.disponible ? 'Disponible' : 'Indisponible'}
-                                            color={salle.disponible ? 'success' : 'default'}
-                                            size="small"
-                                        />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <IconButton
-                                            size="small"
-                                            onClick={() => handleEdit(salle)}
-                                            aria-label={`Modifier ${salle.nom_salle}`}
-                                        >
-                                            <Edit />
-                                        </IconButton>
-                                        <IconButton
-                                            size="small"
-                                            color="error"
-                                            onClick={() => handleDeleteClick(salle.id_salle)}
-                                            aria-label={`Supprimer ${salle.nom_salle}`}
-                                        >
-                                            <Delete />
-                                        </IconButton>
-                                    </TableCell>
+                    <TableContainer>
+                        <Table size="small" stickyHeader>
+                            <TableHead>
+                                <TableRow>
+                                    <TableCell>{t('ref.rooms.cols.name')}</TableCell>
+                                    <TableCell>{t('ref.rooms.cols.type')}</TableCell>
+                                    <TableCell>{t('ref.rooms.cols.campus')}</TableCell>
+                                    <TableCell align="right">{t('ref.rooms.cols.capacity')}</TableCell>
+                                    <TableCell align="right">{t('ref.rooms.cols.exam')}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{t('ref.rooms.cols.floor')}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{t('ref.rooms.cols.equipment')}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.rooms.cols.booking')}</TableCell>
+                                    <TableCell>{t('ref.rooms.cols.state')}</TableCell>
+                                    <TableCell align="right">{t('ref.rooms.cols.actions')}</TableCell>
                                 </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                    <TablePagination
-                        component="div"
-                        count={total}
-                        page={page}
-                        onPageChange={(e, newPage) => setPage(newPage)}
-                        rowsPerPage={rowsPerPage}
-                        onRowsPerPageChange={(e) => {
-                            setRowsPerPage(parseInt(e.target.value, 10));
-                            setPage(0);
-                        }}
-                        rowsPerPageOptions={[5, 10, 25, 50]}
-                    />
-                </TableContainer>
+                            </TableHead>
+                            <TableBody>
+                                {sallesAffichees.map((salle) => (
+                                    <TableRow key={salle.id_salle} hover>
+                                        <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{salle.nom_salle}</TableCell>
+                                        <TableCell>{libelleType(salle.type_salle)}</TableCell>
+                                        <TableCell>{salle.campus?.nom ?? '—'}</TableCell>
+                                        <TableCell align="right">{salle.capacite}</TableCell>
+                                        <TableCell align="right">{salle.capacite_examen ?? '—'}</TableCell>
+                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{libelleEtage(salle.etage)}</TableCell>
+                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' }, maxWidth: 260 }}>
+                                            <Typography variant="body2" color="text.secondary" noWrap title={(salle.equipements || []).join(', ')}>
+                                                {(salle.equipements || []).join(', ') || '—'}
+                                            </Typography>
+                                        </TableCell>
+                                        <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
+                                            {salle.reservable_par === 'enseignants' ? t('ref.rooms.bookingTeachers') : t('ref.rooms.bookingAdmin')}
+                                        </TableCell>
+                                        <TableCell>
+                                            <StateChip tone={salle.disponible ? 'success' : 'danger'}>
+                                                {salle.disponible ? t('ref.rooms.available') : t('ref.rooms.unavailable')}
+                                            </StateChip>
+                                        </TableCell>
+                                        <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                                            <IconButton size="small" onClick={() => ouvrir(salle)} aria-label={t('ref.common.editItem', { name: salle.nom_salle })}>
+                                                <Edit fontSize="small" />
+                                            </IconButton>
+                                            <IconButton size="small" color="error" onClick={() => setASupprimer(salle)} aria-label={t('ref.common.deleteItem', { name: salle.nom_salle })}>
+                                                <Delete fontSize="small" />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </TableContainer>
                 )}
+            </Paper>
 
-                {/* Dialog pour créer/modifier */}
-                <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-                    <form onSubmit={formik.handleSubmit}>
-                        <DialogTitle>
-                            {editing ? 'Modifier la salle' : 'Nouvelle salle'}
-                        </DialogTitle>
-                        <DialogContent>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                                <TextField
-                                    fullWidth
-                                    label="Nom de la salle"
-                                    name="nom_salle"
-                                    value={formik.values.nom_salle}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.nom_salle && Boolean(formik.errors.nom_salle)}
-                                    helperText={formik.touched.nom_salle && formik.errors.nom_salle}
-                                />
-                                <FormControl fullWidth>
-                                    <InputLabel>Type de salle</InputLabel>
-                                    <Select
-                                        name="type_salle"
-                                        value={formik.values.type_salle}
-                                        onChange={formik.handleChange}
-                                        label="Type de salle"
-                                        error={formik.touched.type_salle && Boolean(formik.errors.type_salle)}
-                                    >
-                                        <MenuItem value="amphi">Amphithéâtre</MenuItem>
-                                        <MenuItem value="informatique">Salle informatique</MenuItem>
-                                        <MenuItem value="standard">Salle standard</MenuItem>
-                                        <MenuItem value="labo">Laboratoire</MenuItem>
-                                        <MenuItem value="atelier">Atelier</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <TextField
-                                    fullWidth
-                                    label="Capacité"
-                                    name="capacite"
-                                    type="number"
-                                    value={formik.values.capacite}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.capacite && Boolean(formik.errors.capacite)}
-                                    helperText={formik.touched.capacite && formik.errors.capacite}
-                                />
-                                <FormControl fullWidth>
-                                    <InputLabel>Bâtiment</InputLabel>
-                                    <Select
-                                        name="batiment"
-                                        value={formik.values.batiment}
-                                        onChange={formik.handleChange}
-                                        label="Bâtiment"
-                                        error={formik.touched.batiment && Boolean(formik.errors.batiment)}
-                                    >
-                                        <MenuItem value="A">Bâtiment A</MenuItem>
-                                        <MenuItem value="B">Bâtiment B</MenuItem>
-                                        <MenuItem value="C">Bâtiment C</MenuItem>
-                                        <MenuItem value="D">Bâtiment D</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <FormControl fullWidth>
-                                    <InputLabel>Étage</InputLabel>
-                                    <Select
-                                        name="etage"
-                                        value={formik.values.etage}
-                                        onChange={formik.handleChange}
-                                        label="Étage"
-                                    >
-                                        <MenuItem value="-1">Sous-sol</MenuItem>
-                                        <MenuItem value="0">Rez-de-chaussée</MenuItem>
-                                        <MenuItem value="1">1er étage</MenuItem>
-                                        <MenuItem value="2">2ème étage</MenuItem>
-                                        <MenuItem value="3">3ème étage</MenuItem>
-                                        <MenuItem value="4">4ème étage</MenuItem>
-                                        <MenuItem value="5">5ème étage</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <TextField
-                                    fullWidth
-                                    label="Équipements"
-                                    name="equipements"
-                                    multiline
-                                    rows={3}
-                                    value={formik.values.equipements}
-                                    onChange={formik.handleChange}
-                                />
-                            </Box>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setOpen(false)}>Annuler</Button>
-                            <Button type="submit" variant="contained">
-                                {editing ? 'Modifier' : 'Créer'}
-                            </Button>
-                        </DialogActions>
-                    </form>
-                </Dialog>
-
-                {/* Dialog d'import */}
-                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
-                    <DialogTitle>Importer des salles (Excel/CSV)</DialogTitle>
+            {/* Création / modification */}
+            <Dialog open={dialog.open} onClose={() => setDialog({ open: false, editing: null })} maxWidth="sm" fullWidth>
+                <form onSubmit={enregistrer} noValidate>
+                    <DialogTitle>{dialog.editing ? t('ref.rooms.dialogEdit') : t('ref.rooms.dialogCreate')}</DialogTitle>
                     <DialogContent>
-                        <Box sx={{ mt: 2 }}>
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                                <Typography variant="body2" gutterBottom>
-                                    <strong>Format du fichier requis :</strong>
-                                </Typography>
-                                <Typography variant="body2" component="div">
-                                    Les colonnes requises sont : <strong>nom_salle</strong>, <strong>type_salle</strong>, <strong>capacite</strong>, <strong>batiment</strong>
-                                </Typography>
-                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
-                                    Colonnes optionnelles : <strong>etage</strong>, <strong>equipements</strong>, <strong>disponible</strong>
-                                </Typography>
-                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
-                                    Types de salle acceptés : <strong>amphi</strong>, <strong>informatique</strong>, <strong>standard</strong>, <strong>labo</strong>, <strong>atelier</strong>
-                                </Typography>
-                            </Alert>
-                            
-                            <input
-                                accept=".csv,.xlsx,.xls"
-                                style={{ display: 'none' }}
-                                id="import-salle-file-input"
-                                type="file"
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        handleFileImport(file);
-                                    }
-                                }}
+                        <Stack spacing={2} sx={{ mt: 1 }}>
+                            <TextField
+                                label={t('ref.rooms.fields.name')}
+                                value={form.nom_salle}
+                                onChange={champ('nom_salle')}
+                                error={Boolean(formErrors.nom_salle)}
+                                helperText={formErrors.nom_salle}
+                                required
+                                autoFocus
                             />
-                            <label htmlFor="import-salle-file-input">
-                                <Button
-                                    variant="outlined"
-                                    component="span"
-                                    startIcon={<UploadFile />}
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                <TextField
+                                    select
                                     fullWidth
-                                    disabled={importLoading}
+                                    label={t('ref.rooms.fields.type')}
+                                    value={form.type_salle}
+                                    onChange={champ('type_salle')}
+                                    error={Boolean(formErrors.type_salle)}
+                                    helperText={formErrors.type_salle}
+                                    required
                                 >
-                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
-                                </Button>
-                            </label>
-
-                            {importLoading && (
-                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                                    <CircularProgress />
-                                </Box>
-                            )}
-
-                            {importErrors.length > 0 && (
-                                <Box sx={{ mt: 2 }}>
-                                    <Alert severity="error">
-                                        <Typography variant="subtitle2" gutterBottom>
-                                            Erreurs détectées ({importErrors.length}) :
-                                        </Typography>
-                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
-                                            {importErrors.map((err, index) => (
-                                                <ListItem key={index}>
-                                                    <ListItemText primary={err} />
-                                                </ListItem>
-                                            ))}
-                                        </List>
-                                    </Alert>
-                                </Box>
-                            )}
-                        </Box>
+                                    {types.map((type) => (
+                                        <MenuItem key={type} value={type}>
+                                            {libelleType(type)}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                                <TextField
+                                    select
+                                    fullWidth
+                                    label={t('ref.rooms.fields.campus')}
+                                    value={form.id_campus}
+                                    onChange={champ('id_campus')}
+                                    error={Boolean(formErrors.id_campus)}
+                                    helperText={formErrors.id_campus}
+                                    required
+                                >
+                                    {campus.map((c) => (
+                                        <MenuItem key={c.id_campus} value={c.id_campus}>
+                                            {c.nom}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            </Stack>
+                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    label={t('ref.rooms.fields.capacity')}
+                                    value={form.capacite}
+                                    onChange={champ('capacite')}
+                                    error={Boolean(formErrors.capacite)}
+                                    helperText={formErrors.capacite}
+                                    inputProps={{ min: 1 }}
+                                    required
+                                />
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    label={t('ref.rooms.fields.exam')}
+                                    value={form.capacite_examen}
+                                    onChange={champ('capacite_examen')}
+                                    error={Boolean(formErrors.capacite_examen)}
+                                    helperText={formErrors.capacite_examen || t('ref.rooms.fields.examHelp', { ratio: Math.round(ratioExamen * 100) })}
+                                    inputProps={{ min: 0 }}
+                                />
+                                <TextField
+                                    fullWidth
+                                    type="number"
+                                    label={t('ref.rooms.fields.floor')}
+                                    value={form.etage}
+                                    onChange={champ('etage')}
+                                    helperText={t('ref.rooms.fields.floorHelp')}
+                                />
+                            </Stack>
+                            <Autocomplete
+                                multiple
+                                freeSolo
+                                options={[]}
+                                value={form.equipements}
+                                onChange={(_, valeur) => setForm((f) => ({ ...f, equipements: valeur.map((v) => v.trim()).filter(Boolean) }))}
+                                renderTags={(valeur, getTagProps) =>
+                                    valeur.map((option, index) => <Chip size="small" label={option} {...getTagProps({ index })} key={option} />)
+                                }
+                                renderInput={(params) => (
+                                    <TextField {...params} label={t('ref.rooms.fields.equipment')} helperText={t('ref.rooms.fields.equipmentHelp')} />
+                                )}
+                            />
+                            <TextField select label={t('ref.rooms.fields.booking')} value={form.reservable_par} onChange={champ('reservable_par')}>
+                                <MenuItem value="admin">{t('ref.rooms.bookingAdmin')}</MenuItem>
+                                <MenuItem value="enseignants">{t('ref.rooms.bookingTeachers')}</MenuItem>
+                            </TextField>
+                            <FormControlLabel
+                                control={<Switch checked={form.disponible} onChange={(e) => setForm((f) => ({ ...f, disponible: e.target.checked }))} />}
+                                label={t('ref.rooms.fields.available')}
+                            />
+                        </Stack>
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => {
-                            setImportOpen(false);
-                            setImportErrors([]);
-                        }}>
-                            Fermer
+                        <Button onClick={() => setDialog({ open: false, editing: null })}>{t('common.cancel')}</Button>
+                        <Button type="submit" variant="contained" disabled={saving}>
+                            {t('common.save')}
                         </Button>
                     </DialogActions>
-                </Dialog>
-            </Box>
+                </form>
+            </Dialog>
 
-            {/* Dialog de confirmation de suppression */}
+            {/* Import de l'inventaire */}
+            <Dialog open={importState.open} onClose={() => setImportState({ open: false, loading: false, erreurs: [] })} maxWidth="md" fullWidth>
+                <DialogTitle>{t('ref.rooms.importTitle')}</DialogTitle>
+                <DialogContent>
+                    <Stack spacing={2} sx={{ mt: 1 }}>
+                        <Typography variant="body2">{t('ref.rooms.importIntro')}</Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {t('ref.rooms.importTypes', { types: types.join(', ') })}
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            {t('ref.rooms.importAllOrNothing')}
+                        </Typography>
+                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1}>
+                            <Button variant="outlined" startIcon={<FileDownloadOutlined />} onClick={telechargerModele}>
+                                {t('ref.rooms.template')}
+                            </Button>
+                            <Button variant="contained" component="label" startIcon={<UploadFile />} disabled={importState.loading}>
+                                {importState.loading ? t('ref.rooms.importing') : t('ref.rooms.chooseFile')}
+                                <input
+                                    hidden
+                                    type="file"
+                                    accept=".csv,.xlsx,.xls"
+                                    onChange={(e) => {
+                                        const fichier = e.target.files?.[0];
+                                        e.target.value = '';
+                                        if (fichier) importer(fichier);
+                                    }}
+                                />
+                            </Button>
+                        </Stack>
+                        {importState.erreurs.length > 0 && (
+                            <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: 1 }}>
+                                <Typography variant="subtitle2" sx={{ px: 2, py: 1, color: 'error.main' }}>
+                                    {t('ref.rooms.importErrors', { count: importState.erreurs.length })}
+                                </Typography>
+                                <Table size="small">
+                                    <TableBody>
+                                        {importState.erreurs.map((erreur) => (
+                                            <TableRow key={erreur.ligne}>
+                                                <TableCell sx={{ whiteSpace: 'nowrap', width: 110 }}>{t('ref.rooms.line', { n: erreur.ligne })}</TableCell>
+                                                <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 600 }}>{erreur.nom_salle || '—'}</TableCell>
+                                                <TableCell>{erreur.erreurs.join(' · ')}</TableCell>
+                                            </TableRow>
+                                        ))}
+                                    </TableBody>
+                                </Table>
+                            </Box>
+                        )}
+                    </Stack>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setImportState({ open: false, loading: false, erreurs: [] })}>{t('common.close')}</Button>
+                </DialogActions>
+            </Dialog>
+
             <ConfirmDialog
-                open={confirmDialog.open}
-                title="Supprimer la salle"
-                message="Cette action est irréversible. La salle sera définitivement supprimée."
-                onConfirm={handleDeleteConfirm}
-                onCancel={() => setConfirmDialog({ open: false, id: null })}
+                open={Boolean(aSupprimer)}
+                title={t('ref.rooms.deleteTitle')}
+                message={t('ref.rooms.deleteBody', { name: aSupprimer?.nom_salle })}
+                onConfirm={supprimer}
+                onCancel={() => setASupprimer(null)}
             />
         </DashboardLayout>
     );
 }
-

@@ -230,6 +230,51 @@ export const salleAPI = {
     create: (data) => request('/salles', { method: 'POST', body: data }),
     update: (id, data) => request(`/salles/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/salles/${id}`, { method: 'DELETE' }),
+    // Listes fermées : types de salle, droits de réservation
+    getReferentiel: () => request('/salles/referentiel'),
+    // Import de l'inventaire, tout ou rien (erreurs listées par ligne)
+    importBulk: (salles) => request('/salles/import', { method: 'POST', body: { salles } }),
+};
+
+// ==================== CAMPUS ====================
+export const campusAPI = {
+    getAll: () => request('/campus'),
+    create: (data) => request('/campus', { method: 'POST', body: data }),
+    update: (id, data) => request(`/campus/${id}`, { method: 'PUT', body: data }),
+    delete: (id) => request(`/campus/${id}`, { method: 'DELETE' }),
+    getTrajets: () => request('/campus/trajets'),
+    saveTrajet: (data) => request('/campus/trajets', { method: 'PUT', body: data }),
+};
+
+// ==================== CALENDRIER ACADÉMIQUE ====================
+export const calendrierAPI = {
+    getAnnees: () => request('/calendrier/annees'),
+    createAnnee: (data) => request('/calendrier/annees', { method: 'POST', body: data }),
+    updateAnnee: (id, data) => request(`/calendrier/annees/${id}`, { method: 'PUT', body: data }),
+    deleteAnnee: (id) => request(`/calendrier/annees/${id}`, { method: 'DELETE' }),
+    genererFeries: (id) => request(`/calendrier/annees/${id}/feries`, { method: 'POST' }),
+    createPeriode: (idAnnee, data) => request(`/calendrier/annees/${idAnnee}/periodes`, { method: 'POST', body: data }),
+    updatePeriode: (id, data) => request(`/calendrier/periodes/${id}`, { method: 'PUT', body: data }),
+    deletePeriode: (id) => request(`/calendrier/periodes/${id}`, { method: 'DELETE' }),
+};
+
+// ==================== ÉVÉNEMENTS DU CALENDRIER ====================
+export const evenementAPI = {
+    getAll: (params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/evenements${query ? `?${query}` : ''}`);
+    },
+    create: (data) => request('/evenements', { method: 'POST', body: data }),
+    update: (id, data) => request(`/evenements/${id}`, { method: 'PUT', body: data }),
+    confirmer: (id, data = {}) => request(`/evenements/${id}/confirmer`, { method: 'PATCH', body: data }),
+    delete: (id) => request(`/evenements/${id}`, { method: 'DELETE' }),
+};
+
+// ==================== PARAMÈTRES DE PLANIFICATION ====================
+export const parametrePlanningAPI = {
+    getAll: () => request('/parametres-planning'),
+    update: (cle, valeur) => request(`/parametres-planning/${cle}`, { method: 'PUT', body: { valeur } }),
+    reset: (cle) => request(`/parametres-planning/${cle}`, { method: 'DELETE' }),
 };
 
 // ==================== COURS ====================

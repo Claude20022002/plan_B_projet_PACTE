@@ -17,6 +17,9 @@ export const parseFile = async (file) => {
             Papa.parse(file, {
                 header: true,
                 skipEmptyLines: true,
+                // Séparateur détecté automatiquement (« , » ou « ; » d'Excel en français) ;
+                // en-têtes nettoyés du BOM UTF-8 et des espaces
+                transformHeader: (header) => header.replace(/^﻿/, "").trim(),
                 complete: (results) => {
                     if (results.errors.length > 0) {
                         reject(
