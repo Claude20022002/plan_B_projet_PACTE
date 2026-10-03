@@ -23,8 +23,11 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import {
+  Apartment,
   Assignment,
   AutoAwesome,
+  Event,
+  Tune,
   Book,
   CalendarMonth,
   Category,
@@ -70,6 +73,7 @@ const navigationFor = (role) => {
           { key: 'nav.reports', icon: <EventRepeat />, path: '/gestion/demandes-report' },
           { key: 'nav.conflicts', icon: <WarningAmber />, path: '/gestion/conflits' },
           { key: 'nav.generation', icon: <AutoAwesome />, path: '/gestion/generation-automatique' },
+          { key: 'nav.statistics', icon: <Insights />, path: '/statistiques' },
         ],
       },
       {
@@ -78,7 +82,6 @@ const navigationFor = (role) => {
           { key: 'nav.programs', icon: <Category />, path: '/gestion/filieres' },
           { key: 'nav.groups', icon: <Groups />, path: '/gestion/groupes' },
           { key: 'nav.courses', icon: <Book />, path: '/gestion/cours' },
-          { key: 'nav.slots', icon: <CalendarMonth />, path: '/gestion/creneaux' },
         ],
       },
       {
@@ -90,11 +93,14 @@ const navigationFor = (role) => {
         ],
       },
       {
-        section: 'nav.resources',
+        section: 'nav.establishment',
         items: [
+          { key: 'nav.calendar', icon: <Event />, path: '/gestion/calendrier' },
+          { key: 'nav.campus', icon: <Apartment />, path: '/gestion/campus' },
           { key: 'nav.rooms', icon: <MeetingRoom />, path: '/gestion/salles' },
           { key: 'nav.availableRooms', icon: <EventAvailable />, path: '/salles-disponibles' },
-          { key: 'nav.statistics', icon: <Insights />, path: '/statistiques' },
+          { key: 'nav.slots', icon: <CalendarMonth />, path: '/gestion/creneaux' },
+          { key: 'nav.planningSettings', icon: <Tune />, path: '/gestion/parametres-planning' },
         ],
       },
     ];
@@ -155,6 +161,9 @@ const TITLE_KEYS = {
   '/gestion/demandes-report': 'nav.reports',
   '/gestion/generation-automatique': 'nav.generation',
   '/gestion/emplois-du-temps': 'nav.timetables',
+  '/gestion/campus': 'nav.campus',
+  '/gestion/calendrier': 'nav.calendar',
+  '/gestion/parametres-planning': 'nav.planningSettings',
   '/statistiques': 'nav.statistics',
   '/notifications': 'nav.notifications',
   '/parametres': 'nav.settings',

@@ -58,7 +58,7 @@ const MODELE_CSV = [
 ].join('\n');
 
 const telechargerModele = () => {
-    const blob = new Blob([`﻿${MODELE_CSV}`], { type: 'text/csv;charset=utf-8' });
+    const blob = new Blob([String.fromCharCode(0xfeff) + MODELE_CSV], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const lien = Object.assign(document.createElement('a'), { href: url, download: 'modele-inventaire-salles.csv' });
     lien.click();
