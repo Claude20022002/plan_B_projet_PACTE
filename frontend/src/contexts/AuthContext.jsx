@@ -66,7 +66,6 @@ export const AuthProvider = ({ children }) => {
             console.error('Erreur lors de la déconnexion:', error);
         } finally {
             localStorage.removeItem('token');
-            window.electronAPI?.clearAuthToken?.();
             window.dispatchEvent(new CustomEvent('auth:logout'));
             setUser(null);
             setIsAuthenticated(false);

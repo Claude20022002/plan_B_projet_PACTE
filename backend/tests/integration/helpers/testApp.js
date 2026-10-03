@@ -15,22 +15,29 @@ import {
 } from "../../../models/index.js";
 import { hashPassword } from "../../../utils/passwordHelper.js";
 import { resetRateLimiters } from "../../../middleware/rateLimiterMiddleware.js";
-import { getDefaultInstitution } from "../../../utils/tenantHelper.js";
+import { runMigrations } from "../../../migrations/migrator.js";
 
 export const PASSWORD = "Hestim@2026";
 
 /**
- * Recrée toutes les tables. Refuse de s'exécuter hors d'une base de test,
- * pour qu'une mauvaise configuration ne puisse jamais vider une vraie base.
+ * Vide la base puis la reconstruit par les migrations versionnées : les tests
+ * valident ainsi le même schéma que la production. Refuse de s'exécuter hors
+ * d'une base de test, pour qu'une mauvaise configuration ne puisse jamais vider une vraie base.
  */
 export const resetDatabase = async () => {
     const dbName = sequelize.getDatabaseName();
     if (!dbName?.endsWith("_test")) {
         throw new Error(`Refus de réinitialiser "${dbName}" : seule une base *_test est autorisée`);
     }
+    const [tables] = await sequelize.query(
+        "SELECT TABLE_NAME AS name FROM information_schema.TABLES WHERE TABLE_SCHEMA = DATABASE()"
+    );
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 0");
-    await sequelize.sync({ force: true });
+    for (const { name } of tables) {
+        await sequelize.query(`DROP TABLE IF EXISTS \`${name}\``);
+    }
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
+    await runMigrations();
     resetRateLimiters();
 };
 
@@ -101,9 +108,7 @@ export const anonymous = () => request(app);
  * une salle, un créneau, un cours et une séance pour l'enseignant fourni.
  */
 export const createPlanningFixture = async ({ admin, enseignant, etudiant } = {}) => {
-    // Multi-tenant (retiré en phase 2) : les contrôleurs filtrent sur l'institution de la session
-    const { id_institution } = await getDefaultInstitution();
-    const scoped = (Model, data) => Model.create({ ...data, id_institution });
+    const scoped = (Model, data) => Model.create(data);
 
     const filiere = await scoped(Filiere, { code_filiere: `IIA${userCounter}`, nom_filiere: "Informatique & IA" });
     const groupe = await scoped(Groupe, {

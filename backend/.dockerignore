@@ -7,4 +7,3 @@ npm-debug.log*
 .gitignore
 README.md
 tests/
-local-db/

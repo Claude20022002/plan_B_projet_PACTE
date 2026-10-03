@@ -12,7 +12,6 @@ import CssBaseline from '@mui/material/CssBaseline';
 
 import { ThemeProvider }  from '../contexts/ThemeContext';
 import { AuthProvider }   from '../contexts/AuthContext';
-import { TenantProvider } from '../contexts/TenantContext';
 import { ToastProvider }  from '../contexts/ToastContext';
 import { queryClient }    from '../services/queryClient';
 import { useGlobalQueryError } from '../hooks/api/_shared/useGlobalQueryError';
@@ -32,14 +31,12 @@ export default function AppProviders({ children }) {
     <ThemeProvider>
       <CssBaseline />
       <AuthProvider>
-        <TenantProvider>
-          <QueryClientProvider client={queryClient}>
-            <ToastProvider>
-              <QueryErrorBridge />
-              {children}
-            </ToastProvider>
-          </QueryClientProvider>
-        </TenantProvider>
+        <QueryClientProvider client={queryClient}>
+          <ToastProvider>
+            <QueryErrorBridge />
+            {children}
+          </ToastProvider>
+        </QueryClientProvider>
       </AuthProvider>
     </ThemeProvider>
   );

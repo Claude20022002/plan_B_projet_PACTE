@@ -35,7 +35,6 @@
  * @property {string}  [statut]
  * @property {string}  [date_debut]
  * @property {string}  [date_fin]
- * @property {string}  [updated_after]   - Sync offline
  */
 
 import apiClient, { buildParams } from '../apiClient.js';

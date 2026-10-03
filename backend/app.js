@@ -25,7 +25,6 @@ import authRoutes from "./routes/authRoutes.js";
 import emploiDuTempsRoutes from "./routes/emploiDuTempsRoutes.js";
 import statistiquesRoutes from "./routes/statistiquesRoutes.js";
 import generationAutomatiqueRoutes from "./routes/generationAutomatiqueRoutes.js";
-import institutionRoutes from "./routes/institutionRoutes.js";
 
 // Import des middlewares
 import {
@@ -111,7 +110,6 @@ app.use("/api/appartenances", appartenirRoutes);
 app.use("/api/emplois-du-temps", emploiDuTempsRoutes);
 app.use("/api/statistiques", statistiquesRoutes);
 app.use("/api/generation-automatique", generationAutomatiqueRoutes);
-app.use("/api/institutions", institutionRoutes);
 
 app.get("/", (req, res) => {
     res.json({

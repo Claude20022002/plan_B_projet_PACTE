@@ -55,6 +55,3 @@ export * from "./statistiquesController.js";
 
 // Generation automatique
 export * from "./generationAutomatiqueController.js";
-
-// Institutions
-export * from "./institutionController.js";

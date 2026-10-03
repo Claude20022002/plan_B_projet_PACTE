@@ -35,10 +35,6 @@ export const getAllAffectations = asyncHandler(async (req, res) => {
     } else if (req.query.date_from) {
         where.date_seance = { [Op.gte]: req.query.date_from };
     }
-    // Filtre incrémental pour la sync offline (updated_after)
-    if (req.query.updated_after) {
-        where.updatedAt = { [Op.gt]: new Date(req.query.updated_after) };
-    }
 
     const { count, rows: affectations } = await Affectation.findAndCountAll({
         where,

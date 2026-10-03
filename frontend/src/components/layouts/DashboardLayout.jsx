@@ -48,7 +48,6 @@ import {
   ViewWeek,
   WarningAmber,
 } from '@mui/icons-material';
-import OfflineIndicator from '../common/OfflineIndicator';
 import GlobalSearch from '../common/GlobalSearch';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
@@ -452,7 +451,6 @@ export default function DashboardLayout({ children }) {
             mx: 'auto',
           }}
         >
-          <OfflineIndicator />
           {children}
         </Box>
       </Box>

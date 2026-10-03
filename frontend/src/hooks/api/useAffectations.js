@@ -17,8 +17,7 @@ import { QK } from './_shared/queryKeys';
 /**
  * @param {{
  *   page?: number, limit?: number,
- *   statut?: string, date_debut?: string, date_fin?: string,
- *   updated_after?: string
+ *   statut?: string, date_debut?: string, date_fin?: string
  * }} [params]
  */
 export function useAffectationsList(params) {

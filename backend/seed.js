@@ -5,9 +5,9 @@ import './models/index.js';
 import {
     Users, Enseignant, Etudiant, Filiere, Groupe, Salle, Cours, Creneau,
     Affectation, DemandeReport, Disponibilite, Notification, Conflit, Appartenir,
-    Institution
 } from './models/index.js';
 import { hashPassword } from './utils/passwordHelper.js';
+import { runMigrations } from './migrations/migrator.js';
 
 dotenv.config();
 
@@ -316,27 +316,10 @@ async function seed() {
         console.log('🌱 Seed HESTIM (config-driven) FINAL...');
         await testConnection();
 
-        const models = [Users,Filiere,Salle,Creneau,Groupe,Cours,Enseignant,
-                        Etudiant,Affectation,DemandeReport,Disponibilite,
-                        Notification,Conflit,Appartenir,Institution];
-        for (const M of models) {
-            try { await M.sync({ force:false }); } catch(e) { console.warn('⚠️', e.message); }
-        }
+        // Le schéma vient des migrations versionnées (jamais de sync() implicite)
+        await runMigrations();
 
         const pwd = await hashPassword('password123');
-
-        // Récupérer ou créer l'institution par défaut
-        const [defaultInstitution] = await Institution.findOrCreate({
-            where: { slug: 'default' },
-            defaults: {
-                nom: 'Institution par défaut',
-                slug: 'default',
-                statut: 'active',
-                timezone: 'Africa/Lagos',
-            },
-        });
-
-        console.log(`✅ Institution par défaut: ${defaultInstitution.id_institution}`);
 
         // Dates dynamiques : 1er jour du mois courant → dernier jour du mois prochain
         const _now   = new Date();
@@ -362,8 +345,6 @@ async function seed() {
                     actif:true 
                 },
             });
-            // Mettre à jour l'institution après création
-            await u.update({ id_institution: defaultInstitution.id_institution });
             admins.push(u);
         }
         const admin = admins[0];
@@ -380,8 +361,6 @@ async function seed() {
                     description:`${f.cycle} — ${f.nom}`
                 },
             });
-            // Mettre à jour l'institution après création
-            await rec.update({ id_institution: defaultInstitution.id_institution });
             filieresMap[f.code] = rec;
         }
         console.log(`✅ ${Object.keys(filieresMap).length} filières`);
@@ -399,8 +378,6 @@ async function seed() {
                     annee_scolaire: gDef.annee_scolaire,
                 },
             });
-            // Mettre à jour l'institution après création
-            await g.update({ id_institution: defaultInstitution.id_institution });
             groupesMap[gDef.nom_groupe] = g;
         }
         console.log(`✅ ${GROUPES_DEF.length} groupes`);
@@ -429,8 +406,6 @@ async function seed() {
                         actif:true 
                     },
                 });
-                // Mettre à jour l'institution après création
-                await user.update({ id_institution: defaultInstitution.id_institution });
                 
                 if (created) {
                     await Enseignant.create({ id_user:user.id_user, specialite:dCfg.nom, departement:dCfg.nom, grade:dCfg.grade });
@@ -471,8 +446,6 @@ async function seed() {
                         actif:true 
                     },
                 });
-                // Mettre à jour l'institution après création
-                await user.update({ id_institution: defaultInstitution.id_institution });
                 
                 // Idempotent — findOrCreate sur id_user (PK) évite le conflit numero_etudiant
                 const [, etuCreated] = await Etudiant.findOrCreate({
@@ -496,8 +469,6 @@ async function seed() {
                 where: { nom_salle: d.nom_salle },
                 defaults: { ...d, disponible:true },
             });
-            // Mettre à jour l'institution après création
-            await s.update({ id_institution: defaultInstitution.id_institution });
             sallesList.push(s);
         }
         console.log(`✅ ${sallesList.length} salles (${HESTIM_CONFIG.batiments.map(b => b.nom).join(' + ')})`);
@@ -511,8 +482,6 @@ async function seed() {
                     where: { jour_semaine:jour, heure_debut:slot.heure_debut, heure_fin:slot.heure_fin },
                     defaults: { jour_semaine:jour, ...slot },
                 });
-                // Mettre à jour l'institution après création
-                await c.update({ id_institution: defaultInstitution.id_institution });
                 creneauxList.push(c);
                 creneauxMap[`${jour}_${slot.heure_debut}`] = c;
             }
@@ -540,8 +509,6 @@ async function seed() {
                     coefficient:    d.coef,
                 },
             });
-            // Mettre à jour l'institution après création
-            await c.update({ id_institution: defaultInstitution.id_institution });
             coursMap[d.code] = c;
         }
         console.log(`✅ ${HESTIM_CONFIG.cours.length} cours`);
