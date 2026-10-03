@@ -289,11 +289,11 @@ export default function Salles() {
                                 {sallesAffichees.map((salle) => (
                                     <TableRow key={salle.id_salle} hover>
                                         <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{salle.nom_salle}</TableCell>
-                                        <TableCell>{libelleType(salle.type_salle)}</TableCell>
+                                        <TableCell sx={{ whiteSpace: 'nowrap' }}>{libelleType(salle.type_salle)}</TableCell>
                                         <TableCell>{salle.campus?.nom ?? '—'}</TableCell>
                                         <TableCell align="right">{salle.capacite}</TableCell>
                                         <TableCell align="right">{salle.capacite_examen ?? '—'}</TableCell>
-                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{libelleEtage(salle.etage)}</TableCell>
+                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' }, whiteSpace: 'nowrap' }}>{libelleEtage(salle.etage)}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' }, maxWidth: 260 }}>
                                             <Typography variant="body2" color="text.secondary" noWrap title={(salle.equipements || []).join(', ')}>
                                                 {(salle.equipements || []).join(', ') || '—'}
@@ -303,9 +303,14 @@ export default function Salles() {
                                             {salle.reservable_par === 'enseignants' ? t('ref.rooms.bookingTeachers') : t('ref.rooms.bookingAdmin')}
                                         </TableCell>
                                         <TableCell>
-                                            <StateChip tone={salle.disponible ? 'success' : 'danger'}>
-                                                {salle.disponible ? t('ref.rooms.available') : t('ref.rooms.unavailable')}
-                                            </StateChip>
+                                            {/* Seule l'exception est signalée : une salle disponible reste silencieuse */}
+                                            {salle.disponible ? (
+                                                <Typography variant="body2" color="text.secondary">
+                                                    {t('ref.rooms.available')}
+                                                </Typography>
+                                            ) : (
+                                                <StateChip tone="danger">{t('ref.rooms.unavailable')}</StateChip>
+                                            )}
                                         </TableCell>
                                         <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                                             <IconButton size="small" onClick={() => ouvrir(salle)} aria-label={t('ref.common.editItem', { name: salle.nom_salle })}>
