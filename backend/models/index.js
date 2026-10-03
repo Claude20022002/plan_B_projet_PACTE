@@ -24,6 +24,9 @@ import TrajetCampus from "./TrajetCampus.js";
 import AnneeUniversitaire from "./AnneeUniversitaire.js";
 import Periode from "./Periode.js";
 import ParametrePlanning from "./ParametrePlanning.js";
+import CoursComposante from "./CoursComposante.js";
+import Enseignement from "./Enseignement.js";
+import EnseignementGroupe from "./EnseignementGroupe.js";
 
 // ==================== RELATIONS USER ====================
 
@@ -335,6 +338,38 @@ Periode.belongsTo(AnneeUniversitaire, { foreignKey: "id_annee", as: "annee" });
 
 Evenement.belongsTo(Users, { foreignKey: "id_user_createur", as: "createur", targetKey: "id_user" });
 
+// ==================== OFFRE DE FORMATION (phase P2) ====================
+
+Filiere.belongsTo(Campus, { foreignKey: "id_campus_prefere", as: "campus_prefere" });
+Cours.belongsTo(Users, { foreignKey: "id_responsable", as: "responsable", targetKey: "id_user" });
+
+// Cours (module) -> CoursComposante (CM, TD, TP, Projet)
+Cours.hasMany(CoursComposante, { foreignKey: "id_cours", as: "composantes", onDelete: "CASCADE" });
+CoursComposante.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
+
+// Groupes emboîtés : promotion -> TD -> TP
+Groupe.hasMany(Groupe, { foreignKey: "id_groupe_parent", as: "sous_groupes" });
+Groupe.belongsTo(Groupe, { foreignKey: "id_groupe_parent", as: "parent" });
+
+// Enseignement = composante × groupes (mutualisation) sur une période
+CoursComposante.hasMany(Enseignement, { foreignKey: "id_composante", as: "enseignements", onDelete: "CASCADE" });
+Enseignement.belongsTo(CoursComposante, { foreignKey: "id_composante", as: "composante" });
+Enseignement.belongsTo(Periode, { foreignKey: "id_periode", as: "periode" });
+Enseignement.belongsToMany(Groupe, {
+    through: EnseignementGroupe,
+    foreignKey: "id_enseignement",
+    otherKey: "id_groupe",
+    as: "groupes",
+});
+Groupe.belongsToMany(Enseignement, {
+    through: EnseignementGroupe,
+    foreignKey: "id_groupe",
+    otherKey: "id_enseignement",
+    as: "enseignements",
+});
+Enseignement.hasMany(Affectation, { foreignKey: "id_enseignement", as: "seances" });
+Affectation.belongsTo(Enseignement, { foreignKey: "id_enseignement", as: "enseignement" });
+
 // ==================== RELATIONS AFFECTATION ====================
 
 // Affectation -> DemandeReport (1:n)
@@ -421,4 +456,7 @@ export {
     AnneeUniversitaire,
     Periode,
     ParametrePlanning,
+    CoursComposante,
+    Enseignement,
+    EnseignementGroupe,
 };

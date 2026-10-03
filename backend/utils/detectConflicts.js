@@ -86,8 +86,9 @@ export const detecterConflitsPourAffectation = async (nouvelleAffectation) => {
                 affectationExistante.date_seance
             )
         ) {
-            // Conflit de salle
+            // Conflit de salle (deux séances en distanciel, sans salle, ne se disputent rien)
             if (
+                nouvelleAffectation.id_salle != null &&
                 nouvelleAffectation.id_salle === affectationExistante.id_salle
             ) {
                 conflits.push({
