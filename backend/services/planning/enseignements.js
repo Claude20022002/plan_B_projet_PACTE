@@ -15,6 +15,12 @@ import { contientParentEtEnfant } from "./groupes.js";
 /** « 2025/2026 », « 2025-2026 » → « 2025-2026 » (les deux écritures existent dans les données). */
 const normaliserAnnee = (valeur) => String(valeur || "").replace("/", "-").trim();
 
+// Groupes d'un enseignement avec la composante que chacun suit d'après sa maquette
+const GROUPES_AVEC_ORIGINE = { model: Groupe, as: "groupes", through: { attributes: ["id_composante_origine"] } };
+const origineDuGroupe = (groupe) => groupe.EnseignementGroupe?.id_composante_origine ?? null;
+/** Clé « composante|groupe » : un groupe mutualisé reste couvert au titre de son propre module. */
+const cleCouverture = (enseignement, groupe) => `${origineDuGroupe(groupe) ?? enseignement.id_composante}|${groupe.id_groupe}`;
+
 export class ErreurMetier extends Error {
     constructor(message, status = 400) {
         super(message);
@@ -46,18 +52,16 @@ export const genererEnseignements = async ({ id_periode, id_filiere = null }) =>
     // Groupes déjà couverts par un enseignement de chaque composante sur cette période
     const existants = await Enseignement.findAll({
         where: { id_periode },
-        include: [{ model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } }],
+        include: [{ ...GROUPES_AVEC_ORIGINE, attributes: ["id_groupe"] }],
     });
-    const couverts = new Set(
-        existants.flatMap((e) => e.groupes.map((g) => `${e.id_composante}|${g.id_groupe}`))
-    );
+    const couverts = new Set(existants.flatMap((e) => e.groupes.map((g) => cleCouverture(e, g))));
 
     // Enseignements repris de l'existant (migration) sans période : ils sont rattachés à
     // celle-ci quand leurs séances y tombent, au lieu d'être recréés en double.
     const sansPeriode = await Enseignement.findAll({
         where: { id_periode: null },
         include: [
-            { model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } },
+            { ...GROUPES_AVEC_ORIGINE, attributes: ["id_groupe"] },
             { model: Affectation, as: "seances", attributes: ["date_seance"] },
             { model: CoursComposante, as: "composante", include: [{ model: Cours, as: "cours", attributes: ["id_filiere", "semestre"] }] },
         ],
@@ -75,7 +79,7 @@ export const genererEnseignements = async ({ id_periode, id_filiere = null }) =>
     const rattachees = new Set();
     await sequelize.transaction(async (transaction) => {
         for (const enseignement of aRattacher) {
-            const cles = enseignement.groupes.map((g) => `${enseignement.id_composante}|${g.id_groupe}`);
+            const cles = enseignement.groupes.map((g) => cleCouverture(enseignement, g));
             if (cles.length === 0 || cles.some((cle) => couverts.has(cle))) continue;
             await enseignement.update({ id_periode }, { transaction });
             cles.forEach((cle) => {
@@ -131,7 +135,7 @@ const chargerAvecGroupes = (ids, transaction) =>
     Enseignement.findAll({
         where: { id_enseignement: ids },
         include: [
-            { model: Groupe, as: "groupes", through: { attributes: [] } },
+            GROUPES_AVEC_ORIGINE,
             { model: CoursComposante, as: "composante" },
         ],
         order: [["id_enseignement", "ASC"]],

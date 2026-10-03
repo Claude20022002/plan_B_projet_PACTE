@@ -13,6 +13,9 @@ const EnseignementGroupe = sequelize.define(
             type: DataTypes.INTEGER,
             primaryKey: true,
         },
+        // Composante que la maquette fait suivre au groupe, quand elle diffère de celle de
+        // l'enseignement (mutualisation entre modules différents) ; NULL sinon
+        id_composante_origine: DataTypes.INTEGER,
     },
     {
         tableName: "EnseignementGroupes",
