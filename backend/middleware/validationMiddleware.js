@@ -8,6 +8,12 @@ import {
     TYPES_EVENEMENT,
     PORTEES_EVENEMENT,
     CODES_PERIODE,
+    ECOLES,
+    CYCLES,
+    TYPES_GROUPE,
+    TYPES_COMPOSANTE,
+    NIVEAUX_GROUPE,
+    MODALITES,
     normaliserTypeSalle,
 } from "../config/referentiel.js";
 
@@ -128,6 +134,19 @@ export const validateEtudiantCreation = [
 
 // ==================== VALIDATIONS FILIERE ====================
 
+// Champs de filière ajoutés en phase P2 (école, cycle, campus préféré, double diplôme)
+const champsFiliereP2 = () => [
+    body("description").optional({ nullable: true }).trim(),
+    body("regime").optional().isIn(REGIMES).withMessage("Régime invalide"),
+    body("ecole").optional().isIn(ECOLES).withMessage("École : engineering ou business"),
+    body("cycle").optional({ nullable: true }).isIn(CYCLES).withMessage(`Cycle invalide (${CYCLES.join(", ")})`),
+    body("intitule_cycle").optional({ nullable: true }).isString().trim(),
+    body("premiere_annee_cycle").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Première année du cycle : 1 à 6"),
+    body("id_campus_prefere").optional({ nullable: true }).isInt({ min: 1 }),
+    body("partenaire").optional({ nullable: true }).isString().trim(),
+    body("annees_a_hestim").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Années à HESTIM : 1 à 6"),
+];
+
 export const validateFiliereCreation = [
     body("code_filiere")
         .trim()
@@ -137,11 +156,24 @@ export const validateFiliereCreation = [
         .trim()
         .notEmpty()
         .withMessage("Le nom de la filière est requis"),
-    body("description").optional().trim(),
+    ...champsFiliereP2(),
+    handleValidationErrors,
+];
+
+export const validateFiliereUpdate = [
+    body("code_filiere").optional().trim().notEmpty().withMessage("Le code de la filière ne peut pas être vide"),
+    body("nom_filiere").optional().trim().notEmpty().withMessage("Le nom de la filière ne peut pas être vide"),
+    ...champsFiliereP2(),
     handleValidationErrors,
 ];
 
 // ==================== VALIDATIONS GROUPE ====================
+
+const champsGroupeP2 = () => [
+    body("type_groupe").optional().isIn(TYPES_GROUPE).withMessage("Type de groupe : promotion, td ou tp"),
+    body("id_groupe_parent").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Groupe parent invalide"),
+    body("annee").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Année d'études : 1 à 6"),
+];
 
 export const validateGroupeCreation = [
     body("nom_groupe")
@@ -158,6 +190,17 @@ export const validateGroupeCreation = [
         .notEmpty()
         .withMessage("L'année scolaire est requise"),
     body("id_filiere").isInt({ min: 1 }).withMessage("ID filière invalide"),
+    ...champsGroupeP2(),
+    handleValidationErrors,
+];
+
+export const validateGroupeUpdate = [
+    body("nom_groupe").optional().trim().notEmpty().withMessage("Le nom du groupe ne peut pas être vide"),
+    body("niveau").optional().trim().notEmpty(),
+    body("effectif").optional().isInt({ min: 0 }).withMessage("L'effectif doit être un entier positif"),
+    body("annee_scolaire").optional().trim().notEmpty(),
+    body("id_filiere").optional().isInt({ min: 1 }).withMessage("ID filière invalide"),
+    ...champsGroupeP2(),
     handleValidationErrors,
 ];
 
@@ -195,6 +238,7 @@ export const validateSalleUpdate = champsSalle(false);
 // ==================== VALIDATIONS RÉFÉRENTIEL (phase P1) ====================
 
 const DATE_ISO = /^\d{4}-\d{2}-\d{2}$/;
+const HEURE = /^([01]\d|2[0-3]):[0-5]\d(:00)?$/;
 
 export const validateCampus = (requis) => [
     (requis ? body("code") : body("code").optional())
@@ -247,6 +291,8 @@ export const validateEvenement = (requis) => [
     body("id_cible").optional({ nullable: true }).isInt({ min: 1 }),
     body("niveau").optional({ nullable: true }).isString().trim(),
     body("date_confirmee").optional().isBoolean(),
+    body("heure_debut").optional({ nullable: true, values: "falsy" }).matches(HEURE).withMessage("Heure de début HH:MM"),
+    body("heure_fin").optional({ nullable: true, values: "falsy" }).matches(HEURE).withMessage("Heure de fin HH:MM"),
     handleValidationErrors,
 ];
 
@@ -257,6 +303,11 @@ export const validateConfirmationEvenement = [
 ];
 
 // ==================== VALIDATIONS COURS ====================
+
+const champsCoursP2 = () => [
+    body("ects").optional({ nullable: true }).isFloat({ min: 0, max: 60 }).withMessage("ECTS : entre 0 et 60"),
+    body("id_responsable").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Responsable invalide"),
+];
 
 export const validateCoursCreation = [
     body("code_cours")
@@ -281,6 +332,68 @@ export const validateCoursCreation = [
         .isFloat({ min: 0 })
         .withMessage("Le coefficient doit être un nombre positif"),
     body("id_filiere").isInt({ min: 1 }).withMessage("ID filière invalide"),
+    ...champsCoursP2(),
+    handleValidationErrors,
+];
+
+export const validateCoursUpdate = [
+    body("code_cours").optional().trim().notEmpty(),
+    body("nom_cours").optional().trim().notEmpty(),
+    body("niveau").optional().trim().notEmpty(),
+    body("volume_horaire").optional().isInt({ min: 1 }),
+    body("type_cours").optional().trim().notEmpty(),
+    body("semestre").optional().matches(/^S([1-9]|10)$/).withMessage("Semestre : S1 à S10"),
+    body("coefficient").optional().isFloat({ min: 0 }),
+    body("id_filiere").optional().isInt({ min: 1 }),
+    ...champsCoursP2(),
+    handleValidationErrors,
+];
+
+// ==================== VALIDATIONS COMPOSANTE (phase P2) ====================
+
+export const validateComposante = (requis) => [
+    (requis ? body("type") : body("type").optional()).isIn(TYPES_COMPOSANTE).withMessage("Type : CM, TD, TP ou Projet"),
+    (requis ? body("volume_heures") : body("volume_heures").optional())
+        .isFloat({ min: 0.5, max: 500 })
+        .withMessage("Volume horaire : entre 0,5 et 500 heures"),
+    body("type_salle_requis")
+        .optional({ nullable: true, values: "falsy" })
+        .isIn(TYPES_SALLE)
+        .withMessage("Type de salle requis inconnu"),
+    body("equipements_requis")
+        .optional({ nullable: true })
+        .custom((v) => Array.isArray(v) && v.every((item) => typeof item === "string"))
+        .withMessage("Équipements requis : liste de libellés"),
+    body("niveau_groupe").optional().isIn(NIVEAUX_GROUPE).withMessage("Groupe visé : promotion, td ou tp"),
+    body("creneaux_par_seance").optional().isInt({ min: 1, max: 4 }).withMessage("Créneaux par séance : 1 à 4"),
+    body("modalite").optional().isIn(MODALITES).withMessage("Modalité : presentiel, distanciel ou hybride"),
+    body("mention").optional({ nullable: true }).isString().trim().isLength({ max: 120 }),
+    body("semaine_debut").optional({ nullable: true }).isInt({ min: 1, max: 30 }).withMessage("Semaine de début : 1 à 30"),
+    body("semaine_fin").optional({ nullable: true }).isInt({ min: 1, max: 30 }).withMessage("Semaine de fin : 1 à 30"),
+    body("seances_par_semaine").optional({ nullable: true }).isInt({ min: 1, max: 20 }).withMessage("Séances par semaine : 1 à 20"),
+    handleValidationErrors,
+];
+
+// ==================== VALIDATIONS ENSEIGNEMENT (phase P2) ====================
+
+export const validateGenerationEnseignements = [
+    body("id_periode").isInt({ min: 1 }).withMessage("Période requise"),
+    body("id_filiere").optional({ nullable: true }).isInt({ min: 1 }),
+    handleValidationErrors,
+];
+
+export const validateFusionEnseignements = [
+    body("ids").isArray({ min: 2 }).withMessage("Sélectionnez au moins deux enseignements"),
+    body("ids.*").isInt({ min: 1 }),
+    handleValidationErrors,
+];
+
+export const validateEnseignementUpdate = [
+    body("heures_prevues").optional().isFloat({ min: 0.5, max: 500 }).withMessage("Volume prévu : entre 0,5 et 500 heures"),
+    body("libelle").optional({ nullable: true }).isString().trim().isLength({ max: 150 }),
+    body("id_periode").optional({ nullable: true }).isInt({ min: 1 }),
+    body("groupes").optional().isArray({ min: 1 }).withMessage("Au moins un groupe"),
+    body("groupes.*").optional().isInt({ min: 1 }),
     handleValidationErrors,
 ];
 

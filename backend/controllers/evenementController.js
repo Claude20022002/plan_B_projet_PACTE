@@ -19,6 +19,8 @@ const EVENEMENT_FIELDS = [
     "id_cible",
     "niveau",
     "date_confirmee",
+    "heure_debut",
+    "heure_fin",
 ];
 
 const CIBLE_PAR_PORTEE = { campus: Campus, filiere: Filiere, niveau: Filiere, groupe: Groupe };
@@ -29,6 +31,13 @@ const introuvable = (res, id) =>
 /** Cohérence dates / portée / cible. Retourne un message d'erreur ou null. */
 const verifierEvenement = async (data) => {
     if (data.date_fin < data.date_debut) return "La date de fin doit être égale ou postérieure à la date de début";
+    // Plage horaire : les deux heures ou aucune (journées entières)
+    if (Boolean(data.heure_debut) !== Boolean(data.heure_fin)) return "Indiquez l'heure de début et l'heure de fin, ou aucune des deux";
+    if (data.heure_debut && data.heure_fin.slice(0, 5) <= data.heure_debut.slice(0, 5)) return "L'heure de fin doit suivre l'heure de début";
+    if (!data.heure_debut) {
+        data.heure_debut = null;
+        data.heure_fin = null;
+    }
 
     const portee = data.portee || "etablissement";
     if (portee === "etablissement") {

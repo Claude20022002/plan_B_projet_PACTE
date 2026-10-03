@@ -61,3 +61,7 @@ export * from "./campusController.js";
 export * from "./calendrierController.js";
 export * from "./evenementController.js";
 export * from "./parametrePlanningController.js";
+
+// Offre de formation (phase P2)
+export * from "./composanteController.js";
+export * from "./enseignementController.js";

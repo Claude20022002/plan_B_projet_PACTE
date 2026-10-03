@@ -11,6 +11,7 @@ import {
     requireAdmin,
     asyncHandler,
     validateFiliereCreation,
+    validateFiliereUpdate,
     handleValidationErrors,
 } from "../middleware/index.js";
 
@@ -28,6 +29,7 @@ router.post(
     authenticateToken,
     requireAdmin,
     validateFiliereCreation,
+    validateFiliereUpdate,
     handleValidationErrors,
     asyncHandler(createFiliere)
 );
@@ -37,7 +39,7 @@ router.put(
     "/:id",
     authenticateToken,
     requireAdmin,
-    handleValidationErrors,
+    validateFiliereUpdate,
     asyncHandler(updateFiliere)
 );
 

@@ -5,12 +5,16 @@ import {
     createCours,
     updateCours,
     deleteCours,
+    getComposantesDuCours,
+    createComposante,
 } from "../controllers/index.js";
 import {
     authenticateToken,
     requireAdmin,
     asyncHandler,
     validateCoursCreation,
+    validateCoursUpdate,
+    validateComposante,
     handleValidationErrors,
 } from "../middleware/index.js";
 
@@ -37,7 +41,7 @@ router.put(
     "/:id",
     authenticateToken,
     requireAdmin,
-    handleValidationErrors,
+    validateCoursUpdate,
     asyncHandler(updateCours)
 );
 
@@ -48,5 +52,9 @@ router.delete(
     requireAdmin,
     asyncHandler(deleteCours)
 );
+
+// 🧩 Composantes d'un module (CM, TD, TP, Projet)
+router.get("/:idCours/composantes", authenticateToken, asyncHandler(getComposantesDuCours));
+router.post("/:idCours/composantes", authenticateToken, requireAdmin, validateComposante(true), asyncHandler(createComposante));
 
 export default router;

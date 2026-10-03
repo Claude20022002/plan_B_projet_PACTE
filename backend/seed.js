@@ -4,8 +4,9 @@ import sequelize, { testConnection } from './config/db.js';
 import './models/index.js';
 import {
     Users, Enseignant, Etudiant, Filiere, Groupe, Salle, Cours, Creneau,
-    Affectation, DemandeReport, Disponibilite, Notification, Conflit, Appartenir, Campus,
+    Affectation, DemandeReport, Disponibilite, Notification, Conflit, Appartenir, Campus, CoursComposante,
 } from './models/index.js';
+import { normaliserTypeComposante } from './config/referentiel.js';
 import { hashPassword } from './utils/passwordHelper.js';
 import { runMigrations } from './migrations/migrator.js';
 import { recalculerRangs } from './services/planning/referentiel.js';
@@ -291,15 +292,46 @@ const NOMS_ETU = [
 const PRENOMS_M = ['Hamza','Yassine','Karim','Omar','Mehdi','Anas','Ibrahim','Khalid','Younes','Amine','Nabil','Rachid','Tariq','Ayoub','Zakaria'];
 const PRENOMS_F = ['Aya','Meryem','Salma','Zineb','Nora','Fatima','Rania','Hana','Lamia','Sara','Ghita','Asmaa','Hajar','Imane','Kenza'];
 
-// Créneaux : 5 slots × 6 jours = 30
-const JOURS     = ['lundi','mardi','mercredi','jeudi','vendredi','samedi'];
-const SLOTS_DEF = [
+// Grille officielle de la formation initiale, relevée sur l'emploi du temps HESTIM d'octobre 2026
+// (docs/Planning) : 4 créneaux par jour, vendredi après-midi décalé après la pause de midi,
+// samedi matin seulement. Mêmes rangs partout : une séance garde son rang d'un jour à l'autre.
+const MATIN = [
     { heure_debut:'09:00', heure_fin:'10:45', duree_minutes:105 },
     { heure_debut:'11:00', heure_fin:'12:30', duree_minutes:90  },
+];
+const APRES_MIDI = [
     { heure_debut:'13:30', heure_fin:'15:15', duree_minutes:105 },
-    { heure_debut:'14:30', heure_fin:'18:00', duree_minutes:210 }, // Vendredi 14h30 (créneau dominant)
     { heure_debut:'15:30', heure_fin:'17:00', duree_minutes:90  },
 ];
+const APRES_MIDI_VENDREDI = [
+    { heure_debut:'14:30', heure_fin:'16:15', duree_minutes:105 },
+    { heure_debut:'16:30', heure_fin:'18:00', duree_minutes:90  },
+];
+const GRILLE_HESTIM = {
+    lundi:    [...MATIN, ...APRES_MIDI],
+    mardi:    [...MATIN, ...APRES_MIDI],
+    mercredi: [...MATIN, ...APRES_MIDI],
+    jeudi:    [...MATIN, ...APRES_MIDI],
+    vendredi: [...MATIN, ...APRES_MIDI_VENDREDI],
+    samedi:   [...MATIN],
+};
+
+// Structure des cycles : sert à écrire « 2ème année du cycle Ingénieur d'Etat en … »
+const CYCLES_SEED = {
+    'Ingénieur':    { ecole:'engineering', cycle:'ingenieur', intitule_cycle:"cycle Ingénieur d'Etat", premiere_annee_cycle:3 },
+    'Préparatoire': { ecole:'engineering', cycle:'prepa',     intitule_cycle:'cycle préparatoire intégré', premiere_annee_cycle:1 },
+    'Management':   { ecole:'business',    cycle:'master',    intitule_cycle:'Programme Grande École', premiere_annee_cycle:1 },
+};
+
+// Année universitaire en cours : de septembre à août
+const ANNEE_SCOLAIRE = (() => {
+    const d = new Date();
+    const debut = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1;
+    return `${debut}-${debut + 1}`;
+})();
+
+// Composante initiale d'un module : le CM s'adresse à la promotion, le reste aux groupes de TD
+const niveauGroupeDe = (type) => (type === 'CM' ? 'promotion' : 'td');
 
 // Statuts conformes à l'ENUM du modèle (lowercase)
 const STATUTS_POOL = [
@@ -356,32 +388,58 @@ async function seed() {
         for (const f of HESTIM_CONFIG.filieres) {
             const [rec] = await Filiere.findOrCreate({
                 where: { code_filiere: f.code },
-                defaults: { 
-                    code_filiere:f.code, 
-                    nom_filiere:f.nom, 
-                    description:`${f.cycle} — ${f.nom}`
+                defaults: {
+                    code_filiere:f.code,
+                    nom_filiere:f.nom,
+                    description:`${f.cycle} — ${f.nom}`,
+                    ...(CYCLES_SEED[f.cycle] || {}),
                 },
             });
             filieresMap[f.code] = rec;
         }
         console.log(`✅ ${Object.keys(filieresMap).length} filières`);
 
-        // ── 3. Groupes ────────────────────────────────────────────────────────
+        // ── 3. Groupes : une promotion par (filière, année), ses groupes de TD dessous ──
         const groupesMap = {};
+        const promotionsMap = {};
         for (const gDef of GROUPES_DEF) {
+            const fil = HESTIM_CONFIG.filieres.find(f => f.code === gDef.filiere_code);
+            const annee = Number(niveauNum(gDef.niveau));
+            const clePromo = `${gDef.filiere_code}|${gDef.niveau}`;
+            if (!promotionsMap[clePromo]) {
+                const effectifPromo = GROUPES_DEF
+                    .filter(x => x.filiere_code === gDef.filiere_code && x.niveau === gDef.niveau)
+                    .reduce((total, x) => total + x.effectif, 0);
+                const [promo] = await Groupe.findOrCreate({
+                    where: { nom_groupe: `${annee}A ${fil.abrege}`, annee_scolaire: ANNEE_SCOLAIRE },
+                    defaults: {
+                        nom_groupe:     `${annee}A ${fil.abrege}`,
+                        id_filiere:     filieresMap[gDef.filiere_code].id_filiere,
+                        niveau:         gDef.niveau,
+                        effectif:       effectifPromo,
+                        annee_scolaire: ANNEE_SCOLAIRE,
+                        type_groupe:    'promotion',
+                        annee,
+                    },
+                });
+                promotionsMap[clePromo] = promo;
+            }
             const [g] = await Groupe.findOrCreate({
-                where: { nom_groupe: gDef.nom_groupe },
+                where: { nom_groupe: gDef.nom_groupe, annee_scolaire: ANNEE_SCOLAIRE },
                 defaults: {
-                    nom_groupe:     gDef.nom_groupe,
-                    id_filiere:     filieresMap[gDef.filiere_code].id_filiere,
-                    niveau:         gDef.niveau,
-                    effectif:       gDef.effectif,
-                    annee_scolaire: gDef.annee_scolaire,
+                    nom_groupe:       gDef.nom_groupe,
+                    id_filiere:       filieresMap[gDef.filiere_code].id_filiere,
+                    niveau:           gDef.niveau,
+                    effectif:         gDef.effectif,
+                    annee_scolaire:   ANNEE_SCOLAIRE,
+                    type_groupe:      'td',
+                    id_groupe_parent: promotionsMap[clePromo].id_groupe,
+                    annee,
                 },
             });
             groupesMap[gDef.nom_groupe] = g;
         }
-        console.log(`✅ ${GROUPES_DEF.length} groupes`);
+        console.log(`✅ ${Object.keys(promotionsMap).length} promotions, ${GROUPES_DEF.length} groupes de TD (${ANNEE_SCOLAIRE})`);
 
         // ── 4. Enseignants ────────────────────────────────────────────────────
         const enseignantsList = [];
@@ -478,8 +536,8 @@ async function seed() {
         // ── 7. Créneaux ───────────────────────────────────────────────────────
         const creneauxList = [];
         const creneauxMap  = {};
-        for (const jour of JOURS) {
-            for (const slot of SLOTS_DEF) {
+        for (const [jour, slots] of Object.entries(GRILLE_HESTIM)) {
+            for (const slot of slots) {
                 const [c] = await Creneau.findOrCreate({
                     where: { jour_semaine:jour, heure_debut:slot.heure_debut, heure_fin:slot.heure_fin },
                     defaults: { jour_semaine:jour, ...slot },
@@ -510,6 +568,19 @@ async function seed() {
                     type_cours:     d.type,
                     semestre,
                     coefficient:    d.coef,
+                },
+            });
+            // Composante initiale : à HESTIM une séance occupe deux créneaux (une demi-journée)
+            const type = normaliserTypeComposante(d.type);
+            await CoursComposante.findOrCreate({
+                where: { id_cours: c.id_cours, type },
+                defaults: {
+                    id_cours: c.id_cours,
+                    type,
+                    volume_heures: d.vh,
+                    niveau_groupe: niveauGroupeDe(type),
+                    creneaux_par_seance: 2,
+                    type_salle_requis: type === 'TP' ? 'Labo informatique' : null,
                 },
             });
             coursMap[d.code] = c;
