@@ -140,6 +140,15 @@ const en = {
     activeTeachers: 'Active teachers',
     conflictRate: 'Conflict rate',
     allBuildings: 'All buildings',
+    filterBuilding: 'Filter by building',
+    upcoming: 'Next departures · campus',
+    conflictType: {
+      salle: 'Room conflict',
+      enseignant: 'Teacher conflict',
+      groupe: 'Group conflict',
+    },
+    reportTitle: 'Reschedule request · {{teacher}}',
+    reportTo: 'to {{date}}',
   },
 };
 

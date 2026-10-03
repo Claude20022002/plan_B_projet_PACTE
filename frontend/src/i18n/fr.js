@@ -140,6 +140,15 @@ const fr = {
     activeTeachers: 'Enseignants actifs',
     conflictRate: 'Taux de conflits',
     allBuildings: 'Tous les bâtiments',
+    filterBuilding: 'Filtrer par bâtiment',
+    upcoming: 'Prochains départs · campus',
+    conflictType: {
+      salle: 'Conflit de salle',
+      enseignant: "Conflit d'enseignant",
+      groupe: 'Conflit de groupe',
+    },
+    reportTitle: 'Demande de report · {{teacher}}',
+    reportTo: 'vers le {{date}}',
   },
 };
 

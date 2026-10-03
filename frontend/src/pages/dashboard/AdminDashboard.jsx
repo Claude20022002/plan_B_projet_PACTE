@@ -1,1330 +1,280 @@
-import React, { useState, useEffect } from "react";
-import {
-    Box,
-    Grid,
-    Card,
-    CardContent,
-    Typography,
-    Button,
-    Paper,
-    Avatar,
-    Chip,
-    List,
-    ListItem,
-    ListItemText,
-    IconButton,
-    Divider,
-    LinearProgress,
-    Tooltip,
-    CircularProgress,
-    Tab,
-    Tabs,
-} from "@mui/material";
-import {
-    People,
-    Room,
-    Schedule,
-    Warning,
-    Notifications,
-    Add,
-    BarChart as BarChartIcon,
-    AccessTime,
-    School,
-    PersonOutline,
-    TrendingUp,
-    Timer,
-    AccountBalance,
-    CheckCircle,
-    ErrorOutline,
-    Refresh,
-    LightbulbOutlined,
-    ArrowForward,
-    CheckCircleOutline,
-} from "@mui/icons-material";
-import { Alert, AlertTitle, Collapse } from "@mui/material";
-import DashboardLayout from "../../components/layouts/DashboardLayout";
-import { useAuth } from "../../contexts/AuthContext";
-import {
-    statistiquesAPI,
-    notificationAPI,
-    conflitAPI,
-} from "../../services/api";
-import { useNavigate } from "react-router-dom";
-import {
-    BarChart,
-    Bar,
-    XAxis,
-    YAxis,
-    CartesianGrid,
-    Tooltip as ReTooltip,
-    ResponsiveContainer,
-    PieChart,
-    Pie,
-    Cell,
-} from "recharts";
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { Alert, Box, Button, ButtonBase, Skeleton, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Add, ArrowForward } from '@mui/icons-material';
+import DashboardLayout from '../../components/layouts/DashboardLayout';
+import { affectationAPI, conflitAPI, demandeReportAPI, statistiquesAPI } from '../../services/api';
+import { DepartureBoard } from '../../design-system/board';
+import { byStart, findSpotlight, formatDayLabel, toBoardSession, toLocalISODate } from '../../utils/session';
+import { ds } from '../../design-system/tokens';
 
-// Palette cohérente avec le thème HESTIM
-const PALETTE = [
-    "#1a3a8f",
-    "#e8a020",
-    "#2e7d32",
-    "#c62828",
-    "#0277bd",
-    "#7b1fa2",
-    "#00796b",
-    "#5d4037",
-];
-
-const RADIAN = Math.PI / 180;
-const renderCustomLabel = ({
-    cx,
-    cy,
-    midAngle,
-    innerRadius,
-    outerRadius,
-    percent,
-    name,
-}) => {
-    if (percent < 0.05) return null;
-    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-    const x = cx + radius * Math.cos(-midAngle * RADIAN);
-    const y = cy + radius * Math.sin(-midAngle * RADIAN);
-    return (
-        <text
-            x={x}
-            y={y}
-            fill="white"
-            textAnchor="middle"
-            dominantBaseline="central"
-            fontSize={11}
-            fontWeight="bold"
-        >
-            {`${(percent * 100).toFixed(0)}%`}
-        </text>
-    );
+const sectionTitleSx = {
+  fontFamily: ds.font.board,
+  fontWeight: 700,
+  fontSize: '1rem',
+  letterSpacing: '0.12em',
+  textTransform: 'uppercase',
 };
 
-// Carte KPI principale
-function KPICard({
-    title,
-    value,
-    unit,
-    subtitle,
-    icon,
-    color,
-    trend,
-    onClick,
-}) {
-    return (
-        <Card
+/** File « À traiter » : conflits ouverts et demandes de report en attente, du plus urgent au moins urgent */
+function QueuePanel({ conflicts, conflictsTotal, reports, loading }) {
+  const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
+  const empty = !loading && conflicts.length === 0 && reports.length === 0;
+
+  const Row = ({ tone, title, detail, onClick }) => (
+    <Box component="li" sx={{ borderBottom: '1px solid', borderColor: 'divider', '&:last-of-type': { borderBottom: 0 } }}>
+      <ButtonBase onClick={onClick} sx={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 1.5, px: 2, py: 1.5, textAlign: 'left', '&:hover': { bgcolor: 'action.hover' } }}>
+        <Box component="span" aria-hidden="true" sx={{ mt: '7px', width: 8, height: 8, borderRadius: '50%', flexShrink: 0, bgcolor: tone }} />
+        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
+          <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem', lineHeight: 1.35 }}>{title}</Typography>
+          <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.875rem', lineHeight: 1.45, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+            {detail}
+          </Typography>
+        </Box>
+        <ArrowForward fontSize="small" sx={{ mt: '2px', color: 'text.secondary' }} />
+      </ButtonBase>
+    </Box>
+  );
+
+  return (
+    <Box component="section" aria-labelledby="queue-title" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px`, alignSelf: 'start' }}>
+      <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Typography id="queue-title" component="h2" sx={sectionTitleSx}>
+          {t('admin.toHandle')}
+        </Typography>
+        {!loading && !empty && (
+          <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.875rem' }}>
+            {[
+              conflictsTotal ? t('admin.openConflicts', { count: conflictsTotal }) : null,
+              reports.length ? t('admin.pendingReports', { count: reports.length }) : null,
+            ]
+              .filter(Boolean)
+              .join(' · ')}
+          </Typography>
+        )}
+      </Box>
+
+      {loading && (
+        <Box sx={{ p: 2, display: 'grid', gap: 1.5 }}>
+          {[0, 1, 2].map((i) => (
+            <Skeleton key={i} variant="rectangular" height={44} sx={{ borderRadius: '3px' }} />
+          ))}
+        </Box>
+      )}
+
+      {empty && <Typography sx={{ px: 2, py: 2.5, color: 'text.secondary', fontSize: '0.9375rem' }}>{t('admin.nothingToHandle')}</Typography>}
+
+      {!loading && !empty && (
+        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
+          {conflicts.map((c) => (
+            <Row
+              key={`c-${c.id_conflit}`}
+              tone={ds.colors.danger.text}
+              title={t(`admin.conflictType.${c.type_conflit}`, { defaultValue: c.type_conflit })}
+              detail={c.description}
+              onClick={() => navigate('/gestion/conflits')}
+            />
+          ))}
+          {reports.map((r) => (
+            <Row
+              key={`r-${r.id_demande}`}
+              tone={ds.colors.warning.text}
+              title={t('admin.reportTitle', {
+                teacher: [r.enseignant?.prenom, r.enseignant?.nom].filter(Boolean).join(' ') || '—',
+              })}
+              detail={[
+                r.affectation?.cours?.nom_cours,
+                r.nouvelle_date ? t('admin.reportTo', { date: formatDayLabel(String(r.nouvelle_date).slice(0, 10), i18n.language) }) : null,
+              ]
+                .filter(Boolean)
+                .join(' · ')}
+              onClick={() => navigate('/gestion/demandes-report')}
+            />
+          ))}
+        </Box>
+      )}
+    </Box>
+  );
+}
+
+/** Bande réglée d'indicateurs : quatre chiffres lisibles d'un coup d'œil, qui mènent aux statistiques */
+function IndicatorsStrip({ kpis, loading }) {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const items = [
+    { label: t('admin.occupancy'), value: kpis?.taux_occupation_salles?.valeur, unit: '%' },
+    { label: t('admin.sessionsPlanned'), value: kpis?.taux_conflits?.detail?.total_affectations },
+    { label: t('admin.activeTeachers'), value: kpis?.moyenne_heures_enseignant?.detail?.enseignants_actifs },
+    { label: t('admin.conflictRate'), value: kpis?.taux_conflits?.valeur, unit: '%' },
+  ];
+
+  return (
+    <Box component="section" aria-labelledby="indicators-title" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px` }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Typography id="indicators-title" component="h2" sx={sectionTitleSx}>
+          {t('admin.indicators')}
+        </Typography>
+        <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/statistiques')}>
+          {t('nav.statistics')}
+        </Button>
+      </Box>
+      <Box component="dl" sx={{ m: 0, display: 'grid', gridTemplateColumns: { xs: 'repeat(2, 1fr)', md: 'repeat(4, 1fr)' } }}>
+        {items.map((item, i) => (
+          <Box
+            key={item.label}
             sx={{
-                height: "100%",
-                cursor: onClick ? "pointer" : "default",
-                transition: "all 0.25s ease",
-                border: "1px solid",
-                borderColor: "divider",
-                position: "relative",
-                overflow: "hidden",
-                "&:hover": onClick
-                    ? {
-                          transform: "translateY(-4px)",
-                          boxShadow: 6,
-                          borderColor: color,
-                      }
-                    : {},
-                "&::before": {
-                    content: '""',
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    right: 0,
-                    height: 4,
-                    background: color,
-                    borderRadius: "12px 12px 0 0",
-                },
+              px: 2,
+              py: 1.75,
+              borderLeft: { md: i === 0 ? 0 : '1px solid' },
+              borderTop: { xs: i >= 2 ? '1px solid' : 0, md: 0 },
+              borderRight: { xs: i % 2 === 0 ? '1px solid' : 0, md: 0 },
+              borderColor: { xs: 'divider', md: 'divider' },
             }}
-            onClick={onClick}
-        >
-            <CardContent sx={{ pt: 2.5 }}>
-                <Box
-                    sx={{
-                        display: "flex",
-                        alignItems: "flex-start",
-                        justifyContent: "space-between",
-                    }}
-                >
-                    <Box sx={{ flex: 1 }}>
-                        <Typography
-                            variant="body2"
-                            color="text.secondary"
-                            fontWeight={500}
-                            gutterBottom
-                        >
-                            {title}
-                        </Typography>
-                        <Box
-                            sx={{
-                                display: "flex",
-                                alignItems: "baseline",
-                                gap: 0.5,
-                            }}
-                        >
-                            <Typography
-                                variant="h4"
-                                fontWeight="bold"
-                                sx={{ color }}
-                            >
-                                {value}
-                            </Typography>
-                            {unit && (
-                                <Typography
-                                    variant="body1"
-                                    color="text.secondary"
-                                    fontWeight={500}
-                                >
-                                    {unit}
-                                </Typography>
-                            )}
-                        </Box>
-                        {subtitle && (
-                            <Typography
-                                variant="caption"
-                                color="text.secondary"
-                                sx={{ mt: 0.5, display: "block" }}
-                            >
-                                {subtitle}
-                            </Typography>
-                        )}
-                    </Box>
-                    <Avatar
-                        sx={{
-                            bgcolor: `${color}18`,
-                            color,
-                            width: 52,
-                            height: 52,
-                            ml: 1,
-                        }}
-                    >
-                        {icon}
-                    </Avatar>
+          >
+            <Box component="dt" sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary' }}>
+              {item.label}
+            </Box>
+            <Box component="dd" sx={{ m: 0, mt: 0.5, fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.75rem', lineHeight: 1.1 }}>
+              {loading ? <Skeleton width={64} /> : item.value ?? '—'}
+              {!loading && item.value !== undefined && item.value !== null && item.unit && (
+                <Box component="span" sx={{ ml: 0.25, fontSize: '1rem', color: 'text.secondary' }}>
+                  {item.unit}
                 </Box>
-                {trend !== undefined && (
-                    <Box sx={{ mt: 1.5 }}>
-                        <LinearProgress
-                            variant="determinate"
-                            value={Math.min(100, trend)}
-                            sx={{
-                                bgcolor: `${color}20`,
-                                "& .MuiLinearProgress-bar": { bgcolor: color },
-                            }}
-                        />
-                    </Box>
-                )}
-            </CardContent>
-        </Card>
-    );
-}
-
-// Carte de section avec titre
-function SectionCard({ title, subtitle, children, action, minHeight }) {
-    return (
-        <Paper
-            elevation={2}
-            sx={{ p: 3, height: "100%", minHeight, borderRadius: 2 }}
-        >
-            <Box
-                sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    mb: 2,
-                }}
-            >
-                <Box>
-                    <Typography variant="h6" fontWeight="bold">
-                        {title}
-                    </Typography>
-                    {subtitle && (
-                        <Typography variant="caption" color="text.secondary">
-                            {subtitle}
-                        </Typography>
-                    )}
-                </Box>
-                {action}
+              )}
             </Box>
-            <Divider sx={{ mb: 2 }} />
-            {children}
-        </Paper>
-    );
+          </Box>
+        ))}
+      </Box>
+    </Box>
+  );
 }
 
-// ── Moteur de suggestions ─────────────────────────────────────────────────────
-function generateSuggestions(kpis, stats, conflits) {
-    const s = [];
-
-    // 1. Conflits non résolus
-    if (conflits.length > 0) {
-        s.push({
-            level: 'error',
-            title: `${conflits.length} conflit(s) non résolu(s) — action immédiate requise`,
-            text: 'Des chevauchements de salle ou d\'enseignant bloquent la cohérence du planning. Résolvez-les pour éviter des erreurs dans les emplois du temps.',
-            action: '/gestion/conflits',
-            actionLabel: 'Résoudre les conflits',
-        });
-    }
-
-    // 2. Taux de conflits
-    const tc = kpis?.taux_conflits?.valeur;
-    if (tc > 10) {
-        s.push({
-            level: 'error',
-            title: `Taux de conflits critique : ${tc} %`,
-            text: 'Plus d\'un cours sur dix génère un conflit. Révisez les règles de planification et les créneaux disponibles.',
-            action: '/gestion/creneaux',
-            actionLabel: 'Gérer les créneaux',
-        });
-    } else if (tc > 5) {
-        s.push({
-            level: 'warning',
-            title: `Taux de conflits élevé : ${tc} %`,
-            text: 'Le seuil acceptable est de 5 %. Vérifiez la disponibilité des salles et la charge des enseignants.',
-        });
-    }
-
-    // 3. Occupation des salles
-    const tocc = kpis?.taux_occupation_salles?.valeur;
-    if (tocc >= 85) {
-        s.push({
-            level: 'warning',
-            title: `Salles saturées : ${tocc} % d'occupation`,
-            text: 'La capacité est presque atteinte. Envisagez d\'ajouter des salles ou de redistribuer les cours sur d\'autres créneaux.',
-            action: '/gestion/salles',
-            actionLabel: 'Gérer les salles',
-        });
-    } else if (tocc !== undefined && tocc !== null && tocc < 20) {
-        s.push({
-            level: 'info',
-            title: `Salles sous-utilisées : ${tocc} % d'occupation`,
-            text: 'Une grande partie des salles reste inutilisée. Consolidez les cours pour optimiser les ressources.',
-        });
-    }
-
-    // 4. Charge enseignants
-    const mh  = kpis?.moyenne_heures_enseignant?.valeur;
-    const ensActifs = kpis?.moyenne_heures_enseignant?.detail?.enseignants_actifs ?? 0;
-    if (mh > 25) {
-        s.push({
-            level: 'warning',
-            title: `Surcharge détectée : ${mh} h/enseignant en moyenne`,
-            text: 'La charge horaire moyenne dépasse 25 h. Certains enseignants risquent d\'être surchargés — vérifiez la répartition individuelle.',
-            action: '/statistiques',
-            actionLabel: 'Voir la charge par enseignant',
-        });
-    }
-
-    // 5. Enseignants sans affectation
-    const totalEns = stats?.total_enseignants ?? 0;
-    if (totalEns > 2 && ensActifs < totalEns * 0.5) {
-        s.push({
-            level: 'info',
-            title: `${totalEns - ensActifs} enseignant(s) sans aucune affectation`,
-            text: 'Plus de la moitié du corps enseignant n\'a pas de cours planifié. Vérifiez leur disponibilité et leur affectation.',
-            action: '/gestion/enseignants',
-            actionLabel: 'Voir les enseignants',
-        });
-    }
-
-    // 6. Aucune affectation
-    if ((stats?.total_affectations ?? 0) === 0) {
-        s.push({
-            level: 'info',
-            title: 'Aucune affectation planifiée',
-            text: 'Le planning est vide. Commencez par créer des affectations pour générer les emplois du temps.',
-            action: '/gestion/affectations',
-            actionLabel: 'Créer des affectations',
-        });
-    }
-
-    // 7. Durée des cours hors norme
-    const dur = kpis?.duree_moyenne_cours?.valeur;
-    if (dur && dur < 45) {
-        s.push({
-            level: 'info',
-            title: `Cours très courts détectés : ${dur} min en moyenne`,
-            text: 'Des séances de moins de 45 min sont inhabituelles. Vérifiez la configuration des créneaux.',
-        });
-    } else if (dur && dur > 210) {
-        s.push({
-            level: 'info',
-            title: `Cours très longs détectés : ${dur} min en moyenne`,
-            text: 'Des séances de plus de 3h30 peuvent nuire à l\'attention des étudiants. Envisagez de les découper.',
-        });
-    }
-
-    // 8. Tout va bien
-    if (s.length === 0) {
-        s.push({
-            level: 'success',
-            title: 'Planning en bonne santé',
-            text: 'Tous les indicateurs sont dans les seuils optimaux. Continuez à surveiller les KPIs régulièrement.',
-        });
-    }
-
-    return s;
-}
-
-// ── Panneau de suggestions ────────────────────────────────────────────────────
-function SuggestionsPanel({ kpis, stats, conflits, navigate }) {
-    const suggestions = generateSuggestions(kpis, stats, conflits);
-    const urgentes  = suggestions.filter(s => s.level === 'error');
-    const attention = suggestions.filter(s => s.level === 'warning');
-    const autres    = suggestions.filter(s => s.level === 'info' || s.level === 'success');
-
-    const severityColor = { error: '#c62828', warning: '#e8a020', info: '#0277bd', success: '#2e7d32' };
-
-    return (
-        <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
-                <LightbulbOutlined sx={{ color: '#e8a020' }} />
-                <Typography variant="h6" fontWeight="bold">
-                    Suggestions & Alertes
-                </Typography>
-                <Chip
-                    label={`${urgentes.length} urgente(s) · ${attention.length} attention · ${autres.length} info`}
-                    size="small" variant="outlined" sx={{ ml: 'auto' }}
-                />
-            </Box>
-            <Divider sx={{ mb: 2 }} />
-
-            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                {suggestions.map((sug, i) => (
-                    <Alert
-                        key={i}
-                        severity={sug.level === 'success' ? 'success' : sug.level}
-                        icon={sug.level === 'success' ? <CheckCircleOutline /> : undefined}
-                        sx={{ borderRadius: 1.5, alignItems: 'flex-start' }}
-                        action={
-                            sug.action ? (
-                                <Button
-                                    size="small"
-                                    color="inherit"
-                                    endIcon={<ArrowForward fontSize="small" />}
-                                    onClick={() => navigate(sug.action)}
-                                    sx={{ whiteSpace: 'nowrap', mt: 0.5 }}
-                                >
-                                    {sug.actionLabel}
-                                </Button>
-                            ) : null
-                        }
-                    >
-                        <AlertTitle sx={{ fontWeight: 700, mb: 0.25 }}>
-                            {sug.title}
-                        </AlertTitle>
-                        {sug.text}
-                    </Alert>
-                ))}
-            </Box>
-        </Paper>
-    );
-}
+const DAYS_AHEAD = 2;
 
 export default function AdminDashboard() {
-    const { user } = useAuth();
-    const navigate = useNavigate();
-    const [stats, setStats] = useState(null);
-    const [kpis, setKpis] = useState(null);
-    const [notifications, setNotifications] = useState([]);
-    const [conflits, setConflits] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [tabChart, setTabChart] = useState(0);
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const [sessions, setSessions] = useState([]);
+  const [conflicts, setConflicts] = useState([]);
+  const [conflictsTotal, setConflictsTotal] = useState(0);
+  const [reports, setReports] = useState([]);
+  const [kpis, setKpis] = useState(null);
+  const [building, setBuilding] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+  const [now, setNow] = useState(() => new Date());
 
-    useEffect(() => {
-        loadDashboardData();
-    }, []);
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(id);
+  }, []);
 
-    const loadDashboardData = async () => {
-        setLoading(true);
-        try {
-            const [statsData, kpisData, notifsData, conflitsData] =
-                await Promise.all([
-                    statistiquesAPI.getStatistiquesGlobales(),
-                    statistiquesAPI.getKPIs(),
-                    notificationAPI.getNonLues(user?.id_user),
-                    conflitAPI.getNonResolus(),
-                ]);
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError(false);
+    try {
+      const [affectations, nonResolus, demandes, stats] = await Promise.all([
+        affectationAPI.getAll({
+          date_from: toLocalISODate(),
+          date_to: toLocalISODate(new Date(Date.now() + DAYS_AHEAD * 86400000)),
+          limit: 400,
+        }),
+        conflitAPI.getNonResolus({ limit: 5 }).catch(() => ({ data: [], pagination: { total: 0 } })),
+        demandeReportAPI.getByStatut('en_attente').catch(() => []),
+        statistiquesAPI.getKPIs().catch(() => null),
+      ]);
+      setSessions((affectations?.data || []).map(toBoardSession).sort(byStart));
+      setConflicts(nonResolus?.data || []);
+      setConflictsTotal(nonResolus?.pagination?.total ?? (nonResolus?.data || []).length);
+      setReports((demandes?.data || demandes || []).slice(0, 5));
+      setKpis(stats?.kpis || null);
+    } catch {
+      setError(true);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
-            setStats(statsData?.resume || statsData || {});
-            setKpis(kpisData?.kpis || null);
-            setNotifications(notifsData.data || notifsData || []);
-            setConflits(conflitsData.data || conflitsData || []);
-        } catch (error) {
-            setStats({});
-            setKpis(null);
-        } finally {
-            setLoading(false);
-        }
-    };
+  useEffect(() => {
+    load();
+  }, [load]);
 
-    // KPI cards principale (4 indicateurs généraux)
-    const mainCards = [
-        {
-            title: "Utilisateurs actifs",
-            value: stats?.total_users || 0,
-            icon: <People />,
-            color: "#1a3a8f",
-            subtitle: `${stats?.total_enseignants || 0} enseignants • ${Math.max(0, (stats?.total_users || 0) - (stats?.total_enseignants || 0) - (stats?.total_admins || 0))} étudiants`,
-            onClick: () => navigate("/gestion/utilisateurs"),
-        },
-        {
-            title: "Affectations planifiées",
-            value: stats?.total_affectations || 0,
-            icon: <Schedule />,
-            color: "#0277bd",
-            subtitle: `${stats?.total_cours || 0} cours • ${stats?.total_groupes || 0} groupes`,
-            onClick: () => navigate("/gestion/affectations"),
-        },
-        {
-            title: "Salles disponibles",
-            value: stats?.total_salles || 0,
-            icon: <Room />,
-            color: "#2e7d32",
-            subtitle: `${stats?.salles_utilisees || 0} en cours d'utilisation`,
-            trend: stats?.total_salles
-                ? (stats.salles_utilisees / stats.total_salles) * 100
-                : 0,
-            onClick: () => navigate("/gestion/salles"),
-        },
-        {
-            title: "Conflits non résolus",
-            value: conflits.length,
-            icon: <Warning />,
-            color: conflits.length > 0 ? "#c62828" : "#2e7d32",
-            subtitle:
-                conflits.length > 0
-                    ? "⚠ Action requise"
-                    : "✓ Aucun conflit actif",
-            onClick: () => navigate("/gestion/conflits"),
-        },
-    ];
+  const buildings = useMemo(() => [...new Set(sessions.map((s) => s.building).filter(Boolean))].sort(), [sessions]);
+  const upcoming = useMemo(
+    () => sessions.filter((s) => (!s.end || s.end > now) && (building === 'all' || s.building === building)),
+    [sessions, now, building]
+  );
+  // Sur le campus, la lampe s'allume sur la prochaine séance qui démarre
+  const spotlight = useMemo(() => findSpotlight(upcoming, now), [upcoming, now]);
 
-    // KPI cards secondaires (7 indicateurs spécifiques)
-    const kpiCards = [
-        {
-            title: "Taux d'occupation des salles",
-            value: kpis?.taux_occupation_salles?.valeur ?? "—",
-            unit: "%",
-            icon: <Room />,
-            color: "#0277bd",
-            subtitle: `${kpis?.taux_occupation_salles?.detail?.salles_occupees || 0} / ${kpis?.taux_occupation_salles?.detail?.total_salles || 0} salles utilisées`,
-            trend: kpis?.taux_occupation_salles?.valeur,
-        },
-        {
-            title: "Moy. heures / enseignant",
-            value: kpis?.moyenne_heures_enseignant?.valeur ?? "—",
-            unit: "h",
-            icon: <School />,
-            color: "#7b1fa2",
-            subtitle: `${kpis?.moyenne_heures_enseignant?.detail?.enseignants_actifs || 0} enseignants actifs`,
-        },
-        {
-            title: "Moy. heures / étudiant",
-            value: kpis?.moyenne_heures_etudiant?.valeur ?? "—",
-            unit: "h",
-            icon: <PersonOutline />,
-            color: "#00796b",
-            subtitle: `${kpis?.moyenne_heures_etudiant?.detail?.etudiants_concernes || 0} étudiants concernés`,
-        },
-        {
-            title: "Taux de conflits",
-            value: kpis?.taux_conflits?.valeur ?? "—",
-            unit: "%",
-            icon: <ErrorOutline />,
-            color: kpis?.taux_conflits?.valeur > 5 ? "#c62828" : "#2e7d32",
-            subtitle: `${kpis?.taux_conflits?.detail?.conflits_non_resolus || 0} conflits / ${kpis?.taux_conflits?.detail?.total_affectations || 0} affectations`,
-            trend: kpis?.taux_conflits?.valeur,
-        },
-        {
-            title: "Durée moyenne des cours",
-            value: kpis?.duree_moyenne_cours?.valeur ?? "—",
-            unit: "min",
-            icon: <Timer />,
-            color: "#e8a020",
-            subtitle: kpis?.duree_moyenne_cours?.valeur_heures
-                ? `≈ ${kpis.duree_moyenne_cours.valeur_heures}h par séance`
-                : "",
-        },
-    ];
+  return (
+    <DashboardLayout>
+      <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mb: { xs: 2, md: 3 } }}>
+        {buildings.length > 1 && (
+          <ToggleButtonGroup
+            size="small"
+            exclusive
+            value={building}
+            onChange={(_, value) => value && setBuilding(value)}
+            aria-label={t('admin.filterBuilding')}
+            sx={{ '& .MuiToggleButton-root': { fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.06em', px: 1.5 } }}
+          >
+            <ToggleButton value="all">{t('admin.allBuildings')}</ToggleButton>
+            {buildings.map((b) => (
+              <ToggleButton key={b} value={b}>
+                {b}
+              </ToggleButton>
+            ))}
+          </ToggleButtonGroup>
+        )}
+        <Box sx={{ flexGrow: 1 }} />
+        <Button variant="contained" startIcon={<Add />} onClick={() => navigate('/gestion/affectations')}>
+          {t('admin.planSession')}
+        </Button>
+      </Box>
 
-    // Données pour graphiques
-    const filiereData = kpis?.repartition_par_filiere?.data || [];
-    const creneauxData = kpis?.creneaux_les_plus_demandes?.top || [];
-    const sallesGraphData = kpis?.taux_occupation_salles?.graphique || [];
+      {error && (
+        <Alert
+          severity="error"
+          sx={{ mb: 2 }}
+          action={
+            <Button color="inherit" size="small" onClick={load}>
+              {t('common.retry')}
+            </Button>
+          }
+        >
+          {t('common.errorLoad')}
+        </Alert>
+      )}
 
-    return (
-        <DashboardLayout>
-            <Box sx={{ flexGrow: 1 }}>
-                {/* Header */}
-                <Paper elevation={2} sx={{ p: 2.5, mb: 3, borderRadius: 2 }}>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            flexWrap: "wrap",
-                            gap: 2,
-                        }}
-                    >
-                        <Box>
-                            <Typography
-                                variant="h5"
-                                fontWeight="bold"
-                                gutterBottom
-                            >
-                                Tableau de bord Administrateur
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                                Bienvenue, {user?.prenom} {user?.nom} •{" "}
-                                {new Date().toLocaleDateString("fr-FR", {
-                                    weekday: "long",
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                })}
-                            </Typography>
-                        </Box>
-                        <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-                            <Button
-                                variant="outlined"
-                                startIcon={<Refresh />}
-                                onClick={loadDashboardData}
-                                size="small"
-                            >
-                                Actualiser
-                            </Button>
-                            <Button
-                                variant="contained"
-                                startIcon={<Add />}
-                                onClick={() =>
-                                    navigate("/gestion/affectations")
-                                }
-                                size="small"
-                            >
-                                Nouvelle affectation
-                            </Button>
-                            <Button
-                                variant="outlined"
-                                startIcon={<BarChartIcon />}
-                                onClick={() => navigate("/statistiques")}
-                                size="small"
-                            >
-                                Statistiques détaillées
-                            </Button>
-                        </Box>
-                    </Box>
-                </Paper>
+      <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 2fr) minmax(300px, 1fr)' } }}>
+        <Box sx={{ minWidth: 0 }}>
+          <DepartureBoard
+            title={t('admin.upcoming')}
+            sessions={upcoming}
+            loading={loading}
+            spotlight={spotlight}
+            columns={['time', 'course', 'group', 'room', 'teacher', 'status']}
+            empty={
+              <Box sx={{ color: ds.board.letter }}>
+                <Typography component="p" sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '1.125rem' }}>
+                  {t('admin.campusEmpty')}
+                </Typography>
+                <Button variant="outlined" sx={{ mt: 2, color: ds.board.letter, borderColor: ds.board.seam }} onClick={() => navigate('/gestion/emplois-du-temps')}>
+                  {t('nav.timetables')}
+                </Button>
+              </Box>
+            }
+          />
+        </Box>
+        <QueuePanel conflicts={conflicts} conflictsTotal={conflictsTotal} reports={reports} loading={loading} />
+      </Box>
 
-                {loading && <LinearProgress sx={{ mb: 2 }} />}
-
-                {/* Cartes principales */}
-                <Grid container spacing={2.5} sx={{ mb: 3 }}>
-                    {mainCards.map((card, i) => (
-                        <Grid size={{ xs: 12, sm: 6, md: 3 }} key={i}>
-                            <KPICard {...card} />
-                        </Grid>
-                    ))}
-                </Grid>
-
-                {/* ── MODULE KPIs ── */}
-                <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 1,
-                            mb: 2,
-                        }}
-                    >
-                        <TrendingUp color="primary" />
-                        <Typography variant="h6" fontWeight="bold">
-                            Indicateurs de performance (KPIs)
-                        </Typography>
-                        {loading && (
-                            <CircularProgress size={16} sx={{ ml: 1 }} />
-                        )}
-                    </Box>
-                    <Divider sx={{ mb: 2.5 }} />
-
-                    {!kpis && !loading ? (
-                        <Box sx={{ textAlign: "center", py: 3 }}>
-                            <Typography color="text.secondary">
-                                Aucune donnée disponible. Créez des affectations
-                                pour voir les KPIs.
-                            </Typography>
-                        </Box>
-                    ) : (
-                        <Grid container spacing={2}>
-                            {kpiCards.map((card, i) => (
-                                <Grid
-                                    size={{ xs: 12, sm: 6, md: 4, lg: 2.4 }}
-                                    key={i}
-                                >
-                                    <KPICard {...card} />
-                                </Grid>
-                            ))}
-                        </Grid>
-                    )}
-                </Paper>
-
-                {/* ── SUGGESTIONS ── */}
-                {!loading && (
-                    <SuggestionsPanel
-                        kpis={kpis}
-                        stats={stats}
-                        conflits={conflits}
-                        navigate={navigate}
-                    />
-                )}
-
-                {/* ── MODULE GRAPHIQUES ── */}
-                <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
-                    <Box
-                        sx={{
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "space-between",
-                            mb: 1,
-                        }}
-                    >
-                        <Typography variant="h6" fontWeight="bold">
-                            Statistiques visuelles
-                        </Typography>
-                    </Box>
-                    <Tabs
-                        value={tabChart}
-                        onChange={(_, v) => setTabChart(v)}
-                        sx={{ mb: 2, borderBottom: 1, borderColor: "divider" }}
-                        variant="scrollable"
-                        scrollButtons="auto"
-                    >
-                        <Tab label="Répartition par filière" />
-                        <Tab label="Créneaux les plus demandés" />
-                        <Tab label="Occupation des salles" />
-                    </Tabs>
-
-                    {/* Tab 0: Répartition par filière */}
-                    {tabChart === 0 && (
-                        <Box>
-                            {filiereData.length === 0 ? (
-                                <Box sx={{ textAlign: "center", py: 4 }}>
-                                    <AccountBalance
-                                        sx={{
-                                            fontSize: 48,
-                                            color: "text.disabled",
-                                            mb: 1,
-                                        }}
-                                    />
-                                    <Typography color="text.secondary">
-                                        Aucune donnée filière disponible
-                                    </Typography>
-                                </Box>
-                            ) : (
-                                <Grid container spacing={3} alignItems="center">
-                                    <Grid size={{ xs: 12, md: 5 }}>
-                                        <ResponsiveContainer
-                                            width="100%"
-                                            height={260}
-                                        >
-                                            <PieChart>
-                                                <Pie
-                                                    data={filiereData.filter(
-                                                        (f) =>
-                                                            f.nombre_seances >
-                                                            0,
-                                                    )}
-                                                    dataKey="nombre_seances"
-                                                    nameKey="nom"
-                                                    cx="50%"
-                                                    cy="50%"
-                                                    outerRadius={100}
-                                                    labelLine={false}
-                                                    label={renderCustomLabel}
-                                                >
-                                                    {filiereData.map(
-                                                        (_, idx) => (
-                                                            <Cell
-                                                                key={idx}
-                                                                fill={
-                                                                    PALETTE[
-                                                                        idx %
-                                                                            PALETTE.length
-                                                                    ]
-                                                                }
-                                                            />
-                                                        ),
-                                                    )}
-                                                </Pie>
-                                                <ReTooltip
-                                                    formatter={(v, n) => [
-                                                        `${v} séances`,
-                                                        n,
-                                                    ]}
-                                                />
-                                            </PieChart>
-                                        </ResponsiveContainer>
-                                    </Grid>
-                                    <Grid size={{ xs: 12, md: 7 }}>
-                                        <Typography
-                                            variant="subtitle2"
-                                            fontWeight="bold"
-                                            gutterBottom
-                                        >
-                                            Détail par filière
-                                        </Typography>
-                                        <Box
-                                            sx={{
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                gap: 1.5,
-                                            }}
-                                        >
-                                            {filiereData
-                                                .slice(0, 8)
-                                                .map((f, idx) => (
-                                                    <Box key={f.nom}>
-                                                        <Box
-                                                            sx={{
-                                                                display: "flex",
-                                                                justifyContent:
-                                                                    "space-between",
-                                                                mb: 0.5,
-                                                            }}
-                                                        >
-                                                            <Box
-                                                                sx={{
-                                                                    display:
-                                                                        "flex",
-                                                                    alignItems:
-                                                                        "center",
-                                                                    gap: 1,
-                                                                }}
-                                                            >
-                                                                <Box
-                                                                    sx={{
-                                                                        width: 12,
-                                                                        height: 12,
-                                                                        borderRadius:
-                                                                            "50%",
-                                                                        bgcolor:
-                                                                            PALETTE[
-                                                                                idx %
-                                                                                    PALETTE.length
-                                                                            ],
-                                                                        flexShrink: 0,
-                                                                    }}
-                                                                />
-                                                                <Typography
-                                                                    variant="body2"
-                                                                    noWrap
-                                                                >
-                                                                    {f.nom}
-                                                                </Typography>
-                                                            </Box>
-                                                            <Box
-                                                                sx={{
-                                                                    display:
-                                                                        "flex",
-                                                                    gap: 1,
-                                                                    ml: 1,
-                                                                }}
-                                                            >
-                                                                <Chip
-                                                                    label={`${f.nombre_seances} séances`}
-                                                                    size="small"
-                                                                />
-                                                                <Chip
-                                                                    label={`${f.nombre_heures}h`}
-                                                                    size="small"
-                                                                    sx={{
-                                                                        bgcolor: `${PALETTE[idx % PALETTE.length]}20`,
-                                                                        color: PALETTE[
-                                                                            idx %
-                                                                                PALETTE.length
-                                                                        ],
-                                                                    }}
-                                                                />
-                                                            </Box>
-                                                        </Box>
-                                                        <LinearProgress
-                                                            variant="determinate"
-                                                            value={
-                                                                filiereData[0]
-                                                                    ?.nombre_seances >
-                                                                0
-                                                                    ? (f.nombre_seances /
-                                                                          filiereData[0]
-                                                                              .nombre_seances) *
-                                                                      100
-                                                                    : 0
-                                                            }
-                                                            sx={{
-                                                                bgcolor: `${PALETTE[idx % PALETTE.length]}20`,
-                                                                "& .MuiLinearProgress-bar":
-                                                                    {
-                                                                        bgcolor:
-                                                                            PALETTE[
-                                                                                idx %
-                                                                                    PALETTE.length
-                                                                            ],
-                                                                    },
-                                                            }}
-                                                        />
-                                                    </Box>
-                                                ))}
-                                        </Box>
-                                    </Grid>
-                                </Grid>
-                            )}
-                        </Box>
-                    )}
-
-                    {/* Tab 1: Créneaux les plus demandés */}
-                    {tabChart === 1 && (
-                        <Box>
-                            {creneauxData.length === 0 ? (
-                                <Box sx={{ textAlign: "center", py: 4 }}>
-                                    <AccessTime
-                                        sx={{
-                                            fontSize: 48,
-                                            color: "text.disabled",
-                                            mb: 1,
-                                        }}
-                                    />
-                                    <Typography color="text.secondary">
-                                        Aucune donnée de créneaux disponible
-                                    </Typography>
-                                </Box>
-                            ) : (
-                                <ResponsiveContainer width="100%" height={280}>
-                                    <BarChart
-                                        data={creneauxData}
-                                        margin={{
-                                            top: 10,
-                                            right: 20,
-                                            left: 0,
-                                            bottom: 60,
-                                        }}
-                                    >
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                            vertical={false}
-                                        />
-                                        <XAxis
-                                            dataKey="label"
-                                            angle={-35}
-                                            textAnchor="end"
-                                            tick={{ fontSize: 11 }}
-                                            interval={0}
-                                        />
-                                        <YAxis
-                                            tick={{ fontSize: 11 }}
-                                            allowDecimals={false}
-                                        />
-                                        <ReTooltip
-                                            formatter={(v) => [
-                                                `${v} affectation(s)`,
-                                                "Demandes",
-                                            ]}
-                                            labelFormatter={(l) =>
-                                                `Créneau: ${l}`
-                                            }
-                                        />
-                                        <Bar
-                                            dataKey="count"
-                                            radius={[6, 6, 0, 0]}
-                                            fill="#1a3a8f"
-                                        >
-                                            {creneauxData.map((_, idx) => (
-                                                <Cell
-                                                    key={idx}
-                                                    fill={
-                                                        PALETTE[
-                                                            idx % PALETTE.length
-                                                        ]
-                                                    }
-                                                />
-                                            ))}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            )}
-                        </Box>
-                    )}
-
-                    {/* Tab 2: Occupation des salles */}
-                    {tabChart === 2 && (
-                        <Box>
-                            {sallesGraphData.length === 0 ? (
-                                <Box sx={{ textAlign: "center", py: 4 }}>
-                                    <Room
-                                        sx={{
-                                            fontSize: 48,
-                                            color: "text.disabled",
-                                            mb: 1,
-                                        }}
-                                    />
-                                    <Typography color="text.secondary">
-                                        Aucune donnée d'occupation disponible
-                                    </Typography>
-                                </Box>
-                            ) : (
-                                <ResponsiveContainer width="100%" height={280}>
-                                    <BarChart
-                                        data={sallesGraphData}
-                                        layout="vertical"
-                                        margin={{
-                                            top: 5,
-                                            right: 40,
-                                            left: 80,
-                                            bottom: 5,
-                                        }}
-                                    >
-                                        <CartesianGrid
-                                            strokeDasharray="3 3"
-                                            horizontal={false}
-                                        />
-                                        <XAxis
-                                            type="number"
-                                            domain={[0, 100]}
-                                            tickFormatter={(v) => `${v}%`}
-                                            tick={{ fontSize: 11 }}
-                                        />
-                                        <YAxis
-                                            dataKey="nom"
-                                            type="category"
-                                            tick={{ fontSize: 11 }}
-                                            width={75}
-                                        />
-                                        <ReTooltip
-                                            formatter={(v, n, p) => [
-                                                `${v}% (${p.payload.heures}h)`,
-                                                "Taux d'occupation",
-                                            ]}
-                                        />
-                                        <Bar
-                                            dataKey="taux"
-                                            radius={[0, 6, 6, 0]}
-                                        >
-                                            {sallesGraphData.map(
-                                                (entry, idx) => (
-                                                    <Cell
-                                                        key={idx}
-                                                        fill={
-                                                            entry.taux >= 70
-                                                                ? "#c62828"
-                                                                : entry.taux >=
-                                                                    40
-                                                                  ? "#e8a020"
-                                                                  : "#2e7d32"
-                                                        }
-                                                    />
-                                                ),
-                                            )}
-                                        </Bar>
-                                    </BarChart>
-                                </ResponsiveContainer>
-                            )}
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    gap: 2,
-                                    mt: 1,
-                                    flexWrap: "wrap",
-                                }}
-                            >
-                                {[
-                                    {
-                                        color: "#2e7d32",
-                                        label: "< 40% — Faible",
-                                    },
-                                    {
-                                        color: "#e8a020",
-                                        label: "40-70% — Moyen",
-                                    },
-                                    {
-                                        color: "#c62828",
-                                        label: "> 70% — Élevé",
-                                    },
-                                ].map((l) => (
-                                    <Box
-                                        key={l.label}
-                                        sx={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: 0.5,
-                                        }}
-                                    >
-                                        <Box
-                                            sx={{
-                                                width: 12,
-                                                height: 12,
-                                                borderRadius: 1,
-                                                bgcolor: l.color,
-                                            }}
-                                        />
-                                        <Typography
-                                            variant="caption"
-                                            color="text.secondary"
-                                        >
-                                            {l.label}
-                                        </Typography>
-                                    </Box>
-                                ))}
-                            </Box>
-                        </Box>
-                    )}
-                </Paper>
-
-                {/* ── NOTIFICATIONS & CONFLITS ── */}
-                <Grid container spacing={3}>
-                    {/* Notifications */}
-                    <Grid size={{ xs: 12, md: 6 }}>
-                        <SectionCard
-                            title="Notifications récentes"
-                            subtitle={`${notifications.length} non lue(s)`}
-                            minHeight={320}
-                            action={
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        alignItems: "center",
-                                        gap: 1,
-                                    }}
-                                >
-                                    {notifications.length > 0 && (
-                                        <Chip
-                                            label={notifications.length}
-                                            color="primary"
-                                            size="small"
-                                        />
-                                    )}
-                                    <IconButton
-                                        size="small"
-                                        onClick={() =>
-                                            navigate("/notifications")
-                                        }
-                                        color="primary"
-                                    >
-                                        <Notifications />
-                                    </IconButton>
-                                </Box>
-                            }
-                        >
-                            {notifications.length > 0 ? (
-                                <List dense sx={{ p: 0 }}>
-                                    {notifications
-                                        .slice(0, 5)
-                                        .map((notif, idx) => (
-                                            <React.Fragment
-                                                key={notif.id_notification}
-                                            >
-                                                <ListItem
-                                                    sx={{
-                                                        bgcolor: "action.hover",
-                                                        borderRadius: 1.5,
-                                                        mb: 0.75,
-                                                        "&:hover": {
-                                                            bgcolor:
-                                                                "action.selected",
-                                                        },
-                                                    }}
-                                                >
-                                                    <ListItemText
-                                                        primary={
-                                                            <Typography
-                                                                variant="body2"
-                                                                fontWeight="bold"
-                                                                component="span"
-                                                                sx={{
-                                                                    display:
-                                                                        "flex",
-                                                                    alignItems:
-                                                                        "center",
-                                                                    gap: 1,
-                                                                }}
-                                                            >
-                                                                {notif.titre}
-                                                                <Chip
-                                                                    label={
-                                                                        notif.type_notification
-                                                                    }
-                                                                    size="small"
-                                                                    color={
-                                                                        notif.type_notification ===
-                                                                        "error"
-                                                                            ? "error"
-                                                                            : notif.type_notification ===
-                                                                                "warning"
-                                                                              ? "warning"
-                                                                              : "primary"
-                                                                    }
-                                                                    variant="outlined"
-                                                                    sx={{
-                                                                        ml: "auto",
-                                                                    }}
-                                                                />
-                                                            </Typography>
-                                                        }
-                                                        secondary={
-                                                            <Box component="span">
-                                                                <Typography
-                                                                    variant="caption"
-                                                                    color="text.secondary"
-                                                                    component="span"
-                                                                    display="block"
-                                                                >
-                                                                    {
-                                                                        notif.message
-                                                                    }
-                                                                </Typography>
-                                                                <Typography
-                                                                    variant="caption"
-                                                                    color="text.disabled"
-                                                                    component="span"
-                                                                >
-                                                                    {new Date(
-                                                                        notif.date_envoi ||
-                                                                            notif.date_creation,
-                                                                    ).toLocaleString(
-                                                                        "fr-FR",
-                                                                    )}
-                                                                </Typography>
-                                                            </Box>
-                                                        }
-                                                    />
-                                                </ListItem>
-                                            </React.Fragment>
-                                        ))}
-                                </List>
-                            ) : (
-                                <Box sx={{ textAlign: "center", py: 4 }}>
-                                    <CheckCircle
-                                        sx={{
-                                            fontSize: 48,
-                                            color: "success.main",
-                                            mb: 1,
-                                        }}
-                                    />
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                    >
-                                        Aucune notification non lue
-                                    </Typography>
-                                </Box>
-                            )}
-                        </SectionCard>
-                    </Grid>
-
-                    {/* Conflits */}
-                    <Grid size={{ xs: 12, md: 6 }}>
-                        <SectionCard
-                            title="Conflits non résolus"
-                            subtitle={
-                                conflits.length > 0
-                                    ? "Intervention requise"
-                                    : "Tout est en ordre"
-                            }
-                            minHeight={320}
-                            action={
-                                <Chip
-                                    label={conflits.length}
-                                    color={
-                                        conflits.length > 0
-                                            ? "error"
-                                            : "success"
-                                    }
-                                    size="small"
-                                    icon={
-                                        conflits.length > 0 ? (
-                                            <Warning fontSize="small" />
-                                        ) : (
-                                            <CheckCircle fontSize="small" />
-                                        )
-                                    }
-                                />
-                            }
-                        >
-                            {conflits.length > 0 ? (
-                                <List dense sx={{ p: 0 }}>
-                                    {conflits.slice(0, 5).map((conflit) => (
-                                        <ListItem
-                                            key={conflit.id_conflit}
-                                            sx={{
-                                                bgcolor: "error.light",
-                                                borderRadius: 1.5,
-                                                mb: 0.75,
-                                                opacity: 0.9,
-                                                "&:hover": { opacity: 1 },
-                                            }}
-                                            secondaryAction={
-                                                <Button
-                                                    size="small"
-                                                    variant="contained"
-                                                    color="error"
-                                                    onClick={() =>
-                                                        navigate(
-                                                            "/gestion/conflits",
-                                                        )
-                                                    }
-                                                >
-                                                    Résoudre
-                                                </Button>
-                                            }
-                                        >
-                                            <ListItemText
-                                                primary={
-                                                    <Typography
-                                                        variant="body2"
-                                                        fontWeight="bold"
-                                                        component="span"
-                                                    >
-                                                        {conflit.type_conflit}
-                                                    </Typography>
-                                                }
-                                                secondary={
-                                                    <Typography
-                                                        variant="caption"
-                                                        component="span"
-                                                    >
-                                                        {conflit.description}
-                                                    </Typography>
-                                                }
-                                            />
-                                        </ListItem>
-                                    ))}
-                                </List>
-                            ) : (
-                                <Box sx={{ textAlign: "center", py: 4 }}>
-                                    <CheckCircle
-                                        sx={{
-                                            fontSize: 48,
-                                            color: "success.main",
-                                            mb: 1,
-                                        }}
-                                    />
-                                    <Typography
-                                        variant="body2"
-                                        color="text.secondary"
-                                    >
-                                        Aucun conflit à résoudre — emploi du
-                                        temps cohérent
-                                    </Typography>
-                                </Box>
-                            )}
-                        </SectionCard>
-                    </Grid>
-                </Grid>
-            </Box>
-        </DashboardLayout>
-    );
+      <Box sx={{ mt: { xs: 2, md: 3 } }}>
+        <IndicatorsStrip kpis={kpis} loading={loading} />
+      </Box>
+    </DashboardLayout>
+  );
 }
