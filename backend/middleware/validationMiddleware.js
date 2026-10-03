@@ -14,6 +14,8 @@ import {
     TYPES_COMPOSANTE,
     NIVEAUX_GROUPE,
     MODALITES,
+    STATUTS_ENSEIGNANT,
+    ROLES_SERVICE,
     normaliserTypeSalle,
 } from "../config/referentiel.js";
 
@@ -117,6 +119,32 @@ export const validateEnseignantCreation = [
         .withMessage("Le département est requis"),
     body("grade").optional().trim(),
     body("bureau").optional().trim(),
+    handleValidationErrors,
+];
+
+export const validateEnseignantUpdate = [
+    body("specialite").optional().trim().notEmpty(),
+    body("departement").optional().trim().notEmpty(),
+    body("grade").optional({ nullable: true }).trim(),
+    body("bureau").optional({ nullable: true }).trim(),
+    body("statut").optional().isIn(STATUTS_ENSEIGNANT).withMessage("Statut : permanent ou vacataire"),
+    body("service_annuel_heures").optional({ nullable: true }).isInt({ min: 0, max: 1000 }).withMessage("Service annuel : 0 à 1000 heures"),
+    body("max_heures_semaine").optional({ nullable: true }).isInt({ min: 1, max: 60 }).withMessage("Maximum hebdomadaire : 1 à 60 heures"),
+    body("id_campus_prefere").optional({ nullable: true }).isInt({ min: 1 }),
+    body("entreprise").optional({ nullable: true }).isString().trim(),
+    handleValidationErrors,
+];
+
+export const validateCompetences = [
+    body("cours").isArray().withMessage("Liste de modules (ids) attendue"),
+    body("cours.*").isInt({ min: 1 }),
+    handleValidationErrors,
+];
+
+export const validateService = (requis) => [
+    ...(requis ? [body("id_user").isInt({ min: 1 }).withMessage("Enseignant requis")] : []),
+    body("role").optional().isIn(ROLES_SERVICE).withMessage("Rôle : principal ou co_enseignant"),
+    body("heures").optional({ nullable: true }).isFloat({ min: 0.5, max: 500 }).withMessage("Heures : entre 0,5 et 500"),
     handleValidationErrors,
 ];
 

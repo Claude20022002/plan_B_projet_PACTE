@@ -2,6 +2,7 @@ import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { Op } from "sequelize";
 import { AuthSession, Users, Enseignant, Etudiant, PasswordResetToken } from "../models/index.js";
+import { filieresDuResponsable } from "../services/planning/droits.js";
 import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
@@ -69,6 +70,9 @@ const getAdditionalInfo = async (user) => {
                 departement: enseignant.departement,
                 grade: enseignant.grade,
                 bureau: enseignant.bureau,
+                statut: enseignant.statut,
+                // Filières dont il est responsable : ouvre la préparation du semestre côté frontend
+                responsabilites: await filieresDuResponsable(user.id_user),
             };
         }
     }

@@ -98,3 +98,15 @@ export const periodeDuSemestre = (semestre) => {
 
 // Ordre d'emboîtement : une promotion contient des groupes de TD, qui contiennent des groupes de TP
 export const RANG_TYPE_GROUPE = { promotion: 0, td: 1, tp: 2 };
+
+// ==================== ENSEIGNANTS ET SERVICES (phase P3) ====================
+
+// Permanent : disponible sauf indisponibilité déclarée. Vacataire : disponible seulement là où il l'a déclaré.
+export const STATUTS_ENSEIGNANT = ["permanent", "vacataire"];
+
+export const ROLES_SERVICE = ["principal", "co_enseignant"];
+
+export const STATUTS_SERVICE = ["propose", "accepte", "refuse"];
+
+// Vœu sur un créneau : simple préférence, jamais bloquante
+export const PREFERENCES_CRENEAU = ["neutre", "prefere", "eviter"];

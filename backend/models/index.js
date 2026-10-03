@@ -27,6 +27,9 @@ import ParametrePlanning from "./ParametrePlanning.js";
 import CoursComposante from "./CoursComposante.js";
 import Enseignement from "./Enseignement.js";
 import EnseignementGroupe from "./EnseignementGroupe.js";
+import CompetenceEnseignant from "./CompetenceEnseignant.js";
+import EnseignementEnseignant from "./EnseignementEnseignant.js";
+import ResponsableFiliere from "./ResponsableFiliere.js";
 
 // ==================== RELATIONS USER ====================
 
@@ -370,6 +373,26 @@ Groupe.belongsToMany(Enseignement, {
 Enseignement.hasMany(Affectation, { foreignKey: "id_enseignement", as: "seances" });
 Affectation.belongsTo(Enseignement, { foreignKey: "id_enseignement", as: "enseignement" });
 
+// ==================== ENSEIGNANTS ET SERVICES (phase P3) ====================
+
+Enseignant.belongsTo(Campus, { foreignKey: "id_campus_prefere", as: "campus_prefere" });
+
+// Compétences : modules qu'un enseignant peut prendre
+Users.belongsToMany(Cours, { through: CompetenceEnseignant, foreignKey: "id_user", otherKey: "id_cours", as: "competences" });
+Cours.belongsToMany(Users, { through: CompetenceEnseignant, foreignKey: "id_cours", otherKey: "id_user", as: "enseignants_competents" });
+
+// Services : enseignants d'un enseignement (avec co-enseignement)
+Enseignement.hasMany(EnseignementEnseignant, { foreignKey: "id_enseignement", as: "services", onDelete: "CASCADE" });
+EnseignementEnseignant.belongsTo(Enseignement, { foreignKey: "id_enseignement", as: "enseignement" });
+EnseignementEnseignant.belongsTo(Users, { foreignKey: "id_user", as: "enseignant", targetKey: "id_user" });
+Users.hasMany(EnseignementEnseignant, { foreignKey: "id_user", as: "services" });
+
+// Responsables de filière
+Filiere.hasMany(ResponsableFiliere, { foreignKey: "id_filiere", as: "responsables", onDelete: "CASCADE" });
+ResponsableFiliere.belongsTo(Filiere, { foreignKey: "id_filiere", as: "filiere" });
+ResponsableFiliere.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
+Users.hasMany(ResponsableFiliere, { foreignKey: "id_user", as: "responsabilites" });
+
 // ==================== RELATIONS AFFECTATION ====================
 
 // Affectation -> DemandeReport (1:n)
@@ -459,4 +482,7 @@ export {
     CoursComposante,
     Enseignement,
     EnseignementGroupe,
+    CompetenceEnseignant,
+    EnseignementEnseignant,
+    ResponsableFiliere,
 };

@@ -6,6 +6,11 @@ import {
     updateEnseignant,
     deleteEnseignant,
     importEnseignants,
+    getChargesEnseignants,
+    getChargeEnseignant,
+    getCompetences,
+    setCompetences,
+    getDisponibiliteEnseignant,
 } from "../controllers/index.js";
 import {
     authenticateToken,
@@ -14,8 +19,11 @@ import {
     requireOwnResourceOrAdmin,
     asyncHandler,
     validateEnseignantCreation,
+    validateEnseignantUpdate,
+    validateCompetences,
     handleValidationErrors,
 } from "../middleware/index.js";
+import { requireAdminOuResponsable } from "../services/planning/droits.js";
 
 const router = express.Router();
 
@@ -27,6 +35,9 @@ router.get(
     asyncHandler(getAllEnseignants)
 );
 
+// 📊 Charges de tous les enseignants (administration et responsables de filière)
+router.get("/charges", authenticateToken, requireAdminOuResponsable, asyncHandler(getChargesEnseignants));
+
 // 🔍 Récupérer un enseignant par ID (Admin ou propriétaire)
 router.get(
     "/:id",
@@ -34,6 +45,16 @@ router.get(
     requireOwnResourceOrAdmin("id"),
     asyncHandler(getEnseignantById)
 );
+
+// 📊 Charge d'un enseignant (lui-même ou l'administration)
+router.get("/:id/charge", authenticateToken, requireOwnResourceOrAdmin("id"), asyncHandler(getChargeEnseignant));
+
+// 🎓 Compétences : lecture pour l'intéressé, l'administration et les responsables ; écriture par l'administration
+router.get("/:id/competences", authenticateToken, requireEnseignant, asyncHandler(getCompetences));
+router.put("/:id/competences", authenticateToken, requireAdmin, validateCompetences, asyncHandler(setCompetences));
+
+// 🕐 Disponibilité sur un créneau (règle permanent / vacataire)
+router.get("/:id/disponibilite", authenticateToken, requireAdminOuResponsable, asyncHandler(getDisponibiliteEnseignant));
 
 // ➕ Créer un enseignant (Admin seulement)
 router.post(
@@ -50,7 +71,7 @@ router.put(
     "/:id",
     authenticateToken,
     requireAdmin,
-    handleValidationErrors,
+    validateEnseignantUpdate,
     asyncHandler(updateEnseignant)
 );
 

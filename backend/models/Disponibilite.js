@@ -1,5 +1,6 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
+import { PREFERENCES_CRENEAU } from "../config/referentiel.js";
 
 const Disponibilite = sequelize.define(
     "Disponibilite",
@@ -14,6 +15,12 @@ const Disponibilite = sequelize.define(
             defaultValue: true,
         },
         raison_indisponibilite: DataTypes.TEXT,
+        // Vœu non bloquant sur ce créneau (préféré / à éviter), pris en compte par la génération
+        preference: {
+            type: DataTypes.ENUM(...PREFERENCES_CRENEAU),
+            allowNull: false,
+            defaultValue: "neutre",
+        },
         date_debut: {
             type: DataTypes.DATEONLY,
             allowNull: false,

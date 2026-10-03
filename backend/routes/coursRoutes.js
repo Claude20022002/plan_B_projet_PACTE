@@ -10,13 +10,13 @@ import {
 } from "../controllers/index.js";
 import {
     authenticateToken,
-    requireAdmin,
     asyncHandler,
     validateCoursCreation,
     validateCoursUpdate,
     validateComposante,
-    handleValidationErrors,
 } from "../middleware/index.js";
+import { autoriserFiliere, filiereDuCorps, requireAdminOuResponsable } from "../services/planning/droits.js";
+import { filiereDuCours } from "../services/planning/resolveursFiliere.js";
 
 const router = express.Router();
 
@@ -26,35 +26,15 @@ router.get("/", authenticateToken, asyncHandler(getAllCours));
 // 🔍 Récupérer un cours par ID (Tous les utilisateurs authentifiés)
 router.get("/:id", authenticateToken, asyncHandler(getCoursById));
 
-// ➕ Créer un cours (Admin seulement)
-router.post(
-    "/",
-    authenticateToken,
-    requireAdmin,
-    validateCoursCreation,
-    handleValidationErrors,
-    asyncHandler(createCours)
-);
+// ✏️ Maquette : administration, et responsable pour les modules de sa filière
+const gestion = [authenticateToken, requireAdminOuResponsable];
 
-// ✏️ Mettre à jour un cours (Admin seulement)
-router.put(
-    "/:id",
-    authenticateToken,
-    requireAdmin,
-    validateCoursUpdate,
-    asyncHandler(updateCours)
-);
-
-// 🗑️ Supprimer un cours (Admin seulement)
-router.delete(
-    "/:id",
-    authenticateToken,
-    requireAdmin,
-    asyncHandler(deleteCours)
-);
+router.post("/", ...gestion, validateCoursCreation, autoriserFiliere(filiereDuCorps), asyncHandler(createCours));
+router.put("/:id", ...gestion, validateCoursUpdate, autoriserFiliere(filiereDuCours), asyncHandler(updateCours));
+router.delete("/:id", ...gestion, autoriserFiliere(filiereDuCours), asyncHandler(deleteCours));
 
 // 🧩 Composantes d'un module (CM, TD, TP, Projet)
 router.get("/:idCours/composantes", authenticateToken, asyncHandler(getComposantesDuCours));
-router.post("/:idCours/composantes", authenticateToken, requireAdmin, validateComposante(true), asyncHandler(createComposante));
+router.post("/:idCours/composantes", ...gestion, validateComposante(true), autoriserFiliere(filiereDuCours), asyncHandler(createComposante));
 
 export default router;

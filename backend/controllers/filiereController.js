@@ -1,4 +1,4 @@
-import { Campus, Filiere } from "../models/index.js";
+import { Campus, Filiere, ResponsableFiliere, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { pick } from "../utils/validationHelper.js";
@@ -114,6 +114,36 @@ export const updateFiliere = asyncHandler(async (req, res) => {
         message: "Filière mise à jour avec succès",
         filiere,
     });
+});
+
+// 👤 Responsables d'une filière
+export const getResponsables = asyncHandler(async (req, res) => {
+    const responsables = await ResponsableFiliere.findAll({
+        where: { id_filiere: req.params.id },
+        include: [{ model: Users, as: "user", attributes: ["id_user", "nom", "prenom", "email"] }],
+    });
+    res.json(responsables.map((r) => r.user));
+});
+
+// ➕ Nommer un enseignant responsable d'une filière (administration)
+export const ajouterResponsable = asyncHandler(async (req, res) => {
+    const filiere = await Filiere.findByPk(req.params.id);
+    if (!filiere) {
+        return res.status(404).json({ message: "Filière non trouvée", error: `Aucune filière avec l'ID ${req.params.id}` });
+    }
+    const user = await Users.findByPk(req.body.id_user);
+    if (!user || user.role !== "enseignant") {
+        return res.status(400).json({ message: "Erreur de validation", error: "Le responsable doit être un enseignant" });
+    }
+    const [, cree] = await ResponsableFiliere.findOrCreate({ where: { id_user: user.id_user, id_filiere: filiere.id_filiere } });
+    res.status(cree ? 201 : 200).json({ message: `${user.prenom} ${user.nom} est responsable de ${filiere.code_filiere}` });
+});
+
+// 🗑️ Retirer un responsable
+export const retirerResponsable = asyncHandler(async (req, res) => {
+    const supprimes = await ResponsableFiliere.destroy({ where: { id_filiere: req.params.id, id_user: req.params.idUser } });
+    if (!supprimes) return res.status(404).json({ message: "Responsable non trouvé", error: "Cet enseignant n'est pas responsable de la filière" });
+    res.json({ message: "Responsable retiré" });
 });
 
 // 🗑️ Supprimer une filière

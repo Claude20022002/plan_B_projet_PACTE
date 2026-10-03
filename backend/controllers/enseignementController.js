@@ -1,4 +1,16 @@
-import { Affectation, Cours, CoursComposante, Enseignement, EnseignementGroupe, Filiere, Groupe, Periode } from "../models/index.js";
+import {
+    Affectation,
+    Cours,
+    CoursComposante,
+    Enseignement,
+    EnseignementEnseignant,
+    EnseignementGroupe,
+    Filiere,
+    Groupe,
+    Periode,
+    Users,
+} from "../models/index.js";
+import { filieresDuResponsable } from "../services/planning/droits.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import sequelize from "../config/db.js";
 import {
@@ -23,6 +35,12 @@ const INCLUDES = [
     },
     { model: Groupe, as: "groupes", attributes: ["id_groupe", "nom_groupe", "type_groupe", "effectif", "id_filiere", "annee"], through: { attributes: [] } },
     { model: Periode, as: "periode", attributes: ["id_periode", "code", "id_annee"] },
+    {
+        model: EnseignementEnseignant,
+        as: "services",
+        attributes: ["id_user", "role", "statut_service", "heures", "motif_refus"],
+        include: [{ model: Users, as: "enseignant", attributes: ["id_user", "nom", "prenom"] }],
+    },
 ];
 
 const serialiser = (enseignement, seancesParId = new Map()) => ({
@@ -44,6 +62,11 @@ export const getEnseignements = asyncHandler(async (req, res) => {
     if (req.query.id_periode) where.id_periode = req.query.id_periode;
 
     let enseignements = await Enseignement.findAll({ where, include: INCLUDES, order: [["id_enseignement", "ASC"]] });
+    // Un responsable de filière ne voit que les enseignements de ses filières
+    if (req.user.role !== "admin") {
+        const siennes = new Set(await filieresDuResponsable(req.user.id_user));
+        enseignements = enseignements.filter((e) => siennes.has(e.composante.cours.id_filiere));
+    }
     if (req.query.id_filiere) {
         const idFiliere = Number(req.query.id_filiere);
         enseignements = enseignements.filter(

@@ -9,50 +9,29 @@ import {
 } from "../controllers/index.js";
 import {
     authenticateToken,
-    requireAdmin,
     asyncHandler,
     validateGroupeCreation,
     validateGroupeUpdate,
-    handleValidationErrors,
 } from "../middleware/index.js";
+import { autoriserFiliere, filiereDuCorps, requireAdminOuResponsable } from "../services/planning/droits.js";
+import { filiereDuGroupe } from "../services/planning/resolveursFiliere.js";
 
 const router = express.Router();
 
 // 🔍 Récupérer tous les groupes (Tous les utilisateurs authentifiés)
 router.get("/", authenticateToken, asyncHandler(getAllGroupes));
 
-// 🔍 Récupérer un groupe par ID (Tous les utilisateurs authentifiés)
 // 🌳 Arbre promotions → TD → TP (Tous les utilisateurs authentifiés)
 router.get("/arbre", authenticateToken, asyncHandler(getArbreGroupes));
 
 // 🔍 Récupérer un groupe par ID (Tous les utilisateurs authentifiés)
 router.get("/:id", authenticateToken, asyncHandler(getGroupeById));
 
-// ➕ Créer un groupe (Admin seulement)
-router.post(
-    "/",
-    authenticateToken,
-    requireAdmin,
-    validateGroupeCreation,
-    handleValidationErrors,
-    asyncHandler(createGroupe)
-);
+// ✏️ Groupes : administration, et responsable pour les groupes de sa filière
+const gestion = [authenticateToken, requireAdminOuResponsable];
 
-// ✏️ Mettre à jour un groupe (Admin seulement)
-router.put(
-    "/:id",
-    authenticateToken,
-    requireAdmin,
-    validateGroupeUpdate,
-    asyncHandler(updateGroupe)
-);
-
-// 🗑️ Supprimer un groupe (Admin seulement)
-router.delete(
-    "/:id",
-    authenticateToken,
-    requireAdmin,
-    asyncHandler(deleteGroupe)
-);
+router.post("/", ...gestion, validateGroupeCreation, autoriserFiliere(filiereDuCorps), asyncHandler(createGroupe));
+router.put("/:id", ...gestion, validateGroupeUpdate, autoriserFiliere(filiereDuGroupe), asyncHandler(updateGroupe));
+router.delete("/:id", ...gestion, autoriserFiliere(filiereDuGroupe), asyncHandler(deleteGroupe));
 
 export default router;

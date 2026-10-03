@@ -5,6 +5,9 @@ import {
     createFiliere,
     updateFiliere,
     deleteFiliere,
+    getResponsables,
+    ajouterResponsable,
+    retirerResponsable,
 } from "../controllers/index.js";
 import {
     authenticateToken,
@@ -16,6 +19,11 @@ import {
 } from "../middleware/index.js";
 
 const router = express.Router();
+
+// 👤 Responsables de filière : lecture pour tous, nomination par l'administration
+router.get("/:id/responsables", authenticateToken, asyncHandler(getResponsables));
+router.post("/:id/responsables", authenticateToken, requireAdmin, asyncHandler(ajouterResponsable));
+router.delete("/:id/responsables/:idUser", authenticateToken, requireAdmin, asyncHandler(retirerResponsable));
 
 // 🔍 Récupérer toutes les filières (Tous les utilisateurs authentifiés)
 router.get("/", authenticateToken, asyncHandler(getAllFilieres));

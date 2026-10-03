@@ -65,3 +65,6 @@ export * from "./parametrePlanningController.js";
 // Offre de formation (phase P2)
 export * from "./composanteController.js";
 export * from "./enseignementController.js";
+
+// Enseignants et services (phase P3)
+export * from "./serviceController.js";

@@ -1,26 +1,101 @@
-import { Enseignant, Users } from "../models/index.js";
+import sequelize from "../config/db.js";
+import { Campus, CompetenceEnseignant, Cours, Creneau, Enseignant, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { hashPassword } from "../utils/passwordHelper.js";
 import { pick } from "../utils/validationHelper.js";
+import { chargesEnseignants, disponibiliteEnseignant } from "../services/planning/enseignants.js";
 
 /**
- * Contrôleur pour les enseignants
+ * Contrôleur pour les enseignants : permanents et vacataires, service dû, compétences.
  */
 
-const ENSEIGNANT_FIELDS = ["specialite", "departement", "grade", "bureau"];
+const ENSEIGNANT_FIELDS = [
+    "specialite",
+    "departement",
+    "grade",
+    "bureau",
+    "statut",
+    "service_annuel_heures",
+    "max_heures_semaine",
+    "id_campus_prefere",
+    "entreprise",
+];
+
+const introuvable = (res, id) =>
+    res.status(404).json({ message: "Enseignant non trouvé", error: `Aucun enseignant trouvé avec l'ID ${id}` });
+
+// 📊 Charge de chaque enseignant sur l'année (active par défaut) face à son service dû
+export const getChargesEnseignants = asyncHandler(async (req, res) => {
+    res.json(await chargesEnseignants({ idAnnee: req.query.id_annee || null }));
+});
+
+// 📊 Charge d'un enseignant (l'enseignant lui-même ou l'administration)
+export const getChargeEnseignant = asyncHandler(async (req, res) => {
+    const { annee, charges } = await chargesEnseignants({ idAnnee: req.query.id_annee || null, idUser: Number(req.params.id) });
+    if (charges.length === 0) return introuvable(res, req.params.id);
+    res.json({ annee, ...charges[0] });
+});
+
+// 🎓 Modules qu'un enseignant peut prendre
+export const getCompetences = asyncHandler(async (req, res) => {
+    const enseignant = await Enseignant.findByPk(req.params.id);
+    if (!enseignant) return introuvable(res, req.params.id);
+    const competences = await CompetenceEnseignant.findAll({ where: { id_user: enseignant.id_user }, attributes: ["id_cours"] });
+    const cours = await Cours.findAll({
+        where: { id_cours: competences.map((c) => c.id_cours) },
+        attributes: ["id_cours", "code_cours", "nom_cours", "semestre", "id_filiere"],
+        order: [["code_cours", "ASC"]],
+    });
+    res.json(cours);
+});
+
+// ✏️ Remplacer la liste des compétences (ids de modules)
+export const setCompetences = asyncHandler(async (req, res) => {
+    const enseignant = await Enseignant.findByPk(req.params.id);
+    if (!enseignant) return introuvable(res, req.params.id);
+    const ids = [...new Set((req.body.cours || []).map(Number))];
+    if ((await Cours.count({ where: { id_cours: ids } })) !== ids.length) {
+        return res.status(400).json({ message: "Erreur de validation", error: "Module introuvable" });
+    }
+    await sequelize.transaction(async (transaction) => {
+        await CompetenceEnseignant.destroy({ where: { id_user: enseignant.id_user }, transaction });
+        await CompetenceEnseignant.bulkCreate(ids.map((id_cours) => ({ id_user: enseignant.id_user, id_cours })), { transaction });
+    });
+    res.json({ message: "Compétences enregistrées", cours: ids });
+});
+
+// 🕐 Disponibilité sur un créneau à une date (règle permanent / vacataire)
+export const getDisponibiliteEnseignant = asyncHandler(async (req, res) => {
+    const { date, id_creneau } = req.query;
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date || "") || !id_creneau) {
+        return res.status(400).json({ message: "Erreur de validation", error: "Paramètres date (AAAA-MM-JJ) et id_creneau requis" });
+    }
+    if (!(await Creneau.findByPk(id_creneau))) {
+        return res.status(404).json({ message: "Créneau non trouvé", error: `Aucun créneau avec l'ID ${id_creneau}` });
+    }
+    res.json(await disponibiliteEnseignant({ idUser: Number(req.params.id), date, idCreneau: Number(id_creneau) }));
+});
+
+const campusInconnu = async (data) =>
+    data.id_campus_prefere !== undefined && data.id_campus_prefere !== null && !(await Campus.findByPk(data.id_campus_prefere));
 
 // 🔍 Récupérer tous les enseignants (avec pagination)
 export const getAllEnseignants = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
+    const where = {};
+    if (req.query.statut) where.statut = req.query.statut;
+
     const { count, rows: enseignants } = await Enseignant.findAndCountAll({
+        where,
         include: [
             {
                 model: Users,
                 as: "user",
                 attributes: { exclude: ["password_hash"] },
             },
+            { model: Campus, as: "campus_prefere", attributes: ["id_campus", "code", "nom"] },
         ],
         limit,
         offset,
@@ -104,7 +179,11 @@ export const updateEnseignant = asyncHandler(async (req, res) => {
         });
     }
 
-    await enseignant.update(pick(req.body, ENSEIGNANT_FIELDS));
+    const data = pick(req.body, ENSEIGNANT_FIELDS);
+    if (await campusInconnu(data)) {
+        return res.status(400).json({ message: "Erreur de validation", error: "Campus préféré inconnu" });
+    }
+    await enseignant.update(data);
 
     const enseignantAvecUser = await Enseignant.findByPk(enseignant.id_user, {
         include: [

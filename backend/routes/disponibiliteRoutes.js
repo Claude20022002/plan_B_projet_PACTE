@@ -5,6 +5,7 @@ import {
     requireAdmin,
     requireEnseignant,
 } from "../middleware/index.js";
+import { pick } from "../utils/validationHelper.js";
 
 const router = express.Router();
 
@@ -66,7 +67,7 @@ router.get("/enseignant/:id_enseignant/indisponibilites", authenticateToken, req
 });
 
 // 🔍 Récupérer une disponibilité par ID (tout utilisateur authentifié)
-router.get("/:id", authenticateToken, async (req, res) => {
+router.get("/:id", authenticateToken, requireEnseignant, async (req, res) => {
     try {
         const disponibilite = await Disponibilite.findByPk(req.params.id, {
             include: [
@@ -88,10 +89,23 @@ router.get("/:id", authenticateToken, async (req, res) => {
     }
 });
 
-// ➕ Créer une disponibilité (enseignant ou admin)
+// Champs modifiables d'une déclaration ; l'enseignant concerné vient de la session pour un enseignant
+const DISPONIBILITE_FIELDS = ["disponible", "raison_indisponibilite", "preference", "date_debut", "date_fin", "id_creneau", "id_user_enseignant"];
+
+const preparerDisponibilite = (req) => {
+    const data = pick(req.body, DISPONIBILITE_FIELDS);
+    // Un enseignant ne déclare que pour lui-même ; l'administration peut déclarer pour n'importe qui
+    if (req.user.role !== "admin") data.id_user_enseignant = req.user.id_user;
+    return data;
+};
+
+const proprietaireOuAdmin = (req, disponibilite) =>
+    req.user.role === "admin" || disponibilite.id_user_enseignant === req.user.id_user;
+
+// ➕ Créer une disponibilité (enseignant pour lui-même, ou admin)
 router.post("/", authenticateToken, requireEnseignant, async (req, res) => {
     try {
-        const disponibilite = await Disponibilite.create(req.body);
+        const disponibilite = await Disponibilite.create(preparerDisponibilite(req));
         const disponibiliteComplete = await Disponibilite.findByPk(
             disponibilite.id_disponibilite,
             {
@@ -119,7 +133,10 @@ router.put("/:id", authenticateToken, requireEnseignant, async (req, res) => {
                 .status(404)
                 .json({ message: "Disponibilité non trouvée" });
         }
-        await disponibilite.update(req.body);
+        if (!proprietaireOuAdmin(req, disponibilite)) {
+            return res.status(403).json({ message: "Accès interdit", error: "Vous ne pouvez modifier que vos propres disponibilités" });
+        }
+        await disponibilite.update(preparerDisponibilite(req));
         const disponibiliteComplete = await Disponibilite.findByPk(
             disponibilite.id_disponibilite,
             {
@@ -138,14 +155,17 @@ router.put("/:id", authenticateToken, requireEnseignant, async (req, res) => {
     }
 });
 
-// 🗑️ Supprimer une disponibilité (admin uniquement)
-router.delete("/:id", authenticateToken, requireAdmin, async (req, res) => {
+// 🗑️ Supprimer une disponibilité (l'enseignant concerné ou l'administration)
+router.delete("/:id", authenticateToken, requireEnseignant, async (req, res) => {
     try {
         const disponibilite = await Disponibilite.findByPk(req.params.id);
         if (!disponibilite) {
             return res
                 .status(404)
                 .json({ message: "Disponibilité non trouvée" });
+        }
+        if (!proprietaireOuAdmin(req, disponibilite)) {
+            return res.status(403).json({ message: "Accès interdit", error: "Vous ne pouvez supprimer que vos propres disponibilités" });
         }
         await disponibilite.destroy();
         res.json({ message: "Disponibilité supprimée avec succès" });
