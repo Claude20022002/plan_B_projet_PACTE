@@ -133,6 +133,15 @@ const fr = {
       { title: 'Statistiques', body: 'Occupation des salles, charge des enseignants, heures creuses et pics d’activité.' },
     ],
     footer: 'Projet PACTE · HESTIM Engineering & Business School',
+    photos: {
+      galleryLabel: "Photos de l'école",
+      session: 'Une séance à HESTIM',
+      sessionAlt: "Une salle de HESTIM pendant une conférence : le public assis face à l'intervenant et à l'écran.",
+      incubator: 'Incubateur CIEL',
+      incubatorAlt: "Atelier à l'incubateur CIEL de HESTIM, devant la kakémono « Centre d'innovation, entrepreneuriat et leadership ».",
+      campus: 'Campus HESTIM',
+      campusAlt: 'Des étudiants rassemblés devant le bâtiment HESTIM.',
+    },
   },
   timetable: {
     previousWeek: 'Semaine précédente',

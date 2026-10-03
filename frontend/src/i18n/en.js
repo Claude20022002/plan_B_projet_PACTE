@@ -133,6 +133,15 @@ const en = {
       { title: 'Statistics', body: 'Room occupancy, teacher workload, quiet hours and peak times.' },
     ],
     footer: 'PACTE project · HESTIM Engineering & Business School',
+    photos: {
+      galleryLabel: 'School photos',
+      session: 'A session at HESTIM',
+      sessionAlt: 'A HESTIM room during a talk: the audience seated facing the speaker and the screen.',
+      incubator: 'CIEL incubator',
+      incubatorAlt: 'Workshop at the HESTIM CIEL incubator, in front of the "Innovation, entrepreneurship and leadership centre" banner.',
+      campus: 'HESTIM campus',
+      campusAlt: 'Students gathered in front of the HESTIM building.',
+    },
   },
   timetable: {
     previousWeek: 'Previous week',

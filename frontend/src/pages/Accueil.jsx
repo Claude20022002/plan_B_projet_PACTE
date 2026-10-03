@@ -8,6 +8,44 @@ import { ds } from '../design-system/tokens';
 import { FlapTiles } from '../design-system/board';
 
 /**
+ * Photo réelle de l'école (hestim.ma) encadrée comme le panneau, légendée par une étiquette
+ * de quai en capitales condensées.
+ */
+function PhotoWithCaption({ src, alt, caption, sx, objectPosition = '50% 50%', eager = false }) {
+  return (
+    <Box component="figure" sx={{ m: 0, position: 'relative', bgcolor: ds.board.frame, p: '6px', borderRadius: `${ds.radius.lg}px`, ...sx }}>
+      <Box
+        component="img"
+        src={src}
+        alt={alt}
+        loading={eager ? 'eager' : 'lazy'}
+        sx={{ display: 'block', width: '100%', height: '100%', objectFit: 'cover', objectPosition, borderRadius: `${ds.radius.md}px` }}
+      />
+      <Box
+        component="figcaption"
+        sx={{
+          position: 'absolute',
+          left: 18,
+          bottom: 18,
+          px: 1.5,
+          py: 0.75,
+          bgcolor: ds.board.ground,
+          color: ds.board.letter,
+          borderRadius: '3px',
+          fontFamily: ds.font.board,
+          fontWeight: 600,
+          fontSize: { xs: '0.875rem', md: '1rem' },
+          letterSpacing: '0.12em',
+          textTransform: 'uppercase',
+        }}
+      >
+        {caption}
+      </Box>
+    </Box>
+  );
+}
+
+/**
  * Accueil public : le panneau HESTIM Planner et ce qu'il affiche.
  * Les fonctionnalités sont des lignes du panneau ; aucune donnée ni statistique inventée.
  */
@@ -96,6 +134,16 @@ export default function Accueil() {
           </Box>
         </Box>
 
+        {/* La salle réelle : ce que le panneau organise */}
+        <PhotoWithCaption
+          src="/img/hestim/seance-salle.jpg"
+          alt={t('landing.photos.sessionAlt')}
+          caption={t('landing.photos.session')}
+          sx={{ mt: { xs: 6, md: 9 }, height: { xs: 220, sm: 300, md: 380 } }}
+          objectPosition="50% 60%"
+          eager
+        />
+
         <Box component="section" aria-labelledby="features-title" sx={{ mt: { xs: 7, md: 11 } }}>
           <Box sx={{ bgcolor: ds.board.frame, p: { xs: '6px', sm: '8px' }, borderRadius: `${ds.radius.lg}px` }}>
             <Typography
@@ -132,6 +180,23 @@ export default function Accueil() {
               ))}
             </Box>
           </Box>
+        </Box>
+
+        <Box component="section" aria-label={t('landing.photos.galleryLabel')} sx={{ mt: { xs: 5, md: 7 }, display: 'grid', gap: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+          <PhotoWithCaption
+            src="/img/hestim/incubateur-ciel.jpg"
+            alt={t('landing.photos.incubatorAlt')}
+            caption={t('landing.photos.incubator')}
+            sx={{ height: { xs: 220, md: 300 } }}
+            objectPosition="30% 40%"
+          />
+          <PhotoWithCaption
+            src="/img/hestim/campus-batiment.jpg"
+            alt={t('landing.photos.campusAlt')}
+            caption={t('landing.photos.campus')}
+            sx={{ height: { xs: 220, md: 300 } }}
+            objectPosition="50% 35%"
+          />
         </Box>
       </Box>
 
