@@ -413,6 +413,8 @@ const fr = {
     teacher: 'Enseignant',
     status: 'Statut',
     floor: 'Étage {{floor}}',
+    supports_one: 'Support du cours ({{count}})',
+    supports_other: 'Supports du cours ({{count}})',
     startsIn: 'Commence dans {{duration}}',
     endsIn: 'Se termine dans {{duration}}',
     startedAgo: 'En cours',
