@@ -48,15 +48,16 @@ const buildValidationSchema = (isEditing) => yup.object({
     email: yup.string().email('Email invalide').required('L\'email est requis'),
     role: yup.string().oneOf(['admin', 'enseignant', 'etudiant']).required('Le rôle est requis'),
     telephone: yup.string(),
-    // Mêmes règles que le serveur (validatePasswordStrength) ; facultatif en modification
+    // Mêmes règles que le serveur (validatePasswordStrength). Facultatif : sans mot de passe,
+    // le compte reçoit un lien d'invitation ; un mot de passe saisi est provisoire.
     password: yup
         .string()
+        .transform((valeur) => valeur || undefined)
         .min(8, 'Au moins 8 caractères')
         .matches(/[a-z]/, 'Au moins une minuscule')
         .matches(/[A-Z]/, 'Au moins une majuscule')
         .matches(/[0-9]/, 'Au moins un chiffre')
-        .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Au moins un caractère spécial')
-        .concat(isEditing ? yup.string() : yup.string().required('Le mot de passe est requis')),
+        .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Au moins un caractère spécial'),
 });
 
 export default function Utilisateurs() {
@@ -75,6 +76,7 @@ export default function Utilisateurs() {
     const [importOpen, setImportOpen] = useState(false);
     const [importLoading, setImportLoading] = useState(false);
     const [importErrors, setImportErrors] = useState([]);
+    const [invitation, setInvitation] = useState(null);
     const { sorted: sortedUsers, requestSort, getSortDir } = useSortableTable(utilisateurs);
 
     useEffect(() => {
@@ -112,8 +114,8 @@ export default function Utilisateurs() {
             try {
                 setError('');
                 setSuccess('');
-                const dataToSend = { ...values };
-                if (editing && !dataToSend.password) {
+                const { niveau, ...dataToSend } = values;
+                if (!dataToSend.password) {
                     delete dataToSend.password;
                 }
 
@@ -121,8 +123,10 @@ export default function Utilisateurs() {
                     await userAPI.update(editing.id_user, dataToSend);
                     setSuccess('Utilisateur modifié avec succès');
                 } else {
-                    await userAPI.create(dataToSend);
-                    setSuccess('Utilisateur créé avec succès');
+                    // La fiche étudiant ou enseignant est créée avec le compte
+                    const reponse = await userAPI.create({ ...dataToSend, ...(values.role === 'etudiant' && niveau ? { profil: { niveau } } : {}) });
+                    if (reponse.invitation) setInvitation({ email: values.email, ...reponse.invitation });
+                    setSuccess(reponse.invitation ? 'Compte créé : invitation envoyée' : 'Utilisateur créé : mot de passe provisoire à changer à la première connexion');
                 }
                 formik.resetForm();
                 setOpen(false);
@@ -436,13 +440,18 @@ export default function Utilisateurs() {
                                 />
                                 <TextField
                                     fullWidth
-                                    label={editing ? 'Nouveau mot de passe (laisser vide pour ne pas changer)' : 'Mot de passe'}
+                                    label={editing ? 'Nouveau mot de passe provisoire (laisser vide pour ne pas changer)' : 'Mot de passe provisoire (facultatif)'}
                                     name="password"
                                     type="password"
                                     value={formik.values.password}
                                     onChange={formik.handleChange}
                                     error={formik.touched.password && Boolean(formik.errors.password)}
-                                    helperText={formik.touched.password && formik.errors.password}
+                                    helperText={
+                                        (formik.touched.password && formik.errors.password) ||
+                                        (editing
+                                            ? "L'utilisateur devra le changer à sa prochaine connexion"
+                                            : "Sans mot de passe, un lien d'invitation lui est envoyé pour choisir le sien")
+                                    }
                                 />
                                 {formik.values.role === 'etudiant' && (
                                     <FormControl fullWidth>
@@ -470,6 +479,23 @@ export default function Utilisateurs() {
                             </Button>
                         </DialogActions>
                     </form>
+                </Dialog>
+
+                {/* Lien d'invitation : à transmettre si l'email n'a pas pu partir */}
+                <Dialog open={Boolean(invitation)} onClose={() => setInvitation(null)} maxWidth="sm" fullWidth>
+                    <DialogTitle>Invitation de {invitation?.email}</DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            {invitation?.envoyee
+                                ? "Un email avec ce lien vient d'être envoyé. Vous pouvez aussi le transmettre vous-même ; il est valable 7 jours."
+                                : "L'email n'a pas pu être envoyé : transmettez ce lien à la personne. Il est valable 7 jours."}
+                        </Typography>
+                        <TextField fullWidth value={invitation?.lien ?? ''} InputProps={{ readOnly: true }} onFocus={(e) => e.target.select()} />
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => navigator.clipboard?.writeText(invitation?.lien ?? '')}>Copier le lien</Button>
+                        <Button variant="contained" onClick={() => setInvitation(null)}>Fermer</Button>
+                    </DialogActions>
                 </Dialog>
 
                 {/* Dialog d'import */}

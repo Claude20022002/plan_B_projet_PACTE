@@ -13,12 +13,14 @@ import { ds } from '../design-system/tokens';
 export default function ChangerMotDePasse() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { user, checkAuth, logout } = useAuth();
+    const { user, loading, checkAuth, logout } = useAuth();
     const [form, setForm] = useState({ actuel: '', nouveau: '', confirmation: '' });
     const [erreur, setErreur] = useState('');
     const [envoi, setEnvoi] = useState(false);
 
-    if (user && !user.must_change_password) return <Navigate to={`/dashboard/${user.role}`} replace />;
+    if (loading) return null;
+    if (!user) return <Navigate to="/connexion" replace />;
+    if (!user.must_change_password) return <Navigate to={`/dashboard/${user.role}`} replace />;
 
     const champ = (nom) => (e) => {
         setForm((f) => ({ ...f, [nom]: e.target.value }));
