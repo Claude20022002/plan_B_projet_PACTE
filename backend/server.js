@@ -3,6 +3,7 @@ import app from "./app.js";
 import { testConnection } from "./config/db.js";
 import { Users } from "./models/index.js";
 import { runMigrations } from "./migrations/migrator.js";
+import { marquerRealisees } from "./services/planning/suivi.js";
 
 dotenv.config();
 
@@ -45,6 +46,14 @@ const seedIfRequested = async () => {
         app.listen(PORT, () => {
             console.log(`--> Serveur lancé sur http://localhost:${PORT}`);
         });
+
+        // Séances confirmées et passées → réalisées (suivi du réalisé, phase P7) : au démarrage puis chaque heure
+        const actualiserRealise = () =>
+            marquerRealisees()
+                .then((n) => n && console.log(`--> ${n} séance(s) marquée(s) réalisée(s)`))
+                .catch((error) => console.error("--> Suivi du réalisé :", error.message));
+        actualiserRealise();
+        setInterval(actualiserRealise, 60 * 60 * 1000).unref();
     } catch (error) {
         console.error("--> Erreur serveur :", error);
         process.exit(1);

@@ -36,6 +36,7 @@ import serviceRoutes from "./routes/serviceRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
 import examenRoutes from "./routes/examenRoutes.js";
 import imprevuRoutes from "./routes/imprevuRoutes.js";
+import suiviRoutes from "./routes/suiviRoutes.js";
 
 // Import des middlewares
 import {
@@ -134,6 +135,7 @@ app.use("/api/services", serviceRoutes);
 app.use("/api/reservations", reservationRoutes);
 app.use("/api/examens", examenRoutes);
 app.use("/api/imprevus", imprevuRoutes);
+app.use("/api/suivi", suiviRoutes);
 
 app.get("/", (req, res) => {
     res.json({
