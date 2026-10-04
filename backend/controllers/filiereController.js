@@ -35,7 +35,16 @@ export const getAllFilieres = asyncHandler(async (req, res) => {
 
     const { count, rows: filieres } = await Filiere.findAndCountAll({
         where,
-        include: INCLUDE_CAMPUS,
+        include: [
+            ...INCLUDE_CAMPUS,
+            {
+                model: ResponsableFiliere,
+                as: "responsables",
+                attributes: ["id_user"],
+                include: [{ model: Users, as: "user", attributes: ["id_user", "nom", "prenom"] }],
+            },
+        ],
+        distinct: true,
         limit,
         offset,
         order: [["code_filiere", "ASC"]],

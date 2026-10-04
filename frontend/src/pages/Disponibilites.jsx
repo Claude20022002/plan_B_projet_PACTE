@@ -1,213 +1,214 @@
-import React, { useState, useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
+    Button,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    IconButton,
+    ListSubheader,
+    MenuItem,
     Paper,
+    Stack,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    Typography,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
     TextField,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    FormControlLabel,
-    Switch,
-    Alert,
-    Snackbar,
-    IconButton,
-    Chip,
-    CircularProgress,
+    ToggleButton,
+    ToggleButtonGroup,
+    Typography,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
-import { disponibiliteAPI, creneauAPI } from '../services/api';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import EmptyState from '../design-system/components/EmptyState';
+import StateChip from '../design-system/components/StateChip';
+import { TableSkeleton } from '../design-system/components/PremiumSkeleton';
+import { calendrierAPI, creneauAPI, disponibiliteAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
-import { useFormik } from 'formik';
-import * as yup from 'yup';
+import { useToast } from '../contexts/ToastContext';
+import { fetchAll } from '../utils/fetchAll';
 
-const JOURS_ORDER = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
-const capitalize = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+const JOURS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
+const VOEUX = ['neutre', 'prefere', 'eviter'];
+// Pastilles : l'indisponibilité et le vœu « à éviter » sont les exceptions à signaler
+const TON_VOEU = { prefere: 'info', eviter: 'warning' };
+const hhmm = (heure) => String(heure || '').slice(0, 5);
+const aujourdhui = () => new Date().toISOString().slice(0, 10);
 
-const validationSchema = yup.object({
-    id_creneau: yup.number()
-        .min(1, 'Le créneau est requis')
-        .required('Le créneau est requis'),
-    date_debut: yup.string()
-        .min(1, 'La date de début est requise')
-        .required('La date de début est requise'),
-    date_fin: yup.string()
-        .min(1, 'La date de fin est requise')
-        .required('La date de fin est requise'),
-    disponible: yup.boolean(),
-});
-
+/**
+ * Mes disponibilités : un vacataire n'est placé que sur les créneaux qu'il déclare disponibles
+ * (opt-in), un permanent partout sauf sur ses indisponibilités (opt-out). Les vœux guident la
+ * planification sans la bloquer.
+ */
 export default function Disponibilites() {
+    const { t, i18n } = useTranslation();
+    const toast = useToast();
     const { user } = useAuth();
-    const [disponibilites, setDisponibilites] = useState([]);
-    const [creneaux, setCreneaux]             = useState([]);
-    const [open, setOpen]                     = useState(false);
-    const [loading, setLoading]               = useState(true);
-    const [error, setError]                   = useState('');
-    const [success, setSuccess]               = useState('');
+    const [declarations, setDeclarations] = useState([]);
+    const [creneaux, setCreneaux] = useState([]);
+    const [periode, setPeriode] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [form, setForm] = useState(null);
+    const [aSupprimer, setASupprimer] = useState(null);
 
-    useEffect(() => {
-        if (user?.id_user) {
-            Promise.all([loadDisponibilites(), loadCreneaux()]);
-        }
-    }, [user]);
+    const date = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }), [i18n.language]);
+    const vacataire = user?.statut === 'vacataire';
 
-    const loadCreneaux = async () => {
+    const charger = useCallback(async () => {
+        if (!user?.id_user) return;
         try {
-            const data = await creneauAPI.getAll({ limit: 200 });
-            const list = data.data || data || [];
-            // Trier par jour puis heure
-            list.sort((a, b) => {
-                const di = JOURS_ORDER.indexOf(a.jour_semaine) - JOURS_ORDER.indexOf(b.jour_semaine);
-                return di !== 0 ? di : a.heure_debut.localeCompare(b.heure_debut);
-            });
-            setCreneaux(list);
-        } catch (err) {
-            console.error('Erreur chargement créneaux:', err);
-        }
-    };
-
-    const loadDisponibilites = async () => {
-        try {
-            const data = await disponibiliteAPI.getByEnseignant(user.id_user);
-            setDisponibilites(data.data || data || []);
-        } catch (err) {
-            console.error('Erreur:', err);
-            setError('Erreur lors du chargement des disponibilités');
+            setDeclarations(await disponibiliteAPI.getByEnseignant(user.id_user));
+        } catch {
+            toast.error(t('common.errorLoad'));
         } finally {
             setLoading(false);
         }
-    };
+    }, [user?.id_user, t, toast]);
 
-    const formik = useFormik({
-        initialValues: { id_creneau: '', date_debut: '', date_fin: '', disponible: true },
-        validationSchema,
-        onSubmit: async (values, { setSubmitting }) => {
-            try {
-                setError('');
-                await disponibiliteAPI.create({
-                    id_user_enseignant: user.id_user,
-                    id_creneau:  Number(values.id_creneau),
-                    date_debut:  values.date_debut,
-                    date_fin:    values.date_fin,
-                    disponible:  values.disponible,
-                });
-                setSuccess('Disponibilité ajoutée avec succès');
-                formik.resetForm();
-                setOpen(false);
-                loadDisponibilites();
-            } catch (err) {
-                setError(err.response?.data?.message || err.message || 'Erreur lors de la création');
-            } finally {
-                setSubmitting(false);
-            }
-        },
-    });
+    useEffect(() => {
+        charger();
+        Promise.all([fetchAll(creneauAPI.getAll), calendrierAPI.getAnnees()])
+            .then(([liste, annees]) => {
+                setCreneaux(liste.filter((c) => (c.variante ?? 'normale') === 'normale'));
+                // Validité proposée par défaut : la période en cours (ou la prochaine) de l'année active
+                const periodes = annees.filter((a) => a.active).flatMap((a) => a.periodes);
+                setPeriode(periodes.find((p) => p.date_fin >= aujourdhui()) ?? null);
+            })
+            .catch(() => {});
+    }, [charger]);
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Supprimer cette disponibilité ?')) return;
+    const creneauxParJour = useMemo(
+        () =>
+            JOURS.map((jour) => ({
+                jour,
+                liste: creneaux.filter((c) => c.jour_semaine === jour).sort((a, b) => a.heure_debut.localeCompare(b.heure_debut)),
+            })).filter((g) => g.liste.length > 0),
+        [creneaux]
+    );
+
+    const libelleCreneau = (c) => (c ? `${t(`ref.days.${c.jour_semaine}`)} ${hhmm(c.heure_debut)}–${hhmm(c.heure_fin)}` : '—');
+
+    const triees = useMemo(
+        () =>
+            [...declarations].sort(
+                (a, b) =>
+                    JOURS.indexOf(a.creneau?.jour_semaine) - JOURS.indexOf(b.creneau?.jour_semaine) ||
+                    String(a.creneau?.heure_debut).localeCompare(String(b.creneau?.heure_debut)) ||
+                    String(a.date_debut).localeCompare(String(b.date_debut))
+            ),
+        [declarations]
+    );
+
+    const ouvrir = () =>
+        setForm({
+            id_creneau: '',
+            date_debut: periode?.date_debut ?? '',
+            date_fin: periode?.date_fin ?? '',
+            disponible: vacataire,
+            preference: 'neutre',
+            raison_indisponibilite: '',
+        });
+
+    const champ = (nom) => (e) => setForm((f) => ({ ...f, [nom]: e.target.value }));
+
+    const enregistrer = async (event) => {
+        event.preventDefault();
         try {
-            await disponibiliteAPI.delete(id);
-            setSuccess('Disponibilité supprimée');
-            loadDisponibilites();
-        } catch (err) {
-            setError('Erreur lors de la suppression');
+            await disponibiliteAPI.create({
+                id_creneau: Number(form.id_creneau),
+                date_debut: form.date_debut,
+                date_fin: form.date_fin,
+                disponible: form.disponible,
+                preference: form.disponible ? form.preference : 'neutre',
+                raison_indisponibilite: form.disponible ? null : form.raison_indisponibilite.trim() || null,
+            });
+            toast.success(t('ref.availability.created'));
+            setForm(null);
+            charger();
+        } catch (error) {
+            toast.error(error.response?.data?.error || error.response?.data?.message || error.message);
         }
     };
 
-    const handleOpen = () => {
-        setError('');
-        setSuccess('');
-        formik.resetForm();
-        setOpen(true);
+    const supprimer = async () => {
+        const declaration = aSupprimer;
+        setASupprimer(null);
+        try {
+            await disponibiliteAPI.delete(declaration.id_disponibilite);
+            toast.success(t('ref.availability.deleted'));
+            charger();
+        } catch (error) {
+            toast.error(error.response?.data?.error || error.message);
+        }
     };
+
+    const intro = user?.statut === 'vacataire' ? 'introVacataire' : user?.statut === 'permanent' ? 'introPermanent' : 'introUnknown';
 
     return (
         <DashboardLayout>
-            <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        Mes Disponibilités
+            <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
+                    <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
+                        {t(`ref.availability.${intro}`)}
                     </Typography>
-                    <Button variant="contained" startIcon={<Add />} onClick={handleOpen}>
-                        Ajouter une disponibilité
+                    <Button variant="contained" startIcon={<Add />} onClick={ouvrir}>
+                        {t('ref.availability.add')}
                     </Button>
                 </Box>
 
-                <Snackbar open={!!error}   autoHideDuration={6000} onClose={() => setError('')}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-                    <Alert severity="error"   onClose={() => setError('')}   sx={{ width: '100%' }}>{error}</Alert>
-                </Snackbar>
-                <Snackbar open={!!success} autoHideDuration={4000} onClose={() => setSuccess('')}
-                    anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
-                    <Alert severity="success" onClose={() => setSuccess('')} sx={{ width: '100%' }}>{success}</Alert>
-                </Snackbar>
-
                 {loading ? (
-                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
-                        <CircularProgress />
-                    </Box>
-                ) : disponibilites.length === 0 ? (
-                    <Paper sx={{ p: 3, textAlign: 'center' }}>
-                        <Typography color="text.secondary">Aucune disponibilité enregistrée</Typography>
-                    </Paper>
+                    <TableSkeleton rows={5} />
+                ) : triees.length === 0 ? (
+                    <EmptyState
+                        title={t('ref.availability.emptyTitle')}
+                        description={t(vacataire ? 'ref.availability.emptyVacataire' : 'ref.availability.emptyPermanent')}
+                        actionLabel={t('ref.availability.add')}
+                        onAction={ouvrir}
+                    />
                 ) : (
-                    <TableContainer component={Paper}>
+                    <TableContainer>
                         <Table size="small">
                             <TableHead>
-                                <TableRow sx={{ '& th': { fontWeight: 'bold' } }}>
-                                    <TableCell>Jour</TableCell>
-                                    <TableCell>Créneau</TableCell>
-                                    <TableCell>Période</TableCell>
-                                    <TableCell>Statut</TableCell>
-                                    <TableCell align="right">Action</TableCell>
+                                <TableRow>
+                                    <TableCell>{t('ref.availability.cols.slot')}</TableCell>
+                                    <TableCell>{t('ref.availability.cols.period')}</TableCell>
+                                    <TableCell>{t('ref.availability.cols.kind')}</TableCell>
+                                    <TableCell>{t('ref.availability.cols.wish')}</TableCell>
+                                    <TableCell align="right">{t('ref.rooms.cols.actions')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {disponibilites.map((disp) => (
-                                    <TableRow key={disp.id_disponibilite} hover>
-                                        <TableCell>
-                                            {disp.creneau?.jour_semaine
-                                                ? capitalize(disp.creneau.jour_semaine)
-                                                : '—'}
+                                {triees.map((d) => (
+                                    <TableRow key={d.id_disponibilite} hover>
+                                        <TableCell sx={{ whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>{libelleCreneau(d.creneau)}</TableCell>
+                                        <TableCell sx={{ whiteSpace: 'nowrap' }}>
+                                            {d.date_debut === d.date_fin
+                                                ? date.format(new Date(`${d.date_debut}T00:00:00`))
+                                                : `${date.format(new Date(`${d.date_debut}T00:00:00`))} → ${date.format(new Date(`${d.date_fin}T00:00:00`))}`}
                                         </TableCell>
                                         <TableCell>
-                                            {disp.creneau
-                                                ? `${disp.creneau.heure_debut} – ${disp.creneau.heure_fin}`
-                                                : '—'}
+                                            {d.disponible ? (
+                                                <Typography variant="body2">{t('ref.availability.kinds.disponible')}</Typography>
+                                            ) : (
+                                                <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                                                    <StateChip tone="danger">{t('ref.availability.kinds.indisponible')}</StateChip>
+                                                    {d.raison_indisponibilite && (
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {d.raison_indisponibilite}
+                                                        </Typography>
+                                                    )}
+                                                </Stack>
+                                            )}
                                         </TableCell>
-                                        <TableCell>
-                                            {disp.date_debut
-                                                ? new Date(disp.date_debut).toLocaleDateString('fr-FR')
-                                                : '—'}
-                                            {' → '}
-                                            {disp.date_fin
-                                                ? new Date(disp.date_fin).toLocaleDateString('fr-FR')
-                                                : '—'}
-                                        </TableCell>
-                                        <TableCell>
-                                            <Chip
-                                                label={disp.disponible ? 'Disponible' : 'Indisponible'}
-                                                size="small"
-                                                color={disp.disponible ? 'success' : 'default'}
-                                            />
-                                        </TableCell>
+                                        <TableCell>{TON_VOEU[d.preference] && <StateChip tone={TON_VOEU[d.preference]}>{t(`ref.availability.wishes.${d.preference}`)}</StateChip>}</TableCell>
                                         <TableCell align="right">
-                                            <IconButton size="small" color="error"
-                                                onClick={() => handleDelete(disp.id_disponibilite)}>
+                                            <IconButton size="small" color="error" onClick={() => setASupprimer(d)} aria-label={t('ref.common.deleteItem', { name: libelleCreneau(d.creneau) })}>
                                                 <Delete fontSize="small" />
                                             </IconButton>
                                         </TableCell>
@@ -217,113 +218,65 @@ export default function Disponibilites() {
                         </Table>
                     </TableContainer>
                 )}
+            </Paper>
 
-                {/* ── Dialog ajout disponibilité ──────────────────────────────── */}
-                <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-                    <form onSubmit={formik.handleSubmit}>
-                        <DialogTitle>Nouvelle disponibilité</DialogTitle>
-                        <DialogContent>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-
-                                {/* Créneau — select depuis les créneaux existants */}
-                                <FormControl
-                                    fullWidth
-                                    error={formik.touched.id_creneau && Boolean(formik.errors.id_creneau)}
-                                >
-                                    <InputLabel>Créneau (jour + horaire)</InputLabel>
-                                    <Select
-                                        name="id_creneau"
-                                        value={formik.values.id_creneau}
-                                        onChange={formik.handleChange}
-                                        onBlur={formik.handleBlur}
-                                        label="Créneau (jour + horaire)"
-                                    >
-                                        <MenuItem value=""><em>Sélectionner un créneau</em></MenuItem>
-                                        {creneaux.length === 0 && (
-                                            <MenuItem disabled>Chargement des créneaux…</MenuItem>
-                                        )}
-                                        {JOURS_ORDER.map((jour) => {
-                                            const slots = creneaux.filter(c => c.jour_semaine === jour);
-                                            if (!slots.length) return null;
-                                            return [
-                                                <MenuItem key={`hdr-${jour}`} disabled
-                                                    sx={{ fontSize: 11, fontWeight: 'bold', opacity: 0.6, py: 0.5 }}>
-                                                    ── {capitalize(jour)} ──
-                                                </MenuItem>,
-                                                ...slots.map(c => (
-                                                    <MenuItem key={c.id_creneau} value={c.id_creneau}>
-                                                        {capitalize(c.jour_semaine)} &nbsp;·&nbsp;
-                                                        {c.heure_debut} – {c.heure_fin}
-                                                        &nbsp;
-                                                        <Typography component="span" variant="caption"
-                                                            color="text.secondary">
-                                                            ({c.duree_minutes} min)
-                                                        </Typography>
-                                                    </MenuItem>
-                                                )),
-                                            ];
-                                        })}
-                                    </Select>
-                                    {formik.touched.id_creneau && formik.errors.id_creneau && (
-                                        <Typography variant="caption" color="error" sx={{ mt: 0.5, ml: 1.5 }}>
-                                            {formik.errors.id_creneau}
-                                        </Typography>
-                                    )}
-                                </FormControl>
-
-                                <TextField
-                                    fullWidth
-                                    label="Date de début de validité"
-                                    name="date_debut"
-                                    type="date"
-                                    value={formik.values.date_debut}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    InputLabelProps={{ shrink: true }}
-                                    error={formik.touched.date_debut && Boolean(formik.errors.date_debut)}
-                                    helperText={formik.touched.date_debut && formik.errors.date_debut}
-                                />
-
-                                <TextField
-                                    fullWidth
-                                    label="Date de fin de validité"
-                                    name="date_fin"
-                                    type="date"
-                                    value={formik.values.date_fin}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    InputLabelProps={{ shrink: true }}
-                                    error={formik.touched.date_fin && Boolean(formik.errors.date_fin)}
-                                    helperText={formik.touched.date_fin && formik.errors.date_fin}
-                                />
-
-                                <FormControlLabel
-                                    control={
-                                        <Switch
-                                            name="disponible"
-                                            checked={formik.values.disponible}
-                                            onChange={formik.handleChange}
-                                            color="success"
-                                        />
-                                    }
-                                    label={formik.values.disponible ? 'Disponible' : 'Indisponible'}
-                                />
+            <Dialog open={Boolean(form)} onClose={() => setForm(null)} maxWidth="xs" fullWidth>
+                <form onSubmit={enregistrer}>
+                    <DialogTitle>{t('ref.availability.add')}</DialogTitle>
+                    <DialogContent>
+                        <Stack spacing={2} sx={{ mt: 1 }}>
+                            <TextField select label={t('ref.availability.fields.slot')} value={form?.id_creneau ?? ''} onChange={champ('id_creneau')} required>
+                                {creneauxParJour.flatMap(({ jour, liste }) => [
+                                    <ListSubheader key={`h-${jour}`}>{t(`ref.days.${jour}`)}</ListSubheader>,
+                                    ...liste.map((c) => (
+                                        <MenuItem key={c.id_creneau} value={c.id_creneau}>
+                                            {libelleCreneau(c)}
+                                        </MenuItem>
+                                    )),
+                                ])}
+                            </TextField>
+                            <Stack direction="row" spacing={2}>
+                                <TextField type="date" label={t('ref.availability.fields.from')} value={form?.date_debut ?? ''} onChange={champ('date_debut')} InputLabelProps={{ shrink: true }} required fullWidth />
+                                <TextField type="date" label={t('ref.availability.fields.to')} value={form?.date_fin ?? ''} onChange={champ('date_fin')} InputLabelProps={{ shrink: true }} inputProps={{ min: form?.date_debut }} required fullWidth />
+                            </Stack>
+                            <Box>
+                                <Typography variant="caption" color="text.secondary" component="div" sx={{ mb: 0.5 }}>
+                                    {t('ref.availability.fields.kind')}
+                                </Typography>
+                                <ToggleButtonGroup exclusive size="small" value={form?.disponible ? 'oui' : 'non'} onChange={(_, v) => v && setForm((f) => ({ ...f, disponible: v === 'oui' }))} fullWidth>
+                                    <ToggleButton value="oui">{t('ref.availability.kinds.disponible')}</ToggleButton>
+                                    <ToggleButton value="non">{t('ref.availability.kinds.indisponible')}</ToggleButton>
+                                </ToggleButtonGroup>
                             </Box>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setOpen(false)}>Annuler</Button>
-                            <Button
-                                type="submit"
-                                variant="contained"
-                                disabled={formik.isSubmitting}
-                                startIcon={formik.isSubmitting ? <CircularProgress size={16} color="inherit" /> : null}
-                            >
-                                {formik.isSubmitting ? 'Enregistrement…' : 'Ajouter'}
-                            </Button>
-                        </DialogActions>
-                    </form>
-                </Dialog>
-            </Box>
+                            {form?.disponible ? (
+                                <TextField select label={t('ref.availability.fields.wish')} value={form.preference} onChange={champ('preference')}>
+                                    {VOEUX.map((v) => (
+                                        <MenuItem key={v} value={v}>
+                                            {t(`ref.availability.wishes.${v}`)}
+                                        </MenuItem>
+                                    ))}
+                                </TextField>
+                            ) : (
+                                <TextField label={t('ref.availability.fields.reason')} helperText={t('ref.availability.fields.reasonHelp')} value={form?.raison_indisponibilite ?? ''} onChange={champ('raison_indisponibilite')} />
+                            )}
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setForm(null)}>{t('common.cancel')}</Button>
+                        <Button type="submit" variant="contained">
+                            {t('common.save')}
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
+
+            <ConfirmDialog
+                open={Boolean(aSupprimer)}
+                title={t('ref.availability.deleteTitle')}
+                message={t('ref.availability.deleteBody', { slot: libelleCreneau(aSupprimer?.creneau) })}
+                onConfirm={supprimer}
+                onCancel={() => setASupprimer(null)}
+            />
         </DashboardLayout>
     );
 }

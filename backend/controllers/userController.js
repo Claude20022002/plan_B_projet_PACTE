@@ -17,7 +17,10 @@ const ADMIN_EDITABLE_FIELDS = [...SELF_EDITABLE_FIELDS, "email", "role", "actif"
 export const getAllUsers = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
+    // Filtre facultatif par rôle (ex. comptes enseignants sans fiche, page Enseignants)
+    const where = ["admin", "enseignant", "etudiant"].includes(req.query.role) ? { role: req.query.role } : {};
     const { count, rows: users } = await Users.findAndCountAll({
+        where,
         attributes: { exclude: ["password_hash"] },
         limit,
         offset,

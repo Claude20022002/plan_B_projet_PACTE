@@ -136,3 +136,13 @@ describe("Aucune fuite de hash", () => {
         expect(containsPasswordHash(me.body)).toBe(false);
     });
 });
+
+describe("Liste des comptes", () => {
+    test("filtre par rôle ; un rôle inconnu est ignoré", async () => {
+        const etudiants = await clients.admin.get("/api/users?role=etudiant&limit=100");
+        expect(etudiants.body.data.length).toBeGreaterThan(0);
+        expect(etudiants.body.data.every((u) => u.role === "etudiant")).toBe(true);
+        const tous = await clients.admin.get("/api/users?role=intrus&limit=100");
+        expect(new Set(tous.body.data.map((u) => u.role)).size).toBeGreaterThan(1);
+    });
+});
