@@ -65,7 +65,8 @@ export const detecterConflitsPourAffectation = async (nouvelleAffectation) => {
         where: {
             date_seance: nouvelleAffectation.date_seance,
             statut: {
-                [Op.in]: ["planifie", "confirme"], // Ignorer les annulées/reportées
+                // Une séance reportée occupe son nouveau créneau ; seules les annulées sont ignorées
+                [Op.in]: ["planifie", "confirme", "reporte"],
             },
             id_affectation: {
                 [Op.ne]: nouvelleAffectation.id_affectation || -1, // Exclure l'affectation actuelle si mise à jour
@@ -140,7 +141,7 @@ export const detecterTousLesConflits = async () => {
     const affectations = await Affectation.findAll({
         where: {
             statut: {
-                [Op.in]: ["planifie", "confirme"],
+                [Op.in]: ["planifie", "confirme", "reporte"],
             },
         },
         include: [{ model: Creneau, as: "creneau" }],
@@ -300,8 +301,9 @@ export const verifierEtCreerConflits = async (affectation) => {
     const conflitsCrees = [];
 
     for (const conflitData of conflitsDetectes) {
-        // Vérifier si le conflit n'existe pas déjà
-        const conflitExistant = await Conflit.findOne({
+        // Vérifier si le conflit n'existe pas déjà : même type, ouvert, entre ces deux séances
+        // (et non un conflit qui ne partage qu'une seule des deux)
+        const candidats = await Conflit.findAll({
             where: {
                 type_conflit: conflitData.type,
                 resolu: false,
@@ -322,6 +324,7 @@ export const verifierEtCreerConflits = async (affectation) => {
             ],
         });
 
+        const conflitExistant = candidats.some((c) => c.affectations.length === 2);
         if (!conflitExistant) {
             const conflit = await creerConflit(conflitData);
             conflitsCrees.push(conflit);
