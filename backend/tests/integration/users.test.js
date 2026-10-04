@@ -8,7 +8,7 @@ import {
     PASSWORD,
 } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Users, Etudiant } from "../../models/index.js";
+import { Users, Etudiant, Enseignant } from "../../models/index.js";
 
 let admin;
 let etudiant;
@@ -144,5 +144,57 @@ describe("Liste des comptes", () => {
         expect(etudiants.body.data.every((u) => u.role === "etudiant")).toBe(true);
         const tous = await clients.admin.get("/api/users?role=intrus&limit=100");
         expect(new Set(tous.body.data.map((u) => u.role)).size).toBeGreaterThan(1);
+    });
+});
+
+describe("Invitations et mot de passe provisoire (phase B)", () => {
+    test("sans mot de passe : fiche créée, lien d'invitation, aucun mot de passe connu", async () => {
+        const response = await clients.admin.send("post", "/api/users", {
+            nom: "Lazrak", prenom: "Omar", email: "omar.lazrak@hestim.test", role: "enseignant",
+            profil: { departement: "Génie civil", specialite: "BIM", statut: "vacataire" },
+        });
+        expect(response.status).toBe(201);
+        expect(response.body.user.must_change_password).toBe(true);
+        expect(response.body.invitation.lien).toMatch(/reset-password\?token=[0-9a-f]{64}&id=\d+&invitation=1/);
+        expect(await Enseignant.findByPk(response.body.user.id_user)).toMatchObject({ departement: "Génie civil", statut: "vacataire" });
+        for (const essai of ["password123", PASSWORD]) {
+            expect((await anonymous().post("/api/auth/login").send({ email: "omar.lazrak@hestim.test", password: essai })).status).toBe(401);
+        }
+
+        // Le lien d'invitation permet de choisir son mot de passe, et lève l'obligation
+        const lien = new URL(response.body.invitation.lien);
+        const reset = await anonymous().post("/api/auth/reset-password").send({ token: lien.searchParams.get("token"), id_user: lien.searchParams.get("id"), password: "Choisi@2026" });
+        expect(reset.status).toBe(200);
+        const client = await loginAs({ email: "omar.lazrak@hestim.test" }, "Choisi@2026");
+        expect((await client.get("/api/auth/me")).body.user.must_change_password).toBe(false);
+    });
+
+    test("mot de passe provisoire : tout est bloqué tant qu'il n'est pas changé", async () => {
+        await clients.admin.send("post", "/api/users", { nom: "Tazi", prenom: "Rim", email: "rim.tazi@hestim.test", role: "etudiant", password: "Provisoire@2026" });
+        const client = await loginAs({ email: "rim.tazi@hestim.test" }, "Provisoire@2026");
+        const me = await client.get("/api/auth/me");
+        expect(me.status).toBe(200);
+        expect(me.body.user.must_change_password).toBe(true);
+        const bloque = await client.get("/api/auth/sessions");
+        expect(bloque.status).toBe(403);
+        expect(bloque.body.code).toBe("PASSWORD_CHANGE_REQUIRED");
+
+        expect((await client.send("post", "/api/auth/change-password", { current_password: "faux", password: "Nouveau@2026" })).status).toBe(400);
+        expect((await client.send("post", "/api/auth/change-password", { current_password: "Provisoire@2026", password: "Provisoire@2026" })).status).toBe(400);
+        expect((await client.send("post", "/api/auth/change-password", { current_password: "Provisoire@2026", password: "Nouveau@2026" })).status).toBe(200);
+        expect((await client.get("/api/auth/sessions")).status).toBe(200);
+    });
+
+    test("un mot de passe redéfini par l'administration est provisoire", async () => {
+        const cible = await createUser("enseignant");
+        await clients.admin.send("put", `/api/users/${cible.id_user}`, { password: "Temporaire@2026" });
+        expect((await Users.findByPk(cible.id_user)).must_change_password).toBe(true);
+    });
+
+    test("import sans mot de passe : plus de « password123 »", async () => {
+        const response = await clients.admin.send("post", "/api/users/import", { users: [{ nom: "Squalli", prenom: "Ali", email: "ali.squalli@hestim.test", role: "etudiant", numero_etudiant: "E-SQ-1", niveau: "1ère année" }] });
+        expect(response.body.successCount).toBe(1);
+        expect((await anonymous().post("/api/auth/login").send({ email: "ali.squalli@hestim.test", password: "password123" })).status).toBe(401);
+        expect(await Etudiant.findOne({ where: { numero_etudiant: "E-SQ-1" } })).not.toBeNull();
     });
 });

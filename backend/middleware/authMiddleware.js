@@ -90,9 +90,12 @@ export const authenticateToken = async (req, res, next) => {
         const token = extractToken(req);
 
         if (!token) {
+            // Le cookie d'accès disparaît du navigateur à son expiration : le client peut alors
+            // tenter un renouvellement avec son cookie de session (code TOKEN_MISSING)
             return res.status(401).json({
                 message: "Token d'authentification manquant",
                 error: "Vous devez être connecté pour accéder à cette ressource",
+                code: "TOKEN_MISSING",
             });
         }
 

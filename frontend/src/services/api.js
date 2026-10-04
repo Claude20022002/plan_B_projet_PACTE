@@ -33,6 +33,10 @@ async function ensureCsrfToken() {
     return token ? decodeURIComponent(token) : null;
 }
 
+// Seuls un jeton expiré ou absent (cookie d'accès disparu) justifient un renouvellement ;
+// un jeton invalide, une session révoquée ou un compte désactivé mènent à la connexion.
+const REFRESH_CODES = new Set(['TOKEN_EXPIRED', 'TOKEN_MISSING']);
+
 const NO_REFRESH_ENDPOINTS = new Set([
     '/auth/login',
     '/auth/refresh',
@@ -87,7 +91,7 @@ async function request(endpoint, options = {}) {
             // 401 : le jeton d'accès (15 min) a expiré → un seul renouvellement puis une seule
             // nouvelle tentative. Jamais pour les routes d'auth (un mauvais mot de passe au login
             // ne doit pas déclencher de refresh), ni pour une requête déjà rejouée (évite la boucle).
-            if (response.status === 401 && !NO_REFRESH_ENDPOINTS.has(endpoint) && !options._retried) {
+            if (response.status === 401 && REFRESH_CODES.has(data.code) && !NO_REFRESH_ENDPOINTS.has(endpoint) && !options._retried) {
                 try {
                     await request('/auth/refresh', { method: 'POST' });
                     return request(endpoint, { ...options, _retried: true });
@@ -149,6 +153,7 @@ export const authAPI = {
     login: (data) => request('/auth/login', { method: 'POST', body: data }),
     logout: () => request('/auth/logout', { method: 'POST' }),
     getMe: () => request('/auth/me'),
+    changePassword: (current_password, password) => request('/auth/change-password', { method: 'POST', body: { current_password, password } }),
     refreshToken: () => request('/auth/refresh', { method: 'POST' }),
 };
 
