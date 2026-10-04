@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 import sequelize from "../../../config/db.js";
 import { Affectation, Creneau, PlanningSnapshot } from "../../../models/index.js";
-import { STATUTS_ACTIFS, invaliderApresCreation, minutes, validerAffectation } from "../../planning/affectationRules.js";
+import { STATUTS_ACTIFS, apresCreation, minutes, validerAffectation } from "../../planning/affectationRules.js";
 
 /**
  * Déploiement de la semaine type sur le semestre (phase E) : chaque leçon placée par le solveur
@@ -117,12 +117,16 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
                         ligne.sautees.push({ date, raisons: [...new Set(refus.map((v) => v.code))], message: refus[0].message });
                         continue;
                     }
-                    await Affectation.bulkCreate(
-                        seances.map((s) => ({ ...s, statut: "planifie", id_user_admin: user.id_user, id_snapshot: snapshot.id_snapshot, id_generation_session: session?.id_generation_session ?? null, is_generated: true })),
-                        { transaction }
-                    );
+                    const ids = [];
+                    for (const s of seances) {
+                        const creee = await Affectation.create(
+                            { ...s, statut: "planifie", id_user_admin: user.id_user, id_snapshot: snapshot.id_snapshot, id_generation_session: session?.id_generation_session ?? null, is_generated: true },
+                            { transaction }
+                        );
+                        ids.push(creee.id_affectation);
+                    }
                     creees += seances.length;
-                    invaliderApresCreation(cache, { date_seance: date, enseignants: [info.id_user_enseignant] });
+                    await apresCreation(cache, { date_seance: date, ids, enseignants: [info.id_user_enseignant] }, transaction);
                     const dureeHeures = aPlacer.reduce((t, c) => t + (minutes(c.heure_fin) - minutes(c.heure_debut)), 0) / 60;
                     heures += dureeHeures;
                     ligne.seances += 1;

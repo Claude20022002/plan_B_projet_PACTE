@@ -91,10 +91,38 @@ const memo = (cache, cle, charger) => {
     return cache.get(cle);
 };
 
-/** À appeler après avoir créé des séances validées avec `cache`, pour la date et les enseignants concernés. */
-export const invaliderApresCreation = (cache, { date_seance, enseignants = [] }) => {
+/** Séances avec ce dont les règles ont besoin (créneau, salle, module, équipe, groupes), horaires Ramadan appliqués. */
+const chargerSeances = async (where, transaction) => {
+    const liste = await Affectation.findAll({
+        where: { statut: STATUTS_ACTIFS, ...where },
+        include: [
+            { model: Creneau, as: "creneau" },
+            { model: Salle, as: "salle" },
+            { model: Cours, as: "cours", attributes: ["nom_cours"] },
+            {
+                model: Enseignement,
+                as: "enseignement",
+                include: [{ model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } }, INCLUDE_EQUIPE],
+            },
+        ],
+        transaction,
+    });
+    await appliquerRamadan(liste, { transaction });
+    return liste;
+};
+
+/**
+ * À appeler après avoir créé des séances validées avec `cache` : elles rejoignent la liste du
+ * jour déjà en cache (sans relire toute la journée), et la charge de la semaine des enseignants
+ * concernés sera relue.
+ */
+export const apresCreation = async (cache, { date_seance, ids, enseignants = [] }, transaction) => {
     if (!cache) return;
-    cache.delete(`duJour|${date_seance}`);
+    const cle = `duJour|${date_seance}`;
+    if (cache.has(cle)) {
+        const liste = await cache.get(cle);
+        liste.push(...(await chargerSeances({ id_affectation: ids }, transaction)));
+    }
     const [lundi] = semaineDe(date_seance);
     for (const idUser of enseignants) cache.delete(`semaine|${idUser}|${lundi}`);
 };
@@ -224,25 +252,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
 
     // ── Séances du même jour ──────────────────────────────────────────────
     // Séances du jour (la séance validée exclue) ; en cache, la liste du jour est relue après chaque écriture
-    const chargerDuJour = async () => {
-        const liste = await Affectation.findAll({
-            where: { date_seance: date, statut: STATUTS_ACTIFS },
-            include: [
-                { model: Creneau, as: "creneau" },
-                { model: Salle, as: "salle" },
-                { model: Cours, as: "cours", attributes: ["nom_cours"] },
-                {
-                    model: Enseignement,
-                    as: "enseignement",
-                    include: [{ model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } }, INCLUDE_EQUIPE],
-                },
-            ],
-            transaction,
-        });
-        await appliquerRamadan(liste, { transaction });
-        return liste;
-    };
-    const duJour = (await lu(`duJour|${date}`, chargerDuJour)).filter((a) => !seance.id_affectation || a.id_affectation !== Number(seance.id_affectation));
+    const duJour = (await lu(`duJour|${date}`, () => chargerSeances({ date_seance: date }, transaction))).filter((a) => !seance.id_affectation || a.id_affectation !== Number(seance.id_affectation));
     const autres = duJour.map((a) => ({
         seance: a,
         enseignants: enseignantsDe(a, a.enseignement),
