@@ -71,6 +71,8 @@ export const ds = {
     confirme: { key: 'confirme', board: '#3FCB74', bureau: brand.green, bureauBg: '#E7F4EC' },
     reporte: { key: 'reporte', board: brand.orange, bureau: '#B4410C', bureauBg: '#FDEFE7' },
     annule: { key: 'annule', board: '#FF5A5F', bureau: '#B5161C', bureauBg: '#FCE8E9' },
+    // Séance faite : état normal d'une séance passée, en teinte atténuée (pas une exception)
+    realise: { key: 'realise', board: '#A6A6AC', bureau: '#5B6272', bureauBg: '#F1F2F5' },
   },
 
   // Couleur de ligne par filière : identique partout (panneau, calendrier, graphiques).

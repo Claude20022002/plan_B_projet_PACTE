@@ -1,7 +1,7 @@
 import { Chip } from '@mui/material';
 import StatusFlap from '../board/StatusFlap';
 
-const SESSION_STATUSES = new Set(['planifie', 'confirme', 'annule', 'reporte']);
+const SESSION_STATUSES = new Set(['planifie', 'confirme', 'annule', 'reporte', 'realise']);
 
 const otherTones = {
   active: { label: 'Actif', color: 'success' },

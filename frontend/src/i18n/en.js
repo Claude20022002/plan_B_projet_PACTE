@@ -123,6 +123,7 @@ const en = {
     confirme: 'Confirmed',
     reporte: 'Rescheduled',
     annule: 'Cancelled',
+    realise: 'Done',
     live: 'Now',
     next: 'Next',
   },

@@ -509,3 +509,80 @@ export const generationAutomatiqueAPI = {
     activerSnapshot: (id) => request(`/generation-automatique/snapshots/${id}/activate`, { method: 'POST' }),
     rollbackSnapshot: (id) => request(`/generation-automatique/snapshots/${id}/rollback`, { method: 'POST' }),
 };
+
+const avecQuery = (chemin, params) => {
+    const query = new URLSearchParams(Object.fromEntries(Object.entries(params || {}).filter(([, v]) => v !== undefined && v !== null && v !== ''))).toString();
+    return `${chemin}${query ? `?${query}` : ''}`;
+};
+
+/** Télécharge un fichier servi par l'API (cookies de session compris), sous le nom donné. */
+export async function telecharger(endpoint, nomFichier) {
+    const response = await fetch(`${API_BASE_URL}${endpoint}`, { credentials: 'include' });
+    if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        const error = new Error(data.error || data.message || `Erreur ${response.status}`);
+        error.status = response.status;
+        throw error;
+    }
+    const url = URL.createObjectURL(await response.blob());
+    const lien = document.createElement('a');
+    lien.href = url;
+    lien.download = nomFichier;
+    lien.click();
+    URL.revokeObjectURL(url);
+}
+
+// ==================== RÉSERVATIONS ET EXAMENS (phase P5) ====================
+export const reservationAPI = {
+    getAll: (params) => request(avecQuery('/reservations', params)),
+    getById: (id) => request(`/reservations/${id}`),
+    verifier: (data) => request('/reservations/verifier', { method: 'POST', body: data }),
+    create: (data) => request('/reservations', { method: 'POST', body: data }),
+    valider: (id, extra = {}) => request(`/reservations/${id}/valider`, { method: 'PATCH', body: extra }),
+    refuser: (id, motif) => request(`/reservations/${id}/refuser`, { method: 'PATCH', body: { motif } }),
+    annuler: (id) => request(`/reservations/${id}/annuler`, { method: 'PATCH' }),
+};
+
+export const examenAPI = {
+    getAll: (params) => request(avecQuery('/examens', params)),
+    getMesSurveillances: () => request('/examens/mes-surveillances'),
+    getMesExamens: () => request('/examens/mes-examens'),
+    getChargeSurveillances: (params) => request(avecQuery('/examens/surveillances/charge', params)),
+    create: (data) => request('/examens', { method: 'POST', body: data }),
+    update: (id, data) => request(`/examens/${id}`, { method: 'PUT', body: data }),
+    delete: (id) => request(`/examens/${id}`, { method: 'DELETE' }),
+    autoSurveillants: (id) => request(`/examens/${id}/surveillants/auto`, { method: 'POST' }),
+    setSurveillants: (id, surveillances, extra = {}) => request(`/examens/${id}/surveillants`, { method: 'PUT', body: { surveillances, ...extra } }),
+    publier: (id) => request(`/examens/${id}/publier`, { method: 'PATCH' }),
+};
+
+// ==================== IMPRÉVUS ET ASSISTANT DE CRÉNEAUX (phase P6, I8) ====================
+export const imprevuAPI = {
+    creneauxSeance: (data) => request('/imprevus/assistant/seances', { method: 'POST', body: data }),
+    creneauxReservation: (data) => request('/imprevus/assistant/reservations', { method: 'POST', body: data }),
+    declarerAbsence: (data) => request('/imprevus/absences', { method: 'POST', body: data }),
+    remplacants: (idAffectation) => request(`/imprevus/seances/${idAffectation}/remplacants`),
+    remplacer: (idAffectation, data) => request(`/imprevus/seances/${idAffectation}/remplacer`, { method: 'POST', body: data }),
+    reloger: (idSalle, data) => request(`/imprevus/salles/${idSalle}/reloger`, { method: 'POST', body: data }),
+    jour: (date, params) => request(avecQuery(`/imprevus/jour/${date}`, params)),
+    annulerJour: (date, data) => request(`/imprevus/jour/${date}/annuler`, { method: 'POST', body: data }),
+};
+
+// ==================== SUIVI DU RÉALISÉ ET RETOURS (phase P7, I7) ====================
+export const suiviAPI = {
+    realiser: (idAffectation) => request(`/suivi/seances/${idAffectation}/realiser`, { method: 'PATCH' }),
+    actualiser: () => request('/suivi/actualiser', { method: 'POST' }),
+    modules: (params) => request(avecQuery('/suivi/modules', params)),
+    enseignants: (mois) => request(avecQuery('/suivi/enseignants', { mois })),
+    exportVacataires: (mois) => telecharger(`/suivi/vacataires.csv?mois=${mois}`, `heures-vacataires-${mois}.csv`),
+    retoursADonner: () => request('/suivi/retours/a-donner'),
+    deposerRetour: (idAffectation, data) => request(`/suivi/retours/seances/${idAffectation}`, { method: 'POST', body: data }),
+    mesRetours: () => request('/suivi/retours/mes-modules'),
+};
+
+// ==================== PRÉPARATION DU SEMESTRE ET EDT MENSUEL (phase P4) ====================
+export const preparationAPI = {
+    etat: (idPeriode) => request(avecQuery('/preparation', { id_periode: idPeriode })),
+    relancer: (data) => request('/preparation/relancer', { method: 'POST', body: data }),
+    edtMensuel: (idGroupe, mois) => request(avecQuery(`/emplois-du-temps/groupe/${idGroupe}/mensuel`, { mois })),
+};

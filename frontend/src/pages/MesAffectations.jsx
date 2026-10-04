@@ -34,6 +34,7 @@ const STATUT_CONFIG = {
     confirme: { label: 'Confirmé',  color: 'success'  },
     annule:   { label: 'Annulé',    color: 'error'    },
     reporte:  { label: 'Reporté',   color: 'warning'  },
+    realise:  { label: 'Réalisé',   color: 'default'  },
 };
 
 const reportSchema = yup.object({
