@@ -71,6 +71,7 @@ class ResolutionTest {
                 .withConstraintProviderClass(ContraintesEmploiDuTemps.class)
                 .withTerminationSpentLimit(Duration.ofSeconds(8));
         Solver<EmploiDuTemps> solver = SolverFactory.<EmploiDuTemps>create(config).buildSolver();
+        probleme.preparerValeursPossibles();
         EmploiDuTemps solution = solver.solve(probleme);
 
         assertThat(solution.getScore().hardScore()).isZero();

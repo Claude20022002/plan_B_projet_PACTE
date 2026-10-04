@@ -50,6 +50,23 @@ export const groupesLies = async (idGroupe, transaction) => {
     return [groupe, ...ancetres(groupe, parId), ...descendants(groupe, groupes)].map((g) => g.id_groupe);
 };
 
+/**
+ * Lignées des groupes les plus fins sous `idGroupe` (ou du groupe lui-même s'il n'a pas de
+ * sous-groupe) : chaque lignée (feuille + ancêtres) rassemble les séances que suivent les mêmes
+ * étudiants. C'est la journée vue par eux, pour les heures par jour : deux TD frères en parallèle
+ * ne s'additionnent pas.
+ * @returns {{ feuille: number, lignee: number[] }[]}
+ */
+export const ligneesDe = async (idGroupe, transaction) => {
+    const groupe = await Groupe.findByPk(idGroupe, { transaction });
+    if (!groupe) return [];
+    const groupes = await Groupe.findAll({ where: { id_filiere: groupe.id_filiere }, transaction });
+    const parId = new Map(groupes.map((g) => [g.id_groupe, g]));
+    const parents = new Set(groupes.map((g) => g.id_groupe_parent).filter(Boolean));
+    const feuilles = descendants(groupe, groupes).filter((g) => !parents.has(g.id_groupe));
+    return (feuilles.length ? feuilles : [groupe]).map((f) => ({ feuille: f.id_groupe, lignee: [f, ...ancetres(f, parId)].map((g) => g.id_groupe) }));
+};
+
 /** Vrai si l'un des groupes est l'ancêtre d'un autre (mutualisation impossible : même étudiants). */
 export const contientParentEtEnfant = (groupes, tousLesGroupes) => {
     const parId = new Map(tousLesGroupes.map((g) => [g.id_groupe, g]));

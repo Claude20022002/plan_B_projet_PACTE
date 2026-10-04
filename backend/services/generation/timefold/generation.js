@@ -20,7 +20,7 @@ const executer = async (session, { id_periode, id_filieres, dureeSecondes, user 
     const debut = Date.now();
     try {
         await majSession(session, { progress: 5, last_message: "Préparation du problème" });
-        const { probleme, index, exclus, periode } = await construireProbleme({ id_periode, id_filieres, dureeSecondes });
+        const { probleme, index, exclus, avertissements, periode } = await construireProbleme({ id_periode, id_filieres, dureeSecondes });
         const aPlacer = probleme.lecons.filter((l) => !l.epinglee).length;
         if (!aPlacer) {
             throw new ErreurMetier(exclus.length ? "Aucun enseignement à placer : tous sont déjà planifiés ou sans enseignant" : "Aucun enseignement sur cette période", 400);
@@ -46,6 +46,7 @@ const executer = async (session, { id_periode, id_filieres, dureeSecondes, user 
             violations: etat.violations ?? [],
             lecons_en_conflit: (etat.leconsEnConflit ?? []).filter((l) => index[l]).map((l) => index[l].module),
             exclus,
+            avertissements,
             enseignements: deploiement.enseignements,
             seances_creees: deploiement.creees,
             id_snapshot: deploiement.snapshot.id_snapshot,

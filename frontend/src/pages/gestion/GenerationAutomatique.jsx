@@ -1,768 +1,434 @@
-import React, { useState, useEffect, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 import {
     Box,
-    Paper,
-    Typography,
     Button,
-    TextField,
-    FormControl,
-    InputLabel,
-    Select,
+    Dialog,
+    DialogActions,
+    DialogContent,
+    DialogTitle,
+    LinearProgress,
     MenuItem,
-    Checkbox,
-    FormControlLabel,
-    Grid,
-    Card,
-    CardContent,
-    Alert,
-    CircularProgress,
-    Chip,
+    Paper,
+    Stack,
+    Tab,
     Table,
     TableBody,
     TableCell,
     TableContainer,
     TableHead,
     TableRow,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Divider,
-} from "@mui/material";
-import {
-    PlayArrow,
-    CheckCircle,
-    Error as ErrorIcon,
-    Info,
-} from "@mui/icons-material";
-import DashboardLayout from "../../components/layouts/DashboardLayout";
-import { useAuth } from "../../contexts/AuthContext";
-import {
-    generationAutomatiqueAPI,
-    coursAPI,
-    groupeAPI,
-} from "../../services/api";
+    Tabs,
+    TextField,
+    Typography,
+} from '@mui/material';
+import { PlayArrow, Stop } from '@mui/icons-material';
+import DashboardLayout from '../../components/layouts/DashboardLayout';
+import EmptyState from '../../design-system/components/EmptyState';
+import StateChip from '../../design-system/components/StateChip';
+import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
+import { calendrierAPI, filiereAPI, generationAutomatiqueAPI } from '../../services/api';
+import { useToast } from '../../contexts/ToastContext';
+import { fetchAll } from '../../utils/fetchAll';
+import { ds } from '../../design-system/tokens';
 
+const DUREES = [30, 60, 120, 300];
+const TON_STATUT = { running: 'info', completed: 'success', failed: 'danger' };
+
+/**
+ * Génération automatique (phase E) : la semaine type est calculée par le service Timefold, puis
+ * déployée sur le semestre sous les règles de planification. La page suit l'avancement, affiche
+ * le rapport (enseignements exclus ou incomplets, dates sautées) et permet de revenir à une
+ * version précédente.
+ */
 export default function GenerationAutomatique() {
-    const { user } = useAuth();
-    const isMountedRef = useRef(true);
-    const [loading, setLoading] = useState(false);
-    const [cours, setCours] = useState([]);
-    const [groupes, setGroupes] = useState([]);
-    const [selectedCours, setSelectedCours] = useState([]);
-    const [selectedGroupes, setSelectedGroupes] = useState([]);
-    const [dateDebut, setDateDebut] = useState("");
-    const [dateFin, setDateFin] = useState("");
-    const [ecraserAffectations, setEcraserAffectations] = useState(false);
-    const [maxSessionHours, setMaxSessionHours] = useState(4);
-    const [maxHoursPerDayGroup, setMaxHoursPerDayGroup] = useState(6);
-    const [maxHoursPerDayCourse, setMaxHoursPerDayCourse] = useState(4);
-    const [allowSameCourseTwicePerDay, setAllowSameCourseTwicePerDay] =
-        useState(false);
-    const [resultat, setResultat] = useState(null);
-    const [error, setError] = useState("");
-    const [dialogOpen, setDialogOpen] = useState(false);
-
-    useEffect(() => {
-        return () => {
-            isMountedRef.current = false;
-        };
-    }, []);
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    const loadData = async () => {
-        try {
-            console.log("🔄 Début du chargement des données...");
-            console.log("🔐 Vérification de l'authentification...");
-            
-            // Vérifier si l'utilisateur est bien connecté
-            const token = localStorage.getItem('token');
-            console.log("Token présent:", !!token);
-            
-            console.log("📡 Appel des APIs...");
-            const [coursData, groupesData] = await Promise.all([
-                coursAPI.getAll({ limit: 1000 }),
-                groupeAPI.getAll({ limit: 1000 }),
-            ]);
-            
-            console.log("✅ Données reçues - Cours:", coursData);
-            console.log("✅ Données reçues - Groupes:", groupesData);
-            
-            if (isMountedRef.current) {
-                // Gérer différentes structures de réponses possibles
-                const coursList = Array.isArray(coursData) ? coursData : 
-                                (coursData.data && Array.isArray(coursData.data)) ? coursData.data : [];
-                const groupesList = Array.isArray(groupesData) ? groupesData : 
-                                  (groupesData.data && Array.isArray(groupesData.data)) ? groupesData.data : [];
-                
-                console.log("📊 Listes traitées - Cours:", coursList.length, "Groupes:", groupesList.length);
-                setCours(coursList);
-                setGroupes(groupesList);
-                
-                if (coursList.length === 0 || groupesList.length === 0) {
-                    console.warn("⚠️ Attention: Une des listes est vide");
-                    console.warn("📋 Structure coursData:", JSON.stringify(coursData, null, 2));
-                    console.warn("📋 Structure groupesData:", JSON.stringify(groupesData, null, 2));
-                }
-            }
-        } catch (err) {
-            console.error("❌ Erreur lors du chargement des données:", err);
-            console.error("📋 Détails de l'erreur:", {
-                status: err.status,
-                message: err.message,
-                isConnectionError: err.isConnectionError,
-                response: err.response
-            });
-            
-            if (isMountedRef.current) {
-                if (err.status === 401) {
-                    setError("Erreur d'authentification. Veuillez vous reconnecter.");
-                } else if (err.isConnectionError) {
-                    setError("Impossible de se connecter au serveur. Vérifiez que le backend est démarré.");
-                } else {
-                    setError(`Erreur lors du chargement des données: ${err.message || 'Erreur inconnue'}`);
-                }
-            }
-        }
-    };
-
-    const handleGenerer = async () => {
-        if (!dateDebut || !dateFin) {
-            if (isMountedRef.current) {
-                setError("Veuillez sélectionner les dates de début et de fin");
-            }
-            return;
-        }
-
-        if (new Date(dateDebut) >= new Date(dateFin)) {
-            if (isMountedRef.current) {
-                setError(
-                    "La date de début doit être antérieure à la date de fin",
-                );
-            }
-            return;
-        }
-
-        setLoading(true);
-        setError("");
-        setResultat(null);
-
-        try {
-            const data = {
-                dateDebut,
-                dateFin,
-                coursIds: selectedCours,
-                groupeIds: selectedGroupes,
-                ecraserAffectations,
-                maxSessionHours: Number(maxSessionHours),
-                maxHoursPerDayGroup: Number(maxHoursPerDayGroup),
-                maxHoursPerDayCourse: Number(maxHoursPerDayCourse),
-                allowSameCourseTwicePerDay,
-            };
-
-            const response = await generationAutomatiqueAPI.generer(data);
-            if (isMountedRef.current) {
-                setResultat(response.resultat);
-                setDialogOpen(true);
-            }
-        } catch (err) {
-            console.error("Erreur lors de la génération:", err);
-            // Gérer les erreurs d'authentification
-            if (err.status === 401) {
-                if (isMountedRef.current) {
-                    setError(
-                        "Votre session a expiré. Veuillez vous reconnecter.",
-                    );
-                }
-                // Optionnel: rediriger vers la page de connexion
-                setTimeout(() => {
-                    window.location.href = "/connexion";
-                }, 2000);
-            } else {
-                if (isMountedRef.current) {
-                    setError(
-                        err.message ||
-                            "Erreur lors de la génération automatique",
-                    );
-                }
-            }
-        } finally {
-            if (isMountedRef.current) {
-                setLoading(false);
-            }
-        }
-    };
+    const { t, i18n } = useTranslation();
+    const [onglet, setOnglet] = useState(0);
+    const dateHeure = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { dateStyle: 'medium', timeStyle: 'short' }), [i18n.language]);
 
     return (
         <DashboardLayout>
-            <Box sx={{ p: 3 }}>
-                <Typography variant="h4" fontWeight="bold" gutterBottom>
-                    Génération Automatique d'Affectations
-                </Typography>
-                <Typography
-                    variant="body1"
-                    color="text.secondary"
-                    sx={{ mb: 4 }}
-                >
-                    Générez automatiquement les affectations de cours en
-                    fonction des disponibilités des enseignants, du volume
-                    horaire des cours et des contraintes de salles.
-                </Typography>
+            <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
+                <Tabs value={onglet} onChange={(_, v) => setOnglet(v)} sx={{ mb: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
+                    <Tab label={t('gen.tabs.run')} />
+                    <Tab label={t('gen.tabs.versions')} />
+                </Tabs>
+                {onglet === 0 ? <Lancement dateHeure={dateHeure} /> : <Versions dateHeure={dateHeure} />}
+            </Paper>
+        </DashboardLayout>
+    );
+}
 
-                {error && (
-                    <Alert
-                        severity="error"
-                        sx={{ mb: 3 }}
-                        onClose={() => setError("")}
-                    >
-                        {error}
-                    </Alert>
-                )}
+function Lancement({ dateHeure }) {
+    const { t } = useTranslation();
+    const toast = useToast();
+    const [periodes, setPeriodes] = useState([]);
+    const [idPeriode, setIdPeriode] = useState('');
+    const [filieres, setFilieres] = useState([]);
+    const [choisies, setChoisies] = useState([]);
+    const [duree, setDuree] = useState(60);
+    const [session, setSession] = useState(null);
+    const [chargement, setChargement] = useState(true);
+    const [envoi, setEnvoi] = useState(false);
+    const minuterie = useRef(null);
 
-                {/* Indicateurs de chargement et état des données */}
-                {cours.length === 0 && groupes.length === 0 && !error && (
-                    <Alert severity="info" sx={{ mb: 3 }}>
-                        Chargement des données en cours...
-                    </Alert>
-                )}
+    const suivre = useCallback(
+        (id) => {
+            clearTimeout(minuterie.current);
+            const tour = async () => {
+                try {
+                    const s = await generationAutomatiqueAPI.session(id);
+                    setSession(s);
+                    if (s.status === 'running') minuterie.current = setTimeout(tour, 2000);
+                    else if (s.status === 'completed') toast.success(s.last_message);
+                    else toast.error(s.last_message);
+                } catch {
+                    minuterie.current = setTimeout(tour, 5000);
+                }
+            };
+            tour();
+        },
+        [toast]
+    );
 
-                {cours.length === 0 && !error && (
-                    <Alert severity="warning" sx={{ mb: 3 }}>
-                        Aucun cours trouvé. Veuillez d'abord créer des cours avant de générer les emplois du temps.
-                    </Alert>
-                )}
+    useEffect(() => {
+        Promise.all([calendrierAPI.getAnnees(), fetchAll(filiereAPI.getAll), generationAutomatiqueAPI.sessions()])
+            .then(([annees, toutes, sessions]) => {
+                const liste = annees.flatMap((a) => a.periodes.map((p) => ({ ...p, libelle_annee: a.libelle, active: a.active })));
+                setPeriodes(liste);
+                setFilieres(toutes);
+                const today = new Date().toISOString().slice(0, 10);
+                const courante = liste.find((p) => p.active && p.date_fin >= today) || liste.find((p) => p.active) || liste[0];
+                setIdPeriode(courante?.id_periode ?? '');
+                // Reprendre le suivi d'une génération en cours, sinon afficher le dernier rapport
+                const derniere = sessions.find((s) => s.config?.moteur === 'timefold');
+                if (derniere?.status === 'running') suivre(derniere.id_generation_session);
+                else setSession(derniere ?? null);
+            })
+            .catch(() => toast.error(t('common.errorLoad')))
+            .finally(() => setChargement(false));
+        return () => clearTimeout(minuterie.current);
+    }, [t, toast, suivre]);
 
-                {groupes.length === 0 && !error && (
-                    <Alert severity="warning" sx={{ mb: 3 }}>
-                        Aucun groupe trouvé. Veuillez d'abord créer des groupes avant de générer les emplois du temps.
-                    </Alert>
-                )}
+    const lancer = async () => {
+        setEnvoi(true);
+        try {
+            const { session: s } = await generationAutomatiqueAPI.generer({ id_periode: idPeriode, id_filieres: choisies, duree_secondes: duree });
+            setSession(s);
+            suivre(s.id_generation_session);
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setEnvoi(false);
+        }
+    };
 
-                <Grid container spacing={3}>
-                    {/* Formulaire de configuration */}
-                    <Grid item xs={12} md={8}>
-                        <Paper sx={{ p: 3 }}>
-                            <Typography variant="h6" gutterBottom>
-                                Configuration
-                            </Typography>
-                            <Divider sx={{ mb: 3 }} />
+    const arreter = async () => {
+        try {
+            const { message } = await generationAutomatiqueAPI.arreter(session.id_generation_session);
+            toast.info(message);
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
 
-                            <Grid container spacing={3}>
-                                <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        fullWidth
-                                        label="Date de début"
-                                        type="date"
-                                        value={dateDebut}
-                                        onChange={(e) =>
-                                            setDateDebut(e.target.value)
-                                        }
-                                        InputLabelProps={{ shrink: true }}
-                                        required
-                                    />
-                                </Grid>
-                                <Grid item xs={12} sm={6}>
-                                    <TextField
-                                        fullWidth
-                                        label="Date de fin"
-                                        type="date"
-                                        value={dateFin}
-                                        onChange={(e) =>
-                                            setDateFin(e.target.value)
-                                        }
-                                        InputLabelProps={{ shrink: true }}
-                                        required
-                                    />
-                                </Grid>
+    const enCours = session?.status === 'running';
 
-                                <Grid item xs={12}>
-                                    <FormControl fullWidth>
-                                        <InputLabel>
-                                            Cours à planifier
-                                        </InputLabel>
-                                        <Select
-                                            multiple
-                                            value={selectedCours}
-                                            onChange={(e) =>
-                                                setSelectedCours(e.target.value)
-                                            }
-                                            disabled={cours.length === 0}
-                                            renderValue={(selected) => (
-                                                <Box
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexWrap: "wrap",
-                                                        gap: 0.5,
-                                                    }}
-                                                >
-                                                    {selected.map((id) => {
-                                                        const coursItem =
-                                                            cours.find(
-                                                                (c) =>
-                                                                    c.id_cours ===
-                                                                    id,
-                                                            );
-                                                        return (
-                                                            <Chip
-                                                                key={id}
-                                                                label={
-                                                                    coursItem?.nom_cours ||
-                                                                    id
-                                                                }
-                                                                size="small"
-                                                            />
-                                                        );
-                                                    })}
-                                                </Box>
-                                            )}
-                                        >
-                                            {cours.length === 0 ? (
-                                                <MenuItem disabled>
-                                                    Aucun cours disponible
-                                                </MenuItem>
-                                            ) : (
-                                                cours.map((coursItem) => (
-                                                    <MenuItem
-                                                        key={coursItem.id_cours}
-                                                        value={coursItem.id_cours}
-                                                    >
-                                                        <Checkbox
-                                                            checked={
-                                                                selectedCours.indexOf(
-                                                                    coursItem.id_cours,
-                                                                ) > -1
-                                                            }
-                                                        />
-                                                        {coursItem.nom_cours} (
-                                                        {coursItem.volume_horaire || 0}h)
-                                                    </MenuItem>
-                                                ))
-                                            )}
-                                        </Select>
-                                    </FormControl>
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ mt: 1 }}
-                                    >
-                                        Laissez vide pour planifier tous les
-                                        cours
-                                    </Typography>
-                                </Grid>
+    if (chargement) return <TableSkeleton rows={6} />;
 
-                                <Grid item xs={12}>
-                                    <FormControl fullWidth>
-                                        <InputLabel>
-                                            Groupes à planifier
-                                        </InputLabel>
-                                        <Select
-                                            multiple
-                                            value={selectedGroupes}
-                                            onChange={(e) =>
-                                                setSelectedGroupes(
-                                                    e.target.value,
-                                                )
-                                            }
-                                            disabled={groupes.length === 0}
-                                            renderValue={(selected) => (
-                                                <Box
-                                                    sx={{
-                                                        display: "flex",
-                                                        flexWrap: "wrap",
-                                                        gap: 0.5,
-                                                    }}
-                                                >
-                                                    {selected.map((id) => {
-                                                        const groupe =
-                                                            groupes.find(
-                                                                (g) =>
-                                                                    g.id_groupe ===
-                                                                    id,
-                                                            );
-                                                        return (
-                                                            <Chip
-                                                                key={id}
-                                                                label={
-                                                                    groupe?.nom_groupe ||
-                                                                    id
-                                                                }
-                                                                size="small"
-                                                            />
-                                                        );
-                                                    })}
-                                                </Box>
-                                            )}
-                                        >
-                                            {groupes.length === 0 ? (
-                                                <MenuItem disabled>
-                                                    Aucun groupe disponible
-                                                </MenuItem>
-                                            ) : (
-                                                groupes.map((groupe) => (
-                                                    <MenuItem
-                                                        key={groupe.id_groupe}
-                                                        value={groupe.id_groupe}
-                                                    >
-                                                        <Checkbox
-                                                            checked={
-                                                                selectedGroupes.indexOf(
-                                                                    groupe.id_groupe,
-                                                                ) > -1
-                                                            }
-                                                        />
-                                                        {groupe.nom_groupe} (
-                                                        {groupe.effectif || 0} étudiants)
-                                                    </MenuItem>
-                                                ))
-                                            )}
-                                        </Select>
-                                    </FormControl>
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ mt: 1 }}
-                                    >
-                                        Laissez vide pour planifier tous les
-                                        groupes
-                                    </Typography>
-                                </Grid>
-
-                                <Grid item xs={12}>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={ecraserAffectations}
-                                                onChange={(e) =>
-                                                    setEcraserAffectations(
-                                                        e.target.checked,
-                                                    )
-                                                }
-                                            />
-                                        }
-                                        label="Écraser les affectations existantes pour ces cours/groupes"
-                                    />
-                                    <Typography
-                                        variant="caption"
-                                        color="text.secondary"
-                                        sx={{ display: "block", mt: 1 }}
-                                    >
-                                        Si coché, les affectations existantes
-                                        pour les cours/groupes sélectionnés
-                                        seront supprimées avant la génération
-                                    </Typography>
-                                </Grid>
-
-                                <Grid item xs={12} sm={4}>
-                                    <TextField
-                                        fullWidth
-                                        label="Durée max par séance (h)"
-                                        type="number"
-                                        value={maxSessionHours}
-                                        onChange={(e) =>
-                                            setMaxSessionHours(e.target.value)
-                                        }
-                                        inputProps={{
-                                            min: 1,
-                                            max: 6,
-                                            step: 0.5,
-                                        }}
-                                        helperText="Ex: 2, 3 ou 4 heures"
-                                    />
-                                </Grid>
-                                <Grid item xs={12} sm={4}>
-                                    <TextField
-                                        fullWidth
-                                        label="Max heures/jour (groupe)"
-                                        type="number"
-                                        value={maxHoursPerDayGroup}
-                                        onChange={(e) =>
-                                            setMaxHoursPerDayGroup(
-                                                e.target.value,
-                                            )
-                                        }
-                                        inputProps={{
-                                            min: 1,
-                                            max: 12,
-                                            step: 0.5,
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item xs={12} sm={4}>
-                                    <TextField
-                                        fullWidth
-                                        label="Max heures/jour (module)"
-                                        type="number"
-                                        value={maxHoursPerDayCourse}
-                                        onChange={(e) =>
-                                            setMaxHoursPerDayCourse(
-                                                e.target.value,
-                                            )
-                                        }
-                                        inputProps={{
-                                            min: 1,
-                                            max: 8,
-                                            step: 0.5,
-                                        }}
-                                    />
-                                </Grid>
-                                <Grid item xs={12}>
-                                    <FormControlLabel
-                                        control={
-                                            <Checkbox
-                                                checked={
-                                                    allowSameCourseTwicePerDay
-                                                }
-                                                onChange={(e) =>
-                                                    setAllowSameCourseTwicePerDay(
-                                                        e.target.checked,
-                                                    )
-                                                }
-                                            />
-                                        }
-                                        label="Autoriser plusieurs séances du même module le même jour"
-                                    />
-                                </Grid>
-
-                                <Grid item xs={12}>
-                                    <Button
-                                        variant="contained"
-                                        size="large"
-                                        startIcon={
-                                            loading ? (
-                                                <CircularProgress size={20} />
-                                            ) : (
-                                                <PlayArrow />
-                                            )
-                                        }
-                                        onClick={handleGenerer}
-                                        disabled={
-                                            loading || !dateDebut || !dateFin
-                                        }
-                                        fullWidth
-                                    >
-                                        {loading
-                                            ? "Génération en cours..."
-                                            : "Générer les affectations"}
-                                    </Button>
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    </Grid>
-
-                    {/* Informations */}
-                    <Grid item xs={12} md={4}>
-                        <Paper sx={{ p: 3 }}>
-                            <Typography variant="h6" gutterBottom>
-                                <Info sx={{ verticalAlign: "middle", mr: 1 }} />
-                                Informations
-                            </Typography>
-                            <Divider sx={{ mb: 2 }} />
-                            <Typography variant="body2" paragraph>
-                                L'algorithme de génération automatique prend en
-                                compte :
-                            </Typography>
-                            <Box component="ul" sx={{ pl: 2 }}>
-                                <li>Les disponibilités des enseignants</li>
-                                <li>Le volume horaire de chaque cours</li>
-                                <li>Les contraintes de salles (capacité)</li>
-                                <li>Les événements bloquants du semestre</li>
-                                <li>Les conflits existants</li>
-                            </Box>
-                            <Alert severity="info" sx={{ mt: 2 }}>
-                                Les affectations générées auront le statut
-                                "planifié" et pourront être modifiées
-                                manuellement si nécessaire.
-                            </Alert>
-                        </Paper>
-                    </Grid>
-                </Grid>
-
-                {/* Dialog de résultats */}
-                <Dialog
-                    open={dialogOpen}
-                    onClose={() => {
-                        if (isMountedRef.current) {
-                            setDialogOpen(false);
-                        }
+    return (
+        <>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 820 }}>
+                {t('gen.intro')}
+            </Typography>
+            <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} sx={{ mb: 2 }} alignItems={{ md: 'flex-start' }}>
+                <TextField select size="small" label={t('ref.teaching.period')} value={idPeriode} onChange={(e) => setIdPeriode(e.target.value)} sx={{ minWidth: 200 }} disabled={enCours}>
+                    {periodes.map((p) => (
+                        <MenuItem key={p.id_periode} value={p.id_periode}>
+                            {p.libelle_annee} · {p.code}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                <TextField
+                    select
+                    size="small"
+                    label={t('gen.programs')}
+                    value={choisies}
+                    onChange={(e) => setChoisies(e.target.value)}
+                    sx={{ minWidth: 260, maxWidth: { md: 420 } }}
+                    disabled={enCours}
+                    helperText={t('gen.programsHelp')}
+                    InputLabelProps={{ shrink: true }}
+                    SelectProps={{
+                        multiple: true,
+                        displayEmpty: true,
+                        renderValue: (ids) => (ids.length ? filieres.filter((f) => ids.includes(f.id_filiere)).map((f) => f.code_filiere).join(', ') : t('ref.curriculum.allPrograms')),
                     }}
-                    maxWidth="lg"
-                    fullWidth
                 >
-                    <DialogTitle>
-                        Résultats de la génération automatique
-                    </DialogTitle>
-                    <DialogContent>
-                        {resultat && (
-                            <Box>
-                                <Grid container spacing={2} sx={{ mb: 3 }}>
-                                    <Grid item xs={12} sm={4}>
-                                        <Card>
-                                            <CardContent>
-                                                <Typography
-                                                    color="textSecondary"
-                                                    gutterBottom
-                                                >
-                                                    Séances créées
-                                                </Typography>
-                                                <Typography
-                                                    variant="h4"
-                                                    color="success.main"
-                                                >
-                                                    {
-                                                        resultat.statistiques
-                                                            .totalSeancesPlanifiees
-                                                    }
-                                                </Typography>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                    <Grid item xs={12} sm={4}>
-                                        <Card>
-                                            <CardContent>
-                                                <Typography
-                                                    color="textSecondary"
-                                                    gutterBottom
-                                                >
-                                                    Séances échouées
-                                                </Typography>
-                                                <Typography
-                                                    variant="h4"
-                                                    color="error.main"
-                                                >
-                                                    {
-                                                        resultat.statistiques
-                                                            .totalSeancesEchouees
-                                                    }
-                                                </Typography>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                    <Grid item xs={12} sm={4}>
-                                        <Card>
-                                            <CardContent>
-                                                <Typography
-                                                    color="textSecondary"
-                                                    gutterBottom
-                                                >
-                                                    Conflits détectés
-                                                </Typography>
-                                                <Typography
-                                                    variant="h4"
-                                                    color="warning.main"
-                                                >
-                                                    {
-                                                        resultat.statistiques
-                                                            .conflitsDetectes
-                                                    }
-                                                </Typography>
-                                            </CardContent>
-                                        </Card>
-                                    </Grid>
-                                </Grid>
+                    {filieres.map((f) => (
+                        <MenuItem key={f.id_filiere} value={f.id_filiere}>
+                            {f.code_filiere} · {f.nom_filiere}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                <TextField select size="small" label={t('gen.duration')} value={duree} onChange={(e) => setDuree(e.target.value)} sx={{ minWidth: 140 }} disabled={enCours}>
+                    {DUREES.map((d) => (
+                        <MenuItem key={d} value={d}>
+                            {t('gen.seconds', { count: d })}
+                        </MenuItem>
+                    ))}
+                </TextField>
+                {enCours ? (
+                    <Button variant="outlined" color="inherit" startIcon={<Stop />} onClick={arreter}>
+                        {t('gen.stop')}
+                    </Button>
+                ) : (
+                    <Button variant="contained" startIcon={<PlayArrow />} onClick={lancer} disabled={!idPeriode || envoi}>
+                        {t('gen.start')}
+                    </Button>
+                )}
+            </Stack>
 
-                                {resultat.affectationsEchouees.length > 0 && (
-                                    <Box sx={{ mt: 3 }}>
-                                        <Typography variant="h6" gutterBottom>
-                                            Affectations échouées
+            {!session ? (
+                <EmptyState title={t('gen.emptyTitle')} description={t('gen.emptyBody')} />
+            ) : (
+                <Box sx={{ borderTop: '1px solid', borderColor: 'divider', pt: 2 }}>
+                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap sx={{ mb: 1 }}>
+                        <Typography variant="subtitle2">{t('gen.lastRun', { date: dateHeure.format(new Date(session.createdAt)) })}</Typography>
+                        <StateChip tone={TON_STATUT[session.status]}>{t(`gen.status.${session.status}`)}</StateChip>
+                    </Stack>
+                    {enCours && <LinearProgress variant="determinate" value={session.progress || 0} sx={{ height: 6, borderRadius: 1, mb: 1, bgcolor: 'divider' }} />}
+                    <Typography variant="body2" color={session.status === 'failed' ? 'error' : 'text.secondary'} sx={{ mb: 2 }}>
+                        {session.last_message}
+                    </Typography>
+                    {session.status === 'completed' && session.config?.rapport && <Rapport rapport={session.config.rapport} />}
+                </Box>
+            )}
+        </>
+    );
+}
+
+function Rapport({ rapport }) {
+    const { t, i18n } = useTranslation();
+    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const incomplets = rapport.enseignements.filter((e) => !e.complet);
+    const avertissements = rapport.avertissements ?? [];
+
+    return (
+        <Stack spacing={2.5}>
+            {avertissements.length > 0 && (
+                <Box sx={{ borderLeft: '3px solid', borderColor: 'warning.main', pl: 1.5 }}>
+                    <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                        {t('gen.report.warningsTitle')}
+                    </Typography>
+                    {avertissements.map((a) => (
+                        <Typography key={a.id_user} variant="body2" color="text.secondary">
+                            {t('gen.report.notEnoughAvailability', { name: a.enseignant, sessions: a.seances, free: a.creneaux_libres })}
+                        </Typography>
+                    ))}
+                </Box>
+            )}
+            <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
+                <Chiffre libelle={t('gen.report.created')} valeur={rapport.seances_creees} />
+                <Chiffre libelle={t('gen.report.teachings')} valeur={rapport.enseignements.length} />
+                <Chiffre libelle={t('gen.report.incomplete')} valeur={incomplets.length} alerte={incomplets.length > 0} />
+                <Chiffre libelle={t('gen.report.excluded')} valeur={rapport.exclus.length} alerte={rapport.exclus.length > 0} />
+                <Chiffre libelle={t('gen.report.hard')} valeur={rapport.regles_dures_enfreintes ?? '—'} alerte={rapport.regles_dures_enfreintes < 0} />
+            </Stack>
+
+            {rapport.lecons_en_conflit.length > 0 && (
+                <Typography variant="body2" color="error">
+                    {t('gen.report.conflicts', { modules: [...new Set(rapport.lecons_en_conflit)].join(', ') })}
+                </Typography>
+            )}
+
+            <TableContainer>
+                <Table size="small">
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>{t('ref.teaching.cols.module')}</TableCell>
+                            <TableCell align="right">{t('gen.report.hours')}</TableCell>
+                            <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{t('gen.report.sessions')}</TableCell>
+                            <TableCell>{t('gen.report.skipped')}</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {rapport.enseignements.map((e) => (
+                            <TableRow key={e.id_enseignement} hover>
+                                <TableCell>
+                                    <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                            {e.module}
                                         </Typography>
-                                        <TableContainer>
-                                            <Table size="small">
-                                                <TableHead>
-                                                    <TableRow>
-                                                        <TableCell>
-                                                            Cours
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            Groupe
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            Date
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            Créneau
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            Raison
-                                                        </TableCell>
-                                                    </TableRow>
-                                                </TableHead>
-                                                <TableBody>
-                                                    {resultat.affectationsEchouees
-                                                        .slice(0, 10)
-                                                        .map((aff, index) => (
-                                                            <TableRow
-                                                                key={index}
-                                                            >
-                                                                <TableCell>
-                                                                    {aff.cours}
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {aff.groupe}
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {aff.date}
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    {
-                                                                        aff.creneau
-                                                                    }
-                                                                </TableCell>
-                                                                <TableCell>
-                                                                    <Chip
-                                                                        label={
-                                                                            aff.raison
-                                                                        }
-                                                                        size="small"
-                                                                        color="error"
-                                                                    />
-                                                                </TableCell>
-                                                            </TableRow>
-                                                        ))}
-                                                </TableBody>
-                                            </Table>
-                                        </TableContainer>
-                                        {resultat.affectationsEchouees.length >
-                                            10 && (
-                                            <Typography
-                                                variant="caption"
-                                                color="text.secondary"
-                                                sx={{ mt: 1, display: "block" }}
-                                            >
-                                                ... et{" "}
-                                                {resultat.affectationsEchouees
-                                                    .length - 10}{" "}
-                                                autres
+                                        <Typography component="span" sx={{ fontFamily: ds.font.board, fontWeight: 600 }}>
+                                            {e.type}
+                                        </Typography>
+                                        {e.lecons_non_placees > 0 ? (
+                                            <StateChip tone="danger" title={t('gen.report.unplacedTitle')}>{t('gen.report.unplacedChip')}</StateChip>
+                                        ) : (
+                                            !e.complet && <StateChip tone="warning">{t('gen.report.incompleteChip')}</StateChip>
+                                        )}
+                                    </Stack>
+                                </TableCell>
+                                <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                                    {nombre.format(e.heures_planifiees)} / {nombre.format(e.heures_prevues)} h
+                                </TableCell>
+                                <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' }, fontVariantNumeric: 'tabular-nums' }}>{e.seances}</TableCell>
+                                <TableCell>
+                                    {e.sautees.length === 0 ? (
+                                        <Typography variant="body2" color="text.secondary">—</Typography>
+                                    ) : (
+                                        e.sautees.map((s) => (
+                                            <Typography key={s.date} variant="caption" component="div" color="text.secondary">
+                                                <Box component="span" sx={{ fontVariantNumeric: 'tabular-nums', color: 'text.primary' }}>{s.date}</Box> · {s.message}
+                                            </Typography>
+                                        ))
+                                    )}
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+
+            {rapport.exclus.length > 0 && (
+                <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                        {t('gen.report.excludedTitle')}
+                    </Typography>
+                    {rapport.exclus.map((x) => (
+                        <Typography key={x.id_enseignement} variant="body2" color="text.secondary">
+                            {x.module} {x.type} · {t(`gen.reasons.${x.raison}`)}
+                        </Typography>
+                    ))}
+                </Box>
+            )}
+
+            {rapport.violations.length > 0 && (
+                <Box>
+                    <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
+                        {t('gen.report.violationsTitle')}
+                    </Typography>
+                    {rapport.violations.map((v) => (
+                        <Stack key={v.contrainte} direction="row" spacing={1} alignItems="center" sx={{ py: 0.25 }}>
+                            <StateChip tone={v.dur < 0 ? 'danger' : 'neutral'}>{t(v.dur < 0 ? 'gen.report.hardRule' : 'gen.report.softRule')}</StateChip>
+                            <Typography variant="body2" color="text.secondary">
+                                {v.contrainte} · {t('gen.report.times', { count: v.nombre })}
+                            </Typography>
+                        </Stack>
+                    ))}
+                </Box>
+            )}
+        </Stack>
+    );
+}
+
+function Chiffre({ libelle, valeur, alerte = false }) {
+    return (
+        <Box>
+            <Typography sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '1.5rem', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums', color: alerte ? 'warning.dark' : 'text.primary' }}>{valeur}</Typography>
+            <Typography variant="caption" color="text.secondary">
+                {libelle}
+            </Typography>
+        </Box>
+    );
+}
+
+function Versions({ dateHeure }) {
+    const { t } = useTranslation();
+    const toast = useToast();
+    const [versions, setVersions] = useState([]);
+    const [chargement, setChargement] = useState(true);
+    const [aReactiver, setAReactiver] = useState(null);
+
+    const charger = useCallback(async () => {
+        setChargement(true);
+        try {
+            setVersions((await generationAutomatiqueAPI.snapshots()).snapshots);
+        } catch {
+            toast.error(t('common.errorLoad'));
+        } finally {
+            setChargement(false);
+        }
+    }, [t, toast]);
+
+    useEffect(() => {
+        charger();
+    }, [charger]);
+
+    const reactiver = async () => {
+        try {
+            await generationAutomatiqueAPI.rollbackSnapshot(aReactiver.id_snapshot);
+            toast.success(t('gen.versions.done'));
+            setAReactiver(null);
+            charger();
+        } catch (error) {
+            toast.error(error.message);
+        }
+    };
+
+    if (chargement) return <TableSkeleton rows={6} />;
+
+    return (
+        <>
+            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 820 }}>
+                {t('gen.versions.intro')}
+            </Typography>
+            {versions.length === 0 ? (
+                <EmptyState title={t('gen.versions.emptyTitle')} description={t('gen.versions.emptyBody')} />
+            ) : (
+                <TableContainer>
+                    <Table size="small">
+                        <TableHead>
+                            <TableRow>
+                                <TableCell>{t('gen.versions.cols.label')}</TableCell>
+                                <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{t('gen.versions.cols.date')}</TableCell>
+                                <TableCell align="right">{t('gen.versions.cols.sessions')}</TableCell>
+                                <TableCell align="right" />
+                            </TableRow>
+                        </TableHead>
+                        <TableBody>
+                            {versions.map((v) => (
+                                <TableRow key={v.id_snapshot} hover>
+                                    <TableCell>
+                                        <Stack direction="row" spacing={1} alignItems="center" flexWrap="wrap" useFlexGap>
+                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
+                                                {v.label}
+                                            </Typography>
+                                            {v.is_active && <StateChip tone="success">{t('gen.versions.active')}</StateChip>}
+                                        </Stack>
+                                        {v.admin_createur && (
+                                            <Typography variant="caption" color="text.secondary">
+                                                {v.admin_createur.prenom} {v.admin_createur.nom}
                                             </Typography>
                                         )}
-                                    </Box>
-                                )}
-                            </Box>
-                        )}
-                    </DialogContent>
-                    <DialogActions>
-                        <Button
-                            onClick={() => {
-                                if (isMountedRef.current) {
-                                    setDialogOpen(false);
-                                }
-                            }}
-                        >
-                            Fermer
-                        </Button>
-                        <Button
-                            variant="contained"
-                            onClick={() => {
-                                window.location.href = "/gestion/affectations";
-                            }}
-                        >
-                            Voir les affectations
-                        </Button>
-                    </DialogActions>
-                </Dialog>
-            </Box>
-        </DashboardLayout>
+                                    </TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' }, whiteSpace: 'nowrap' }}>{dateHeure.format(new Date(v.createdAt))}</TableCell>
+                                    <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>{v.nb_affectations ?? 0}</TableCell>
+                                    <TableCell align="right">
+                                        <Button size="small" onClick={() => setAReactiver(v)}>
+                                            {t('gen.versions.restore')}
+                                        </Button>
+                                    </TableCell>
+                                </TableRow>
+                            ))}
+                        </TableBody>
+                    </Table>
+                </TableContainer>
+            )}
+
+            <Dialog open={Boolean(aReactiver)} onClose={() => setAReactiver(null)} maxWidth="xs" fullWidth>
+                <DialogTitle>{t('gen.versions.confirmTitle')}</DialogTitle>
+                <DialogContent>
+                    <Typography variant="body2">{t('gen.versions.confirmBody', { label: aReactiver?.label ?? '' })}</Typography>
+                </DialogContent>
+                <DialogActions>
+                    <Button onClick={() => setAReactiver(null)}>{t('common.cancel')}</Button>
+                    <Button variant="contained" onClick={reactiver}>
+                        {t('gen.versions.restore')}
+                    </Button>
+                </DialogActions>
+            </Dialog>
+        </>
     );
 }

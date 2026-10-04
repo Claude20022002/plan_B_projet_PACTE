@@ -1,5 +1,7 @@
 package ma.hestim.solver.domain;
 
+import java.util.Objects;
+
 /**
  * Groupe ou enseignant présent dans le problème (problème fixe) : sert à compter les heures
  * par jour de chacun (contrainte des heures maximales).
@@ -20,7 +22,17 @@ public class Ressource {
     }
 
     public boolean concerne(Lecon lecon) {
-        return nature == Nature.GROUPE ? lecon.getGroupesDirects().contains(id) : lecon.getEnseignants().contains(id);
+        return nature == Nature.GROUPE ? lecon.getFeuillesEffectives().contains(id) : lecon.getEnseignants().contains(id);
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof Ressource r && nature == r.nature && Objects.equals(id, r.id);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(nature, id);
     }
 
     public Nature getNature() { return nature; }

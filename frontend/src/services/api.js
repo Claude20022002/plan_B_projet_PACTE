@@ -500,7 +500,11 @@ export const statistiquesAPI = {
 
 // ==================== GÉNÉRATION AUTOMATIQUE ====================
 export const generationAutomatiqueAPI = {
+    // { id_periode, id_filieres?, duree_secondes? } → 202 { session } ; suivi par session(id)
     generer: (data) => request('/generation-automatique/generer', { method: 'POST', body: data }),
+    sessions: () => request('/generation-automatique/sessions'),
+    session: (id) => request(`/generation-automatique/sessions/${id}`),
+    arreter: (id) => request(`/generation-automatique/sessions/${id}/arreter`, { method: 'POST' }),
     snapshots: (params) => {
         const query = new URLSearchParams(params || {}).toString();
         return request(`/generation-automatique/snapshots${query ? `?${query}` : ''}`);

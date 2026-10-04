@@ -14,7 +14,7 @@ import {
     Users,
 } from "../../models/index.js";
 import { anneeDepuisNiveau } from "../../config/referentiel.js";
-import { groupesLies } from "./groupes.js";
+import { groupesLies, ligneesDe } from "./groupes.js";
 import { lireParametre, minutesTrajet } from "./referentiel.js";
 import { disponibiliteEnseignant } from "./enseignants.js";
 import { occupationsDuJour } from "./occupations.js";
@@ -278,7 +278,12 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     // Maximum d'heures par jour
     const dureeSeance = duree(creneau);
     const maxGroupe = (await lireParametre("max_heures_jour_groupe")) * 60;
-    const minutesGroupe = autres.filter((o) => o.groupes.some((id) => groupesOccupes.has(id))).reduce((t, o) => t + duree(o.seance.creneau), 0);
+    // Journée la plus chargée parmi les étudiants concernés (chaque groupe le plus fin et ses ancêtres)
+    const lignees = (await Promise.all(idsGroupes.map((id) => ligneesDe(id, transaction)))).flat();
+    const minutesGroupe = Math.max(
+        0,
+        ...lignees.map(({ lignee }) => autres.filter((o) => o.groupes.some((id) => lignee.includes(id))).reduce((t, o) => t + duree(o.seance.creneau), 0))
+    );
     if (minutesGroupe + dureeSeance > maxGroupe) {
         signaler("max_heures_groupe", `Le groupe aurait ${((minutesGroupe + dureeSeance) / 60).toFixed(1)} h de cours ce jour-là (maximum ${maxGroupe / 60} h)`);
     }

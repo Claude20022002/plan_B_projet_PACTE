@@ -8,7 +8,6 @@ import ai.timefold.solver.core.api.domain.solution.PlanningScore;
 import ai.timefold.solver.core.api.domain.solution.PlanningSolution;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactCollectionProperty;
 import ai.timefold.solver.core.api.domain.solution.ProblemFactProperty;
-import ai.timefold.solver.core.api.domain.valuerange.ValueRangeProvider;
 import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.solver.SolverStatus;
 
@@ -19,11 +18,9 @@ import ai.timefold.solver.core.api.solver.SolverStatus;
 @PlanningSolution
 public class EmploiDuTemps {
 
-    @ValueRangeProvider
     @ProblemFactCollectionProperty
     private List<Creneau> creneaux = new ArrayList<>();
 
-    @ValueRangeProvider
     @ProblemFactCollectionProperty
     private List<Salle> salles = new ArrayList<>();
 
@@ -48,6 +45,12 @@ public class EmploiDuTemps {
     private SolverStatus statut;
 
     public EmploiDuTemps() {
+    }
+
+
+    /** Après lecture du problème : valeurs que chaque leçon peut prendre (créneaux, salles). */
+    public void preparerValeursPossibles() {
+        lecons.forEach(l -> l.calculerValeursPossibles(creneaux, salles));
     }
 
     public List<Creneau> getCreneaux() { return creneaux; }

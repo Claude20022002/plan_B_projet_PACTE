@@ -164,6 +164,25 @@ describe("Règles bloquantes : 409 et liste des violations", () => {
         await ParametrePlanning.destroy({ where: { cle: "max_heures_jour_groupe" } });
     });
 
+    test("heures par jour vues par les étudiants : deux TD frères en parallèle ne s'additionnent pas", async () => {
+        await ParametrePlanning.upsert({ cle: "max_heures_jour_groupe", valeur: 4 });
+        // Lundi 3 mai : TD2 le matin, TD1 en début d'après-midi (1 h 45 chacun) ; un CM de promotion
+        // en fin d'après-midi donne 3 h 30 à chaque étudiant, et non 5 h 15 en cumulant les deux TD
+        const date_seance = "2027-05-03";
+        const creees = [];
+        for (const extra of [
+            { id_groupe: ref.td2.id_groupe, id_creneau: ref.creneaux.lun1.id_creneau },
+            { id_groupe: ref.td1.id_groupe, id_user_enseignant: profB.id_user, id_salle: ref.salles.g2.id_salle, id_creneau: ref.creneaux.lun3.id_creneau },
+            { id_groupe: ref.promo.id_groupe, id_creneau: ref.creneaux.lun4.id_creneau },
+        ]) {
+            const response = await creer({ date_seance, ...extra });
+            expect(response.body.violations ?? []).toEqual([]);
+            creees.push(response.body.affectation.id_affectation);
+        }
+        await Affectation.destroy({ where: { id_affectation: creees } });
+        await ParametrePlanning.destroy({ where: { cle: "max_heures_jour_groupe" } });
+    });
+
     test("la vérification renvoie les violations sans rien créer", async () => {
         const avant = await Affectation.count();
         const response = await clients.admin.send("post", "/api/affectations/verifier", seance());

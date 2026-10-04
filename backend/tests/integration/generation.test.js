@@ -152,6 +152,9 @@ describe("Problème envoyé au solveur", () => {
         const tp = lecons.find((l) => l.type === "TP");
         expect(tp).toMatchObject({ longueur: 2, typeSalleRequis: "Labo informatique", effectif: 20, groupesDirects: [ref.td1.id_groupe] });
         expect(tp.groupes.sort()).toEqual([ref.td1.id_groupe, ref.promo.id_groupe].sort());
+        // Groupes les plus fins : le TD n'a pas de sous-groupe ; le CM de promotion concerne ce même TD
+        expect(tp.feuilles).toEqual([ref.td1.id_groupe]);
+        expect(lecons.find((l) => l.type === "CM").feuilles).toEqual([ref.td1.id_groupe]);
 
         const lundi1 = probleme.creneaux.find((c) => c.id === ref.lun[0].id_creneau);
         expect(lundi1).toMatchObject({ jour: 1, debut: 540, fin: 645, suivantId: ref.lun[1].id_creneau, finAvecSuivant: 750 });
@@ -181,6 +184,8 @@ describe("Génération complète", () => {
         expect(session.status).toBe("completed");
         const rapport = session.config.rapport;
         expect(rapport.exclus.map((e) => e.raison)).toEqual(["sans_enseignant"]);
+        // Le vacataire a déclaré assez de créneaux pour son TP : rien à signaler
+        expect(rapport.avertissements).toEqual([]);
 
         // CM : 21 h en demi-journées de 3 h 15 → 7 séances (14 créneaux), le lundi 15 mars sauté
         const cm = rapport.enseignements.find((e) => e.id_enseignement === ref.ensCm.id_enseignement);

@@ -1,5 +1,8 @@
 package ma.hestim.solver.contraintes;
 
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.countDistinct;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.max;
+import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.min;
 import static ai.timefold.solver.core.api.score.stream.ConstraintCollectors.sum;
 import static ai.timefold.solver.core.api.score.stream.Joiners.equal;
 import static ai.timefold.solver.core.api.score.stream.Joiners.filtering;
@@ -12,6 +15,8 @@ import ai.timefold.solver.core.api.score.buildin.hardsoft.HardSoftScore;
 import ai.timefold.solver.core.api.score.stream.Constraint;
 import ai.timefold.solver.core.api.score.stream.ConstraintFactory;
 import ai.timefold.solver.core.api.score.stream.ConstraintProvider;
+import ai.timefold.solver.core.api.score.stream.tri.TriConstraintStream;
+import ai.timefold.solver.core.api.score.stream.uni.UniConstraintStream;
 import ma.hestim.solver.domain.Lecon;
 import ma.hestim.solver.domain.Parametres;
 import ma.hestim.solver.domain.Ressource;
@@ -28,10 +33,23 @@ import ma.hestim.solver.domain.Voeu;
  * Préférences (souples) : un groupe reste sur un seul campus dans la journée ; campus de la
  * filière ; séances d'un même enseignement sur des jours différents ; CM avant TD/TP du même
  * module ; journées sans trous ; vœux des enseignants ; pas de samedi après-midi.
+ *
+ * Une leçon sans salle (allowsUnassigned) reste visible des règles qui ne dépendent pas de la
+ * salle : sinon, retirer la salle d'une leçon masquerait ses conflits d'enseignant ou de groupe
+ * pour le prix d'une seule pénalité « salle requise ».
  */
 public class ContraintesEmploiDuTemps implements ConstraintProvider {
 
     private static final int APRES_MIDI = 12 * 60 + 30;
+
+    /** Clé « étudiants (ou enseignant) × jour » des règles par journée. */
+    record Journee(Object qui, int jour) {
+    }
+
+    /** Leçons dont le créneau est posé, avec ou sans salle. */
+    private static UniConstraintStream<Lecon> posees(ConstraintFactory factory) {
+        return factory.forEachIncludingUnassigned(Lecon.class).filter(l -> l.getCreneau() != null);
+    }
 
     @Override
     public Constraint[] defineConstraints(ConstraintFactory factory) {
@@ -74,7 +92,9 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
     }
 
     Constraint conflitEnseignant(ConstraintFactory factory) {
-        return factory.forEachUniquePair(Lecon.class,
+        return posees(factory)
+                .join(posees(factory),
+                        lessThan(Lecon::getId),
                         equal(Lecon::getJour),
                         overlapping(Lecon::getDebut, Lecon::getFin))
                 .filter(Lecon::partageEnseignant)
@@ -83,7 +103,9 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
     }
 
     Constraint conflitGroupe(ConstraintFactory factory) {
-        return factory.forEachUniquePair(Lecon.class,
+        return posees(factory)
+                .join(posees(factory),
+                        lessThan(Lecon::getId),
                         equal(Lecon::getJour),
                         overlapping(Lecon::getDebut, Lecon::getFin))
                 .filter(Lecon::partageGroupe)
@@ -121,40 +143,49 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
     }
 
     Constraint grilleDuRegime(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
+        return posees(factory)
                 .filter(l -> l.getRegime() != null && !l.getRegime().equals(l.getCreneau().getRegime()))
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Grille du régime");
     }
 
     Constraint longueurSeance(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
+        return posees(factory)
                 .filter(l -> l.getLongueur() == 2 && l.getCreneau().getSuivantId() == null)
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Deux créneaux consécutifs");
     }
 
     Constraint enseignantIndisponible(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
-                .join(Voeu.class,
-                        filtering((l, v) -> v.getType() == Voeu.Type.INDISPONIBLE
-                                && l.getEnseignants().contains(v.getEnseignantId())
-                                && l.occupeCreneau(v.getCreneauId())))
+        return voeuxTouches(factory, Voeu.Type.INDISPONIBLE)
                 .penalize(HardSoftScore.ONE_HARD)
                 .asConstraint("Enseignant indisponible");
     }
 
+    /** Leçon × créneau qu'elle occupe × vœu d'un de ses enseignants sur ce créneau (jointure indexée par créneau). */
+    private static TriConstraintStream<Lecon, Long, Voeu> voeuxTouches(ConstraintFactory factory, Voeu.Type type) {
+        return posees(factory)
+                .expand(Lecon::getCreneauxOccupes)
+                .flattenLast(ids -> ids)
+                .join(Voeu.class,
+                        equal((l, creneauId) -> creneauId, Voeu::getCreneauId),
+                        equal((l, creneauId) -> type, Voeu::getType),
+                        filtering((l, creneauId, v) -> l.getEnseignants().contains(v.getEnseignantId())));
+    }
+
     Constraint maxHeuresJour(ConstraintFactory factory) {
-        return factory.forEach(Ressource.class)
-                .join(Lecon.class, filtering(Ressource::concerne))
-                .groupBy((r, l) -> r, (r, l) -> l.getJour(), sum((r, l) -> l.getDuree()))
+        // Par étudiants (groupe le plus fin, séances des groupes parents comprises) et par enseignant
+        return posees(factory)
+                .expand(Lecon::getRessources)
+                .flattenLast(ressources -> ressources)
+                .groupBy((l, r) -> r, (l, r) -> l.getJour(), sum((l, r) -> l.getDuree()))
                 .join(Parametres.class)
-                .filter((r, jour, minutes, p) -> minutes > max(r, p))
-                .penalize(HardSoftScore.ONE_HARD, (r, jour, minutes, p) -> 1 + (minutes - max(r, p)) / 60)
+                .filter((r, jour, minutes, p) -> minutes > maxMinutes(r, p))
+                .penalize(HardSoftScore.ONE_HARD, (r, jour, minutes, p) -> 1 + (minutes - maxMinutes(r, p)) / 60)
                 .asConstraint("Heures maximales par jour");
     }
 
-    private static int max(Ressource r, Parametres p) {
+    private static int maxMinutes(Ressource r, Parametres p) {
         return r.getNature() == Ressource.Nature.GROUPE ? p.getMaxMinutesJourGroupe() : p.getMaxMinutesJourEnseignant();
     }
 
@@ -172,10 +203,13 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
     // ── Préférences ─────────────────────────────────────────────────────
 
     Constraint unSeulCampusParJour(ConstraintFactory factory) {
-        return factory.forEachUniquePair(Lecon.class, equal(Lecon::getJour))
-                .filter((a, b) -> a.getSalle() != null && b.getSalle() != null && a.partageGroupe(b)
-                        && !Objects.equals(a.getCampusId(), b.getCampusId()))
-                .penalize(HardSoftScore.ofSoft(10))
+        // forEach : seules les leçons avec salle ont un campus
+        return factory.forEach(Lecon.class)
+                .expand(Lecon::getFeuillesEffectives)
+                .flattenLast(feuilles -> feuilles)
+                .groupBy((l, g) -> new Journee(g, l.getJour()), countDistinct((l, g) -> l.getCampusId()))
+                .filter((journee, campus) -> campus > 1)
+                .penalize(HardSoftScore.ofSoft(10), (journee, campus) -> campus - 1)
                 .asConstraint("Un seul campus par jour pour un groupe");
     }
 
@@ -187,15 +221,16 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
     }
 
     Constraint memeEnseignementMemeJour(ConstraintFactory factory) {
-        return factory.forEachUniquePair(Lecon.class, equal(Lecon::getEnseignementId), equal(Lecon::getJour))
+        return posees(factory)
+                .join(posees(factory), lessThan(Lecon::getId), equal(Lecon::getEnseignementId), equal(Lecon::getJour))
                 .penalize(HardSoftScore.ofSoft(20))
                 .asConstraint("Séances d'un enseignement sur des jours différents");
     }
 
     Constraint cmAvantTd(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
+        return posees(factory)
                 .filter(l -> "CM".equals(l.getType()))
-                .join(Lecon.class,
+                .join(posees(factory),
                         equal(Lecon::getCoursId),
                         filtering((cm, td) -> !"CM".equals(td.getType()) && cm.partageGroupe(td)
                                 && td.getInstantSemaine() < cm.getInstantSemaine()))
@@ -204,39 +239,34 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
     }
 
     Constraint trousDansLaJournee(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
-                .join(Lecon.class,
-                        equal(Lecon::getJour),
-                        lessThan(Lecon::getFin, Lecon::getDebut),
-                        filtering(Lecon::partageGroupe))
-                // Rien entre les deux pour ce groupe : c'est un trou
-                .ifNotExists(Lecon.class,
-                        equal((a, b) -> a.getJour(), Lecon::getJour),
-                        filtering((a, b, c) -> c != a && c != b && c.partageGroupe(a)
-                                && c.getDebut() >= a.getFin() && c.getFin() <= b.getDebut()))
-                .filter((a, b) -> b.getDebut() - a.getFin() > 30)
-                .penalize(HardSoftScore.ONE_SOFT, (a, b) -> (b.getDebut() - a.getFin()) / 30)
+        // Trou = rang de la grille laissé vide entre le premier et le dernier cours des étudiants ;
+        // la pause de midi n'en est pas un (les rangs 2 et 3 se suivent)
+        return posees(factory)
+                .expand(Lecon::getFeuillesEffectives)
+                .flattenLast(feuilles -> feuilles)
+                .groupBy((l, g) -> new Journee(g, l.getJour()),
+                        min((Lecon l, Long g) -> l.getRangDebut()),
+                        max((Lecon l, Long g) -> l.getRangFin()),
+                        sum((Lecon l, Long g) -> l.getRangFin() - l.getRangDebut() + 1))
+                .filter((journee, premier, dernier, occupes) -> dernier - premier + 1 > occupes)
+                .penalize(HardSoftScore.ofSoft(5), (journee, premier, dernier, occupes) -> dernier - premier + 1 - occupes)
                 .asConstraint("Journées sans trous");
     }
 
     Constraint voeuEviter(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
-                .join(Voeu.class,
-                        filtering((l, v) -> v.getType() == Voeu.Type.EVITER && l.getEnseignants().contains(v.getEnseignantId()) && l.occupeCreneau(v.getCreneauId())))
+        return voeuxTouches(factory, Voeu.Type.EVITER)
                 .penalize(HardSoftScore.ofSoft(3))
                 .asConstraint("Vœu : créneau à éviter");
     }
 
     Constraint voeuPrefere(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
-                .join(Voeu.class,
-                        filtering((l, v) -> v.getType() == Voeu.Type.PREFERE && l.getEnseignants().contains(v.getEnseignantId()) && l.occupeCreneau(v.getCreneauId())))
+        return voeuxTouches(factory, Voeu.Type.PREFERE)
                 .reward(HardSoftScore.ONE_SOFT)
                 .asConstraint("Vœu : créneau préféré");
     }
 
     Constraint samediApresMidi(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
+        return posees(factory)
                 .filter(l -> l.getJour() == 6 && l.getDebut() >= APRES_MIDI && "initiale".equals(l.getRegime()))
                 .join(Parametres.class)
                 .filter((l, p) -> !p.isSamediApresMidi())

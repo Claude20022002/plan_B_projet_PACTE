@@ -186,6 +186,7 @@ public class EmploiDuTempsController {
                 lecon.setEpinglee(false);
             }
         }
+        probleme.preparerValeursPossibles();
     }
 
     private void purger() {

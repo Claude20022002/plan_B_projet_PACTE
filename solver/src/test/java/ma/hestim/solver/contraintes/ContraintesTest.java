@@ -75,6 +75,17 @@ class ContraintesTest {
     }
 
     @Test
+    void uneLeconSansSalleGardeSesConflits() {
+        // Retirer la salle ne doit pas masquer un conflit d'enseignant ou de groupe
+        Lecon a = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        Lecon sansSalle = lecon(lun1, null, Set.of(10L), Set.of(100L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::conflitEnseignant).given(a, sansSalle).penalizesBy(1);
+        verifier.verifyThat(ContraintesEmploiDuTemps::conflitGroupe).given(a, sansSalle).penalizesBy(1);
+        verifier.verifyThat(ContraintesEmploiDuTemps::enseignantIndisponible)
+                .given(sansSalle, new Voeu(10L, 1L, Voeu.Type.INDISPONIBLE)).penalizesBy(1);
+    }
+
+    @Test
     void uneSeanceDeDeuxCreneauxOccupeLaDemiJournee() {
         Lecon demiJournee = lecon(lun1, g1, Set.of(10L), Set.of(100L));
         demiJournee.setLongueur(2);
@@ -131,6 +142,25 @@ class ContraintesTest {
     }
 
     @Test
+    void heuresParJourVuesParLesEtudiants() {
+        Parametres parametres = new Parametres();
+        parametres.setMaxMinutesJourGroupe(420);
+        // CM de la promotion 100 le matin, TD 102 et TD 103 (frères) en parallèle l'après-midi :
+        // chaque étudiant a 7 h (420 min), pas 10 h 30
+        Lecon cm = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        cm.setLongueur(2);
+        cm.setFeuilles(Set.of(102L, 103L));
+        Lecon td102 = lecon(lun3, g1, Set.of(11L), Set.of(102L));
+        td102.setLongueur(2);
+        Lecon td103 = lecon(lun3, g2, Set.of(12L), Set.of(103L));
+        td103.setLongueur(2);
+        verifier.verifyThat(ContraintesEmploiDuTemps::maxHeuresJour).given(cm, td102, td103, parametres).penalizesBy(0);
+        parametres.setMaxMinutesJourGroupe(360);
+        // 420 minutes > 360 pour chacun des deux TD : 2 × (1 + 60 / 60)
+        verifier.verifyThat(ContraintesEmploiDuTemps::maxHeuresJour).given(cm, td102, td103, parametres).penalizesBy(4);
+    }
+
+    @Test
     void trajetEntreCampusEtCampusUnique() {
         Parametres parametres = new Parametres();
         // 9 h - 10 h 45 à Gandhi puis 11 h à Stendhal : 15 minutes < 30
@@ -138,6 +168,12 @@ class ContraintesTest {
         Lecon stendhal = lecon(lun2, st, Set.of(11L), Set.of(100L));
         verifier.verifyThat(ContraintesEmploiDuTemps::trajetEntreCampus).given(gandhi, stendhal, parametres).penalizesBy(1);
         verifier.verifyThat(ContraintesEmploiDuTemps::unSeulCampusParJour).given(gandhi, stendhal).penalizesBy(1);
+
+        // CM de promotion à Gandhi, TD 102 à Stendhal l'après-midi : les étudiants du TD changent de campus
+        Lecon cm = lecon(lun1, g1, Set.of(10L), Set.of(200L));
+        cm.setFeuilles(Set.of(202L, 203L));
+        Lecon td = lecon(lun3, st, Set.of(11L), Set.of(202L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::unSeulCampusParJour).given(cm, td).penalizesBy(1);
     }
 
     @Test
@@ -161,10 +197,16 @@ class ContraintesTest {
     void trouDansLaJournee() {
         Lecon matin = lecon(lun1, g1, Set.of(10L), Set.of(100L));
         Lecon fin = lecon(new Creneau(4L, 1, 930, 1020, 4, "initiale", null, null), g1, Set.of(11L), Set.of(100L));
-        // 10 h 45 → 15 h 30 : 285 minutes de trou
-        verifier.verifyThat(ContraintesEmploiDuTemps::trousDansLaJournee).given(matin, fin).penalizesBy(9);
+        // Rang 1 puis rang 4 : les rangs 2 et 3 sont vides
+        verifier.verifyThat(ContraintesEmploiDuTemps::trousDansLaJournee).given(matin, fin).penalizesBy(2);
         Lecon entre = lecon(lun3, g2, Set.of(12L), Set.of(100L));
-        entre.setLongueur(1);
-        verifier.verifyThat(ContraintesEmploiDuTemps::trousDansLaJournee).given(matin, entre, fin).penalizesBy(5);
+        verifier.verifyThat(ContraintesEmploiDuTemps::trousDansLaJournee).given(matin, entre, fin).penalizesBy(1);
+
+        // Matin complet puis après-midi complet : la pause de midi n'est pas un trou
+        Lecon demiMatin = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        demiMatin.setLongueur(2);
+        Lecon demiApresMidi = lecon(lun3, g1, Set.of(11L), Set.of(100L));
+        demiApresMidi.setLongueur(2);
+        verifier.verifyThat(ContraintesEmploiDuTemps::trousDansLaJournee).given(demiMatin, demiApresMidi).penalizesBy(0);
     }
 }

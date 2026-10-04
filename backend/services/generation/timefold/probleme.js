@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import {
     Affectation,
+    Users,
     AnneeUniversitaire,
     Cours,
     CoursComposante,
@@ -17,7 +18,7 @@ import {
 } from "../../../models/index.js";
 import { ErreurMetier } from "../../planning/enseignements.js";
 import { STATUTS_ACTIFS } from "../../planning/affectationRules.js";
-import { groupesLies } from "../../planning/groupes.js";
+import { groupesLies, ligneesDe } from "../../planning/groupes.js";
 import { lireParametres } from "../../planning/referentiel.js";
 
 /**
@@ -110,6 +111,8 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
         const enseignants = [...new Set([principal.id_user, ...e.services.filter((s) => s.role === "co_enseignant" && s.statut_service === "accepte").map((s) => s.id_user)])];
         const directs = e.groupes.map((g) => g.id_groupe);
         const occupes = [...new Set((await Promise.all(directs.map((id) => groupesLies(id)))).flat())];
+        // Groupes les plus fins concernés : la journée vue par les étudiants (heures, trous, campus)
+        const feuilles = [...new Set((await Promise.all(directs.map((id) => ligneesDe(id)))).flat().map((l) => l.feuille))];
         const regime = cours.filiere?.regime ?? "initiale";
         regimes.add(regime);
         const nombre = Math.max(1, Math.min(6, composante.seances_par_semaine || 1));
@@ -125,6 +128,7 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
                 enseignants,
                 groupes: occupes,
                 groupesDirects: directs,
+                feuilles,
                 effectif: e.groupes.reduce((t, g) => t + (g.effectif || 0), 0),
                 typeSalleRequis: composante.type_salle_requis || null,
                 equipementsRequis: composante.equipements_requis || [],
@@ -132,7 +136,7 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
                 campusPrefere: cours.filiere?.id_campus_prefere ?? null,
                 epinglee: false,
             });
-            index[id] = { id_enseignement: e.id_enseignement, id_cours: cours.id_cours, id_groupe: directs[0], id_user_enseignant: principal.id_user, heures_prevues: e.heures_prevues, semaine_debut: composante.semaine_debut, semaine_fin: composante.semaine_fin, seances_par_semaine: nombre, longueur: Math.max(1, Math.min(2, composante.creneaux_par_seance || 2)), module: cours.nom_cours, type: composante.type };
+            index[id] = { id_enseignement: e.id_enseignement, id_cours: cours.id_cours, id_groupe: directs[0], id_user_enseignant: principal.id_user, heures_prevues: e.heures_prevues, semaine_debut: composante.semaine_debut, semaine_fin: composante.semaine_fin, seances_par_semaine: nombre, longueur: Math.max(1, Math.min(2, composante.creneaux_par_seance || 2)), module: cours.nom_cours, type: composante.type, distanciel: composante.modalite === "distanciel" };
             enseignants.forEach((x) => enseignantsUtilises.add(x));
             directs.forEach((x) => groupesUtilises.add(x));
         }
@@ -182,6 +186,7 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
             enseignants: [a.id_user_enseignant],
             groupes: occupes,
             groupesDirects: [a.id_groupe],
+            feuilles: (await ligneesDe(a.id_groupe)).map((l) => l.feuille),
             effectif: 0,
             distanciel: !a.id_salle,
             epinglee: true,
@@ -191,7 +196,11 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
     }
 
     // Disponibilités : vacataires en opt-in, indisponibilités couvrant toute la période, vœux
-    const enseignantsInfos = await Enseignant.findAll({ where: { id_user: [...enseignantsUtilises] }, attributes: ["id_user", "statut"] });
+    const enseignantsInfos = await Enseignant.findAll({
+        where: { id_user: [...enseignantsUtilises] },
+        attributes: ["id_user", "statut"],
+        include: [{ model: Users, as: "user", attributes: ["nom", "prenom"] }],
+    });
     const declarations = await Disponibilite.findAll({
         where: { id_user_enseignant: [...enseignantsUtilises], date_debut: { [Op.lte]: periode.date_fin }, date_fin: { [Op.gte]: periode.date_debut } },
     });
@@ -211,6 +220,28 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
         }
     }
 
+    // Disponibilités insuffisantes : plus de séances à donner que de créneaux libres dans la semaine.
+    // Aucun calcul ne peut le résoudre ; c'est signalé avant tout, pour relancer l'enseignant.
+    const avertissements = [];
+    for (const e of enseignantsInfos) {
+        const bloques = new Set(voeux.filter((v) => v.enseignantId === e.id_user && v.type === "INDISPONIBLE").map((v) => v.creneauId));
+        if (!bloques.size) continue;
+        const siennes = lecons.filter((l) => l.enseignants.includes(e.id_user));
+        const libres = (longueur) => creneaux.filter((c) => !bloques.has(c.id) && (longueur === 1 || (c.suivantId && !bloques.has(c.suivantId)))).length;
+        const besoin = siennes.length;
+        const possibles = libres(Math.max(...siennes.map((l) => l.longueur)));
+        if (besoin > possibles) {
+            avertissements.push({
+                type: "disponibilites_insuffisantes",
+                id_user: e.id_user,
+                enseignant: `${e.user?.prenom ?? ""} ${e.user?.nom ?? ""}`.trim(),
+                statut: e.statut,
+                seances: besoin,
+                creneaux_libres: possibles,
+            });
+        }
+    }
+
     const parametres = await lireParametres();
     const trajets = Object.fromEntries((await TrajetCampus.findAll()).map((t) => [`${Math.min(t.id_campus_a, t.id_campus_b)}-${Math.max(t.id_campus_a, t.id_campus_b)}`, t.minutes]));
 
@@ -218,6 +249,7 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
         periode,
         index,
         exclus,
+        avertissements,
         probleme: {
             dureeSecondes,
             creneaux,

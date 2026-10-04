@@ -61,17 +61,25 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
         const rapportParEnseignement = new Map();
         let creees = 0;
 
-        // Leçons d'un même enseignement : déployées ensemble (séances par semaine)
+        // Leçons d'un même enseignement : déployées ensemble (séances par semaine). Une leçon que le
+        // calcul n'a pas pu placer (sans créneau, ou sans salle en présentiel) n'est pas déployée :
+        // elle est signalée une fois plutôt que refusée chaque semaine.
         const parEnseignement = new Map();
-        for (const p of placements.filter((x) => index[x.id] && x.creneauId)) {
-            const info = index[p.id];
+        const nonPlacees = new Map();
+        const parLecon = new Map(placements.map((p) => [p.id, p]));
+        for (const [leconId, info] of Object.entries(index)) {
+            const p = parLecon.get(leconId);
+            if (!p?.creneauId || (!p.salleId && !info.distanciel)) {
+                nonPlacees.set(info.id_enseignement, (nonPlacees.get(info.id_enseignement) ?? 0) + 1);
+                continue;
+            }
             if (!parEnseignement.has(info.id_enseignement)) parEnseignement.set(info.id_enseignement, []);
             parEnseignement.get(info.id_enseignement).push({ ...p, info });
         }
 
         for (const [idEnseignement, lecons] of parEnseignement) {
             const info = lecons[0].info;
-            const ligne = { id_enseignement: idEnseignement, module: info.module, type: info.type, heures_prevues: info.heures_prevues, heures_planifiees: 0, seances: 0, sautees: [] };
+            const ligne = { id_enseignement: idEnseignement, module: info.module, type: info.type, heures_prevues: info.heures_prevues, heures_planifiees: 0, seances: 0, sautees: [], lecons_non_placees: nonPlacees.get(idEnseignement) ?? 0 };
             const semaineDebut = Math.max(1, info.semaine_debut || 1);
             const semaineFin = Math.min(nbSemaines, info.semaine_fin || nbSemaines);
             let heures = 0;
@@ -120,6 +128,12 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
             ligne.heures_planifiees = Math.round(heures * 10) / 10;
             ligne.complet = heures >= info.heures_prevues;
             rapportParEnseignement.set(idEnseignement, ligne);
+        }
+
+        for (const [idEnseignement, nombre] of nonPlacees) {
+            if (rapportParEnseignement.has(idEnseignement)) continue;
+            const info = Object.values(index).find((i) => i.id_enseignement === idEnseignement);
+            rapportParEnseignement.set(idEnseignement, { id_enseignement: idEnseignement, module: info.module, type: info.type, heures_prevues: info.heures_prevues, heures_planifiees: 0, seances: 0, sautees: [], lecons_non_placees: nombre, complet: false });
         }
 
         await snapshot.update({ nb_affectations: creees, nb_conflits: 0 }, { transaction });
