@@ -36,6 +36,8 @@ let ref;
 let solveur;
 let problemes;
 
+const JETON = "jeton-de-test-0123456789abcdef-0123";
+
 /** Faux service `solver/` : place chaque leçon sur le premier créneau et la première salle libres. */
 const demarrerFauxSolveur = () =>
     new Promise((resolve) => {
@@ -49,6 +51,8 @@ const demarrerFauxSolveur = () =>
                     res.writeHead(code, { "Content-Type": "application/json" });
                     res.end(JSON.stringify(data));
                 };
+                // Comme le vrai service : jeton partagé obligatoire
+                if (req.headers["x-solver-token"] !== JETON) return repondre(401, { erreur: "Jeton du service invalide" });
                 if (req.method === "POST" && req.url === "/timetables") {
                     const probleme = JSON.parse(corps);
                     problemes.push(probleme);
@@ -83,6 +87,7 @@ const demarrerFauxSolveur = () =>
         });
         solveur.listen(0, "127.0.0.1", () => {
             process.env.SOLVER_URL = `http://127.0.0.1:${solveur.address().port}`;
+            process.env.SOLVER_TOKEN = JETON;
             resolve();
         });
     });
@@ -230,6 +235,18 @@ describe("Génération complète", () => {
         const session = (await clients.admin.get(`/api/generation-automatique/sessions/${reponse.body.session.id_generation_session}`)).body;
         expect(session.status).toBe("failed");
         expect(session.last_message).toMatch(/injoignable/);
+        // L'adresse interne du service n'est pas divulguée
+        expect(session.last_message).not.toMatch(/127\.0\.0\.1/);
+    });
+
+    test("mauvais jeton : refusé par le service, message de configuration", async () => {
+        process.env.SOLVER_TOKEN = "mauvais";
+        const reponse = await clients.admin.send("post", "/api/generation-automatique/generer", { id_periode: ref.periode.id_periode, id_filieres: [ref.filiere.id_filiere] });
+        await attendreGeneration(reponse.body.session.id_generation_session);
+        process.env.SOLVER_TOKEN = JETON;
+        const session = (await clients.admin.get(`/api/generation-automatique/sessions/${reponse.body.session.id_generation_session}`)).body;
+        expect(session.status).toBe("failed");
+        expect(session.last_message).toMatch(/SOLVER_TOKEN/);
     });
 
     test("réservé à l'administration ; période requise", async () => {

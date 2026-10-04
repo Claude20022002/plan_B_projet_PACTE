@@ -8,7 +8,9 @@
 #    solver   — Génération de la semaine type (Timefold, Java 21), interne
 #
 #  Lancement :
-#    docker compose up -d --build
+#    docker compose --env-file .env.docker up -d --build
+#  (--env-file est nécessaire : les ${…} de ce fichier, dont les mots de passe et
+#   SOLVER_TOKEN, sont lus à l'interpolation, pas depuis env_file)
 #
 #  Premier démarrage (seed) :
 #    docker compose exec backend node seed.js
@@ -22,21 +24,22 @@ services:
     container_name: hestim_mysql
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:-hestim_root_2026}
+      # Aucun mot de passe par défaut : docker compose refuse de démarrer s'ils manquent
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?DB_ROOT_PASSWORD requis dans .env.docker}
       MYSQL_DATABASE:      ${DB_NAME:-hestim_planner}
       MYSQL_USER:          ${DB_USER:-hestim}
-      MYSQL_PASSWORD:      ${DB_PASSWORD:-hestim_pass_2026}
+      MYSQL_PASSWORD:      ${DB_PASSWORD:?DB_PASSWORD requis dans .env.docker}
     volumes:
       - mysql_data:/var/lib/mysql
       # Script d'initialisation optionnel (ex: créer des index supplémentaires)
       # - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
     ports:
-      - "${DB_PORT:-3306}:3306"          # accessible depuis l'hôte pour debug
+      - "127.0.0.1:${DB_PORT:-3306}:3306"   # debug depuis l'hôte uniquement, jamais exposé au réseau
     healthcheck:
       # MySQL redémarre une fois lors du premier boot pour appliquer la config
       # → start_period étendu à 90s pour absorber ce cycle
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost",
-             "-u", "${DB_USER:-hestim}", "-p${DB_PASSWORD:-hestim_pass_2026}"]
+      # ping répond même sans identifiants : pas de mot de passe dans la ligne de commande
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       interval: 10s
       timeout: 5s
       retries: 12
@@ -58,11 +61,12 @@ services:
       DB_HOST:    mysql            # nom du service MySQL dans le réseau Docker
       DB_NAME:    ${DB_NAME:-hestim_planner}
       DB_USER:    ${DB_USER:-hestim}
-      DB_PASSWORD: ${DB_PASSWORD:-hestim_pass_2026}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD requis dans .env.docker}
       PORT:       5000
       SOLVER_URL: http://solver:8080
+      SOLVER_TOKEN: ${SOLVER_TOKEN:?SOLVER_TOKEN requis dans .env.docker}
     ports:
-      - "${BACKEND_PORT:-5000}:5000"
+      - "127.0.0.1:${BACKEND_PORT:-5000}:5000"   # le public passe par le frontend (nginx /api)
     depends_on:
       mysql:
         condition: service_healthy
@@ -85,6 +89,20 @@ services:
       dockerfile: Dockerfile
     container_name: hestim_solver
     restart: unless-stopped
+    environment:
+      SOLVER_TOKEN: ${SOLVER_TOKEN:?SOLVER_TOKEN requis dans .env.docker}
+      JAVA_OPTS: -XX:MaxRAMPercentage=75
+    # Calcul gourmand en CPU : borné pour ne pas affamer l'API et la base
+    deploy:
+      resources:
+        limits:
+          cpus: "2"
+          memory: 1g
+    read_only: true
+    tmpfs:
+      - /tmp
+    security_opt:
+      - no-new-privileges:true
     networks:
       - hestim_net
 

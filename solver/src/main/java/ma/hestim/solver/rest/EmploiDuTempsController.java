@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -47,6 +48,14 @@ public class EmploiDuTempsController {
     private static final int DUREE_DEFAUT_SECONDES = 60;
     private static final int DUREE_MAX_SECONDES = 600;
     private static final Duration CONSERVATION = Duration.ofHours(1);
+    // Bornes d'un problème : HESTIM entier tient très en dessous (≈ 250 leçons par semestre)
+    private static final int LECONS_MAX = 5000;
+    private static final int CRENEAUX_MAX = 500;
+    private static final int SALLES_MAX = 2000;
+    private static final int VOEUX_MAX = 200_000;
+
+    @Value("${solver.calculs-simultanes-max:2}")
+    private int calculsSimultanesMax;
 
     private final SolverManager<EmploiDuTemps, String> solverManager;
     private final SolutionManager<EmploiDuTemps, HardSoftScore> solutionManager;
@@ -73,6 +82,14 @@ public class EmploiDuTempsController {
     @PostMapping("/timetables")
     public ResponseEntity<Map<String, Object>> lancer(@RequestBody EmploiDuTemps probleme) {
         purger();
+        String refus = verifierTaille(probleme);
+        if (refus != null) {
+            return ResponseEntity.badRequest().body(Map.of("erreur", refus));
+        }
+        long actifs = travaux.keySet().stream().map(solverManager::getSolverStatus).filter(s -> s != SolverStatus.NOT_SOLVING).count();
+        if (actifs >= calculsSimultanesMax) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).body(Map.of("erreur", "Trop de calculs en cours : réessayez dans quelques minutes"));
+        }
         relier(probleme);
         String id = UUID.randomUUID().toString();
         Travail travail = new Travail();
@@ -190,6 +207,20 @@ public class EmploiDuTempsController {
             }
         }
         probleme.preparerValeursPossibles();
+    }
+
+    static String verifierTaille(EmploiDuTemps p) {
+        if (p.getLecons() == null || p.getCreneaux() == null || p.getSalles() == null) {
+            return "Problème incomplet : leçons, créneaux et salles sont requis";
+        }
+        if (p.getLecons().size() > LECONS_MAX || p.getCreneaux().size() > CRENEAUX_MAX || p.getSalles().size() > SALLES_MAX
+                || (p.getVoeux() != null && p.getVoeux().size() > VOEUX_MAX)) {
+            return "Problème trop grand";
+        }
+        if (p.getLecons().stream().anyMatch(l -> l.getId() == null || l.getLongueur() < 1 || l.getLongueur() > 2)) {
+            return "Leçon invalide (identifiant manquant ou longueur hors de 1-2)";
+        }
+        return null;
     }
 
     private void purger() {
