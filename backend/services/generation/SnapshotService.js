@@ -11,112 +11,11 @@ import {
     Users,
 } from "../../models/index.js";
 
+/**
+ * Versions de planning (snapshots) : chaque génération Timefold en crée une ; on peut les lister,
+ * les consulter et en réactiver une pour revenir en arrière.
+ */
 export class SnapshotService {
-    async createSession(params) {
-        return GenerationSession.create({
-            label: params.label || `Generation ${params.dateDebut} - ${params.dateFin}`,
-            date_debut: params.dateDebut,
-            date_fin: params.dateFin,
-            status: "running",
-            progress: 5,
-            last_message: "Generation demarree",
-            config: params,
-            id_user_admin: params.idUserAdmin,
-        });
-    }
-
-    async failSession(session, error) {
-        if (!session) return;
-        await session.update({
-            status: "failed",
-            progress: 100,
-            last_message: error.message,
-        });
-    }
-
-    async commitGeneration({ session, assignments, score, conflicts, failedSessions, durationMs, params }) {
-        return sequelize.transaction(async (transaction) => {
-            const previousSnapshots = await PlanningSnapshot.findAll({
-                where: {
-                    date_debut: params.dateDebut,
-                    date_fin: params.dateFin,
-                    is_active: true,
-                },
-                transaction,
-            });
-
-            const previousSnapshotIds = previousSnapshots.map((snapshot) => snapshot.id_snapshot);
-
-            if (previousSnapshotIds.length) {
-                await PlanningSnapshot.update(
-                    { is_active: false },
-                    {
-                        where: { id_snapshot: { [Op.in]: previousSnapshotIds } },
-                        transaction,
-                    }
-                );
-
-                await Affectation.update(
-                    { statut: "annule" },
-                    {
-                        where: {
-                            id_snapshot: { [Op.in]: previousSnapshotIds },
-                            is_generated: true,
-                        },
-                        transaction,
-                    }
-                );
-            }
-
-            const snapshot = await PlanningSnapshot.create({
-                label: params.label || `Auto ${new Date().toISOString().slice(0, 19).replace("T", " ")}`,
-                date_debut: params.dateDebut,
-                date_fin: params.dateFin,
-                is_active: true,
-                score_total: score.total,
-                score_detail: score.breakdown,
-                nb_affectations: assignments.length,
-                nb_conflits: conflicts.length,
-                id_generation_session: session.id_generation_session,
-                id_user_admin: params.idUserAdmin,
-            }, { transaction });
-
-            const created = [];
-            for (const assignment of assignments) {
-                const affectation = await Affectation.create({
-                    date_seance: assignment.slot.date,
-                    statut: "planifie",
-                    id_cours: assignment.session.course.id_cours,
-                    id_groupe: assignment.session.group.id_groupe,
-                    id_user_enseignant: assignment.teacher.id_user,
-                    id_salle: assignment.room.id_salle,
-                    id_creneau: assignment.slot.id_creneau,
-                    id_user_admin: params.idUserAdmin,
-                    id_snapshot: snapshot.id_snapshot,
-                    id_generation_session: session.id_generation_session,
-                    is_generated: true,
-                    score_contrib: assignment.score || null,
-                }, { transaction });
-
-                created.push({ affectation, assignment });
-            }
-
-            await session.update({
-                status: "completed",
-                progress: 100,
-                last_message: "Generation terminee",
-                score_total: score.total,
-                score_detail: score.breakdown,
-                nb_assignees: assignments.length,
-                nb_conflits: conflicts.length,
-                nb_non_placees: failedSessions.length,
-                duration_ms: durationMs,
-            }, { transaction });
-
-            return { snapshot, created };
-        });
-    }
-
     /**
      * Réactive une version : ses séances générées reprennent (statut planifié) et celles des
      * autres versions de la même période pour les mêmes enseignements sont annulées. Une
