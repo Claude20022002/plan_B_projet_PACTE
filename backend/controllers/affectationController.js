@@ -6,11 +6,12 @@ import {
     Creneau,
     Users,
 } from "../models/index.js";
-import sequelize from "../config/db.js";
 import { Op } from "sequelize";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
-import { verifierEtCreerConflits } from "../utils/detectConflicts.js";
+import { ViolationsBloquantes, enregistrerSeance, notifierChangementSeance, supprimerSeance, verifierSeance } from "../services/planning/seances.js";
+import { STATUTS_ACTIFS, aujourdhui } from "../services/planning/affectationRules.js";
+import { ErreurMetier } from "../services/planning/enseignements.js";
 import { notifierNouvelleAffectation } from "../utils/notificationHelper.js";
 import { pick } from "../utils/validationHelper.js";
 import { etudiantAppartientAuGroupe } from "../middleware/accessMiddleware.js";
@@ -113,118 +114,126 @@ const AFFECTATION_FIELDS = [
     "id_user_enseignant",
     "id_salle",
     "id_creneau",
+    "id_enseignement",
 ];
 
-// ➕ Créer une affectation
+const INCLUDES_AFFECTATION = [
+    { model: Cours, as: "cours" },
+    { model: Groupe, as: "groupe" },
+    { model: Users, as: "enseignant", attributes: { exclude: ["password_hash"] } },
+    { model: Salle, as: "salle" },
+    { model: Creneau, as: "creneau" },
+    { model: Users, as: "admin_createur", attributes: { exclude: ["password_hash"] } },
+];
+
+// La date arrive en chaîne « AAAA-MM-JJ » (le validateur ne la convertit plus en Date)
+const lireDonnees = (body) => {
+    const donnees = pick(body, AFFECTATION_FIELDS);
+    if (donnees.date_seance) donnees.date_seance = String(donnees.date_seance).slice(0, 10);
+    if (donnees.id_salle === "") donnees.id_salle = null;
+    return donnees;
+};
+
+/** 409 avec la liste des règles enfreintes, 4xx métier, sinon l'erreur remonte. */
+const repondreErreur = (res, error) => {
+    if (error instanceof ViolationsBloquantes) {
+        return res.status(409).json({ message: error.message, error: error.violations.find((v) => v.bloquant)?.message, violations: error.violations });
+    }
+    if (error instanceof ErreurMetier) return res.status(error.status).json({ message: error.message, error: error.message });
+    throw error;
+};
+
+const jourLisible = (affectation) => `${affectation.date_seance}${affectation.creneau ? ` à ${String(affectation.creneau.heure_debut).slice(0, 5)}` : ""}`;
+
+// 🧪 Vérifier une séance sans l'enregistrer : liste des règles enfreintes
+export const verifierAffectation = asyncHandler(async (req, res) => {
+    const seance = { ...lireDonnees(req.body), ...(req.body.id_affectation ? { id_affectation: Number(req.body.id_affectation) } : {}) };
+    const resultat = await verifierSeance(seance);
+    res.json(resultat);
+});
+
+// ➕ Créer une affectation (refus 409 si une règle bloque, sauf forçage justifié)
 export const createAffectation = asyncHandler(async (req, res) => {
-    const affectation = await Affectation.create(
-        { ...pick(req.body, AFFECTATION_FIELDS), id_user_admin: req.user.id_user }
-    );
+    let resultat;
+    try {
+        resultat = await enregistrerSeance({
+            donnees: lireDonnees(req.body),
+            user: req.user,
+            forcer: req.body.forcer === true,
+            justification: req.body.justification,
+        });
+    } catch (error) {
+        return repondreErreur(res, error);
+    }
 
-    // Détecter les conflits automatiquement
-    const conflits = await verifierEtCreerConflits(affectation);
-
-    const affectationComplete = await Affectation.findByPk(
-        affectation.id_affectation,
-        {
-            include: [
-                { model: Cours, as: "cours" },
-                { model: Groupe, as: "groupe" },
-                {
-                    model: Users,
-                    as: "enseignant",
-                    attributes: { exclude: ["password_hash"] },
-                },
-                { model: Salle, as: "salle" },
-                { model: Creneau, as: "creneau" },
-                {
-                    model: Users,
-                    as: "admin_createur",
-                    attributes: { exclude: ["password_hash"] },
-                },
-            ],
-        }
-    );
-
-    // Notifier l'enseignant de la nouvelle affectation
-    if (affectation.id_user_enseignant) {
-        try {
-            await notifierNouvelleAffectation({
-                id_user_enseignant: affectation.id_user_enseignant,
-                affectation: affectationComplete,
-            });
-        } catch (error) {
-            console.error("Erreur lors de l'envoi de la notification:", error);
-            // Ne pas bloquer la réponse si la notification échoue
-        }
+    const affectationComplete = await Affectation.findByPk(resultat.affectation.id_affectation, { include: INCLUDES_AFFECTATION });
+    try {
+        await notifierNouvelleAffectation({ id_user_enseignant: affectationComplete.id_user_enseignant, affectation: affectationComplete });
+    } catch (error) {
+        console.error("Erreur lors de l'envoi de la notification:", error);
     }
 
     res.status(201).json({
-        message: "Affectation créée avec succès",
+        message: resultat.force ? "Affectation enregistrée malgré les règles (forçage)" : "Affectation créée avec succès",
         affectation: affectationComplete,
-        conflits_detectes: conflits.length,
-        conflits: conflits,
+        force: resultat.force,
+        violations: resultat.violations,
     });
 });
 
-// ✏️ Mettre à jour une affectation
+// ✏️ Mettre à jour une affectation (mêmes règles que la création)
 export const updateAffectation = asyncHandler(async (req, res) => {
-    const affectation = await Affectation.findOne({ where: { id_affectation: req.params.id } });
-
-    if (!affectation) {
-        return res.status(404).json({
-            message: "Affectation non trouvée",
-            error: `Aucune affectation trouvée avec l'ID ${req.params.id}`,
+    let resultat;
+    try {
+        resultat = await enregistrerSeance({
+            id: Number(req.params.id),
+            donnees: lireDonnees(req.body),
+            user: req.user,
+            forcer: req.body.forcer === true,
+            justification: req.body.justification,
         });
+    } catch (error) {
+        return repondreErreur(res, error);
     }
 
-    await affectation.update(pick(req.body, AFFECTATION_FIELDS));
-
-    // Re-vérifier les conflits après modification
-    const conflits = await verifierEtCreerConflits(affectation);
-
-    const affectationComplete = await Affectation.findByPk(
-        affectation.id_affectation,
-        {
-            include: [
-                { model: Cours, as: "cours" },
-                { model: Groupe, as: "groupe" },
-                {
-                    model: Users,
-                    as: "enseignant",
-                    attributes: { exclude: ["password_hash"] },
-                },
-                { model: Salle, as: "salle" },
-                { model: Creneau, as: "creneau" },
-                {
-                    model: Users,
-                    as: "admin_createur",
-                    attributes: { exclude: ["password_hash"] },
-                },
-            ],
-        }
-    );
+    const affectationComplete = await Affectation.findByPk(resultat.affectation.id_affectation, { include: INCLUDES_AFFECTATION });
+    if (resultat.changement) {
+        const annulee = affectationComplete.statut === "annule";
+        await notifierChangementSeance({
+            affectation: affectationComplete,
+            titre: annulee ? "Séance annulée" : "Séance modifiée",
+            message: annulee
+                ? `${affectationComplete.cours?.nom_cours ?? "Une séance"} du ${resultat.avant.date_seance} est annulée.`
+                : `${affectationComplete.cours?.nom_cours ?? "Une séance"} a changé : ${jourLisible(affectationComplete)}${affectationComplete.salle ? `, ${affectationComplete.salle.nom_salle}` : ""}.`,
+        });
+    }
 
     res.json({
-        message: "Affectation mise à jour avec succès",
+        message: resultat.force ? "Affectation enregistrée malgré les règles (forçage)" : "Affectation mise à jour avec succès",
         affectation: affectationComplete,
-        conflits_detectes: conflits.length,
-        conflits: conflits,
+        force: resultat.force,
+        violations: resultat.violations,
     });
 });
 
-// 🗑️ Supprimer une affectation
+// 🗑️ Supprimer une affectation (ses conflits sont résolus, les personnes concernées prévenues)
 export const deleteAffectation = asyncHandler(async (req, res) => {
-    const affectation = await Affectation.findOne({ where: { id_affectation: req.params.id } });
-
+    const affectation = await Affectation.findByPk(req.params.id, { include: [{ model: Cours, as: "cours" }] });
     if (!affectation) {
         return res.status(404).json({
             message: "Affectation non trouvée",
             error: `Aucune affectation trouvée avec l'ID ${req.params.id}`,
         });
     }
-
-    await affectation.destroy();
+    const etaitActive = STATUTS_ACTIFS.includes(affectation.statut);
+    await supprimerSeance(affectation.id_affectation);
+    if (etaitActive && affectation.date_seance >= aujourdhui()) {
+        await notifierChangementSeance({
+            affectation,
+            titre: "Séance supprimée",
+            message: `${affectation.cours?.nom_cours ?? "Une séance"} du ${affectation.date_seance} est retirée de l'emploi du temps.`,
+        });
+    }
 
     res.json({
         message: "Affectation supprimée avec succès",

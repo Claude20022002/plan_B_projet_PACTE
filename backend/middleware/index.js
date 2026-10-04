@@ -52,6 +52,7 @@ export {
     validateCreneauCreation,
     validateCreneauUpdate,
     validateAffectationCreation,
+    validateAffectationUpdate,
     validateDemandeReportCreation,
     validateConflitCreation,
     validateNotificationCreation,

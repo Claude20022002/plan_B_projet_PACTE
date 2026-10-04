@@ -5,6 +5,7 @@ import {
     createAffectation,
     updateAffectation,
     deleteAffectation,
+    verifierAffectation,
     confirmerAffectation,
     getAffectationsByEnseignant,
     getAffectationsByGroupe,
@@ -15,7 +16,7 @@ import {
     requireOwnResourceOrAdmin,
     asyncHandler,
     validateAffectationCreation,
-    handleValidationErrors,
+    validateAffectationUpdate,
 } from "../middleware/index.js";
 import { requireGroupAccess } from "../middleware/accessMiddleware.js";
 
@@ -36,6 +37,9 @@ router.get(
 // 🔍 Récupérer les affectations par groupe (personnel, ou étudiant membre du groupe)
 router.get("/groupe/:id_groupe", requireGroupAccess("id_groupe"), asyncHandler(getAffectationsByGroupe));
 
+// 🧪 Vérifier une séance sans l'enregistrer (Admin) : règles enfreintes, bloquantes ou non
+router.post("/verifier", requireAdmin, validateAffectationCreation, asyncHandler(verifierAffectation));
+
 // 🔍 Récupérer une affectation par ID (accès vérifié dans le contrôleur)
 router.get("/:id", asyncHandler(getAffectationById));
 
@@ -44,12 +48,11 @@ router.post(
     "/",
     requireAdmin,
     validateAffectationCreation,
-    handleValidationErrors,
     asyncHandler(createAffectation)
 );
 
 // ✏️ Mettre à jour une affectation (Admin seulement)
-router.put("/:id", requireAdmin, asyncHandler(updateAffectation));
+router.put("/:id", requireAdmin, validateAffectationUpdate, asyncHandler(updateAffectation));
 
 // 🗑️ Supprimer une affectation (Admin seulement)
 router.delete("/:id", requireAdmin, asyncHandler(deleteAffectation));

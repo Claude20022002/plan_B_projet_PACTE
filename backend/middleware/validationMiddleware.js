@@ -474,26 +474,33 @@ export const validateCreneauUpdate = [
 
 // ==================== VALIDATIONS AFFECTATION ====================
 
+// Champs communs à la création, la modification et la vérification d'une séance
+const champsSeance = (requis) => {
+    const champ = (nom) => (requis ? body(nom) : body(nom).optional());
+    return [
+        champ("date_seance").isISO8601({ strict: true }).withMessage("Format de date invalide (AAAA-MM-JJ)"),
+        body("statut").optional().isIn(["planifie", "confirme", "annule", "reporte"]).withMessage("Statut invalide"),
+        body("commentaire").optional({ nullable: true }).trim(),
+        champ("id_cours").isInt({ min: 1 }).withMessage("ID cours invalide"),
+        champ("id_groupe").isInt({ min: 1 }).withMessage("ID groupe invalide"),
+        champ("id_user_enseignant").isInt({ min: 1 }).withMessage("ID enseignant invalide"),
+        // Facultative : une séance en distanciel n'a pas de salle
+        body("id_salle").optional({ nullable: true, checkFalsy: true }).isInt({ min: 1 }).withMessage("ID salle invalide"),
+        champ("id_creneau").isInt({ min: 1 }).withMessage("ID créneau invalide"),
+        body("id_enseignement").optional({ nullable: true }).isInt({ min: 1 }).withMessage("ID enseignement invalide"),
+        // Forçage d'une séance qui enfreint des règles : réservé à l'admin, justification obligatoire
+        body("forcer").optional().isBoolean({ strict: true }).withMessage("forcer doit être un booléen"),
+        body("justification").optional({ nullable: true }).isString().trim().isLength({ max: 1000 }),
+    ];
+};
+
 export const validateAffectationCreation = [
-    body("date_seance")
-        .isISO8601()
-        .toDate()
-        .withMessage("Format de date invalide (ISO 8601)"),
-    body("statut")
-        .optional()
-        .isIn(["planifie", "confirme", "annule", "reporte"])
-        .withMessage("Statut invalide"),
-    body("commentaire").optional().trim(),
-    body("id_cours").isInt({ min: 1 }).withMessage("ID cours invalide"),
-    body("id_groupe").isInt({ min: 1 }).withMessage("ID groupe invalide"),
-    body("id_user_enseignant")
-        .isInt({ min: 1 })
-        .withMessage("ID enseignant invalide"),
-    body("id_salle").isInt({ min: 1 }).withMessage("ID salle invalide"),
-    body("id_creneau").isInt({ min: 1 }).withMessage("ID créneau invalide"),
+    ...champsSeance(true),
     // id_user_admin n'est plus attendu du client : il est pris dans la session
     handleValidationErrors,
 ];
+
+export const validateAffectationUpdate = [...champsSeance(false), handleValidationErrors];
 
 // ==================== VALIDATIONS DEMANDE REPORT ====================
 
@@ -507,12 +514,12 @@ export const validateDemandeReportCreation = [
         .optional()
         .isIn(["en_attente", "approuve", "refuse"])
         .withMessage("Statut de demande invalide"),
-    body("id_user_enseignant")
-        .isInt({ min: 1 })
-        .withMessage("ID enseignant invalide"),
+    // Ignoré : l'enseignant est celui de la séance (décidé par le serveur)
+    body("id_user_enseignant").optional().isInt({ min: 1 }).withMessage("ID enseignant invalide"),
     body("id_affectation")
         .isInt({ min: 1 })
         .withMessage("ID affectation invalide"),
+    body("id_creneau_nouveau").optional({ nullable: true }).isInt({ min: 1 }).withMessage("ID créneau invalide"),
     handleValidationErrors,
 ];
 

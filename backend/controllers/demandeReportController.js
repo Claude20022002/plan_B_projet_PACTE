@@ -1,7 +1,23 @@
-import { DemandeReport, Affectation, Users, Cours, Groupe, Salle, Creneau, Appartenir, Etudiant } from "../models/index.js";
+import { DemandeReport, Affectation, Users, Cours, Groupe, Salle, Creneau } from "../models/index.js";
 import { notifierAdministrateurs } from "../utils/notificationHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { pick } from "../utils/validationHelper.js";
+import { ViolationsBloquantes, enregistrerSeance, notifierChangementSeance } from "../services/planning/seances.js";
+import { jourDe } from "../services/planning/affectationRules.js";
+import { ErreurMetier } from "../services/planning/enseignements.js";
+
+/**
+ * Créneau d'arrivée d'un report : celui que la demande précise, sinon le créneau de même rang
+ * (même grille, même variante) le jour de la nouvelle date — les créneaux sont propres à un jour.
+ */
+const creneauDuReport = async (demande, creneauActuel) => {
+    if (demande.id_creneau_nouveau) return Creneau.findByPk(demande.id_creneau_nouveau);
+    const jour = jourDe(String(demande.nouvelle_date).slice(0, 10));
+    if (creneauActuel.jour_semaine === jour) return creneauActuel;
+    return Creneau.findOne({
+        where: { jour_semaine: jour, rang: creneauActuel.rang, regime: creneauActuel.regime, variante: creneauActuel.variante },
+    });
+};
 
 /**
  * Contrôleur pour les demandes de report
@@ -75,7 +91,7 @@ export const getDemandeReportById = asyncHandler(async (req, res) => {
     res.json(demande);
 });
 
-const EDITABLE_FIELDS = ["motif", "nouvelle_date"];
+const EDITABLE_FIELDS = ["motif", "nouvelle_date", "id_creneau_nouveau"];
 
 /**
  * Charge une demande modifiable par l'utilisateur courant :
@@ -287,136 +303,78 @@ export const traiterDemandeReport = asyncHandler(async (req, res) => {
     }
 
     const nouveauStatut = action === "approuver" ? "approuve" : "refuse";
-    await demande.update({ statut_demande: nouveauStatut });
 
-    // Si la demande est approuvée, mettre à jour l'affectation et notifier
+    // Approuver = déplacer la séance, sous les mêmes règles qu'une séance créée à la main :
+    // 409 si une règle bloque (la demande reste en attente), sauf forçage justifié.
     if (action === "approuver") {
-        const { notifierNouvelleAffectation, notifierEtudiantsGroupe } = await import("../utils/notificationHelper.js");
-        const { sendReportConfirmation, sendAnnulationSeance } = await import("../utils/sendEmail.js");
-        const { verifierEtCreerConflits } = await import("../utils/detectConflicts.js");
-
-        // Mettre à jour la date de l'affectation
-        const affectation = await Affectation.findByPk(demande.id_affectation, {
-            include: [
-                { model: Cours, as: "cours" },
-                { model: Groupe, as: "groupe" },
-                {
-                    model: Users,
-                    as: "enseignant",
-                    attributes: { exclude: ["password_hash"] },
-                },
-                { model: Salle, as: "salle" },
-                { model: Creneau, as: "creneau" },
-            ],
-        });
-
+        const affectation = await Affectation.findByPk(demande.id_affectation, { include: [{ model: Creneau, as: "creneau" }, { model: Cours, as: "cours" }] });
         if (!affectation) {
-            return res.status(404).json({
-                message: "Affectation non trouvée",
+            return res.status(404).json({ message: "Affectation non trouvée" });
+        }
+
+        const creneau = await creneauDuReport(demande, affectation.creneau);
+        if (!creneau) {
+            return res.status(409).json({
+                message: "Aucun créneau pour la nouvelle date",
+                error: `La grille n'a pas de créneau de même rang le ${jourDe(String(demande.nouvelle_date))} : précisez le créneau visé`,
+                violations: [{ code: "creneau_introuvable", bloquant: true, message: "Aucun créneau de même rang ce jour-là" }],
             });
         }
 
         const ancienneDate = affectation.date_seance;
-
-        // Mettre à jour l'affectation avec la nouvelle date et statut reporte
-        await affectation.update({
-            date_seance: demande.nouvelle_date,
-            statut: "reporte",
-        });
-
-        // Recharger l'affectation mise à jour
-        const affectationMiseAJour = await Affectation.findByPk(affectation.id_affectation, {
-            include: [
-                { model: Cours, as: "cours" },
-                { model: Groupe, as: "groupe" },
-                {
-                    model: Users,
-                    as: "enseignant",
-                    attributes: { exclude: ["password_hash"] },
+        try {
+            await enregistrerSeance({
+                id: affectation.id_affectation,
+                donnees: {
+                    date_seance: String(demande.nouvelle_date).slice(0, 10),
+                    id_creneau: creneau.id_creneau,
+                    statut: "reporte",
+                    // Première date et heure de la séance, gardées même après plusieurs reports
+                    date_seance_initiale: affectation.date_seance_initiale ?? affectation.date_seance,
+                    id_creneau_initial: affectation.id_creneau_initial ?? affectation.id_creneau,
                 },
-                { model: Salle, as: "salle" },
-                { model: Creneau, as: "creneau" },
-            ],
-        });
+                user: req.user,
+                forcer: req.body.forcer === true,
+                justification: req.body.justification,
+                action: "report",
+            });
+        } catch (error) {
+            if (error instanceof ViolationsBloquantes) {
+                return res.status(409).json({ message: error.message, error: error.violations.find((v) => v.bloquant)?.message, violations: error.violations });
+            }
+            if (error instanceof ErreurMetier) return res.status(error.status).json({ message: error.message, error: error.message });
+            throw error;
+        }
+        await demande.update({ statut_demande: nouveauStatut, id_creneau_nouveau: creneau.id_creneau });
 
-        // Vérifier les conflits avec la nouvelle date
-        const conflits = await verifierEtCreerConflits(affectationMiseAJour);
-
-        // Notifier l'enseignant (confirmation de la demande de report)
+        const heure = String(creneau.heure_debut).slice(0, 5);
+        const coursNom = affectation.cours?.nom_cours || "votre cours";
         try {
             const { creerNotification } = await import("../utils/notificationHelper.js");
-            const coursNom = affectationMiseAJour.cours?.nom_cours || "votre cours";
             await creerNotification({
                 id_user: affectation.id_user_enseignant,
                 titre: "Demande de report approuvée",
-                message: `Votre demande de report pour "${coursNom}" a été approuvée. Nouvelle date : ${demande.nouvelle_date}.`,
+                message: `Votre demande de report pour « ${coursNom} » a été approuvée : ${demande.nouvelle_date} à ${heure}.`,
                 type_notification: "success",
                 lien: "/demandes-report",
             });
-
-            // Envoyer un email de confirmation à l'enseignant
-            const enseignant = await Users.findByPk(affectation.id_user_enseignant, {
-                attributes: ["email"],
-            });
+            const { sendReportConfirmation } = await import("../utils/sendEmail.js");
+            const enseignant = await Users.findByPk(affectation.id_user_enseignant, { attributes: ["email"] });
             if (enseignant?.email) {
-                await sendReportConfirmation({
-                    to: enseignant.email,
-                    demande,
-                    affectation: affectationMiseAJour,
-                });
+                await sendReportConfirmation({ to: enseignant.email, demande, affectation: await Affectation.findByPk(affectation.id_affectation, { include: [{ model: Cours, as: "cours" }, { model: Salle, as: "salle" }, { model: Creneau, as: "creneau" }] }) });
             }
         } catch (error) {
             console.error("Erreur lors de la notification de l'enseignant:", error);
         }
-
-        // Notifier les étudiants du groupe (annulation de l'ancienne séance)
-        try {
-            await notifierEtudiantsGroupe({
-                id_groupe: affectation.id_groupe,
-                titre: "Séance reportée",
-                message: `La séance du ${ancienneDate} a été reportée au ${demande.nouvelle_date}. Veuillez consulter votre emploi du temps.`,
-                type_notification: "warning",
-                lien: "/emploi-du-temps/etudiant",
-            });
-
-            // Envoyer des emails aux étudiants
-            const appartenances = await Appartenir.findAll({
-                where: { id_groupe: affectation.id_groupe },
-                include: [
-                    {
-                        model: Etudiant,
-                        as: "etudiant",
-                        include: [
-                            {
-                                model: Users,
-                                as: "user",
-                                attributes: ["id_user", "email"],
-                            },
-                        ],
-                    },
-                ],
-            });
-
-            for (const app of appartenances) {
-                if (app.etudiant?.user?.email) {
-                    try {
-                        await sendAnnulationSeance({
-                            to: app.etudiant.user.email,
-                            affectation: {
-                                ...affectation.toJSON(),
-                                date_seance: ancienneDate,
-                            },
-                            nouvelle_date: demande.nouvelle_date,
-                        });
-                    } catch (emailError) {
-                        console.error(`Erreur lors de l'envoi de l'email à l'étudiant ${app.etudiant.user.id_user}:`, emailError);
-                    }
-                }
-            }
-        } catch (error) {
-            console.error("Erreur lors de la notification des étudiants:", error);
-        }
+        // Étudiants du groupe et de ses sous-groupes
+        await notifierChangementSeance({
+            affectation,
+            notifierEnseignant: false,
+            titre: "Séance reportée",
+            message: `« ${coursNom} » du ${ancienneDate} est reportée au ${demande.nouvelle_date} à ${heure}.`,
+        });
     } else {
+        await demande.update({ statut_demande: nouveauStatut });
         // Si refusé, notifier l'enseignant
         try {
             const { creerNotification } = await import("../utils/notificationHelper.js");
