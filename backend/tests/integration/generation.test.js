@@ -21,6 +21,7 @@ import {
 } from "../../models/index.js";
 import { construireProbleme } from "../../services/generation/timefold/probleme.js";
 import { attendreGeneration } from "../../services/generation/timefold/generation.js";
+import { retenirDansCache, validerAffectation } from "../../services/planning/affectationRules.js";
 
 /**
  * Phase E — génération par Timefold, côté Planner. Un faux solveur HTTP (glouton) remplace le
@@ -139,7 +140,7 @@ beforeAll(async () => {
     const autreCours = await Cours.create({ code_cours: "GEN-AUT", nom_cours: "Autre", niveau: "4ème année", volume_horaire: 10, type_cours: "CM", semestre: "S8", id_filiere: filiere.id_filiere });
     const manuelle = (date_seance, creneau) => ({ date_seance, statut: "planifie", id_cours: autreCours.id_cours, id_groupe: promo.id_groupe, id_user_enseignant: prof2.id_user, id_salle: null, id_creneau: creneau.id_creneau, id_user_admin: admin.id_user });
     await Affectation.bulkCreate([manuelle("2027-03-02", mar[0]), manuelle("2027-03-01", lun[2]), manuelle("2027-03-08", lun[2])]);
-    ref = { filiere, promo, td1, periode, ensCm, ensTp, ensSans, lun, mar };
+    ref = { filiere, promo, td1, periode, ensCm, ensTp, ensSans, lun, mar, cours };
 });
 afterAll(async () => {
     await new Promise((r) => solveur.close(r));
@@ -173,6 +174,25 @@ describe("Problème envoyé au solveur", () => {
         const epinglees = probleme.lecons.filter((l) => l.epinglee);
         expect(epinglees).toEqual([expect.objectContaining({ enseignants: [prof2.id_user], creneau: { id: ref.lun[2].id_creneau }, distanciel: true })]);
         expect(probleme.parametres).toMatchObject({ maxMinutesJourGroupe: 480, samediApresMidi: false });
+    });
+});
+
+describe("Validation en série avec cache (déploiement)", () => {
+    test("une séance retenue, pas encore écrite, bloque les validations suivantes de la passe", async () => {
+        const cache = new Map();
+        const salle = await Salle.findOne({ where: { nom_salle: "G-GEN1" } });
+        // Lundi 7 juin 2027 : hors des semaines déployées
+        const cm = { date_seance: "2027-06-07", id_creneau: ref.lun[0].id_creneau, id_salle: salle.id_salle, id_groupe: ref.promo.id_groupe, id_user_enseignant: prof.id_user, id_cours: ref.cours.id_cours, id_enseignement: ref.ensCm.id_enseignement };
+        expect((await validerAffectation(cm, { cache })).bloquant).toBe(false);
+        await retenirDansCache(cache, cm);
+
+        // Même créneau, un TD de la promotion, un autre enseignant, sans salle : conflit de groupe
+        const td = { ...cm, id_groupe: ref.td1.id_groupe, id_user_enseignant: prof2.id_user, id_enseignement: null, id_salle: null };
+        const { violations } = await validerAffectation(td, { cache });
+        expect(violations.map((v) => v.code)).toContain("conflit_groupe");
+        // La même salle, un autre groupe et un autre enseignant : conflit de salle
+        expect((await validerAffectation({ ...td, id_groupe: ref.promo.id_groupe, id_salle: salle.id_salle }, { cache })).violations.map((v) => v.code)).toContain("conflit_salle");
+        expect(await Affectation.count({ where: { date_seance: "2027-06-07" } })).toBe(0);
     });
 });
 

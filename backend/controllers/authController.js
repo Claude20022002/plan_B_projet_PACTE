@@ -1,7 +1,7 @@
-import jwt from "jsonwebtoken";
 import crypto from "crypto";
 import { Op } from "sequelize";
-import { AuthSession, Users, Enseignant, Etudiant, PasswordResetToken } from "../models/index.js";
+import { Appartenir, AuthSession, Users, Enseignant, Etudiant, Filiere, Groupe, PasswordResetToken } from "../models/index.js";
+import { signerJetonAcces } from "../utils/jetons.js";
 import { filieresDuResponsable } from "../services/planning/droits.js";
 import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
@@ -18,28 +18,51 @@ import {
 } from "../config/authCookies.js";
 
 /**
- * Génère un token JWT pour un utilisateur
+ * Identité transmise aux services de la plateforme (connexion unique, phase C) : StudyLib ouvre
+ * le compte à la première visite avec ces informations. Pour un étudiant : sa filière (code),
+ * son niveau et son groupe le plus fin.
  */
-const generateToken = (user, sessionId, familyId) => {
-    return jwt.sign(
-        {
-            sub: String(user.id_user),
-            userId: user.id_user,
-            id_user: user.id_user,
-            role: user.role,
-            sid: sessionId,
-            fid: familyId,
-            jti: crypto.randomUUID(),
-        },
-        process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "dev_secret_temporaire_non_securise",
-        {
-            expiresIn: ACCESS_TOKEN_TTL_SECONDS,
-            issuer: process.env.JWT_ISSUER || "hestim-planner-api",
-            audience: process.env.JWT_AUDIENCE || "hestim-planner-spa",
-            algorithm: "HS256",
-        }
-    );
+const identiteSso = async (user) => {
+    const identite = { role: user.role, email: user.email, nom: user.nom, prenom: user.prenom };
+    if (user.role !== "etudiant") return identite;
+    const [etudiant, appartenances] = await Promise.all([
+        Etudiant.findByPk(user.id_user, { attributes: ["niveau"] }),
+        Appartenir.findAll({
+            where: { id_user_etudiant: user.id_user },
+            include: [{ model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe", "annee", "id_groupe_parent"], include: [{ model: Filiere, as: "filiere", attributes: ["code_filiere"] }] }],
+        }),
+    ]);
+    // Le groupe le plus fin : celui qui n'est le parent d'aucun autre groupe de l'étudiant
+    const groupes = appartenances.map((a) => a.groupe).filter(Boolean);
+    const parents = new Set(groupes.map((g) => g.id_groupe_parent).filter(Boolean));
+    const groupe = groupes.find((g) => !parents.has(g.id_groupe)) ?? groupes[0];
+    return { ...identite, filiere: groupe?.filiere?.code_filiere ?? null, niveau: etudiant?.niveau ?? null, annee: groupe?.annee ?? null, groupe: groupe?.nom_groupe ?? null };
 };
+
+/** Jeton d'accès RS256 (utils/jetons.js), rattaché à la session serveur (sid) et à sa famille (fid). */
+const generateToken = async (user, sessionId, familyId) =>
+    signerJetonAcces({ sub: String(user.id_user), sid: sessionId, fid: familyId, ...(await identiteSso(user)) }, ACCESS_TOKEN_TTL_SECONDS);
+
+/**
+ * Client mobile (application Expo) : en-tête X-Client: mobile. Les jetons voyagent dans le corps
+ * (stockés par l'application dans le trousseau sécurisé), jamais en cookies. Un navigateur envoie
+ * toujours l'en-tête Origin sur un POST : il ne peut pas se faire passer pour l'application et
+ * obtenir un jeton de renouvellement lisible par du JavaScript.
+ */
+const modeMobile = (req) => req.get("X-Client") === "mobile";
+const refuserMobileDepuisNavigateur = (req, res) => {
+    if (modeMobile(req) && req.get("origin")) {
+        res.status(400).json({ message: "Client mobile invalide", code: "CLIENT_INVALIDE" });
+        return true;
+    }
+    return false;
+};
+const jetonsMobile = ({ accessToken, refreshToken }) => ({
+    access_token: accessToken,
+    refresh_token: refreshToken,
+    token_type: "Bearer",
+    expires_in: ACCESS_TOKEN_TTL_SECONDS,
+});
 
 // req.ip tient compte de "trust proxy" (app.js) ; X-Forwarded-For brut serait falsifiable par le client.
 const getClientIp = (req) => req.ip;
@@ -94,6 +117,7 @@ const getAdditionalInfo = async (user) => {
 const createAuthSession = async (req, res, user, familyId = crypto.randomUUID()) => {
     const sessionId = crypto.randomUUID();
     const refreshToken = randomToken();
+    const mobile = modeMobile(req);
 
     await AuthSession.create({
         id_user: user.id_user,
@@ -105,11 +129,13 @@ const createAuthSession = async (req, res, user, familyId = crypto.randomUUID())
         expires_at: makeRefreshExpiry(),
     });
 
-    const accessToken = generateToken(user, sessionId, familyId);
-    setAuthCookies(res, { accessToken, refreshToken });
-    setCsrfCookie(res, sessionId);
+    const accessToken = await generateToken(user, sessionId, familyId);
+    if (!mobile) {
+        setAuthCookies(res, { accessToken, refreshToken });
+        setCsrfCookie(res, sessionId);
+    }
 
-    return { sessionId, familyId };
+    return { sessionId, familyId, accessToken, refreshToken };
 };
 
 // Pas d'inscription publique : les comptes sont créés par l'administration (POST /api/users).
@@ -132,6 +158,7 @@ const INVALID_CREDENTIALS = {
  * Connexion d'un utilisateur
  */
 export const login = asyncHandler(async (req, res) => {
+    if (refuserMobileDepuisNavigateur(req, res)) return;
     const { email, password } = req.body;
 
     // Validation des champs (types stricts : un tableau deviendrait une clause IN)
@@ -160,11 +187,12 @@ export const login = asyncHandler(async (req, res) => {
 
     // Récupérer les informations complémentaires selon le rôle
     const additionalInfo = await getAdditionalInfo(user);
-    await createAuthSession(req, res, user);
+    const session = await createAuthSession(req, res, user);
 
     res.json({
         message: "Connexion réussie",
         user: sanitizeUser(user, additionalInfo),
+        ...(modeMobile(req) ? jetonsMobile(session) : {}),
     });
 });
 
@@ -228,7 +256,7 @@ export const getMe = asyncHandler(async (req, res) => {
  * Cette route peut être utilisée pour logger la déconnexion
  */
 export const logout = asyncHandler(async (req, res) => {
-    const refreshToken = req.cookies?.[REFRESH_COOKIE];
+    const refreshToken = modeMobile(req) && typeof req.body?.refresh_token === "string" ? req.body.refresh_token : req.cookies?.[REFRESH_COOKIE];
     const where = {};
 
     if (refreshToken) {
@@ -263,7 +291,10 @@ export const logout = asyncHandler(async (req, res) => {
  * Rafraîchir le token (optionnel)
  */
 export const refreshToken = asyncHandler(async (req, res) => {
-    const oldRefreshToken = req.cookies?.[REFRESH_COOKIE];
+    if (refuserMobileDepuisNavigateur(req, res)) return;
+    const mobile = modeMobile(req);
+    // Mobile : le jeton de renouvellement arrive dans le corps ; navigateur : dans son cookie
+    const oldRefreshToken = mobile ? (typeof req.body?.refresh_token === "string" ? req.body.refresh_token : null) : req.cookies?.[REFRESH_COOKIE];
     if (!oldRefreshToken) {
         clearAuthCookies(res);
         return res.status(401).json({
@@ -354,7 +385,10 @@ export const refreshToken = asyncHandler(async (req, res) => {
         replaced_by_token_id: newRecord.id_auth_session,
     });
 
-    const accessToken = generateToken(user, newSessionId, tokenRecord.family_id);
+    const accessToken = await generateToken(user, newSessionId, tokenRecord.family_id);
+    if (mobile) {
+        return res.json({ message: "Token rafraîchi", ...jetonsMobile({ accessToken, refreshToken: newRefreshToken }) });
+    }
     setAuthCookies(res, { accessToken, refreshToken: newRefreshToken });
     setCsrfCookie(res, newSessionId);
 

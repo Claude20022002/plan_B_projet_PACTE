@@ -1,4 +1,4 @@
-import { CSRF_COOKIE, setCsrfCookie, verifyCsrfToken } from "../config/authCookies.js";
+import { ACCESS_COOKIE, CSRF_COOKIE, REFRESH_COOKIE, setCsrfCookie, verifyCsrfToken } from "../config/authCookies.js";
 
 const unsafeMethods = new Set(["POST", "PUT", "PATCH", "DELETE"]);
 
@@ -29,6 +29,15 @@ export const issueCsrfToken = (req, res) => {
 export const csrfProtection = (req, res, next) => {
     const path = req.originalUrl.split("?")[0];
     if (!unsafeMethods.has(req.method) || csrfExemptPaths.has(path)) {
+        return next();
+    }
+
+    // Client authentifié par l'en-tête Authorization (application mobile) et sans cookie
+    // d'authentification : un site tiers ne peut ni poser cet en-tête (CORS) ni s'appuyer sur un
+    // cookie envoyé d'office, le CSRF ne le concerne pas. Dès qu'un cookie d'auth est présent,
+    // la protection s'applique normalement.
+    const bearer = req.get("authorization")?.startsWith("Bearer ");
+    if (bearer && !req.cookies?.[ACCESS_COOKIE] && !req.cookies?.[REFRESH_COOKIE]) {
         return next();
     }
 

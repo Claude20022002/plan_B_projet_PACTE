@@ -38,6 +38,7 @@ import examenRoutes from "./routes/examenRoutes.js";
 import imprevuRoutes from "./routes/imprevuRoutes.js";
 import suiviRoutes from "./routes/suiviRoutes.js";
 import preparationRoutes from "./routes/preparationRoutes.js";
+import integrationRoutes from "./routes/integrationRoutes.js";
 
 // Import des middlewares
 import {
@@ -108,6 +109,8 @@ app.use(csrfProtection);
 app.use(exigerChangementMotDePasse);
 
 app.use("/api/auth", authRoutes);
+// JWKS (public) et référentiel pour StudyLib (jeton de service) : connexion unique, phase C
+app.use("/api", integrationRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/enseignants", enseignantRoutes);
 app.use("/api/etudiants", etudiantRoutes);

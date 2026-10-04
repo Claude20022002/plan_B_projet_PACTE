@@ -1,21 +1,17 @@
-import jwt from "jsonwebtoken";
 import { AuthSession, Users } from "../models/index.js";
 import { ACCESS_COOKIE } from "../config/authCookies.js";
+import { verifierJetonAcces } from "../utils/jetons.js";
 
-// Validation critique au démarrage : JWT_SECRET doit être défini explicitement.
-// Un secret par défaut ("secret_key_default") serait devinable et compromettrait tous les tokens.
-if (!process.env.JWT_SECRET) {
+// Les jetons d'accès sont signés en RS256 (utils/jetons.js) ; le seul secret partagé restant
+// signe les jetons CSRF. Sans lui, en production, un défaut devinable serait utilisé : arrêt.
+if (!process.env.CSRF_SECRET && !process.env.JWT_SECRET) {
     if (process.env.NODE_ENV === "production") {
-        console.error("ERREUR CRITIQUE: JWT_SECRET n'est pas défini. Arrêt du serveur.");
+        console.error("ERREUR CRITIQUE: CSRF_SECRET n'est pas défini. Arrêt du serveur.");
         process.exit(1);
     } else {
-        console.warn("AVERTISSEMENT: JWT_SECRET non défini. Utilisation d'un secret temporaire (dev uniquement).");
+        console.warn("AVERTISSEMENT: CSRF_SECRET non défini. Utilisation d'un secret temporaire (dev uniquement).");
     }
 }
-
-const JWT_SECRET = process.env.JWT_ACCESS_SECRET || process.env.JWT_SECRET || "dev_secret_temporaire_non_securise";
-const JWT_ISSUER = process.env.JWT_ISSUER || "hestim-planner-api";
-const JWT_AUDIENCE = process.env.JWT_AUDIENCE || "hestim-planner-spa";
 
 const extractToken = (req) => {
     if (req.cookies?.[ACCESS_COOKIE]) {
@@ -26,12 +22,7 @@ const extractToken = (req) => {
     return authHeader?.startsWith("Bearer ") ? authHeader.split(" ")[1] : null;
 };
 
-const verifyAccessToken = (token) =>
-    jwt.verify(token, JWT_SECRET, {
-        issuer: JWT_ISSUER,
-        audience: JWT_AUDIENCE,
-        algorithms: ["HS256"],
-    });
+const verifyAccessToken = (token) => verifierJetonAcces(token);
 
 const attachUserFromToken = async (req, decoded) => {
     const userId = decoded.sub || decoded.userId || decoded.id_user;
