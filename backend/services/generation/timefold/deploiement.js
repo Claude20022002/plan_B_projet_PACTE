@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 import sequelize from "../../../config/db.js";
-import { Affectation, Creneau, PlanningSnapshot } from "../../../models/index.js";
-import { STATUTS_ACTIFS, apresCreation, minutes, validerAffectation } from "../../planning/affectationRules.js";
+import { Affectation, Creneau, Groupe, PlanningSnapshot, Salle, Users } from "../../../models/index.js";
+import { STATUTS_ACTIFS, minutes, retenirDansCache, validerAffectation } from "../../planning/affectationRules.js";
 
 /**
  * Déploiement de la semaine type sur le semestre (phase E) : chaque leçon placée par le solveur
@@ -39,6 +39,16 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
     return sequelize.transaction(async (transaction) => {
         const idsEnseignements = [...new Set(Object.values(index).map((i) => i.id_enseignement))];
 
+        // Les séances sont écrites en lot à la fin : on verrouille d'abord les ressources concernées,
+        // dans l'ordre du validateur (salles, enseignants, groupes). Une saisie manuelle sur l'une
+        // d'elles attend la fin du déploiement, puis se valide en voyant les séances déployées.
+        const lock = transaction.LOCK.UPDATE;
+        const infos = Object.values(index);
+        const idsSalles = [...new Set(placements.map((p) => p.salleId).filter(Boolean))];
+        if (idsSalles.length) await Salle.findAll({ where: { id_salle: idsSalles }, attributes: ["id_salle"], transaction, lock });
+        await Users.findAll({ where: { id_user: [...new Set(infos.map((i) => i.id_user_enseignant))] }, attributes: ["id_user"], transaction, lock });
+        await Groupe.findAll({ where: { id_groupe: [...new Set(infos.map((i) => i.id_groupe))] }, attributes: ["id_groupe"], transaction, lock });
+
         // Les séances générées précédemment pour ces enseignements (à venir) sont annulées
         await Affectation.update(
             { statut: "annule" },
@@ -62,6 +72,7 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
         let creees = 0;
         // Lectures stables mises en cache pour toute la passe (voir validerAffectation)
         const cache = new Map();
+        const aEcrire = [];
 
         // Leçons d'un même enseignement : déployées ensemble (séances par semaine). Une leçon que le
         // calcul n'a pas pu placer (sans créneau, ou sans salle en présentiel) n'est pas déployée :
@@ -117,16 +128,11 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
                         ligne.sautees.push({ date, raisons: [...new Set(refus.map((v) => v.code))], message: refus[0].message });
                         continue;
                     }
-                    const ids = [];
                     for (const s of seances) {
-                        const creee = await Affectation.create(
-                            { ...s, statut: "planifie", id_user_admin: user.id_user, id_snapshot: snapshot.id_snapshot, id_generation_session: session?.id_generation_session ?? null, is_generated: true },
-                            { transaction }
-                        );
-                        ids.push(creee.id_affectation);
+                        await retenirDansCache(cache, s);
+                        aEcrire.push({ ...s, statut: "planifie", id_user_admin: user.id_user, id_snapshot: snapshot.id_snapshot, id_generation_session: session?.id_generation_session ?? null, is_generated: true });
                     }
                     creees += seances.length;
-                    await apresCreation(cache, { date_seance: date, ids, enseignants: [info.id_user_enseignant] }, transaction);
                     const dureeHeures = aPlacer.reduce((t, c) => t + (minutes(c.heure_fin) - minutes(c.heure_debut)), 0) / 60;
                     heures += dureeHeures;
                     ligne.seances += 1;
@@ -143,6 +149,9 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
             rapportParEnseignement.set(idEnseignement, { id_enseignement: idEnseignement, module: info.module, type: info.type, heures_prevues: info.heures_prevues, heures_planifiees: 0, seances: 0, sautees: [], lecons_non_placees: nombre, complet: false });
         }
 
+        for (let i = 0; i < aEcrire.length; i += 500) {
+            await Affectation.bulkCreate(aEcrire.slice(i, i + 500), { transaction });
+        }
         await snapshot.update({ nb_affectations: creees, nb_conflits: 0 }, { transaction });
         return { creees, snapshot, enseignements: [...rapportParEnseignement.values()] };
     });

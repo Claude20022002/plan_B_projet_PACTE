@@ -28,9 +28,12 @@ const variantesEntre = async (debut, fin, transaction) => {
  * Créneau effectif d'une séance à une date : le créneau lui-même, ou une copie portant les
  * horaires ramadan (même identifiant : disponibilités et vœux restent ceux du créneau normal).
  */
-export const creneauEffectif = async (creneau, date, { transaction } = {}) => {
+export const creneauEffectif = async (creneau, date, { transaction, cache = null } = {}) => {
     if (!creneau || creneau.variante === "ramadan") return creneau;
-    const variantes = await variantesEntre(date, date, transaction);
+    // Avec un cache : une seule lecture du calendrier par date
+    const variantes = cache
+        ? await (cache.get(`ramadan|${date}`) ?? cache.set(`ramadan|${date}`, variantesEntre(date, date, transaction)).get(`ramadan|${date}`))
+        : await variantesEntre(date, date, transaction);
     const ramadan = variantes?.estRamadan(date) ? variantes.variante(creneau) : null;
     if (!ramadan) return creneau;
     const base = typeof creneau.get === "function" ? creneau.get({ plain: true }) : creneau;

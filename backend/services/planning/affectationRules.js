@@ -111,20 +111,31 @@ const chargerSeances = async (where, transaction) => {
     return liste;
 };
 
+/** Séances retenues pendant la passe mais pas encore écrites (voir `retenirDansCache`). */
+const enAttente = (cache) => cache?.get("enAttente") ?? [];
+
 /**
- * À appeler après avoir créé des séances validées avec `cache` : elles rejoignent la liste du
- * jour déjà en cache (sans relire toute la journée), et la charge de la semaine des enseignants
- * concernés sera relue.
+ * Retient une séance que l'on vient de valider avec `cache` et que l'on écrira plus tard (en lot) :
+ * les validations suivantes de la passe la voient comme déjà posée. Elle est reconstruite à partir
+ * de ce que sa validation a mis en cache (créneau effectif, salle, module, enseignement).
  */
-export const apresCreation = async (cache, { date_seance, ids, enseignants = [] }, transaction) => {
-    if (!cache) return;
-    const cle = `duJour|${date_seance}`;
-    if (cache.has(cle)) {
-        const liste = await cache.get(cle);
-        liste.push(...(await chargerSeances({ id_affectation: ids }, transaction)));
-    }
-    const [lundi] = semaineDe(date_seance);
-    for (const idUser of enseignants) cache.delete(`semaine|${idUser}|${lundi}`);
+export const retenirDansCache = async (cache, seance) => {
+    const date = seance.date_seance;
+    const entree = {
+        ...seance,
+        id_affectation: null,
+        statut: "planifie",
+        creneau: await cache.get(`effectif|${seance.id_creneau}|${date}`),
+        salle: seance.id_salle ? await cache.get(`salle|${seance.id_salle}`) : null,
+        cours: await cache.get(`cours|${seance.id_cours}`),
+        enseignement: seance.id_enseignement ? await cache.get(`enseignement|${seance.id_enseignement}`) : null,
+    };
+    if (!entree.creneau || !entree.cours) throw new Error("retenirDansCache : la séance doit d'abord être validée avec ce cache");
+    if (!cache.has("enAttente")) cache.set("enAttente", []);
+    cache.get("enAttente").push(entree);
+    if (cache.has(`duJour|${date}`)) (await cache.get(`duJour|${date}`)).push(entree);
+    const [lundi] = semaineDe(date);
+    if (cache.has(`semaine|${seance.id_user_enseignant}|${lundi}`)) (await cache.get(`semaine|${seance.id_user_enseignant}|${lundi}`)).push(entree);
 };
 
 /** Un événement bloquant concerne-t-il cette séance ? */
@@ -188,7 +199,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     if (seance.id_enseignement && !enseignement) signaler("introuvable", "Enseignement introuvable");
     if (violations.length) return { violations, bloquant: true };
     // Pendant le Ramadan, même rang mais horaires réduits (variante de la grille)
-    const creneau = await lu(`effectif|${creneauNormal.id_creneau}|${seance.date_seance}`, () => creneauEffectif(creneauNormal, seance.date_seance, { transaction }));
+    const creneau = await lu(`effectif|${creneauNormal.id_creneau}|${seance.date_seance}`, () => creneauEffectif(creneauNormal, seance.date_seance, { transaction, cache }));
 
     const idsEnseignants = enseignantsDe(seance, enseignement);
     const idsGroupes = groupesDe(seance, enseignement);
@@ -252,7 +263,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
 
     // ── Séances du même jour ──────────────────────────────────────────────
     // Séances du jour (la séance validée exclue) ; en cache, la liste du jour est relue après chaque écriture
-    const duJour = (await lu(`duJour|${date}`, () => chargerSeances({ date_seance: date }, transaction))).filter((a) => !seance.id_affectation || a.id_affectation !== Number(seance.id_affectation));
+    const duJour = (await lu(`duJour|${date}`, async () => [...(await chargerSeances({ date_seance: date }, transaction)), ...enAttente(cache).filter((a) => a.date_seance === date)])).filter((a) => !seance.id_affectation || a.id_affectation !== Number(seance.id_affectation));
     const autres = duJour.map((a) => ({
         seance: a,
         enseignants: enseignantsDe(a, a.enseignement),
@@ -350,7 +361,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     const [lundi, dimanche] = semaineDe(date);
     for (const idUser of idsEnseignants) {
         const nom = nomComplet(parIdEnseignant.get(idUser));
-        const dispo = await lu(`dispo|${idUser}|${date}|${creneau.id_creneau}`, () => disponibiliteEnseignant({ idUser, date, idCreneau: creneau.id_creneau }));
+        const dispo = await disponibiliteEnseignant({ idUser, date, idCreneau: creneau.id_creneau }, { cache });
         if (!dispo.disponible) signaler("enseignant_indisponible", `${nom} : ${dispo.raison}`, { id_user: idUser });
         else if (dispo.preference === "eviter") signaler("voeu_eviter", `${nom} préfère éviter ce créneau`, { id_user: idUser }, false);
 
@@ -363,7 +374,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
                     transaction,
                 });
                 await appliquerRamadan(liste, { transaction });
-                return liste;
+                return [...liste, ...enAttente(cache).filter((a) => a.id_user_enseignant === idUser && a.date_seance >= lundi && a.date_seance <= dimanche)];
             };
             const semaine = (await lu(`semaine|${idUser}|${lundi}`, chargerSemaine)).filter((a) => !seance.id_affectation || a.id_affectation !== Number(seance.id_affectation));
             const total = semaine.reduce((t, a) => t + duree(a.creneau), 0) + dureeSeance;

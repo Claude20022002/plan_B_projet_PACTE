@@ -15,18 +15,26 @@ import {
  * - un VACATAIRE n'est disponible que là où il a déclaré une disponibilité.
  * Les vœux (préféré / à éviter) ne bloquent jamais : ils servent à la génération.
  */
-export const disponibiliteEnseignant = async ({ idUser, date, idCreneau }) => {
-    const enseignant = await Enseignant.findByPk(idUser);
+export const disponibiliteEnseignant = async ({ idUser, date, idCreneau }, { cache = null } = {}) => {
+    // Avec un cache (passe de validation en série) : fiche et déclarations lues une fois par enseignant
+    const enseignant = cache
+        ? await (cache.get(`fiche|${idUser}`) ?? cache.set(`fiche|${idUser}`, Enseignant.findByPk(idUser)).get(`fiche|${idUser}`))
+        : await Enseignant.findByPk(idUser);
     if (!enseignant) return { disponible: false, raison: "Enseignant introuvable" };
 
-    const declarations = await Disponibilite.findAll({
-        where: {
-            id_user_enseignant: idUser,
-            id_creneau: idCreneau,
-            date_debut: { [Op.lte]: date },
-            date_fin: { [Op.gte]: date },
-        },
-    });
+    const declarations = cache
+        ? (
+              await (cache.get(`declarations|${idUser}`) ??
+                  cache.set(`declarations|${idUser}`, Disponibilite.findAll({ where: { id_user_enseignant: idUser } })).get(`declarations|${idUser}`))
+          ).filter((d) => d.id_creneau === idCreneau && d.date_debut <= date && d.date_fin >= date)
+        : await Disponibilite.findAll({
+              where: {
+                  id_user_enseignant: idUser,
+                  id_creneau: idCreneau,
+                  date_debut: { [Op.lte]: date },
+                  date_fin: { [Op.gte]: date },
+              },
+          });
     const indisponibilite = declarations.find((d) => d.disponible === false);
     const preference = declarations.find((d) => d.preference !== "neutre")?.preference || "neutre";
 
