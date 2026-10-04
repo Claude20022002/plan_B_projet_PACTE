@@ -5,6 +5,7 @@
 #    mysql    — Base de données MySQL 8
 #    backend  — API Express/Sequelize (port 5000)
 #    frontend — React/Vite servi par Nginx (port 80)
+#    solver   — Génération de la semaine type (Timefold, Java 21), interne
 #
 #  Lancement :
 #    docker compose up -d --build
@@ -59,17 +60,31 @@ services:
       DB_USER:    ${DB_USER:-hestim}
       DB_PASSWORD: ${DB_PASSWORD:-hestim_pass_2026}
       PORT:       5000
+      SOLVER_URL: http://solver:8080
     ports:
       - "${BACKEND_PORT:-5000}:5000"
     depends_on:
       mysql:
         condition: service_healthy
+      solver:
+        condition: service_started
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:5000/health"]
       interval: 15s
       timeout: 10s
       retries: 8
       start_period: 60s
+    networks:
+      - hestim_net
+
+  # ── Solveur (Timefold) ───────────────────────────────────────────────────
+  # Jamais exposé : seul le backend l'appelle sur le réseau interne
+  solver:
+    build:
+      context: ./solver
+      dockerfile: Dockerfile
+    container_name: hestim_solver
+    restart: unless-stopped
     networks:
       - hestim_net
 
