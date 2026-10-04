@@ -10,6 +10,7 @@ import {
 import { authenticateToken, requireAdmin, requireOwnResourceOrAdmin } from "../middleware/index.js";
 import { requireGroupAccess, requireSelfOrStaff } from "../middleware/accessMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { getEdtMensuel } from "../controllers/preparationController.js";
 
 const router = express.Router();
 
@@ -28,6 +29,9 @@ router.get(
     requireGroupAccess("id"),
     asyncHandler(getEmploiDuTempsGroupe)
 );
+
+// 🗓️ GET /api/emplois-du-temps/groupe/:id/mensuel?mois=AAAA-MM - EDT du mois au format HESTIM (impression, PDF)
+router.get("/groupe/:id/mensuel", authenticateToken, requireGroupAccess("id"), getEdtMensuel);
 
 // 📅 GET /api/emplois-du-temps/etudiant/:id - Emploi du temps d'un étudiant (lui-même ou personnel)
 router.get(
