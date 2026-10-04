@@ -452,7 +452,8 @@ export const demandeReportAPI = {
     create: (data) => request('/demandes-report', { method: 'POST', body: data }),
     update: (id, data) => request(`/demandes-report/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/demandes-report/${id}`, { method: 'DELETE' }),
-    traiter: (id, action) => request(`/demandes-report/${id}/traiter`, { method: 'PATCH', body: { action } }),
+    // extra : { forcer, justification } pour approuver un report malgré les règles (admin)
+    traiter: (id, action, extra = {}) => request(`/demandes-report/${id}/traiter`, { method: 'PATCH', body: { action, ...extra } }),
 };
 
 // ==================== DISPONIBILITÉS ====================
