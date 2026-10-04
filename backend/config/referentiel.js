@@ -110,3 +110,8 @@ export const STATUTS_SERVICE = ["propose", "accepte", "refuse"];
 
 // Vœu sur un créneau : simple préférence, jamais bloquante
 export const PREFERENCES_CRENEAU = ["neutre", "prefere", "eviter"];
+
+// Réservations de salles hors cours (phase P5)
+export const TYPES_RESERVATION = ["rattrapage", "reunion", "soutenance", "examen", "evenement", "club"];
+export const STATUTS_RESERVATION = ["demandee", "validee", "refusee", "annulee"];
+export const ROLES_PARTICIPANT = ["participant", "jury", "president", "etudiant", "intervenant"];

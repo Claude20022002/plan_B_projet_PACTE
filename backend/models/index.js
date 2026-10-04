@@ -16,6 +16,12 @@ import ConflitAffectation from "./ConflitAffectation.js";
 import Appartenir from "./Appartenir.js";
 import PasswordResetToken from "./PasswordResetToken.js";
 import Evenement from "./Evenement.js";
+import Reservation from "./Reservation.js";
+import ReservationParticipant from "./ReservationParticipant.js";
+import SessionExamen from "./SessionExamen.js";
+import SessionExamenGroupe from "./SessionExamenGroupe.js";
+import SessionExamenSalle from "./SessionExamenSalle.js";
+import Surveillance from "./Surveillance.js";
 import AuthSession from "./AuthSession.js";
 import GenerationSession from "./GenerationSession.js";
 import PlanningSnapshot from "./PlanningSnapshot.js";
@@ -450,6 +456,28 @@ ConflitAffectation.belongsTo(Affectation, {
     as: "affectation",
 });
 
+// ==================== RÉSERVATIONS ET EXAMENS (phase P5) ====================
+Reservation.belongsTo(Salle, { foreignKey: "id_salle", as: "salle" });
+Reservation.belongsTo(Users, { foreignKey: "id_demandeur", as: "demandeur", targetKey: "id_user" });
+Reservation.belongsTo(Users, { foreignKey: "id_valideur", as: "valideur", targetKey: "id_user" });
+Reservation.belongsTo(Affectation, { foreignKey: "id_affectation_origine", as: "seance_origine" });
+Reservation.belongsTo(Affectation, { foreignKey: "id_affectation_creee", as: "seance_creee" });
+Reservation.hasMany(ReservationParticipant, { foreignKey: "id_reservation", as: "participants", onDelete: "CASCADE" });
+ReservationParticipant.belongsTo(Reservation, { foreignKey: "id_reservation", as: "reservation" });
+ReservationParticipant.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
+ReservationParticipant.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
+
+SessionExamen.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
+SessionExamen.belongsTo(Periode, { foreignKey: "id_periode", as: "periode" });
+SessionExamen.belongsTo(Users, { foreignKey: "id_createur", as: "createur", targetKey: "id_user" });
+SessionExamen.belongsToMany(Groupe, { through: SessionExamenGroupe, foreignKey: "id_session", otherKey: "id_groupe", as: "groupes" });
+SessionExamen.hasMany(SessionExamenSalle, { foreignKey: "id_session", as: "salles", onDelete: "CASCADE" });
+SessionExamenSalle.belongsTo(Salle, { foreignKey: "id_salle", as: "salle" });
+SessionExamen.hasMany(Surveillance, { foreignKey: "id_session", as: "surveillances", onDelete: "CASCADE" });
+Surveillance.belongsTo(Users, { foreignKey: "id_user", as: "surveillant", targetKey: "id_user" });
+Surveillance.belongsTo(Salle, { foreignKey: "id_salle", as: "salle" });
+Surveillance.belongsTo(SessionExamen, { foreignKey: "id_session", as: "session" });
+
 // Export de tous les modèles
 export {
     Users,
@@ -485,4 +513,10 @@ export {
     CompetenceEnseignant,
     EnseignementEnseignant,
     ResponsableFiliere,
+    Reservation,
+    ReservationParticipant,
+    SessionExamen,
+    SessionExamenGroupe,
+    SessionExamenSalle,
+    Surveillance,
 };
