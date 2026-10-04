@@ -24,6 +24,9 @@ import SessionExamenSalle from "./SessionExamenSalle.js";
 import Surveillance from "./Surveillance.js";
 import RetourSeance from "./RetourSeance.js";
 import RetourSeanceParticipation from "./RetourSeanceParticipation.js";
+import PushToken from "./PushToken.js";
+// Cycle volontaire : services/push.js n'utilise les modèles qu'à l'appel, jamais au chargement
+import { planifierPush } from "../services/push.js";
 import AuthSession from "./AuthSession.js";
 import GenerationSession from "./GenerationSession.js";
 import PlanningSnapshot from "./PlanningSnapshot.js";
@@ -484,6 +487,18 @@ Surveillance.belongsTo(SessionExamen, { foreignKey: "id_session", as: "session" 
 Affectation.hasMany(RetourSeance, { foreignKey: "id_affectation", as: "retours", onDelete: "CASCADE" });
 RetourSeance.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
 
+// Appareils de l'application mobile (D3)
+Users.hasMany(PushToken, { foreignKey: "id_user", as: "pushTokens", onDelete: "CASCADE" });
+PushToken.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
+
+// Push (D3) : chaque notification part aussi vers les appareils du destinataire, une fois validée
+// la transaction qui l'a créée (jamais pour un changement finalement annulé).
+Notification.afterCreate((notification, options) => {
+    const planifier = () => planifierPush(notification.id_user, { titre: notification.titre, message: notification.message, lien: notification.lien });
+    if (options.transaction) options.transaction.afterCommit(planifier);
+    else planifier();
+});
+
 // Export de tous les modèles
 export {
     Users,
@@ -527,4 +542,5 @@ export {
     Surveillance,
     RetourSeance,
     RetourSeanceParticipation,
+    PushToken,
 };

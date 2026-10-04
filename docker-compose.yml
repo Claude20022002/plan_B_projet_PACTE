@@ -122,6 +122,9 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      # Logique et jetons communs avec l'application mobile (frontend/Dockerfile : COPY --from=shared)
+      additional_contexts:
+        shared: ./shared
       args:
         # En production avec proxy Nginx, /api suffit.
         # Pour un domaine séparé : VITE_API_URL=https://api.mondomaine.com/api

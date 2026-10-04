@@ -39,6 +39,7 @@ import imprevuRoutes from "./routes/imprevuRoutes.js";
 import suiviRoutes from "./routes/suiviRoutes.js";
 import preparationRoutes from "./routes/preparationRoutes.js";
 import integrationRoutes from "./routes/integrationRoutes.js";
+import pushTokenRoutes from "./routes/pushTokenRoutes.js";
 
 // Import des middlewares
 import {
@@ -141,6 +142,7 @@ app.use("/api/examens", examenRoutes);
 app.use("/api/imprevus", imprevuRoutes);
 app.use("/api/suivi", suiviRoutes);
 app.use("/api/preparation", preparationRoutes);
+app.use("/api/push-tokens", pushTokenRoutes);
 
 app.get("/", (req, res) => {
     res.json({

@@ -11,6 +11,8 @@ COPY package*.json ./
 RUN npm ci
 
 COPY . .
+# Logique et jetons partagés avec le mobile (contexte « shared » de docker-compose) : /app/../shared
+COPY --from=shared . /shared
 
 # L'URL de l'API en prod : Nginx proxifie /api → backend:5000
 # Pour un domaine séparé : --build-arg VITE_API_URL=https://api.mondomaine.com/api

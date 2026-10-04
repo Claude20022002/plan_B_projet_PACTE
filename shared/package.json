@@ -1,0 +1,6 @@
+{
+  "name": "@hestim/shared",
+  "private": true,
+  "type": "module",
+  "description": "Logique des séances, jetons de design et traductions communs au web et à l application mobile"
+}

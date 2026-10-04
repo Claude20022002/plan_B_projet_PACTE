@@ -1,0 +1,72 @@
+{
+  "$description": "Jetons partagés par le web (frontend) et l'application mobile : marque, panneau, statuts, lignes. Une seule source de vérité.",
+  "brand": {
+    "navy": "#001861",
+    "navyDeep": "#000E3D",
+    "navySoft": "#E8ECF7",
+    "red": "#DB1F26",
+    "orange": "#F26322",
+    "green": "#137D3F"
+  },
+  "board": {
+    "ground": "#0B0B0D",
+    "frame": "#001861",
+    "cell": "#212124",
+    "cellHinge": "#000000",
+    "seam": "#2C2C30",
+    "letter": "#F2F1EC",
+    "letterDim": "#A6A6AC",
+    "onTime": "#F2F1EC",
+    "live": "#3FCB74",
+    "delayed": "#F26322",
+    "cancelled": "#FF5A5F"
+  },
+  "status": {
+    "planifie": {
+      "key": "planifie",
+      "board": "#F2F1EC",
+      "bureau": "#3F4759",
+      "bureauBg": "#EEF0F5"
+    },
+    "confirme": {
+      "key": "confirme",
+      "board": "#3FCB74",
+      "bureau": "#137D3F",
+      "bureauBg": "#E7F4EC"
+    },
+    "reporte": {
+      "key": "reporte",
+      "board": "#F26322",
+      "bureau": "#B4410C",
+      "bureauBg": "#FDEFE7"
+    },
+    "annule": {
+      "key": "annule",
+      "board": "#FF5A5F",
+      "bureau": "#B5161C",
+      "bureauBg": "#FCE8E9"
+    },
+    "realise": {
+      "key": "realise",
+      "board": "#A6A6AC",
+      "bureau": "#5B6272",
+      "bureauBg": "#F1F2F5"
+    }
+  },
+  "lines": [
+    "#3B63E0",
+    "#1592C9",
+    "#0F8A7E",
+    "#7048C9",
+    "#B03A8C",
+    "#46508F"
+  ],
+  "lineUnknown": "#6B6B72",
+  "radius": {
+    "xs": 2,
+    "sm": 3,
+    "md": 4,
+    "lg": 6
+  },
+  "flapStepMs": 28
+}

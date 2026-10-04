@@ -7,15 +7,10 @@
  * Les couleurs de marque sont relevées sur le logo officiel (public/HESTIM.png).
  */
 
-// Couleurs exactes du logo HESTIM
-const brand = {
-  navy: '#001861',
-  navyDeep: '#000E3D',
-  navySoft: '#E8ECF7',
-  red: '#DB1F26',
-  orange: '#F26322',
-  green: '#137D3F',
-};
+import { tokens as partages, lineColor } from '../../../shared/tokens.js';
+
+// Couleurs exactes du logo HESTIM (shared/design-tokens.json)
+const brand = partages.brand;
 
 export const ds = {
   brand,
@@ -49,37 +44,15 @@ export const ds = {
     info: { text: brand.navy, bg: brand.navySoft, border: '#BCC6E6' },
   },
 
-  // Sol « panneau » (sombre) — séances en direct, accueil, connexion
-  board: {
-    ground: '#0B0B0D', // noir mat neutre (volets)
-    frame: brand.navy, // cadre : bleu marine HESTIM (remplace l'acier)
-    cell: '#212124', // face d'un volet, nettement détachée du fond
-    cellHinge: '#000000', // charnière horizontale au milieu du volet
-    seam: '#2C2C30', // filet d'un pixel entre colonnes
-    letter: '#F2F1EC', // lettres blanc cassé
-    letterDim: '#A6A6AC', // en-têtes de colonnes, libellés (contraste ≥ 7:1 sur le fond)
-    // États lisibles sur le panneau (contraste ≥ 4.5:1 sur ground)
-    onTime: '#F2F1EC',
-    live: '#3FCB74', // lampe « en cours / prochaine » (vert logo éclairci)
-    delayed: brand.orange, // reporté / modifié
-    cancelled: '#FF5A5F', // annulé (rouge logo éclairci)
-  },
+  // Commun au web et au mobile (shared/design-tokens.json)
+  board: partages.board,
 
-  // Statuts métier : une seule source de vérité pour toutes les vues
-  status: {
-    planifie: { key: 'planifie', board: '#F2F1EC', bureau: '#3F4759', bureauBg: '#EEF0F5' },
-    confirme: { key: 'confirme', board: '#3FCB74', bureau: brand.green, bureauBg: '#E7F4EC' },
-    reporte: { key: 'reporte', board: brand.orange, bureau: '#B4410C', bureauBg: '#FDEFE7' },
-    annule: { key: 'annule', board: '#FF5A5F', bureau: '#B5161C', bureauBg: '#FCE8E9' },
-    // Séance faite : état normal d'une séance passée, en teinte atténuée (pas une exception)
-    realise: { key: 'realise', board: '#A6A6AC', bureau: '#5B6272', bureauBg: '#F1F2F5' },
-  },
+  // Commun au web et au mobile (shared/design-tokens.json)
+  status: partages.status,
 
-  // Couleur de ligne par filière : identique partout (panneau, calendrier, graphiques).
-  // Hors orange/rouge/vert, réservés aux statuts.
-  lines: ['#3B63E0', '#1592C9', '#0F8A7E', '#7048C9', '#B03A8C', '#46508F'],
-  // Filière inconnue : gris neutre, jamais attribué à une vraie filière
-  lineUnknown: '#6B6B72',
+  // Couleur de ligne par filière (shared/design-tokens.json) ; orange, rouge et vert sont réservés aux statuts
+  lines: partages.lines,
+  lineUnknown: partages.lineUnknown,
 
   font: {
     // Une seule famille : Barlow (signalétique) — condensée pour le panneau et les en-têtes
@@ -108,14 +81,5 @@ export const ds = {
   },
 };
 
-/**
- * Couleur de ligne stable d'une filière (même code → même couleur sur tous les écrans).
- * @param {string|number|undefined} key - code ou identifiant de filière
- */
-export const lineColor = (key) => {
-  if (key === undefined || key === null || key === '') return ds.lineUnknown;
-  const text = String(key);
-  let hash = 0;
-  for (let i = 0; i < text.length; i += 1) hash = (hash * 31 + text.charCodeAt(i)) >>> 0;
-  return ds.lines[hash % ds.lines.length];
-};
+// Couleur de ligne stable d'une filière : partagée avec le mobile
+export { lineColor };

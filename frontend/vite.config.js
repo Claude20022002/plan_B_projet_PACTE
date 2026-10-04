@@ -154,6 +154,8 @@ export default defineConfig({
   // ── Serveur de développement ───────────────────────────────────────────
   server: {
     port: 5173,
+    // shared/ (logique et jetons communs avec le mobile) est hors du dossier du frontend
+    fs: { allow: [path.resolve(__dirname), path.resolve(__dirname, '../shared')] },
     hmr: { overlay: true },
     // Même origine qu'en production (nginx proxifie /api) : cookies SameSite=strict
     // et jeton CSRF lisible par le frontend.

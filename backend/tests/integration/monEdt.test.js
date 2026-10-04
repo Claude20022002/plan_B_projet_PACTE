@@ -1,0 +1,87 @@
+import { resetDatabase, closeDatabase, createUser, loginAs } from "./helpers/testApp.js";
+import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
+import { Affectation, AnneeUniversitaire, Appartenir, Campus, Cours, CoursComposante, Creneau, Enseignement, Filiere, Groupe, Periode, Salle } from "../../models/index.js";
+
+/**
+ * Phase D2 : emploi du temps de l'étudiant connecté pour l'application mobile.
+ */
+
+let etudiant;
+let enseignant;
+let clients;
+let ref;
+
+const JOUR = "2027-03-02";
+const seance = (extra) => ({ date_seance: JOUR, statut: "planifie", id_user_enseignant: enseignant.id_user, id_creneau: ref.creneau.id_creneau, id_cours: ref.cours.id_cours, id_salle: ref.salle.id_salle, ...extra });
+
+beforeAll(async () => {
+    await resetDatabase();
+    etudiant = await createUser("etudiant");
+    enseignant = await createUser("enseignant");
+    const admin = await createUser("admin");
+    clients = { etudiant: await loginAs(etudiant), enseignant: await loginAs(enseignant) };
+
+    const gandhi = await Campus.findOne({ where: { code: "G" } });
+    const filiere = await Filiere.create({ code_filiere: "MOB", nom_filiere: "Mobile" });
+    const autreFiliere = await Filiere.create({ code_filiere: "AUT", nom_filiere: "Autre" });
+    const promo = await Groupe.create({ nom_groupe: "4A MOB", niveau: "4ème année", annee: 4, effectif: 30, annee_scolaire: "2026-2027", type_groupe: "promotion", id_filiere: filiere.id_filiere });
+    const td1 = await Groupe.create({ nom_groupe: "MOB-4A", niveau: "4ème année", annee: 4, effectif: 15, annee_scolaire: "2026-2027", type_groupe: "td", id_groupe_parent: promo.id_groupe, id_filiere: filiere.id_filiere });
+    const td2 = await Groupe.create({ nom_groupe: "MOB-4B", niveau: "4ème année", annee: 4, effectif: 15, annee_scolaire: "2026-2027", type_groupe: "td", id_groupe_parent: promo.id_groupe, id_filiere: filiere.id_filiere });
+    const autre = await Groupe.create({ nom_groupe: "4A AUT", niveau: "4ème année", annee: 4, effectif: 20, annee_scolaire: "2026-2027", type_groupe: "promotion", id_filiere: autreFiliere.id_filiere });
+    // L'étudiant n'est inscrit qu'à son TD
+    await Appartenir.create({ id_user_etudiant: etudiant.id_user, id_groupe: td1.id_groupe });
+
+    const salle = await Salle.create({ nom_salle: "G-MOB1", type_salle: "Salle de cours", capacite: 60, id_campus: gandhi.id_campus });
+    const creneau = await Creneau.create({ jour_semaine: "mardi", heure_debut: "09:00", heure_fin: "10:45", duree_minutes: 105, rang: 1 });
+    const cours = await Cours.create({ code_cours: "MOB-ANG", nom_cours: "Anglais", niveau: "4ème année", volume_horaire: 20, type_cours: "CM", semestre: "S8", id_filiere: filiere.id_filiere });
+    const annee = await AnneeUniversitaire.create({ libelle: "2026-2027", date_debut: "2026-09-01", date_fin: "2027-07-31", active: true });
+    const periode = await Periode.create({ id_annee: annee.id_annee, code: "S2", date_debut: "2027-02-15", date_fin: "2027-06-30", nb_semaines: 18 });
+    const composante = await CoursComposante.create({ id_cours: cours.id_cours, type: "CM", volume_heures: 20, niveau_groupe: "promotion" });
+    // CM d'anglais mutualisé : l'autre filière et le TD de l'étudiant, posé sur le groupe de l'autre filière
+    const mutualise = await Enseignement.create({ id_composante: composante.id_composante, id_periode: periode.id_periode, heures_prevues: 20 });
+    await mutualise.setGroupes([autre.id_groupe, td1.id_groupe]);
+    ref = { promo, td1, td2, autre, salle, creneau, cours, admin, mutualise };
+
+    const base = { id_user_admin: admin.id_user };
+    await Affectation.bulkCreate([
+        seance({ ...base, id_groupe: promo.id_groupe }), // CM de sa promotion
+        seance({ ...base, id_groupe: td1.id_groupe, date_seance: "2027-03-03" }), // son TD
+        seance({ ...base, id_groupe: td1.id_groupe, date_seance: "2027-03-04", statut: "annule" }), // annulée : visible
+        seance({ ...base, id_groupe: td2.id_groupe, date_seance: "2027-03-03" }), // TD voisin : non
+        seance({ ...base, id_groupe: autre.id_groupe, id_enseignement: mutualise.id_enseignement, date_seance: "2027-03-05" }), // mutualisé : oui
+        seance({ ...base, id_groupe: autre.id_groupe, date_seance: "2027-03-05" }), // autre filière : non
+        seance({ ...base, id_groupe: td1.id_groupe, date_seance: "2027-05-10" }), // hors période demandée
+    ]);
+});
+afterAll(closeDatabase);
+beforeEach(resetRateLimiters);
+
+describe("GET /api/emplois-du-temps/moi", () => {
+    test("ses groupes, leurs parents et les mutualisations ; annulées visibles ; voisins exclus", async () => {
+        const reponse = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-01&au=2027-03-07");
+        expect(reponse.status).toBe(200);
+        const lignes = reponse.body.seances.map((s) => `${s.date_seance} ${s.groupe.nom_groupe} ${s.statut}`);
+        expect(lignes).toEqual(["2027-03-02 4A MOB planifie", "2027-03-03 MOB-4A planifie", "2027-03-04 MOB-4A annule", "2027-03-05 4A AUT planifie"]);
+        expect(reponse.body.groupes).toEqual([{ id_groupe: ref.td1.id_groupe, nom_groupe: "MOB-4A" }]);
+
+        const [premiere] = reponse.body.seances;
+        expect(premiere.salle).toMatchObject({ nom_salle: "G-MOB1", campus: { code: "G" } });
+        expect(premiere.cours).toMatchObject({ code_cours: "MOB-ANG", nom_cours: "Anglais" });
+        // Le nom de l'enseignant, rien d'autre
+        expect(Object.keys(premiere.enseignant).sort()).toEqual(["id_user", "nom", "prenom"]);
+        expect(JSON.stringify(reponse.body)).not.toMatch(/password|@hestim/);
+    });
+
+    test("réservé aux étudiants ; période validée", async () => {
+        expect((await clients.enseignant.get("/api/emplois-du-temps/moi")).status).toBe(403);
+        expect((await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-07&au=2027-03-01")).status).toBe(400);
+        expect((await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-01-01&au=2027-06-30")).status).toBe(400);
+        expect((await clients.etudiant.get("/api/emplois-du-temps/moi?du=hier")).status).toBe(400);
+        expect((await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-01&du=2027-03-02")).status).toBe(400);
+        expect((await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-02-31")).status).toBe(400);
+        // Sans paramètre : à partir d'aujourd'hui, deux semaines
+        const parDefaut = await clients.etudiant.get("/api/emplois-du-temps/moi");
+        expect(parDefaut.status).toBe(200);
+        expect(parDefaut.body.du).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    });
+});

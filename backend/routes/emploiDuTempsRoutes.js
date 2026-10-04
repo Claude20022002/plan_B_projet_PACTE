@@ -10,6 +10,10 @@ import {
 import { authenticateToken, requireAdmin, requireOwnResourceOrAdmin } from "../middleware/index.js";
 import { requireGroupAccess, requireSelfOrStaff } from "../middleware/accessMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { requireRole } from "../middleware/roleMiddleware.js";
+import { seancesDeLEtudiant } from "../services/planning/monEmploiDuTemps.js";
+import { aujourdhui } from "../services/planning/affectationRules.js";
+import { planification } from "../utils/erreursPlanning.js";
 import { getEdtMensuel } from "../controllers/preparationController.js";
 
 const router = express.Router();
@@ -28,6 +32,17 @@ router.get(
     authenticateToken,
     requireGroupAccess("id"),
     asyncHandler(getEmploiDuTempsGroupe)
+);
+
+// 📱 GET /api/emplois-du-temps/moi?du=&au= — l'étudiant connecté (application mobile) :
+// séances de ses groupes et de leurs parents, mutualisations comprises, annulées visibles
+router.get(
+    "/moi",
+    authenticateToken,
+    requireRole("etudiant"),
+    planification(async (req, res) => {
+        res.json(await seancesDeLEtudiant(req.user.id_user, { du: req.query.du, au: req.query.au, aujourdhui: aujourdhui() }));
+    })
 );
 
 // 🗓️ GET /api/emplois-du-temps/groupe/:id/mensuel?mois=AAAA-MM - EDT du mois au format HESTIM (impression, PDF)
