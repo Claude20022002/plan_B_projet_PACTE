@@ -189,6 +189,42 @@ public class Lecon {
         return ressources;
     }
 
+    /** Intervalles élémentaires occupés (voir {@link Creneau#calculerAtomes}). */
+    @JsonIgnore
+    public List<Integer> getAtomes() {
+        if (creneau == null) {
+            return List.of();
+        }
+        return longueur == 2 && creneau.getFinAvecSuivant() != null ? creneau.getAtomesAvecSuivant() : creneau.getAtomes();
+    }
+
+    @JsonIgnore
+    public List<Occupation> getOccupationsEnseignants() {
+        return occupations(enseignants.stream().map(e -> (Object) new Ressource(Ressource.Nature.ENSEIGNANT, e)).toList());
+    }
+
+    /** Étudiants : groupes les plus fins (un CM de promotion occupe tous ses TD et TP). */
+    @JsonIgnore
+    public List<Occupation> getOccupationsEtudiants() {
+        return occupations(getFeuillesEffectives().stream().map(g -> (Object) new Ressource(Ressource.Nature.GROUPE, g)).toList());
+    }
+
+    @JsonIgnore
+    public List<Occupation> getOccupationsSalle() {
+        return salle == null ? List.of() : occupations(List.of(salle));
+    }
+
+    private List<Occupation> occupations(List<Object> qui) {
+        List<Integer> atomes = getAtomes();
+        List<Occupation> resultat = new ArrayList<>(atomes.size() * qui.size());
+        for (Integer atome : atomes) {
+            for (Object q : qui) {
+                resultat.add(new Occupation(atome, q));
+            }
+        }
+        return resultat;
+    }
+
     /** Rangs de la grille couverts (pour les trous de la journée). */
     @JsonIgnore
     public int getRangDebut() {

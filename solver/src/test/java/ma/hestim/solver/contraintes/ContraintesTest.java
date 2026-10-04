@@ -1,5 +1,6 @@
 package ma.hestim.solver.contraintes;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
@@ -26,6 +27,11 @@ class ContraintesTest {
     private final Creneau mar1 = new Creneau(5L, 2, 540, 645, 1, "initiale", 6L, 750);
     private final Creneau sam3 = new Creneau(9L, 6, 810, 915, 3, "initiale", null, null);
     private final Creneau soir = new Creneau(10L, 1, 1080, 1260, 1, "continue", null, null);
+
+    {
+        // Intervalles élémentaires de la grille (fait par EmploiDuTemps.preparerValeursPossibles en production)
+        Creneau.calculerAtomes(List.of(lun1, lun2, lun3, mar1, sam3, soir));
+    }
 
     private final Salle g1 = new Salle(1L, "G-S01", 40, "Salle de cours", 1L);
     private final Salle g2 = new Salle(2L, "G-S02", 40, "Salle de cours", 1L);
@@ -61,13 +67,15 @@ class ContraintesTest {
         Lecon memeProf = lecon(lun1, g2, Set.of(10L), Set.of(101L));
         verifier.verifyThat(ContraintesEmploiDuTemps::conflitEnseignant).given(a, memeProf).penalizesBy(1);
 
-        // Le CM de la promotion (100) occupe aussi le TD 102 : même ensemble « groupes »
+        // Le CM de la promotion (100) concerne les étudiants des TD 102 et 103 (groupes les plus fins)
+        a.setFeuilles(Set.of(102L, 103L));
         Lecon td = lecon(lun1, g2, Set.of(11L), Set.of(102L, 100L));
         td.setGroupesDirects(Set.of(102L));
         verifier.verifyThat(ContraintesEmploiDuTemps::conflitGroupe).given(a, td).penalizesBy(1);
         // Deux TD frères (102 et 103) de la même promotion peuvent avoir cours en même temps
         Lecon tdFrere = lecon(lun1, g1, Set.of(12L), Set.of(103L, 100L));
         tdFrere.setGroupesDirects(Set.of(103L));
+        tdFrere.setFeuilles(Set.of(103L));
         verifier.verifyThat(ContraintesEmploiDuTemps::conflitGroupe).given(td, tdFrere).penalizesBy(0);
 
         Lecon autreJour = lecon(mar1, g1, Set.of(10L), Set.of(100L));
@@ -91,6 +99,11 @@ class ContraintesTest {
         demiJournee.setLongueur(2);
         Lecon rang2 = lecon(lun2, g1, Set.of(11L), Set.of(101L));
         verifier.verifyThat(ContraintesEmploiDuTemps::conflitSalle).given(demiJournee, rang2).penalizesBy(1);
+        // Deux demi-journées entières sur le même créneau : un seul conflit, pas un par intervalle
+        Lecon memeDemiJournee = lecon(lun1, g1, Set.of(10L), Set.of(104L));
+        memeDemiJournee.setLongueur(2);
+        verifier.verifyThat(ContraintesEmploiDuTemps::conflitSalle).given(demiJournee, memeDemiJournee).penalizesBy(1);
+        verifier.verifyThat(ContraintesEmploiDuTemps::conflitEnseignant).given(demiJournee, memeDemiJournee, rang2).penalizesBy(1);
 
         Lecon surRang2 = lecon(lun2, g2, Set.of(12L), Set.of(103L));
         surRang2.setLongueur(2);

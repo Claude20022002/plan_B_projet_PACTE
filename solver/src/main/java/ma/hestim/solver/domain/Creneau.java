@@ -1,5 +1,13 @@
 package ma.hestim.solver.domain;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeSet;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import ai.timefold.solver.core.api.domain.lookup.PlanningId;
 
 /**
@@ -49,6 +57,39 @@ public class Creneau {
     public void setRegime(String regime) { this.regime = regime; }
     public Long getSuivantId() { return suivantId; }
     public void setSuivantId(Long suivantId) { this.suivantId = suivantId; }
+    /**
+     * Intervalles élémentaires couverts (seul, ou avec le créneau suivant). Un jour est découpé aux
+     * bornes de tous ses créneaux, toutes grilles confondues : deux créneaux se chevauchent si et
+     * seulement s'ils partagent un intervalle. Identifiant : jour × 1440 + minute de début.
+     */
+    @JsonIgnore
+    private List<Integer> atomes = List.of();
+    @JsonIgnore
+    private List<Integer> atomesAvecSuivant = List.of();
+
+    public static void calculerAtomes(Collection<Creneau> creneaux) {
+        Map<Integer, TreeSet<Integer>> bornes = new HashMap<>();
+        for (Creneau c : creneaux) {
+            TreeSet<Integer> jour = bornes.computeIfAbsent(c.jour, j -> new TreeSet<>());
+            jour.add(c.debut);
+            jour.add(c.fin);
+            if (c.finAvecSuivant != null) {
+                jour.add(c.finAvecSuivant);
+            }
+        }
+        for (Creneau c : creneaux) {
+            TreeSet<Integer> jour = bornes.get(c.jour);
+            c.atomes = jour.subSet(c.debut, true, c.fin, false).stream().map(b -> c.jour * 1440 + b).toList();
+            c.atomesAvecSuivant = c.finAvecSuivant == null ? c.atomes
+                    : jour.subSet(c.debut, true, c.finAvecSuivant, false).stream().map(b -> c.jour * 1440 + b).toList();
+        }
+    }
+
+    @JsonIgnore
+    public List<Integer> getAtomes() { return atomes; }
+    @JsonIgnore
+    public List<Integer> getAtomesAvecSuivant() { return atomesAvecSuivant; }
+
     public Integer getFinAvecSuivant() { return finAvecSuivant; }
     public void setFinAvecSuivant(Integer finAvecSuivant) { this.finAvecSuivant = finAvecSuivant; }
 

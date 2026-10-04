@@ -50,6 +50,7 @@ public class EmploiDuTemps {
 
     /** Après lecture du problème : valeurs que chaque leçon peut prendre (créneaux, salles). */
     public void preparerValeursPossibles() {
+        Creneau.calculerAtomes(creneaux);
         lecons.forEach(l -> l.calculerValeursPossibles(creneaux, salles));
     }
 

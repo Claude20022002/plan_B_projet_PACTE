@@ -78,6 +78,27 @@ const enseignantsDe = (seance, enseignement) =>
 /** Groupes qu'une séance réunit : ceux de son enseignement (mutualisation), sinon son groupe. */
 const groupesDe = (seance, enseignement) => [...new Set([seance.id_groupe, ...(enseignement?.groupes ?? []).map((g) => g.id_groupe)])].filter(Boolean);
 
+/**
+ * Cache d'une passe de validation en série (déploiement d'une semaine type) : les lectures qui
+ * ne changent pas pendant la passe (créneaux, groupes, salles, paramètres, événements,
+ * réservations, disponibilités…) sont faites une fois. Les séances du jour et la charge de la
+ * semaine changent à chaque écriture : `invaliderApresCreation` les oublie. Sans cache, chaque
+ * appel relit tout (cas des enregistrements unitaires).
+ */
+const memo = (cache, cle, charger) => {
+    if (!cache) return charger();
+    if (!cache.has(cle)) cache.set(cle, charger());
+    return cache.get(cle);
+};
+
+/** À appeler après avoir créé des séances validées avec `cache`, pour la date et les enseignants concernés. */
+export const invaliderApresCreation = (cache, { date_seance, enseignants = [] }) => {
+    if (!cache) return;
+    cache.delete(`duJour|${date_seance}`);
+    const [lundi] = semaineDe(date_seance);
+    for (const idUser of enseignants) cache.delete(`semaine|${idUser}|${lundi}`);
+};
+
 /** Un événement bloquant concerne-t-il cette séance ? */
 export const evenementConcerne = (evenement, { salle, groupe, groupesOccupes, creneau }) => {
     if (evenement.heure_debut && evenement.heure_fin && !seChevauchent(creneau, evenement)) return false;
@@ -107,25 +128,29 @@ export const evenementConcerne = (evenement, { salle, groupe, groupesOccupes, cr
  * enseignants et des groupes sont verrouillées dans `transaction` : deux enregistrements
  * concurrents sur les mêmes ressources passent l'un après l'autre.
  */
-export const validerAffectation = async (seance, { transaction, verrouiller = false } = {}) => {
+export const validerAffectation = async (seance, { transaction, verrouiller = false, cache = null } = {}) => {
     const violations = [];
     const signaler = (code, message, extra = {}, bloquant = true) => violations.push({ code, bloquant, message, ...extra });
     const options = { transaction };
+    const lu = (cle, charger) => memo(cache, cle, charger);
+    const parametre = (cle) => lu(`parametre|${cle}`, () => lireParametre(cle));
 
     const [creneauNormal, groupe, salle, cours, enseignement] = await Promise.all([
-        Creneau.findByPk(seance.id_creneau, options),
-        Groupe.findByPk(seance.id_groupe, { ...options, include: [{ model: Filiere, as: "filiere" }] }),
-        seance.id_salle ? Salle.findByPk(seance.id_salle, options) : null,
-        Cours.findByPk(seance.id_cours, options),
+        lu(`creneau|${seance.id_creneau}`, () => Creneau.findByPk(seance.id_creneau, options)),
+        lu(`groupe|${seance.id_groupe}`, () => Groupe.findByPk(seance.id_groupe, { ...options, include: [{ model: Filiere, as: "filiere" }] })),
+        seance.id_salle ? lu(`salle|${seance.id_salle}`, () => Salle.findByPk(seance.id_salle, options)) : null,
+        lu(`cours|${seance.id_cours}`, () => Cours.findByPk(seance.id_cours, options)),
         seance.id_enseignement
-            ? Enseignement.findByPk(seance.id_enseignement, {
-                  ...options,
-                  include: [
-                      { model: Groupe, as: "groupes", through: { attributes: [] } },
-                      { model: CoursComposante, as: "composante" },
-                      INCLUDE_EQUIPE,
-                  ],
-              })
+            ? lu(`enseignement|${seance.id_enseignement}`, () =>
+                  Enseignement.findByPk(seance.id_enseignement, {
+                      ...options,
+                      include: [
+                          { model: Groupe, as: "groupes", through: { attributes: [] } },
+                          { model: CoursComposante, as: "composante" },
+                          INCLUDE_EQUIPE,
+                      ],
+                  })
+              )
             : null,
     ]);
     if (!creneauNormal) signaler("introuvable", "Créneau introuvable");
@@ -135,11 +160,11 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     if (seance.id_enseignement && !enseignement) signaler("introuvable", "Enseignement introuvable");
     if (violations.length) return { violations, bloquant: true };
     // Pendant le Ramadan, même rang mais horaires réduits (variante de la grille)
-    const creneau = await creneauEffectif(creneauNormal, seance.date_seance, { transaction });
+    const creneau = await lu(`effectif|${creneauNormal.id_creneau}|${seance.date_seance}`, () => creneauEffectif(creneauNormal, seance.date_seance, { transaction }));
 
     const idsEnseignants = enseignantsDe(seance, enseignement);
     const idsGroupes = groupesDe(seance, enseignement);
-    const groupesOccupes = new Set((await Promise.all(idsGroupes.map((id) => groupesLies(id, transaction)))).flat());
+    const groupesOccupes = new Set((await Promise.all(idsGroupes.map((id) => lu(`lies|${id}`, () => groupesLies(id, transaction))))).flat());
 
     if (verrouiller) {
         const lock = transaction.LOCK.UPDATE;
@@ -148,12 +173,14 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
         await Groupe.findAll({ where: { id_groupe: [...groupesOccupes] }, transaction, lock });
     }
 
-    const enseignants = await Users.findAll({
-        where: { id_user: idsEnseignants },
-        attributes: ["id_user", "nom", "prenom"],
-        include: [{ model: Enseignant, as: "enseignant" }],
-        transaction,
-    });
+    const enseignants = await lu(`enseignants|${[...idsEnseignants].sort().join(",")}`, () =>
+        Users.findAll({
+            where: { id_user: idsEnseignants },
+            attributes: ["id_user", "nom", "prenom"],
+            include: [{ model: Enseignant, as: "enseignant" }],
+            transaction,
+        })
+    );
     const parIdEnseignant = new Map(enseignants.map((u) => [u.id_user, u]));
     const date = seance.date_seance;
     const jour = jourDe(date);
@@ -168,12 +195,12 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
         signaler("grille_regime", `Ce créneau appartient à la grille « ${creneau.regime} », la filière suit la grille « ${regime} »`);
     }
     if (regime === "initiale" && jour === "vendredi") {
-        const pause = await lireParametre("pause_vendredi");
+        const pause = await parametre("pause_vendredi");
         if (pause?.active && seChevauchent(creneau, { heure_debut: pause.debut, heure_fin: pause.fin })) {
             signaler("pause_vendredi", `Le créneau empiète sur la pause du vendredi (${pause.debut}-${pause.fin})`);
         }
     }
-    if (regime === "initiale" && jour === "samedi" && minutes(creneau.heure_debut) >= APRES_MIDI && !(await lireParametre("samedi_apres_midi_initiale"))) {
+    if (regime === "initiale" && jour === "samedi" && minutes(creneau.heure_debut) >= APRES_MIDI && !(await parametre("samedi_apres_midi_initiale"))) {
         signaler("samedi_apres_midi", "Pas de cours de formation initiale le samedi après-midi");
     }
 
@@ -196,25 +223,26 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     }
 
     // ── Séances du même jour ──────────────────────────────────────────────
-    const duJour = await Affectation.findAll({
-        where: {
-            date_seance: date,
-            statut: STATUTS_ACTIFS,
-            ...(seance.id_affectation ? { id_affectation: { [Op.ne]: seance.id_affectation } } : {}),
-        },
-        include: [
-            { model: Creneau, as: "creneau" },
-            { model: Salle, as: "salle" },
-            { model: Cours, as: "cours", attributes: ["nom_cours"] },
-            {
-                model: Enseignement,
-                as: "enseignement",
-                include: [{ model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } }, INCLUDE_EQUIPE],
-            },
-        ],
-        transaction,
-    });
-    await appliquerRamadan(duJour, { transaction });
+    // Séances du jour (la séance validée exclue) ; en cache, la liste du jour est relue après chaque écriture
+    const chargerDuJour = async () => {
+        const liste = await Affectation.findAll({
+            where: { date_seance: date, statut: STATUTS_ACTIFS },
+            include: [
+                { model: Creneau, as: "creneau" },
+                { model: Salle, as: "salle" },
+                { model: Cours, as: "cours", attributes: ["nom_cours"] },
+                {
+                    model: Enseignement,
+                    as: "enseignement",
+                    include: [{ model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } }, INCLUDE_EQUIPE],
+                },
+            ],
+            transaction,
+        });
+        await appliquerRamadan(liste, { transaction });
+        return liste;
+    };
+    const duJour = (await lu(`duJour|${date}`, chargerDuJour)).filter((a) => !seance.id_affectation || a.id_affectation !== Number(seance.id_affectation));
     const autres = duJour.map((a) => ({
         seance: a,
         enseignants: enseignantsDe(a, a.enseignement),
@@ -244,7 +272,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     }
 
     // Réservations validées et épreuves d'examen (phase P5) : elles bloquent comme une séance
-    const horsCours = await occupationsDuJour(date, { transaction, sources: ["reservation", "examen"] });
+    const horsCours = await lu(`horsCours|${date}`, () => occupationsDuJour(date, { transaction, sources: ["reservation", "examen"] }));
     for (const o of horsCours.filter((x) => seChevauchent(creneau, x))) {
         const reference = { source: o.source, id_occupation: o.id };
         if (salle && o.salles.some((x) => x.id_salle === salle.id_salle)) signaler("conflit_salle", `${salle.nom_salle} est réservée : ${o.libelle}`, reference);
@@ -266,7 +294,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
         for (const o of concernees) {
             const avant = minutes(o.seance.creneau.heure_fin) <= minutes(creneau.heure_debut);
             const ecart = avant ? minutes(creneau.heure_debut) - minutes(o.seance.creneau.heure_fin) : minutes(o.seance.creneau.heure_debut) - minutes(creneau.heure_fin);
-            const necessaire = await minutesTrajet(o.seance.salle.id_campus, salle.id_campus);
+            const necessaire = await lu(`trajet|${o.seance.salle.id_campus}|${salle.id_campus}`, () => minutesTrajet(o.seance.salle.id_campus, salle.id_campus));
             if (ecart < necessaire) {
                 signaler("trajet_campus", `${ecart} min pour changer de campus ${avant ? "après" : "avant"} ${libelle(o.seance)} (${necessaire} min nécessaires)`, {
                     id_affectation: o.seance.id_affectation,
@@ -277,9 +305,9 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
 
     // Maximum d'heures par jour
     const dureeSeance = duree(creneau);
-    const maxGroupe = (await lireParametre("max_heures_jour_groupe")) * 60;
+    const maxGroupe = (await parametre("max_heures_jour_groupe")) * 60;
     // Journée la plus chargée parmi les étudiants concernés (chaque groupe le plus fin et ses ancêtres)
-    const lignees = (await Promise.all(idsGroupes.map((id) => ligneesDe(id, transaction)))).flat();
+    const lignees = (await Promise.all(idsGroupes.map((id) => lu(`lignees|${id}`, () => ligneesDe(id, transaction))))).flat();
     const minutesGroupe = Math.max(
         0,
         ...lignees.map(({ lignee }) => autres.filter((o) => o.groupes.some((id) => lignee.includes(id))).reduce((t, o) => t + duree(o.seance.creneau), 0))
@@ -287,7 +315,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     if (minutesGroupe + dureeSeance > maxGroupe) {
         signaler("max_heures_groupe", `Le groupe aurait ${((minutesGroupe + dureeSeance) / 60).toFixed(1)} h de cours ce jour-là (maximum ${maxGroupe / 60} h)`);
     }
-    const maxEnseignant = (await lireParametre("max_heures_jour_enseignant")) * 60;
+    const maxEnseignant = (await parametre("max_heures_jour_enseignant")) * 60;
     for (const idUser of idsEnseignants) {
         const minutesProf = autres.filter((o) => o.enseignants.includes(idUser)).reduce((t, o) => t + duree(o.seance.creneau), 0);
         if (minutesProf + dureeSeance > maxEnseignant) {
@@ -298,10 +326,12 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     }
 
     // ── Événements bloquants (fériés, examens, activités…) ────────────────
-    const evenements = await Evenement.findAll({
-        where: { bloque_affectations: true, date_debut: { [Op.lte]: date }, date_fin: { [Op.gte]: date } },
-        transaction,
-    });
+    const evenements = await lu(`evenements|${date}`, () =>
+        Evenement.findAll({
+            where: { bloque_affectations: true, date_debut: { [Op.lte]: date }, date_fin: { [Op.gte]: date } },
+            transaction,
+        })
+    );
     for (const evenement of evenements.filter((e) => evenementConcerne(e, { salle, groupe, groupesOccupes, creneau }))) {
         signaler("evenement", `${evenement.titre}${evenement.date_confirmee === false ? " (date à confirmer)" : ""}`, { id_evenement: evenement.id_evenement });
     }
@@ -310,23 +340,22 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     const [lundi, dimanche] = semaineDe(date);
     for (const idUser of idsEnseignants) {
         const nom = nomComplet(parIdEnseignant.get(idUser));
-        const dispo = await disponibiliteEnseignant({ idUser, date, idCreneau: creneau.id_creneau });
+        const dispo = await lu(`dispo|${idUser}|${date}|${creneau.id_creneau}`, () => disponibiliteEnseignant({ idUser, date, idCreneau: creneau.id_creneau }));
         if (!dispo.disponible) signaler("enseignant_indisponible", `${nom} : ${dispo.raison}`, { id_user: idUser });
         else if (dispo.preference === "eviter") signaler("voeu_eviter", `${nom} préfère éviter ce créneau`, { id_user: idUser }, false);
 
         const plafond = parIdEnseignant.get(idUser)?.enseignant?.max_heures_semaine;
         if (plafond) {
-            const semaine = await Affectation.findAll({
-                where: {
-                    id_user_enseignant: idUser,
-                    statut: STATUTS_ACTIFS,
-                    date_seance: { [Op.between]: [lundi, dimanche] },
-                    ...(seance.id_affectation ? { id_affectation: { [Op.ne]: seance.id_affectation } } : {}),
-                },
-                include: [{ model: Creneau, as: "creneau" }],
-                transaction,
-            });
-            await appliquerRamadan(semaine, { transaction });
+            const chargerSemaine = async () => {
+                const liste = await Affectation.findAll({
+                    where: { id_user_enseignant: idUser, statut: STATUTS_ACTIFS, date_seance: { [Op.between]: [lundi, dimanche] } },
+                    include: [{ model: Creneau, as: "creneau" }],
+                    transaction,
+                });
+                await appliquerRamadan(liste, { transaction });
+                return liste;
+            };
+            const semaine = (await lu(`semaine|${idUser}|${lundi}`, chargerSemaine)).filter((a) => !seance.id_affectation || a.id_affectation !== Number(seance.id_affectation));
             const total = semaine.reduce((t, a) => t + duree(a.creneau), 0) + dureeSeance;
             if (total > plafond * 60) signaler("max_heures_semaine", `${nom} dépasserait son plafond de ${plafond} h cette semaine (${(total / 60).toFixed(1)} h)`, { id_user: idUser }, false);
         }

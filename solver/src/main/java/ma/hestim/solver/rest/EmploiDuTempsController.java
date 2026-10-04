@@ -157,7 +157,10 @@ public class EmploiDuTempsController {
             if (s.hardScore() < 0 && contrainte.matches() != null) {
                 contrainte.matches().forEach(m -> {
                     if (m.justification() instanceof DefaultConstraintJustification justification) {
-                        justification.getFacts().stream().filter(Lecon.class::isInstance).map(f -> ((Lecon) f).getId()).forEach(leconsEnConflit::add);
+                        // Faits de la correspondance : des leçons, ou une liste de leçons (conflits regroupés)
+                        justification.getFacts().stream()
+                                .flatMap(f -> f instanceof java.util.Collection<?> liste ? liste.stream() : java.util.stream.Stream.of(f))
+                                .filter(Lecon.class::isInstance).map(f -> ((Lecon) f).getId()).forEach(leconsEnConflit::add);
                     }
                 });
             }

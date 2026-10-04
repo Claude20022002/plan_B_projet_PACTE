@@ -1,7 +1,7 @@
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { GenerationSession } from "../models/index.js";
 import { SnapshotService } from "../services/generation/SnapshotService.js";
-import { arreterGeneration, lancerGeneration } from "../services/generation/timefold/generation.js";
+import { arreterGeneration, lancerGeneration, progressionEnMemoire } from "../services/generation/timefold/generation.js";
 import { SolveurIndisponible } from "../services/generation/timefold/solveurClient.js";
 import { planification } from "../utils/erreursPlanning.js";
 import { ErreurMetier } from "../services/planning/enseignements.js";
@@ -39,7 +39,8 @@ export const listerSessions = asyncHandler(async (req, res) => {
 export const getSession = asyncHandler(async (req, res) => {
     const session = await GenerationSession.findByPk(req.params.id);
     if (!session) return res.status(404).json({ message: "Génération introuvable", error: "Génération introuvable" });
-    res.json(session);
+    const progression = session.status === "running" ? progressionEnMemoire(session.id_generation_session) : null;
+    res.json({ ...session.toJSON(), ...(progression ?? {}) });
 });
 
 /** POST /api/generation-automatique/sessions/:id/arreter — garde la meilleure solution connue */

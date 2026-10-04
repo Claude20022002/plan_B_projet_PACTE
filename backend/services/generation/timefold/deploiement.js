@@ -1,7 +1,7 @@
 import { Op } from "sequelize";
 import sequelize from "../../../config/db.js";
 import { Affectation, Creneau, PlanningSnapshot } from "../../../models/index.js";
-import { STATUTS_ACTIFS, minutes, validerAffectation } from "../../planning/affectationRules.js";
+import { STATUTS_ACTIFS, invaliderApresCreation, minutes, validerAffectation } from "../../planning/affectationRules.js";
 
 /**
  * Déploiement de la semaine type sur le semestre (phase E) : chaque leçon placée par le solveur
@@ -27,7 +27,7 @@ const aujourdhui = () => new Date().toLocaleDateString("en-CA", { timeZone: proc
  * @param {object} options periode, placements [{ id, creneauId, salleId }], index (problème), user, session, libelle
  * @returns rapport { creees, enseignements: [...], snapshot }
  */
-export const deployerSemaineType = async ({ periode, placements, index, user, session, libelle }) => {
+export const deployerSemaineType = async ({ periode, placements, index, user, session, libelle, surAvancement }) => {
     const creneaux = new Map((await Creneau.findAll()).map((c) => [c.id_creneau, c]));
     const suivantDe = (c) =>
         [...creneaux.values()].find((x) => x.jour_semaine === c.jour_semaine && x.regime === c.regime && x.variante === c.variante && x.rang === c.rang + 1);
@@ -60,6 +60,8 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
 
         const rapportParEnseignement = new Map();
         let creees = 0;
+        // Lectures stables mises en cache pour toute la passe (voir validerAffectation)
+        const cache = new Map();
 
         // Leçons d'un même enseignement : déployées ensemble (séances par semaine). Une leçon que le
         // calcul n'a pas pu placer (sans créneau, ou sans salle en présentiel) n'est pas déployée :
@@ -77,7 +79,9 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
             parEnseignement.get(info.id_enseignement).push({ ...p, info });
         }
 
+        let traites = 0;
         for (const [idEnseignement, lecons] of parEnseignement) {
+            if (surAvancement) await surAvancement(traites++ / parEnseignement.size);
             const info = lecons[0].info;
             const ligne = { id_enseignement: idEnseignement, module: info.module, type: info.type, heures_prevues: info.heures_prevues, heures_planifiees: 0, seances: 0, sautees: [], lecons_non_placees: nonPlacees.get(idEnseignement) ?? 0 };
             const semaineDebut = Math.max(1, info.semaine_debut || 1);
@@ -106,20 +110,19 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
                     // Les deux créneaux d'une demi-journée passent ensemble, ou pas du tout
                     const refus = [];
                     for (const s of seances) {
-                        const { violations } = await validerAffectation(s, { transaction });
+                        const { violations } = await validerAffectation(s, { transaction, cache });
                         refus.push(...violations.filter((v) => v.bloquant));
                     }
                     if (refus.length) {
                         ligne.sautees.push({ date, raisons: [...new Set(refus.map((v) => v.code))], message: refus[0].message });
                         continue;
                     }
-                    for (const s of seances) {
-                        await Affectation.create(
-                            { ...s, statut: "planifie", id_user_admin: user.id_user, id_snapshot: snapshot.id_snapshot, id_generation_session: session?.id_generation_session ?? null, is_generated: true },
-                            { transaction }
-                        );
-                        creees += 1;
-                    }
+                    await Affectation.bulkCreate(
+                        seances.map((s) => ({ ...s, statut: "planifie", id_user_admin: user.id_user, id_snapshot: snapshot.id_snapshot, id_generation_session: session?.id_generation_session ?? null, is_generated: true })),
+                        { transaction }
+                    );
+                    creees += seances.length;
+                    invaliderApresCreation(cache, { date_seance: date, enseignants: [info.id_user_enseignant] });
                     const dureeHeures = aPlacer.reduce((t, c) => t + (minutes(c.heure_fin) - minutes(c.heure_debut)), 0) / 60;
                     heures += dureeHeures;
                     ligne.seances += 1;

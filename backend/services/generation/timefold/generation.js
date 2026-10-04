@@ -37,7 +37,19 @@ const executer = async (session, { id_periode, id_filieres, dureeSecondes, user 
         await majSession(session, { progress: 75, last_message: "Déploiement sur les semaines du semestre" });
         const filieres = id_filieres.length ? await Filiere.findAll({ where: { id_filiere: id_filieres }, attributes: ["code_filiere"] }) : [];
         const libelle = `Timefold ${periode.code} ${periode.annee?.libelle ?? ""}${filieres.length ? ` · ${filieres.map((f) => f.code_filiere).join(", ")}` : ""}`.trim();
-        const deploiement = await deployerSemaineType({ periode, placements: etat.lecons, index, user, session, libelle });
+        const deploiement = await deployerSemaineType({
+            periode,
+            placements: etat.lecons,
+            index,
+            user,
+            session,
+            libelle,
+            // En mémoire seulement : les séances insérées dans la transaction verrouillent la ligne de
+            // la session (clé étrangère) ; l'écrire maintenant attendrait la fin de cette transaction
+            surAvancement: (part) => {
+                enCours.get(session.id_generation_session).progression = { progress: 75 + Math.round(23 * part), last_message: `Déploiement sur les semaines du semestre (${Math.round(100 * part)} %)` };
+            },
+        });
 
         const nonPlaces = deploiement.enseignements.filter((e) => !e.complet);
         const rapport = {
@@ -97,6 +109,9 @@ export const arreterGeneration = async (idSession) => {
     if (!travail?.calcul) throw new ErreurMetier("Aucun calcul en cours pour cette génération", 400);
     await arreterCalcul(travail.calcul);
 };
+
+/** Avancement tenu en mémoire pendant le déploiement (voir `executer`), ou null. */
+export const progressionEnMemoire = (idSession) => enCours.get(Number(idSession))?.progression ?? null;
 
 /** Pour les tests : attend la fin d'une génération lancée dans ce processus. */
 export const attendreGeneration = async (idSession) => enCours.get(Number(idSession))?.promesse;
