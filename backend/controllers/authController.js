@@ -169,6 +169,35 @@ export const login = asyncHandler(async (req, res) => {
 });
 
 /**
+ * POST /api/auth/change-password
+ * Changer son mot de passe (obligatoire à la première connexion d'un compte créé par
+ * l'administration) : l'actuel est exigé ; les autres sessions sont fermées.
+ */
+export const changePassword = asyncHandler(async (req, res) => {
+    const { current_password: actuel, password } = req.body;
+    if (typeof actuel !== "string" || typeof password !== "string" || !password) {
+        return res.status(400).json({ message: "Champs manquants", error: "Le mot de passe actuel et le nouveau sont requis" });
+    }
+    const user = await Users.scope("withPassword").findByPk(req.user.id_user);
+    if (!(await comparePassword(actuel, user.password_hash))) {
+        return res.status(400).json({ message: "Mot de passe actuel incorrect", error: "Saisissez votre mot de passe actuel" });
+    }
+    if (await comparePassword(password, user.password_hash)) {
+        return res.status(400).json({ message: "Mot de passe inchangé", error: "Choisissez un mot de passe différent de l'actuel" });
+    }
+    const verification = validatePasswordStrength(password);
+    if (!verification.valid) {
+        return res.status(400).json({ message: "Mot de passe invalide", errors: verification.errors, error: verification.errors[0] });
+    }
+    await user.update({ password_hash: await hashPassword(password), must_change_password: false });
+    await AuthSession.update(
+        { revoked_at: new Date(), revoked_reason: "password_change" },
+        { where: { id_user: user.id_user, revoked_at: null, session_id: { [Op.ne]: req.auth?.sessionId ?? "" } } }
+    );
+    res.json({ message: "Mot de passe modifié" });
+});
+
+/**
  * GET /api/auth/me
  * Récupérer le profil de l'utilisateur connecté
  */
@@ -562,7 +591,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
     // Mettre à jour le mot de passe
     const user = resetToken.user;
     const password_hash = await hashPassword(password);
-    await user.update({ password_hash });
+    await user.update({ password_hash, must_change_password: false });
 
     // Marquer le token comme utilisé
     await resetToken.update({ used: true });

@@ -4,6 +4,7 @@ import cors from "cors";
 import "./models/index.js"; // Import pour initialiser les relations
 import { parseCookies } from "./middleware/cookieMiddleware.js";
 import { csrfProtection } from "./middleware/csrfMiddleware.js";
+import { exigerChangementMotDePasse } from "./middleware/passwordChangeMiddleware.js";
 
 // Import des routes
 import userRoutes from "./routes/userRoutes.js";
@@ -97,6 +98,9 @@ app.use(logger);
 // Protection CSRF (cookie-to-header) sur toutes les méthodes modifiantes ;
 // les routes d'authentification publiques sont exemptées dans le middleware.
 app.use(csrfProtection);
+
+// Mot de passe provisoire ou invitation : rien d'autre tant qu'il n'est pas changé
+app.use(exigerChangementMotDePasse);
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);

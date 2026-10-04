@@ -3,6 +3,8 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
 import { pick } from "../utils/validationHelper.js";
+import sequelize from "../config/db.js";
+import { creerLienInvitation, creerProfil, empreinteInutilisable, envoyerInvitation } from "../services/comptes.js";
 
 /**
  * Contrôleur pour les utilisateurs
@@ -57,27 +59,42 @@ export const createUser = asyncHandler(async (req, res) => {
         });
     }
 
-    const passwordValidation = validatePasswordStrength(req.body.password);
-    if (!passwordValidation.valid) {
-        return res.status(400).json({
-            message: "Mot de passe invalide",
-            errors: passwordValidation.errors,
-        });
+    // Mot de passe provisoire facultatif : sans lui, le compte reçoit un lien d'invitation
+    const motDePasse = typeof req.body.password === "string" && req.body.password ? req.body.password : null;
+    if (motDePasse) {
+        const passwordValidation = validatePasswordStrength(motDePasse);
+        if (!passwordValidation.valid) {
+            return res.status(400).json({
+                message: "Mot de passe invalide",
+                errors: passwordValidation.errors,
+            });
+        }
     }
 
-    // Seuls les champs connus sont acceptés ; le mot de passe est toujours haché ici
-    const user = await Users.create({
-        ...pick(req.body, ["nom", "prenom", "email", "role", "telephone", "actif"]),
-        password_hash: await hashPassword(req.body.password),
+    // Compte et fiche (enseignant, étudiant) dans la même transaction : jamais de compte sans fiche
+    const { user, lien } = await sequelize.transaction(async (transaction) => {
+        const compte = await Users.create(
+            {
+                ...pick(req.body, ["nom", "prenom", "email", "role", "telephone", "actif"]),
+                password_hash: motDePasse ? await hashPassword(motDePasse) : await empreinteInutilisable(),
+                must_change_password: true,
+            },
+            { transaction }
+        );
+        await creerProfil(compte, req.body.profil, transaction);
+        return { user: compte, lien: motDePasse ? null : await creerLienInvitation(compte, transaction) };
     });
+    const envoyee = lien ? await envoyerInvitation(user, lien) : false;
 
     // Retourner l'utilisateur sans le mot de passe
     const userResponse = user.toJSON();
     delete userResponse.password_hash;
 
     res.status(201).json({
-        message: "Utilisateur créé avec succès",
+        message: lien ? "Compte créé : invitation envoyée" : "Utilisateur créé avec succès",
         user: userResponse,
+        // Le lien reste visible par l'administration : à transmettre si l'email n'est pas parti
+        invitation: lien ? { envoyee, lien } : null,
     });
 });
 
@@ -134,6 +151,8 @@ export const updateUser = asyncHandler(async (req, res) => {
         }
 
         updateData.password_hash = await hashPassword(String(req.body.password));
+        // Son propre mot de passe : l'obligation tombe ; celui d'un autre (admin) : provisoire, à changer
+        updateData.must_change_password = !isOwnAccount;
     }
 
     await user.update(updateData);
@@ -207,11 +226,16 @@ export const importUsers = asyncHandler(async (req, res) => {
                 actif: userData.actif !== undefined ? userData.actif : true,
             };
 
-            // Hasher le mot de passe si fourni, sinon utiliser le mot de passe par défaut
-            const password = userData.password || 'password123';
-            userCreateData.password_hash = await hashPassword(password);
+            // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion
+            userCreateData.password_hash = userData.password ? await hashPassword(String(userData.password)) : await empreinteInutilisable();
+            userCreateData.must_change_password = true;
 
-            const user = await Users.create(userCreateData);
+            const user = await sequelize.transaction(async (transaction) => {
+                const compte = await Users.create(userCreateData, { transaction });
+                await creerProfil(compte, userData, transaction);
+                return compte;
+            });
+            if (!userData.password) await envoyerInvitation(user, await creerLienInvitation(user));
             const userResponse = user.toJSON();
             delete userResponse.password_hash;
             results.success.push(userResponse);

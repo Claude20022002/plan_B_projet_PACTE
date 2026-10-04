@@ -3,6 +3,7 @@ import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { hashPassword } from "../utils/passwordHelper.js";
 import { pick } from "../utils/validationHelper.js";
+import { creerLienInvitation, empreinteInutilisable, envoyerInvitation } from "../services/comptes.js";
 
 /**
  * Contrôleur pour les étudiants
@@ -312,8 +313,8 @@ export const importEtudiants = asyncHandler(async (req, res) => {
             
             if (!user) {
                 // Créer l'utilisateur
-                const password = etudiantData.password || "password123";
-                const password_hash = await hashPassword(password);
+                // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion
+                const password_hash = etudiantData.password ? await hashPassword(String(etudiantData.password)) : await empreinteInutilisable();
 
                 user = await Users.create({
                     nom: etudiantData.nom,
@@ -323,7 +324,9 @@ export const importEtudiants = asyncHandler(async (req, res) => {
                     telephone: etudiantData.telephone || null,
                     actif: etudiantData.actif !== undefined ? etudiantData.actif : true,
                     password_hash: password_hash,
+                    must_change_password: true,
                 });
+                if (!etudiantData.password) await envoyerInvitation(user, await creerLienInvitation(user));
             } else if (user.role !== "etudiant") {
                 // Mettre à jour le rôle si nécessaire
                 await user.update({ role: "etudiant" });

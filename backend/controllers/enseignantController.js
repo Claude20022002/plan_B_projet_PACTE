@@ -6,6 +6,7 @@ import { hashPassword } from "../utils/passwordHelper.js";
 import { pick } from "../utils/validationHelper.js";
 import { chargesEnseignants, disponibiliteEnseignant } from "../services/planning/enseignants.js";
 import { STATUTS_ENSEIGNANT } from "../config/referentiel.js";
+import { creerLienInvitation, empreinteInutilisable, envoyerInvitation } from "../services/comptes.js";
 
 /**
  * Contrôleur pour les enseignants : permanents et vacataires, service dû, compétences.
@@ -268,8 +269,8 @@ export const importEnseignants = asyncHandler(async (req, res) => {
             
             if (!user) {
                 // Créer l'utilisateur
-                const password = enseignantData.password || "password123";
-                const password_hash = await hashPassword(password);
+                // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion
+                const password_hash = enseignantData.password ? await hashPassword(String(enseignantData.password)) : await empreinteInutilisable();
 
                 user = await Users.create({
                     nom: enseignantData.nom,
@@ -279,7 +280,9 @@ export const importEnseignants = asyncHandler(async (req, res) => {
                     telephone: enseignantData.telephone || null,
                     actif: enseignantData.actif !== undefined ? enseignantData.actif : true,
                     password_hash: password_hash,
+                    must_change_password: true,
                 });
+                if (!enseignantData.password) await envoyerInvitation(user, await creerLienInvitation(user));
             } else if (user.role !== "enseignant") {
                 // Mettre à jour le rôle si nécessaire
                 await user.update({ role: "enseignant" });

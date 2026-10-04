@@ -52,7 +52,9 @@ export const validateUserCreation = [
     body("nom").trim().notEmpty().withMessage("Le nom est requis"),
     body("prenom").trim().notEmpty().withMessage("Le prénom est requis"),
     body("email").isEmail().withMessage("L'email doit être valide"),
+    // Facultatif : sans mot de passe, le compte reçoit un lien d'invitation
     body("password")
+        .optional({ checkFalsy: true })
         .isString()
         .isLength({ min: 8 })
         .withMessage("Le mot de passe doit contenir au moins 8 caractères"),
@@ -61,6 +63,9 @@ export const validateUserCreation = [
         .isIn(["admin", "enseignant", "etudiant"])
         .withMessage("Rôle invalide"),
     telephoneOptionnel(),
+    body("profil").optional().isObject().withMessage("Fiche invalide"),
+    body("profil.id_groupe").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Groupe invalide"),
+    body("profil.statut").optional().isIn(["permanent", "vacataire"]).withMessage("Statut invalide"),
     handleValidationErrors,
 ];
 

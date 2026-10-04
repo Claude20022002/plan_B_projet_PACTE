@@ -9,6 +9,7 @@ import {
     refreshToken,
     forgotPassword,
     resetPassword,
+    changePassword,
 } from "../controllers/authController.js";
 import { authenticateToken, optionalAuth } from "../middleware/authMiddleware.js";
 import { issueCsrfToken } from "../middleware/csrfMiddleware.js";
@@ -33,6 +34,9 @@ router.post("/logout-all", authenticateToken, asyncHandler(logoutAllDevices));
 
 // 🔐 GET /api/auth/me - Profil utilisateur connecté
 router.get("/me", authenticateToken, asyncHandler(getMe));
+
+// Changer son mot de passe (obligatoire après une invitation ou un mot de passe provisoire)
+router.post("/change-password", authRateLimiter, authenticateToken, asyncHandler(changePassword));
 
 // 🔐 POST /api/auth/refresh - Rafraîchir le token
 router.post("/refresh", asyncHandler(refreshToken));
