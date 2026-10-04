@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+    Autocomplete,
     Box,
     Button,
     Dialog,
@@ -22,14 +23,14 @@ import {
     ToggleButtonGroup,
     Typography,
 } from '@mui/material';
-import { Add, Delete, Edit, UploadFile } from '@mui/icons-material';
+import { Add, Close, Delete, Edit, ManageAccounts, UploadFile } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
 import DataToolbar from '../../design-system/components/DataToolbar';
 import EmptyState from '../../design-system/components/EmptyState';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
-import { campusAPI, filiereAPI } from '../../services/api';
+import { campusAPI, enseignantAPI, filiereAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { fetchAll } from '../../utils/fetchAll';
 import { lineColor } from '../../design-system/tokens';
@@ -74,6 +75,7 @@ export default function Filieres() {
     const [dialog, setDialog] = useState({ open: false, editing: null, form: FILIERE_VIDE });
     const [aSupprimer, setASupprimer] = useState(null);
     const [importOuvert, setImportOuvert] = useState(false);
+    const [idResponsables, setIdResponsables] = useState(null);
 
     const charger = useCallback(async () => {
         setLoading(true);
@@ -222,6 +224,7 @@ export default function Filieres() {
                                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.programs.cols.regime')}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{t('ref.programs.cols.campus')}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{t('ref.programs.cols.partner')}</TableCell>
+                                    <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{t('ref.programs.heads')}</TableCell>
                                     <TableCell align="right">{t('ref.rooms.cols.actions')}</TableCell>
                                 </TableRow>
                             </TableHead>
@@ -254,7 +257,19 @@ export default function Filieres() {
                                         <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t(`ref.regimes.${f.regime}`)}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{f.campus_prefere?.nom || '—'}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{f.partenaire || '—'}</TableCell>
+                                        <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
+                                            {f.responsables?.length ? (
+                                                f.responsables.map((r) => `${r.user?.prenom?.[0] ?? ''}. ${r.user?.nom ?? ''}`).join(', ')
+                                            ) : (
+                                                <Typography component="span" variant="body2" color="text.secondary">
+                                                    {t('ref.programs.headsNone')}
+                                                </Typography>
+                                            )}
+                                        </TableCell>
                                         <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                                            <IconButton size="small" onClick={() => setIdResponsables(f.id_filiere)} aria-label={t('ref.programs.headsTitle', { name: f.code_filiere })}>
+                                                <ManageAccounts fontSize="small" />
+                                            </IconButton>
                                             <IconButton size="small" onClick={() => ouvrir(f)} aria-label={t('ref.common.editItem', { name: f.nom_filiere })}>
                                                 <Edit fontSize="small" />
                                             </IconButton>
@@ -347,6 +362,8 @@ export default function Filieres() {
                 onImport={importer}
             />
 
+            <ResponsablesDialog filiere={filieres.find((f) => f.id_filiere === idResponsables) ?? null} onClose={() => setIdResponsables(null)} onChange={charger} />
+
             <ConfirmDialog
                 open={Boolean(aSupprimer)}
                 title={t('ref.programs.deleteTitle')}
@@ -355,5 +372,97 @@ export default function Filieres() {
                 onCancel={() => setASupprimer(null)}
             />
         </DashboardLayout>
+    );
+}
+
+/** Responsables d'une filière : enseignants qui préparent ses emplois du temps (nommés par l'administration). */
+function ResponsablesDialog({ filiere, onClose, onChange }) {
+    const { t } = useTranslation();
+    const toast = useToast();
+    const [enseignants, setEnseignants] = useState([]);
+    const [choix, setChoix] = useState(null);
+
+    useEffect(() => {
+        if (!filiere || enseignants.length) return;
+        fetchAll(enseignantAPI.getAll)
+            .then((liste) => setEnseignants(liste.filter((e) => e.user?.actif !== false)))
+            .catch(() => toast.error(t('common.errorLoad')));
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [filiere]);
+
+    const erreur = (error) => toast.error(error.response?.data?.error || error.message);
+    const responsables = filiere?.responsables ?? [];
+    const dejaNommes = new Set(responsables.map((r) => r.id_user));
+
+    const nommer = async () => {
+        try {
+            await filiereAPI.ajouterResponsable(filiere.id_filiere, choix.id_user);
+            toast.success(t('ref.programs.headAdded'));
+            setChoix(null);
+            onChange();
+        } catch (error) {
+            erreur(error);
+        }
+    };
+
+    const retirer = async (idUser) => {
+        try {
+            await filiereAPI.retirerResponsable(filiere.id_filiere, idUser);
+            toast.success(t('ref.programs.headRemoved'));
+            onChange();
+        } catch (error) {
+            erreur(error);
+        }
+    };
+
+    return (
+        <Dialog open={Boolean(filiere)} onClose={onClose} maxWidth="xs" fullWidth>
+            <DialogTitle>
+                {t('ref.programs.headsTitle', { name: filiere?.code_filiere })}
+                <Typography variant="body2" color="text.secondary">
+                    {filiere?.nom_filiere}
+                </Typography>
+            </DialogTitle>
+            <DialogContent>
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {t('ref.programs.headsIntro')}
+                </Typography>
+                <Box sx={{ borderTop: '1px solid', borderColor: 'divider', mb: 2 }}>
+                    {responsables.length === 0 && (
+                        <Typography variant="body2" sx={{ py: 1 }}>
+                            {t('ref.programs.headsNone')}
+                        </Typography>
+                    )}
+                    {responsables.map((r) => (
+                        <Stack key={r.id_user} direction="row" alignItems="center" sx={{ py: 0.75, borderBottom: '1px solid', borderColor: 'divider' }}>
+                            <Typography variant="body2" sx={{ flex: 1 }}>
+                                {r.user?.prenom} {r.user?.nom}
+                            </Typography>
+                            <IconButton size="small" onClick={() => retirer(r.id_user)} aria-label={t('ref.programs.headRemove', { name: `${r.user?.prenom} ${r.user?.nom}` })}>
+                                <Close fontSize="small" />
+                            </IconButton>
+                        </Stack>
+                    ))}
+                </Box>
+                <Stack direction="row" spacing={1} alignItems="center">
+                    <Autocomplete
+                        sx={{ flex: 1 }}
+                        size="small"
+                        options={enseignants.filter((e) => !dejaNommes.has(e.id_user)).sort((a, b) => (a.user?.nom || '').localeCompare(b.user?.nom || ''))}
+                        value={choix}
+                        onChange={(_, v) => setChoix(v)}
+                        getOptionLabel={(e) => `${e.user?.nom} ${e.user?.prenom}${e.departement ? ` · ${e.departement}` : ''}`}
+                        isOptionEqualToValue={(a, b) => a.id_user === b.id_user}
+                        renderInput={(params) => <TextField {...params} label={t('ref.programs.headPick')} />}
+                    />
+                    <Button variant="contained" onClick={nommer} disabled={!choix}>
+                        {t('ref.programs.headAdd')}
+                    </Button>
+                </Stack>
+            </DialogContent>
+            <DialogActions>
+                <Button onClick={onClose}>{t('common.close')}</Button>
+            </DialogActions>
+        </Dialog>
     );
 }
