@@ -27,6 +27,8 @@ import { demandeReportAPI } from '../../services/api';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_DEMANDES_REPORT } from '../../utils/exportColumns';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import ViolationsDialog from '../../components/planning/ViolationsDialog';
 
 export default function DemandesReportAdmin() {
     const { user } = useAuth();
@@ -36,6 +38,8 @@ export default function DemandesReportAdmin() {
     const [success, setSuccess] = useState('');
     const [detailDialog, setDetailDialog] = useState({ open: false, demande: null });
     const [processingId, setProcessingId] = useState(null);
+    const [violations, setViolations] = useState(null);
+    const { t } = useTranslation();
 
     useEffect(() => {
         loadDemandes();
@@ -54,20 +58,28 @@ export default function DemandesReportAdmin() {
         }
     };
 
-    const traiterDemande = async (id, action) => {
+    const traiterDemande = async (id, action, extra = {}) => {
         try {
             setProcessingId(id);
             setError('');
             setSuccess('');
-            
-            await demandeReportAPI.traiter(id, action);
-            
-            setSuccess(`Demande ${action === 'approuver' ? 'approuvée' : 'refusée'} avec succès`);
+
+            const reponse = await demandeReportAPI.traiter(id, action, extra);
+
+            setViolations(null);
+            setSuccess(extra.forcer ? t('rules.forced') : `Demande ${action === 'approuver' ? 'approuvée' : 'refusée'} avec succès`);
             await loadDemandes();
+            return reponse;
         } catch (error) {
+            // Approuver = déplacer la séance : 409 avec la liste des règles enfreintes
+            if (error.status === 409 && error.response?.data?.violations) {
+                setViolations({ liste: error.response.data.violations, forcer: (justification) => traiterDemande(id, action, { forcer: true, justification }) });
+                return null;
+            }
             console.error('Erreur:', error);
             const errorMessage = error.message || error.response?.data?.message || error.response?.data?.error || `Erreur lors du traitement de la demande`;
             setError(errorMessage);
+            return null;
         } finally {
             setProcessingId(null);
         }
@@ -379,6 +391,7 @@ export default function DemandesReportAdmin() {
                     )}
                 </Dialog>
             </Box>
+            <ViolationsDialog violations={violations?.liste} onClose={() => setViolations(null)} onForcer={violations?.forcer} />
         </DashboardLayout>
     );
 }

@@ -35,6 +35,8 @@ import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAP
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_AFFECTATIONS } from '../../utils/exportColumns';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from 'react-i18next';
+import ViolationsDialog from '../../components/planning/ViolationsDialog';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { formatHeure } from '../../utils/session';
@@ -54,6 +56,7 @@ const validationSchema = yup.object({
 
 export default function Affectations() {
     const { user } = useAuth();
+    const { t } = useTranslation();
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
     const [searchParams, setSearchParams] = useSearchParams();
@@ -67,6 +70,7 @@ export default function Affectations() {
     const [editing, setEditing] = useState(null);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [violations, setViolations] = useState(null);
     const [options, setOptions] = useState({
         cours: [],
         groupes: [],
@@ -159,22 +163,39 @@ export default function Affectations() {
                     id_user_admin: user?.id_user || Number(values.id_user_admin),
                 };
 
-                if (editing) {
-                    await affectationAPI.update(editing.id_affectation, dataToSend);
-                    setSuccess('Séance modifiée avec succès');
-                } else {
-                    await affectationAPI.create(dataToSend);
-                    setSuccess('Séance planifiée avec succès');
+                // Les règles de planification sont vérifiées par le serveur : 409 + liste si l'une bloque,
+                // et l'administration peut alors forcer en justifiant (ViolationsDialog)
+                const envoyer = (extra = {}) =>
+                    editing ? affectationAPI.update(editing.id_affectation, { ...dataToSend, ...extra }) : affectationAPI.create({ ...dataToSend, ...extra });
+                const apresEnregistrement = async (reponse) => {
+                    const avertissements = (reponse.violations || []).filter((v) => !v.bloquant).length;
+                    const base = reponse.force ? t('rules.forced') : editing ? 'Séance modifiée avec succès' : 'Séance planifiée avec succès';
+                    setSuccess(avertissements ? `${base} · ${t('rules.warningsCount', { count: avertissements })}` : base);
+                    setViolations(null);
+                    formik.resetForm();
+                    setOpen(false);
+                    setEditing(null);
+                    setSearchParams({}); // Nettoyer les paramètres URL
+                    await loadAffectations();
+                };
+                try {
+                    await apresEnregistrement(await envoyer());
+                } catch (erreurEnvoi) {
+                    if (erreurEnvoi.status === 409 && erreurEnvoi.response?.data?.violations) {
+                        setViolations({
+                            liste: erreurEnvoi.response.data.violations,
+                            forcer: async (justification) => {
+                                try {
+                                    await apresEnregistrement(await envoyer({ forcer: true, justification }));
+                                } catch (erreurForcage) {
+                                    setError(erreurForcage.response?.data?.error || erreurForcage.message);
+                                }
+                            },
+                        });
+                        return;
+                    }
+                    throw erreurEnvoi;
                 }
-                
-                // Fermer le dialog et réinitialiser
-                formik.resetForm();
-                setOpen(false);
-                setEditing(null);
-                setSearchParams({}); // Nettoyer les paramètres URL
-                
-                // Recharger les affectations
-                await loadAffectations();
             } catch (error) {
                 console.error('Erreur lors de la sauvegarde:', error);
                 
@@ -555,6 +576,7 @@ export default function Affectations() {
                     </form>
                 </Dialog>
             </Box>
+            <ViolationsDialog violations={violations?.liste} onClose={() => setViolations(null)} onForcer={violations?.forcer} />
         </DashboardLayout>
     );
 }
