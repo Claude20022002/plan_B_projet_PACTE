@@ -12,6 +12,7 @@ import {
 } from "../models/index.js";
 import { Op } from "sequelize";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { appliquerRamadan } from "../services/planning/ramadan.js";
 
 /**
  * Formate les affectations en emploi du temps organisé par jour
@@ -132,6 +133,7 @@ export const getEmploiDuTempsEnseignant = asyncHandler(async (req, res) => {
             [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
         ],
     });
+    await appliquerRamadan(affectations);
 
     const emploiParJour = formatEmploiDuTemps(affectations);
 
@@ -193,6 +195,7 @@ export const getEmploiDuTempsGroupe = asyncHandler(async (req, res) => {
             [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
         ],
     });
+    await appliquerRamadan(affectations);
 
     const groupe = await Groupe.findByPk(id, {
         include: [{ model: Filiere, as: "filiere" }],
@@ -283,6 +286,7 @@ export const getEmploiDuTempsEtudiant = asyncHandler(async (req, res) => {
             [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
         ],
     });
+    await appliquerRamadan(affectations);
 
     const etudiant = await Etudiant.findByPk(id, {
         include: [{ model: Users, as: "user" }],
@@ -364,6 +368,7 @@ export const getEmploiDuTempsSalle = asyncHandler(async (req, res) => {
             [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
         ],
     });
+    await appliquerRamadan(affectations);
 
     const salle = await Salle.findByPk(id);
 
@@ -439,6 +444,7 @@ export const getEmploiDuTempsConsolide = asyncHandler(async (req, res) => {
             [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
         ],
     });
+    await appliquerRamadan(affectations);
 
     const emploiParJour = formatEmploiDuTemps(affectations);
 

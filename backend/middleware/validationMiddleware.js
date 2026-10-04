@@ -486,7 +486,7 @@ const champsSeance = (requis) => {
     const champ = (nom) => (requis ? body(nom) : body(nom).optional());
     return [
         champ("date_seance").isISO8601({ strict: true }).withMessage("Format de date invalide (AAAA-MM-JJ)"),
-        body("statut").optional().isIn(["planifie", "confirme", "annule", "reporte"]).withMessage("Statut invalide"),
+        body("statut").optional().isIn(["planifie", "confirme", "annule", "reporte", "realise"]).withMessage("Statut invalide"),
         body("commentaire").optional({ nullable: true }).trim(),
         champ("id_cours").isInt({ min: 1 }).withMessage("ID cours invalide"),
         champ("id_groupe").isInt({ min: 1 }).withMessage("ID groupe invalide"),

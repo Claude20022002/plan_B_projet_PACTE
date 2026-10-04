@@ -13,6 +13,7 @@ import {
     SessionExamenSalle,
     Surveillance,
 } from "../../models/index.js";
+import { appliquerRamadan } from "./ramadan.js";
 
 /**
  * Tout ce qui occupe des salles, des personnes ou des groupes un jour donné, sous une forme
@@ -22,7 +23,7 @@ import {
  * recherche de créneaux libres (I8).
  */
 
-export const STATUTS_SEANCE_ACTIFS = ["planifie", "confirme", "reporte"];
+export const STATUTS_SEANCE_ACTIFS = ["planifie", "confirme", "reporte", "realise"];
 
 const hhmm = (h) => String(h).slice(0, 5);
 
@@ -106,5 +107,6 @@ export const occupationsDuJour = async (date, { transaction, sources = ["seance"
               })
             : [],
     ]);
+    await appliquerRamadan(seances, { transaction });
     return [...seances.map(depuisSeance), ...reservations.map(depuisReservation), ...examens.map(depuisExamen)];
 };

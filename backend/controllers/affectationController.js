@@ -14,6 +14,7 @@ import { STATUTS_ACTIFS, aujourdhui } from "../services/planning/affectationRule
 import { ErreurMetier } from "../services/planning/enseignements.js";
 import { notifierNouvelleAffectation } from "../utils/notificationHelper.js";
 import { pick } from "../utils/validationHelper.js";
+import { appliquerRamadan } from "../services/planning/ramadan.js";
 import { etudiantAppartientAuGroupe } from "../middleware/accessMiddleware.js";
 
 /**
@@ -59,6 +60,7 @@ export const getAllAffectations = asyncHandler(async (req, res) => {
         offset,
         order: [["date_seance", "DESC"], ["id_affectation", "DESC"]],
     });
+    await appliquerRamadan(affectations);
 
     res.json(createPaginationResponse(affectations, count, page, limit));
 });
@@ -268,6 +270,7 @@ export const getAffectationsByEnseignant = asyncHandler(async (req, res) => {
         offset,
         order: [["date_seance", "ASC"], ["id_affectation", "ASC"]],
     });
+    await appliquerRamadan(affectations);
 
     res.json(createPaginationResponse(affectations, count, page, limit));
 });
@@ -325,6 +328,7 @@ export const getAffectationsByGroupe = asyncHandler(async (req, res) => {
         offset,
         order: [["date_seance", "ASC"], ["id_affectation", "ASC"]],
     });
+    await appliquerRamadan(affectations);
 
     res.json(createPaginationResponse(affectations, count, page, limit));
 });

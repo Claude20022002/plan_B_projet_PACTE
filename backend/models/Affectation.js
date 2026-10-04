@@ -14,7 +14,7 @@ const Affectation = sequelize.define(
             allowNull: false,
         },
         statut: {
-            type: DataTypes.ENUM("planifie", "confirme", "annule", "reporte"),
+            type: DataTypes.ENUM("planifie", "confirme", "annule", "reporte", "realise"),
             defaultValue: "planifie",
         },
         commentaire: DataTypes.TEXT,
@@ -55,6 +55,8 @@ const Affectation = sequelize.define(
         },
         // Séance reportée : date et créneau d'origine (l'ancienne heure s'affiche barrée)
         date_seance_initiale: DataTypes.DATEONLY,
+        // Séance faite (phase P7) : marquée par l'enseignant ou d'office après une séance confirmée
+        realisee_le: DataTypes.DATE,
         id_creneau_initial: DataTypes.INTEGER,
         id_snapshot: {
             type: DataTypes.INTEGER,

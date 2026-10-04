@@ -22,6 +22,8 @@ import SessionExamen from "./SessionExamen.js";
 import SessionExamenGroupe from "./SessionExamenGroupe.js";
 import SessionExamenSalle from "./SessionExamenSalle.js";
 import Surveillance from "./Surveillance.js";
+import RetourSeance from "./RetourSeance.js";
+import RetourSeanceParticipation from "./RetourSeanceParticipation.js";
 import AuthSession from "./AuthSession.js";
 import GenerationSession from "./GenerationSession.js";
 import PlanningSnapshot from "./PlanningSnapshot.js";
@@ -478,6 +480,10 @@ Surveillance.belongsTo(Users, { foreignKey: "id_user", as: "surveillant", target
 Surveillance.belongsTo(Salle, { foreignKey: "id_salle", as: "salle" });
 Surveillance.belongsTo(SessionExamen, { foreignKey: "id_session", as: "session" });
 
+// Retours de séance (I7) : anonymes, une participation par étudiant
+Affectation.hasMany(RetourSeance, { foreignKey: "id_affectation", as: "retours", onDelete: "CASCADE" });
+RetourSeance.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
+
 // Export de tous les modèles
 export {
     Users,
@@ -519,4 +525,6 @@ export {
     SessionExamenGroupe,
     SessionExamenSalle,
     Surveillance,
+    RetourSeance,
+    RetourSeanceParticipation,
 };

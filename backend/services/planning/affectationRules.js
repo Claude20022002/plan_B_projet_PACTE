@@ -18,6 +18,7 @@ import { groupesLies } from "./groupes.js";
 import { lireParametre, minutesTrajet } from "./referentiel.js";
 import { disponibiliteEnseignant } from "./enseignants.js";
 import { occupationsDuJour } from "./occupations.js";
+import { appliquerRamadan, creneauEffectif } from "./ramadan.js";
 
 /**
  * Règles d'une séance (phase B). `validerAffectation` renvoie la liste des violations, sans
@@ -33,7 +34,7 @@ import { occupationsDuJour } from "./occupations.js";
  */
 
 // Séances qui occupent leur créneau (une séance reportée l'occupe à sa nouvelle date)
-export const STATUTS_ACTIFS = ["planifie", "confirme", "reporte"];
+export const STATUTS_ACTIFS = ["planifie", "confirme", "reporte", "realise"];
 
 const JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
 const FUSEAU = process.env.APP_TIMEZONE || "Africa/Casablanca";
@@ -111,7 +112,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
     const signaler = (code, message, extra = {}, bloquant = true) => violations.push({ code, bloquant, message, ...extra });
     const options = { transaction };
 
-    const [creneau, groupe, salle, cours, enseignement] = await Promise.all([
+    const [creneauNormal, groupe, salle, cours, enseignement] = await Promise.all([
         Creneau.findByPk(seance.id_creneau, options),
         Groupe.findByPk(seance.id_groupe, { ...options, include: [{ model: Filiere, as: "filiere" }] }),
         seance.id_salle ? Salle.findByPk(seance.id_salle, options) : null,
@@ -127,12 +128,14 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
               })
             : null,
     ]);
-    if (!creneau) signaler("introuvable", "Créneau introuvable");
+    if (!creneauNormal) signaler("introuvable", "Créneau introuvable");
     if (!groupe) signaler("introuvable", "Groupe introuvable");
     if (seance.id_salle && !salle) signaler("introuvable", "Salle introuvable");
     if (!cours) signaler("introuvable", "Module introuvable");
     if (seance.id_enseignement && !enseignement) signaler("introuvable", "Enseignement introuvable");
     if (violations.length) return { violations, bloquant: true };
+    // Pendant le Ramadan, même rang mais horaires réduits (variante de la grille)
+    const creneau = await creneauEffectif(creneauNormal, seance.date_seance, { transaction });
 
     const idsEnseignants = enseignantsDe(seance, enseignement);
     const idsGroupes = groupesDe(seance, enseignement);
@@ -211,6 +214,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
         ],
         transaction,
     });
+    await appliquerRamadan(duJour, { transaction });
     const autres = duJour.map((a) => ({
         seance: a,
         enseignants: enseignantsDe(a, a.enseignement),
@@ -317,6 +321,7 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
                 include: [{ model: Creneau, as: "creneau" }],
                 transaction,
             });
+            await appliquerRamadan(semaine, { transaction });
             const total = semaine.reduce((t, a) => t + duree(a.creneau), 0) + dureeSeance;
             if (total > plafond * 60) signaler("max_heures_semaine", `${nom} dépasserait son plafond de ${plafond} h cette semaine (${(total / 60).toFixed(1)} h)`, { id_user: idUser }, false);
         }
