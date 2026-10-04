@@ -16,6 +16,8 @@ import {
     MODALITES,
     STATUTS_ENSEIGNANT,
     ROLES_SERVICE,
+    TYPES_RESERVATION,
+    ROLES_PARTICIPANT,
     normaliserTypeSalle,
 } from "../config/referentiel.js";
 
@@ -506,6 +508,26 @@ export const validateAffectationCreation = [
 ];
 
 export const validateAffectationUpdate = [...champsSeance(false), handleValidationErrors];
+
+// ==================== VALIDATIONS RÉSERVATION (phase P5) ====================
+const HEURE_RESA = /^([01]\d|2[0-3]):[0-5]\d(:[0-5]\d)?$/;
+export const validateReservation = [
+    body("type").isIn(TYPES_RESERVATION).withMessage("Type de réservation invalide"),
+    body("titre").trim().notEmpty().isLength({ max: 255 }).withMessage("Le titre est requis"),
+    body("description").optional({ nullable: true }).isString().trim(),
+    body("id_salle").optional({ nullable: true, checkFalsy: true }).isInt({ min: 1 }).withMessage("Salle invalide"),
+    body("date").isISO8601({ strict: true }).withMessage("Date invalide (AAAA-MM-JJ)"),
+    body("heure_debut").matches(HEURE_RESA).withMessage("Heure de début invalide (HH:MM)"),
+    body("heure_fin").matches(HEURE_RESA).withMessage("Heure de fin invalide (HH:MM)"),
+    body("id_affectation_origine").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Séance d'origine invalide"),
+    body("participants").optional().isArray({ max: 200 }).withMessage("Participants invalides"),
+    body("participants.*.id_user").optional({ nullable: true }).isInt({ min: 1 }),
+    body("participants.*.id_groupe").optional({ nullable: true }).isInt({ min: 1 }),
+    body("participants.*.role").optional().isIn(ROLES_PARTICIPANT).withMessage("Rôle de participant invalide"),
+    body("forcer").optional().isBoolean({ strict: true }),
+    body("justification").optional({ nullable: true }).isString().trim().isLength({ max: 1000 }),
+    handleValidationErrors,
+];
 
 // ==================== VALIDATIONS DEMANDE REPORT ====================
 
