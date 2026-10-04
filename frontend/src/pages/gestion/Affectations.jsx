@@ -29,14 +29,15 @@ import {
     useMediaQuery,
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Add, Edit, Delete, Visibility, Download } from '@mui/icons-material';
+import { Add, Edit, Delete, Visibility, Download, AutoAwesome } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI } from '../../services/api';
+import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI, imprevuAPI } from '../../services/api';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_AFFECTATIONS } from '../../utils/exportColumns';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import ViolationsDialog from '../../components/planning/ViolationsDialog';
+import AssistantCreneauxDialog from '../../components/planning/AssistantCreneauxDialog';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { formatHeure } from '../../utils/session';
@@ -71,6 +72,7 @@ export default function Affectations() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [violations, setViolations] = useState(null);
+    const [aDeplacer, setADeplacer] = useState(null);
     const [options, setOptions] = useState({
         cours: [],
         groupes: [],
@@ -383,6 +385,7 @@ export default function Affectations() {
                                         {aff.enseignant?.prenom || ''} {aff.enseignant?.nom || '-'} · {new Date(aff.date_seance).toLocaleDateString('fr-FR')} · {formatHeure(aff.creneau?.heure_debut)} – {formatHeure(aff.creneau?.heure_fin)}
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, mt: 1 }}>
+                                        <IconButton size="small" onClick={() => setADeplacer(aff)} aria-label={t('incidents.move')}><AutoAwesome fontSize="small" /></IconButton>
                                         <IconButton size="small" onClick={() => handleEdit(aff)}><Edit fontSize="small" /></IconButton>
                                         <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)}><Delete fontSize="small" /></IconButton>
                                     </Box>
@@ -423,6 +426,9 @@ export default function Affectations() {
                                                 <StatusBadge status={aff.statut} />
                                             </TableCell>
                                             <TableCell align="right">
+                                                <IconButton size="small" onClick={() => setADeplacer(aff)} aria-label={t('incidents.move')} title={t('incidents.move')}>
+                                                    <AutoAwesome fontSize="small" />
+                                                </IconButton>
                                                 <IconButton size="small" onClick={() => handleEdit(aff)}>
                                                     <Edit fontSize="small" />
                                                 </IconButton>
@@ -577,6 +583,25 @@ export default function Affectations() {
                 </Dialog>
             </Box>
             <ViolationsDialog violations={violations?.liste} onClose={() => setViolations(null)} onForcer={violations?.forcer} />
+            {/* Assistant de créneaux (I8) : déplacer une séance sur un créneau déjà vérifié */}
+            <AssistantCreneauxDialog
+                open={Boolean(aDeplacer)}
+                titre={t('incidents.findSlot')}
+                sousTitre={aDeplacer ? `${aDeplacer.cours?.nom_cours ?? ''} · ${aDeplacer.groupe?.nom_groupe ?? ''}` : ''}
+                onClose={() => setADeplacer(null)}
+                chercher={(date_debut, date_fin) => imprevuAPI.creneauxSeance({ id_affectation: aDeplacer.id_affectation, date_debut, date_fin })}
+                onChoisir={async (p) => {
+                    try {
+                        await affectationAPI.update(aDeplacer.id_affectation, { date_seance: p.date, id_creneau: p.id_creneau, id_salle: p.id_salle });
+                        setSuccess(t('incidents.moved'));
+                        setADeplacer(null);
+                        await loadAffectations();
+                    } catch (erreurDeplacement) {
+                        setError(erreurDeplacement.response?.data?.error || erreurDeplacement.message);
+                    }
+                }}
+                libelleChoix={t('incidents.moveHere')}
+            />
         </DashboardLayout>
     );
 }
