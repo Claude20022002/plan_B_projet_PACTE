@@ -309,10 +309,10 @@ export default function Reservations() {
                                 />
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                     <TextField type="date" label={t('resa.fields.date')} value={form.date} onChange={champ('date')} InputLabelProps={{ shrink: true }} required fullWidth />
-                                    <TextField type="time" label={t('resa.fields.start')} value={form.heure_debut} onChange={champ('heure_debut')} InputLabelProps={{ shrink: true }} required />
-                                    <TextField type="time" label={t('resa.fields.end')} value={form.heure_fin} onChange={champ('heure_fin')} InputLabelProps={{ shrink: true }} required />
+                                    <TextField type="time" label={t('resa.fields.start')} value={form.heure_debut} onChange={champ('heure_debut')} InputLabelProps={{ shrink: true }} required sx={{ minWidth: 130 }} />
+                                    <TextField type="time" label={t('resa.fields.end')} value={form.heure_fin} onChange={champ('heure_fin')} InputLabelProps={{ shrink: true }} required sx={{ minWidth: 130 }} />
                                 </Stack>
-                                <TextField select label={t('resa.fields.room')} value={form.id_salle} onChange={champ('id_salle')} helperText={form.type === 'reunion' ? t('resa.fields.roomOptional') : null}>
+                                <TextField select label={t('resa.fields.room')} value={form.id_salle} onChange={champ('id_salle')} SelectProps={{ displayEmpty: true }} InputLabelProps={{ shrink: true }} helperText={form.type === 'reunion' ? t('resa.fields.roomOptional') : null}>
                                     <MenuItem value="">{t('assistant.remote')}</MenuItem>
                                     {ref.salles.map((s) => (
                                         <MenuItem key={s.id_salle} value={s.id_salle}>

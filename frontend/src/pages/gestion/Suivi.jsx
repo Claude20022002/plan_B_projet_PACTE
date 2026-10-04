@@ -93,7 +93,7 @@ function Avancement({ nombre, user }) {
                         </MenuItem>
                     ))}
                 </TextField>
-                <TextField select size="small" label={t('ref.curriculum.program')} value={filiere} onChange={(e) => setFiliere(e.target.value)} sx={{ minWidth: 220 }}>
+                <TextField select size="small" label={t('ref.curriculum.program')} value={filiere} onChange={(e) => setFiliere(e.target.value)} sx={{ minWidth: 220 }} SelectProps={{ displayEmpty: true }} InputLabelProps={{ shrink: true }}>
                     <MenuItem value="">{t('ref.curriculum.allPrograms')}</MenuItem>
                     {filieres.map((f) => (
                         <MenuItem key={f.id_filiere} value={f.id_filiere}>
@@ -143,7 +143,7 @@ function Avancement({ nombre, user }) {
                                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{l.groupes.join(', ')}</TableCell>
                                     <TableCell>
                                         <Box sx={{ position: 'relative' }}>
-                                            <LinearProgress variant="determinate" value={Math.min(100, (100 * l.heures_realisees) / (l.heures_prevues || 1))} sx={{ height: 6, borderRadius: 1 }} />
+                                            <LinearProgress variant="determinate" value={Math.min(100, (100 * l.heures_realisees) / (l.heures_prevues || 1))} sx={{ height: 6, borderRadius: 1, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }} />
                                             {/* Repère du rythme attendu à ce jour */}
                                             <Box aria-hidden sx={{ position: 'absolute', top: -3, bottom: -3, width: 2, bgcolor: 'text.primary', left: `${Math.min(100, (100 * l.heures_attendues) / (l.heures_prevues || 1))}%` }} />
                                         </Box>

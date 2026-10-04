@@ -107,7 +107,6 @@ export default function AssistantCreneauxDialog({ open, titre, sousTitre, onClos
                                                 {p.heure_debut}–{p.heure_fin} · {p.nom_salle ?? t('assistant.remote')}
                                             </Typography>
                                         </Box>
-                                        {p.meme_salle && <StateChip tone="info">{t('assistant.sameRoom')}</StateChip>}
                                         {p.avertissements?.length > 0 && (
                                             <StateChip tone="warning" title={p.avertissements.map((a) => a.message).join(' · ')}>
                                                 {t('rules.warningsCount', { count: p.avertissements.length })}

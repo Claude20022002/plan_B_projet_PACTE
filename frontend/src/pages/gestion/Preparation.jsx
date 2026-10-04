@@ -129,7 +129,7 @@ export default function Preparation() {
                                         {filiere.nom_filiere}
                                     </Typography>
                                     <Box sx={{ width: 120, display: { xs: 'none', sm: 'block' } }}>
-                                        <LinearProgress variant="determinate" value={avancement} sx={{ height: 6, borderRadius: 1 }} />
+                                        <LinearProgress variant="determinate" value={avancement} sx={{ height: 6, borderRadius: 1, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }} />
                                     </Box>
                                     <Typography sx={{ fontFamily: ds.font.board, fontWeight: 600, fontVariantNumeric: 'tabular-nums', minWidth: 44, textAlign: 'right' }}>{avancement} %</Typography>
                                 </Stack>

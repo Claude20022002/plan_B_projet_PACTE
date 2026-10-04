@@ -275,7 +275,7 @@ function Journee({ ref_, ligneSeance, ouvrirAssistant, erreur }) {
             </Typography>
             <Stack direction={{ xs: 'column', md: 'row' }} spacing={1.5} sx={{ mb: 2 }}>
                 <TextField size="small" type="date" label={t('incidents.date')} value={form.date} onChange={(e) => setForm((f) => ({ ...f, date: e.target.value }))} InputLabelProps={{ shrink: true }} />
-                <TextField select size="small" label={t('ref.curriculum.program')} value={form.id_filiere} onChange={(e) => setForm((f) => ({ ...f, id_filiere: e.target.value }))} sx={{ minWidth: 200 }}>
+                <TextField select size="small" label={t('ref.curriculum.program')} value={form.id_filiere} onChange={(e) => setForm((f) => ({ ...f, id_filiere: e.target.value }))} sx={{ minWidth: 200 }} SelectProps={{ displayEmpty: true }} InputLabelProps={{ shrink: true }}>
                     <MenuItem value="">{t('ref.curriculum.allPrograms')}</MenuItem>
                     {ref_.filieres.map((f) => (
                         <MenuItem key={f.id_filiere} value={f.id_filiere}>

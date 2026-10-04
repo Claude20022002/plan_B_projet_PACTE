@@ -254,8 +254,8 @@ export default function Examens() {
                                 />
                                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                     <TextField type="date" label={t('resa.fields.date')} value={dialog.date} onChange={champ('date')} InputLabelProps={{ shrink: true }} required fullWidth />
-                                    <TextField type="time" label={t('resa.fields.start')} value={dialog.heure_debut} onChange={champ('heure_debut')} InputLabelProps={{ shrink: true }} required />
-                                    <TextField type="time" label={t('resa.fields.end')} value={dialog.heure_fin} onChange={champ('heure_fin')} InputLabelProps={{ shrink: true }} required />
+                                    <TextField type="time" label={t('resa.fields.start')} value={dialog.heure_debut} onChange={champ('heure_debut')} InputLabelProps={{ shrink: true }} required sx={{ minWidth: 130 }} />
+                                    <TextField type="time" label={t('resa.fields.end')} value={dialog.heure_fin} onChange={champ('heure_fin')} InputLabelProps={{ shrink: true }} required sx={{ minWidth: 130 }} />
                                 </Stack>
                                 <Autocomplete
                                     multiple
