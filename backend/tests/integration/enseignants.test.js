@@ -147,6 +147,8 @@ describe("Services : proposition, co-enseignement, réponse, charge", () => {
         expect(sansMotif.status).toBe(400);
         const refus = await clients.vacataire.send("patch", `/api/services/${enseignement.id_enseignement}/reponse`, { statut: "refuse", motif: "Déjà pris le lundi matin" });
         expect(refus.status).toBe(200);
+        // Le responsable de la filière est prévenu pour proposer quelqu'un d'autre
+        expect(await Notification.count({ where: { id_user: responsable.id_user, titre: "Service refusé" } })).toBe(1);
 
         const accepte = await clients.permanent.send("patch", `/api/services/${enseignement.id_enseignement}/reponse`, { statut: "accepte" });
         expect(accepte.status).toBe(200);

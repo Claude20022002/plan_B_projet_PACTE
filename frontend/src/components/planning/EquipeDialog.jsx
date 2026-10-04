@@ -19,16 +19,9 @@ import StateChip from '../../design-system/components/StateChip';
 import { enseignementAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { ds } from '../../design-system/tokens';
+import { TON_SERVICE, principalActif } from '../../utils/services';
 
 const ROLES = ['principal', 'co_enseignant'];
-// Pastilles : seules les exceptions (à accepter, refusé) sont signalées ; un service accepté n'en a pas
-export const TON_SERVICE = { propose: 'warning', refuse: 'neutral' };
-
-export const nomCourt = (enseignant) => (enseignant ? `${enseignant.prenom?.[0] ? `${enseignant.prenom[0]}. ` : ''}${enseignant.nom}` : '');
-
-/** Un enseignement a un principal tant qu'il n'a pas refusé. */
-export const principalActif = (services = []) => services.find((s) => s.role === 'principal' && s.statut_service !== 'refuse');
-
 /**
  * Équipe pédagogique d'un enseignement : le responsable propose un principal et des
  * co-enseignants (les candidats compétents d'abord, avec leur charge), retire une proposition.

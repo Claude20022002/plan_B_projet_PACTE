@@ -54,8 +54,6 @@ const MODELE_CSV = [
     'SQUALLI;Nadia;nadia.squalli@hestim.ma;+212600000000;Bases de données;Informatique;Professeur;G-204;permanent;192;18;',
     'MERCIER;Jean;jean.mercier@hestim.ma;;Cloud;Informatique;Vacataire;;vacataire;;9;ESN casablancaise',
 ].join('\n');
-// Un permanent en dessous de cette part de son service dû est signalé en sous-service
-const SEUIL_SOUS_SERVICE = 0.5;
 
 const nombreOuNull = (v) => (v === '' || v === null || v === undefined ? null : Number(v));
 
@@ -288,9 +286,11 @@ export default function Enseignants() {
                                             </TableCell>
                                             <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                                                 <Typography variant="body2">{e.departement}</Typography>
-                                                <Typography variant="caption" color="text.secondary">
-                                                    {e.specialite}
-                                                </Typography>
+                                                {e.specialite && e.specialite !== e.departement && (
+                                                    <Typography variant="caption" color="text.secondary">
+                                                        {e.specialite}
+                                                    </Typography>
+                                                )}
                                             </TableCell>
                                             <TableCell>
                                                 <Typography variant="body2">{t(`ref.staff.statuses.${e.statut}`)}</Typography>
@@ -454,14 +454,15 @@ export default function Enseignants() {
     );
 }
 
-/** Charge prévue : heures, et pastille seulement en cas d'écart notable au service dû. */
+/**
+ * Charge prévue : heures, et pastille seulement au-delà du service dû. Le sous-service n'est pas
+ * signalé : tant que tous les semestres ne sont pas préparés, il serait affiché pour tout le monde.
+ */
 function Charge({ charge, nombre }) {
     const { t } = useTranslation();
     if (!charge) return '—';
     const { heures_prevues: prevues, heures_proposees: proposees, service_du: du } = charge;
-    let pastille = null;
-    if (du && prevues > du) pastille = <StateChip tone="warning" title={t('ref.staff.overTitle')}>{t('ref.staff.over', { hours: nombre.format(prevues - du) })}</StateChip>;
-    else if (du && prevues < du * SEUIL_SOUS_SERVICE) pastille = <StateChip tone="neutral" title={t('ref.staff.underTitle', { hours: nombre.format(du - prevues) })}>{t('ref.staff.under')}</StateChip>;
+    const pastille = du && prevues > du ? <StateChip tone="warning" title={t('ref.staff.overTitle')}>{t('ref.staff.over', { hours: nombre.format(prevues - du) })}</StateChip> : null;
     return (
         <Stack alignItems="flex-end" spacing={0.25}>
             <Stack direction="row" spacing={0.75} alignItems="center">

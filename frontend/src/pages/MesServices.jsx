@@ -181,7 +181,7 @@ function LigneService({ service, nombre, onAccepter, onRefuser }) {
         <Box
             sx={{
                 display: 'grid',
-                gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 2fr) minmax(0, 1.4fr) auto' },
+                gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 2fr) minmax(0, 1.4fr) 200px' },
                 gap: { xs: 1, md: 2 },
                 alignItems: 'center',
                 py: 1.25,
@@ -203,7 +203,6 @@ function LigneService({ service, nombre, onAccepter, onRefuser }) {
                     </Stack>
                     <Typography variant="caption" color="text.secondary">
                         {module.code_cours} · {module.filiere?.code_filiere} · {module.semestre}
-                        {enseignement.periode ? ` · ${enseignement.periode.code}` : ''}
                     </Typography>
                     {service.statut_service === 'refuse' && service.motif_refus && (
                         <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
@@ -228,7 +227,7 @@ function LigneService({ service, nombre, onAccepter, onRefuser }) {
                     </Button>
                 </Stack>
             ) : (
-                <Box sx={{ justifySelf: { md: 'end' } }}>{service.statut_service === 'refuse' && <StateChip tone="neutral">{t('ref.teaching.serviceStatus.refuse')}</StateChip>}</Box>
+                <Box />
             )}
         </Box>
     );

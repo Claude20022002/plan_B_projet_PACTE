@@ -744,8 +744,6 @@ const fr = {
       },
       over: '+{{hours}} h',
       overTitle: 'Au-delà du service dû (heures complémentaires)',
-      under: 'Sous-service',
-      underTitle: '{{hours}} h sous le service dû',
       pending: '{{hours}} h à confirmer',
       add: 'Ajouter un enseignant',
       edit: 'Modifier l’enseignant',
@@ -849,7 +847,6 @@ const fr = {
       emptyVacataire: 'Sans déclaration, vous ne pouvez être placé sur aucun créneau.',
       deleteTitle: 'Supprimer la déclaration',
       deleteBody: 'La déclaration du {{slot}} sera supprimée.',
-      ramadan: 'Ramadan',
     },
     settings: {
       intro: 'Règles appliquées par la vérification des séances et par la génération automatique des emplois du temps. Les valeurs par défaut sont des hypothèses à confirmer avec la direction pédagogique.',

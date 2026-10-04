@@ -8,10 +8,11 @@ import {
     Filiere,
     Groupe,
     Periode,
+    ResponsableFiliere,
     Users,
 } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { creerNotification } from "../utils/notificationHelper.js";
+import { creerNotification, creerNotificationsMultiples, notifierAdministrateurs } from "../utils/notificationHelper.js";
 import { chargesEnseignants } from "../services/planning/enseignants.js";
 
 /**
@@ -25,6 +26,23 @@ const introuvable = (res, quoi, id) => res.status(404).json({ message: `${quoi} 
 const nomModule = async (enseignement) => {
     const composante = await CoursComposante.findByPk(enseignement.id_composante, { include: [{ model: Cours, as: "cours" }] });
     return `${composante.cours.nom_cours} (${composante.type})`;
+};
+
+/** Un refus est signalé aux responsables de la filière (à l'administration s'il n'y en a pas) pour qu'ils proposent quelqu'un d'autre. */
+const signalerRefus = async (service, enseignant) => {
+    const enseignement = await Enseignement.findByPk(service.id_enseignement, {
+        include: [{ model: CoursComposante, as: "composante", include: [{ model: Cours, as: "cours" }] }],
+    });
+    const cours = enseignement.composante.cours;
+    const notification = {
+        titre: "Service refusé",
+        message: `${enseignant.prenom} ${enseignant.nom} refuse ${cours.nom_cours} (${enseignement.composante.type}) : ${service.motif_refus}`,
+        type_notification: "warning",
+        lien: "/gestion/enseignements",
+    };
+    const responsables = await ResponsableFiliere.findAll({ where: { id_filiere: cours.id_filiere }, attributes: ["id_user"] });
+    if (responsables.length) await creerNotificationsMultiples({ ...notification, id_users: responsables.map((r) => r.id_user) });
+    else await notifierAdministrateurs(notification);
 };
 
 // 🧭 Candidats pour un enseignement : ceux qui ont la compétence d'abord, puis les moins chargés
@@ -156,5 +174,6 @@ export const repondreService = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: "Erreur de validation", error: "Indiquez le motif du refus" });
     }
     await service.update({ statut_service: statut, motif_refus: statut === "refuse" ? String(motif).trim() : null });
+    if (statut === "refuse") await signalerRefus(service, req.user);
     res.json({ message: statut === "accepte" ? "Service accepté" : "Service refusé", service });
 });

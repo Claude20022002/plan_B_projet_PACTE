@@ -744,8 +744,6 @@ const en = {
       },
       over: '+{{hours}} h',
       overTitle: 'Above hours due (overtime)',
-      under: 'Under-load',
-      underTitle: '{{hours}} h below hours due',
       pending: '{{hours}} h to confirm',
       add: 'Add a teacher',
       edit: 'Edit teacher',
@@ -849,7 +847,6 @@ const en = {
       emptyVacataire: 'Without a declaration, you cannot be scheduled on any slot.',
       deleteTitle: 'Delete declaration',
       deleteBody: 'The declaration for {{slot}} will be deleted.',
-      ramadan: 'Ramadan',
     },
     settings: {
       intro: 'Rules applied when checking sessions and when generating timetables. Default values are assumptions to be confirmed with the academic office.',

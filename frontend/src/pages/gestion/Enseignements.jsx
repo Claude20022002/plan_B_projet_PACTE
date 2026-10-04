@@ -24,7 +24,8 @@ import {
 import { AutoAwesome, CallSplit, Delete, Edit, GroupAdd, MergeType } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import EquipeDialog, { TON_SERVICE, nomCourt, principalActif } from '../../components/planning/EquipeDialog';
+import EquipeDialog from '../../components/planning/EquipeDialog';
+import { TON_SERVICE, nomCourt, principalActif } from '../../utils/services';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
