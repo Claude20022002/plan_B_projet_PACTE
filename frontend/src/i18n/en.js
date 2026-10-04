@@ -20,6 +20,16 @@ const en = {
     logout: 'Sign out',
     errorLoad: 'The data could not be loaded. Check your connection and try again.',
   },
+  password: {
+    title: 'Choose your password',
+    intro: 'Hello {{name}}, your account uses a temporary password given by the administration. Choose your own to continue.',
+    current: 'Temporary password',
+    new: 'New password',
+    confirm: 'Confirm the new password',
+    rules: 'At least 8 characters, with an uppercase letter, a lowercase letter, a digit and a special character.',
+    mismatch: 'The two passwords do not match',
+    submit: 'Save and continue',
+  },
   roles: {
     admin: 'Administration',
     enseignant: 'Teacher',

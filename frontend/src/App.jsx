@@ -30,6 +30,7 @@ import ErrorBoundary   from './components/common/ErrorBoundary';
 const Connexion      = lazy(() => import('./pages/Connexion'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword  = lazy(() => import('./pages/ResetPassword'));
+const ChangerMotDePasse = lazy(() => import('./pages/ChangerMotDePasse'));
 const Accueil        = lazy(() => import('./pages/Accueil'));
 
 // ── Dashboards (chunk par rôle) ───────────────────────────────────────────
@@ -122,6 +123,9 @@ export default function App() {
           } />
           <Route path="/forgot-password" element={
             <PublicPage><ForgotPassword /></PublicPage>
+          } />
+          <Route path="/changer-mot-de-passe" element={
+            <PublicPage><ChangerMotDePasse /></PublicPage>
           } />
           <Route path="/reset-password" element={
             <PublicPage><ResetPassword /></PublicPage>

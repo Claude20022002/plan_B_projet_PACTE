@@ -22,6 +22,8 @@ export default function ResetPassword() {
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
     const id_user = searchParams.get('id');
+    // Lien reçu à la création du compte : on « choisit » son mot de passe plutôt qu'on le réinitialise
+    const invitation = searchParams.get('invitation') === '1';
 
     const [formData, setFormData] = useState({
         password: '',
@@ -130,7 +132,7 @@ export default function ResetPassword() {
                         }}
                     >
                         <Typography variant="h4" fontWeight="bold" gutterBottom align="center" sx={{ mb: 3 }}>
-                            Réinitialiser votre mot de passe
+                            {invitation ? 'Choisissez votre mot de passe' : 'Réinitialiser votre mot de passe'}
                         </Typography>
 
                         {success ? (

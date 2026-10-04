@@ -20,6 +20,16 @@ const fr = {
     logout: 'Se déconnecter',
     errorLoad: 'Impossible de charger les données. Vérifiez votre connexion puis réessayez.',
   },
+  password: {
+    title: 'Choisissez votre mot de passe',
+    intro: 'Bonjour {{name}}, votre compte utilise un mot de passe provisoire donné par l’administration. Choisissez le vôtre pour continuer.',
+    current: 'Mot de passe provisoire',
+    new: 'Nouveau mot de passe',
+    confirm: 'Confirmer le nouveau mot de passe',
+    rules: '8 caractères au moins, avec une majuscule, une minuscule, un chiffre et un caractère spécial.',
+    mismatch: 'Les deux mots de passe ne correspondent pas',
+    submit: 'Enregistrer et continuer',
+  },
   roles: {
     admin: 'Administration',
     enseignant: 'Enseignant',
