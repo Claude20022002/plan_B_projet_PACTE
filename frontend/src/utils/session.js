@@ -43,7 +43,7 @@ export const toBoardSession = (a) => {
   const start = combine(a.date_seance, a.creneau?.heure_debut);
   const end = combine(a.date_seance, a.creneau?.heure_fin);
   // Séance reportée : date d'origine, affichée barrée à côté de la nouvelle.
-  // Renseignée par l'API dès que la colonne date_seance_initiale existe (règles métier, phase 3).
+  // date_seance_initiale est posée par l'approbation d'un report (phase B, migration 0011).
   const initialDate = a.date_seance_initiale ? String(a.date_seance_initiale).slice(0, 10) : null;
   const previousLabel =
     initialDate && initialDate !== String(a.date_seance || '').slice(0, 10)
