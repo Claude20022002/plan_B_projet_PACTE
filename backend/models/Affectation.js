@@ -53,6 +53,9 @@ const Affectation = sequelize.define(
             allowNull: false,
             // Les relations sont gérées via les associations dans models/index.js
         },
+        // Séance reportée : date et créneau d'origine (l'ancienne heure s'affiche barrée)
+        date_seance_initiale: DataTypes.DATEONLY,
+        id_creneau_initial: DataTypes.INTEGER,
         id_snapshot: {
             type: DataTypes.INTEGER,
             allowNull: true,

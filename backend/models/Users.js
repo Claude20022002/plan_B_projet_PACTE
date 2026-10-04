@@ -35,6 +35,11 @@ const Users = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        // Compte créé par l'administration : mot de passe à choisir à la première connexion
+        must_change_password: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
         avatar_url: DataTypes.TEXT, // Utiliser TEXT au lieu de STRING pour permettre les images base64 longues
     },
     {

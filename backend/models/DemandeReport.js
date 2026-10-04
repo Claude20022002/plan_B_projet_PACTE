@@ -30,6 +30,8 @@ const DemandeReport = sequelize.define(
             allowNull: false,
             // Les relations sont gérées via les associations dans models/index.js
         },
+        // Créneau visé ; sans lui, le créneau de même rang le jour de la nouvelle date
+        id_creneau_nouveau: DataTypes.INTEGER,
         id_affectation: {
             type: DataTypes.INTEGER,
             allowNull: false,

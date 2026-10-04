@@ -14,7 +14,8 @@ const HistoriqueAffectation = sequelize.define(
                 "creation",
                 "modification",
                 "suppression",
-                "annulation"
+                "annulation",
+                "report"
             ),
             allowNull: false,
         },
@@ -25,6 +26,11 @@ const HistoriqueAffectation = sequelize.define(
         anciens_donnees: DataTypes.JSON,
         nouveaux_donnees: DataTypes.JSON,
         commentaire: DataTypes.TEXT,
+        // Enregistrée malgré des règles bloquantes (justification dans commentaire)
+        force: {
+            type: DataTypes.BOOLEAN,
+            defaultValue: false,
+        },
         id_affectation: {
             type: DataTypes.INTEGER,
             allowNull: false,
