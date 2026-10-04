@@ -29,7 +29,7 @@ import ConfirmDialog from '../components/common/ConfirmDialog';
 import EmptyState from '../design-system/components/EmptyState';
 import StateChip from '../design-system/components/StateChip';
 import { TableSkeleton } from '../design-system/components/PremiumSkeleton';
-import { calendrierAPI, creneauAPI, disponibiliteAPI } from '../services/api';
+import { calendrierAPI, creneauAPI, disponibiliteAPI, imprevuAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { fetchAll } from '../utils/fetchAll';
@@ -56,6 +56,7 @@ export default function Disponibilites() {
     const [loading, setLoading] = useState(true);
     const [form, setForm] = useState(null);
     const [aSupprimer, setASupprimer] = useState(null);
+    const [absence, setAbsence] = useState(null);
 
     const date = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', year: 'numeric' }), [i18n.language]);
     const vacataire = user?.statut === 'vacataire';
@@ -148,6 +149,19 @@ export default function Disponibilites() {
         }
     };
 
+    // Absence (maladie, déplacement) : bloque tous les créneaux de la période ; l'administration est prévenue
+    const declarerAbsence = async (event) => {
+        event.preventDefault();
+        try {
+            const reponse = await imprevuAPI.declarerAbsence({ date_debut: absence.date_debut, date_fin: absence.date_fin, motif: absence.motif.trim() });
+            toast.success(t('incidents.absenceSaved', { count: reponse.seances.length }));
+            setAbsence(null);
+            charger();
+        } catch (error) {
+            toast.error(error.response?.data?.error || error.message);
+        }
+    };
+
     const intro = user?.statut === 'vacataire' ? 'introVacataire' : user?.statut === 'permanent' ? 'introPermanent' : 'introUnknown';
 
     return (
@@ -157,9 +171,14 @@ export default function Disponibilites() {
                     <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>
                         {t(`ref.availability.${intro}`)}
                     </Typography>
-                    <Button variant="contained" startIcon={<Add />} onClick={ouvrir}>
-                        {t('ref.availability.add')}
-                    </Button>
+                    <Stack direction="row" spacing={1}>
+                        <Button variant="outlined" onClick={() => setAbsence({ date_debut: aujourdhui(), date_fin: aujourdhui(), motif: '' })}>
+                            {t('incidents.declareAbsence')}
+                        </Button>
+                        <Button variant="contained" startIcon={<Add />} onClick={ouvrir}>
+                            {t('ref.availability.add')}
+                        </Button>
+                    </Stack>
                 </Box>
 
                 {loading ? (
@@ -265,6 +284,30 @@ export default function Disponibilites() {
                         <Button onClick={() => setForm(null)}>{t('common.cancel')}</Button>
                         <Button type="submit" variant="contained">
                             {t('common.save')}
+                        </Button>
+                    </DialogActions>
+                </form>
+            </Dialog>
+
+            <Dialog open={Boolean(absence)} onClose={() => setAbsence(null)} maxWidth="xs" fullWidth>
+                <form onSubmit={declarerAbsence}>
+                    <DialogTitle>{t('incidents.declareAbsence')}</DialogTitle>
+                    <DialogContent>
+                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                            {t('incidents.absenceSelfIntro')}
+                        </Typography>
+                        <Stack spacing={2}>
+                            <Stack direction="row" spacing={2}>
+                                <TextField type="date" label={t('ref.availability.fields.from')} value={absence?.date_debut ?? ''} onChange={(e) => setAbsence((a) => ({ ...a, date_debut: e.target.value }))} InputLabelProps={{ shrink: true }} required fullWidth />
+                                <TextField type="date" label={t('ref.availability.fields.to')} value={absence?.date_fin ?? ''} onChange={(e) => setAbsence((a) => ({ ...a, date_fin: e.target.value }))} InputLabelProps={{ shrink: true }} inputProps={{ min: absence?.date_debut }} required fullWidth />
+                            </Stack>
+                            <TextField label={t('incidents.reason')} value={absence?.motif ?? ''} onChange={(e) => setAbsence((a) => ({ ...a, motif: e.target.value }))} required />
+                        </Stack>
+                    </DialogContent>
+                    <DialogActions>
+                        <Button onClick={() => setAbsence(null)}>{t('common.cancel')}</Button>
+                        <Button type="submit" variant="contained" disabled={!absence?.motif.trim()}>
+                            {t('incidents.declare')}
                         </Button>
                     </DialogActions>
                 </form>

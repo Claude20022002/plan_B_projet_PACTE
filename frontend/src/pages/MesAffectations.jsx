@@ -22,9 +22,10 @@ import {
     Snackbar,
     CircularProgress,
 } from '@mui/material';
-import { CheckCircle, EventRepeat } from '@mui/icons-material';
+import { CheckCircle, EventRepeat, TaskAlt } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
-import { affectationAPI, demandeReportAPI } from '../services/api';
+import { affectationAPI, demandeReportAPI, suiviAPI } from '../services/api';
+import MesRetours from '../components/planning/MesRetours';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -76,6 +77,21 @@ export default function MesAffectations() {
             setError(err.response?.data?.message || err.message || 'Erreur lors de la confirmation');
         } finally {
             setConfirmingId(null);
+        }
+    };
+
+    // Séance faite (phase P7) : possible une fois l'heure de fin passée
+    const estPassee = (aff) => {
+        const fin = new Date(`${String(aff.date_seance).slice(0, 10)}T${aff.creneau?.heure_fin ?? '23:59'}`);
+        return fin <= new Date();
+    };
+    const handleRealiser = async (aff) => {
+        try {
+            await suiviAPI.realiser(aff.id_affectation);
+            setSuccess(`Séance « ${aff.cours?.nom_cours} » marquée réalisée`);
+            loadAffectations();
+        } catch (err) {
+            setError(err.response?.data?.error || err.message);
         }
     };
 
@@ -185,7 +201,14 @@ export default function MesAffectations() {
                                                             </span>
                                                         </Tooltip>
                                                     )}
-                                                    {['planifie', 'confirme'].includes(aff.statut) && (
+                                                    {['planifie', 'confirme', 'reporte'].includes(aff.statut) && estPassee(aff) && (
+                                                        <Tooltip title="Marquer la séance réalisée">
+                                                            <IconButton size="small" onClick={() => handleRealiser(aff)}>
+                                                                <TaskAlt fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    )}
+                                                    {['planifie', 'confirme'].includes(aff.statut) && !estPassee(aff) && (
                                                         <Tooltip title="Demander un report">
                                                             <IconButton
                                                                 size="small"
@@ -271,6 +294,7 @@ export default function MesAffectations() {
                         </DialogActions>
                     </form>
                 </Dialog>
+                <MesRetours />
             </Box>
         </DashboardLayout>
     );
