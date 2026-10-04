@@ -42,7 +42,7 @@ import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
 import { parseFile, validateUserData } from '../../utils/fileImport';
 
-const buildValidationSchema = (isEditing) => yup.object({
+const validationSchema = yup.object({
     nom: yup.string().required('Le nom est requis'),
     prenom: yup.string().required('Le prénom est requis'),
     email: yup.string().email('Email invalide').required('L\'email est requis'),
@@ -108,7 +108,7 @@ export default function Utilisateurs() {
             actif: true,
             niveau: '',
         },
-        validationSchema: buildValidationSchema(Boolean(editing)),
+        validationSchema,
         enableReinitialize: true,
         onSubmit: async (values, { setSubmitting }) => {
             try {
