@@ -5,6 +5,7 @@ import { getPaginationParams, createPaginationResponse } from "../utils/paginati
 import { hashPassword } from "../utils/passwordHelper.js";
 import { pick } from "../utils/validationHelper.js";
 import { chargesEnseignants, disponibiliteEnseignant } from "../services/planning/enseignants.js";
+import { STATUTS_ENSEIGNANT } from "../config/referentiel.js";
 
 /**
  * Contrôleur pour les enseignants : permanents et vacataires, service dû, compétences.
@@ -219,6 +220,19 @@ export const deleteEnseignant = asyncHandler(async (req, res) => {
     });
 });
 
+// Colonnes facultatives du fichier d'import : statut, service dû, plafond, entreprise
+const nombreOuNull = (valeur) => (valeur === undefined || valeur === null || String(valeur).trim() === "" || Number.isNaN(Number(valeur)) ? null : Number(valeur));
+const colonnesP3Import = (ligne) => {
+    const statut = String(ligne.statut || "").trim().toLowerCase();
+    if (statut && !STATUTS_ENSEIGNANT.includes(statut)) throw new Error(`Statut inconnu : ${ligne.statut} (permanent ou vacataire)`);
+    return {
+        ...(statut && { statut }),
+        service_annuel_heures: nombreOuNull(ligne.service_annuel_heures),
+        max_heures_semaine: nombreOuNull(ligne.max_heures_semaine),
+        entreprise: String(ligne.entreprise || "").trim() || null,
+    };
+};
+
 // 📥 Importer des enseignants en masse
 export const importEnseignants = asyncHandler(async (req, res) => {
     const { enseignants } = req.body;
@@ -245,6 +259,9 @@ export const importEnseignants = asyncHandler(async (req, res) => {
                 });
                 continue;
             }
+
+            // Colonnes facultatives validées avant toute création (pas de compte orphelin)
+            const colonnesP3 = colonnesP3Import(enseignantData);
 
             // Vérifier si l'email existe déjà
             let user = await Users.findOne({ where: { email: enseignantData.email } });
@@ -285,6 +302,7 @@ export const importEnseignants = asyncHandler(async (req, res) => {
                 departement: enseignantData.departement || null,
                 grade: enseignantData.grade || null,
                 bureau: enseignantData.bureau || null,
+                ...colonnesP3,
             });
 
             const enseignantAvecUser = await Enseignant.findByPk(enseignant.id_user, {
