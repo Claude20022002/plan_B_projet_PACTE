@@ -68,6 +68,7 @@ const Statistiques   = lazy(() => import('./pages/Statistiques'));
 const MesAffectations= lazy(() => import('./pages/MesAffectations'));
 const DemandesReport = lazy(() => import('./pages/DemandesReport'));
 const Disponibilites = lazy(() => import('./pages/Disponibilites'));
+const MesServices    = lazy(() => import('./pages/MesServices'));
 const SallesDisponibles = lazy(() => import('./pages/SallesDisponibles'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
 
@@ -165,7 +166,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/gestion/groupes" element={
-            <PrivateRoute requiredRole="admin">
+            <PrivateRoute requiredRole="admin" allowResponsable>
               <AppPage><Groupes /></AppPage>
             </PrivateRoute>
           } />
@@ -175,7 +176,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/gestion/cours" element={
-            <PrivateRoute requiredRole="admin">
+            <PrivateRoute requiredRole="admin" allowResponsable>
               <AppPage><Cours /></AppPage>
             </PrivateRoute>
           } />
@@ -215,7 +216,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/gestion/enseignements" element={
-            <PrivateRoute requiredRole="admin">
+            <PrivateRoute requiredRole="admin" allowResponsable>
               <AppPage><Enseignements /></AppPage>
             </PrivateRoute>
           } />
@@ -268,6 +269,11 @@ export default function App() {
           <Route path="/demandes-report" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><DemandesReport /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/mes-services" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><MesServices /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/disponibilites" element={

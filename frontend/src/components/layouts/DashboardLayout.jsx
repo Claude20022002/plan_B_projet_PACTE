@@ -25,6 +25,7 @@ import {
 import {
   Apartment,
   Assignment,
+  AssignmentInd,
   AutoAwesome,
   Event,
   Hub,
@@ -58,11 +59,13 @@ import { useTheme } from '../../contexts/ThemeContext';
 import { notificationAPI } from '../../services/api';
 import { LANGUAGES } from '../../i18n';
 import { ds } from '../../design-system/tokens';
+import { estResponsable } from '../../utils/droits';
 
 const RAIL_WIDTH = 248;
 
 /** Navigation par rôle : sections (libellé) et entrées (icône, chemin, clé de traduction) */
-const navigationFor = (role) => {
+const navigationFor = (user) => {
+  const role = user?.role;
   if (role === 'admin') {
     return [
       { items: [{ key: 'nav.dashboard', icon: <BoardIcon />, path: '/dashboard/admin' }] },
@@ -108,18 +111,31 @@ const navigationFor = (role) => {
     ];
   }
   if (role === 'enseignant') {
-    return [
+    const sections = [
       {
         items: [
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
           { key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' },
+          { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
           { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },
           { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
           { key: 'nav.availableRooms', icon: <MeetingRoom />, path: '/salles-disponibles' },
         ],
       },
     ];
+    // Responsable de filière : préparation de ses filières
+    if (estResponsable(user)) {
+      sections.push({
+        section: 'nav.preparation',
+        items: [
+          { key: 'nav.courses', icon: <Book />, path: '/gestion/cours' },
+          { key: 'nav.groups', icon: <Groups />, path: '/gestion/groupes' },
+          { key: 'nav.teaching', icon: <Hub />, path: '/gestion/enseignements' },
+        ],
+      });
+    }
+    return sections;
   }
   return [
     {
@@ -171,6 +187,7 @@ const TITLE_KEYS = {
   '/notifications': 'nav.notifications',
   '/parametres': 'nav.settings',
   '/mes-affectations': 'nav.mySessions',
+  '/mes-services': 'nav.myServices',
   '/disponibilites': 'nav.myAvailability',
   '/demandes-report': 'nav.myReports',
   '/salles-disponibles': 'nav.availableRooms',
@@ -225,7 +242,7 @@ export default function DashboardLayout({ children }) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   const role = user?.role;
-  const navigation = useMemo(() => navigationFor(role), [role]);
+  const navigation = useMemo(() => navigationFor(user), [user]);
   const bottomTabs = useMemo(() => bottomTabsFor(role), [role]);
   const showBottomTabs = !isDesktop && (role === 'etudiant' || role === 'enseignant');
 

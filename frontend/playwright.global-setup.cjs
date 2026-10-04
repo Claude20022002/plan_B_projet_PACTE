@@ -157,7 +157,7 @@ module.exports = async function globalSetup() {
         if (!fs.existsSync(CREDS_FILE)) {
             fs.writeFileSync(CREDS_FILE, JSON.stringify({
                 admin:      { email: 'admin@hestim.ma',           password: 'password123' },
-                enseignant: { email: 'alain.bennis0@hestim.ma',   password: 'password123' },
+                enseignant: { email: 'alain.benkirane0@hestim.ma',   password: 'password123' },
                 etudiant:   { email: 'hamza.benali0@hestim.ma',   password: 'password123' },
             }));
         }

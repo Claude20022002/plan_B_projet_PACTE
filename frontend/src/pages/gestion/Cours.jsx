@@ -33,6 +33,8 @@ import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { composanteAPI, coursAPI, enseignantAPI, filiereAPI, salleAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_COURS } from '../../utils/exportColumns';
@@ -89,6 +91,7 @@ const nombreOuNull = (valeur) => (valeur === '' || valeur === null || valeur ===
 export default function Cours() {
     const { t, i18n } = useTranslation();
     const toast = useToast();
+    const { user } = useAuth();
     const [modules, setModules] = useState([]);
     const [filieres, setFilieres] = useState([]);
     const [enseignants, setEnseignants] = useState([]);
@@ -115,7 +118,7 @@ export default function Cours() {
                 salleAPI.getReferentiel(),
             ]);
             setModules(liste);
-            setFilieres(listeFilieres);
+            setFilieres(filieresGerables(listeFilieres, user));
             setEnseignants(listeEnseignants);
             setTypesSalle(referentiel.types_salle || []);
         } catch {
@@ -123,21 +126,23 @@ export default function Cours() {
         } finally {
             setLoading(false);
         }
-    }, [t, toast]);
+    }, [t, toast, user]);
 
     useEffect(() => {
         charger();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
+    const idsGerables = useMemo(() => new Set(filieres.map((f) => f.id_filiere)), [filieres]);
+
     const modulesAffiches = useMemo(() => {
         const terme = search.trim().toLowerCase();
         return modules
-            .filter((m) => filiere === 'toutes' || m.id_filiere === filiere)
+            .filter((m) => (filiere === 'toutes' ? idsGerables.has(m.id_filiere) : m.id_filiere === filiere))
             .filter((m) => periode === 'toutes' || periodeDe(m.semestre) === periode)
             .filter((m) => !terme || [m.code_cours, m.nom_cours].some((v) => v?.toLowerCase().includes(terme)))
             .sort((a, b) => (a.filiere?.code_filiere || '').localeCompare(b.filiere?.code_filiere || '') || a.semestre.localeCompare(b.semestre, 'fr', { numeric: true }) || a.code_cours.localeCompare(b.code_cours));
-    }, [modules, filiere, periode, search]);
+    }, [modules, filiere, periode, search, idsGerables]);
 
     const erreur = (error) => toast.error(error.response?.data?.error || error.response?.data?.errors?.[0]?.message || error.message);
 

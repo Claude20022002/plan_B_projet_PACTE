@@ -163,6 +163,18 @@ describe("Services : proposition, co-enseignement, réponse, charge", () => {
         expect(maCharge.body).toMatchObject({ heures_acceptees: 21, annee: { libelle: "2026-2027" } });
     });
 
+    test("candidats : ceux déjà sur l'enseignement sont exclus, les compétents passent devant", async () => {
+        const autre = await enseignementDe(clients.admin, filiereG);
+        await clients.admin.send("put", `/api/enseignants/${vacataire.id_user}/competences`, { cours: [filiereG.cours.id_cours] });
+        const candidats = await clients.admin.get(`/api/enseignements/${autre.id_enseignement}/candidats`);
+        expect(candidats.status).toBe(200);
+        expect(candidats.body[0]).toMatchObject({ id_user: vacataire.id_user, competent: true, statut: "vacataire" });
+
+        const surF = await clients.admin.get(`/api/enseignements/${enseignement.id_enseignement}/candidats`);
+        expect(surF.body.map((c) => c.id_user)).not.toEqual(expect.arrayContaining([permanent.id_user]));
+        expect((await clients.responsable.get(`/api/enseignements/${autre.id_enseignement}/candidats`)).status).toBe(403);
+    });
+
     test("la liste des enseignements montre les services", async () => {
         const liste = await clients.admin.get(`/api/enseignements?id_periode=${periode.id_periode}&id_filiere=${filiereF.filiere.id_filiere}`);
         expect(liste.body[0].services.map((s) => [s.enseignant.id_user, s.role, s.statut_service])).toEqual(

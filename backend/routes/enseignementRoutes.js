@@ -7,6 +7,7 @@ import {
     updateEnseignement,
     deleteEnseignement,
     ajouterEnseignant,
+    getCandidats,
     modifierService,
     retirerEnseignant,
 } from "../controllers/index.js";
@@ -37,6 +38,7 @@ router.put("/:id", validateEnseignementUpdate, surSaFiliere, asyncHandler(update
 router.delete("/:id", surSaFiliere, asyncHandler(deleteEnseignement));
 
 // Services : enseignants proposés sur l'enseignement (principal ou co-enseignant)
+router.get("/:id/candidats", surSaFiliere, asyncHandler(getCandidats));
 router.post("/:id/enseignants", validateService(true), surSaFiliere, asyncHandler(ajouterEnseignant));
 router.put("/:id/enseignants/:idUser", validateService(false), surSaFiliere, asyncHandler(modifierService));
 router.delete("/:id/enseignants/:idUser", surSaFiliere, asyncHandler(retirerEnseignant));

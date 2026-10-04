@@ -21,14 +21,17 @@ import {
     TextField,
     Typography,
 } from '@mui/material';
-import { AutoAwesome, CallSplit, Delete, Edit, MergeType } from '@mui/icons-material';
+import { AutoAwesome, CallSplit, Delete, Edit, GroupAdd, MergeType } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import EquipeDialog, { TON_SERVICE, nomCourt, principalActif } from '../../components/planning/EquipeDialog';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { calendrierAPI, enseignementAPI, filiereAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { ds, lineColor } from '../../design-system/tokens';
 
@@ -40,6 +43,7 @@ import { ds, lineColor } from '../../design-system/tokens';
 export default function Enseignements() {
     const { t, i18n } = useTranslation();
     const toast = useToast();
+    const { user } = useAuth();
     const [periodes, setPeriodes] = useState([]);
     const [idPeriode, setIdPeriode] = useState('');
     const [filieres, setFilieres] = useState([]);
@@ -50,13 +54,17 @@ export default function Enseignements() {
     const [rapport, setRapport] = useState(null);
     const [edition, setEdition] = useState(null);
     const [aSupprimer, setASupprimer] = useState(null);
+    const [idEquipe, setIdEquipe] = useState(null);
 
     const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
 
     useEffect(() => {
         (async () => {
             try {
-                const [annees, listeFilieres] = await Promise.all([calendrierAPI.getAnnees(), fetchAll(filiereAPI.getAll)]);
+                const [annees, toutes] = await Promise.all([calendrierAPI.getAnnees(), fetchAll(filiereAPI.getAll)]);
+                const listeFilieres = filieresGerables(toutes, user);
+                // Un responsable génère filière par filière : la sienne est choisie d'office
+                if (user?.role !== 'admin' && listeFilieres.length) setFiliere(listeFilieres[0].id_filiere);
                 const liste = annees.flatMap((a) => a.periodes.map((p) => ({ ...p, libelle_annee: a.libelle, active: a.active })));
                 setPeriodes(liste);
                 setFilieres(listeFilieres);
@@ -186,7 +194,7 @@ export default function Enseignements() {
                             ))}
                         </TextField>
                         <TextField select size="small" label={t('ref.curriculum.program')} value={filiere} onChange={(e) => setFiliere(e.target.value)} sx={{ minWidth: 220 }}>
-                            <MenuItem value="toutes">{t('ref.curriculum.allPrograms')}</MenuItem>
+                            {user?.role === 'admin' && <MenuItem value="toutes">{t('ref.curriculum.allPrograms')}</MenuItem>}
                             {filieres.map((f) => (
                                 <MenuItem key={f.id_filiere} value={f.id_filiere}>
                                     {f.code_filiere} · {f.nom_filiere}
@@ -245,6 +253,7 @@ export default function Enseignements() {
                                     <TableCell>{t('ref.teaching.cols.module')}</TableCell>
                                     <TableCell>{t('ref.teaching.cols.type')}</TableCell>
                                     <TableCell>{t('ref.teaching.cols.groups')}</TableCell>
+                                    <TableCell>{t('ref.teaching.team.col')}</TableCell>
                                     <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.teaching.cols.size')}</TableCell>
                                     <TableCell align="right">{t('ref.teaching.cols.hours')}</TableCell>
                                     <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.teaching.cols.sessions')}</TableCell>
@@ -292,10 +301,16 @@ export default function Enseignements() {
                                                     <Typography variant="body2">{e.groupes.map((g) => g.nom_groupe).join(', ')}</Typography>
                                                 </Stack>
                                             </TableCell>
+                                            <TableCell>
+                                                <Equipe services={e.services} onOuvrir={() => setIdEquipe(e.id_enseignement)} />
+                                            </TableCell>
                                             <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>{e.effectif}</TableCell>
                                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{nombre.format(e.heures_prevues)} h</TableCell>
                                             <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' } }}>{e.nb_seances}</TableCell>
                                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
+                                                <IconButton size="small" onClick={() => setIdEquipe(e.id_enseignement)} aria-label={t('ref.teaching.team.manage', { name: module.nom_cours })}>
+                                                    <GroupAdd fontSize="small" />
+                                                </IconButton>
                                                 {mutualise && (
                                                     <IconButton size="small" onClick={() => scinder(e)} aria-label={t('ref.teaching.splitItem', { name: module.nom_cours })}>
                                                         <CallSplit fontSize="small" />
@@ -340,6 +355,8 @@ export default function Enseignements() {
                 </form>
             </Dialog>
 
+            <EquipeDialog enseignement={enseignements.find((e) => e.id_enseignement === idEquipe) ?? null} onClose={() => setIdEquipe(null)} onChange={charger} />
+
             <ConfirmDialog
                 open={Boolean(aSupprimer)}
                 title={t('ref.teaching.deleteTitle')}
@@ -348,5 +365,35 @@ export default function Enseignements() {
                 onCancel={() => setASupprimer(null)}
             />
         </DashboardLayout>
+    );
+}
+
+/** Équipe d'un enseignement dans la liste : noms, et pastille seulement pour ce qui reste à régler. */
+function Equipe({ services = [], onOuvrir }) {
+    const { t } = useTranslation();
+    const visibles = services.filter((s) => s.statut_service !== 'refuse');
+    return (
+        <Box
+            component="button"
+            type="button"
+            onClick={onOuvrir}
+            sx={{ all: 'unset', cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center', '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 } }}
+        >
+            {!principalActif(services) && <StateChip tone="warning">{t('ref.teaching.team.none')}</StateChip>}
+            {visibles.map((s) => (
+                <Box key={s.id_user} component="span" sx={{ display: 'inline-flex', gap: 0.5, alignItems: 'center' }}>
+                    <Typography component="span" variant="body2" sx={{ whiteSpace: 'nowrap' }}>
+                        {nomCourt(s.enseignant)}
+                        {s.role === 'co_enseignant' && (
+                            <Typography component="span" variant="caption" color="text.secondary">
+                                {' '}
+                                ({t('ref.teaching.roles.co_enseignant').toLowerCase()})
+                            </Typography>
+                        )}
+                    </Typography>
+                    {TON_SERVICE[s.statut_service] && <StateChip tone={TON_SERVICE[s.statut_service]}>{t(`ref.teaching.serviceStatus.${s.statut_service}`)}</StateChip>}
+                </Box>
+            ))}
+        </Box>
     );
 }

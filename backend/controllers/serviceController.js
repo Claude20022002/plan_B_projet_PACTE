@@ -12,6 +12,7 @@ import {
 } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { creerNotification } from "../utils/notificationHelper.js";
+import { chargesEnseignants } from "../services/planning/enseignants.js";
 
 /**
  * Services d'enseignement : le responsable de filière (ou l'administration) propose un
@@ -25,6 +26,29 @@ const nomModule = async (enseignement) => {
     const composante = await CoursComposante.findByPk(enseignement.id_composante, { include: [{ model: Cours, as: "cours" }] });
     return `${composante.cours.nom_cours} (${composante.type})`;
 };
+
+// 🧭 Candidats pour un enseignement : ceux qui ont la compétence d'abord, puis les moins chargés
+export const getCandidats = asyncHandler(async (req, res) => {
+    const enseignement = await Enseignement.findByPk(req.params.id, {
+        include: [
+            { model: CoursComposante, as: "composante" },
+            { model: EnseignementEnseignant, as: "services", attributes: ["id_user"] },
+        ],
+    });
+    if (!enseignement) return introuvable(res, "Enseignement", req.params.id);
+
+    const [{ charges }, competences] = await Promise.all([
+        chargesEnseignants(),
+        CompetenceEnseignant.findAll({ where: { id_cours: enseignement.composante.id_cours }, attributes: ["id_user"] }),
+    ]);
+    const competents = new Set(competences.map((c) => c.id_user));
+    const dejaLa = new Set(enseignement.services.map((s) => s.id_user));
+    const candidats = charges
+        .filter((c) => c.actif && !dejaLa.has(c.id_user))
+        .map((c) => ({ ...c, competent: competents.has(c.id_user) }))
+        .sort((a, b) => Number(b.competent) - Number(a.competent) || a.heures_prevues - b.heures_prevues || (a.nom || "").localeCompare(b.nom || ""));
+    res.json(candidats);
+});
 
 // ➕ Proposer un enseignant sur un enseignement
 export const ajouterEnseignant = asyncHandler(async (req, res) => {

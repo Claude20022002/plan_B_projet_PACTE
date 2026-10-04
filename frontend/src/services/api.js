@@ -176,6 +176,14 @@ export const enseignantAPI = {
     update: (id, data) => request(`/enseignants/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/enseignants/${id}`, { method: 'DELETE' }),
     importEnseignants: (data) => request('/enseignants/import', { method: 'POST', body: { enseignants: data } }),
+    // Phase P3 : charges, compétences, disponibilité calculée
+    getCharges: (params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/enseignants/charges${query ? `?${query}` : ''}`);
+    },
+    getCharge: (id) => request(`/enseignants/${id}/charge`),
+    getCompetences: (id) => request(`/enseignants/${id}/competences`),
+    setCompetences: (id, cours) => request(`/enseignants/${id}/competences`, { method: 'PUT', body: { cours } }),
 };
 
 // ==================== ÉTUDIANTS ====================
@@ -202,6 +210,9 @@ export const filiereAPI = {
     create: (data) => request('/filieres', { method: 'POST', body: data }),
     update: (id, data) => request(`/filieres/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/filieres/${id}`, { method: 'DELETE' }),
+    getResponsables: (id) => request(`/filieres/${id}/responsables`),
+    ajouterResponsable: (id, idUser) => request(`/filieres/${id}/responsables`, { method: 'POST', body: { id_user: idUser } }),
+    retirerResponsable: (id, idUser) => request(`/filieres/${id}/responsables/${idUser}`, { method: 'DELETE' }),
 };
 
 // ==================== GROUPES ====================
@@ -314,6 +325,20 @@ export const enseignementAPI = {
     scinder: (id) => request(`/enseignements/${id}/scinder`, { method: 'POST' }),
     update: (id, data) => request(`/enseignements/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/enseignements/${id}`, { method: 'DELETE' }),
+    // Équipe pédagogique d'un enseignement (principal, co-enseignants)
+    getCandidats: (id) => request(`/enseignements/${id}/candidats`),
+    ajouterEnseignant: (id, data) => request(`/enseignements/${id}/enseignants`, { method: 'POST', body: data }),
+    modifierService: (id, idUser, data) => request(`/enseignements/${id}/enseignants/${idUser}`, { method: 'PUT', body: data }),
+    retirerEnseignant: (id, idUser) => request(`/enseignements/${id}/enseignants/${idUser}`, { method: 'DELETE' }),
+};
+
+// ==================== SERVICES (espace enseignant) ====================
+export const serviceAPI = {
+    getMesServices: (params) => {
+        const query = new URLSearchParams(params).toString();
+        return request(`/services/mes-services${query ? `?${query}` : ''}`);
+    },
+    repondre: (idEnseignement, data) => request(`/services/${idEnseignement}/reponse`, { method: 'PATCH', body: data }),
 };
 
 // ==================== CRÉNEAUX ====================

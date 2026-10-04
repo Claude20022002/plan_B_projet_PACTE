@@ -7,7 +7,7 @@
 const USERS = {
     admin: { email: "admin@hestim.ma", password: "password123", role: "admin" },
     enseignant: {
-        email: "alain.bennis0@hestim.ma",
+        email: "alain.benkirane0@hestim.ma",
         password: "password123",
         role: "enseignant",
     },

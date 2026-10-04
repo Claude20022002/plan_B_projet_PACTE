@@ -762,14 +762,18 @@ async function seed() {
 
         // ── 10. Enseignements du S1, puis mutualisations ─────────────────────
         const rapport = await genererEnseignements({ id_periode: periodes.S1.id_periode });
+        let nbMutualisations = 0;
         for (const codes of HESTIM_CONFIG.mutualisations) {
             const aFusionner = await Enseignement.findAll({
                 where: { id_periode: periodes.S1.id_periode },
                 include: [{ model: CoursComposante, as: 'composante', where: { id_cours: codes.map(code => coursMap[code].id_cours) } }],
             });
-            if (aFusionner.length > 1) await fusionnerEnseignements(aFusionner.map(e => e.id_enseignement));
+            if (aFusionner.length > 1) {
+                await fusionnerEnseignements(aFusionner.map(e => e.id_enseignement));
+                nbMutualisations++;
+            }
         }
-        console.log(`✅ Enseignements S1 : ${rapport.crees} créés, ${HESTIM_CONFIG.mutualisations.length} mutualisation(s)`);
+        console.log(`✅ Enseignements S1 : ${rapport.crees} créés, ${nbMutualisations} mutualisation(s)`);
 
         // ── 11. Services : un principal par enseignement, co-enseignement des projets ──
         // Celui qui assure déjà une autre composante du module (CM et TD par le même enseignant), sinon

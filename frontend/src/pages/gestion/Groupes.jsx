@@ -30,6 +30,8 @@ import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { filiereAPI, groupeAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import { useAuth } from '../../contexts/AuthContext';
+import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_GROUPES } from '../../utils/exportColumns';
@@ -63,6 +65,7 @@ const aplatir = (noeuds, profondeur = 0) =>
 export default function Groupes() {
     const { t } = useTranslation();
     const toast = useToast();
+    const { user } = useAuth();
     const [filieres, setFilieres] = useState([]);
     const [filiere, setFiliere] = useState('');
     const [annees, setAnnees] = useState(() => [anneeScolaireCourante()]);
@@ -77,7 +80,8 @@ export default function Groupes() {
     useEffect(() => {
         (async () => {
             try {
-                const [listeFilieres, groupes] = await Promise.all([fetchAll(filiereAPI.getAll), fetchAll(groupeAPI.getAll)]);
+                const [toutes, groupes] = await Promise.all([fetchAll(filiereAPI.getAll), fetchAll(groupeAPI.getAll)]);
+                const listeFilieres = filieresGerables(toutes, user);
                 setFilieres(listeFilieres);
                 setFiliere((f) => f || listeFilieres[0]?.id_filiere || '');
                 const liste = [...new Set([anneeScolaireCourante(), ...groupes.map((g) => g.annee_scolaire)])].sort().reverse();
