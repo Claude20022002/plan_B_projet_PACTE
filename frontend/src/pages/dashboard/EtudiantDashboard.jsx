@@ -11,6 +11,7 @@ import ChangesList from '../../design-system/board/ChangesList';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
+import RetourSeanceCard from '../../components/planning/RetourSeanceCard';
 
 const HORIZON_DAYS = 7;
 
@@ -133,9 +134,13 @@ export default function EtudiantDashboard() {
           </Box>
         </Box>
 
-        {!(compact && changes.length > 0 && spotlight) && (
-          <ChangesList items={changes} onSeeAll={() => navigate('/notifications')} />
-        )}
+        <Box sx={{ display: 'grid', gap: 2, alignContent: 'start', minWidth: 0 }}>
+          {/* Retour de séance en un clic (I7) : n'apparaît que s'il y a une séance à évaluer */}
+          <RetourSeanceCard />
+          {!(compact && changes.length > 0 && spotlight) && (
+            <ChangesList items={changes} onSeeAll={() => navigate('/notifications')} />
+          )}
+        </Box>
       </Box>
     </DashboardLayout>
   );
