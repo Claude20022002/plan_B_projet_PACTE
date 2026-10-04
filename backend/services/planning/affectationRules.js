@@ -17,6 +17,7 @@ import { anneeDepuisNiveau } from "../../config/referentiel.js";
 import { groupesLies } from "./groupes.js";
 import { lireParametre, minutesTrajet } from "./referentiel.js";
 import { disponibiliteEnseignant } from "./enseignants.js";
+import { occupationsDuJour } from "./occupations.js";
 
 /**
  * Règles d'une séance (phase B). `validerAffectation` renvoie la liste des violations, sans
@@ -45,7 +46,7 @@ export const minutes = (heure) => {
 const hhmm = (heure) => String(heure).slice(0, 5);
 export const jourDe = (date) => JOURS[new Date(`${date}T12:00:00Z`).getUTCDay()];
 export const aujourdhui = () => new Date().toLocaleDateString("en-CA", { timeZone: FUSEAU });
-const seChevauchent = (a, b) => minutes(a.heure_debut) < minutes(b.heure_fin) && minutes(b.heure_debut) < minutes(a.heure_fin);
+export const seChevauchent = (a, b) => minutes(a.heure_debut) < minutes(b.heure_fin) && minutes(b.heure_debut) < minutes(a.heure_fin);
 const duree = (creneau) => minutes(creneau.heure_fin) - minutes(creneau.heure_debut);
 const nomComplet = (u) => (u ? `${u.prenom ?? ""} ${u.nom ?? ""}`.trim() : "");
 
@@ -77,7 +78,7 @@ const enseignantsDe = (seance, enseignement) =>
 const groupesDe = (seance, enseignement) => [...new Set([seance.id_groupe, ...(enseignement?.groupes ?? []).map((g) => g.id_groupe)])].filter(Boolean);
 
 /** Un événement bloquant concerne-t-il cette séance ? */
-const evenementConcerne = (evenement, { salle, groupe, groupesOccupes, creneau }) => {
+export const evenementConcerne = (evenement, { salle, groupe, groupesOccupes, creneau }) => {
     if (evenement.heure_debut && evenement.heure_fin && !seChevauchent(creneau, evenement)) return false;
     switch (evenement.portee) {
         case "etablissement":
@@ -236,6 +237,17 @@ export const validerAffectation = async (seance, { transaction, verrouiller = fa
                 type_conflit: "groupe",
             });
         }
+    }
+
+    // Réservations validées et épreuves d'examen (phase P5) : elles bloquent comme une séance
+    const horsCours = await occupationsDuJour(date, { transaction, sources: ["reservation", "examen"] });
+    for (const o of horsCours.filter((x) => seChevauchent(creneau, x))) {
+        const reference = { source: o.source, id_occupation: o.id };
+        if (salle && o.salles.some((x) => x.id_salle === salle.id_salle)) signaler("conflit_salle", `${salle.nom_salle} est réservée : ${o.libelle}`, reference);
+        for (const idUser of o.personnes.filter((id) => idsEnseignants.includes(id))) {
+            signaler("conflit_enseignant", `${nomComplet(parIdEnseignant.get(idUser))} est pris : ${o.libelle}`, { ...reference, id_user: idUser });
+        }
+        if (o.groupes.some((id) => groupesOccupes.has(id))) signaler("conflit_groupe", `Le groupe est pris : ${o.libelle}`, reference);
     }
 
     // Trajet entre campus pour les enseignants et les groupes, entre deux séances qui se suivent
