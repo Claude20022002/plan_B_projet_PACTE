@@ -70,6 +70,14 @@ const MesAffectations= lazy(() => import('./pages/MesAffectations'));
 const DemandesReport = lazy(() => import('./pages/DemandesReport'));
 const Disponibilites = lazy(() => import('./pages/Disponibilites'));
 const MesServices    = lazy(() => import('./pages/MesServices'));
+// Phases P4 à P7 : préparation, réservations, examens, imprévus, suivi, EDT mensuel
+const Reservations   = lazy(() => import('./pages/Reservations'));
+const MesExamens     = lazy(() => import('./pages/MesExamens'));
+const EdtMensuel     = lazy(() => import('./pages/EdtMensuel'));
+const Examens        = lazy(() => import('./pages/gestion/Examens'));
+const Imprevus       = lazy(() => import('./pages/gestion/Imprevus'));
+const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
+const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
 const SallesDisponibles = lazy(() => import('./pages/SallesDisponibles'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
 
@@ -289,6 +297,43 @@ export default function App() {
           <Route path="/salles-disponibles" element={
             <PrivateRoute requiredRole={['enseignant', 'admin']}>
               <AppPage><SallesDisponibles /></AppPage>
+            </PrivateRoute>
+          } />
+
+          {/* ── Phases P4 à P7 ────────────────────────────────────────── */}
+          <Route path="/reservations" element={
+            <PrivateRoute requiredRole={['enseignant', 'admin']}>
+              <AppPage><Reservations /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/examens" element={
+            <PrivateRoute requiredRole="admin">
+              <AppPage><Examens /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/mes-examens" element={
+            <PrivateRoute requiredRole={['enseignant', 'etudiant']}>
+              <AppPage><MesExamens /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/imprevus" element={
+            <PrivateRoute requiredRole="admin">
+              <AppPage><Imprevus /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/suivi" element={
+            <PrivateRoute requiredRole="admin" allowResponsable>
+              <AppPage><Suivi /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/preparation" element={
+            <PrivateRoute requiredRole="admin" allowResponsable>
+              <AppPage><Preparation /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/emploi-du-temps/mensuel" element={
+            <PrivateRoute>
+              <AppPage><EdtMensuel /></AppPage>
             </PrivateRoute>
           } />
 
