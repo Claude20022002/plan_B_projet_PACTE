@@ -586,3 +586,8 @@ export const preparationAPI = {
     relancer: (data) => request('/preparation/relancer', { method: 'POST', body: data }),
     edtMensuel: (idGroupe, mois) => request(avecQuery(`/emplois-du-temps/groupe/${idGroupe}/mensuel`, { mois })),
 };
+
+// ==================== APPARTENANCES (groupe d'un étudiant) ====================
+export const appartenanceAPI = {
+    getByEtudiant: (idEtudiant) => request(`/appartenances/etudiant/${idEtudiant}`),
+};

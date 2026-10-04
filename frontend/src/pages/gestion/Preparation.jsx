@@ -18,6 +18,8 @@ const ICONES = {
 };
 // Étapes menées par l'administration (les autres par le responsable de filière)
 const ETAPES_ADMIN = new Set(['calendrier', 'generation', 'publication']);
+// Écrans accessibles à un responsable de filière (les autres sont réservés à l'administration)
+const ECRANS_RESPONSABLE = new Set(['maquette', 'groupes', 'services']);
 
 /**
  * Assistant « Préparer le semestre » (phase P4) : pour chaque filière, les 8 étapes et leur
@@ -149,7 +151,7 @@ export default function Preparation() {
                                                     {t('prep.remind')}
                                                 </Button>
                                             )}
-                                            {(admin || !ETAPES_ADMIN.has(etape.cle)) && etape.etat !== 'fait' && (
+                                            {(admin || ECRANS_RESPONSABLE.has(etape.cle)) && etape.etat !== 'fait' && (
                                                 <Button size="small" onClick={() => navigate(etape.lien)}>
                                                     {t('prep.open')}
                                                 </Button>
