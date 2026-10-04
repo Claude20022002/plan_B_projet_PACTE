@@ -99,6 +99,8 @@ export const authenticateToken = async (req, res, next) => {
                 return res.status(401).json({
                     message: "Token invalide",
                     error: "Le token fourni n'est pas valide",
+                    // Ex. jeton signé avant le passage en RS256 : le client tente un renouvellement
+                    code: "TOKEN_INVALID",
                 });
             }
             if (jwtError.name === "TokenExpiredError") {
@@ -122,6 +124,7 @@ export const authenticateToken = async (req, res, next) => {
             return res.status(401).json({
                 message: "Token invalide",
                 error: "Le token fourni n'est pas valide",
+                code: "TOKEN_INVALID",
             });
         }
         if (error.name === "TokenExpiredError") {

@@ -33,9 +33,10 @@ async function ensureCsrfToken() {
     return token ? decodeURIComponent(token) : null;
 }
 
-// Seuls un jeton expiré ou absent (cookie d'accès disparu) justifient un renouvellement ;
-// un jeton invalide, une session révoquée ou un compte désactivé mènent à la connexion.
-const REFRESH_CODES = new Set(['TOKEN_EXPIRED', 'TOKEN_MISSING']);
+// Un jeton expiré, absent (cookie d'accès disparu) ou illisible (ex. signé avant le passage en
+// RS256, phase C) justifie une tentative de renouvellement : elle exige le jeton de renouvellement
+// valide. Une session révoquée ou un compte désactivé mènent à la connexion.
+const REFRESH_CODES = new Set(['TOKEN_EXPIRED', 'TOKEN_MISSING', 'TOKEN_INVALID']);
 
 const NO_REFRESH_ENDPOINTS = new Set([
     '/auth/login',
