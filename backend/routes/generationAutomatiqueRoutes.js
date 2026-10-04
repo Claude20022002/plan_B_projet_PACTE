@@ -1,7 +1,10 @@
 import express from "express";
 import {
     activerSnapshot,
+    arreterSession,
     genererAffectations,
+    getSession,
+    listerSessions,
     getSnapshot,
     listerSnapshots,
     rollbackSnapshot,
@@ -17,9 +20,14 @@ router.use(requireRole("admin"));
 
 /**
  * POST /api/generation-automatique/generer
- * Génère automatiquement les affectations pour un semestre
+ * Lance la génération Timefold d'une période : { id_periode, id_filieres?, duree_secondes? }
  */
 router.post("/generer", genererAffectations);
+
+// Suivi d'une génération (avancement, rapport) et arrêt anticipé
+router.get("/sessions", listerSessions);
+router.get("/sessions/:id", getSession);
+router.post("/sessions/:id/arreter", arreterSession);
 
 router.get("/snapshots", listerSnapshots);
 router.get("/snapshots/:id", getSnapshot);

@@ -1,119 +1,51 @@
-import { Op } from "sequelize";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { genererAffectationsAutomatiques } from "../utils/generateAffectations.js";
-import { verifierEtCreerConflits } from "../utils/detectConflicts.js";
-import { Affectation } from "../models/index.js";
+import { GenerationSession } from "../models/index.js";
 import { SnapshotService } from "../services/generation/SnapshotService.js";
+import { arreterGeneration, lancerGeneration } from "../services/generation/timefold/generation.js";
+import { SolveurIndisponible } from "../services/generation/timefold/solveurClient.js";
+import { planification } from "../utils/erreursPlanning.js";
+import { ErreurMetier } from "../services/planning/enseignements.js";
+
+/**
+ * Génération automatique (phase E) : la semaine type est calculée par le service Timefold,
+ * puis déployée sur le semestre sous les règles de planification. Chaque génération crée une
+ * version (snapshot) que l'on peut réactiver pour revenir en arrière.
+ */
 
 /**
  * POST /api/generation-automatique/generer
- * Génère automatiquement les affectations pour un semestre
+ * { id_periode, id_filieres?: number[], duree_secondes?: 10–600 } → 202 { session }
  */
-export const genererAffectations = asyncHandler(async (req, res) => {
-    // Vérifier que l'utilisateur est authentifié
-    if (!req.user || !req.user.id_user) {
-        return res.status(401).json({
-            message: "Authentification requise",
-            error: "Vous devez être connecté pour accéder à cette ressource",
-        });
-    }
-
-    const {
-        dateDebut,
-        dateFin,
-        coursIds = [],
-        groupeIds = [],
-        ecraserAffectations = false,
-        //les nouveaux paramètres que j'ai ajoutés
-        maxSessionHours,
-        maxHoursPerDayGroup,
-        maxHoursPerDayCourse,
-        allowSameCourseTwicePerDay,
-    } = req.body;
-
-    const idUserAdmin = req.user.id_user;
-
-    // Validation
-    if (!dateDebut || !dateFin) {
-        return res.status(400).json({
-            message: "Paramètres manquants",
-            error: "Les dates de début et de fin sont requises",
-        });
-    }
-
-    // Validation des dates
-    const debut = new Date(dateDebut);
-    const fin = new Date(dateFin);
-    if (debut >= fin) {
-        return res.status(400).json({
-            message: "Dates invalides",
-            error: "La date de début doit être antérieure à la date de fin",
-        });
-    }
-
-    const optionsValidation = [
-        { key: "maxSessionHours", value: maxSessionHours, min: 1, max: 8 },
-        { key: "maxHoursPerDayGroup", value: maxHoursPerDayGroup, min: 1, max: 12 },
-        { key: "maxHoursPerDayCourse", value: maxHoursPerDayCourse, min: 1, max: 8 },
-    ];
-
-    for (const option of optionsValidation) {
-        if (option.value !== undefined) {
-            const nombre = Number(option.value);
-            if (Number.isNaN(nombre) || nombre < option.min || nombre > option.max) {
-                return res.status(400).json({
-                    message: "Paramètres invalides",
-                    error: `${option.key} doit être compris entre ${option.min} et ${option.max}`,
-                });
-            }
-        }
-    }
-
+export const genererAffectations = planification(async (req, res) => {
+    const idPeriode = Number(req.body.id_periode);
+    if (!idPeriode) throw new ErreurMetier("Période requise", 400);
+    const idFilieres = Array.isArray(req.body.id_filieres) ? [...new Set(req.body.id_filieres.map(Number).filter(Boolean))] : [];
+    const duree = Math.min(600, Math.max(10, Number(req.body.duree_secondes) || 60));
     try {
-        // Générer les affectations
-        const resultat = await genererAffectationsAutomatiques({
-            dateDebut,
-            dateFin,
-            coursIds,
-            groupeIds,
-            idUserAdmin,
-            ecraserAffectations,
-            //les nouveaux paramètres que j'ai ajoutés
-            maxSessionHours,
-            maxHoursPerDayGroup,
-            maxHoursPerDayCourse,
-            allowSameCourseTwicePerDay,
-        });
-
-        // Vérifier les conflits pour les nouvelles affectations
-        if (resultat.affectationsCreees.length > 0) {
-            const nouvellesAffectations = await Affectation.findAll({
-                where: {
-                    id_affectation: {
-                        [Op.in]: resultat.affectationsCreees.map((a) => a.id),
-                    },
-                },
-            });
-
-            let conflitsTotal = 0;
-            for (const affectation of nouvellesAffectations) {
-                const conflits = await verifierEtCreerConflits(affectation);
-                conflitsTotal += conflits.length;
-            }
-            resultat.statistiques.conflitsDetectes = conflitsTotal;
-        }
-
-        res.status(200).json({
-            message: "Génération automatique terminée",
-            resultat,
-        });
+        const session = await lancerGeneration({ id_periode: idPeriode, id_filieres: idFilieres, dureeSecondes: duree, user: req.user });
+        res.status(202).json({ message: "Génération lancée", session });
     } catch (error) {
-        console.error("Erreur lors de la génération automatique:", error);
-        res.status(500).json({
-            message: "Erreur lors de la génération automatique",
-            error: error.message,
-        });
+        if (error instanceof SolveurIndisponible) return res.status(503).json({ message: error.message, error: error.message });
+        throw error;
     }
+});
+
+/** GET /api/generation-automatique/sessions — dernières générations */
+export const listerSessions = asyncHandler(async (req, res) => {
+    res.json(await GenerationSession.findAll({ order: [["id_generation_session", "DESC"]], limit: 20 }));
+});
+
+/** GET /api/generation-automatique/sessions/:id — avancement et rapport */
+export const getSession = asyncHandler(async (req, res) => {
+    const session = await GenerationSession.findByPk(req.params.id);
+    if (!session) return res.status(404).json({ message: "Génération introuvable", error: "Génération introuvable" });
+    res.json(session);
+});
+
+/** POST /api/generation-automatique/sessions/:id/arreter — garde la meilleure solution connue */
+export const arreterSession = planification(async (req, res) => {
+    await arreterGeneration(req.params.id);
+    res.json({ message: "Arrêt demandé : la meilleure solution trouvée va être déployée" });
 });
 
 /**
@@ -143,7 +75,8 @@ export const getSnapshot = asyncHandler(async (req, res) => {
 
 /**
  * POST /api/generation-automatique/snapshots/:id/activate
- * Active un snapshot et desactive les autres snapshots de la meme periode.
+ * Réactive une version : ses séances générées reprennent, celles des autres versions pour les
+ * mêmes enseignements sont annulées.
  */
 export const activerSnapshot = asyncHandler(async (req, res) => {
     const snapshotService = new SnapshotService();
