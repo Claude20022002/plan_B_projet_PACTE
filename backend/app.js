@@ -34,6 +34,7 @@ import composanteRoutes from "./routes/composanteRoutes.js";
 import enseignementRoutes from "./routes/enseignementRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
 import reservationRoutes from "./routes/reservationRoutes.js";
+import examenRoutes from "./routes/examenRoutes.js";
 
 // Import des middlewares
 import {
@@ -130,6 +131,7 @@ app.use("/api/composantes", composanteRoutes);
 app.use("/api/enseignements", enseignementRoutes);
 app.use("/api/services", serviceRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/examens", examenRoutes);
 
 app.get("/", (req, res) => {
     res.json({

@@ -54,6 +54,7 @@ export {
     validateAffectationCreation,
     validateAffectationUpdate,
     validateReservation,
+    validateExamen,
     validateDemandeReportCreation,
     validateConflitCreation,
     validateNotificationCreation,

@@ -42,6 +42,11 @@ export const PARAMETRES_PLANNING = {
         valider: (v) => typeof v === "number" && v > 0 && v <= 1,
         description: "Part de la capacité d'une salle utilisable en examen (si non renseignée sur la salle)",
     },
+    surveillants_par_salle: {
+        defaut: 2,
+        valider: entier(1, 6),
+        description: "Nombre minimal de surveillants par salle d'examen",
+    },
     trajet_inter_campus_defaut_minutes: {
         defaut: 30,
         valider: entier(0, 240),
