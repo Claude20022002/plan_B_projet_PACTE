@@ -163,8 +163,13 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
     const motifs = new Map();
     // Seuls les créneaux de la grille envoyée comptent (une autre grille ne peut pas chevaucher la semaine type)
     const idsCreneaux = new Set(creneaux.map((c) => c.id));
-    for (const a of autres.filter((x) => x.creneau && idsCreneaux.has(x.id_creneau))) {
-        const cle = `${a.id_creneau}|${a.id_salle}|${a.id_user_enseignant}|${a.id_groupe}`;
+    const cleDe = (a) => `${a.id_creneau}|${a.id_salle}|${a.id_user_enseignant}|${a.id_groupe}`;
+    // Une séance ponctuelle n'immobilise pas la semaine type : le déploiement saute simplement sa date.
+    // Seuls les motifs qui reviennent (au moins deux dates) sont épinglés.
+    const dates = new Map();
+    for (const a of autres) dates.set(cleDe(a), (dates.get(cleDe(a)) ?? new Set()).add(a.date_seance));
+    for (const a of autres.filter((x) => x.creneau && idsCreneaux.has(x.id_creneau) && dates.get(cleDe(x)).size >= 2)) {
+        const cle = cleDe(a);
         if (motifs.has(cle)) continue;
         const occupes = await groupesLies(a.id_groupe);
         motifs.set(cle, {
