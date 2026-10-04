@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -18,6 +18,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../contexts/AuthContext';
 import { LANGUAGES } from '../i18n';
 import { ds } from '../design-system/tokens';
+import { cheminSuivantSur } from '../utils/redirection';
 import { FlapTiles } from '../design-system/board';
 
 /**
@@ -81,7 +82,15 @@ const errorKeyFor = (message = '') => {
 export default function Connexion() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const [params] = useSearchParams();
+  // Retour vers la bibliothèque (StudyLib) si la connexion a été demandée par elle
+  const suivant = cheminSuivantSur(params.get('next'));
+  const { login, loading: chargementSession, isAuthenticated } = useAuth();
+
+  // Session encore valide (ou renouvelée au chargement) : retour direct à la bibliothèque
+  useEffect(() => {
+    if (suivant && !chargementSession && isAuthenticated) window.location.assign(suivant);
+  }, [suivant, chargementSession, isAuthenticated]);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -106,7 +115,8 @@ export default function Connexion() {
       if (result.success) {
         // Le rôle vient du compte : aucune saisie de « fonction » n'est demandée
         const role = result.data?.user?.role;
-        navigate(role ? `/dashboard/${role}` : '/');
+        if (suivant) window.location.assign(suivant);
+        else navigate(role ? `/dashboard/${role}` : '/');
       } else {
         setErrorKey(errorKeyFor(result.error));
       }

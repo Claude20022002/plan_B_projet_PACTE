@@ -22,7 +22,7 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
-import {
+import { LocalLibrary,
   Apartment,
   Assignment,
   AssignmentInd,
@@ -135,6 +135,7 @@ const navigationFor = (user) => {
           { key: 'nav.bookings', icon: <BookOnline />, path: '/reservations' },
           { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
           { key: 'nav.availableRooms', icon: <MeetingRoom />, path: '/salles-disponibles' },
+          { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
         ],
       },
     ];
@@ -161,6 +162,7 @@ const navigationFor = (user) => {
         { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/etudiant' },
         { key: 'nav.monthly', icon: <Print />, path: '/emploi-du-temps/mensuel' },
         { key: 'nav.myExams', icon: <FactCheck />, path: '/mes-examens' },
+        { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
       ],
     },
   ];
@@ -293,6 +295,11 @@ export default function DashboardLayout({ children }) {
   };
 
   const go = (path) => {
+    // La bibliothèque (StudyLib) est une autre application sur la même origine : navigation complète
+    if (path.startsWith('/biblio')) {
+      window.location.assign(path);
+      return;
+    }
     navigate(path);
     setDrawerOpen(false);
   };

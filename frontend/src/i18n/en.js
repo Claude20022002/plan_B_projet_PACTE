@@ -390,6 +390,7 @@ const en = {
     monthly: 'Monthly timetable',
     myInvigilations: 'My invigilation',
     myExams: 'My exams',
+    library: 'Library',
   },
   status: {
     planifie: 'Scheduled',

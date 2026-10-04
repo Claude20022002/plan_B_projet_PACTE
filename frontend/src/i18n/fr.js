@@ -390,6 +390,7 @@ const fr = {
     monthly: 'EDT du mois',
     myInvigilations: 'Mes surveillances',
     myExams: 'Mes examens',
+    library: 'Bibliothèque',
   },
   status: {
     planifie: 'Planifiée',
