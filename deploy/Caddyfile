@@ -1,0 +1,31 @@
+# Passerelle publique de la plateforme : HTTPS automatique (Let's Encrypt), seule exposée.
+#   SITE_ADDRESS     ex. planner.hestim.ma       → Planner (/), API (/api), StudyLib (/biblio)
+#   FICHIERS_ADDRESS ex. fichiers.hestim.ma      → liens signés de téléchargement (MinIO)
+# En local : SITE_ADDRESS=localhost FICHIERS_ADDRESS=fichiers.localhost (certificat local Caddy).
+
+{$SITE_ADDRESS} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	reverse_proxy frontend:80 {
+		header_up X-Forwarded-Proto {scheme}
+	}
+}
+
+# Téléchargements : les liens sont signés pour l'hôte interne minio:9000 ; on lui rend cet
+# en-tête Host, la signature (qui l'inclut) reste valide. Lecture seule : GET et HEAD.
+{$FICHIERS_ADDRESS} {
+	@lecture method GET HEAD
+	handle @lecture {
+		reverse_proxy minio:9000 {
+			header_up Host minio:9000
+		}
+	}
+	handle {
+		respond "Méthode non autorisée" 405
+	}
+}
