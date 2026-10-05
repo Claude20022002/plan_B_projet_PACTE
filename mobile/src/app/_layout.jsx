@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import * as Notifications from 'expo-notifications';
+import { Notifications } from '../notifications';
 import { useFonts, Barlow_400Regular, Barlow_600SemiBold } from '@expo-google-fonts/barlow';
 import { BarlowCondensed_500Medium, BarlowCondensed_600SemiBold, BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
@@ -36,6 +36,7 @@ export default function Racine() {
 
   // Toucher une notification ouvre l'écran correspondant
   useEffect(() => {
+    if (!Notifications) return undefined;
     const abonnement = Notifications.addNotificationResponseReceivedListener((reponse) => {
       router.push(ecranDeLien(reponse.notification.request.content.data?.lien));
     });
