@@ -964,6 +964,10 @@ registerCommand("pbpaste", {
 });
 registerCommand("bash", { category: "Shell", description: "Identify Bash as a shell (not a nested interpreter here).", examples: ["echo $SHELL"], platforms: ["Linux"], help: "bash\n\nThe game models one shell syntax while teaching that many Linux servers default to Bash." , execute: (_args) => result("bash: nested shell simulation\n") });
 registerCommand("zsh", { category: "Shell", description: "Identify Zsh as a shell (not a nested interpreter here).", examples: ["echo $SHELL"], platforms: ["macOS"], help: "zsh\n\nThe game models one shell syntax while teaching that modern macOS defaults to Zsh." , execute: (_args) => result("zsh: nested shell simulation\n") });
+registerCommand("help", {
+  category: "Shell", description: "List the commands available in this terminal.", examples: ["help"], help: "help\n\nList every command this simulated terminal understands. Use man <command> for details.",
+  execute: () => result(`${Object.keys(COMMANDS).sort().join("  ")}\n\nman <command>: help on one command\n`)
+});
 
 const checkResult = (ok, message) => ({ ok: !!ok, message });
 const outputContains = (check, value, insensitive = false) => {
@@ -978,7 +982,7 @@ const fileHas = (check, path, predicate) => {
 const makeChallenge = (config) => ({
   xp: 100,
   platforms: ["macOS + Linux"],
-  hints: ["Think about the tool that matches this objective.", "Use the Commands quick reference if you need to remember the name.", "Try the simplest form and observe the terminal response."],
+  hints: ["Think about the tool that matches this objective.", "Type help for the list of commands, or man <command> for help on one.", "Try the simplest form and observe the terminal response."],
   setup: () => makeBaseScenario(),
   ...config
 });
