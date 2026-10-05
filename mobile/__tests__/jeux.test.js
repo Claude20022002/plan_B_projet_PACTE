@@ -2,7 +2,8 @@ jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'u', get
 jest.mock('../src/api/client', () => ({ planner: jest.fn(), biblio: jest.fn() }));
 
 import { planner } from '../src/api/client';
-import { chargerPartiesQuiz } from '../src/api/donnees';
+import { chargerAccueilJeux, chargerPartiesQuiz, enregistrerReussite } from '../src/api/donnees';
+import { PartieTerminal, defisLinux } from '../../shared/terminal/jeu.js';
 
 /** Parties ClassQuiz proposées à l'étudiant : seuls les liens https sont gardés. */
 test('parties en cours : lien https gardé, lien non sécurisé écarté', async () => {
@@ -18,8 +19,6 @@ test('parties en cours : lien https gardé, lien non sécurisé écarté', async
   expect(parties.map((p) => p.id)).toEqual([1, 3]);
 });
 
-import { chargerAccueilJeux, enregistrerReussite } from '../src/api/donnees';
-import { PartieTerminal, defisLinux } from '../../shared/terminal/jeu.js';
 
 /** Jeux intégrés : appels à Planner (le serveur calcule les points) et moteur partagé. */
 test('réussite d’un défi : POST sur le bon défi, avec le nombre d’indices seulement', async () => {
