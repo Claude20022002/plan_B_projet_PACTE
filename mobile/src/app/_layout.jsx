@@ -14,7 +14,7 @@ import { couleurs } from '../theme';
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
 /** Liens d'une alerte : seulement des écrans internes de l'application. */
-const ECRANS_AUTORISES = new Set(['/', '/semaine', '/alertes']);
+const ECRANS_AUTORISES = new Set(['/', '/semaine', '/alertes', '/jeux']);
 const ecranDeLien = (lien) => {
   if (typeof lien !== 'string') return '/alertes';
   if (lien.startsWith('/emploi-du-temps')) return '/semaine';

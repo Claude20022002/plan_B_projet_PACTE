@@ -67,3 +67,9 @@ export const chargerIdeesProjet = async () => {
 };
 
 export const partagerStage = (avis) => biblio('/internship-reviews', { method: 'POST', body: avis });
+
+/** Parties ClassQuiz en cours dans les séances de l'étudiant (lien de jeu https uniquement) */
+export const chargerPartiesQuiz = async () => {
+  const reponse = await planner('/quiz/parties/en-cours');
+  return (reponse.data || []).filter((p) => typeof p.url !== 'string' || /^https:\/\//.test(p.url));
+};

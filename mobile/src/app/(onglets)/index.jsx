@@ -82,10 +82,15 @@ export default function Tableau() {
   }, [codeVedette]);
 
   const cloche = (
-    <Pressable onPress={() => router.push('/alertes')} style={styles.cloche} accessibilityRole="button" accessibilityLabel={`${t('app.tableau.alertes')} : ${alertes.length}`}>
-      <MaterialCommunityIcons name="bell-outline" size={24} color="#FFFFFF" />
-      {alertes.length > 0 ? <View style={styles.pastille} /> : null}
-    </Pressable>
+    <View style={{ flexDirection: 'row' }}>
+      <Pressable onPress={() => router.push('/jeux')} style={styles.cloche} accessibilityRole="button" accessibilityLabel={t('app.jeux.titre')}>
+        <MaterialCommunityIcons name="gamepad-variant-outline" size={24} color="#FFFFFF" />
+      </Pressable>
+      <Pressable onPress={() => router.push('/alertes')} style={styles.cloche} accessibilityRole="button" accessibilityLabel={`${t('app.tableau.alertes')} : ${alertes.length}`}>
+        <MaterialCommunityIcons name="bell-outline" size={24} color="#FFFFFF" />
+        {alertes.length > 0 ? <View style={styles.pastille} /> : null}
+      </Pressable>
+    </View>
   );
 
   return (
