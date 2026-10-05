@@ -17,3 +17,28 @@ test('parties en cours : lien https gardé, lien non sécurisé écarté', async
   expect(planner).toHaveBeenCalledWith('/quiz/parties/en-cours');
   expect(parties.map((p) => p.id)).toEqual([1, 3]);
 });
+
+import { chargerAccueilJeux, enregistrerReussite } from '../src/api/donnees';
+import { PartieTerminal, defisLinux } from '../../shared/terminal/jeu.js';
+
+/** Jeux intégrés : appels à Planner (le serveur calcule les points) et moteur partagé. */
+test('réussite d’un défi : POST sur le bon défi, avec le nombre d’indices seulement', async () => {
+  planner.mockResolvedValueOnce({ cree: true, points: 80 });
+  const r = await enregistrerReussite('terminal-linux', 'navigation-01', 1);
+  expect(planner).toHaveBeenLastCalledWith('/jeux/terminal-linux/defis/navigation-01/reussite', { method: 'POST', body: { indices: 1 } });
+  expect(r.points).toBe(80);
+});
+
+test('accueil des jeux : catalogue et modules depuis Planner', async () => {
+  planner.mockResolvedValueOnce({ jeux: [], modules: [] });
+  await chargerAccueilJeux();
+  expect(planner).toHaveBeenLastCalledWith('/jeux');
+});
+
+test('le moteur du terminal partagé tourne dans l’application (défi résolu par sa solution)', () => {
+  const defi = defisLinux('fr').find((d) => d.id === 'pipes-03');
+  const partie = new PartieTerminal(defi.id, { joueur: 'Mintsa' });
+  for (const ligne of defi.solution.split('\n')) partie.executer(ligne);
+  expect(partie.verifier().ok).toBe(true);
+  expect(partie.invite).toBe('mintsa@hestim-lab:~ $');
+});

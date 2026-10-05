@@ -10,6 +10,8 @@ import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { CIBLE_TACTILE, couleurs, polices } from '../../theme';
 
 const RAFRAICHISSEMENT_QUIZ_MS = 20000;
+// Écran de chaque jeu intégré
+const ECRAN_JEU = { 'terminal-linux': '/terminal' };
 
 // Lecture seule : le composant applique le résultat dans le .then (aucun état modifié ici)
 const lireTout = () =>
@@ -102,7 +104,7 @@ export default function Jeux() {
             <Text style={styles.section} accessibilityRole="header">{t('app.jeux.mesModules')}</Text>
             {modules.flatMap((m) =>
               m.jeux.map((code) => (
-                <Pressable key={`${m.id_cours}-${code}`} onPress={() => router.push(`/${code === 'terminal-linux' ? 'terminal' : code}`)} style={styles.ligne} accessibilityRole="button">
+                <Pressable key={`${m.id_cours}-${code}`} onPress={() => ECRAN_JEU[code] && router.push(ECRAN_JEU[code])} style={styles.ligne} accessibilityRole="button">
                   <View style={[styles.lampe, { backgroundColor: couleurs.enCours }]} />
                   <View style={styles.contenu}>
                     <Text style={styles.titreCapitales}>{titreJeu(code)}</Text>
@@ -119,7 +121,7 @@ export default function Jeux() {
         {jeux.map((jeu) => {
           const p = jeu.progression;
           return (
-            <Pressable key={jeu.code} onPress={() => router.push('/terminal')} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${libelle(jeu.titre, i18n.language)}, ${t('app.jeux.progression', { reussis: p.reussis, total: p.total, points: p.points })}`}>
+            <Pressable key={jeu.code} onPress={() => ECRAN_JEU[jeu.code] && router.push(ECRAN_JEU[jeu.code])} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${libelle(jeu.titre, i18n.language)}, ${t('app.jeux.progression', { reussis: p.reussis, total: p.total, points: p.points })}`}>
               <View style={[styles.lampe, p.reussis ? { backgroundColor: couleurs.enCours } : null]} />
               <View style={styles.contenu}>
                 <Text style={styles.titreCapitales}>{libelle(jeu.titre, i18n.language)}</Text>
