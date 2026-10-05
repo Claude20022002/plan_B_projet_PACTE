@@ -1,15 +1,17 @@
 import { useEffect, useState } from 'react';
-import { FlatList, Pressable, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Pressable, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../board/Ecran';
 import { useAuth } from '../auth/AuthContext';
 import { chargerAlertes } from '../api/donnees';
-import { CIBLE_TACTILE, couleurs, polices } from '../theme';
+import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
 
 /** Alertes (ouvertes depuis la cloche du Tableau ou en touchant une notification). */
 export default function Alertes() {
+  const { couleurs } = useTheme();
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { utilisateur } = useAuth();
@@ -24,12 +26,12 @@ export default function Alertes() {
 
   const fermer = (
     <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} style={styles.fermer} accessibilityRole="button" accessibilityLabel={t('app.commun.fermer')}>
-      <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />
+      <MaterialCommunityIcons name="close" size={24} color={couleurs.surCadre} />
     </Pressable>
   );
 
   return (
-    <Ecran titre={t('app.alertes.titre')} droite={fermer}>
+    <Ecran titre={t('app.alertes.titre')} droite={fermer} espaces={false}>
       <FlatList
         data={alertes ?? []}
         keyExtractor={(a) => String(a.id_notification)}
@@ -49,11 +51,11 @@ export default function Alertes() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((t) => ({
   fermer: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },
-  alerte: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: couleurs.filet },
-  pastille: { width: 8, height: 8, borderRadius: 4, marginTop: 7, backgroundColor: couleurs.reporte },
-  titre: { color: couleurs.lettre, fontFamily: polices.texteGras, fontSize: 15 },
-  texte: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 14, marginTop: 2, lineHeight: 20 },
-  date: { color: couleurs.lettreAttenuee, fontFamily: polices.panneauMoyen, fontSize: 13, marginTop: 4 },
-});
+  alerte: { flexDirection: 'row', gap: 10, paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: t.couleurs.filet },
+  pastille: { width: 8, height: 8, borderRadius: 4, marginTop: 7, backgroundColor: t.couleurs.reporte },
+  titre: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 15 },
+  texte: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 14, marginTop: 2, lineHeight: 20 },
+  date: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneauMoyen, fontSize: 13, marginTop: 4 },
+}));

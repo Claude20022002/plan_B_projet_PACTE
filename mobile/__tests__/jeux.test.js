@@ -2,7 +2,7 @@ jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'u', get
 jest.mock('../src/api/client', () => ({ planner: jest.fn(), biblio: jest.fn() }));
 
 import { planner } from '../src/api/client';
-import { chargerAccueilJeux, chargerPartiesQuiz, enregistrerReussite } from '../src/api/donnees';
+import { chargerAccueilJeux, chargerHistoriqueQuiz, chargerPartiesQuiz, chargerResultatsQuiz, enregistrerReussite } from '../src/api/donnees';
 import { PartieTerminal, defisLinux } from '../../shared/terminal/jeu.js';
 
 /** Parties ClassQuiz proposées à l'étudiant : seuls les liens https sont gardés. */
@@ -21,10 +21,10 @@ test('parties en cours : lien https gardé, lien non sécurisé écarté', async
 
 
 /** Jeux intégrés : appels à Planner (le serveur calcule les points) et moteur partagé. */
-test('réussite d’un défi : POST sur le bon défi, avec le nombre d’indices seulement', async () => {
+test('réussite d’un défi : POST sur le bon défi, avec les indices et les commandes à rejouer', async () => {
   planner.mockResolvedValueOnce({ cree: true, points: 80 });
-  const r = await enregistrerReussite('terminal-linux', 'navigation-01', 1);
-  expect(planner).toHaveBeenLastCalledWith('/jeux/terminal-linux/defis/navigation-01/reussite', { method: 'POST', body: { indices: 1 } });
+  const r = await enregistrerReussite('terminal-linux', 'navigation-01', 1, ['cd projects']);
+  expect(planner).toHaveBeenLastCalledWith('/jeux/terminal-linux/defis/navigation-01/reussite', { method: 'POST', body: { indices: 1, commandes: ['cd projects'] } });
   expect(r.points).toBe(80);
 });
 
@@ -40,4 +40,13 @@ test('le moteur du terminal partagé tourne dans l’application (défi résolu 
   for (const ligne of defi.solution.split('\n')) partie.executer(ligne);
   expect(partie.verifier().ok).toBe(true);
   expect(partie.invite).toBe('mintsa@hestim-lab:~ $');
+});
+
+test('quiz terminés : mes scores et les résultats d’une partie depuis Planner', async () => {
+  planner.mockResolvedValueOnce({ data: [{ id: 7, titre: 'Spark', score: 2400, rang: 2, nb_joueurs: 6 }] });
+  expect(await chargerHistoriqueQuiz()).toEqual([{ id: 7, titre: 'Spark', score: 2400, rang: 2, nb_joueurs: 6 }]);
+  expect(planner).toHaveBeenLastCalledWith('/quiz/parties/historique');
+  planner.mockResolvedValueOnce({ partie: { id: 7 }, classement: [], moi: null, equipes: [], nuages: [] });
+  await chargerResultatsQuiz(7);
+  expect(planner).toHaveBeenLastCalledWith('/quiz/parties/7/resultats');
 });

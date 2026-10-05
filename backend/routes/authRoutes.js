@@ -10,6 +10,8 @@ import {
     forgotPassword,
     resetPassword,
     changePassword,
+    creerPasserelle,
+    suivrePasserelle,
 } from "../controllers/authController.js";
 import { authenticateToken, optionalAuth } from "../middleware/authMiddleware.js";
 import { issueCsrfToken } from "../middleware/csrfMiddleware.js";
@@ -46,6 +48,12 @@ router.get("/sessions", authenticateToken, asyncHandler(listSessions));
 
 // 🔐 DELETE /api/auth/sessions/:sessionId - Révoquer un appareil
 router.delete("/sessions/:sessionId", authenticateToken, asyncHandler(revokeSession));
+
+// Passerelle de l'application mobile vers les sites web : code à usage unique, puis session web.
+// Pas de limiteur des connexions : tout un campus partage la même adresse, et le code (256 bits)
+// ne se devine pas.
+router.post("/passerelle", authenticateToken, asyncHandler(creerPasserelle));
+router.get("/passerelle", asyncHandler(suivrePasserelle));
 
 // 🔐 POST /api/auth/forgot-password - Demande de réinitialisation
 router.post("/forgot-password", authRateLimiter, asyncHandler(forgotPassword));

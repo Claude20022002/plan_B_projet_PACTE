@@ -1,6 +1,6 @@
 import { Platform } from 'react-native';
 import * as Device from 'expo-device';
-import * as Notifications from 'expo-notifications';
+import { Notifications, pushDisponible } from './notifications';
 import Constants from 'expo-constants';
 import { planner } from './api/client';
 import { effacerPushToken, enregistrerPushToken, lirePushToken } from './auth/stockage';
@@ -11,13 +11,13 @@ import { effacerPushToken, enregistrerPushToken, lirePushToken } from './auth/st
  * le même que celui des envois de Planner (services/push.js).
  */
 
-Notifications.setNotificationHandler({
+Notifications?.setNotificationHandler({
   handleNotification: async () => ({ shouldShowBanner: true, shouldShowList: true, shouldPlaySound: true, shouldSetBadge: false }),
 });
 
 export const inscrireAuxNotifications = async () => {
-  // Les push n'arrivent que sur un vrai téléphone (pas un émulateur sans services Google)
-  if (!Device.isDevice) return null;
+  // Les push n'arrivent que sur un vrai téléphone (pas un émulateur sans services Google), hors Expo Go Android
+  if (!pushDisponible || !Device.isDevice) return null;
   if (Platform.OS === 'android') {
     await Notifications.setNotificationChannelAsync('planning', {
       name: 'Emploi du temps',

@@ -102,3 +102,19 @@ export class PartieTerminal {
     return { ok: false, message: fr?.echec ?? validation?.message ?? 'The objective is not met yet.' };
   }
 }
+
+/** Limites d'une partie rejouée par le serveur (lignes tapées, longueur d'une ligne). */
+export const COMMANDES_MAX = 300;
+export const LONGUEUR_COMMANDE_MAX = 1000;
+
+/**
+ * Rejoue les commandes d'une partie depuis l'état initial du défi et vérifie l'objectif : le
+ * serveur n'enregistre une réussite que si ces commandes l'atteignent réellement. Le moteur est
+ * déterministe (seule la commande date dépend du jour).
+ * @returns {boolean}
+ */
+export const rejouerDefi = (idDefi, commandes, { joueur = 'etudiant' } = {}) => {
+  const partie = new PartieTerminal(idDefi, { joueur });
+  for (const ligne of commandes) partie.executer(ligne);
+  return partie.verifier().ok;
+};

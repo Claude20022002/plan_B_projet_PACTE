@@ -74,7 +74,7 @@ export default function JeuTerminal() {
     async (id, niveauIndice) => {
       if (reussis.has(id)) return reussis.get(id).points;
       try {
-        const r = await jeuxAPI.reussir(CODE, id, niveauIndice);
+        const r = await jeuxAPI.reussir(CODE, id, niveauIndice, [...partie.historique]);
         setReussis((m) => new Map(m).set(id, { id, points: r.points, indices: niveauIndice }));
         return r.points;
       } catch {
@@ -82,7 +82,7 @@ export default function JeuTerminal() {
         return pointsPour(defi.xp, niveauIndice);
       }
     },
-    [reussis, defi]
+    [reussis, defi, partie]
   );
 
   // Après chaque commande : l'objectif est-il atteint ?

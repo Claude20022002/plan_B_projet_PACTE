@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import Animated, { useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withTiming } from 'react-native-reanimated';
-import { couleurs, DECALAGE_VOLET_MS, polices, rayons } from '../theme';
+import { creerStyles, DECALAGE_VOLET_MS } from '../theme';
 
 /**
  * Tuiles à volets : réservées à l'heure de la prochaine séance. Un caractère ne bascule que
@@ -12,6 +12,7 @@ function Volet({ caractere, rang, taille }) {
   const reduire = useReducedMotion();
   const precedent = useRef(caractere);
   const rotation = useSharedValue(0);
+  const styles = useStyles();
 
   useEffect(() => {
     if (precedent.current === caractere) return;
@@ -35,6 +36,7 @@ function Volet({ caractere, rang, taille }) {
 }
 
 export default function FlapTiles({ valeur, taille = 40, accessibilityLabel }) {
+  const styles = useStyles();
   return (
     <View style={styles.rangee} accessible accessibilityLabel={accessibilityLabel ?? valeur}>
       {String(valeur)
@@ -46,15 +48,15 @@ export default function FlapTiles({ valeur, taille = 40, accessibilityLabel }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((t) => ({
   rangee: { flexDirection: 'row', gap: 3 },
   volet: {
-    backgroundColor: couleurs.cellule,
-    borderRadius: rayons.xs,
+    backgroundColor: t.volet.fond,
+    borderRadius: t.rayons.xs,
     alignItems: 'center',
     justifyContent: 'center',
     overflow: 'hidden',
   },
-  lettre: { color: couleurs.lettre, fontFamily: polices.panneauGras, fontVariant: ['tabular-nums'] },
-  charniere: { position: 'absolute', left: 0, right: 0, top: '50%', height: 1, backgroundColor: '#000000' },
-});
+  lettre: { color: t.volet.lettre, fontFamily: t.polices.panneauGras, fontVariant: ['tabular-nums'] },
+  charniere: { position: 'absolute', left: 0, right: 0, top: '50%', height: 1, backgroundColor: t.volet.charniere },
+}));

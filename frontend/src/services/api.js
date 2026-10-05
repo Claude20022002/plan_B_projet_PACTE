@@ -605,15 +605,22 @@ export const quizAPI = {
     // { actif, url, peutLancer } : où envoyer l'enseignant pour lancer une partie
     getConfig: () => request('/quiz/config'),
     getPartiesEnCours: () => request('/quiz/parties/en-cours'),
+    // Parties terminées (enseignant) ou mes scores (étudiant)
+    getHistorique: () => request('/quiz/parties/historique'),
+    // { partie, classement, moi, equipes, nuages }
+    getResultats: (id) => request(`/quiz/parties/${encodeURIComponent(id)}/resultats`),
 };
 
 // ==================== JEUX INTÉGRÉS (terminal Linux…) ====================
 export const jeuxAPI = {
     // { jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] }
     getAccueil: () => request('/jeux'),
+    // Personnage du joueur (shared/jeux/avatars.js)
+    choisirAvatar: (avatar) => request('/jeux/profil', { method: 'PUT', body: { avatar } }),
     getProgression: (code) => request(`/jeux/${encodeURIComponent(code)}/progression`),
-    reussir: (code, idDefi, indices) =>
-        request(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices } }),
+    // commandes : les lignes tapées depuis le début de la partie, rejouées par le serveur
+    reussir: (code, idDefi, indices, commandes) =>
+        request(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices, commandes } }),
     proposer: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules`, { method: 'POST', body: { id_cours: idCours } }),
     retirer: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}`, { method: 'DELETE' }),
     getSuivi: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}/suivi`),

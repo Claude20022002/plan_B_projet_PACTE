@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Ecran, { Message } from '../../board/Ecran';
 import { chargerAvisStage, chargerIdeesProjet, chargerSeances, chargerSupports } from '../../api/donnees';
-import { CIBLE_TACTILE, couleurs, lineColor, polices } from '../../theme';
+import { CIBLE_TACTILE, creerStyles, espace, lineColor, useTheme } from '../../theme';
 
 const JOURS_MODULES = 42;
 
@@ -23,6 +23,8 @@ const lireBibliotheque = async () => {
  * semaines) et leurs supports, puis les avis de stage et les idées de projets.
  */
 export default function Bibliotheque() {
+  const { couleurs } = useTheme();
+  const styles = useStyles();
   const { t } = useTranslation();
   const router = useRouter();
   const [modules, setModules] = useState([]);
@@ -109,16 +111,16 @@ export default function Bibliotheque() {
   );
 }
 
-const styles = StyleSheet.create({
-  section: { color: couleurs.lettreAttenuee, fontFamily: polices.panneau, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 6 },
+const useStyles = creerStyles((t) => ({
+  section: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1.2), paddingHorizontal: 16, paddingTop: 20, paddingBottom: 6 },
   sectionLigne: { flex: 1 },
   entete: { flexDirection: 'row', alignItems: 'flex-end' },
   action: { minHeight: CIBLE_TACTILE, justifyContent: 'flex-end', paddingHorizontal: 16, paddingBottom: 6 },
-  actionTexte: { color: couleurs.lettre, fontFamily: polices.texteGras, fontSize: 14, textDecorationLine: 'underline' },
-  ligne: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 56, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: couleurs.filet },
-  carre: { width: 10, height: 10, borderRadius: 1 },
-  nom: { flex: 1, color: couleurs.lettre, fontFamily: polices.texteGras, fontSize: 15 },
-  compte: { color: couleurs.lettreAttenuee, fontFamily: polices.panneau, fontSize: 14, textTransform: 'uppercase' },
-  carte: { paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: couleurs.filet, gap: 4 },
-  detail: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 14, lineHeight: 20 },
-});
+  actionTexte: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 14, textDecorationLine: 'underline' },
+  ligne: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 56, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: t.couleurs.filet },
+  carre: { width: 10, height: 10, borderRadius: t.famille === 'planner' ? 1 : 5 },
+  nom: { flex: 1, color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 15 },
+  compte: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales },
+  carte: { paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: t.couleurs.filet, gap: 4 },
+  detail: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 14, lineHeight: 20 },
+}));

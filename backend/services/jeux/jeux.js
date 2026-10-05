@@ -1,9 +1,10 @@
-import { Appartenir, Cours, CoursComposante, Enseignement, EnseignementEnseignant, EnseignementGroupe, Groupe, JeuModule, JeuProgression, Users } from "../../models/index.js";
+import { Appartenir, Cours, CoursComposante, Enseignement, EnseignementEnseignant, EnseignementGroupe, Groupe, JeuModule, JeuProfil, JeuProgression, Users } from "../../models/index.js";
 import { ancetres } from "../planning/groupes.js";
 import { peutGererFiliere } from "../planning/droits.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { JEUX, defiDuJeu, jeuParCode, pointsMax } from "../../../shared/jeux/catalogue.js";
-import { pointsPour, NIVEAU_REPONSE } from "../../../shared/terminal/jeu.js";
+import { AVATARS, avatarDe, avatarValide } from "../../../shared/jeux/avatars.js";
+import { COMMANDES_MAX, LONGUEUR_COMMANDE_MAX, NIVEAU_REPONSE, pointsPour, rejouerDefi } from "../../../shared/terminal/jeu.js";
 
 /**
  * Jeux intégrés à Planner (terminal Linux…). Le catalogue est commun au web et au mobile
@@ -67,14 +68,25 @@ const resumeProgression = (jeu, lignes) => {
     return { reussis: reussis.length, total: jeu.defis.length, points: reussis.reduce((t, l) => t + l.points, 0), pointsMax: pointsMax(jeu) };
 };
 
+/** Personnage du joueur (choisi, sinon tiré de son numéro) */
+const profilDuJoueur = async (idUser) => ({ avatar: avatarDe(idUser, (await JeuProfil.findByPk(idUser))?.avatar) });
+
+/** Choisir son personnage parmi ceux de shared/jeux/avatars.js */
+export const choisirAvatar = async (user, avatar) => {
+    if (!avatarValide(avatar)) throw new ErreurMetier(`avatar doit être l'un de : ${AVATARS.join(", ")}`, 400);
+    await JeuProfil.upsert({ id_user: user.id_user, avatar });
+    return { avatar };
+};
+
 /**
- * Accueil des jeux d'un utilisateur : le catalogue avec sa progression, et ses modules qui
- * proposent un jeu (avec les codes des jeux proposés).
+ * Accueil des jeux d'un utilisateur : son personnage, le catalogue avec sa progression, et ses
+ * modules qui proposent un jeu (avec les codes des jeux proposés).
  */
 export const accueilJeux = async (user) => {
-    const [lignes, idsModules] = await Promise.all([
+    const [lignes, idsModules, profil] = await Promise.all([
         JeuProgression.findAll({ where: { id_user: user.id_user }, attributes: ["code_jeu", "id_defi", "points"] }),
         modulesDuJoueur(user),
+        profilDuJoueur(user.id_user),
     ]);
     const propositions = idsModules.length
         ? await JeuModule.findAll({ where: { id_cours: idsModules }, include: [{ model: Cours, as: "cours", attributes: ["id_cours", "code_cours", "nom_cours"] }], order: [["id_cours", "ASC"]] })
@@ -91,6 +103,7 @@ export const accueilJeux = async (user) => {
         modules.get(p.id_cours).jeux.push(p.code_jeu);
     }
     return {
+        profil,
         jeux: JEUX.map((jeu) => ({ code: jeu.code, type: jeu.type, discipline: jeu.discipline, titre: jeu.titre, resume: jeu.resume, source: jeu.source, progression: resumeProgression(jeu, lignes) })),
         modules: [...modules.values()],
     };
@@ -106,17 +119,34 @@ export const progressionDuJeu = async (user, code) => {
     };
 };
 
+/** Commandes tapées pendant la partie : tableau de chaînes, borné en nombre et en longueur. */
+const commandesOuErreur = (commandes) => {
+    const valides =
+        Array.isArray(commandes) &&
+        commandes.length > 0 &&
+        commandes.length <= COMMANDES_MAX &&
+        commandes.every((c) => typeof c === "string" && c.length <= LONGUEUR_COMMANDE_MAX);
+    if (!valides) throw new ErreurMetier(`commandes doit être une liste de 1 à ${COMMANDES_MAX} lignes`, 400);
+    return commandes;
+};
+
 /**
- * Enregistre la réussite d'un défi. La première réussite compte (rejouer ne rapporte rien de
- * plus) ; les points dépendent des indices utilisés (0 à 3, 4 = réponse affichée).
+ * Enregistre la réussite d'un défi. Le serveur rejoue les commandes de la partie depuis l'état
+ * initial du défi : sans objectif atteint, rien n'est enregistré. La première réussite compte
+ * (rejouer ne rapporte rien de plus) ; les points dépendent des indices utilisés (0 à 3,
+ * 4 = réponse affichée), que seul le joueur connaît (les indices sont dans le code client).
  * @returns {{ cree: boolean, points: number, progression }}
  */
-export const enregistrerReussite = async (user, code, idDefi, indices) => {
+export const enregistrerReussite = async (user, code, idDefi, indices, commandes) => {
     const jeu = jeuOuErreur(code);
     const defi = defiDuJeu(jeu, String(idDefi ?? ""));
     if (!defi) throw new ErreurMetier("Défi inconnu", 404);
     const n = Number(indices ?? 0);
     if (!Number.isInteger(n) || n < 0 || n > NIVEAU_REPONSE) throw new ErreurMetier(`indices doit être un entier de 0 à ${NIVEAU_REPONSE}`, 400);
+    // Même nom de joueur que l'écran de jeu (invite et dossier personnel du terminal simulé)
+    if (!rejouerDefi(defi.id, commandesOuErreur(commandes), { joueur: user.prenom || "etudiant" })) {
+        throw new ErreurMetier("Objectif du défi non atteint", 422);
+    }
 
     const [ligne, cree] = await JeuProgression.findOrCreate({
         where: { id_user: user.id_user, code_jeu: jeu.code, id_defi: defi.id },
@@ -157,7 +187,7 @@ export const retirerDuModule = async (user, code, idCours) => {
 
 /**
  * Suivi d'un module par son enseignant : progression des étudiants qui suivent ce module
- * (nom, prénom et points seulement), du plus avancé au moins avancé.
+ * (nom, prénom, personnage et points seulement), du plus avancé au moins avancé.
  */
 export const suiviDuModule = async (user, code, idCours) => {
     const jeu = jeuOuErreur(code);
@@ -182,15 +212,17 @@ export const suiviDuModule = async (user, code, idCours) => {
     const ids = [...new Set(inscrits.map((a) => a.id_user_etudiant))];
     if (!ids.length) return { module: { id_cours: cours.id_cours, code: cours.code_cours, nom: cours.nom_cours }, etudiants: [] };
 
-    const [etudiants, lignes] = await Promise.all([
+    const [etudiants, lignes, profils] = await Promise.all([
         Users.findAll({ where: { id_user: ids, actif: true }, attributes: ["id_user", "nom", "prenom"] }),
         JeuProgression.findAll({ where: { id_user: ids, code_jeu: jeu.code }, attributes: ["id_user", "code_jeu", "id_defi", "points"] }),
+        JeuProfil.findAll({ where: { id_user: ids } }),
     ]);
+    const avatars = new Map(profils.map((p) => [p.id_user, p.avatar]));
     const parEtudiant = (id) => resumeProgression(jeu, lignes.filter((l) => l.id_user === id));
     return {
         module: { id_cours: cours.id_cours, code: cours.code_cours, nom: cours.nom_cours },
         etudiants: etudiants
-            .map((e) => ({ id_user: e.id_user, nom: e.nom, prenom: e.prenom, ...parEtudiant(e.id_user) }))
+            .map((e) => ({ id_user: e.id_user, nom: e.nom, prenom: e.prenom, avatar: avatarDe(e.id_user, avatars.get(e.id_user)), ...parEtudiant(e.id_user) }))
             .sort((a, b) => b.points - a.points || a.nom.localeCompare(b.nom)),
     };
 };

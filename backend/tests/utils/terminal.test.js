@@ -1,4 +1,4 @@
-import { PartieTerminal, defisLinux, pointsPour } from "../../../shared/terminal/jeu.js";
+import { PartieTerminal, defisLinux, pointsPour, rejouerDefi } from "../../../shared/terminal/jeu.js";
 import { JEUX, jeuParCode } from "../../../shared/jeux/catalogue.js";
 import { DEFIS_FR } from "../../../shared/terminal/defis-fr.js";
 
@@ -15,6 +15,13 @@ describe("Défis du terminal Linux", () => {
         expect(partie.verifier().ok).toBe(false);
         for (const ligne of defi.solution.split("\n")) partie.executer(ligne);
         expect(partie.verifier()).toEqual({ ok: true, message: "" });
+    });
+
+    test("rejouer une partie : vrai seulement si les commandes atteignent l'objectif", () => {
+        const solution = defis.find((d) => d.id === "combine-01").solution.split("\n");
+        expect(rejouerDefi("combine-01", solution, { joueur: "Mintsa" })).toBe(true);
+        expect(rejouerDefi("combine-01", solution.slice(0, 2), { joueur: "Mintsa" })).toBe(false);
+        expect(rejouerDefi("combine-01", ["ls", "", "pwd"], { joueur: "Mintsa" })).toBe(false);
     });
 
     test("chaque défi a ses textes français (titre, objectif, message d'échec)", () => {
