@@ -8,7 +8,6 @@
     "scheme": "hestim",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0B0B0D",
-    "newArchEnabled": true,
     "android": {
       "package": "com.hestim.planner",
       "versionCode": 1,
@@ -16,10 +15,15 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#FFFFFF"
       },
-      "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
-      "permissions": ["POST_NOTIFICATIONS"],
-      "blockedPermissions": ["android.permission.RECORD_AUDIO", "android.permission.CAMERA", "android.permission.ACCESS_FINE_LOCATION"]
+      "permissions": [
+        "POST_NOTIFICATIONS"
+      ],
+      "blockedPermissions": [
+        "android.permission.RECORD_AUDIO",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ]
     },
     "ios": {
       "bundleIdentifier": "com.hestim.planner",
@@ -49,7 +53,8 @@
           "icon": "./assets/adaptive-icon.png",
           "color": "#001861"
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": false
