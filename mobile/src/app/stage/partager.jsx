@@ -1,17 +1,19 @@
 import { useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Switch, Text, TextInput, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
 import { partagerStage } from '../../api/donnees';
-import { CIBLE_TACTILE, couleurs, polices, rayons } from '../../theme';
+import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
 
 /**
  * « Partager mon stage » : un avis publié par l'étudiant lui-même, avec son accord explicite
  * (aucune collecte automatique de profils). Mêmes champs que le formulaire web de StudyLib.
  */
 export default function PartagerStage() {
+  const { couleurs } = useTheme();
+  const styles = useStyles();
   const { t } = useTranslation();
   const router = useRouter();
   const [champs, setChamps] = useState({ company_name: '', company_city: '', position: '', description: '', rating: 0, is_paid: false });
@@ -41,12 +43,12 @@ export default function PartagerStage() {
 
   const retour = (
     <Pressable onPress={() => router.back()} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
-      <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+      <MaterialCommunityIcons name="arrow-left" size={24} color={couleurs.surCadre} />
     </Pressable>
   );
 
   return (
-    <Ecran titre={t('app.stage.titre')} droite={retour}>
+    <Ecran titre={t('app.stage.titre')} droite={retour} espaces={false}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         <ScrollView contentContainerStyle={styles.contenu} keyboardShouldPersistTaps="handled">
           {champ('company_name', t('app.stage.entreprise'))}
@@ -82,18 +84,18 @@ export default function PartagerStage() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((t) => ({
   contenu: { padding: 16, gap: 6, paddingBottom: 40 },
   icone: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },
   groupe: { gap: 6, marginBottom: 6 },
-  libelle: { color: couleurs.lettreAttenuee, fontFamily: polices.panneau, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1 },
-  champ: { minHeight: CIBLE_TACTILE, backgroundColor: couleurs.cellule, borderRadius: rayons.sm, color: couleurs.lettre, fontFamily: polices.texte, fontSize: 16, paddingHorizontal: 14 },
+  libelle: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1) },
+  champ: { minHeight: CIBLE_TACTILE, backgroundColor: t.couleurs.cellule, borderRadius: t.rayons.sm, borderWidth: t.sombre ? 0 : 1, borderColor: t.couleurs.filet, color: t.couleurs.lettre, fontFamily: t.polices.texte, fontSize: 16, paddingHorizontal: 14 },
   multi: { minHeight: 140, paddingTop: 12 },
   etoiles: { flexDirection: 'row', gap: 4 },
   etoile: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },
   ligne: { flexDirection: 'row', alignItems: 'center', gap: 12, minHeight: CIBLE_TACTILE, marginTop: 8 },
-  texte: { color: couleurs.lettre, fontFamily: polices.texte, fontSize: 14, lineHeight: 20 },
-  bouton: { marginTop: 16, minHeight: CIBLE_TACTILE + 4, backgroundColor: couleurs.lettre, borderRadius: rayons.sm, alignItems: 'center', justifyContent: 'center' },
+  texte: { color: t.couleurs.lettre, fontFamily: t.polices.texte, fontSize: 14, lineHeight: 20 },
+  bouton: { marginTop: 16, minHeight: CIBLE_TACTILE + 4, backgroundColor: t.couleurs.accent, borderRadius: t.rayons.sm, alignItems: 'center', justifyContent: 'center' },
   inactif: { opacity: 0.4 },
-  boutonTexte: { color: couleurs.fond, fontFamily: polices.panneauGras, fontSize: 18, textTransform: 'uppercase', letterSpacing: 1.2 },
-});
+  boutonTexte: { color: t.couleurs.surAccent, fontFamily: t.polices.panneauGras, fontSize: 18, textTransform: t.capitales, letterSpacing: espace(t, 1.2) },
+}));

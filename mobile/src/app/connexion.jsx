@@ -1,13 +1,15 @@
 import { useState } from 'react';
-import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, Text, TextInput, View } from 'react-native';
 import { Redirect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { ErreurConnexion, useAuth } from '../auth/AuthContext';
-import { CIBLE_TACTILE, couleurs, polices, rayons } from '../theme';
+import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
 
 /** Panneau de connexion : logo, email, mot de passe. Les comptes viennent de l'administration. */
 export default function Connexion() {
+  const { couleurs } = useTheme();
+  const styles = useStyles();
   const { t } = useTranslation();
   const { etat, connexion } = useAuth();
   const marges = useSafeAreaInsets();
@@ -82,7 +84,7 @@ export default function Connexion() {
         ) : null}
 
         <Pressable onPress={valider} disabled={envoi} style={({ pressed }) => [styles.bouton, (pressed || envoi) && styles.boutonPresse]} accessibilityRole="button">
-          {envoi ? <ActivityIndicator color={couleurs.fond} /> : <Text style={styles.boutonTexte}>{t('app.connexion.valider')}</Text>}
+          {envoi ? <ActivityIndicator color={couleurs.surAccent} /> : <Text style={styles.boutonTexte}>{t('app.connexion.valider')}</Text>}
         </Pressable>
         <Text style={styles.aide}>{t('app.connexion.aide')}</Text>
       </View>
@@ -90,29 +92,31 @@ export default function Connexion() {
   );
 }
 
-const styles = StyleSheet.create({
-  ecran: { flex: 1, backgroundColor: couleurs.fond, paddingHorizontal: 24 },
+const useStyles = creerStyles((t) => ({
+  ecran: { flex: 1, backgroundColor: t.couleurs.fond, paddingHorizontal: 24 },
   entete: { alignItems: 'center', gap: 12, marginBottom: 40 },
-  logo: { width: 72, height: 72, borderRadius: rayons.md, backgroundColor: '#FFFFFF' },
-  nom: { color: couleurs.lettre, fontFamily: polices.panneauGras, fontSize: 28, textTransform: 'uppercase', letterSpacing: 1.5 },
+  logo: { width: 72, height: 72, borderRadius: t.rayons.md, backgroundColor: '#FFFFFF' },
+  nom: { color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: 28, textTransform: t.capitales, letterSpacing: espace(t, 1.5) },
   formulaire: { gap: 8 },
-  libelle: { color: couleurs.lettreAttenuee, fontFamily: polices.panneau, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1, marginTop: 8 },
+  libelle: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1), marginTop: 8 },
   champ: {
     minHeight: CIBLE_TACTILE,
-    backgroundColor: couleurs.cellule,
-    borderRadius: rayons.sm,
-    color: couleurs.lettre,
-    fontFamily: polices.texte,
+    backgroundColor: t.couleurs.cellule,
+    borderRadius: t.rayons.sm,
+    borderWidth: t.sombre ? 0 : 1,
+    borderColor: t.couleurs.filet,
+    color: t.couleurs.lettre,
+    fontFamily: t.polices.texte,
     fontSize: 16,
     paddingHorizontal: 14,
   },
   ligneMdp: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   champMdp: { flex: 1 },
-  oeil: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center', backgroundColor: couleurs.cellule, borderRadius: rayons.sm },
-  oeilTexte: { color: couleurs.lettre, fontSize: 18 },
-  erreur: { color: couleurs.annule, fontFamily: polices.texte, fontSize: 14, marginTop: 8 },
-  bouton: { marginTop: 20, minHeight: CIBLE_TACTILE + 4, backgroundColor: couleurs.lettre, borderRadius: rayons.sm, alignItems: 'center', justifyContent: 'center' },
+  oeil: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center', backgroundColor: t.couleurs.cellule, borderRadius: t.rayons.sm, borderWidth: t.sombre ? 0 : 1, borderColor: t.couleurs.filet },
+  oeilTexte: { color: t.couleurs.lettre, fontSize: 18 },
+  erreur: { color: t.couleurs.annule, fontFamily: t.polices.texte, fontSize: 14, marginTop: 8 },
+  bouton: { marginTop: 20, minHeight: CIBLE_TACTILE + 4, backgroundColor: t.couleurs.accent, borderRadius: t.rayons.sm, alignItems: 'center', justifyContent: 'center' },
   boutonPresse: { opacity: 0.8 },
-  boutonTexte: { color: couleurs.fond, fontFamily: polices.panneauGras, fontSize: 18, textTransform: 'uppercase', letterSpacing: 1.2 },
-  aide: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 13, marginTop: 16, lineHeight: 19 },
-});
+  boutonTexte: { color: t.couleurs.surAccent, fontFamily: t.polices.panneauGras, fontSize: 18, textTransform: t.capitales, letterSpacing: espace(t, 1.2) },
+  aide: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13, marginTop: 16, lineHeight: 19 },
+}));

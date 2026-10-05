@@ -3,6 +3,7 @@ import { authenticateToken } from "../middleware/authMiddleware.js";
 import { planification } from "../utils/erreursPlanning.js";
 import {
     accueilJeux,
+    choisirAvatar,
     enregistrerReussite,
     modulesDuJeu,
     progressionDuJeu,
@@ -13,7 +14,8 @@ import {
 
 /**
  * Jeux intégrés à Planner (terminal Linux…). Les quiz en direct restent dans ClassQuiz (/api/quiz).
- *  - GET  /api/jeux                              catalogue, progression et jeux de mes modules
+ *  - GET  /api/jeux                              mon personnage, catalogue, progression et jeux de mes modules
+ *  - PUT  /api/jeux/profil                       { avatar } : choisir mon personnage
  *  - GET  /api/jeux/:code/progression            défis que j'ai réussis
  *  - POST /api/jeux/:code/defis/:id/reussite     { indices, commandes } : rejoue la partie, enregistre la réussite
  *  - GET  /api/jeux/:code/modules                modules où le jeu est proposé (enseignants, admin)
@@ -30,6 +32,10 @@ const enseignantOuAdmin = (req, res, next) =>
 
 router.get("/", planification(async (req, res) => {
     res.json(await accueilJeux(req.user));
+}));
+
+router.put("/profil", planification(async (req, res) => {
+    res.json(await choisirAvatar(req.user, req.body?.avatar));
 }));
 
 router.get("/:code/progression", planification(async (req, res) => {

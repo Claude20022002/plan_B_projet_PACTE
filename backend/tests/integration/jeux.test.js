@@ -1,6 +1,11 @@
 import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs, anonymous } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import { AnneeUniversitaire, Appartenir, Cours, CoursComposante, Enseignement, EnseignementEnseignant, Groupe, JeuProgression, Periode } from "../../models/index.js";
+import { defisLinux } from "../../../shared/terminal/jeu.js";
+import { AVATARS } from "../../../shared/jeux/avatars.js";
+
+/** Commandes qui résolvent un défi (sa solution, une commande par ligne) */
+const solution = (id) => defisLinux("en").find((d) => d.id === id).solution.split("\n");
 
 /**
  * Jeux intégrés (terminal Linux) : un enseignant propose le jeu dans son module, les étudiants
@@ -112,15 +117,15 @@ describe("Proposer un jeu dans un module", () => {
 describe("Progression", () => {
     test("les points sont calculés par le serveur selon les indices ; la première réussite compte", async () => {
         const client = await loginAs(etudiant);
-        const premier = await client.send("post", "/api/jeux/terminal-linux/defis/orientation-01/reussite", { indices: 2, points: 9999 });
+        const premier = await client.send("post", "/api/jeux/terminal-linux/defis/orientation-01/reussite", { indices: 2, points: 9999, commandes: solution("orientation-01") });
         expect(premier.status).toBe(201);
         expect(premier.body).toMatchObject({ cree: true, points: 60, progression: { reussis: 1, points: 60 } });
 
-        const rejoue = await client.send("post", "/api/jeux/terminal-linux/defis/orientation-01/reussite", { indices: 0 });
+        const rejoue = await client.send("post", "/api/jeux/terminal-linux/defis/orientation-01/reussite", { indices: 0, commandes: ["pwd"] });
         expect(rejoue.status).toBe(200);
         expect(rejoue.body).toMatchObject({ cree: false, points: 60, progression: { reussis: 1, points: 60 } });
 
-        await client.send("post", "/api/jeux/terminal-linux/defis/combine-01/reussite", { indices: 0 });
+        expect((await client.send("post", "/api/jeux/terminal-linux/defis/combine-01/reussite", { indices: 0, commandes: solution("combine-01") })).status).toBe(201);
         const progression = await client.get("/api/jeux/terminal-linux/progression");
         expect(progression.body).toMatchObject({ reussis: 2, total: 66, points: 210 });
         expect(progression.body.defis.map((d) => d.id)).toEqual(["orientation-01", "combine-01"]);
@@ -129,9 +134,24 @@ describe("Progression", () => {
     test("défi inconnu ou nombre d'indices invalide : refusé", async () => {
         const client = await loginAs(etudiant);
         expect((await client.send("post", "/api/jeux/terminal-linux/defis/inexistant/reussite", {})).status).toBe(404);
-        expect((await client.send("post", "/api/jeux/terminal-linux/defis/navigation-01/reussite", { indices: 7 })).status).toBe(400);
-        expect((await client.send("post", "/api/jeux/terminal-linux/defis/navigation-01/reussite", { indices: "2; DROP" })).status).toBe(400);
+        const commandes = solution("navigation-01");
+        expect((await client.send("post", "/api/jeux/terminal-linux/defis/navigation-01/reussite", { indices: 7, commandes })).status).toBe(400);
+        expect((await client.send("post", "/api/jeux/terminal-linux/defis/navigation-01/reussite", { indices: "2; DROP", commandes })).status).toBe(400);
         expect(await JeuProgression.count({ where: { id_user: etudiant.id_user, id_defi: "navigation-01" } })).toBe(0);
+    });
+
+    test("le serveur rejoue la partie : sans objectif atteint, rien n'est enregistré", async () => {
+        const client = await loginAs(etudiantTp);
+        const url = "/api/jeux/terminal-linux/defis/combine-01/reussite";
+        // Aucune commande, commandes qui n'atteignent pas l'objectif, format invalide
+        expect((await client.send("post", url, { indices: 0 })).status).toBe(400);
+        expect((await client.send("post", url, { indices: 0, commandes: ["ls", "pwd"] })).status).toBe(422);
+        expect((await client.send("post", url, { indices: 0, commandes: "cd ~/projects" })).status).toBe(400);
+        expect((await client.send("post", url, { indices: 0, commandes: [42] })).status).toBe(400);
+        expect((await client.send("post", url, { indices: 0, commandes: Array(301).fill("pwd") })).status).toBe(400);
+        // La moitié de la solution ne suffit pas
+        expect((await client.send("post", url, { indices: 0, commandes: solution("combine-01").slice(0, 2) })).status).toBe(422);
+        expect(await JeuProgression.count({ where: { id_user: etudiantTp.id_user } })).toBe(0);
     });
 
     test("la progression de chacun lui est propre", async () => {
@@ -141,8 +161,21 @@ describe("Progression", () => {
 
     test("sans jeton CSRF, une réussite n'est pas enregistrée", async () => {
         const client = await loginAs(etudiantTp);
-        const res = await client.agent.post("/api/jeux/terminal-linux/defis/navigation-02/reussite").send({ indices: 0 });
+        const res = await client.agent.post("/api/jeux/terminal-linux/defis/navigation-02/reussite").send({ indices: 0, commandes: solution("navigation-02") });
         expect(res.status).toBe(403);
+    });
+});
+
+describe("Personnage du joueur", () => {
+    test("tiré du numéro du joueur, puis celui qu'il choisit ; liste fermée", async () => {
+        const client = await loginAs(etudiantTp);
+        expect(AVATARS).toContain((await client.get("/api/jeux")).body.profil.avatar);
+
+        expect((await client.send("put", "/api/jeux/profil", { avatar: "pirate" })).status).toBe(400);
+        expect((await client.send("put", "/api/jeux/profil", {})).status).toBe(400);
+        expect((await client.send("put", "/api/jeux/profil", { avatar: "female-c" })).body).toEqual({ avatar: "female-c" });
+        expect((await client.send("put", "/api/jeux/profil", { avatar: "male-d" })).status).toBe(200);
+        expect((await client.get("/api/jeux")).body.profil).toEqual({ avatar: "male-d" });
     });
 });
 
@@ -151,6 +184,9 @@ describe("Suivi du module par l'enseignant", () => {
         const res = await (await loginAs(enseignant)).get(`/api/jeux/terminal-linux/modules/${fixture.cours.id_cours}/suivi`);
         expect(res.status).toBe(200);
         expect(res.body.etudiants.map((e) => [e.prenom, e.points, e.reussis])).toEqual([["Mintsa", 210, 2], ["Yanis", 0, 0]]);
+        // Le personnage choisi par Yanis, celui tiré du numéro pour Mintsa
+        expect(res.body.etudiants[1].avatar).toBe("male-d");
+        expect(AVATARS).toContain(res.body.etudiants[0].avatar);
         expect(JSON.stringify(res.body)).not.toMatch(/email|password/);
     });
 

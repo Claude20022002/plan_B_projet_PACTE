@@ -5,11 +5,12 @@ import * as SplashScreen from 'expo-splash-screen';
 import { Notifications } from '../notifications';
 import { useFonts, Barlow_400Regular, Barlow_600SemiBold } from '@expo-google-fonts/barlow';
 import { BarlowCondensed_500Medium, BarlowCondensed_600SemiBold, BarlowCondensed_700Bold } from '@expo-google-fonts/barlow-condensed';
+import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 // Initialise les traductions au chargement du module
 import { restaurerLangue } from '../i18n';
 import { AuthProvider } from '../auth/AuthContext';
-import { couleurs } from '../theme';
+import { restaurerTheme, ThemeProvider, useTheme } from '../theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -24,15 +25,27 @@ const ecranDeLien = (lien) => {
 export default function Racine() {
   const router = useRouter();
   const [langueChargee, setLangueChargee] = useState(false);
-  const [policesChargees] = useFonts({ Barlow_400Regular, Barlow_600SemiBold, BarlowCondensed_500Medium, BarlowCondensed_600SemiBold, BarlowCondensed_700Bold });
+  const [preferenceTheme, setPreferenceTheme] = useState(null);
+  const [policesChargees] = useFonts({
+    Barlow_400Regular,
+    Barlow_600SemiBold,
+    BarlowCondensed_500Medium,
+    BarlowCondensed_600SemiBold,
+    BarlowCondensed_700Bold,
+    Inter_400Regular,
+    Inter_500Medium,
+    Inter_600SemiBold,
+    Inter_700Bold,
+  });
 
   useEffect(() => {
     restaurerLangue().finally(() => setLangueChargee(true));
+    restaurerTheme().then(setPreferenceTheme);
   }, []);
 
   useEffect(() => {
-    if (policesChargees && langueChargee) SplashScreen.hideAsync().catch(() => {});
-  }, [policesChargees, langueChargee]);
+    if (policesChargees && langueChargee && preferenceTheme) SplashScreen.hideAsync().catch(() => {});
+  }, [policesChargees, langueChargee, preferenceTheme]);
 
   // Toucher une notification ouvre l'écran correspondant
   useEffect(() => {
@@ -43,14 +56,26 @@ export default function Racine() {
     return () => abonnement.remove();
   }, [router]);
 
-  if (!policesChargees || !langueChargee) return null;
+  if (!policesChargees || !langueChargee || !preferenceTheme) return null;
 
   return (
     <SafeAreaProvider>
-      <AuthProvider>
-        <StatusBar style="light" />
-        <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: couleurs.fond }, animation: 'fade' }} />
-      </AuthProvider>
+      <ThemeProvider preferenceInitiale={preferenceTheme}>
+        <AuthProvider>
+          <Pile />
+        </AuthProvider>
+      </ThemeProvider>
     </SafeAreaProvider>
+  );
+}
+
+/** Navigation de l'application, aux couleurs du thème choisi */
+function Pile() {
+  const { couleurs, barreStatut } = useTheme();
+  return (
+    <>
+      <StatusBar style={barreStatut} />
+      <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: couleurs.fond }, animation: 'fade' }} />
+    </>
   );
 }

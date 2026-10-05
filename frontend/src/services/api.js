@@ -612,8 +612,9 @@ export const jeuxAPI = {
     // { jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] }
     getAccueil: () => request('/jeux'),
     getProgression: (code) => request(`/jeux/${encodeURIComponent(code)}/progression`),
-    reussir: (code, idDefi, indices) =>
-        request(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices } }),
+    // commandes : les lignes tapées depuis le début de la partie, rejouées par le serveur
+    reussir: (code, idDefi, indices, commandes) =>
+        request(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices, commandes } }),
     proposer: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules`, { method: 'POST', body: { id_cours: idCours } }),
     retirer: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}`, { method: 'DELETE' }),
     getSuivi: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}/suivi`),

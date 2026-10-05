@@ -1,8 +1,8 @@
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { relativeTo } from '../../../shared/session.js';
 import FlapTiles from './FlapTiles';
-import { CIBLE_TACTILE, couleurs, couleurStatut, polices } from '../theme';
+import { CIBLE_TACTILE, couleurStatut, creerStyles, espace, useTheme } from '../theme';
 
 /**
  * La séance en vedette (en cours ou prochaine) : l'heure sur les volets, la salle en très grand
@@ -10,9 +10,11 @@ import { CIBLE_TACTILE, couleurs, couleurStatut, polices } from '../theme';
  */
 export default function Spotlight({ seance: s, phase, maintenant, supports, onSupports }) {
   const { t, i18n } = useTranslation();
+  const theme = useTheme();
+  const styles = useStyles();
   const enCours = phase === 'live';
   const quand = enCours ? t('board.startedAgo') : t('board.startsIn', { duration: relativeTo(s.start, i18n.language, maintenant) });
-  const couleur = s.status === 'reporte' || s.status === 'annule' ? couleurStatut(s.status) : couleurs.enCours;
+  const couleur = s.status === 'reporte' || s.status === 'annule' ? couleurStatut(theme, s.status) : theme.couleurs.enCours;
 
   return (
     <View style={styles.cadre}>
@@ -42,16 +44,24 @@ export default function Spotlight({ seance: s, phase, maintenant, supports, onSu
   );
 }
 
-const styles = StyleSheet.create({
-  cadre: { margin: 16, padding: 16, backgroundColor: couleurs.cellule, borderRadius: 4, gap: 10 },
+const useStyles = creerStyles((t) => ({
+  cadre: {
+    margin: 16,
+    padding: 16,
+    backgroundColor: t.couleurs.cellule,
+    borderRadius: t.rayons.md,
+    gap: 10,
+    // Clair : la carte se détache du sol par un filet, comme les cartes StudyLib
+    ...(t.sombre ? null : { borderWidth: 1, borderColor: t.couleurs.filet }),
+  },
   entete: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   lampe: { width: 8, height: 8, borderRadius: 4 },
-  phase: { fontFamily: polices.panneau, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1 },
-  quand: { marginLeft: 'auto', color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 13 },
-  cours: { color: couleurs.lettre, fontFamily: polices.panneau, fontSize: 22, textTransform: 'uppercase', letterSpacing: 0.4 },
-  salle: { color: couleurs.lettre, fontFamily: polices.panneauGras, fontSize: 56, lineHeight: 60, letterSpacing: 1 },
-  details: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 14 },
-  avant: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 13, textDecorationLine: 'line-through' },
+  phase: { fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1) },
+  quand: { marginLeft: 'auto', color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13 },
+  cours: { color: t.couleurs.lettre, fontFamily: t.polices.panneau, fontSize: t.famille === 'planner' ? 22 : 19, textTransform: t.capitales, letterSpacing: espace(t, 0.4) },
+  salle: { color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: t.famille === 'planner' ? 56 : 44, lineHeight: t.famille === 'planner' ? 60 : 50, letterSpacing: espace(t, 1) },
+  details: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 14 },
+  avant: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13, textDecorationLine: 'line-through' },
   supports: { minHeight: CIBLE_TACTILE, justifyContent: 'center' },
-  supportsTexte: { color: couleurs.lettre, fontFamily: polices.texteGras, fontSize: 15, textDecorationLine: 'underline' },
-});
+  supportsTexte: { color: t.famille === 'planner' ? t.couleurs.lettre : t.couleurs.accent, fontFamily: t.polices.texteGras, fontSize: 15, textDecorationLine: t.famille === 'planner' ? 'underline' : 'none' },
+}));

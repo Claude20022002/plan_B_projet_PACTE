@@ -1,0 +1,9 @@
+Personnages et éléments de décor des jeux — Kenney (www.kenney.nl), licence CC0 1.0
+(domaine public : usage personnel, éducatif et commercial, sans obligation de citation).
+http://creativecommons.org/publicdomain/zero/1.0/
+
+personnages/  Mini Characters 1.0 (aperçus PNG recadrés)  https://kenney.nl/assets/mini-characters
+decor/        Background Elements (style Flat), silhouettes passées en blanc pour être teintées
+              aux couleurs du thème  https://kenney.nl/assets/background-elements
+
+Repris du projet CatéGO (même auteur que la plateforme). Aucun son n'est repris.

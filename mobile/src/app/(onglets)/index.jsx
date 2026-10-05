@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -13,7 +13,7 @@ import { ErreurApi } from '../../api/client';
 import { ecrireCache, lireCache } from '../../cache';
 import useRafraichissement from '../../hooks/useRafraichissement';
 import { HORIZON_TABLEAU_JOURS } from '../../config';
-import { CIBLE_TACTILE, couleurs, polices } from '../../theme';
+import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
 
 const heure = (iso) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 // Les dates reviennent du cache en texte : on refait des objets Date
@@ -43,6 +43,8 @@ const lireTableau = async (utilisateur, silencieux) => {
 
 /** Tableau : prochaine séance, aujourd'hui et le prochain jour de cours, changements récents. */
 export default function Tableau() {
+  const { couleurs } = useTheme();
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { utilisateur } = useAuth();
@@ -93,7 +95,7 @@ export default function Tableau() {
   const cloche = (
     <View style={{ flexDirection: 'row' }}>
       <Pressable onPress={() => router.push('/alertes')} style={styles.cloche} accessibilityRole="button" accessibilityLabel={`${t('app.tableau.alertes')} : ${alertes.length}`}>
-        <MaterialCommunityIcons name="bell-outline" size={24} color="#FFFFFF" />
+        <MaterialCommunityIcons name="bell-outline" size={24} color={couleurs.surCadre} />
         {alertes.length > 0 ? <View style={styles.pastille} /> : null}
       </Pressable>
     </View>
@@ -157,15 +159,15 @@ export default function Tableau() {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((t) => ({
   cloche: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },
-  pastille: { position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: couleurs.reporte },
-  section: { color: couleurs.lettreAttenuee, fontFamily: polices.panneau, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2, paddingHorizontal: 16, paddingTop: 20, paddingBottom: 6 },
-  videTitre: { color: couleurs.lettre, fontFamily: polices.panneauGras, fontSize: 22, textTransform: 'uppercase', paddingHorizontal: 16, paddingTop: 24 },
+  pastille: { position: 'absolute', top: 10, right: 10, width: 8, height: 8, borderRadius: 4, backgroundColor: t.couleurs.reporte },
+  section: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1.2), paddingHorizontal: 16, paddingTop: 20, paddingBottom: 6 },
+  videTitre: { color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: 22, textTransform: t.capitales, paddingHorizontal: 16, paddingTop: 24 },
   reessayer: { marginHorizontal: 16, minHeight: CIBLE_TACTILE, justifyContent: 'center' },
-  reessayerTexte: { color: couleurs.lettre, fontFamily: polices.texteGras, fontSize: 15, textDecorationLine: 'underline' },
+  reessayerTexte: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 15, textDecorationLine: 'underline' },
   changements: { paddingBottom: 24 },
-  alerte: { paddingHorizontal: 16, paddingVertical: 10, minHeight: CIBLE_TACTILE, borderBottomWidth: 1, borderBottomColor: couleurs.filet },
-  alerteTitre: { color: couleurs.lettre, fontFamily: polices.texteGras, fontSize: 15 },
-  alerteTexte: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 14, marginTop: 2 },
-});
+  alerte: { paddingHorizontal: 16, paddingVertical: 10, minHeight: CIBLE_TACTILE, borderBottomWidth: 1, borderBottomColor: t.couleurs.filet },
+  alerteTitre: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 15 },
+  alerteTexte: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 14, marginTop: 2 },
+}));

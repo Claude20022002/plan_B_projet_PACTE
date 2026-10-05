@@ -79,12 +79,18 @@ export const chargerConfigQuiz = () => planner('/quiz/config');
 
 // ── Jeux intégrés (terminal Linux…) ───────────────────────────────────────
 
-/** { jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] } */
+/** { profil: { avatar }, jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] } */
 export const chargerAccueilJeux = () => planner('/jeux');
+
+/** Choisir son personnage (shared/jeux/avatars.js) */
+export const choisirAvatar = (avatar) => planner('/jeux/profil', { method: 'PUT', body: { avatar } });
 
 /** Défis réussis dans un jeu : { reussis, total, points, defis: [{ id, points, indices }] } */
 export const chargerProgressionJeu = (code) => planner(`/jeux/${encodeURIComponent(code)}/progression`);
 
-/** Enregistre une réussite ; le serveur calcule les points selon les indices utilisés */
-export const enregistrerReussite = (code, idDefi, indices) =>
-  planner(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices } });
+/**
+ * Enregistre une réussite : le serveur rejoue les commandes de la partie (depuis son début) et
+ * calcule les points selon les indices utilisés.
+ */
+export const enregistrerReussite = (code, idDefi, indices, commandes) =>
+  planner(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices, commandes } });

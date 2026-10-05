@@ -3,18 +3,22 @@ import { View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../auth/AuthContext';
-import { couleurs, polices } from '../../theme';
+import { espace, useTheme } from '../../theme';
 
 /**
  * Cinq onglets : Tableau · Semaine · Jeux · Bibliothèque · Compte (Planner, les jeux et la
- * bibliothèque à un geste : les espaces HESTIM de shared/espaces.js). Une icône par onglet, rien d'autre ;
- * onglet actif en couleur lettre avec une barre de 2 px, les autres atténués.
+ * bibliothèque à un geste : les espaces HESTIM de shared/espaces.js ; le bouton des espaces de la
+ * barre de titre mène aussi au Quiz et aux sites web). Une icône par onglet ; onglet actif avec
+ * une barre de 2 px (Planner) ou en bleu StudyLib, les autres atténués.
  */
 const ICONES = { index: 'view-dashboard-outline', semaine: 'calendar-week', jeux: 'gamepad-variant-outline', bibliotheque: 'bookshelf', compte: 'account-circle-outline' };
 
 export default function Onglets() {
   const { t } = useTranslation();
   const { etat } = useAuth();
+  const theme = useTheme();
+  const { couleurs, polices } = theme;
+  const actif = theme.famille === 'planner' ? couleurs.lettre : couleurs.accent;
   if (etat === 'chargement') return <View style={{ flex: 1, backgroundColor: couleurs.fond }} />;
   if (etat !== 'connecte') return <Redirect href="/connexion" />;
 
@@ -23,7 +27,7 @@ export default function Onglets() {
     tabBarIcon: ({ color, focused }) => (
       <View style={{ alignItems: 'center' }}>
         {/* Barre de 2 px au-dessus de l'onglet actif */}
-        <View style={{ width: 28, height: 2, marginBottom: 4, backgroundColor: focused ? couleurs.lettre : 'transparent' }} />
+        <View style={{ width: 28, height: 2, marginBottom: 4, borderRadius: 1, backgroundColor: focused ? actif : 'transparent' }} />
         <MaterialCommunityIcons name={ICONES[nom]} size={24} color={color} />
       </View>
     ),
@@ -34,10 +38,10 @@ export default function Onglets() {
     <Tabs
       screenOptions={{
         headerShown: false,
-        tabBarActiveTintColor: couleurs.lettre,
+        tabBarActiveTintColor: actif,
         tabBarInactiveTintColor: couleurs.lettreAttenuee,
-        tabBarStyle: { backgroundColor: couleurs.fond, borderTopColor: couleurs.filet, borderTopWidth: 1, minHeight: 60 },
-        tabBarLabelStyle: { fontFamily: polices.panneau, fontSize: 12, textTransform: 'uppercase', letterSpacing: 0.8 },
+        tabBarStyle: { backgroundColor: theme.famille === 'planner' ? couleurs.fond : couleurs.cellule, borderTopColor: couleurs.filet, borderTopWidth: 1, minHeight: 60 },
+        tabBarLabelStyle: { fontFamily: polices.panneau, fontSize: theme.famille === 'planner' ? 12 : 11, textTransform: theme.capitales, letterSpacing: espace(theme, 0.8) },
         tabBarItemStyle: { minHeight: 48 },
       }}
     >

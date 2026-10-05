@@ -1,24 +1,42 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import Animated, { ZoomIn } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import Ecran, { Message } from '../board/Ecran';
+import Ecran from '../board/Ecran';
 import { useAuth } from '../auth/AuthContext';
-import { chargerProgressionJeu, enregistrerReussite } from '../api/donnees';
+import { chargerAccueilJeux, chargerProgressionJeu, enregistrerReussite } from '../api/donnees';
+import Personnage from '../jeux/Personnage';
 import { INDICES_MAX, NIVEAU_REPONSE, PartieTerminal, defisLinux, pointsPour } from '../../../shared/terminal/jeu.js';
-import { CIBLE_TACTILE, couleurs, polices } from '../theme';
+import { CIBLE_TACTILE, creerStyles, espace, THEMES, useTheme } from '../theme';
 
 const CODE = 'terminal-linux';
 const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
+/** Touches de raccourci sous le terminal : Tab, caractères difficiles à taper, dernière commande */
+const TOUCHES = [
+  { libelle: 'Tab', action: 'tab' },
+  { libelle: '|', texte: ' | ' },
+  { libelle: '>', texte: ' > ' },
+  { libelle: '~', texte: '~' },
+  { libelle: '/', texte: '/' },
+  { libelle: '↑', action: 'derniere' },
+];
+
+/** État d'une partie : remis à zéro quand le défi ou l'essai change (clé de la partie) */
+const partieNeuve = (cle) => ({ cle, lignes: [], saisie: '', indices: 0, retour: null });
+
 /**
  * Jeu « Terminal Linux » sur téléphone : le défi en haut, le terminal simulé dessous (même moteur
- * que le web, shared/terminal). L'objectif est vérifié après chaque commande ; la réussite est
- * enregistrée par Planner. Raccourcis en bas du terminal pour Tab et les caractères difficiles
- * à taper sur un clavier de téléphone (| > ~ /).
+ * que le web, shared/terminal). L'objectif est vérifié après chaque commande ; Planner rejoue la
+ * partie avant d'enregistrer la réussite. Raccourcis en bas du terminal pour Tab et les
+ * caractères difficiles à taper sur un clavier de téléphone (| > ~ /). Le terminal reste sombre
+ * dans tous les thèmes ; une réussite fait sauter le personnage du joueur (sans son).
  */
 export default function Terminal() {
+  const { couleurs } = useTheme();
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { utilisateur } = useAuth();
@@ -26,21 +44,22 @@ export default function Terminal() {
   const langue = i18n.language;
   const defis = useMemo(() => defisLinux(langue), [langue]);
   const [reussis, setReussis] = useState(() => new Map());
+  const [avatar, setAvatar] = useState(null);
   const [choisi, setChoisi] = useState(typeof demande === 'string' ? demande : null);
   const courantId = defis.some((d) => d.id === choisi) ? choisi : (defis.find((d) => !reussis.has(d.id)) ?? defis[0]).id;
   const index = defis.findIndex((d) => d.id === courantId);
   const defi = defis[index];
   const [essai, setEssai] = useState(0);
+  const cle = `${courantId}#${essai}`;
   const partie = useMemo(
     () => new PartieTerminal(courantId, { joueur: utilisateur?.prenom || 'etudiant', langue }),
     // essai : nouvelle partie à « Recommencer »
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [courantId, essai, utilisateur?.prenom]
   );
-  const [lignes, setLignes] = useState([]);
-  const [saisie, setSaisie] = useState('');
-  const [indices, setIndices] = useState(0);
-  const [retour, setRetour] = useState(null);
+  const [etatPartie, setEtatPartie] = useState(() => partieNeuve(cle));
+  const { lignes, saisie, indices, retour } = etatPartie.cle === cle ? etatPartie : partieNeuve(cle);
+  const majPartie = (modif) => setEtatPartie((e) => ({ ...(e.cle === cle ? e : partieNeuve(cle)), ...(typeof modif === 'function' ? modif(e.cle === cle ? e : partieNeuve(cle)) : modif) }));
   const ecran = useRef(null);
   const champ = useRef(null);
 
@@ -48,62 +67,58 @@ export default function Terminal() {
     chargerProgressionJeu(CODE)
       .then((p) => setReussis(new Map((p?.defis ?? []).map((d) => [d.id, d]))))
       .catch(() => {});
+    chargerAccueilJeux()
+      .then((a) => setAvatar(a?.profil?.avatar ?? null))
+      .catch(() => {});
   }, []);
-
-  useEffect(() => {
-    setLignes([]);
-    setSaisie('');
-    setIndices(0);
-    setRetour(null);
-  }, [partie]);
 
   const executer = async () => {
     const ligne = saisie;
-    setSaisie('');
-    if (!ligne.trim()) return;
+    if (!ligne.trim()) return majPartie({ saisie: '' });
     const r = partie.executer(ligne);
     const sorties = [];
     if (r.erreur) sorties.push({ type: 'erreur', texte: r.erreur.replace(/\n$/, '') });
     if (r.sortie) sorties.push({ type: 'sortie', texte: r.sortie.replace(/\n$/, '') });
-    setLignes((l) => (r.effacer ? sorties : [...l, { type: 'commande', invite: partie.invite, texte: ligne }, ...sorties].slice(-300)));
-    if (retour?.ok || !partie.verifier().ok) return;
+    majPartie((e) => ({ saisie: '', lignes: r.effacer ? sorties : [...e.lignes, { type: 'commande', invite: partie.invite, texte: ligne }, ...sorties].slice(-300) }));
+    if (retour?.ok || !partie.verifier().ok) return undefined;
     let points = reussis.get(defi.id)?.points ?? pointsPour(defi.xp, indices);
     if (!reussis.has(defi.id)) {
       try {
-        points = (await enregistrerReussite(CODE, defi.id, indices)).points;
+        points = (await enregistrerReussite(CODE, defi.id, indices, [...partie.historique])).points;
         setReussis((m) => new Map(m).set(defi.id, { id: defi.id, points }));
       } catch {
         // Hors ligne : la réussite est affichée, elle sera enregistrée en rejouant le défi
       }
     }
-    setRetour({ ok: true, points });
+    return majPartie({ retour: { ok: true, points } });
   };
 
   const verifier = () => {
     const v = partie.verifier();
-    setRetour(v.ok ? { ok: true, points: reussis.get(defi.id)?.points ?? pointsPour(defi.xp, indices) } : { ok: false, message: v.message });
+    majPartie({ retour: v.ok ? { ok: true, points: reussis.get(defi.id)?.points ?? pointsPour(defi.xp, indices) } : { ok: false, message: v.message } });
   };
 
-  const tab = () => {
-    const r = partie.completer(saisie);
-    setSaisie(r.valeur);
-    if (r.suggestions.length > 1) setLignes((l) => [...l, { type: 'erreur', texte: r.suggestions.join('   ') }]);
-    champ.current?.focus();
-  };
-  const inserer = (texte) => {
-    setSaisie((s) => s + texte);
+  const toucher = (touche) => {
+    if (touche.action === 'tab') {
+      const r = partie.completer(saisie);
+      majPartie((e) => ({ saisie: r.valeur, lignes: r.suggestions.length > 1 ? [...e.lignes, { type: 'erreur', texte: r.suggestions.join('   ') }] : e.lignes }));
+    } else if (touche.action === 'derniere') {
+      majPartie({ saisie: partie.historique.at(-1) ?? '' });
+    } else {
+      majPartie((e) => ({ saisie: e.saisie + touche.texte }));
+    }
     champ.current?.focus();
   };
 
   const suivant = defis[index + 1];
   const fermer = (
     <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/jeux'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
-      <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
+      <MaterialCommunityIcons name="arrow-left" size={24} color={couleurs.surCadre} />
     </Pressable>
   );
 
   return (
-    <Ecran titre={t('app.terminal.titre')} droite={fermer}>
+    <Ecran titre={t('app.terminal.titre')} droite={fermer} espaces={false}>
       <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
         {/* Parcours : un défi par pastille, réussis marqués d'une lampe */}
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.parcours} contentContainerStyle={{ paddingHorizontal: 12, gap: 8 }}>
@@ -112,7 +127,7 @@ export default function Terminal() {
             return (
               <Pressable key={d.id} onPress={() => setChoisi(d.id)} style={[styles.pastille, actif && styles.pastilleActive]} accessibilityRole="button" accessibilityState={{ selected: actif }} accessibilityLabel={`${i + 1}. ${d.titre}${reussis.has(d.id) ? `, ${t('app.terminal.reussi')}` : ''}`}>
                 <View style={[styles.lampe, reussis.has(d.id) && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
-                <Text style={[styles.pastilleTexte, actif && { color: couleurs.lettre }]}>{i + 1}</Text>
+                <Text style={[styles.pastilleTexte, actif && styles.pastilleTexteActif]}>{i + 1}</Text>
               </Pressable>
             );
           })}
@@ -131,7 +146,16 @@ export default function Terminal() {
           ))}
           {indices >= NIVEAU_REPONSE ? <Text style={styles.solution}>{defi.solution}</Text> : null}
 
-          {retour?.ok ? <Message>{t('app.terminal.reussite', { points: retour.points })}</Message> : null}
+          {/* Réussite : le personnage du joueur saute, les points s'affichent */}
+          {retour?.ok ? (
+            <Animated.View entering={ZoomIn.springify().damping(14)} style={styles.victoire} accessibilityLiveRegion="polite" accessible accessibilityLabel={t('app.terminal.reussite', { points: retour.points })}>
+              <Personnage avatar={avatar} idUser={utilisateur?.id_user} taille={56} anime />
+              <View style={{ flex: 1 }}>
+                <Text style={styles.victoireTitre}>{t('app.terminal.bravo')}</Text>
+                <Text style={styles.victoirePoints}>{t('app.terminal.plusPoints', { points: retour.points })}</Text>
+              </View>
+            </Animated.View>
+          ) : null}
           {retour && !retour.ok ? <Text style={styles.echec}>{retour.message}</Text> : null}
 
           <View style={styles.actions}>
@@ -140,8 +164,8 @@ export default function Terminal() {
             ) : (
               <Bouton plein onPress={verifier}>{t('app.terminal.verifier')}</Bouton>
             )}
-            {!retour?.ok && indices < INDICES_MAX ? <Bouton onPress={() => setIndices((n) => n + 1)}>{t('app.terminal.indice', { n: indices + 1, total: INDICES_MAX })}</Bouton> : null}
-            {!retour?.ok && indices === INDICES_MAX ? <Bouton onPress={() => setIndices(NIVEAU_REPONSE)}>{t('app.terminal.reponse')}</Bouton> : null}
+            {!retour?.ok && indices < INDICES_MAX ? <Bouton onPress={() => majPartie((e) => ({ indices: e.indices + 1 }))}>{t('app.terminal.indice', { n: indices + 1, total: INDICES_MAX })}</Bouton> : null}
+            {!retour?.ok && indices === INDICES_MAX ? <Bouton onPress={() => majPartie({ indices: NIVEAU_REPONSE })}>{t('app.terminal.reponse')}</Bouton> : null}
             <Bouton onPress={() => setEssai((n) => n + 1)}>{t('app.terminal.recommencer')}</Bouton>
           </View>
         </ScrollView>
@@ -160,7 +184,7 @@ export default function Terminal() {
               <TextInput
                 ref={champ}
                 value={saisie}
-                onChangeText={setSaisie}
+                onChangeText={(valeur) => majPartie({ saisie: valeur })}
                 onSubmitEditing={executer}
                 submitBehavior="submit"
                 returnKeyType="send"
@@ -174,9 +198,9 @@ export default function Terminal() {
             </View>
           </ScrollView>
           <View style={styles.touches}>
-            {[['Tab', tab], ['|', () => inserer(' | ')], ['>', () => inserer(' > ')], ['~', () => inserer('~')], ['/', () => inserer('/')], ['↑', () => setSaisie(partie.historique.at(-1) ?? '')]].map(([libelle, action]) => (
-              <Pressable key={libelle} onPress={action} style={styles.touche} accessibilityRole="button" accessibilityLabel={libelle === '↑' ? t('app.terminal.derniere') : libelle}>
-                <Text style={styles.toucheTexte}>{libelle}</Text>
+            {TOUCHES.map((touche) => (
+              <Pressable key={touche.libelle} onPress={() => toucher(touche)} style={styles.touche} accessibilityRole="button" accessibilityLabel={touche.action === 'derniere' ? t('app.terminal.derniere') : touche.libelle}>
+                <Text style={styles.toucheTexte}>{touche.libelle}</Text>
               </Pressable>
             ))}
           </View>
@@ -187,6 +211,7 @@ export default function Terminal() {
 }
 
 function Bouton({ plein = false, onPress, children }) {
+  const styles = useStyles();
   return (
     <Pressable onPress={onPress} style={plein ? styles.plein : styles.contour} accessibilityRole="button">
       <Text style={plein ? styles.pleinTexte : styles.contourTexte}>{children}</Text>
@@ -194,34 +219,50 @@ function Bouton({ plein = false, onPress, children }) {
   );
 }
 
-const styles = StyleSheet.create({
-  icone: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },
-  parcours: { flexGrow: 0, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: couleurs.filet },
-  pastille: { minWidth: CIBLE_TACTILE, height: 40, borderRadius: 3, borderWidth: 1, borderColor: couleurs.filet, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 8 },
-  pastilleActive: { borderColor: couleurs.lettre, backgroundColor: couleurs.cellule },
-  pastilleTexte: { color: couleurs.lettreAttenuee, fontFamily: polices.panneauGras, fontSize: 15 },
-  lampe: { width: 8, height: 8, borderRadius: 4, borderWidth: 1, borderColor: couleurs.filet },
-  defi: { flex: 1 },
-  niveau: { color: couleurs.lettreAttenuee, fontFamily: polices.panneauGras, fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase' },
-  titre: { color: couleurs.lettre, fontFamily: polices.panneauGras, fontSize: 24, letterSpacing: 0.6, textTransform: 'uppercase', marginTop: 4 },
-  texte: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 15, lineHeight: 22, marginTop: 6 },
-  objectif: { color: couleurs.lettre, fontFamily: polices.texteGras, fontSize: 15, lineHeight: 22, marginTop: 10, paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: couleurs.cadre },
-  indice: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 14, marginTop: 6 },
-  solution: { color: couleurs.lettre, fontFamily: MONO, fontSize: 14, marginTop: 8, padding: 10, backgroundColor: couleurs.cellule, borderRadius: 3 },
-  echec: { color: couleurs.lettre, fontFamily: polices.texte, fontSize: 14, marginTop: 10 },
-  actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
-  plein: { minHeight: CIBLE_TACTILE, paddingHorizontal: 16, justifyContent: 'center', borderRadius: 3, backgroundColor: couleurs.lettre },
-  pleinTexte: { color: couleurs.fond, fontFamily: polices.panneauGras, fontSize: 15, letterSpacing: 1, textTransform: 'uppercase' },
-  contour: { minHeight: CIBLE_TACTILE, paddingHorizontal: 12, justifyContent: 'center', borderRadius: 3, borderWidth: 1, borderColor: couleurs.filet },
-  contourTexte: { color: couleurs.lettre, fontFamily: polices.panneau, fontSize: 14, letterSpacing: 0.8, textTransform: 'uppercase' },
-  cadre: { backgroundColor: couleurs.cadre, padding: 6 },
-  terminal: { height: 220, backgroundColor: couleurs.fond, borderRadius: 4, paddingHorizontal: 10, paddingVertical: 8 },
-  mono: { color: couleurs.lettre, fontFamily: MONO, fontSize: 13, lineHeight: 19 },
-  monoInvite: { color: couleurs.lettreAttenuee },
-  monoErreur: { color: couleurs.lettreAttenuee, fontStyle: 'italic' },
-  saisie: { flexDirection: 'row', alignItems: 'center', gap: 6 },
-  champ: { flex: 1, padding: 0, minHeight: 32 },
-  touches: { flexDirection: 'row', gap: 6, paddingTop: 6 },
-  touche: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderRadius: 3, backgroundColor: couleurs.cellule },
-  toucheTexte: { color: couleurs.lettre, fontFamily: MONO, fontSize: 15 },
+const useStyles = creerStyles((t) => {
+  // Le terminal garde les couleurs sombres de la famille, quel que soit le mode
+  const nuit = THEMES[`${t.famille}-sombre`].couleurs;
+  return {
+    icone: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },
+    parcours: { flexGrow: 0, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: t.couleurs.filet },
+    pastille: { minWidth: CIBLE_TACTILE, height: 40, borderRadius: t.rayons.sm, borderWidth: 1, borderColor: t.couleurs.filet, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 8 },
+    pastilleActive: { borderColor: t.famille === 'planner' ? t.couleurs.lettre : t.couleurs.accent, backgroundColor: t.couleurs.cellule },
+    pastilleTexte: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneauGras, fontSize: 15 },
+    pastilleTexteActif: { color: t.couleurs.lettre },
+    lampe: { width: 8, height: 8, borderRadius: 4, borderWidth: 1, borderColor: t.couleurs.filet },
+    defi: { flex: 1 },
+    niveau: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneauGras, fontSize: 12, letterSpacing: espace(t, 1.6), textTransform: t.capitales },
+    titre: { color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: t.famille === 'planner' ? 24 : 20, letterSpacing: espace(t, 0.6), textTransform: t.capitales, marginTop: 4 },
+    texte: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 15, lineHeight: 22, marginTop: 6 },
+    objectif: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 15, lineHeight: 22, marginTop: 10, paddingLeft: 10, borderLeftWidth: 3, borderLeftColor: t.famille === 'planner' ? t.couleurs.cadre : t.couleurs.accent },
+    indice: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 14, marginTop: 6 },
+    solution: { color: nuit.lettre, fontFamily: MONO, fontSize: 14, marginTop: 8, padding: 10, backgroundColor: nuit.cellule, borderRadius: t.rayons.sm },
+    echec: { color: t.couleurs.lettre, fontFamily: t.polices.texte, fontSize: 14, marginTop: 10 },
+    victoire: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 12,
+      marginTop: 14,
+      padding: 12,
+      borderRadius: t.rayons.md,
+      backgroundColor: t.scene.ciel,
+    },
+    victoireTitre: { color: t.scene.texte, fontFamily: t.polices.panneauGras, fontSize: 20, textTransform: t.capitales, letterSpacing: espace(t, 1) },
+    victoirePoints: { color: t.scene.texteAttenue, fontFamily: t.polices.panneau, fontSize: 16, fontVariant: ['tabular-nums'] },
+    actions: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginTop: 14 },
+    plein: { minHeight: CIBLE_TACTILE, paddingHorizontal: 16, justifyContent: 'center', borderRadius: t.rayons.sm, backgroundColor: t.couleurs.accent },
+    pleinTexte: { color: t.couleurs.surAccent, fontFamily: t.polices.panneauGras, fontSize: 15, letterSpacing: espace(t, 1), textTransform: t.capitales },
+    contour: { minHeight: CIBLE_TACTILE, paddingHorizontal: 12, justifyContent: 'center', borderRadius: t.rayons.sm, borderWidth: 1, borderColor: t.couleurs.filet },
+    contourTexte: { color: t.couleurs.lettre, fontFamily: t.polices.panneau, fontSize: 14, letterSpacing: espace(t, 0.8), textTransform: t.capitales },
+    cadre: { backgroundColor: t.famille === 'planner' ? t.couleurs.cadre : nuit.cellule, padding: 6 },
+    terminal: { height: 220, backgroundColor: nuit.fond, borderRadius: t.rayons.xs + 2, paddingHorizontal: 10, paddingVertical: 8 },
+    mono: { color: nuit.lettre, fontFamily: MONO, fontSize: 13, lineHeight: 19 },
+    monoInvite: { color: nuit.lettreAttenuee },
+    monoErreur: { color: nuit.lettreAttenuee, fontStyle: 'italic' },
+    saisie: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+    champ: { flex: 1, padding: 0, minHeight: 32 },
+    touches: { flexDirection: 'row', gap: 6, paddingTop: 6 },
+    touche: { flex: 1, minHeight: 40, alignItems: 'center', justifyContent: 'center', borderRadius: t.rayons.sm, backgroundColor: nuit.cellule },
+    toucheTexte: { color: nuit.lettre, fontFamily: MONO, fontSize: 15 },
+  };
 });

@@ -1,6 +1,6 @@
-import { StyleSheet, Text, View } from 'react-native';
+import { Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { couleurs, couleurStatut, lineColor, polices } from '../theme';
+import { couleurStatut, creerStyles, espace, lineColor, useTheme } from '../theme';
 
 /**
  * Une ligne du panneau : heure, carré de la filière, cours (type CM/TD/TP), salle et campus,
@@ -8,9 +8,11 @@ import { couleurs, couleurStatut, lineColor, polices } from '../theme';
  */
 export default function DepartureRow({ seance: s, enVedette = false }) {
   const { t } = useTranslation();
+  const theme = useTheme();
+  const styles = useStyles();
   const statut = enVedette && s.status !== 'annule' && s.status !== 'reporte' ? 'live' : s.status;
   const libelleStatut = t(`status.${statut}`);
-  const couleur = statut === 'live' ? couleurs.enCours : couleurStatut(s.status);
+  const couleur = statut === 'live' ? theme.couleurs.enCours : couleurStatut(theme, s.status);
   const annule = s.status === 'annule';
   const lieu = s.distanciel ? [t('app.distanciel'), s.mention].filter(Boolean).join(' · ') : [s.room, s.building].filter(Boolean).join(' · ');
 
@@ -41,7 +43,7 @@ export default function DepartureRow({ seance: s, enVedette = false }) {
   );
 }
 
-const styles = StyleSheet.create({
+const useStyles = creerStyles((t) => ({
   ligne: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -49,15 +51,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderBottomWidth: 1,
-    borderBottomColor: couleurs.filet,
+    borderBottomColor: t.couleurs.filet,
     gap: 10,
   },
-  heure: { width: 52, color: couleurs.lettre, fontFamily: polices.panneauGras, fontSize: 20, fontVariant: ['tabular-nums'] },
-  carre: { width: 10, height: 10, borderRadius: 1 },
+  heure: { width: 52, color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: t.famille === 'planner' ? 20 : 17, fontVariant: ['tabular-nums'] },
+  carre: { width: 10, height: 10, borderRadius: t.famille === 'planner' ? 1 : 5 },
   centre: { flex: 1 },
-  cours: { color: couleurs.lettre, fontFamily: polices.panneau, fontSize: 18, textTransform: 'uppercase', letterSpacing: 0.4 },
-  type: { color: couleurs.lettreAttenuee, fontFamily: polices.panneauMoyen, fontSize: 14 },
-  lieu: { color: couleurs.lettreAttenuee, fontFamily: polices.texte, fontSize: 13, marginTop: 2 },
-  statut: { fontFamily: polices.panneau, fontSize: 14, textTransform: 'uppercase', letterSpacing: 0.8 },
-  barre: { textDecorationLine: 'line-through', color: couleurs.lettreAttenuee },
-});
+  cours: { color: t.couleurs.lettre, fontFamily: t.polices.panneau, fontSize: t.famille === 'planner' ? 18 : 16, textTransform: t.capitales, letterSpacing: espace(t, 0.4) },
+  type: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneauMoyen, fontSize: 14 },
+  lieu: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13, marginTop: 2 },
+  statut: { fontFamily: t.polices.panneau, fontSize: t.famille === 'planner' ? 14 : 13, textTransform: t.capitales, letterSpacing: espace(t, 0.8) },
+  barre: { textDecorationLine: 'line-through', color: t.couleurs.lettreAttenuee },
+}));

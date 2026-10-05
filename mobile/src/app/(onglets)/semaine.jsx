@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { Pressable, RefreshControl, SectionList, StyleSheet, Text, View } from 'react-native';
+import { Pressable, RefreshControl, SectionList, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { formatDayLabel, groupByDay, toLocalISODate } from '../../../../shared/session.js';
@@ -8,7 +8,7 @@ import DepartureRow from '../../board/DepartureRow';
 import { chargerSeances } from '../../api/donnees';
 import { ecrireCache, lireCache } from '../../cache';
 import useRafraichissement from '../../hooks/useRafraichissement';
-import { CIBLE_TACTILE, couleurs, polices } from '../../theme';
+import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
 
 const lundiDe = (date) => {
   const d = new Date(date.getFullYear(), date.getMonth(), date.getDate());
@@ -37,6 +37,8 @@ const lireSemaine = async (lundi, cle) => {
 
 /** Semaine : une section par jour, du lundi au samedi, et navigation de semaine en semaine. */
 export default function Semaine() {
+  const { couleurs } = useTheme();
+  const styles = useStyles();
   const { t, i18n } = useTranslation();
   const [lundi, setLundi] = useState(() => lundiDe(new Date()));
   const cle = `semaine.${toLocalISODate(lundi)}`;
@@ -99,10 +101,10 @@ export default function Semaine() {
   );
 }
 
-const styles = StyleSheet.create({
-  navigation: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: couleurs.filet },
+const useStyles = creerStyles((t) => ({
+  navigation: { flexDirection: 'row', alignItems: 'center', borderBottomWidth: 1, borderBottomColor: t.couleurs.filet },
   fleche: { width: CIBLE_TACTILE + 8, height: CIBLE_TACTILE + 8, alignItems: 'center', justifyContent: 'center' },
   libelle: { flex: 1, alignItems: 'center', minHeight: CIBLE_TACTILE, justifyContent: 'center' },
-  libelleTexte: { color: couleurs.lettre, fontFamily: polices.panneau, fontSize: 17, textTransform: 'uppercase', letterSpacing: 0.8 },
-  jour: { backgroundColor: couleurs.fond, color: couleurs.lettreAttenuee, fontFamily: polices.panneau, fontSize: 14, textTransform: 'uppercase', letterSpacing: 1.2, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
-});
+  libelleTexte: { color: t.couleurs.lettre, fontFamily: t.polices.panneau, fontSize: 17, textTransform: t.capitales, letterSpacing: espace(t, 0.8) },
+  jour: { backgroundColor: t.couleurs.fond, color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1.2), paddingHorizontal: 16, paddingTop: 16, paddingBottom: 6 },
+}));

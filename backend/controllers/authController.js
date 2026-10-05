@@ -1,6 +1,6 @@
 import crypto from "crypto";
 import { Op } from "sequelize";
-import { Appartenir, AuthSession, Users, Enseignant, Etudiant, Filiere, Groupe, PasswordResetToken } from "../models/index.js";
+import { Appartenir, AuthSession, Users, Enseignant, Etudiant, Filiere, Groupe, PasserelleWeb, PasswordResetToken } from "../models/index.js";
 import { signerJetonAcces } from "../utils/jetons.js";
 import { filieresDuResponsable } from "../services/planning/droits.js";
 import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
@@ -194,6 +194,61 @@ export const login = asyncHandler(async (req, res) => {
         user: sanitizeUser(user, additionalInfo),
         ...(modeMobile(req) ? jetonsMobile(session) : {}),
     });
+});
+
+// ── Passerelle de l'application mobile vers les sites web ──────────────────
+// L'application ouvre Planner, StudyLib (/biblio/) ou les jeux dans le navigateur du téléphone,
+// déjà connectée : elle demande un code à usage unique (60 s), le navigateur l'échange contre
+// une session web puis suit le chemin choisi. Le code ne vaut que pour un chemin de la
+// plateforme (relatif, jamais vers un autre site) ; seule son empreinte est enregistrée.
+
+const PASSERELLE_TTL_MS = 60 * 1000;
+const CHEMIN_PLATEFORME = /^\/(?![/\\])[A-Za-z0-9\-._~/?=&%#]{0,299}$/;
+
+/**
+ * POST /api/auth/passerelle (application mobile, jeton Bearer) — { suite: "/biblio/" }
+ * → { code, expire_dans }
+ */
+export const creerPasserelle = asyncHandler(async (req, res) => {
+    // Réservé à l'application : un navigateur a déjà sa session web
+    if (!modeMobile(req) || req.get("origin") || !req.get("authorization")?.startsWith("Bearer ")) {
+        return res.status(403).json({ message: "Réservé à l'application mobile", code: "CLIENT_INVALIDE" });
+    }
+    const suite = req.body?.suite ?? "/";
+    if (typeof suite !== "string" || !CHEMIN_PLATEFORME.test(suite)) {
+        return res.status(400).json({ message: "suite doit être un chemin de la plateforme (ex. /biblio/)" });
+    }
+    const maintenant = new Date();
+    // Ménage des codes expirés depuis plus d'un jour
+    await PasserelleWeb.destroy({ where: { expire_le: { [Op.lt]: new Date(maintenant.getTime() - 24 * 3600 * 1000) } } });
+    const code = randomToken(32);
+    await PasserelleWeb.create({ code_hash: sha256(code), id_user: req.user.id_user, suite, expire_le: new Date(maintenant.getTime() + PASSERELLE_TTL_MS) });
+    res.status(201).json({ code, expire_dans: PASSERELLE_TTL_MS / 1000 });
+});
+
+/**
+ * GET /api/auth/passerelle?code=… (navigateur du téléphone) : ouvre une session web et redirige
+ * vers le chemin demandé. Code inconnu, expiré ou déjà utilisé : retour à l'accueil du site.
+ */
+export const suivrePasserelle = asyncHandler(async (req, res) => {
+    // Le code figure dans l'adresse : ni cache, ni référent
+    res.set("Cache-Control", "no-store");
+    res.set("Referrer-Policy", "no-referrer");
+    const code = typeof req.query.code === "string" ? req.query.code : "";
+    if (!code || code.length > 100) return res.redirect(303, "/");
+
+    const maintenant = new Date();
+    const codeHash = sha256(code);
+    // Usage unique : seule la requête qui marque le code comme utilisé continue
+    const [marques] = await PasserelleWeb.update({ utilise_le: maintenant }, { where: { code_hash: codeHash, utilise_le: null, expire_le: { [Op.gt]: maintenant } } });
+    if (marques !== 1) return res.redirect(303, "/");
+
+    const passerelle = await PasserelleWeb.findOne({ where: { code_hash: codeHash } });
+    const user = await Users.findByPk(passerelle.id_user);
+    if (!user?.actif || !CHEMIN_PLATEFORME.test(passerelle.suite)) return res.redirect(303, "/");
+
+    await createAuthSession(req, res, user);
+    res.redirect(303, passerelle.suite);
 });
 
 /**
