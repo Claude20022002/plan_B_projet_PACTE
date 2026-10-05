@@ -139,7 +139,6 @@ const navigationFor = (user) => {
           { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
           { key: 'nav.availableRooms', icon: <MeetingRoom />, path: '/salles-disponibles' },
           { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
-        { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
           { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
         ],
       },
