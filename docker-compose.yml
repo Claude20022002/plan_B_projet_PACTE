@@ -400,6 +400,8 @@ services:
       args:
         VITE_CUSTOM_OAUTH_NAME: HESTIM Planner
         VITE_REGISTRATION_DISABLED: "true"
+        # Sélecteur d'espaces de ClassQuiz : retour vers Planner, la bibliothèque et les jeux
+        VITE_PLANNER_URL: https://${SITE_ADDRESS}
     container_name: hestim_quiz_frontend
     restart: unless-stopped
     environment:

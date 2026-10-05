@@ -1,0 +1,82 @@
+{
+  "title": "Culture informatique",
+  "description": "Questions d’Open Trivia DB (https://opentdb.com, catégorie « Science: Computers »), traduites en français pour HESTIM. Licence CC BY-SA 4.0 : ce quiz se partage aux mêmes conditions, en citant Open Trivia DB.",
+  "source": {
+    "nom": "Open Trivia DB",
+    "url": "https://opentdb.com/api.php?amount=50&category=18&type=multiple",
+    "licence": "CC BY-SA 4.0",
+    "recupere_le": "2026-10-05"
+  },
+  "questions": [
+    {
+      "question": "Quel composant est surnommé « le cerveau » de l’ordinateur ?",
+      "bonne": "Le processeur (CPU)",
+      "fausses": ["La carte mère", "La carte graphique (GPU)", "Le clavier"]
+    },
+    {
+      "question": "Dans une version de logiciel, que signifie « LTS » ?",
+      "bonne": "Long Term Support (support à long terme)",
+      "fausses": ["Long Transfer Speed", "Low Tension System", "Linux Terminal Shell"]
+    },
+    {
+      "question": "Quelle est la taille d’une adresse IPv6 ?",
+      "bonne": "128 bits",
+      "fausses": ["32 bits", "64 bits", "128 octets"]
+    },
+    {
+      "question": "Que signifie l’acronyme du protocole de routage « RIP » ?",
+      "bonne": "Routing Information Protocol",
+      "fausses": ["Runtime Instance Processes", "Regular Interval Processes", "Routine Inspection Protocol"]
+    },
+    {
+      "question": "Combien d’octets contient un kibioctet (Kio) ?",
+      "bonne": "1024",
+      "fausses": ["1000", "1240", "2400"]
+    },
+    {
+      "question": "En programmation, quel symbole désigne le plus souvent l’opérateur ternaire ?",
+      "bonne": "? :",
+      "fausses": ["??", "if then", "?"]
+    },
+    {
+      "question": "Quel niveau de RAID correspond à la mise en miroir des données ?",
+      "bonne": "RAID 1",
+      "fausses": ["RAID 0", "RAID 5", "RAID 10"]
+    },
+    {
+      "question": "Selon les lois de De Morgan, l’expression booléenne (AB)' équivaut à :",
+      "bonne": "A' + B'",
+      "fausses": ["A'B'", "A'B + B'A", "AB' + AB"]
+    },
+    {
+      "question": "Lequel de ces noms n’est pas un nom de code officiel d’une version d’Ubuntu ?",
+      "bonne": "Mystic Mansion",
+      "fausses": ["Trusty Tahr", "Utopic Unicorn", "Wily Werewolf"]
+    },
+    {
+      "question": "En réseau, que signifie « LAN » ?",
+      "bonne": "Local Area Network (réseau local)",
+      "fausses": ["Long Antenna Node", "Light Access Node", "Land Address Navigation"]
+    },
+    {
+      "question": "À quel langage le framework Django est-il associé ?",
+      "bonne": "Python",
+      "fausses": ["C#", "C++", "Java"]
+    },
+    {
+      "question": "Quel langage Node.js exécute-t-il ?",
+      "bonne": "JavaScript",
+      "fausses": ["Java", "Python", "PHP"]
+    },
+    {
+      "question": "Comment s’appelle la couche 7 du modèle OSI ?",
+      "bonne": "Application",
+      "fausses": ["Session", "Réseau", "Présentation"]
+    },
+    {
+      "question": "En conception web, que signifie « CSS » ?",
+      "bonne": "Cascading Style Sheets (feuilles de style en cascade)",
+      "fausses": ["Computer Style Sheets", "Corrective Style Sheets", "Counter Strike: Source"]
+    }
+  ]
+}

@@ -1,0 +1,62 @@
+{
+  "title": "Terminal Linux : les bases",
+  "description": "Révision rapide avant le jeu « Terminal Linux » de l’espace Jeux. Questions tirées des défis de Terminal Quest (https://github.com/brunozapico/terminal_quest, licence MIT, © Bruno Zapico), adaptées pour HESTIM.",
+  "source": {
+    "nom": "Terminal Quest",
+    "url": "https://github.com/brunozapico/terminal_quest",
+    "licence": "MIT",
+    "recupere_le": "2026-10-05"
+  },
+  "questions": [
+    {
+      "question": "Quelle commande affiche le répertoire dans lequel vous êtes ?",
+      "bonne": "pwd",
+      "fausses": ["ls", "whoami", "cd"]
+    },
+    {
+      "question": "Comment lister aussi les fichiers cachés, avec leurs détails ?",
+      "bonne": "ls -la",
+      "fausses": ["ls -h", "ls --hidden", "dir /a"]
+    },
+    {
+      "question": "Que désigne « .. » dans un chemin ?",
+      "bonne": "Le répertoire parent",
+      "fausses": ["Le répertoire courant", "La racine /", "Le dossier personnel"]
+    },
+    {
+      "question": "Quelle commande crée src/components en une seule fois, dossiers intermédiaires compris ?",
+      "bonne": "mkdir -p src/components",
+      "fausses": ["mkdir src/components", "touch src/components", "mkdir -r src/components"]
+    },
+    {
+      "question": "Pour copier un dossier et tout son contenu, on utilise :",
+      "bonne": "cp -r assets assets-copy",
+      "fausses": ["cp assets assets-copy", "mv assets assets-copy", "cat assets > assets-copy"]
+    },
+    {
+      "question": "Quelle est la différence entre > et >> ?",
+      "bonne": "> remplace le contenu du fichier, >> l’ajoute à la fin",
+      "fausses": ["> ajoute à la fin, >> remplace", "Aucune différence", ">> redirige les erreurs"]
+    },
+    {
+      "question": "Quelle commande affiche seulement les lignes contenant ERROR dans server.log ?",
+      "bonne": "grep ERROR server.log",
+      "fausses": ["find ERROR server.log", "cat ERROR server.log", "head ERROR server.log"]
+    },
+    {
+      "question": "Dans « sort names.txt | uniq », à quoi sert le | ?",
+      "bonne": "Il envoie la sortie de sort en entrée de uniq",
+      "fausses": ["Il exécute les deux commandes en parallèle", "Il enregistre le résultat dans un fichier", "Il compare les deux commandes"]
+    },
+    {
+      "question": "Que donne chmod 755 à un fichier ?",
+      "bonne": "rwx pour le propriétaire, r-x pour le groupe et les autres",
+      "fausses": ["rwx pour tout le monde", "Lecture seule pour tous", "rw- pour le propriétaire seulement"]
+    },
+    {
+      "question": "Quelle commande arrête le processus de PID 840 ?",
+      "bonne": "kill 840",
+      "fausses": ["stop 840", "ps 840", "killall 840"]
+    }
+  ]
+}

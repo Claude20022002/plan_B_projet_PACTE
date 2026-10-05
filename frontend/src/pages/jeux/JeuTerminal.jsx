@@ -165,7 +165,7 @@ export default function JeuTerminal() {
           {t('jeux.tous')}
         </Button>
         <Typography variant="body2" color="text.secondary" sx={{ fontVariantNumeric: 'tabular-nums' }}>
-          {t('jeux.progression', { reussis: nbReussis, total: defis.length, points })}
+          {t('jeux.progression', { count: nbReussis, total: defis.length, points })}
         </Typography>
       </Stack>
 
