@@ -501,6 +501,8 @@ const en = {
       reussite: 'Challenge solved: +{{points}} pts.',
       dejaReussi: 'Challenge solved (already counted).',
       fin: 'You finished the path!',
+      nonEnregistre: 'Not saved yet (offline): replay this challenge once you are back online.',
+      refus: 'Planner did not validate this success. Restart the challenge and try again.',
       bareme: 'Solved now: {{points}} of {{max}} pts.',
       aide: 'Enter runs · Tab completes · ↑ ↓ history · Ctrl+L clears. Type help to list commands. Nothing runs on a real machine.',
       sortie: 'Terminal output',

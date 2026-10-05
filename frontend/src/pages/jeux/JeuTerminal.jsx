@@ -70,16 +70,22 @@ export default function JeuTerminal() {
     setTimeout(() => terminal.current?.focus(), 0);
   };
 
+  /**
+   * Enregistre la réussite : { points, horsLigne }. Le serveur rejoue la partie ; s'il répond par
+   * une erreur (objectif non atteint de son côté, session expirée…), elle est levée : la réussite
+   * n'est pas affichée. Seule une coupure réseau (status 0) laisse la réussite à l'écran.
+   */
   const enregistrer = useCallback(
     async (id, niveauIndice) => {
-      if (reussis.has(id)) return reussis.get(id).points;
+      if (reussis.has(id)) return { points: reussis.get(id).points, horsLigne: false };
       try {
         const r = await jeuxAPI.reussir(CODE, id, niveauIndice, [...partie.historique]);
         setReussis((m) => new Map(m).set(id, { id, points: r.points, indices: niveauIndice }));
-        return r.points;
-      } catch {
+        return { points: r.points, horsLigne: false };
+      } catch (erreur) {
+        if (erreur?.status) throw erreur;
         // Hors ligne : la réussite compte à l'écran, elle sera enregistrée en rejouant le défi
-        return pointsPour(defi.xp, niveauIndice);
+        return { points: pointsPour(defi.xp, niveauIndice), horsLigne: true };
       }
     },
     [reussis, defi, partie]
@@ -93,8 +99,13 @@ export default function JeuTerminal() {
       if (retour) setRetour(null);
       return;
     }
-    const points = await enregistrer(defi.id, indices);
-    setRetour({ ok: true, points, deja: reussis.has(defi.id) });
+    const deja = reussis.has(defi.id);
+    try {
+      const { points, horsLigne } = await enregistrer(defi.id, indices);
+      setRetour({ ok: true, points, deja, horsLigne });
+    } catch (erreur) {
+      setRetour({ ok: false, message: erreur.status === 422 ? t('jeux.terminal.refus') : erreur.message });
+    }
   };
 
   const verifier = () => {
@@ -253,6 +264,7 @@ export default function JeuTerminal() {
               {retour?.ok && (
                 <Alert severity="success" variant="outlined">
                   {retour.deja ? t('jeux.terminal.dejaReussi') : t('jeux.terminal.reussite', { points: retour.points })}
+                  {retour.horsLigne && ` ${t('jeux.terminal.nonEnregistre')}`}
                   {!suivant && ` ${t('jeux.terminal.fin')}`}
                 </Alert>
               )}

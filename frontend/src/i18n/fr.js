@@ -501,6 +501,8 @@ const fr = {
       reussite: 'Défi réussi : +{{points}} pts.',
       dejaReussi: 'Défi réussi (déjà compté).',
       fin: 'Vous avez terminé le parcours !',
+      nonEnregistre: 'Pas encore enregistré (hors ligne) : rejouez ce défi une fois reconnecté.',
+      refus: 'Planner n’a pas validé cette réussite. Recommencez le défi puis réessayez.',
       bareme: 'Réussi maintenant : {{points}} pts sur {{max}}.',
       aide: 'Entrée exécute · Tab complète · ↑ ↓ historique · Ctrl+L efface. Tapez help pour la liste des commandes. Rien n’est exécuté sur une vraie machine.',
       sortie: 'Sortie du terminal',
