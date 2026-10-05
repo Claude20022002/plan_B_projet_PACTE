@@ -13,36 +13,21 @@ const CODE = 'terminal-linux';
 const MONO = Platform.select({ ios: 'Menlo', android: 'monospace', default: 'monospace' });
 
 /**
- * Jeu « Terminal Linux » sur téléphone : le défi en haut, le terminal simulé dessous (même moteur
- * que le web, shared/terminal). L'objectif est vérifié après chaque commande ; la réussite est
- * enregistrée par Planner. Raccourcis en bas du terminal pour Tab et les caractères difficiles
- * à taper sur un clavier de téléphone (| > ~ /).
+ * Jeu « Terminal Linux » sur téléphone : le parcours en haut, puis le défi et le terminal simulé
+ * (même moteur que le web, shared/terminal). L'objectif est vérifié après chaque commande ; la
+ * réussite est enregistrée par Planner.
  */
 export default function Terminal() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { utilisateur } = useAuth();
   const { defi: demande } = useLocalSearchParams();
-  const langue = i18n.language;
-  const defis = useMemo(() => defisLinux(langue), [langue]);
+  const defis = useMemo(() => defisLinux(i18n.language), [i18n.language]);
   const [reussis, setReussis] = useState(() => new Map());
   const [choisi, setChoisi] = useState(typeof demande === 'string' ? demande : null);
+  const [essai, setEssai] = useState(0);
   const courantId = defis.some((d) => d.id === choisi) ? choisi : (defis.find((d) => !reussis.has(d.id)) ?? defis[0]).id;
   const index = defis.findIndex((d) => d.id === courantId);
-  const defi = defis[index];
-  const [essai, setEssai] = useState(0);
-  const partie = useMemo(
-    () => new PartieTerminal(courantId, { joueur: utilisateur?.prenom || 'etudiant', langue }),
-    // essai : nouvelle partie à « Recommencer »
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [courantId, essai, utilisateur?.prenom]
-  );
-  const [lignes, setLignes] = useState([]);
-  const [saisie, setSaisie] = useState('');
-  const [indices, setIndices] = useState(0);
-  const [retour, setRetour] = useState(null);
-  const ecran = useRef(null);
-  const champ = useRef(null);
 
   useEffect(() => {
     chargerProgressionJeu(CODE)
@@ -50,52 +35,6 @@ export default function Terminal() {
       .catch(() => {});
   }, []);
 
-  useEffect(() => {
-    setLignes([]);
-    setSaisie('');
-    setIndices(0);
-    setRetour(null);
-  }, [partie]);
-
-  const executer = async () => {
-    const ligne = saisie;
-    setSaisie('');
-    if (!ligne.trim()) return;
-    const r = partie.executer(ligne);
-    const sorties = [];
-    if (r.erreur) sorties.push({ type: 'erreur', texte: r.erreur.replace(/\n$/, '') });
-    if (r.sortie) sorties.push({ type: 'sortie', texte: r.sortie.replace(/\n$/, '') });
-    setLignes((l) => (r.effacer ? sorties : [...l, { type: 'commande', invite: partie.invite, texte: ligne }, ...sorties].slice(-300)));
-    if (retour?.ok || !partie.verifier().ok) return;
-    let points = reussis.get(defi.id)?.points ?? pointsPour(defi.xp, indices);
-    if (!reussis.has(defi.id)) {
-      try {
-        points = (await enregistrerReussite(CODE, defi.id, indices)).points;
-        setReussis((m) => new Map(m).set(defi.id, { id: defi.id, points }));
-      } catch {
-        // Hors ligne : la réussite est affichée, elle sera enregistrée en rejouant le défi
-      }
-    }
-    setRetour({ ok: true, points });
-  };
-
-  const verifier = () => {
-    const v = partie.verifier();
-    setRetour(v.ok ? { ok: true, points: reussis.get(defi.id)?.points ?? pointsPour(defi.xp, indices) } : { ok: false, message: v.message });
-  };
-
-  const tab = () => {
-    const r = partie.completer(saisie);
-    setSaisie(r.valeur);
-    if (r.suggestions.length > 1) setLignes((l) => [...l, { type: 'erreur', texte: r.suggestions.join('   ') }]);
-    champ.current?.focus();
-  };
-  const inserer = (texte) => {
-    setSaisie((s) => s + texte);
-    champ.current?.focus();
-  };
-
-  const suivant = defis[index + 1];
   const fermer = (
     <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/jeux'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
       <MaterialCommunityIcons name="arrow-left" size={24} color="#FFFFFF" />
@@ -109,80 +48,151 @@ export default function Terminal() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.parcours} contentContainerStyle={{ paddingHorizontal: 12, gap: 8 }}>
           {defis.map((d, i) => {
             const actif = d.id === courantId;
+            const fait = reussis.has(d.id);
             return (
-              <Pressable key={d.id} onPress={() => setChoisi(d.id)} style={[styles.pastille, actif && styles.pastilleActive]} accessibilityRole="button" accessibilityState={{ selected: actif }} accessibilityLabel={`${i + 1}. ${d.titre}${reussis.has(d.id) ? `, ${t('app.terminal.reussi')}` : ''}`}>
-                <View style={[styles.lampe, reussis.has(d.id) && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
+              <Pressable key={d.id} onPress={() => setChoisi(d.id)} style={[styles.pastille, actif && styles.pastilleActive]} accessibilityRole="button" accessibilityState={{ selected: actif }} accessibilityLabel={`${i + 1}. ${d.titre}${fait ? `, ${t('app.terminal.reussi')}` : ''}`}>
+                <View style={[styles.lampe, fait && styles.lampeAllumee]} />
                 <Text style={[styles.pastilleTexte, actif && { color: couleurs.lettre }]}>{i + 1}</Text>
               </Pressable>
             );
           })}
         </ScrollView>
-
-        <ScrollView style={styles.defi} contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
-          <Text style={styles.niveau}>
-            {t('app.terminal.niveau', { n: defi.niveau })} · {defi.niveauNom}
-            {defi.boss ? ` · ${t('app.terminal.boss')}` : ''}
-          </Text>
-          <Text style={styles.titre} accessibilityRole="header">{defi.titre}</Text>
-          <Text style={styles.texte}>{defi.explication}</Text>
-          <Text style={styles.objectif}>{defi.objectif}</Text>
-          {defi.indices.slice(0, Math.min(indices, INDICES_MAX)).map((indice, i) => (
-            <Text key={i} style={styles.indice}>{`${i + 1}. ${indice}`}</Text>
-          ))}
-          {indices >= NIVEAU_REPONSE ? <Text style={styles.solution}>{defi.solution}</Text> : null}
-
-          {retour?.ok ? <Message>{t('app.terminal.reussite', { points: retour.points })}</Message> : null}
-          {retour && !retour.ok ? <Text style={styles.echec}>{retour.message}</Text> : null}
-
-          <View style={styles.actions}>
-            {retour?.ok && suivant ? (
-              <Bouton plein onPress={() => setChoisi(suivant.id)}>{t('app.terminal.suivant')}</Bouton>
-            ) : (
-              <Bouton plein onPress={verifier}>{t('app.terminal.verifier')}</Bouton>
-            )}
-            {!retour?.ok && indices < INDICES_MAX ? <Bouton onPress={() => setIndices((n) => n + 1)}>{t('app.terminal.indice', { n: indices + 1, total: INDICES_MAX })}</Bouton> : null}
-            {!retour?.ok && indices === INDICES_MAX ? <Bouton onPress={() => setIndices(NIVEAU_REPONSE)}>{t('app.terminal.reponse')}</Bouton> : null}
-            <Bouton onPress={() => setEssai((n) => n + 1)}>{t('app.terminal.recommencer')}</Bouton>
-          </View>
-        </ScrollView>
-
-        {/* Terminal */}
-        <View style={styles.cadre}>
-          <ScrollView ref={ecran} style={styles.terminal} onContentSizeChange={() => ecran.current?.scrollToEnd({ animated: false })} keyboardShouldPersistTaps="handled" accessibilityLiveRegion="polite">
-            {lignes.map((l, i) => (
-              <Text key={i} style={[styles.mono, l.type === 'erreur' && styles.monoErreur]} selectable>
-                {l.type === 'commande' ? <Text style={styles.monoInvite}>{`${l.invite} `}</Text> : null}
-                {l.texte}
-              </Text>
-            ))}
-            <View style={styles.saisie}>
-              <Text style={[styles.mono, styles.monoInvite]} numberOfLines={1}>{partie.invite}</Text>
-              <TextInput
-                ref={champ}
-                value={saisie}
-                onChangeText={setSaisie}
-                onSubmitEditing={executer}
-                submitBehavior="submit"
-                returnKeyType="send"
-                autoCapitalize="none"
-                autoCorrect={false}
-                spellCheck={false}
-                style={[styles.mono, styles.champ]}
-                selectionColor={couleurs.reporte}
-                accessibilityLabel={t('app.terminal.saisie')}
-              />
-            </View>
-          </ScrollView>
-          <View style={styles.touches}>
-            {[['Tab', tab], ['|', () => inserer(' | ')], ['>', () => inserer(' > ')], ['~', () => inserer('~')], ['/', () => inserer('/')], ['↑', () => setSaisie(partie.historique.at(-1) ?? '')]].map(([libelle, action]) => (
-              <Pressable key={libelle} onPress={action} style={styles.touche} accessibilityRole="button" accessibilityLabel={libelle === '↑' ? t('app.terminal.derniere') : libelle}>
-                <Text style={styles.toucheTexte}>{libelle}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
+        {/* Une partie par défi et par essai : changer de défi ou recommencer repart d'un terminal neuf */}
+        <Partie
+          key={`${courantId}-${essai}`}
+          defi={defis[index]}
+          joueur={utilisateur?.prenom || 'etudiant'}
+          langue={i18n.language}
+          dejaReussi={reussis.get(courantId)}
+          onReussite={(id, points) => setReussis((m) => new Map(m).set(id, { id, points }))}
+          onSuivant={defis[index + 1] ? () => setChoisi(defis[index + 1].id) : null}
+          onRecommencer={() => setEssai((n) => n + 1)}
+        />
       </KeyboardAvoidingView>
     </Ecran>
+  );
+}
+
+function Partie({ defi, joueur, langue, dejaReussi, onReussite, onSuivant, onRecommencer }) {
+  const { t } = useTranslation();
+  const [partie] = useState(() => new PartieTerminal(defi.id, { joueur, langue }));
+  const [lignes, setLignes] = useState([]);
+  const [saisie, setSaisie] = useState('');
+  const [indices, setIndices] = useState(0);
+  const [retour, setRetour] = useState(null);
+  const ecran = useRef(null);
+
+  const reussir = async () => {
+    let points = dejaReussi?.points ?? pointsPour(defi.xp, indices);
+    if (!dejaReussi) {
+      try {
+        points = (await enregistrerReussite(CODE, defi.id, indices)).points;
+        onReussite(defi.id, points);
+      } catch {
+        // Hors ligne : la réussite est affichée, elle sera enregistrée en rejouant le défi
+      }
+    }
+    setRetour({ ok: true, points });
+  };
+
+  const executer = () => {
+    const ligne = saisie;
+    setSaisie('');
+    if (!ligne.trim()) return;
+    const invite = partie.invite;
+    const r = partie.executer(ligne);
+    const sorties = [];
+    if (r.erreur) sorties.push({ type: 'erreur', texte: r.erreur.replace(/\n$/, '') });
+    if (r.sortie) sorties.push({ type: 'sortie', texte: r.sortie.replace(/\n$/, '') });
+    setLignes((l) => (r.effacer ? sorties : [...l, { type: 'commande', invite, texte: ligne }, ...sorties].slice(-300)));
+    if (!retour?.ok && partie.verifier().ok) reussir();
+  };
+
+  const verifier = () => {
+    const v = partie.verifier();
+    if (v.ok) reussir();
+    else setRetour({ ok: false, message: v.message });
+  };
+
+  const completer = () => {
+    const r = partie.completer(saisie);
+    setSaisie(r.valeur);
+    if (r.suggestions.length > 1) setLignes((l) => [...l, { type: 'erreur', texte: r.suggestions.join('   ') }]);
+  };
+
+  // Tab et caractères difficiles à taper sur un clavier de téléphone
+  const touches = [
+    { libelle: 'Tab', action: completer },
+    { libelle: '|', action: () => setSaisie((s) => `${s} | `) },
+    { libelle: '>', action: () => setSaisie((s) => `${s} > `) },
+    { libelle: '~', action: () => setSaisie((s) => `${s}~`) },
+    { libelle: '/', action: () => setSaisie((s) => `${s}/`) },
+    { libelle: '↑', action: () => setSaisie(partie.historique.at(-1) ?? ''), nom: t('app.terminal.derniere') },
+  ];
+
+  return (
+    <>
+      <ScrollView style={styles.defi} contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+        <Text style={styles.niveau}>
+          {t('app.terminal.niveau', { n: defi.niveau })} · {defi.niveauNom}
+          {defi.boss ? ` · ${t('app.terminal.boss')}` : ''}
+        </Text>
+        <Text style={styles.titre} accessibilityRole="header">{defi.titre}</Text>
+        <Text style={styles.texte}>{defi.explication}</Text>
+        <Text style={styles.objectif}>{defi.objectif}</Text>
+        {defi.indices.slice(0, Math.min(indices, INDICES_MAX)).map((indice, i) => (
+          <Text key={i} style={styles.indice}>{`${i + 1}. ${indice}`}</Text>
+        ))}
+        {indices >= NIVEAU_REPONSE ? <Text style={styles.solution}>{defi.solution}</Text> : null}
+
+        <View accessibilityLiveRegion="polite">
+          {retour?.ok ? <Message>{t('app.terminal.reussite', { points: retour.points })}</Message> : null}
+          {retour && !retour.ok ? <Text style={styles.echec}>{retour.message}</Text> : null}
+        </View>
+
+        <View style={styles.actions}>
+          {retour?.ok && onSuivant ? <Bouton plein onPress={onSuivant}>{t('app.terminal.suivant')}</Bouton> : null}
+          {!retour?.ok ? <Bouton plein onPress={verifier}>{t('app.terminal.verifier')}</Bouton> : null}
+          {!retour?.ok && indices < INDICES_MAX ? <Bouton onPress={() => setIndices((n) => n + 1)}>{t('app.terminal.indice', { n: indices + 1, total: INDICES_MAX })}</Bouton> : null}
+          {!retour?.ok && indices === INDICES_MAX ? <Bouton onPress={() => setIndices(NIVEAU_REPONSE)}>{t('app.terminal.reponse')}</Bouton> : null}
+          <Bouton onPress={onRecommencer}>{t('app.terminal.recommencer')}</Bouton>
+        </View>
+      </ScrollView>
+
+      <View style={styles.cadre}>
+        <ScrollView ref={ecran} style={styles.terminal} onContentSizeChange={() => ecran.current?.scrollToEnd({ animated: false })} keyboardShouldPersistTaps="handled" accessibilityLiveRegion="polite">
+          {lignes.map((l, i) => (
+            <Text key={i} style={[styles.mono, l.type === 'erreur' && styles.monoErreur]} selectable>
+              {l.type === 'commande' ? <Text style={styles.monoInvite}>{`${l.invite} `}</Text> : null}
+              {l.texte}
+            </Text>
+          ))}
+          <View style={styles.saisie}>
+            <Text style={[styles.mono, styles.monoInvite]} numberOfLines={1}>{partie.invite}</Text>
+            <TextInput
+              value={saisie}
+              onChangeText={setSaisie}
+              onSubmitEditing={executer}
+              submitBehavior="submit"
+              returnKeyType="send"
+              autoCapitalize="none"
+              autoCorrect={false}
+              spellCheck={false}
+              style={[styles.mono, styles.champ]}
+              selectionColor={couleurs.reporte}
+              accessibilityLabel={t('app.terminal.saisie')}
+            />
+          </View>
+        </ScrollView>
+        <View style={styles.touches}>
+          {touches.map((touche) => (
+            <Pressable key={touche.libelle} onPress={touche.action} style={styles.touche} accessibilityRole="button" accessibilityLabel={touche.nom ?? touche.libelle}>
+              <Text style={styles.toucheTexte}>{touche.libelle}</Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+    </>
   );
 }
 
@@ -201,6 +211,7 @@ const styles = StyleSheet.create({
   pastilleActive: { borderColor: couleurs.lettre, backgroundColor: couleurs.cellule },
   pastilleTexte: { color: couleurs.lettreAttenuee, fontFamily: polices.panneauGras, fontSize: 15 },
   lampe: { width: 8, height: 8, borderRadius: 4, borderWidth: 1, borderColor: couleurs.filet },
+  lampeAllumee: { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours },
   defi: { flex: 1 },
   niveau: { color: couleurs.lettreAttenuee, fontFamily: polices.panneauGras, fontSize: 12, letterSpacing: 1.6, textTransform: 'uppercase' },
   titre: { color: couleurs.lettre, fontFamily: polices.panneauGras, fontSize: 24, letterSpacing: 0.6, textTransform: 'uppercase', marginTop: 4 },
