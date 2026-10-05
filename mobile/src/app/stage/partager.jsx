@@ -24,7 +24,7 @@ export default function PartagerStage() {
     if (!valide) return;
     setEtat({ envoi: true, message: '', ok: false });
     try {
-      await partagerStage({ ...champs, company_name: champs.company_name.trim(), description: champs.description.trim() });
+      await partagerStage({ ...champs, company_name: champs.company_name.trim(), description: champs.description.trim(), consent: true });
       setEtat({ envoi: false, message: t('app.stage.merci'), ok: true });
       setTimeout(() => router.back(), 1200);
     } catch {
