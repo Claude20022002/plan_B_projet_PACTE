@@ -82,6 +82,7 @@ const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
 const SallesDisponibles = lazy(() => import('./pages/SallesDisponibles'));
 const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
+const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -313,6 +314,11 @@ export default function App() {
           <Route path="/jeux/terminal-linux" element={
             <PrivateRoute>
               <AppPage><JeuTerminal /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/jeux/devoirs/:id" element={
+            <PrivateRoute requiredRole={['etudiant']}>
+              <AppPage><DevoirJouer /></AppPage>
             </PrivateRoute>
           } />
 

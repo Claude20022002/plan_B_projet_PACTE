@@ -93,6 +93,9 @@ export default function JeuTerminal() {
       if (retour) setRetour(null);
       return;
     }
+    // Sans défi dans l'adresse, le défi courant est « le premier non réussi » : on le fige avant
+    // d'enregistrer la réussite, sinon l'écran passerait au suivant sans montrer le résultat
+    if (!demande) setParams({ defi: defi.id }, { replace: true });
     const points = await enregistrer(defi.id, indices);
     setRetour({ ok: true, points, deja: reussis.has(defi.id) });
   };

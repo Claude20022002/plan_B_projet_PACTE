@@ -142,12 +142,12 @@ export default function Jeux() {
           <View>
             <Text style={styles.section} accessibilityRole="header">{t('app.jeux.derniersQuiz')}</Text>
             {historique.slice(0, 5).map((h) => (
-              <Pressable key={h.id} onPress={() => router.push(`/resultats/${h.id}`)} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${h.titre}, ${t('app.jeux.resumeQuiz', { score: h.score, rang: h.rang, total: h.nb_joueurs })}`}>
+              <Pressable key={h.id} onPress={() => router.push(`/resultats/${h.id}`)} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${h.titre}, ${t('app.jeux.resumeQuiz', { score: h.score, count: h.rang, ordinal: true, total: h.nb_joueurs })}`}>
                 <View style={[styles.lampe, h.rang <= 3 && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
                 <View style={styles.contenu}>
                   <Text style={styles.titre} numberOfLines={1}>{h.titre}</Text>
                   {h.module ? <Text style={styles.detail} numberOfLines={1}>{h.module.nom}</Text> : null}
-                  <Text style={styles.code}>{t('app.jeux.resumeQuiz', { score: h.score, rang: h.rang, total: h.nb_joueurs })}</Text>
+                  <Text style={styles.code}>{t('app.jeux.resumeQuiz', { score: h.score, count: h.rang, ordinal: true, total: h.nb_joueurs })}</Text>
                 </View>
                 <MaterialCommunityIcons name="chevron-right" size={22} color={couleurs.lettreAttenuee} />
               </Pressable>

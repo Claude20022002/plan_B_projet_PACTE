@@ -83,6 +83,8 @@ services:
       # OIDC_COOKIE_KEYS viennent de .env.docker
       OIDC_ISSUER: https://${SITE_ADDRESS}/api/oidc
       QUIZ_URL: https://${QUIZ_ADDRESS:?QUIZ_ADDRESS requis dans .env.docker}
+      # Devoirs notés : questions des quiz lues par le réseau interne (requêtes signées)
+      QUIZ_API_INTERNE: http://quiz-api
     ports:
       - "127.0.0.1:${BACKEND_PORT:-5000}:5000"   # le public passe par le frontend (nginx /api)
     depends_on:

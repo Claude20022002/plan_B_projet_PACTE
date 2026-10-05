@@ -92,7 +92,7 @@ export default function ResultatsQuiz({ idPartie, onClose }) {
               <Section titre={t('jeux.resultats.monScore')}>
                 <Box sx={{ display: 'flex', gap: 4, alignItems: 'baseline', flexWrap: 'wrap' }}>
                   <Capitales sx={{ fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{nombre(donnees.moi.score)} pts</Capitales>
-                  <Typography>{t('jeux.resultats.rang', { rang: donnees.moi.rang, total: p.nb_joueurs })}</Typography>
+                  <Typography>{t('jeux.resultats.rang', { count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}</Typography>
                   {p.nb_questions ? <Typography color="text.secondary">{t('jeux.resultats.bonnes', { bonnes: donnees.moi.bonnes, total: p.nb_questions })}</Typography> : null}
                 </Box>
               </Section>

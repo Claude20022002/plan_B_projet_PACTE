@@ -43,6 +43,7 @@ import pushTokenRoutes from "./routes/pushTokenRoutes.js";
 import oidcRoutes from "./routes/oidcRoutes.js";
 import quizRoutes, { webhookQuiz } from "./routes/quizRoutes.js";
 import jeuxRoutes from "./routes/jeuxRoutes.js";
+import devoirRoutes from "./routes/devoirRoutes.js";
 import { MONTAGE as OIDC_MONTAGE } from "./services/oidc/provider.js";
 
 // Import des middlewares
@@ -155,6 +156,7 @@ app.use("/api/preparation", preparationRoutes);
 app.use("/api/push-tokens", pushTokenRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/jeux", jeuxRoutes);
+app.use("/api/devoirs", devoirRoutes);
 
 app.get("/", (req, res) => {
     res.json({

@@ -611,6 +611,19 @@ export const quizAPI = {
     getResultats: (id) => request(`/quiz/parties/${encodeURIComponent(id)}/resultats`),
 };
 
+// ==================== DEVOIRS NOTÉS (quiz ClassQuiz corrigés par Planner) ====================
+export const devoirsAPI = {
+    // Étudiant : à rendre et rendus ; enseignant : devoirs donnés (rendus, moyenne)
+    lister: () => request('/devoirs'),
+    quizDisponibles: () => request('/devoirs/quiz-disponibles'),
+    // { quiz_id, id_cours, id_groupe?, date_limite }
+    creer: (donnees) => request('/devoirs', { method: 'POST', body: donnees }),
+    sujet: (id) => request(`/devoirs/${encodeURIComponent(id)}`),
+    rendre: (id, reponses) => request(`/devoirs/${encodeURIComponent(id)}/rendu`, { method: 'POST', body: { reponses } }),
+    resultats: (id) => request(`/devoirs/${encodeURIComponent(id)}/resultats`),
+    supprimer: (id) => request(`/devoirs/${encodeURIComponent(id)}`, { method: 'DELETE' }),
+};
+
 // ==================== JEUX INTÉGRÉS (terminal Linux…) ====================
 export const jeuxAPI = {
     // { jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] }

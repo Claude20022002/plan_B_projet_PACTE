@@ -212,7 +212,7 @@ export default function Jeux() {
                     h.terminee_le ? new Date(h.terminee_le).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }) : null,
                     enseignant
                       ? t('jeux.resultats.resumeEnseignant', { count: h.nb_joueurs ?? 0, moyenne: h.moyenne })
-                      : t('jeux.resultats.resumeEtudiant', { score: h.score, rang: h.rang, total: h.nb_joueurs }),
+                      : t('jeux.resultats.resumeEtudiant', { score: h.score, count: h.rang, ordinal: true, total: h.nb_joueurs }),
                   ]
                     .filter(Boolean)
                     .join(' · ')}

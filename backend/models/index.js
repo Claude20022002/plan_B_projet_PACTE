@@ -28,6 +28,8 @@ import PushToken from "./PushToken.js";
 import OidcPayload from "./OidcPayload.js";
 import QuizPartie from "./QuizPartie.js";
 import QuizResultat from "./QuizResultat.js";
+import Devoir from "./Devoir.js";
+import DevoirRendu from "./DevoirRendu.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
 import JeuProfil from "./JeuProfil.js";
@@ -502,6 +504,12 @@ QuizPartie.belongsTo(Users, { foreignKey: "id_user_enseignant", as: "enseignant"
 QuizPartie.hasMany(QuizResultat, { foreignKey: "id_quiz_partie", as: "resultats", onDelete: "CASCADE" });
 QuizResultat.belongsTo(QuizPartie, { foreignKey: "id_quiz_partie", as: "partie" });
 QuizResultat.belongsTo(Users, { foreignKey: "id_user", as: "joueur", targetKey: "id_user" });
+Devoir.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
+Devoir.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
+Devoir.belongsTo(Users, { foreignKey: "id_user_enseignant", as: "enseignant", targetKey: "id_user" });
+Devoir.hasMany(DevoirRendu, { foreignKey: "id_devoir", as: "rendus", onDelete: "CASCADE" });
+DevoirRendu.belongsTo(Devoir, { foreignKey: "id_devoir", as: "devoir" });
+DevoirRendu.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
 
 // Jeux intégrés : proposés dans un module, progression par joueur
 Cours.hasMany(JeuModule, { foreignKey: "id_cours", as: "jeux", onDelete: "CASCADE" });
@@ -565,6 +573,8 @@ export {
     OidcPayload,
     QuizPartie,
     QuizResultat,
+    Devoir,
+    DevoirRendu,
     JeuModule,
     JeuProgression,
     JeuProfil,

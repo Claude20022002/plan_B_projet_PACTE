@@ -20,7 +20,7 @@ const jeuOuErreur = (code) => {
 };
 
 /** Identifiants des groupes de l'étudiant et de leurs groupes parents (TP → TD → promotion). */
-const groupesDeLEtudiant = async (idUser) => {
+export const groupesDeLEtudiant = async (idUser) => {
     const directs = (await Appartenir.findAll({ where: { id_user_etudiant: idUser }, include: [{ model: Groupe, as: "groupe" }] }))
         .map((a) => a.groupe)
         .filter(Boolean);
@@ -186,6 +186,28 @@ export const retirerDuModule = async (user, code, idCours) => {
 };
 
 /**
+ * Groupes d'un module (ceux de ses enseignements) et leurs sous-groupes, et les étudiants qui y
+ * sont inscrits (les étudiants le sont dans les groupes les plus fins).
+ * @returns {{ groupes: number[], etudiants: number[] }}
+ */
+export const inscritsDuModule = async (idCours) => {
+    const enseignements = await Enseignement.findAll({
+        attributes: ["id_enseignement"],
+        include: [
+            { model: CoursComposante, as: "composante", attributes: [], where: { id_cours: idCours }, required: true },
+            { model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } },
+        ],
+    });
+    const vises = new Set(enseignements.flatMap((e) => e.groupes.map((g) => g.id_groupe)));
+    if (!vises.size) return { groupes: [], etudiants: [] };
+    const tous = await Groupe.findAll({ attributes: ["id_groupe", "id_groupe_parent", "id_filiere"] });
+    const parId = new Map(tous.map((g) => [g.id_groupe, g]));
+    const groupes = tous.filter((g) => vises.has(g.id_groupe) || ancetres(g, parId).some((a) => vises.has(a.id_groupe))).map((g) => g.id_groupe);
+    const inscrits = await Appartenir.findAll({ where: { id_groupe: groupes }, attributes: ["id_user_etudiant"] });
+    return { groupes, etudiants: [...new Set(inscrits.map((a) => a.id_user_etudiant))] };
+};
+
+/**
  * Suivi d'un module par son enseignant : progression des étudiants qui suivent ce module
  * (nom, prénom, personnage et points seulement), du plus avancé au moins avancé.
  */
@@ -194,22 +216,7 @@ export const suiviDuModule = async (user, code, idCours) => {
     const cours = await coursOuErreur(idCours);
     if (!(await peutProposerDansModule(user, cours))) throw new ErreurMetier("Suivi réservé aux enseignants du module", 403);
 
-    const enseignements = await Enseignement.findAll({
-        attributes: ["id_enseignement"],
-        include: [
-            { model: CoursComposante, as: "composante", attributes: [], where: { id_cours: cours.id_cours }, required: true },
-            { model: Groupe, as: "groupes", attributes: ["id_groupe"], through: { attributes: [] } },
-        ],
-    });
-    // Groupes du module et leurs sous-groupes : les étudiants sont inscrits dans les plus fins
-    const vises = new Set(enseignements.flatMap((e) => e.groupes.map((g) => g.id_groupe)));
-    if (!vises.size) return { module: { id_cours: cours.id_cours, code: cours.code_cours, nom: cours.nom_cours }, etudiants: [] };
-    const tous = await Groupe.findAll({ attributes: ["id_groupe", "id_groupe_parent", "id_filiere"] });
-    const parId = new Map(tous.map((g) => [g.id_groupe, g]));
-    const groupes = tous.filter((g) => vises.has(g.id_groupe) || ancetres(g, parId).some((a) => vises.has(a.id_groupe))).map((g) => g.id_groupe);
-
-    const inscrits = await Appartenir.findAll({ where: { id_groupe: groupes }, attributes: ["id_user_etudiant"] });
-    const ids = [...new Set(inscrits.map((a) => a.id_user_etudiant))];
+    const { etudiants: ids } = await inscritsDuModule(cours.id_cours);
     if (!ids.length) return { module: { id_cours: cours.id_cours, code: cours.code_cours, nom: cours.nom_cours }, etudiants: [] };
 
     const [etudiants, lignes, profils] = await Promise.all([

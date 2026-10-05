@@ -49,12 +49,12 @@ export default function Resultats() {
             </View>
 
             {donnees.moi ? (
-              <View style={styles.score} accessible accessibilityLabel={t('app.resultats.monScoreLu', { score: donnees.moi.score, rang: donnees.moi.rang, total: p.nb_joueurs })}>
+              <View style={styles.score} accessible accessibilityLabel={t('app.resultats.monScoreLu', { score: donnees.moi.score, count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}>
                 <Text style={styles.scoreValeur}>{nombre(donnees.moi.score)}</Text>
                 <Text style={styles.scoreUnite}>pts</Text>
                 <View style={{ flex: 1 }} />
                 <View style={{ alignItems: 'flex-end' }}>
-                  <Text style={styles.rang}>{t('app.resultats.rang', { rang: donnees.moi.rang, total: p.nb_joueurs })}</Text>
+                  <Text style={styles.rang}>{t('app.resultats.rang', { count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}</Text>
                   {p.nb_questions ? <Text style={styles.detail}>{t('app.resultats.bonnes', { bonnes: donnees.moi.bonnes, total: p.nb_questions })}</Text> : null}
                 </View>
               </View>

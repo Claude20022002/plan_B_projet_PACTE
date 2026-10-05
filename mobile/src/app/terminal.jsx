@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import Animated, { ZoomIn } from 'react-native-reanimated';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran from '../board/Ecran';
@@ -37,6 +38,7 @@ const partieNeuve = (cle) => ({ cle, lignes: [], saisie: '', indices: 0, retour:
 export default function Terminal() {
   const { couleurs } = useTheme();
   const styles = useStyles();
+  const marges = useSafeAreaInsets();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { utilisateur } = useAuth();
@@ -75,12 +77,17 @@ export default function Terminal() {
   const executer = async () => {
     const ligne = saisie;
     if (!ligne.trim()) return majPartie({ saisie: '' });
+    // Invite d'avant la commande (cd la change)
+    const invite = partie.invite;
     const r = partie.executer(ligne);
     const sorties = [];
     if (r.erreur) sorties.push({ type: 'erreur', texte: r.erreur.replace(/\n$/, '') });
     if (r.sortie) sorties.push({ type: 'sortie', texte: r.sortie.replace(/\n$/, '') });
-    majPartie((e) => ({ saisie: '', lignes: r.effacer ? sorties : [...e.lignes, { type: 'commande', invite: partie.invite, texte: ligne }, ...sorties].slice(-300) }));
+    majPartie((e) => ({ saisie: '', lignes: r.effacer ? sorties : [...e.lignes, { type: 'commande', invite, texte: ligne }, ...sorties].slice(-300) }));
     if (retour?.ok || !partie.verifier().ok) return undefined;
+    // Le défi courant est « le premier non réussi » tant qu'aucun n'est choisi : on le fige, sinon
+    // l'écran passerait au suivant dès la réussite sans montrer le personnage et les points
+    if (!choisi) setChoisi(defi.id);
     let points = reussis.get(defi.id)?.points ?? pointsPour(defi.xp, indices);
     if (!reussis.has(defi.id)) {
       try {
@@ -171,7 +178,8 @@ export default function Terminal() {
         </ScrollView>
 
         {/* Terminal */}
-        <View style={styles.cadre}>
+        {/* Les touches restent au-dessus de la barre de navigation du téléphone */}
+        <View style={[styles.cadre, { paddingBottom: marges.bottom + 6 }]}>
           <ScrollView ref={ecran} style={styles.terminal} onContentSizeChange={() => ecran.current?.scrollToEnd({ animated: false })} keyboardShouldPersistTaps="handled" accessibilityLiveRegion="polite">
             {lignes.map((l, i) => (
               <Text key={i} style={[styles.mono, l.type === 'erreur' && styles.monoErreur]} selectable>

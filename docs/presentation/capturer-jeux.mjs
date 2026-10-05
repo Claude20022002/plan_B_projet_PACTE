@@ -46,6 +46,23 @@ const photo = async (page, nom, attente = 1200) => {
 // ── Étudiant : scène du joueur, derniers quiz, résultats, terminal, sélecteur d'espaces
 {
     const s = await session(process.env.ETU_EMAIL, process.env.ETU_PASS, { video: "web-jeux-etudiant" });
+    // Le terminal d'abord : le défi en cours est résolu en vrai (Planner rejoue les commandes)
+    // Défi « Revenir d'un cran » : le terminal démarre dans ~/projects, la solution est « cd .. »
+    await s.page.goto(`${BASE}/jeux/terminal-linux?defi=navigation-02`, { waitUntil: "networkidle" });
+    const saisie = s.page.getByLabel("Commande").first();
+    const taper = async (commande, attente = 700) => {
+        await saisie.pressSequentially(commande, { delay: 90 });
+        await saisie.press("Enter");
+        await pause(attente);
+    };
+    // Des commandes qui n'atteignent pas encore l'objectif, puis celle qui le réussit
+    await taper("pwd");
+    await taper("ls -la");
+    await taper("cat README.md");
+    await photo(s.page, "web-18-terminal", 800);
+    await taper("cd ..", 300);
+    await photo(s.page, "web-18b-terminal-reussite", 1200);
+
     await s.page.goto(`${BASE}/jeux`, { waitUntil: "networkidle" });
     await photo(s.page, "web-16-jeux-etudiant", 2500);
 
@@ -58,14 +75,6 @@ const photo = async (page, nom, attente = 1200) => {
     await photo(s.page, "web-19-espaces", 1000);
     await s.page.keyboard.press("Escape");
 
-    await s.page.goto(`${BASE}/jeux/terminal-linux`, { waitUntil: "networkidle" });
-    const saisie = s.page.getByLabel("Commande").first();
-    for (const commande of ["pwd", "ls -la", "cd projects", "ls"]) {
-        await saisie.pressSequentially(commande, { delay: 70 });
-        await saisie.press("Enter");
-        await pause(500);
-    }
-    await photo(s.page, "web-18-terminal", 1200);
     await fermer(s);
 }
 
