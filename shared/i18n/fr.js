@@ -26,7 +26,8 @@ const partage = {
     floor: 'Étage {{floor}}',
     supports_one: 'Support du cours ({{count}})',
     supports_other: 'Supports du cours ({{count}})',
-    startsIn: 'Commence dans {{duration}}',
+    // duration vient de relativeTo, qui inclut déjà « dans » (« dans 20 heures »)
+    startsIn: 'Commence {{duration}}',
     endsIn: 'Se termine dans {{duration}}',
     startedAgo: 'En cours',
     noSessionsTitle: 'Aucune séance à venir',

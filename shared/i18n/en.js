@@ -26,7 +26,8 @@ const partage = {
     floor: 'Floor {{floor}}',
     supports_one: 'Course material ({{count}})',
     supports_other: 'Course materials ({{count}})',
-    startsIn: 'Starts in {{duration}}',
+    // duration comes from relativeTo, which already says « in » ("in 20 hours")
+    startsIn: 'Starts {{duration}}',
     endsIn: 'Ends in {{duration}}',
     startedAgo: 'In progress',
     noSessionsTitle: 'No upcoming sessions',
