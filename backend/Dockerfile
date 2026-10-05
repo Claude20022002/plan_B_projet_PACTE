@@ -24,6 +24,8 @@ RUN addgroup -S hestim && adduser -S hestim -G hestim
 # Copier les dépendances et le code en tant que root, puis changer le propriétaire
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
+# Code partagé avec le web et le mobile (contexte « shared » de docker-compose) : /app/../shared
+COPY --from=shared . /shared
 RUN rm -f .env && chown -R hestim:hestim /app
 
 # Basculer sur l'utilisateur non-root

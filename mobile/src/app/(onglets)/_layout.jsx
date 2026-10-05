@@ -6,10 +6,11 @@ import { useAuth } from '../../auth/AuthContext';
 import { couleurs, polices } from '../../theme';
 
 /**
- * Quatre onglets : Tableau · Semaine · Bibliothèque · Compte. Une icône par onglet, rien d'autre ;
+ * Cinq onglets : Tableau · Semaine · Jeux · Bibliothèque · Compte (Planner, les jeux et la
+ * bibliothèque à un geste : les espaces HESTIM de shared/espaces.js). Une icône par onglet, rien d'autre ;
  * onglet actif en couleur lettre avec une barre de 2 px, les autres atténués.
  */
-const ICONES = { index: 'view-dashboard-outline', semaine: 'calendar-week', bibliotheque: 'bookshelf', compte: 'account-circle-outline' };
+const ICONES = { index: 'view-dashboard-outline', semaine: 'calendar-week', jeux: 'gamepad-variant-outline', bibliotheque: 'bookshelf', compte: 'account-circle-outline' };
 
 export default function Onglets() {
   const { t } = useTranslation();
@@ -42,6 +43,7 @@ export default function Onglets() {
     >
       <Tabs.Screen name="index" options={options('index', t('app.onglets.tableau'))} />
       <Tabs.Screen name="semaine" options={options('semaine', t('app.onglets.semaine'))} />
+      <Tabs.Screen name="jeux" options={options('jeux', t('app.onglets.jeux'))} />
       <Tabs.Screen name="bibliotheque" options={options('bibliotheque', t('app.onglets.bibliotheque'))} />
       <Tabs.Screen name="compte" options={options('compte', t('app.onglets.compte'))} />
     </Tabs>

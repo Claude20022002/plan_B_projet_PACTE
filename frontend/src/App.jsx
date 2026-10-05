@@ -79,6 +79,8 @@ const Imprevus       = lazy(() => import('./pages/gestion/Imprevus'));
 const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
 const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
 const SallesDisponibles = lazy(() => import('./pages/SallesDisponibles'));
+const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
+const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -291,6 +293,18 @@ export default function App() {
           <Route path="/disponibilites" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><Disponibilites /></AppPage>
+            </PrivateRoute>
+          } />
+
+          {/* ── Jeux (tous les rôles) ─────────────────────────────────── */}
+          <Route path="/jeux" element={
+            <PrivateRoute>
+              <AppPage><Jeux /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/jeux/terminal-linux" element={
+            <PrivateRoute>
+              <AppPage><JeuTerminal /></AppPage>
             </PrivateRoute>
           } />
 

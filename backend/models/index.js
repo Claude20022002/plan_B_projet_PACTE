@@ -27,6 +27,8 @@ import RetourSeanceParticipation from "./RetourSeanceParticipation.js";
 import PushToken from "./PushToken.js";
 import OidcPayload from "./OidcPayload.js";
 import QuizPartie from "./QuizPartie.js";
+import JeuModule from "./JeuModule.js";
+import JeuProgression from "./JeuProgression.js";
 // Cycle volontaire : services/push.js n'utilise les modèles qu'à l'appel, jamais au chargement
 import { planifierPush } from "../services/push.js";
 import AuthSession from "./AuthSession.js";
@@ -495,6 +497,11 @@ PushToken.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_u
 QuizPartie.belongsTo(Affectation, { foreignKey: "id_affectation", as: "affectation" });
 QuizPartie.belongsTo(Users, { foreignKey: "id_user_enseignant", as: "enseignant", targetKey: "id_user" });
 
+// Jeux intégrés : proposés dans un module, progression par joueur
+Cours.hasMany(JeuModule, { foreignKey: "id_cours", as: "jeux", onDelete: "CASCADE" });
+JeuModule.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
+Users.hasMany(JeuProgression, { foreignKey: "id_user", as: "progressionsJeux", onDelete: "CASCADE" });
+
 // Push (D3) : chaque notification part aussi vers les appareils du destinataire, une fois validée
 // la transaction qui l'a créée (jamais pour un changement finalement annulé).
 Notification.afterCreate((notification, options) => {
@@ -549,4 +556,6 @@ export {
     PushToken,
     OidcPayload,
     QuizPartie,
+    JeuModule,
+    JeuProgression,
 };

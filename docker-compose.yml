@@ -56,6 +56,9 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+      # Catalogue et moteur des jeux communs avec le web et le mobile (backend/Dockerfile : COPY --from=shared)
+      additional_contexts:
+        shared: ./shared
     container_name: hestim_backend
     restart: unless-stopped
     env_file: .env.docker          # fichier dédié Docker (voir .env.docker.example)
