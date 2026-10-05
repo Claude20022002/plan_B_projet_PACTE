@@ -255,7 +255,7 @@ export default function Jeux() {
                   <LinearProgress
                     variant="determinate"
                     value={pourcentage}
-                    aria-label={t('jeux.progression', { reussis: p.reussis, total: p.total, points: p.points })}
+                    aria-label={t('jeux.progression', { count: p.reussis, total: p.total, points: p.points })}
                     sx={{ flex: 1, height: 4, borderRadius: '2px', bgcolor: ds.board.seam, '& .MuiLinearProgress-bar': { bgcolor: ds.board.letter } }}
                   />
                   <Capitales sx={{ fontSize: '0.8125rem', color: ds.board.letterDim, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>

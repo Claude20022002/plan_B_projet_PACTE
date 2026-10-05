@@ -360,7 +360,8 @@ export default function DashboardLayout({ children }) {
             )}
             <List disablePadding>
               {group.items.map((item) => {
-                const selected = location.pathname === item.path;
+                // Jeux : la rubrique reste active dans chaque jeu (/jeux/terminal-linux…)
+                const selected = location.pathname === item.path || (item.path === '/jeux' && location.pathname.startsWith('/jeux/'));
                 return (
                   <ListItemButton
                     key={item.path}

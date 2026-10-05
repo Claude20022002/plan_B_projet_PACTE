@@ -33,6 +33,15 @@ Points clés du métier :
   bloquées. Chaque génération crée une version que l'on peut réactiver.
 - **Connexion unique** : Planner est le fournisseur d'identité. StudyLib (la bibliothèque) et
   l'application mobile vérifient ses jetons avec sa clé publique.
+- **Espaces HESTIM** : Planner, Bibliothèque, Jeux et Quiz, dans le même ordre et sous les mêmes
+  noms partout ([`shared/espaces.js`](shared/espaces.js)). Sur le web (Planner, StudyLib, ClassQuiz),
+  le sélecteur d'espaces de la barre du haut mène à chacun en deux clics ; dans l'application,
+  Jeux et Bibliothèque sont des onglets.
+- **Jeux** : quiz en direct dans ClassQuiz (au thème HESTIM, fork `../ClassQuiz`), et jeux intégrés
+  à Planner, dont le **terminal Linux** : 66 défis joués dans un terminal simulé, repris de
+  [Terminal Quest](https://github.com/brunozapico/terminal_quest) (MIT) et traduits
+  ([`shared/terminal/`](shared/terminal)). Un enseignant propose un jeu dans ses modules et suit la
+  progression de ses étudiants. Quiz prêts à importer : [`deploy/quiz/`](deploy/quiz).
 
 ---
 
@@ -204,7 +213,7 @@ Les tests d'intégration attendent un MySQL de test, par exemple :
 | C | Connexion unique et intégration de StudyLib, passerelle HTTPS | ✅ |
 | D | Application mobile étudiant, notifications push | ✅ (essais sur téléphone à faire) |
 | F | Import des cours depuis Google Drive, avis de stage avec consentement | à faire |
-| Q | Jeux pédagogiques en classe (ClassQuiz) | à faire |
+| Q | Jeux pédagogiques : quiz en direct (ClassQuiz au thème HESTIM), terminal Linux, sélecteur d'espaces | en cours |
 | I | Appel par QR code, révisions espacées, exercices de code auto-corrigés | à faire |
 | G | Nettoyage du frontend, intégration continue, documentation de déploiement | à faire |
 
