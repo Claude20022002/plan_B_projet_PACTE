@@ -25,4 +25,5 @@ csrf_token=*
 # Fichiers système
 .DS_Store
 Thumbs.db
-studylib-drive-a32da7a10364
+google-drive.json
+StudyLib-*.json
