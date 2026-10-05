@@ -185,6 +185,8 @@ services:
       APP_KEY: ${STUDYLIB_APP_KEY:?STUDYLIB_APP_KEY requis dans .env.docker}
       APP_URL: https://${SITE_ADDRESS}/biblio
       ASSET_URL: /biblio
+      # Sélecteur d'espaces : lien vers les quiz (ClassQuiz) ; Planner et les Jeux sont sur la même origine
+      QUIZ_URL: https://${QUIZ_ADDRESS}
       LOG_CHANNEL: stderr
       DB_CONNECTION: mysql
       DB_HOST: mysql

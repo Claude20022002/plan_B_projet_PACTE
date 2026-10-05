@@ -15,6 +15,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './components/common/PrivateRoute';
+import VersTableau from './components/espaces/VersTableau';
 
 // ── Composants de layout critique (jamais lazy — trop fréquents) ──────────
 import PageSkeleton    from './components/common/PageSkeleton';
@@ -293,6 +294,13 @@ export default function App() {
           <Route path="/disponibilites" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><Disponibilites /></AppPage>
+            </PrivateRoute>
+          } />
+
+          {/* ── Entrée depuis les autres espaces (StudyLib, ClassQuiz) ──── */}
+          <Route path="/tableau" element={
+            <PrivateRoute>
+              <VersTableau />
             </PrivateRoute>
           } />
 

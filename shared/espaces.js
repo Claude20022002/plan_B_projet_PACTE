@@ -12,7 +12,8 @@ export const ESPACES = [
     icone: 'calendar',
     titre: { fr: 'Planner', en: 'Planner' },
     resume: { fr: 'Emploi du temps, séances, salles', en: 'Timetable, sessions, rooms' },
-    chemin: '/',
+    // Tableau du rôle connecté (redirection de Planner) : les autres espaces ne connaissent pas le rôle
+    chemin: '/tableau',
   },
   {
     code: 'bibliotheque',
