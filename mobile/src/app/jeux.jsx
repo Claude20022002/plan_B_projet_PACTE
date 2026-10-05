@@ -8,6 +8,9 @@ import Ecran, { Message } from '../board/Ecran';
 import { chargerPartiesQuiz } from '../api/donnees';
 import { CIBLE_TACTILE, couleurs, polices } from '../theme';
 
+// Lecture seule : le composant applique le résultat dans le .then (aucun état modifié ici)
+const lireParties = () => chargerPartiesQuiz().then((liste) => ({ liste }), () => ({ erreur: true }));
+
 /**
  * Jeux : parties ClassQuiz lancées pendant les séances de l'étudiant (ouvert depuis le Tableau
  * ou la notification « Quiz en cours »). Rejoindre ouvre la partie dans le navigateur intégré,
@@ -20,15 +23,14 @@ export default function Jeux() {
   const [etat, setEtat] = useState({ erreur: false, rafraichit: false });
 
   // L'état ne change qu'au retour des données (l'indicateur du geste est posé par onRefresh)
-  const charger = useCallback(async () => {
-    try {
-      setParties(await chargerPartiesQuiz());
-      setEtat({ erreur: false, rafraichit: false });
-    } catch {
-      setParties((p) => p ?? []);
-      setEtat({ erreur: true, rafraichit: false });
-    }
-  }, []);
+  const charger = useCallback(
+    () =>
+      lireParties().then(({ liste, erreur }) => {
+        setParties((p) => liste ?? p ?? []);
+        setEtat({ erreur: Boolean(erreur), rafraichit: false });
+      }),
+    []
+  );
 
   useEffect(() => {
     charger();

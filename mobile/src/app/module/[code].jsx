@@ -32,7 +32,7 @@ export default function Module() {
         setErreur(true);
       }
     })();
-  }, [code]);
+  }, [code, codeValide]);
 
   const ouvrir = async (doc) => {
     setOuverture(doc.id);

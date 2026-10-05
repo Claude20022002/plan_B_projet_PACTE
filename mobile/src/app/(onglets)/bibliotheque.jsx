@@ -8,6 +8,16 @@ import { CIBLE_TACTILE, couleurs, lineColor, polices } from '../../theme';
 
 const JOURS_MODULES = 42;
 
+/** Modules des six prochaines semaines, leurs supports, avis de stage et idées (lecture seule). */
+const lireBibliotheque = async () => {
+  const { seances } = await chargerSeances(new Date(), new Date(Date.now() + JOURS_MODULES * 864e5));
+  const parCode = new Map();
+  seances.forEach((s) => s.courseCode && !parCode.has(s.courseCode) && parCode.set(s.courseCode, { code: s.courseCode, nom: s.course, ligne: s.lineKey }));
+  const liste = [...parCode.values()].sort((a, b) => a.nom.localeCompare(b.nom));
+  const [supports, avis, idees] = await Promise.all([chargerSupports(liste.map((m) => m.code)), chargerAvisStage().catch(() => []), chargerIdeesProjet().catch(() => [])]);
+  return { liste, supports, avis, idees };
+};
+
 /**
  * Bibliothèque (StudyLib) : les modules suivis (tirés de l'emploi du temps des six prochaines
  * semaines) et leurs supports, puis les avis de stage et les idées de projets.
@@ -21,24 +31,20 @@ export default function Bibliotheque() {
   const [projets, setProjets] = useState([]);
   const [etat, setEtat] = useState({ chargement: true, indisponible: false, rafraichit: false });
 
-  const charger = useCallback(async ({ tire = false } = {}) => {
-    try {
-      const debut = new Date();
-      const fin = new Date(Date.now() + JOURS_MODULES * 864e5);
-      const { seances } = await chargerSeances(debut, fin);
-      const parCode = new Map();
-      seances.forEach((s) => s.courseCode && !parCode.has(s.courseCode) && parCode.set(s.courseCode, { code: s.courseCode, nom: s.course, ligne: s.lineKey }));
-      const liste = [...parCode.values()].sort((a, b) => a.nom.localeCompare(b.nom));
-      setModules(liste);
-      const [sup, avis, idees] = await Promise.all([chargerSupports(liste.map((m) => m.code)), chargerAvisStage().catch(() => []), chargerIdeesProjet().catch(() => [])]);
-      setSupports(sup);
-      setStages(avis.slice(0, 5));
-      setProjets(idees.slice(0, 5));
-      setEtat({ chargement: false, indisponible: false, rafraichit: false });
-    } catch {
-      setEtat({ chargement: false, indisponible: true, rafraichit: false });
-    }
-  }, []);
+  const charger = useCallback(
+    () =>
+      lireBibliotheque().then(
+        ({ liste, supports: sup, avis, idees }) => {
+          setModules(liste);
+          setSupports(sup);
+          setStages(avis.slice(0, 5));
+          setProjets(idees.slice(0, 5));
+          setEtat({ chargement: false, indisponible: false, rafraichit: false });
+        },
+        () => setEtat({ chargement: false, indisponible: true, rafraichit: false })
+      ),
+    []
+  );
 
   useEffect(() => {
     charger();

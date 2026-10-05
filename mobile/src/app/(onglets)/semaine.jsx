@@ -20,7 +20,20 @@ const decaler = (date, jours) => {
   d.setDate(d.getDate() + jours);
   return d;
 };
+const AUCUNE = [];
 const reviver = (s) => ({ ...s, start: s.start ? new Date(s.start) : null, end: s.end ? new Date(s.end) : null });
+
+/** Séances de la semaine ; à défaut, la dernière copie en cache (lecture seule). */
+const lireSemaine = async (lundi, cle) => {
+  try {
+    const { seances } = await chargerSeances(lundi, decaler(lundi, 5));
+    ecrireCache(cle, seances);
+    return { cle, seances, erreur: false };
+  } catch {
+    const cache = await lireCache(cle);
+    return { cle, seances: cache ? cache.donnees.map(reviver) : [], erreur: !cache };
+  }
+};
 
 /** Semaine : une section par jour, du lundi au samedi, et navigation de semaine en semaine. */
 export default function Semaine() {
@@ -31,22 +44,16 @@ export default function Semaine() {
   const [resultat, setResultat] = useState({ cle: null, seances: [], erreur: false });
   const [rafraichit, setRafraichit] = useState(false);
   const aJour = resultat.cle === cle;
-  const seances = aJour ? resultat.seances : [];
+  // Tableau vide stable entre deux rendus (dépendance des mémos ci-dessous)
+  const seances = aJour ? resultat.seances : AUCUNE;
   const etat = { chargement: !aJour, erreur: aJour && resultat.erreur, rafraichit };
 
   const charger = useCallback(
-    async () => {
-      try {
-        const { seances: lues } = await chargerSeances(lundi, decaler(lundi, 5));
-        setResultat({ cle, seances: lues, erreur: false });
-        ecrireCache(cle, lues);
-      } catch {
-        const cache = await lireCache(cle);
-        setResultat({ cle, seances: cache ? cache.donnees.map(reviver) : [], erreur: !cache });
-      } finally {
+    () =>
+      lireSemaine(lundi, cle).then((lu) => {
+        setResultat(lu);
         setRafraichit(false);
-      }
-    },
+      }),
     [lundi, cle]
   );
 

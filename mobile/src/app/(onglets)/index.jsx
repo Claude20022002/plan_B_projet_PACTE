@@ -19,6 +19,28 @@ const heure = (iso) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digi
 // Les dates reviennent du cache en texte : on refait des objets Date
 const reviver = (s) => ({ ...s, start: s.start ? new Date(s.start) : null, end: s.end ? new Date(s.end) : null });
 
+/**
+ * Séances et alertes du tableau ; en cas d'échec, la dernière copie en cache (lecture seule).
+ * Retourne de quoi mettre l'écran à jour en une fois.
+ */
+const lireTableau = async (utilisateur, silencieux) => {
+  try {
+    const [{ seances }, alertes] = await Promise.all([chargerTableau(HORIZON_TABLEAU_JOURS), utilisateur ? chargerAlertes(utilisateur.id_user).catch(() => []) : []]);
+    const le = new Date();
+    ecrireCache('tableau', { seances, alertes }, le);
+    return { seances, alertes, le, etat: { chargement: false, erreur: false, horsLigne: false, le: le.toISOString(), rafraichit: false } };
+  } catch (erreur) {
+    const cache = await lireCache('tableau');
+    const horsLigne = erreur instanceof ErreurApi && erreur.code === 'RESEAU';
+    return {
+      seances: cache ? cache.donnees.seances.map(reviver) : null,
+      alertes: cache ? cache.donnees.alertes || [] : null,
+      le: new Date(),
+      etat: { chargement: false, erreur: !cache && !silencieux, horsLigne: Boolean(cache) && horsLigne, le: cache?.le ?? null, rafraichit: false },
+    };
+  }
+};
+
 /** Tableau : prochaine séance, aujourd'hui et le prochain jour de cours, changements récents. */
 export default function Tableau() {
   const { t, i18n } = useTranslation();
@@ -31,26 +53,13 @@ export default function Tableau() {
   const [maintenant, setMaintenant] = useState(new Date());
 
   const charger = useCallback(
-    async ({ silencieux = false } = {}) => {
-      try {
-        const [{ seances: lues }, nonLues] = await Promise.all([chargerTableau(HORIZON_TABLEAU_JOURS), utilisateur ? chargerAlertes(utilisateur.id_user).catch(() => []) : []]);
-        setSeances(lues);
-        setAlertes(nonLues);
-        const le = new Date();
-        setMaintenant(le);
-        setEtat({ chargement: false, erreur: false, horsLigne: false, le: le.toISOString(), rafraichit: false });
-        ecrireCache('tableau', { seances: lues, alertes: nonLues }, le);
-      } catch (erreur) {
-        const cache = await lireCache('tableau');
-        if (cache) {
-          setSeances(cache.donnees.seances.map(reviver));
-          setAlertes(cache.donnees.alertes || []);
-        }
-        setMaintenant(new Date());
-        const horsLigne = erreur instanceof ErreurApi && erreur.code === 'RESEAU';
-        setEtat({ chargement: false, erreur: !cache && !silencieux, horsLigne: Boolean(cache) && horsLigne, le: cache?.le ?? null, rafraichit: false });
-      }
-    },
+    ({ silencieux = false } = {}) =>
+      lireTableau(utilisateur, silencieux).then((lu) => {
+        if (lu.seances) setSeances(lu.seances);
+        if (lu.alertes) setAlertes(lu.alertes);
+        setMaintenant(lu.le);
+        setEtat(lu.etat);
+      }),
     [utilisateur]
   );
 
