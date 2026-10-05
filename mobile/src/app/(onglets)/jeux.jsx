@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
 import { useAuth } from '../../auth/AuthContext';
-import { chargerAccueilJeux, chargerConfigQuiz, chargerHistoriqueQuiz, chargerPartiesQuiz, choisirAvatar } from '../../api/donnees';
+import { chargerAccueilJeux, chargerConfigQuiz, chargerDevoirs, chargerHistoriqueQuiz, chargerPartiesQuiz, choisirAvatar } from '../../api/donnees';
 import ChoixPersonnage from '../../jeux/ChoixPersonnage';
 import Personnage from '../../jeux/Personnage';
 import Scene from '../../jeux/Scene';
@@ -19,11 +19,12 @@ const ECRAN_JEU = { 'terminal-linux': '/terminal' };
 
 // Lecture seule : le composant applique le résultat dans le .then (aucun état modifié ici)
 const lireTout = () =>
-  Promise.allSettled([chargerPartiesQuiz(), chargerAccueilJeux(), chargerConfigQuiz(), chargerHistoriqueQuiz()]).then(([parties, accueil, config, historique]) => ({
+  Promise.allSettled([chargerPartiesQuiz(), chargerAccueilJeux(), chargerConfigQuiz(), chargerHistoriqueQuiz(), chargerDevoirs()]).then(([parties, accueil, config, historique, devoirs]) => ({
     parties: parties.status === 'fulfilled' ? parties.value : null,
     accueil: accueil.status === 'fulfilled' ? accueil.value : null,
     config: config.status === 'fulfilled' ? config.value : null,
     historique: historique.status === 'fulfilled' ? historique.value : null,
+    devoirs: devoirs.status === 'fulfilled' ? devoirs.value : null,
     erreur: accueil.status === 'rejected',
   }));
 
@@ -46,7 +47,7 @@ export default function Jeux() {
   const charger = useCallback(
     () =>
       lireTout().then((d) => {
-        setDonnees((avant) => ({ ...d, parties: d.parties ?? avant?.parties ?? [], accueil: d.accueil ?? avant?.accueil ?? null, historique: d.historique ?? avant?.historique ?? [] }));
+        setDonnees((avant) => ({ ...d, parties: d.parties ?? avant?.parties ?? [], accueil: d.accueil ?? avant?.accueil ?? null, historique: d.historique ?? avant?.historique ?? [], devoirs: d.devoirs ?? avant?.devoirs ?? [] }));
         setRafraichit(false);
       }),
     []
@@ -69,6 +70,8 @@ export default function Jeux() {
   // La partie se joue dans l'application (écran /quiz, page de ClassQuiz intégrée)
   const ouvrir = (url) => router.push({ pathname: '/quiz', params: { url } });
   const historique = donnees?.historique ?? [];
+  const devoirs = donnees?.devoirs ?? [];
+  const dateCourte = (iso) => new Date(iso).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   const choisir = (nouvel) => {
     const avant = avatar;
@@ -134,6 +137,28 @@ export default function Jeux() {
                 ) : null}
               </View>
             ) : null}
+          </View>
+        ) : null}
+
+        {/* Devoirs notés : à rendre d'abord, puis les notes */}
+        {devoirs.length ? (
+          <View>
+            <Text style={styles.section} accessibilityRole="header">{t('app.jeux.devoirs')}</Text>
+            {devoirs.map((dv) => {
+              const aRendre = dv.ouvert && !dv.rendu;
+              const etat = dv.rendu ? t('app.devoirs.note', { note: dv.rendu.note }) : aRendre ? t('app.devoirs.avant', { date: dateCourte(dv.date_limite) }) : t('app.devoirs.nonRendu');
+              return (
+                <Pressable key={dv.id} onPress={() => router.push(`/devoir/${dv.id}`)} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${dv.titre}, ${etat}`}>
+                  <View style={[styles.lampe, aRendre && { backgroundColor: couleurs.reporte, borderColor: couleurs.reporte }, dv.rendu && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
+                  <View style={styles.contenu}>
+                    <Text style={styles.titre} numberOfLines={1}>{dv.titre}</Text>
+                    {dv.module ? <Text style={styles.detail} numberOfLines={1}>{dv.module.nom}</Text> : null}
+                    <Text style={[styles.code, aRendre && { color: couleurs.reporte }]}>{etat}</Text>
+                  </View>
+                  <MaterialCommunityIcons name="chevron-right" size={22} color={couleurs.lettreAttenuee} />
+                </Pressable>
+              );
+            })}
           </View>
         ) : null}
 

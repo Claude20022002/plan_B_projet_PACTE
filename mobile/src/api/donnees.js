@@ -80,6 +80,17 @@ export const chargerConfigQuiz = () => planner('/quiz/config');
 /** Mes derniers scores : [{ id, titre, score, rang, nb_joueurs, module }] */
 export const chargerHistoriqueQuiz = async () => (await planner('/quiz/parties/historique')).data || [];
 
+// ── Devoirs notés (quiz ClassQuiz corrigés par Planner) ───────────────────
+
+/** Mes devoirs : [{ id, titre, module, date_limite, ouvert, rendu: { note } | null }] */
+export const chargerDevoirs = async () => (await planner('/devoirs')).data || [];
+
+/** Sujet sans les réponses ; correction après la date limite : { devoir, questions, rendu } */
+export const chargerDevoir = (id) => planner(`/devoirs/${encodeURIComponent(id)}`);
+
+/** Rendre ma copie (une réponse par question) : { note, bonnes, notees } */
+export const rendreDevoir = (id, reponses) => planner(`/devoirs/${encodeURIComponent(id)}/rendu`, { method: 'POST', body: { reponses } });
+
 /** Résultats d'une partie : { partie, classement (podium), moi, equipes, nuages } */
 export const chargerResultatsQuiz = (id) => planner(`/quiz/parties/${encodeURIComponent(id)}/resultats`);
 
