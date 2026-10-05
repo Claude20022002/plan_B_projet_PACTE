@@ -21,10 +21,10 @@ test('parties en cours : lien https gardé, lien non sécurisé écarté', async
 
 
 /** Jeux intégrés : appels à Planner (le serveur calcule les points) et moteur partagé. */
-test('réussite d’un défi : POST sur le bon défi, avec le nombre d’indices seulement', async () => {
+test('réussite d’un défi : POST sur le bon défi, avec les indices et les commandes à rejouer', async () => {
   planner.mockResolvedValueOnce({ cree: true, points: 80 });
-  const r = await enregistrerReussite('terminal-linux', 'navigation-01', 1);
-  expect(planner).toHaveBeenLastCalledWith('/jeux/terminal-linux/defis/navigation-01/reussite', { method: 'POST', body: { indices: 1 } });
+  const r = await enregistrerReussite('terminal-linux', 'navigation-01', 1, ['cd projects']);
+  expect(planner).toHaveBeenLastCalledWith('/jeux/terminal-linux/defis/navigation-01/reussite', { method: 'POST', body: { indices: 1, commandes: ['cd projects'] } });
   expect(r.points).toBe(80);
 });
 
