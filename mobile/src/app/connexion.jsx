@@ -3,12 +3,13 @@ import { ActivityIndicator, Image, KeyboardAvoidingView, Platform, Pressable, Te
 import { Redirect } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { StatusBar } from 'expo-status-bar';
 import { ErreurConnexion, useAuth } from '../auth/AuthContext';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
 
 /** Panneau de connexion : logo, email, mot de passe. Les comptes viennent de l'administration. */
 export default function Connexion() {
-  const { couleurs } = useTheme();
+  const { couleurs, sombre } = useTheme();
   const styles = useStyles();
   const { t } = useTranslation();
   const { etat, connexion } = useAuth();
@@ -37,6 +38,8 @@ export default function Connexion() {
 
   return (
     <KeyboardAvoidingView style={[styles.ecran, { paddingTop: marges.top + 32 }]} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+      {/* Pas de barre de titre ici : la barre d'état se lit sur le sol */}
+      <StatusBar style={sombre ? 'light' : 'dark'} />
       <View style={styles.entete}>
         <Image source={require('../../assets/logo.png')} style={styles.logo} accessibilityIgnoresInvertColors accessibilityLabel="HESTIM" />
         <Text style={styles.nom} accessibilityRole="header">
