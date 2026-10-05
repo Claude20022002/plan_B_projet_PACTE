@@ -183,7 +183,7 @@ export const resoudreConflitsObsoletes = async (idAffectation, transaction) => {
 };
 
 /** Étudiants concernés : ceux du groupe et de ses sous-groupes (un étudiant est inscrit dans son groupe le plus fin). */
-const groupesANotifier = async (idsGroupes) => {
+export const groupesANotifier = async (idsGroupes) => {
     const ids = new Set();
     for (const id of idsGroupes) {
         const groupe = await Groupe.findByPk(id);

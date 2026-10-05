@@ -26,6 +26,7 @@ import RetourSeance from "./RetourSeance.js";
 import RetourSeanceParticipation from "./RetourSeanceParticipation.js";
 import PushToken from "./PushToken.js";
 import OidcPayload from "./OidcPayload.js";
+import QuizPartie from "./QuizPartie.js";
 // Cycle volontaire : services/push.js n'utilise les modèles qu'à l'appel, jamais au chargement
 import { planifierPush } from "../services/push.js";
 import AuthSession from "./AuthSession.js";
@@ -491,6 +492,8 @@ RetourSeance.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance"
 // Appareils de l'application mobile (D3)
 Users.hasMany(PushToken, { foreignKey: "id_user", as: "pushTokens", onDelete: "CASCADE" });
 PushToken.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
+QuizPartie.belongsTo(Affectation, { foreignKey: "id_affectation", as: "affectation" });
+QuizPartie.belongsTo(Users, { foreignKey: "id_user_enseignant", as: "enseignant", targetKey: "id_user" });
 
 // Push (D3) : chaque notification part aussi vers les appareils du destinataire, une fois validée
 // la transaction qui l'a créée (jamais pour un changement finalement annulé).
@@ -545,4 +548,5 @@ export {
     RetourSeanceParticipation,
     PushToken,
     OidcPayload,
+    QuizPartie,
 };
