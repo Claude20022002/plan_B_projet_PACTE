@@ -23,6 +23,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau';
 import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
+import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -50,6 +51,8 @@ export default function Jeux() {
   const [erreur, setErreur] = useState(false);
   const [quiz, setQuiz] = useState({ config: null, parties: [] });
   const [suivi, setSuivi] = useState(null); // { module, etudiants } | { chargement: true }
+  const [historique, setHistorique] = useState([]);
+  const [resultats, setResultats] = useState(null); // id de la partie affichée
 
   const charger = useCallback(() => {
     jeuxAPI
@@ -69,6 +72,7 @@ export default function Jeux() {
   useEffect(() => {
     let actif = true;
     quizAPI.getConfig().then((config) => actif && setQuiz((q) => ({ ...q, config }))).catch(() => {});
+    quizAPI.getHistorique().then((r) => actif && setHistorique(r?.data ?? [])).catch(() => {});
     const lireParties = () =>
       quizAPI
         .getPartiesEnCours()
@@ -188,6 +192,36 @@ export default function Jeux() {
           </Panneau>
         )}
 
+        {/* ── Quiz terminés : résultats, défi par équipes, nuages de mots ── */}
+        {historique.length > 0 && (
+          <Panneau titre={t(enseignant ? 'jeux.resultats.historiqueEnseignant' : 'jeux.resultats.historique')} titreId="historique-titre">
+            {historique.slice(0, 8).map((h, i) => (
+              <LignePanneau
+                key={h.id}
+                premier={i === 0}
+                action={
+                  <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(h.id)}>
+                    {t('jeux.resultats.voir')}
+                  </Button>
+                }
+              >
+                <Box sx={{ fontWeight: 600 }}>{h.titre}</Box>
+                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
+                  {[
+                    h.module?.nom,
+                    h.terminee_le ? new Date(h.terminee_le).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }) : null,
+                    enseignant
+                      ? t('jeux.resultats.resumeEnseignant', { count: h.nb_joueurs ?? 0, moyenne: h.moyenne })
+                      : t('jeux.resultats.resumeEtudiant', { score: h.score, rang: h.rang, total: h.nb_joueurs }),
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </Box>
+              </LignePanneau>
+            ))}
+          </Panneau>
+        )}
+
         {/* ── Jeux de mes modules ─────────────────────────────────────── */}
         {(enseignant || modules.length > 0) && (
           <Panneau titre={t(enseignant ? 'jeux.modules.titreEnseignant' : 'jeux.modules.titre')} titreId="modules-titre">
@@ -291,6 +325,8 @@ export default function Jeux() {
           </LignePanneau>
         </Panneau>
       </Box>
+
+      <ResultatsQuiz idPartie={resultats} onClose={() => setResultats(null)} />
 
       <Dialog open={Boolean(suivi)} onClose={() => setSuivi(null)} fullWidth maxWidth="sm">
         <DialogTitle>{t('jeux.modules.suiviTitre', { module: suivi?.module ? `${suivi.module.code} · ${suivi.module.nom}` : '' })}</DialogTitle>

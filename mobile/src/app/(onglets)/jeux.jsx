@@ -5,8 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
 import { useAuth } from '../../auth/AuthContext';
-import { chargerAccueilJeux, chargerConfigQuiz, chargerPartiesQuiz, choisirAvatar } from '../../api/donnees';
-import { ouvrirAdresse } from '../../espaces/ouvrir';
+import { chargerAccueilJeux, chargerConfigQuiz, chargerHistoriqueQuiz, chargerPartiesQuiz, choisirAvatar } from '../../api/donnees';
 import ChoixPersonnage from '../../jeux/ChoixPersonnage';
 import Personnage from '../../jeux/Personnage';
 import Scene from '../../jeux/Scene';
@@ -20,10 +19,11 @@ const ECRAN_JEU = { 'terminal-linux': '/terminal' };
 
 // Lecture seule : le composant applique le résultat dans le .then (aucun état modifié ici)
 const lireTout = () =>
-  Promise.allSettled([chargerPartiesQuiz(), chargerAccueilJeux(), chargerConfigQuiz()]).then(([parties, accueil, config]) => ({
+  Promise.allSettled([chargerPartiesQuiz(), chargerAccueilJeux(), chargerConfigQuiz(), chargerHistoriqueQuiz()]).then(([parties, accueil, config, historique]) => ({
     parties: parties.status === 'fulfilled' ? parties.value : null,
     accueil: accueil.status === 'fulfilled' ? accueil.value : null,
     config: config.status === 'fulfilled' ? config.value : null,
+    historique: historique.status === 'fulfilled' ? historique.value : null,
     erreur: accueil.status === 'rejected',
   }));
 
@@ -46,7 +46,7 @@ export default function Jeux() {
   const charger = useCallback(
     () =>
       lireTout().then((d) => {
-        setDonnees((avant) => ({ ...d, parties: d.parties ?? avant?.parties ?? [], accueil: d.accueil ?? avant?.accueil ?? null }));
+        setDonnees((avant) => ({ ...d, parties: d.parties ?? avant?.parties ?? [], accueil: d.accueil ?? avant?.accueil ?? null, historique: d.historique ?? avant?.historique ?? [] }));
         setRafraichit(false);
       }),
     []
@@ -66,7 +66,9 @@ export default function Jeux() {
   const avatar = avatarChoisi ?? donnees?.accueil?.profil?.avatar;
   const titreJeu = (code) => libelle(jeux.find((j) => j.code === code)?.titre, i18n.language) || code;
   const total = jeux.reduce((somme, j) => ({ points: somme.points + j.progression.points, reussis: somme.reussis + j.progression.reussis }), { points: 0, reussis: 0 });
-  const ouvrir = (url) => ouvrirAdresse(url, couleurs);
+  // La partie se joue dans l'application (écran /quiz, page de ClassQuiz intégrée)
+  const ouvrir = (url) => router.push({ pathname: '/quiz', params: { url } });
+  const historique = donnees?.historique ?? [];
 
   const choisir = (nouvel) => {
     const avant = avatar;
@@ -132,6 +134,24 @@ export default function Jeux() {
                 ) : null}
               </View>
             ) : null}
+          </View>
+        ) : null}
+
+        {/* Mes derniers quiz : score, rang, équipes et nuages */}
+        {historique.length ? (
+          <View>
+            <Text style={styles.section} accessibilityRole="header">{t('app.jeux.derniersQuiz')}</Text>
+            {historique.slice(0, 5).map((h) => (
+              <Pressable key={h.id} onPress={() => router.push(`/resultats/${h.id}`)} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${h.titre}, ${t('app.jeux.resumeQuiz', { score: h.score, rang: h.rang, total: h.nb_joueurs })}`}>
+                <View style={[styles.lampe, h.rang <= 3 && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
+                <View style={styles.contenu}>
+                  <Text style={styles.titre} numberOfLines={1}>{h.titre}</Text>
+                  {h.module ? <Text style={styles.detail} numberOfLines={1}>{h.module.nom}</Text> : null}
+                  <Text style={styles.code}>{t('app.jeux.resumeQuiz', { score: h.score, rang: h.rang, total: h.nb_joueurs })}</Text>
+                </View>
+                <MaterialCommunityIcons name="chevron-right" size={22} color={couleurs.lettreAttenuee} />
+              </Pressable>
+            ))}
           </View>
         ) : null}
 

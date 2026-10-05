@@ -2,7 +2,7 @@ jest.mock('expo-secure-store', () => ({ WHEN_UNLOCKED_THIS_DEVICE_ONLY: 'u', get
 jest.mock('../src/api/client', () => ({ planner: jest.fn(), biblio: jest.fn() }));
 
 import { planner } from '../src/api/client';
-import { chargerAccueilJeux, chargerPartiesQuiz, enregistrerReussite } from '../src/api/donnees';
+import { chargerAccueilJeux, chargerHistoriqueQuiz, chargerPartiesQuiz, chargerResultatsQuiz, enregistrerReussite } from '../src/api/donnees';
 import { PartieTerminal, defisLinux } from '../../shared/terminal/jeu.js';
 
 /** Parties ClassQuiz proposées à l'étudiant : seuls les liens https sont gardés. */
@@ -40,4 +40,13 @@ test('le moteur du terminal partagé tourne dans l’application (défi résolu 
   for (const ligne of defi.solution.split('\n')) partie.executer(ligne);
   expect(partie.verifier().ok).toBe(true);
   expect(partie.invite).toBe('mintsa@hestim-lab:~ $');
+});
+
+test('quiz terminés : mes scores et les résultats d’une partie depuis Planner', async () => {
+  planner.mockResolvedValueOnce({ data: [{ id: 7, titre: 'Spark', score: 2400, rang: 2, nb_joueurs: 6 }] });
+  expect(await chargerHistoriqueQuiz()).toEqual([{ id: 7, titre: 'Spark', score: 2400, rang: 2, nb_joueurs: 6 }]);
+  expect(planner).toHaveBeenLastCalledWith('/quiz/parties/historique');
+  planner.mockResolvedValueOnce({ partie: { id: 7 }, classement: [], moi: null, equipes: [], nuages: [] });
+  await chargerResultatsQuiz(7);
+  expect(planner).toHaveBeenLastCalledWith('/quiz/parties/7/resultats');
 });

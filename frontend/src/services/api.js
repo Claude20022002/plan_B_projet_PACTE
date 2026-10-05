@@ -605,6 +605,10 @@ export const quizAPI = {
     // { actif, url, peutLancer } : où envoyer l'enseignant pour lancer une partie
     getConfig: () => request('/quiz/config'),
     getPartiesEnCours: () => request('/quiz/parties/en-cours'),
+    // Parties terminées (enseignant) ou mes scores (étudiant)
+    getHistorique: () => request('/quiz/parties/historique'),
+    // { partie, classement, moi, equipes, nuages }
+    getResultats: (id) => request(`/quiz/parties/${encodeURIComponent(id)}/resultats`),
 };
 
 // ==================== JEUX INTÉGRÉS (terminal Linux…) ====================

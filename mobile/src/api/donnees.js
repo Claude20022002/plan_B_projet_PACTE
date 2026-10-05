@@ -77,6 +77,12 @@ export const chargerPartiesQuiz = async () => {
 /** Adresse de ClassQuiz et droit de lancer une partie ({ actif, url, peutLancer }) */
 export const chargerConfigQuiz = () => planner('/quiz/config');
 
+/** Mes derniers scores : [{ id, titre, score, rang, nb_joueurs, module }] */
+export const chargerHistoriqueQuiz = async () => (await planner('/quiz/parties/historique')).data || [];
+
+/** Résultats d'une partie : { partie, classement (podium), moi, equipes, nuages } */
+export const chargerResultatsQuiz = (id) => planner(`/quiz/parties/${encodeURIComponent(id)}/resultats`);
+
 // ── Jeux intégrés (terminal Linux…) ───────────────────────────────────────
 
 /** { profil: { avatar }, jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] } */

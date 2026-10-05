@@ -13,6 +13,12 @@ const QuizPartie = sequelize.define(
         id_user_enseignant: { type: DataTypes.INTEGER, allowNull: false },
         id_affectation: { type: DataTypes.INTEGER, allowNull: true },
         demarree_le: { type: DataTypes.DATE, allowNull: false },
+        // Fin de partie (webhook game.finished)
+        terminee_le: { type: DataTypes.DATE, allowNull: true },
+        nb_questions: { type: DataTypes.INTEGER, allowNull: true },
+        nb_joueurs: { type: DataTypes.INTEGER, allowNull: true },
+        // Réponses libres regroupées : [{ index, question, mots: [{ texte, nombre }] }]
+        nuages: { type: DataTypes.JSON, allowNull: true },
     },
     { tableName: "QuizParties", freezeTableName: true }
 );
