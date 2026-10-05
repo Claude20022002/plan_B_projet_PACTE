@@ -56,10 +56,12 @@ import { LocalLibrary,
   Schedule,
   School,
   Search,
+  SportsEsports,
   ViewWeek,
   WarningAmber,
 } from '@mui/icons-material';
 import GlobalSearch from '../common/GlobalSearch';
+import SelecteurEspaces from '../espaces/SelecteurEspaces';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { notificationAPI } from '../../services/api';
@@ -90,6 +92,7 @@ const navigationFor = (user) => {
           { key: 'nav.tracking', icon: <Timeline />, path: '/gestion/suivi' },
           { key: 'nav.monthly', icon: <Print />, path: '/emploi-du-temps/mensuel' },
           { key: 'nav.statistics', icon: <Insights />, path: '/statistiques' },
+          { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
         ],
       },
       {
@@ -136,6 +139,8 @@ const navigationFor = (user) => {
           { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
           { key: 'nav.availableRooms', icon: <MeetingRoom />, path: '/salles-disponibles' },
           { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
+        { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
+          { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
         ],
       },
     ];
@@ -163,6 +168,7 @@ const navigationFor = (user) => {
         { key: 'nav.monthly', icon: <Print />, path: '/emploi-du-temps/mensuel' },
         { key: 'nav.myExams', icon: <FactCheck />, path: '/mes-examens' },
         { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
+        { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
       ],
     },
   ];
@@ -221,6 +227,8 @@ const TITLE_KEYS = {
   '/salles-disponibles': 'nav.availableRooms',
   '/emploi-du-temps/enseignant': 'nav.timetable',
   '/emploi-du-temps/etudiant': 'nav.timetable',
+  '/jeux': 'nav.games',
+  '/jeux/terminal-linux': 'nav.games',
 };
 
 function LanguageSwitch({ onDark = false }) {
@@ -482,6 +490,7 @@ export default function DashboardLayout({ children }) {
             >
               {title}
             </Typography>
+            <SelecteurEspaces role={role} />
             {role === 'admin' && (
               <Tooltip title={t('nav.search')}>
                 <IconButton onClick={() => setSearchOpen(true)} aria-label={t('nav.search')} sx={{ color: 'inherit' }}>

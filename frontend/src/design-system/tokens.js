@@ -58,6 +58,8 @@ export const ds = {
     // Une seule famille : Barlow (signalétique) — condensée pour le panneau et les en-têtes
     board: '"Barlow Condensed", "Arial Narrow", sans-serif',
     body: '"Barlow", "Segoe UI", system-ui, sans-serif',
+    // Terminal des jeux : la seule exception à Barlow, un terminal se lit à chasse fixe
+    mono: 'ui-monospace, "Cascadia Mono", "Segoe UI Mono", Consolas, "Liberation Mono", monospace',
   },
 
   radius: {
