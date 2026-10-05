@@ -24,6 +24,11 @@ const defaults = {
     // Vides : aucun email ne peut partir pendant les tests
     SMTP_USER: "",
     EMAIL_USER: "",
+    // Vides : intégrations désactivées sauf dans les tests qui les configurent (pas celles du .env local)
+    INTEGRATION_TOKEN: "",
+    CLASSQUIZ_OIDC_CLIENT_SECRET: "",
+    QUIZ_URL: "",
+    OIDC_COOKIE_KEYS: "",
 };
 
 for (const [key, value] of Object.entries(defaults)) {
