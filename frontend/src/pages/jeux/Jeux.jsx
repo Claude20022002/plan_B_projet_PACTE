@@ -21,7 +21,8 @@ import {
 } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
-import Panneau, { Capitales, LignePanneau, boutonPanneau, boutonPanneauPlein } from '../../components/jeux/Panneau';
+import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau';
+import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { jeuxAPI, quizAPI } from '../../services/api';

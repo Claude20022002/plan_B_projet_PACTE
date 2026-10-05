@@ -73,3 +73,18 @@ export const chargerPartiesQuiz = async () => {
   const reponse = await planner('/quiz/parties/en-cours');
   return (reponse.data || []).filter((p) => typeof p.url !== 'string' || /^https:\/\//.test(p.url));
 };
+
+/** Adresse de ClassQuiz et droit de lancer une partie ({ actif, url, peutLancer }) */
+export const chargerConfigQuiz = () => planner('/quiz/config');
+
+// ── Jeux intégrés (terminal Linux…) ───────────────────────────────────────
+
+/** { jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] } */
+export const chargerAccueilJeux = () => planner('/jeux');
+
+/** Défis réussis dans un jeu : { reussis, total, points, defis: [{ id, points, indices }] } */
+export const chargerProgressionJeu = (code) => planner(`/jeux/${encodeURIComponent(code)}/progression`);
+
+/** Enregistre une réussite ; le serveur calcule les points selon les indices utilisés */
+export const enregistrerReussite = (code, idDefi, indices) =>
+  planner(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices } });
