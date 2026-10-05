@@ -49,7 +49,7 @@ services:
       - "172.17.0.1:8090:80"
     volumes:
       - ./deploy/vps/Caddyfile.vps:/etc/caddy/Caddyfile:ro
-    mem_limit: 64m
+    mem_limit: 128m
 
   studylib:
     build: !reset null
@@ -97,7 +97,7 @@ services:
     mem_limit: 320m
 
   quiz-worker:
-    mem_limit: 192m
+    mem_limit: 256m
 
   quiz-frontend:
     build: !reset null

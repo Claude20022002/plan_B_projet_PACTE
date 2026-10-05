@@ -3,10 +3,15 @@
 //   HESTIM_URL, ADMIN_EMAIL, ADMIN_PASS, PROF_EMAIL, PROF_PASS, ETU_EMAIL, ETU_PASS
 // Lancement (depuis frontend/, où Playwright est installé) : node ../docs/presentation/capturer-web.mjs
 import { mkdirSync, renameSync } from "fs";
-import { chromium } from "playwright";
+import { createRequire } from "module";
+import { fileURLToPath } from "url";
+
+// Playwright est installé dans frontend/ (lancer le script depuis ce dossier)
+const { chromium } = createRequire(`${process.cwd()}/`)("@playwright/test");
 
 const BASE = process.env.HESTIM_URL || "https://planner.finadmintech.fr";
-const SORTIE = new URL("./captures/", import.meta.url).pathname.replace(/^\/([A-Z]:)/, "$1");
+// fileURLToPath : décode les espaces du chemin (« Github Project »), qu'URL.pathname laisse en %20
+const SORTIE = fileURLToPath(new URL("./captures/", import.meta.url)).replaceAll("\\", "/");
 mkdirSync(`${SORTIE}video`, { recursive: true });
 const TAILLE = { width: 1920, height: 1080 };
 const pause = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -68,6 +73,22 @@ const photo = async (page, nom, chemin, attente = 1500) => {
     await pause(3500);
     await photo(s.page, "web-04-tableau-enseignant", null, 500);
     await photo(s.page, "web-05-mes-services", "/mes-services", 2000);
+    // ClassQuiz : connexion unique de bout en bout (déjà connecté à Planner → aucun mot de passe)
+    const quiz = BASE.replace("://planner.", "://quiz.");
+    await s.page.goto(`${quiz}/account/login`, { waitUntil: "networkidle" });
+    await photo(s.page, "web-14-classquiz-connexion", null, 1200);
+    const bouton = s.page.locator('a[href="/api/v1/users/oauth/custom/login"]').first();
+    if (await bouton.count()) {
+        // Planner → retour sur ClassQuiz (/oauth/custom/auth), qui renvoie vers le tableau de bord
+        const retour = s.page.waitForResponse((r) => r.url().includes("/api/v1/users/oauth/custom/auth"), { timeout: 30000 });
+        await bouton.click();
+        await retour;
+        await s.page.waitForURL((u) => u.pathname.startsWith("/dashboard"), { timeout: 30000 });
+        await s.page.waitForLoadState("networkidle");
+        await photo(s.page, "web-15-classquiz-dashboard", null, 2000);
+    } else {
+        console.log("  (bouton « HESTIM Planner » introuvable sur la page de connexion ClassQuiz)");
+    }
     await fermer(s);
 }
 
@@ -84,16 +105,6 @@ const photo = async (page, nom, chemin, attente = 1500) => {
     // Bibliothèque StudyLib (connexion unique : même session)
     await photo(s.page, "web-13-bibliotheque", "/biblio/documents", 3500);
     await fermer(s);
-}
-
-// ── ClassQuiz (sous-domaine quiz.) : page d'accueil et connexion « HESTIM Planner »
-{
-    const contexte = await navigateur.newContext({ viewport: TAILLE, locale: "fr-FR", colorScheme: "dark" });
-    const page = await contexte.newPage();
-    const quiz = BASE.replace("://planner.", "://quiz.");
-    await page.goto(`${quiz}/account/login`, { waitUntil: "networkidle" });
-    await photo(page, "web-14-classquiz-connexion", null, 1500);
-    await contexte.close();
 }
 
 await navigateur.close();
