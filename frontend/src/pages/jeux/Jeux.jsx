@@ -22,6 +22,7 @@ import {
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau';
+import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -83,6 +84,17 @@ export default function Jeux() {
 
   const jouer = (jeu) => navigate(`/jeux/${jeu}`);
 
+  const choisirAvatar = async (avatar) => {
+    const avant = accueil?.profil;
+    setAccueil((a) => ({ ...a, profil: { avatar } }));
+    try {
+      await jeuxAPI.choisirAvatar(avatar);
+    } catch (e) {
+      setAccueil((a) => ({ ...a, profil: avant }));
+      toast.error(e?.message || t('jeux.erreurAction'));
+    }
+  };
+
   const basculer = async (module, code) => {
     const propose = module.jeux.includes(code);
     try {
@@ -122,6 +134,9 @@ export default function Jeux() {
       )}
 
       <Box sx={{ display: 'grid', gap: 2.5 }}>
+        {/* ── Le joueur dans sa scène (personnage et décor repris de CatéGO) ── */}
+        {accueil && <SceneJoueur user={user} profil={accueil.profil} jeux={accueil.jeux} onChoisir={choisirAvatar} />}
+
         {/* ── Quiz en direct (ClassQuiz) ─────────────────────────────── */}
         {urlQuiz && (
           <Panneau
@@ -294,7 +309,12 @@ export default function Jeux() {
               <TableBody>
                 {suivi.etudiants.map((e) => (
                   <TableRow key={e.id_user}>
-                    <TableCell>{e.prenom} {e.nom}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                        <Personnage avatar={e.avatar} idUser={e.id_user} taille={32} />
+                        {e.prenom} {e.nom}
+                      </Box>
+                    </TableCell>
                     <TableCell align="right">{e.reussis}/{e.total}</TableCell>
                     <TableCell align="right">{e.points}</TableCell>
                   </TableRow>

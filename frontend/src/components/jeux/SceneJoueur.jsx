@@ -5,7 +5,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import { ds } from '../../design-system/tokens';
 import { AVATARS, avatarDe } from '../../../../shared/jeux/avatars.js';
 import { Capitales } from './Panneau';
-import { boutonPanneau } from './styles';
 
 /**
  * Personnages et décor des jeux (Kenney, CC0, repris de CatéGO : public/img/jeux). Le décor est
@@ -130,9 +129,7 @@ export default function SceneJoueur({ user, profil, jeux, onChoisir }) {
           </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOuvert(false)} sx={boutonPanneau.color ? undefined : undefined}>
-            {t('common.close')}
-          </Button>
+          <Button onClick={() => setOuvert(false)}>{t('common.close')}</Button>
         </DialogActions>
       </Dialog>
     </Box>

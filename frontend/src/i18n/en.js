@@ -417,6 +417,15 @@ const en = {
     source: 'Based on {{nom}} by {{auteur}} ({{licence}} licence).',
     voirSource: 'View source',
     bientot: 'More games are coming for other modules: SQL, Git, networks…',
+    joueur: {
+      titre: 'Your player',
+      changer: 'Change character',
+      personnage: 'Your character',
+      personnageN: 'Character {{n}}',
+      defisReussis_one: '{{count}} challenge solved',
+      defisReussis_other: '{{count}} challenges solved',
+      credit: 'Characters and scenery: Kenney (kenney.nl), public domain.',
+    },
     quiz: {
       titre: 'Live quizzes',
       enCours: 'Live',

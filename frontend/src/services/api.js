@@ -611,6 +611,8 @@ export const quizAPI = {
 export const jeuxAPI = {
     // { jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] }
     getAccueil: () => request('/jeux'),
+    // Personnage du joueur (shared/jeux/avatars.js)
+    choisirAvatar: (avatar) => request('/jeux/profil', { method: 'PUT', body: { avatar } }),
     getProgression: (code) => request(`/jeux/${encodeURIComponent(code)}/progression`),
     // commandes : les lignes tapées depuis le début de la partie, rejouées par le serveur
     reussir: (code, idDefi, indices, commandes) =>
