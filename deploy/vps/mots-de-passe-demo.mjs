@@ -24,8 +24,8 @@ await Users.update({ password_hash: await hashPassword(aleatoire()) }, { where: 
 const lignes = [`# Comptes de démonstration HESTIM (${new Date().toISOString()}) — à garder pour soi`];
 for (const [role, user] of demo) {
     const motDePasse = aleatoire();
-    // L'admin choisit son propre mot de passe à la première connexion
-    await user.update({ password_hash: await hashPassword(motDePasse), must_change_password: role === "admin" });
+    // Mot de passe fort et connu de root seul : pas de changement imposé (captures de démonstration)
+    await user.update({ password_hash: await hashPassword(motDePasse), must_change_password: false });
     lignes.push(`${role.padEnd(10)} ${user.email}  ${motDePasse}`);
 }
 await AuthSession.destroy({ where: {} });
