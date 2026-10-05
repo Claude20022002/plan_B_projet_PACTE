@@ -40,6 +40,8 @@ import suiviRoutes from "./routes/suiviRoutes.js";
 import preparationRoutes from "./routes/preparationRoutes.js";
 import integrationRoutes from "./routes/integrationRoutes.js";
 import pushTokenRoutes from "./routes/pushTokenRoutes.js";
+import oidcRoutes from "./routes/oidcRoutes.js";
+import { MONTAGE as OIDC_MONTAGE } from "./services/oidc/provider.js";
 
 // Import des middlewares
 import {
@@ -87,6 +89,10 @@ app.use(
         credentials: true,
     })
 );
+
+// Fournisseur OpenID Connect (ClassQuiz) : avant les lecteurs de corps, qu'oidc-provider gère
+// lui-même ; hors CSRF (le client s'authentifie par son secret sur /token)
+app.use(OIDC_MONTAGE, apiRateLimiter, oidcRoutes);
 
 // Body parser - Augmenter la limite pour permettre l'upload d'images en base64
 app.use(express.json({ limit: "10mb" }));
