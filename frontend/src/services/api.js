@@ -402,6 +402,9 @@ export const conflitAPI = {
 
 // ==================== EMPLOIS DU TEMPS ====================
 export const emploiDuTempsAPI = {
+    // Étudiant connecté : séances de ses groupes ET de leurs parents (CM de la promotion),
+    // mutualisations comprises ; 62 jours au plus par appel (voir utils/mesSeances.js)
+    getMoi: ({ du, au }) => request(`/emplois-du-temps/moi?du=${du}&au=${au}`),
     getByEnseignant: (id, params) => {
         const query = new URLSearchParams(params).toString();
         return request(`/emplois-du-temps/enseignant/${id}${query ? `?${query}` : ''}`);

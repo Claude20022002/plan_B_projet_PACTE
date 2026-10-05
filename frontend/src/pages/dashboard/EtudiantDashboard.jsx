@@ -5,10 +5,11 @@ import { Alert, Box, Button, Typography, useMediaQuery } from '@mui/material';
 import { ViewWeek } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { affectationAPI, etudiantAPI, notificationAPI } from '../../services/api';
+import { etudiantAPI, notificationAPI } from '../../services/api';
 import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
 import ChangesList from '../../design-system/board/ChangesList';
-import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
+import { byStart, findSpotlight, toBoardSession } from '../../utils/session';
+import { chargerMesSeances } from '../../utils/mesSeances';
 import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
 import RetourSeanceCard from '../../components/planning/RetourSeanceCard';
@@ -51,14 +52,9 @@ export default function EtudiantDashboard() {
         return;
       }
 
-      const from = new Date();
-      const to = new Date(Date.now() + HORIZON_DAYS * 86400000);
-      const data = await affectationAPI.getByGroupe(idGroupe, {
-        date_from: toLocalISODate(from),
-        date_to: toLocalISODate(to),
-        limit: 200,
-      });
-      setSessions((data?.data || []).map(toBoardSession).sort(byStart));
+      // Séances du groupe ET des groupes parents (CM de la promotion), comme sur le mobile
+      const { seances } = await chargerMesSeances(new Date(), new Date(Date.now() + HORIZON_DAYS * 86400000));
+      setSessions(seances.map(toBoardSession).sort(byStart));
     } catch {
       setError(true);
     } finally {

@@ -4,7 +4,7 @@ import { Alert, Button } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetable';
 import TimetableExportMenu from '../../components/emploi-du-temps/TimetableExportMenu';
-import { affectationAPI, etudiantAPI } from '../../services/api';
+import { chargerMesSeances } from '../../utils/mesSeances';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function EmploiDuTempsEtudiant() {
@@ -17,10 +17,10 @@ export default function EmploiDuTempsEtudiant() {
     if (!user?.id_user) return;
     setError(false);
     try {
-      const etudiant = await etudiantAPI.getById(user.id_user);
-      if (!etudiant?.id_groupe) return;
-      const response = await affectationAPI.getByGroupe(etudiant.id_groupe, { limit: 1000 });
-      setAffectations(response?.data || []);
+      // Le semestre autour d'aujourd'hui : séances du groupe et des groupes parents (CM de promotion)
+      const aujourdhui = new Date();
+      const { seances } = await chargerMesSeances(new Date(aujourdhui.getTime() - 60 * 86400000), new Date(aujourdhui.getTime() + 180 * 86400000));
+      setAffectations(seances);
     } catch {
       setError(true);
     }
