@@ -31,14 +31,13 @@ export default function Tableau() {
   const [maintenant, setMaintenant] = useState(new Date());
 
   const charger = useCallback(
-    async ({ silencieux = false, tire = false } = {}) => {
-      if (tire) setEtat((e) => ({ ...e, rafraichit: true }));
-      setMaintenant(new Date());
+    async ({ silencieux = false } = {}) => {
       try {
         const [{ seances: lues }, nonLues] = await Promise.all([chargerTableau(HORIZON_TABLEAU_JOURS), utilisateur ? chargerAlertes(utilisateur.id_user).catch(() => []) : []]);
         setSeances(lues);
         setAlertes(nonLues);
         const le = new Date();
+        setMaintenant(le);
         setEtat({ chargement: false, erreur: false, horsLigne: false, le: le.toISOString(), rafraichit: false });
         ecrireCache('tableau', { seances: lues, alertes: nonLues }, le);
       } catch (erreur) {
@@ -47,6 +46,7 @@ export default function Tableau() {
           setSeances(cache.donnees.seances.map(reviver));
           setAlertes(cache.donnees.alertes || []);
         }
+        setMaintenant(new Date());
         const horsLigne = erreur instanceof ErreurApi && erreur.code === 'RESEAU';
         setEtat({ chargement: false, erreur: !cache && !silencieux, horsLigne: Boolean(cache) && horsLigne, le: cache?.le ?? null, rafraichit: false });
       }
@@ -95,7 +95,7 @@ export default function Tableau() {
 
   return (
     <Ecran titre={t('board.title')} droite={cloche}>
-      <ScrollView refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => charger({ tire: true })} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
+      <ScrollView refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => { setEtat((e) => ({ ...e, rafraichit: true })); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
         {etat.le ? <Message discret>{t(etat.horsLigne ? 'app.tableau.horsLigne' : 'app.tableau.misAJour', { heure: heure(etat.le) })}</Message> : null}
         {etat.erreur ? (
           <View>

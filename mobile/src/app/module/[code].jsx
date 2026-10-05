@@ -17,11 +17,13 @@ export default function Module() {
   const router = useRouter();
   const { code } = useLocalSearchParams();
   const [documents, setDocuments] = useState(null);
-  const [erreur, setErreur] = useState(false);
+  const codeValide = typeof code === 'string' && CODE.test(code);
+  const [erreurChargement, setErreur] = useState(false);
+  const erreur = !codeValide || erreurChargement;
   const [ouverture, setOuverture] = useState(null);
 
   useEffect(() => {
-    if (typeof code !== 'string' || !CODE.test(code)) return setErreur(true);
+    if (!codeValide) return;
     (async () => {
       try {
         const module = (await chargerSupports([code]))[code];

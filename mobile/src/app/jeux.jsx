@@ -19,8 +19,8 @@ export default function Jeux() {
   const [parties, setParties] = useState(null);
   const [etat, setEtat] = useState({ erreur: false, rafraichit: false });
 
-  const charger = useCallback(async ({ tire = false } = {}) => {
-    setEtat((e) => ({ ...e, rafraichit: tire }));
+  // L'état ne change qu'au retour des données (l'indicateur du geste est posé par onRefresh)
+  const charger = useCallback(async () => {
     try {
       setParties(await chargerPartiesQuiz());
       setEtat({ erreur: false, rafraichit: false });
@@ -51,7 +51,7 @@ export default function Jeux() {
       <FlatList
         data={parties ?? []}
         keyExtractor={(p) => String(p.id)}
-        refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => charger({ tire: true })} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}
+        refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => { setEtat((e) => ({ ...e, rafraichit: true })); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}
         ListHeaderComponent={etat.erreur ? <Message>{t('app.jeux.erreur')}</Message> : null}
         ListEmptyComponent={parties ? <Message>{t('app.jeux.vide')}</Message> : <Message discret>{t('app.commun.chargement')}</Message>}
         renderItem={({ item: p }) => (

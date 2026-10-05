@@ -26,30 +26,31 @@ const reviver = (s) => ({ ...s, start: s.start ? new Date(s.start) : null, end: 
 export default function Semaine() {
   const { t, i18n } = useTranslation();
   const [lundi, setLundi] = useState(() => lundiDe(new Date()));
-  const [seances, setSeances] = useState([]);
-  const [etat, setEtat] = useState({ chargement: true, erreur: false, rafraichit: false });
   const cle = `semaine.${toLocalISODate(lundi)}`;
+  // Résultat de la dernière lecture, avec la semaine qu'il concerne
+  const [resultat, setResultat] = useState({ cle: null, seances: [], erreur: false });
+  const [rafraichit, setRafraichit] = useState(false);
+  const aJour = resultat.cle === cle;
+  const seances = aJour ? resultat.seances : [];
+  const etat = { chargement: !aJour, erreur: aJour && resultat.erreur, rafraichit };
 
   const charger = useCallback(
-    async ({ tire = false } = {}) => {
-      if (tire) setEtat((e) => ({ ...e, rafraichit: true }));
+    async () => {
       try {
         const { seances: lues } = await chargerSeances(lundi, decaler(lundi, 5));
-        setSeances(lues);
-        setEtat({ chargement: false, erreur: false, rafraichit: false });
+        setResultat({ cle, seances: lues, erreur: false });
         ecrireCache(cle, lues);
       } catch {
         const cache = await lireCache(cle);
-        if (cache) setSeances(cache.donnees.map(reviver));
-        setEtat({ chargement: false, erreur: !cache, rafraichit: false });
+        setResultat({ cle, seances: cache ? cache.donnees.map(reviver) : [], erreur: !cache });
+      } finally {
+        setRafraichit(false);
       }
     },
     [lundi, cle]
   );
 
   useEffect(() => {
-    setSeances([]);
-    setEtat({ chargement: true, erreur: false, rafraichit: false });
     charger();
   }, [charger]);
   useRafraichissement(charger);
@@ -84,7 +85,7 @@ export default function Semaine() {
         renderItem={({ item }) => <DepartureRow seance={item} />}
         renderSectionHeader={({ section }) => <Text style={styles.jour}>{section.title}</Text>}
         stickySectionHeadersEnabled
-        refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => charger({ tire: true })} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}
+        refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => { setRafraichit(true); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}
         ListEmptyComponent={!etat.chargement ? <Message>{t(etat.erreur ? 'app.tableau.erreur' : 'app.semaine.vide')}</Message> : null}
       />
     </Ecran>

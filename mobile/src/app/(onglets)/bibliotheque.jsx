@@ -22,7 +22,6 @@ export default function Bibliotheque() {
   const [etat, setEtat] = useState({ chargement: true, indisponible: false, rafraichit: false });
 
   const charger = useCallback(async ({ tire = false } = {}) => {
-    if (tire) setEtat((e) => ({ ...e, rafraichit: true }));
     try {
       const debut = new Date();
       const fin = new Date(Date.now() + JOURS_MODULES * 864e5);
@@ -47,7 +46,7 @@ export default function Bibliotheque() {
 
   return (
     <Ecran titre={t('app.onglets.bibliotheque')}>
-      <ScrollView refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => charger({ tire: true })} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
+      <ScrollView refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => { setEtat((e) => ({ ...e, rafraichit: true })); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
         {etat.indisponible ? <Message>{t('app.bibliotheque.indisponible')}</Message> : null}
 
         <Text style={styles.section}>{t('app.bibliotheque.mesModules')}</Text>
