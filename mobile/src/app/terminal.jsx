@@ -81,21 +81,32 @@ export default function Terminal() {
     if (r.sortie) sorties.push({ type: 'sortie', texte: r.sortie.replace(/\n$/, '') });
     majPartie((e) => ({ saisie: '', lignes: r.effacer ? sorties : [...e.lignes, { type: 'commande', invite: partie.invite, texte: ligne }, ...sorties].slice(-300) }));
     if (retour?.ok || !partie.verifier().ok) return undefined;
-    let points = reussis.get(defi.id)?.points ?? pointsPour(defi.xp, indices);
-    if (!reussis.has(defi.id)) {
-      try {
-        points = (await enregistrerReussite(CODE, defi.id, indices, [...partie.historique])).points;
-        setReussis((m) => new Map(m).set(defi.id, { id: defi.id, points }));
-      } catch {
-        // Hors ligne : la réussite est affichée, elle sera enregistrée en rejouant le défi
+    return reussir();
+  };
+
+  /**
+   * Objectif atteint à l'écran : Planner rejoue la partie et enregistre la réussite. S'il répond
+   * par une erreur (objectif non atteint de son côté, session expirée…), la réussite n'est pas
+   * affichée ; seule une coupure réseau (statut 0) la laisse à l'écran, marquée non enregistrée.
+   */
+  const reussir = async () => {
+    if (reussis.has(defi.id)) return majPartie({ retour: { ok: true, points: reussis.get(defi.id).points } });
+    try {
+      const { points } = await enregistrerReussite(CODE, defi.id, indices, [...partie.historique]);
+      setReussis((m) => new Map(m).set(defi.id, { id: defi.id, points }));
+      return majPartie({ retour: { ok: true, points } });
+    } catch (erreur) {
+      if (erreur?.statut) {
+        return majPartie({ retour: { ok: false, message: erreur.statut === 422 ? t('app.terminal.refus') : erreur.message } });
       }
+      return majPartie({ retour: { ok: true, points: pointsPour(defi.xp, indices), horsLigne: true } });
     }
-    return majPartie({ retour: { ok: true, points } });
   };
 
   const verifier = () => {
     const v = partie.verifier();
-    majPartie({ retour: v.ok ? { ok: true, points: reussis.get(defi.id)?.points ?? pointsPour(defi.xp, indices) } : { ok: false, message: v.message } });
+    if (v.ok) return reussir();
+    return majPartie({ retour: { ok: false, message: v.message } });
   };
 
   const toucher = (touche) => {
@@ -153,6 +164,7 @@ export default function Terminal() {
               <View style={{ flex: 1 }}>
                 <Text style={styles.victoireTitre}>{t('app.terminal.bravo')}</Text>
                 <Text style={styles.victoirePoints}>{t('app.terminal.plusPoints', { points: retour.points })}</Text>
+                {retour.horsLigne ? <Text style={styles.indice}>{t('app.terminal.nonEnregistre')}</Text> : null}
               </View>
             </Animated.View>
           ) : null}
