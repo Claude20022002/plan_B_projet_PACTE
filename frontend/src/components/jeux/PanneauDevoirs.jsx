@@ -218,7 +218,8 @@ export default function PanneauDevoirs({ enseignant, modules }) {
             <LignePanneau
               key={d.id}
               premier={i === 0}
-              lampe={aRendre ? ds.board.delayed : d.rendu || (enseignant && d.rendus) ? ds.board.live : null}
+              // Orange réservé aux reports : un devoir à rendre s'allume en blanc
+              lampe={aRendre ? ds.board.letter : d.rendu || (enseignant && d.rendus) ? ds.board.live : null}
               action={
                 enseignant ? (
                   <Box sx={{ display: 'flex', gap: 1 }}>
@@ -236,7 +237,7 @@ export default function PanneauDevoirs({ enseignant, modules }) {
               <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
                 {[d.module?.nom, d.ouvert ? t('jeux.devoirs.avant', { date: date(d.date_limite) }) : t('jeux.devoirs.closLe', { date: date(d.date_limite) })].filter(Boolean).join(' · ')}
               </Box>
-              <Capitales sx={{ display: 'block', mt: 0.5, fontSize: '0.875rem', color: aRendre ? ds.board.delayed : ds.board.letter }}>
+              <Capitales sx={{ display: 'block', mt: 0.5, fontSize: '0.875rem', color: ds.board.letter }}>
                 {enseignant
                   ? t('jeux.devoirs.resumeEnseignant', { count: d.rendus, moyenne: d.moyenne === null ? '—' : d.moyenne.toLocaleString(i18n.language) })
                   : d.rendu

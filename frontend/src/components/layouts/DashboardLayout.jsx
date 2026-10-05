@@ -311,7 +311,8 @@ export default function DashboardLayout({ children }) {
     setDrawerOpen(false);
   };
 
-  const title = t(TITLE_KEYS[location.pathname] || 'app.name');
+  // Pages des jeux (/jeux/devoirs/12…) : titre de l'espace Jeux
+  const title = t(TITLE_KEYS[location.pathname] || (location.pathname.startsWith('/jeux/') ? 'nav.games' : 'app.name'));
   const initials = `${user?.prenom?.[0] || ''}${user?.nom?.[0] || ''}`.toUpperCase();
 
   const rail = (

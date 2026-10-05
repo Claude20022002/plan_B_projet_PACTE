@@ -149,11 +149,11 @@ export default function Jeux() {
               const etat = dv.rendu ? t('app.devoirs.note', { note: dv.rendu.note }) : aRendre ? t('app.devoirs.avant', { date: dateCourte(dv.date_limite) }) : t('app.devoirs.nonRendu');
               return (
                 <Pressable key={dv.id} onPress={() => router.push(`/devoir/${dv.id}`)} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${dv.titre}, ${etat}`}>
-                  <View style={[styles.lampe, aRendre && { backgroundColor: couleurs.reporte, borderColor: couleurs.reporte }, dv.rendu && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
+                  <View style={[styles.lampe, aRendre && { backgroundColor: couleurs.lettre, borderColor: couleurs.lettre }, dv.rendu && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
                   <View style={styles.contenu}>
                     <Text style={styles.titre} numberOfLines={1}>{dv.titre}</Text>
                     {dv.module ? <Text style={styles.detail} numberOfLines={1}>{dv.module.nom}</Text> : null}
-                    <Text style={[styles.code, aRendre && { color: couleurs.reporte }]}>{etat}</Text>
+                    <Text style={[styles.code, aRendre && { color: couleurs.lettre }]}>{etat}</Text>
                   </View>
                   <MaterialCommunityIcons name="chevron-right" size={22} color={couleurs.lettreAttenuee} />
                 </Pressable>

@@ -34,6 +34,17 @@ Tu es motion designer et développeur Remotion. Réalise une vidéo de présenta
 | `mobile-01-tableau.png` + `video/mobile-tableau.mp4` | application mobile : prochaine séance, salle en grand, « Supports du cours (8) », « Quiz en cours » |
 | `mobile-02-semaine.png`, `mobile-03-bibliotheque.png` | semaine ; bibliothèque (documents par module) |
 | `mobile-04-jeux.png`, `mobile-06-alertes.png` | écran Jeux (partie en cours, bouton Rejoindre) ; alertes |
+| `web-16-jeux-etudiant.png` + `video/web-jeux-etudiant.webm` | espace Jeux : le joueur dans sa scène (personnage Kenney, points), derniers quiz, terminal Linux |
+| `web-17-resultats-etudiant.png`, `web-21-resultats-enseignant.png`, `web-22-nuage-de-mots.png` | résultats d'un vrai quiz : score, **défi par équipes** (groupes de TP), podium / classement nominatif, **nuage de mots** |
+| `web-18-terminal.png`, `web-18b-terminal-reussite.png` | jeu « Terminal Linux » : commandes tapées, « Défi réussi : +100 pts » |
+| `web-19-espaces.png` | sélecteur d'espaces (Planner, Bibliothèque, Jeux, Quiz) |
+| `web-23-devoirs-etudiant.png` … `web-27-donner-devoir.png` | **devoir noté** : à rendre, copie notée sur 20, notes de l'enseignant, « Donner un devoir » |
+| `mobile-10-tableau-planner-clair.png`, `mobile-21-tableau-*.png` (4 thèmes) | application : **thèmes Planner et StudyLib, clair et sombre** |
+| `mobile-11-espaces.png`, `mobile-15-espaces-sombre.png` | application : tous les espaces en deux gestes (« Site web » sans se reconnecter) |
+| `mobile-22-jeux-*.png`, `mobile-27-choix-personnage.png` | application : onglet Jeux (scène du joueur), choix du personnage |
+| `mobile-23-resultats-*.png`, `mobile-13-resultats.png` | application : résultats du quiz (score, équipes, podium, nuage de mots) |
+| `mobile-25-terminal-commandes.png`, `mobile-26-terminal-reussite.png` | application : terminal Linux, le personnage saute à la réussite (+100 pts) |
+| `mobile-28-jeux-devoir.png`, `mobile-29-devoir-*.png` | application : devoir à rendre, copie et note sur 20 |
 | `../../frontend/public/HESTIM.png`, `logo-planner.png` | logos |
 
 Si un fichier manque, saute le plan correspondant plutôt que d'inventer un écran.
@@ -59,9 +70,9 @@ Si un fichier manque, saute le plan correspondant plutôt que d'inventer un écr
 | 2 | 3,0–7,0 s | quatre tuiles-étiquettes | `EXCEL` · `PDF` · `WHATSAPP` · `KAHOOT`, puis « Tout est éparpillé. » | chaque mot arrive sur un temps ; à 5,5 s, un trait orange `#F26322` les barre l'un après l'autre (statut « reporté ») |
 | 3 | 7,0–12,0 s | `web-08-generation.png` dans le navigateur | `2620 SÉANCES · 90 S` (compteur qui défile en volets), « Le semestre se construit tout seul. » | zoom lent ; le compteur monte de 0 à 2620 pendant que « 90 S » s'affiche |
 | 4 | 12,0–17,0 s | `video/web-tableau-etudiant.webm` (ou le PNG en zoom) | « Chaque étudiant voit sa journée, en temps réel. » | la vidéo démarre sur le basculement des volets ; une pastille verte `#3FCB74` « EN COURS » pulse une fois |
-| 5 | 17,0–22,0 s | téléphone : `mobile-01-tableau` → `mobile-04-jeux` | « Dans la poche. Notifiée au moindre changement. » | le téléphone entre par la droite ; à 19,5 s une bannière de notification « Quiz en cours » glisse du haut, puis l'écran passe à `mobile-04-jeux` |
-| 6 | 22,0–27,0 s | écran partagé : `web-13-bibliotheque` / `mobile-04-jeux` (dans le téléphone) | « Cours, TD, quiz : une seule connexion. » | les deux navigateurs glissent l'un vers l'autre et s'arrêtent côte à côte |
-| 7 | 27,0–32,0 s | mosaïque rapide (un temps chacune) : `web-09-edt-mensuel`, `web-07-preparation`, `web-10-suivi`, `web-04-tableau-enseignant` | puces en volets : `TIMEFOLD` · `LARAVEL` · `EXPO` · `OPENID CONNECT` · `DOCKER`, puis `442 TESTS` | coupe sur chaque temps ; les puces basculent en rafale |
+| 5 | 17,0–22,0 s | téléphone : `mobile-21-tableau-planner-sombre` → `mobile-21-tableau-studylib-clair` → `mobile-26-terminal-reussite` | « Dans la poche. À votre style. » | le téléphone entre par la droite ; l'écran bascule de thème sur un temps (fondu croisé court), puis la notification « Quiz en cours » glisse du haut et l'écran passe au terminal réussi |
+| 6 | 22,0–27,0 s | écran partagé : `web-17-resultats-etudiant` / `mobile-23-resultats-planner-sombre` (dans le téléphone) | « Quiz, équipes, devoirs : une seule connexion. » | les deux écrans glissent l'un vers l'autre et s'arrêtent côte à côte ; la barre de l'équipe gagnante se remplit |
+| 7 | 27,0–32,0 s | mosaïque rapide (un temps chacune) : `web-09-edt-mensuel`, `web-07-preparation`, `web-22-nuage-de-mots`, `web-26-devoir-notes` | puces en volets : `TIMEFOLD` · `LARAVEL` · `EXPO` · `OPENID CONNECT` · `DOCKER`, puis le nombre de tests (voir `README.md`) | coupe sur chaque temps ; les puces basculent en rafale |
 | 8 | 32,0–36,0 s | fond noir, cadre marine fin | `PLANNER.FINADMINTECH.FR` en volets, logo HESTIM, « Projet PACTE — HESTIM 2026 » | le titre bascule, le logo apparaît en fondu ; dernière seconde immobile (fin propre pour enchaîner sur la présentation) |
 
 ## Contraintes de qualité
