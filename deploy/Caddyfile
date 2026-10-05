@@ -1,6 +1,7 @@
 # Passerelle publique de la plateforme : HTTPS automatique (Let's Encrypt), seule exposée.
 #   SITE_ADDRESS     ex. planner.hestim.ma       → Planner (/), API (/api), StudyLib (/biblio)
 #   FICHIERS_ADDRESS ex. fichiers.hestim.ma      → liens signés de téléchargement (MinIO)
+#   QUIZ_ADDRESS     ex. quiz.hestim.ma          → jeux pédagogiques (ClassQuiz)
 # En local : SITE_ADDRESS=localhost FICHIERS_ADDRESS=fichiers.localhost (certificat local Caddy).
 
 {$SITE_ADDRESS} {
@@ -27,5 +28,26 @@
 	}
 	handle {
 		respond "Méthode non autorisée" 405
+	}
+}
+
+# Jeux pédagogiques (ClassQuiz) : API et WebSocket vers quiz-api, le reste vers son frontend.
+# Sous-domaine dédié : ClassQuiz ne s'installe pas sous un sous-chemin (/api serait en collision).
+{$QUIZ_ADDRESS} {
+	encode zstd gzip
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
+	handle /api/* {
+		reverse_proxy quiz-api:80
+	}
+	handle /socket.io/* {
+		reverse_proxy quiz-api:80
+	}
+	handle {
+		reverse_proxy quiz-frontend:3000
 	}
 }
