@@ -24,6 +24,7 @@ import PageHeader from '../../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau';
 import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
+import PanneauDevoirs from '../../components/jeux/PanneauDevoirs';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -221,6 +222,9 @@ export default function Jeux() {
             ))}
           </Panneau>
         )}
+
+        {/* ── Devoirs notés (quiz ClassQuiz corrigés par Planner) ─────────── */}
+        {accueil && <PanneauDevoirs enseignant={enseignant} modules={modules} />}
 
         {/* ── Jeux de mes modules ─────────────────────────────────────── */}
         {(enseignant || modules.length > 0) && (
