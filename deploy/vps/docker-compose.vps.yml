@@ -1,0 +1,110 @@
+# ────────────────────────────────────────────────────────────────────────────
+#  Surcharge pour un VPS partagé (ici celui de finadmintech.fr, 2 vCPU / 3,7 Go)
+#
+#  Une autre application y tient déjà les ports 80/443 (nginx de FinAdminTech, qui fait
+#  aussi le HTTPS). Ici :
+#   - aucune construction : les images arrivent toutes faites (docker save | docker load) ;
+#   - Caddy n'aiguille que par nom d'hôte, en HTTP, sur 172.17.0.1:8090 (interface docker0,
+#     joignable depuis le conteneur nginx de FinAdminTech, pas depuis Internet) ;
+#   - chaque conteneur a une limite de mémoire : en cas de manque, ce sont eux qui sont
+#     arrêtés, jamais l'application voisine ;
+#   - aucun port de base de données ou d'API publié sur l'hôte.
+#
+#  Lancement (dans /opt/hestim) :
+#    docker compose --env-file .env.docker -f docker-compose.yml -f deploy/vps/docker-compose.vps.yml up -d
+# ────────────────────────────────────────────────────────────────────────────
+
+services:
+  mysql:
+    ports: !reset []
+    volumes:
+      - ./deploy/vps/mysql.cnf:/etc/mysql/conf.d/hestim.cnf:ro
+    mem_limit: 512m
+
+  backend:
+    build: !reset null
+    ports: !reset []
+    environment:
+      # nginx de FinAdminTech, Caddy puis nginx du frontend : trois proxys devant l'API
+      TRUST_PROXY_HOPS: 3
+    mem_limit: 384m
+
+  solver:
+    image: claude20022002/hestim-solver:latest
+    build: !reset null
+    environment:
+      JAVA_OPTS: -XX:MaxRAMPercentage=70
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 640m
+
+  frontend:
+    build: !reset null
+    mem_limit: 64m
+
+  caddy:
+    ports: !override
+      - "172.17.0.1:8090:80"
+    volumes:
+      - ./deploy/vps/Caddyfile.vps:/etc/caddy/Caddyfile:ro
+    mem_limit: 64m
+
+  studylib:
+    build: !reset null
+    mem_limit: 256m
+
+  studylib-queue:
+    mem_limit: 160m
+
+  studylib-scheduler:
+    mem_limit: 128m
+
+  redis:
+    mem_limit: 96m
+
+  minio:
+    mem_limit: 256m
+
+  # Crée le compartiment des documents au premier démarrage (idempotent), puis s'arrête
+  minio-init:
+    # Même image que le serveur MinIO : elle contient le client mc
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
+    container_name: hestim_minio_init
+    depends_on:
+      - minio
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - >-
+        until mc alias set hestim http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" >/dev/null 2>&1; do sleep 2; done;
+        mc mb --ignore-existing hestim/studylib && echo "compartiment studylib prêt"
+    restart: "no"
+    mem_limit: 64m
+    networks:
+      - hestim_net
+
+  meilisearch:
+    environment:
+      MEILI_MAX_INDEXING_MEMORY: 100Mb
+    mem_limit: 256m
+
+  quiz-api:
+    build: !reset null
+    mem_limit: 320m
+
+  quiz-worker:
+    mem_limit: 192m
+
+  quiz-frontend:
+    build: !reset null
+    mem_limit: 256m
+
+  quiz-db:
+    mem_limit: 192m
+
+  quiz-meilisearch:
+    mem_limit: 192m

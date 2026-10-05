@@ -1,0 +1,44 @@
+# Aiguillage interne sur un VPS partagé : le HTTPS est fait par le nginx déjà en place
+# (voir nginx-hestim.conf), qui renvoie les trois sous-domaines ici en HTTP.
+# Il est le seul à joindre ce port (172.17.0.1:8090) : on lui fait confiance pour
+# X-Forwarded-For et X-Forwarded-Proto (https).
+{
+	auto_https off
+	servers {
+		trusted_proxies static private_ranges
+	}
+}
+
+http://{$SITE_ADDRESS} {
+	encode zstd gzip
+	header -Server
+	reverse_proxy frontend:80
+}
+
+# Téléchargements : liens signés pour l'hôte interne minio:9000 ; lecture seule.
+http://{$FICHIERS_ADDRESS} {
+	@lecture method GET HEAD
+	handle @lecture {
+		reverse_proxy minio:9000 {
+			header_up Host minio:9000
+		}
+	}
+	handle {
+		respond "Méthode non autorisée" 405
+	}
+}
+
+# Jeux pédagogiques (ClassQuiz)
+http://{$QUIZ_ADDRESS} {
+	encode zstd gzip
+	header -Server
+	handle /api/* {
+		reverse_proxy quiz-api:80
+	}
+	handle /socket.io/* {
+		reverse_proxy quiz-api:80
+	}
+	handle {
+		reverse_proxy quiz-frontend:3000
+	}
+}

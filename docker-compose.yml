@@ -281,7 +281,9 @@ services:
       - hestim_net
 
   minio:
-    image: minio/minio:RELEASE.2025-09-07T16-13-09Z
+    # MinIO ne publie plus d'images (Docker Hub minio/minio supprimé, quay.io privé) : version
+    # communautaire reconstruite depuis les sources par Pigsty, identique à l'usage (S3, mc inclus)
+    image: pgsty/minio:RELEASE.2026-08-04T00-00-00Z
     container_name: hestim_minio
     restart: unless-stopped
     command: ["server", "/data"]
