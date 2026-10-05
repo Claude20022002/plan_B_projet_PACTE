@@ -41,6 +41,7 @@ import preparationRoutes from "./routes/preparationRoutes.js";
 import integrationRoutes from "./routes/integrationRoutes.js";
 import pushTokenRoutes from "./routes/pushTokenRoutes.js";
 import oidcRoutes from "./routes/oidcRoutes.js";
+import quizRoutes, { webhookQuiz } from "./routes/quizRoutes.js";
 import { MONTAGE as OIDC_MONTAGE } from "./services/oidc/provider.js";
 
 // Import des middlewares
@@ -93,6 +94,8 @@ app.use(
 // Fournisseur OpenID Connect (ClassQuiz) : avant les lecteurs de corps, qu'oidc-provider gère
 // lui-même ; hors CSRF (le client s'authentifie par son secret sur /token)
 app.use(OIDC_MONTAGE, apiRateLimiter, oidcRoutes);
+// Webhook signé de ClassQuiz (« partie démarrée ») : corps brut pour vérifier la signature HMAC
+app.use("/api/quiz/webhook", apiRateLimiter, webhookQuiz);
 
 // Body parser - Augmenter la limite pour permettre l'upload d'images en base64
 app.use(express.json({ limit: "10mb" }));
@@ -149,6 +152,7 @@ app.use("/api/imprevus", imprevuRoutes);
 app.use("/api/suivi", suiviRoutes);
 app.use("/api/preparation", preparationRoutes);
 app.use("/api/push-tokens", pushTokenRoutes);
+app.use("/api/quiz", quizRoutes);
 
 app.get("/", (req, res) => {
     res.json({
