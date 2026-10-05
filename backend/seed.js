@@ -187,6 +187,17 @@ const HESTIM_CONFIG = {
             ['IIIA-4-FSSI',  "Fondamentaux de la sécurité des systèmes d'information",    'CM21 TD9',  'Cybersécurité'],
             ['IIIA-4-IBMDS', 'IBM Data Science — certificat professionnel (cours 1 à 4)', 'CM24',      'IA & Data', { modalite:'distanciel', mention:'Blended Coursera' }],
             ['IIIA-4-PIC',   'Projet PIC',                                                'PRJ30',     'Informatique', { co:true }],
+            // Modules du S7 vus dans les supports partagés (Drive StudyLib, 2024-2025) ; HESTIM publie un
+            // nouvel emploi du temps chaque mois, la liste se complète au fil des EDT (volumes supposés)
+            ['IIIA-4-MLNS',  'Machine learning non supervisé',                            'CM15 TP21', 'IA & Data'],
+            ['IIIA-4-IA',    'Intelligence artificielle',                                 'CM21 TP12', 'IA & Data'],
+            ['IIIA-4-PADP',  'Prétraitement et analyse des données avec Python',          'CM12 TP18', 'IA & Data'],
+            ['IIIA-4-BIGD',  'Architecture et technologies Big Data',                     'CM15 TP21', 'IA & Data'],
+            ['IIIA-4-BI',    'Business Intelligence',                                     'CM15 TP15', 'IA & Data'],
+            ['IIIA-4-JEE',   'Architecture microservices et JEE',                         'CM15 TP21', 'Informatique'],
+            ['IIIA-4-RES',   'Réseaux',                                                   'CM21 TP12', 'Cybersécurité'],
+            ['IIIA-4-ENT',   'Entrepreneuriat',                                           'CM21',      'Management'],
+            ['IIIA-4-GP',    'Gestion de projet',                                         'CM21 TD9',  'Management'],
         ],
         'IIIA-IABD|5ème année': [
             ['IABD-5-AML',   'Advanced Machine Learning',      'CM15 TP21', 'IA & Data'],
