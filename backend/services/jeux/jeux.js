@@ -3,7 +3,7 @@ import { ancetres } from "../planning/groupes.js";
 import { peutGererFiliere } from "../planning/droits.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { JEUX, defiDuJeu, jeuParCode, pointsMax } from "../../../shared/jeux/catalogue.js";
-import { pointsPour, NIVEAU_REPONSE } from "../../../shared/terminal/jeu.js";
+import { COMMANDES_MAX, LONGUEUR_COMMANDE_MAX, NIVEAU_REPONSE, pointsPour, rejouerDefi } from "../../../shared/terminal/jeu.js";
 
 /**
  * Jeux intégrés à Planner (terminal Linux…). Le catalogue est commun au web et au mobile
@@ -106,17 +106,34 @@ export const progressionDuJeu = async (user, code) => {
     };
 };
 
+/** Commandes tapées pendant la partie : tableau de chaînes, borné en nombre et en longueur. */
+const commandesOuErreur = (commandes) => {
+    const valides =
+        Array.isArray(commandes) &&
+        commandes.length > 0 &&
+        commandes.length <= COMMANDES_MAX &&
+        commandes.every((c) => typeof c === "string" && c.length <= LONGUEUR_COMMANDE_MAX);
+    if (!valides) throw new ErreurMetier(`commandes doit être une liste de 1 à ${COMMANDES_MAX} lignes`, 400);
+    return commandes;
+};
+
 /**
- * Enregistre la réussite d'un défi. La première réussite compte (rejouer ne rapporte rien de
- * plus) ; les points dépendent des indices utilisés (0 à 3, 4 = réponse affichée).
+ * Enregistre la réussite d'un défi. Le serveur rejoue les commandes de la partie depuis l'état
+ * initial du défi : sans objectif atteint, rien n'est enregistré. La première réussite compte
+ * (rejouer ne rapporte rien de plus) ; les points dépendent des indices utilisés (0 à 3,
+ * 4 = réponse affichée), que seul le joueur connaît (les indices sont dans le code client).
  * @returns {{ cree: boolean, points: number, progression }}
  */
-export const enregistrerReussite = async (user, code, idDefi, indices) => {
+export const enregistrerReussite = async (user, code, idDefi, indices, commandes) => {
     const jeu = jeuOuErreur(code);
     const defi = defiDuJeu(jeu, String(idDefi ?? ""));
     if (!defi) throw new ErreurMetier("Défi inconnu", 404);
     const n = Number(indices ?? 0);
     if (!Number.isInteger(n) || n < 0 || n > NIVEAU_REPONSE) throw new ErreurMetier(`indices doit être un entier de 0 à ${NIVEAU_REPONSE}`, 400);
+    // Même nom de joueur que l'écran de jeu (invite et dossier personnel du terminal simulé)
+    if (!rejouerDefi(defi.id, commandesOuErreur(commandes), { joueur: user.prenom || "etudiant" })) {
+        throw new ErreurMetier("Objectif du défi non atteint", 422);
+    }
 
     const [ligne, cree] = await JeuProgression.findOrCreate({
         where: { id_user: user.id_user, code_jeu: jeu.code, id_defi: defi.id },
