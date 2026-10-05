@@ -22,14 +22,18 @@ Tu es motion designer et développeur Remotion. Réalise une vidéo de présenta
 |---|---|
 | `web-01-connexion.png` | page de connexion |
 | `web-02-tableau-etudiant.png` + `video/web-tableau-etudiant.webm` | tableau de l'étudiant façon « panneau des départs » d'aéroport, volets qui tournent |
+| `web-03-semaine-etudiant.png` | semaine de l'étudiant (grille) |
 | `web-04-tableau-enseignant.png` | séance en vedette, bouton « Lancer un quiz » |
 | `web-07-preparation.png` | assistant de préparation du semestre (8 étapes) |
-| `web-08-generation.png` | génération automatique de l'emploi du temps (solveur Timefold) |
+| `web-08-generation.png` | génération automatique de l'emploi du temps (solveur Timefold) ; les chiffres sont en bas : 2620 séances, 261 enseignements placés |
 | `web-09-edt-mensuel.png` | emploi du temps mensuel au format officiel de l'école |
 | `web-10-suivi.png` | suivi des heures réalisées |
 | `web-13-bibliotheque.png` | bibliothèque de cours StudyLib |
-| `web-14-classquiz-connexion.png` | jeux pédagogiques ClassQuiz, connexion « HESTIM Planner » |
-| `mobile-01-tableau.png` … `mobile-04-jeux.png` + `video/mobile-tableau.mp4` | application mobile étudiant (Android) |
+| `web-14-classquiz-connexion.png` | jeux pédagogiques ClassQuiz, bouton de connexion « HESTIM Planner » (ne pas utiliser `web-15`, l'interface d'origine de ClassQuiz) |
+| `mobile-00-connexion.png` | application mobile : connexion |
+| `mobile-01-tableau.png` + `video/mobile-tableau.mp4` | application mobile : prochaine séance, salle en grand, « Supports du cours (8) », « Quiz en cours » |
+| `mobile-02-semaine.png`, `mobile-03-bibliotheque.png` | semaine ; bibliothèque (documents par module) |
+| `mobile-04-jeux.png`, `mobile-06-alertes.png` | écran Jeux (partie en cours, bouton Rejoindre) ; alertes |
 | `../../frontend/public/HESTIM.png`, `logo-planner.png` | logos |
 
 Si un fichier manque, saute le plan correspondant plutôt que d'inventer un écran.
@@ -53,10 +57,10 @@ Si un fichier manque, saute le plan correspondant plutôt que d'inventer un écr
 |---|---|---|---|---|
 | 1 | 0,0–3,0 s | fond noir, rangée de tuiles vides | `HESTIM PLANNER` puis, dessous, « L'école, à l'heure. » | les tuiles basculent de gauche à droite jusqu'au titre ; le sous-titre apparaît en fondu à 2,2 s |
 | 2 | 3,0–7,0 s | quatre tuiles-étiquettes | `EXCEL` · `PDF` · `WHATSAPP` · `KAHOOT`, puis « Tout est éparpillé. » | chaque mot arrive sur un temps ; à 5,5 s, un trait orange `#F26322` les barre l'un après l'autre (statut « reporté ») |
-| 3 | 7,0–12,0 s | `web-08-generation.png` dans le navigateur | `242 ENSEIGNEMENTS · 60 S` (compteur qui défile en volets), « Le semestre se construit tout seul. » | zoom lent ; le compteur monte de 0 à 242 pendant que « 60 S » s'affiche |
+| 3 | 7,0–12,0 s | `web-08-generation.png` dans le navigateur | `2620 SÉANCES · 90 S` (compteur qui défile en volets), « Le semestre se construit tout seul. » | zoom lent ; le compteur monte de 0 à 2620 pendant que « 90 S » s'affiche |
 | 4 | 12,0–17,0 s | `video/web-tableau-etudiant.webm` (ou le PNG en zoom) | « Chaque étudiant voit sa journée, en temps réel. » | la vidéo démarre sur le basculement des volets ; une pastille verte `#3FCB74` « EN COURS » pulse une fois |
 | 5 | 17,0–22,0 s | téléphone : `mobile-01-tableau` → `mobile-04-jeux` | « Dans la poche. Notifiée au moindre changement. » | le téléphone entre par la droite ; à 19,5 s une bannière de notification « Quiz en cours » glisse du haut, puis l'écran passe à `mobile-04-jeux` |
-| 6 | 22,0–27,0 s | écran partagé : `web-13-bibliotheque` / `web-14-classquiz-connexion` | « Cours, TD, quiz : une seule connexion. » | les deux navigateurs glissent l'un vers l'autre et s'arrêtent côte à côte |
+| 6 | 22,0–27,0 s | écran partagé : `web-13-bibliotheque` / `mobile-04-jeux` (dans le téléphone) | « Cours, TD, quiz : une seule connexion. » | les deux navigateurs glissent l'un vers l'autre et s'arrêtent côte à côte |
 | 7 | 27,0–32,0 s | mosaïque rapide (un temps chacune) : `web-09-edt-mensuel`, `web-07-preparation`, `web-10-suivi`, `web-04-tableau-enseignant` | puces en volets : `TIMEFOLD` · `LARAVEL` · `EXPO` · `OPENID CONNECT` · `DOCKER`, puis `442 TESTS` | coupe sur chaque temps ; les puces basculent en rafale |
 | 8 | 32,0–36,0 s | fond noir, cadre marine fin | `PLANNER.FINADMINTECH.FR` en volets, logo HESTIM, « Projet PACTE — HESTIM 2026 » | le titre bascule, le logo apparaît en fondu ; dernière seconde immobile (fin propre pour enchaîner sur la présentation) |
 

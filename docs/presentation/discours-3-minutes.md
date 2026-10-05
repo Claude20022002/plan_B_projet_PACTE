@@ -21,7 +21,7 @@ Lancer la vidéo sans rien dire. Laisser la dernière image (l'adresse du site) 
 
 > « HESTIM Planner réunit tout cela dans une seule plateforme.
 >
-> **Un : le semestre se construit tout seul.** Un solveur d'optimisation, Timefold, place les cours en respectant toutes les règles de l'école : disponibilités des enseignants, salles, campus Gandhi et Stendhal, pause du vendredi, Ramadan. Sur notre jeu de démonstration, il place 219 enseignements sur 242 en une minute, et signale lui-même ce qui reste à arbitrer.
+> **Un : le semestre se construit tout seul.** Un solveur d'optimisation, Timefold, place les cours en respectant toutes les règles de l'école : disponibilités des enseignants, salles, campus Gandhi et Stendhal, pause du vendredi, Ramadan. Sur le serveur en ligne, en 90 secondes, il a placé 261 enseignements et déployé 2 620 séances sur le semestre, et il signale lui-même ce qui reste à arbitrer.
 >
 > **Deux : chacun voit sa journée en temps réel.** L'écran s'inspire des panneaux d'aéroport : la prochaine séance, la salle, et les changements en orange. Sur mobile, l'étudiant reçoit une notification au moindre report.
 >
@@ -43,9 +43,9 @@ Lancer la vidéo sans rien dire. Laisser la dernière image (l'adresse du site) 
 
 | Sujet | Chiffre |
 |---|---|
-| Génération | 219 / 242 enseignements placés en 60 s (démo S1), ~20 000 essais par seconde |
-| Déploiement d'une génération | 8 s pour ~2 400 séances |
-| Données de démonstration | 11 filières, 76 enseignants, 41 salles sur 2 campus |
+| Génération (serveur en ligne) | 2 620 séances déployées, 261 enseignements placés en 90 s (25 incomplets signalés), ~20 000 essais par seconde |
+| Bibliothèque | 82 supports de cours importés depuis Drive, rattachés à leur module |
+| Données de démonstration | 11 filières, 149 modules, 76 enseignants, 684 étudiants, 41 salles sur 2 campus |
 | Tests automatiques | 199 intégration + 74 unitaires (Planner), 142 (StudyLib), 14 (solveur Java), 13 (mobile) |
 | Architecture | Planner (Node.js), web (React), solveur (Java, Timefold), bibliothèque (Laravel), jeux (ClassQuiz, Python), mobile (Expo / React Native) |
 | Sécurité | connexion unique par jetons signés RS256 et OpenID Connect, protection CSRF, secrets hors du code |
