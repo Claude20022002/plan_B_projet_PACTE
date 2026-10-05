@@ -2,11 +2,11 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Typography, useMediaQuery } from '@mui/material';
-import { CheckCircleOutline, EventRepeat, ViewWeek } from '@mui/icons-material';
+import { CheckCircleOutline, EventRepeat, SportsEsports, ViewWeek } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
-import { affectationAPI, demandeReportAPI, notificationAPI } from '../../services/api';
+import { affectationAPI, demandeReportAPI, notificationAPI, quizAPI } from '../../services/api';
 import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
 import ChangesList from '../../design-system/board/ChangesList';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
@@ -83,6 +83,19 @@ export default function EnseignantDashboard() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [confirmingId, setConfirmingId] = useState(null);
+  // Jeux (ClassQuiz) : bouton proposé seulement si la plateforme en a un
+  const [quiz, setQuiz] = useState(null);
+
+  useEffect(() => {
+    let actif = true;
+    quizAPI
+      .getConfig()
+      .then((c) => actif && setQuiz(c?.peutLancer && /^https?:\/\//.test(c.url ?? '') ? c : null))
+      .catch(() => actif && setQuiz(null));
+    return () => {
+      actif = false;
+    };
+  }, []);
   const [now, setNow] = useState(() => new Date());
   const compact = useMediaQuery('(max-width:599.95px)');
 
@@ -156,6 +169,20 @@ export default function EnseignantDashboard() {
           sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: '#FFFFFF' } }}
         >
           {t('board.confirm')}
+        </Button>
+      )}
+      {/* ClassQuiz : l'enseignant y choisit et lance son quiz ; la partie est rattachée à cette
+          séance et ses étudiants sont prévenus (webhook « partie démarrée ») */}
+      {quiz?.peutLancer && s.status !== 'annule' && (
+        <Button
+          variant="outlined"
+          startIcon={<SportsEsports />}
+          href={`${quiz.url}/dashboard`}
+          target="_blank"
+          rel="noopener noreferrer"
+          sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
+        >
+          {t('board.launchQuiz')}
         </Button>
       )}
       {s.status !== 'annule' && (

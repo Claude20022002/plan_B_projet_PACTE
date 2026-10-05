@@ -40,6 +40,7 @@ const partage = {
     confirm: 'Confirm',
     confirmed: 'Confirmed',
     requestReport: 'Request a reschedule',
+    launchQuiz: 'Launch a quiz',
     openTimetable: 'Open timetable',
     changesTitle: 'Recent changes',
     noChanges: 'Nothing has changed since your last visit.',

@@ -40,6 +40,7 @@ const partage = {
     confirm: 'Confirmer',
     confirmed: 'Confirmée',
     requestReport: 'Demander un report',
+    launchQuiz: 'Lancer un quiz',
     openTimetable: "Voir l'emploi du temps",
     changesTitle: 'Changements récents',
     noChanges: "Aucun changement depuis votre dernière visite.",

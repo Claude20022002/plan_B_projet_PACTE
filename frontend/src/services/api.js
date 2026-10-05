@@ -596,3 +596,10 @@ export const preparationAPI = {
 export const appartenanceAPI = {
     getByEtudiant: (idEtudiant) => request(`/appartenances/etudiant/${idEtudiant}`),
 };
+
+// ==================== JEUX (ClassQuiz, phase Q) ====================
+export const quizAPI = {
+    // { actif, url, peutLancer } : où envoyer l'enseignant pour lancer une partie
+    getConfig: () => request('/quiz/config'),
+    getPartiesEnCours: () => request('/quiz/parties/en-cours'),
+};
