@@ -99,7 +99,7 @@ export const accueilJeux = async (user) => {
 /** Défis réussis par l'utilisateur dans un jeu. */
 export const progressionDuJeu = async (user, code) => {
     const jeu = jeuOuErreur(code);
-    const lignes = await JeuProgression.findAll({ where: { id_user: user.id_user, code_jeu: jeu.code }, order: [["reussi_le", "ASC"]] });
+    const lignes = await JeuProgression.findAll({ where: { id_user: user.id_user, code_jeu: jeu.code }, order: [["reussi_le", "ASC"], ["id_jeu_progression", "ASC"]] });
     return {
         ...resumeProgression(jeu, lignes),
         defis: lignes.filter((l) => defiDuJeu(jeu, l.id_defi)).map((l) => ({ id: l.id_defi, indices: l.indices, points: l.points, reussi_le: l.reussi_le })),
