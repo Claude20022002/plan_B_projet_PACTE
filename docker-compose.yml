@@ -343,6 +343,9 @@ services:
       CUSTOM_OPENID_PROVIDER__CLIENT_SECRET: ${CLASSQUIZ_OIDC_CLIENT_SECRET:?CLASSQUIZ_OIDC_CLIENT_SECRET requis dans .env.docker}
       # Adresse publique : les points d'accès annoncés doivent être ceux que voit le navigateur
       CUSTOM_OPENID_PROVIDER__SERVER_METADATA_URL: https://${SITE_ADDRESS}/api/oidc/.well-known/openid-configuration
+      # Fork HESTIM : « partie démarrée » signalée à Planner par le réseau interne (signé HMAC)
+      HESTIM_WEBHOOK_URL: http://backend:5000/api/quiz/webhook
+      HESTIM_WEBHOOK_SECRET: ${QUIZ_WEBHOOK_SECRET:?QUIZ_WEBHOOK_SECRET requis dans .env.docker}
     volumes:
       - quiz_data:/app/data
     depends_on:

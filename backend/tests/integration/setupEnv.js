@@ -29,6 +29,7 @@ const defaults = {
     CLASSQUIZ_OIDC_CLIENT_SECRET: "",
     QUIZ_URL: "",
     OIDC_COOKIE_KEYS: "",
+    QUIZ_WEBHOOK_SECRET: "",
 };
 
 for (const [key, value] of Object.entries(defaults)) {
