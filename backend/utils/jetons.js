@@ -58,6 +58,12 @@ const parKid = new Map([courante, precedente].filter(Boolean).map((c) => [c.kid,
 export const jeuDeCles = () => ({ keys: [courante, precedente].filter(Boolean).map((c) => c.jwk) });
 
 /**
+ * Clé privée courante au format JWK, pour le fournisseur OpenID Connect (services/oidc) : même
+ * clé, mais ses jetons portent un autre émetteur et l'audience du client, jamais « planner ».
+ */
+export const clePriveeJwk = () => ({ ...clePrivee.export({ format: "jwk" }), alg: ALGORITHME, use: "sig", kid: courante.kid });
+
+/**
  * Signe un jeton d'accès. `revendications` : sub, sid, fid, role, email, nom, prenom et, pour un
  * étudiant, filiere (code), niveau, groupe — ce dont StudyLib a besoin pour ouvrir le compte.
  */
