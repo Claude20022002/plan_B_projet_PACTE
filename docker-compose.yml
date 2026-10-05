@@ -75,6 +75,11 @@ services:
       TRUST_PROXY_HOPS: 2
       # Une seule origine publique (Caddy) : les cookies __Host- exigent HTTPS
       ALLOWED_ORIGINS: https://${SITE_ADDRESS:?SITE_ADDRESS requis dans .env.docker}
+      FRONTEND_URL: https://${SITE_ADDRESS}
+      # Fournisseur OpenID Connect pour ClassQuiz (phase Q) ; CLASSQUIZ_OIDC_CLIENT_SECRET et
+      # OIDC_COOKIE_KEYS viennent de .env.docker
+      OIDC_ISSUER: https://${SITE_ADDRESS}/api/oidc
+      QUIZ_URL: https://${QUIZ_ADDRESS:?QUIZ_ADDRESS requis dans .env.docker}
     ports:
       - "127.0.0.1:${BACKEND_PORT:-5000}:5000"   # le public passe par le frontend (nginx /api)
     depends_on:
@@ -151,6 +156,7 @@ services:
     environment:
       SITE_ADDRESS: ${SITE_ADDRESS:?SITE_ADDRESS requis dans .env.docker}
       FICHIERS_ADDRESS: ${FICHIERS_ADDRESS:?FICHIERS_ADDRESS requis dans .env.docker}
+      QUIZ_ADDRESS: ${QUIZ_ADDRESS:?QUIZ_ADDRESS requis dans .env.docker}
     volumes:
       - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
       - caddy_data:/data
@@ -300,6 +306,120 @@ services:
     networks:
       - hestim_net
 
+  # ── ClassQuiz (jeux pédagogiques, fork ../ClassQuiz, branche hestim) ──────
+  # Sous-domaine QUIZ_ADDRESS : ClassQuiz ne s'installe pas sous un sous-chemin et ses routes
+  # /api et /socket.io entreraient en collision avec celles de Planner. Les enseignants s'y
+  # connectent par Planner (OpenID Connect) ; les étudiants jouent par code PIN, sans compte.
+  quiz-api:
+    image: claude20022002/hestim-classquiz-api:latest
+    build:
+      context: ../ClassQuiz
+      dockerfile: Dockerfile
+    container_name: hestim_quiz_api
+    restart: unless-stopped
+    environment: &quiz_env
+      DB_URL: postgresql://classquiz:${QUIZ_DB_PASSWORD:?QUIZ_DB_PASSWORD requis dans .env.docker}@quiz-db:5432/classquiz
+      # Redis de la plateforme, base 2 (StudyLib utilise les bases 0 et 1)
+      REDIS: redis://:${REDIS_PASSWORD}@redis:6379/2?decode_responses=True
+      SECRET_KEY: ${QUIZ_SECRET_KEY:?QUIZ_SECRET_KEY requis dans .env.docker}
+      MAX_WORKERS: "1"
+      ACCESS_TOKEN_EXPIRE_MINUTES: "30"
+      MEILISEARCH_URL: http://quiz-meilisearch:7700
+      ROOT_ADDRESS: https://${QUIZ_ADDRESS:?QUIZ_ADDRESS requis dans .env.docker}
+      TELEMETRY_ENABLED: "false"
+      # Comptes créés par Planner (adresse vérifiée) : ni inscription locale ni courriel
+      REGISTRATION_DISABLED: "true"
+      SKIP_EMAIL_VERIFICATION: "true"
+      MAIL_ADDRESS: quiz@${SITE_ADDRESS}
+      MAIL_USERNAME: quiz@${SITE_ADDRESS}
+      MAIL_PASSWORD: inutilise
+      MAIL_SERVER: localhost
+      MAIL_PORT: "587"
+      STORAGE_BACKEND: local
+      STORAGE_PATH: /app/data
+      CUSTOM_OPENID_PROVIDER__CLIENT_ID: classquiz
+      CUSTOM_OPENID_PROVIDER__CLIENT_SECRET: ${CLASSQUIZ_OIDC_CLIENT_SECRET:?CLASSQUIZ_OIDC_CLIENT_SECRET requis dans .env.docker}
+      # Adresse publique : les points d'accès annoncés doivent être ceux que voit le navigateur
+      CUSTOM_OPENID_PROVIDER__SERVER_METADATA_URL: https://${SITE_ADDRESS}/api/oidc/.well-known/openid-configuration
+    volumes:
+      - quiz_data:/app/data
+    depends_on:
+      quiz-db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - hestim_net
+
+  quiz-worker:
+    image: claude20022002/hestim-classquiz-api:latest
+    container_name: hestim_quiz_worker
+    restart: unless-stopped
+    command: ["arq", "classquiz.worker.WorkerSettings"]
+    environment: *quiz_env
+    volumes:
+      - quiz_data:/app/data
+    depends_on:
+      - quiz-api
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - hestim_net
+
+  quiz-frontend:
+    image: claude20022002/hestim-classquiz-frontend:latest
+    build:
+      context: ../ClassQuiz/frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_CUSTOM_OAUTH_NAME: HESTIM Planner
+        VITE_REGISTRATION_DISABLED: "true"
+    container_name: hestim_quiz_frontend
+    restart: unless-stopped
+    environment:
+      API_URL: http://quiz-api:80
+      REDIS_URL: redis://:${REDIS_PASSWORD}@redis:6379/2?decode_responses=True
+    depends_on:
+      - quiz-api
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - hestim_net
+
+  # Base PostgreSQL propre à ClassQuiz (exception au MySQL partagé : ClassQuiz ne connaît que PostgreSQL)
+  quiz-db:
+    image: postgres:16-alpine
+    container_name: hestim_quiz_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: classquiz
+      POSTGRES_PASSWORD: ${QUIZ_DB_PASSWORD:?QUIZ_DB_PASSWORD requis dans .env.docker}
+      POSTGRES_DB: classquiz
+    volumes:
+      - quiz_db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U classquiz -d classquiz"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - hestim_net
+
+  # Meilisearch 0.28 : version imposée par le client de ClassQuiz, distincte de celle de StudyLib.
+  # Interne au réseau Docker, jamais exposée.
+  quiz-meilisearch:
+    image: getmeili/meilisearch:v0.28.0
+    container_name: hestim_quiz_meilisearch
+    restart: unless-stopped
+    environment:
+      MEILI_NO_ANALYTICS: "true"
+    volumes:
+      - quiz_meili_data:/data.ms
+    networks:
+      - hestim_net
+
 # ── Volumes persistants ────────────────────────────────────────────────────
 volumes:
   mysql_data:
@@ -309,6 +429,9 @@ volumes:
   redis_data:
   minio_data:
   meili_data:
+  quiz_data:
+  quiz_db_data:
+  quiz_meili_data:
 
 # ── Réseau interne isolé ───────────────────────────────────────────────────
 networks:
