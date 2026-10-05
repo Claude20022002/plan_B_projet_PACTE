@@ -25,6 +25,7 @@ import Surveillance from "./Surveillance.js";
 import RetourSeance from "./RetourSeance.js";
 import RetourSeanceParticipation from "./RetourSeanceParticipation.js";
 import PushToken from "./PushToken.js";
+import OidcPayload from "./OidcPayload.js";
 // Cycle volontaire : services/push.js n'utilise les modèles qu'à l'appel, jamais au chargement
 import { planifierPush } from "../services/push.js";
 import AuthSession from "./AuthSession.js";
@@ -543,4 +544,5 @@ export {
     RetourSeance,
     RetourSeanceParticipation,
     PushToken,
+    OidcPayload,
 };
