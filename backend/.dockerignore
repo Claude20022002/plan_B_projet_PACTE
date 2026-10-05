@@ -7,3 +7,4 @@ npm-debug.log*
 .gitignore
 README.md
 tests/
+storage/app/private/*

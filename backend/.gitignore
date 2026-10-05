@@ -136,4 +136,4 @@ dist
 .yarn/install-state.gz
 .pnp.*
 
-studylib-drive-a32da7a10364
+storage/app/private/*

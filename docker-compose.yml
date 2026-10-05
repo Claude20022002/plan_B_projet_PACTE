@@ -202,8 +202,14 @@ services:
       PLANNER_API_URL: http://backend:5000/api
       PLANNER_LOGIN_URL: /connexion
       PLANNER_INTEGRATION_TOKEN: ${INTEGRATION_TOKEN}
+      # Import Google Drive (studylib:import-drive) : clé du compte de service, montée ci-dessous
+      GOOGLE_DRIVE_CREDENTIALS: /run/secrets/google/google-drive.json
       # serversideup/php : migrations et caches Laravel au démarrage (conteneur web seulement)
       AUTORUN_ENABLED: "true"
+    # Clé Drive montée en lecture seule, jamais copiée dans l'image (.dockerignore) ;
+    # le dossier est monté plutôt que le fichier pour que son absence ne bloque pas le démarrage
+    volumes:
+      - ${GOOGLE_DRIVE_KEY_DIR:-../StudyLib/storage/app/private}:/run/secrets/google:ro
     expose:
       - "8080"
     depends_on:
