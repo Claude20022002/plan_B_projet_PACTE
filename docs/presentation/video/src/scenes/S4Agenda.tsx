@@ -3,10 +3,10 @@ import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { Line, PhoneFrame, Screen } from "../components/Frames";
 import { fadeUp, ramp, useEnter, usePortrait } from "../components/motion";
 import { C } from "../theme";
-import { PHONE_LEFT, PHONE_SCREEN_H, PHONE_TOP, phoneGeometry } from "./S3Convergence";
+import { PHONE_LEFT, PHONE_SCREEN_H, PHONE_TOP, PORTRAIT_SCREEN_H, PORTRAIT_TOP, phoneGeometry, portraitLeft } from "./S3Convergence";
 
-const TOUCHER = 75; // 14,5 s du film
-const FICHE = 86;
+const TOUCHER = 105; // 3,5 s dans la scène
+const FICHE = 116;
 // Jour sélectionné (6 octobre) sur mobile-37-mois.png, en pixels de la capture
 const JOUR = { x: 239, y: 990 };
 
@@ -32,14 +32,15 @@ const Toucher: React.FC<{ frame: number }> = ({ frame }) => {
   );
 };
 
-/** 4 · 12–17 s : le mois, chaque jour avec ses cours ; un toucher ouvre le détail de la séance. */
+/** 4 · le mois, chaque jour avec ses cours (3,5 s) ; un toucher ouvre le détail de la séance. */
 export const S4Agenda: React.FC = () => {
   const frame = useCurrentFrame();
   const portrait = usePortrait();
   const phrase = useEnter(6);
+  const detail = useEnter(FICHE + 12);
   const fiche = ramp(frame, FICHE, FICHE + 8);
-  const screenH = portrait ? 1240 : PHONE_SCREEN_H;
-  const { screenW, phoneW } = phoneGeometry(screenH);
+  const screenH = portrait ? PORTRAIT_SCREEN_H : PHONE_SCREEN_H;
+  const { screenW } = phoneGeometry(screenH);
 
   const ecran = (
     <>
@@ -55,10 +56,13 @@ export const S4Agenda: React.FC = () => {
   if (portrait) {
     return (
       <AbsoluteFill style={{ background: C.bg }}>
-        <Line size={80} style={{ ...fadeUp(phrase), position: "absolute", left: 80, right: 80, top: 150, textAlign: "center" }}>
-          Un emploi du temps toujours à jour.
-        </Line>
-        <PhoneFrame screenHeight={screenH} style={{ left: (1080 - phoneW) / 2, top: 560 }}>
+        <div style={{ position: "absolute", left: 80, right: 80, top: 150, textAlign: "center" }}>
+          <Line size={80} style={fadeUp(phrase)}>Un emploi du temps toujours à jour.</Line>
+          <Line size={50} weight={400} color={C.inkSoft} style={{ ...fadeUp(detail), marginTop: 18 }}>
+            Chaque cours : salle, heure, enseignant.
+          </Line>
+        </div>
+        <PhoneFrame screenHeight={screenH} style={{ left: portraitLeft(), top: PORTRAIT_TOP }}>
           {ecran}
         </PhoneFrame>
       </AbsoluteFill>
@@ -71,6 +75,9 @@ export const S4Agenda: React.FC = () => {
         <Line size={88} style={fadeUp(phrase)}>Un emploi du temps</Line>
         <Line size={88} color={C.inkSoft} style={{ ...fadeUp(phrase), marginTop: 12 }}>
           toujours à jour.
+        </Line>
+        <Line size={46} weight={400} color={C.inkSoft} style={{ ...fadeUp(detail), marginTop: 40 }}>
+          Chaque cours : salle, heure, enseignant.
         </Line>
       </div>
       <PhoneFrame screenHeight={PHONE_SCREEN_H} style={{ left: PHONE_LEFT, top: PHONE_TOP }}>

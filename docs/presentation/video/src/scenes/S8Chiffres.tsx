@@ -13,7 +13,7 @@ const LIGNES = [
 ];
 
 const Ligne: React.FC<{ i: number; colonne: number }> = ({ i, colonne }) => {
-  const start = i * BEAT * 3; // 33,0 / 34,5 / 36,0 s
+  const start = i * BEAT * 4; // un chiffre toutes les 2 s
   const legende = useEnter(start + 20);
   const { height } = tileSize(FS);
   return (
@@ -28,7 +28,7 @@ const Ligne: React.FC<{ i: number; colonne: number }> = ({ i, colonne }) => {
   );
 };
 
-/** 8 · 33–38 s : trois chiffres en volets, un par groupe de 3 temps, avec leur légende. */
+/** 8 · trois chiffres en volets, un toutes les 2 s, avec leur légende ; ils restent ensemble 3 s. */
 export const S8Chiffres: React.FC = () => {
   const colonne = Math.max(...LIGNES.map((l) => flapWidth(l.chiffre, FS)));
   return (

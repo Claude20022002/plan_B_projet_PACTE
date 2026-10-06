@@ -7,7 +7,7 @@ import { BEAT, C } from "../theme";
 const BW = 1120;
 const SCREEN_H = 740;
 const GAP = 64;
-const DEVOIR = 105; // 30,5 s du film
+const DEVOIR = 150; // 5 s dans la scène
 const BW_DEVOIR = 1380;
 
 /**
@@ -42,8 +42,8 @@ const BarMask: React.FC<{ bar: Bar; p: number; radius: number }> = ({ bar, p, ra
 };
 
 /**
- * 7 · 27–33 s : résultats d'un quiz côté enseignant (web) et étudiant (téléphone), les barres
- * des équipes se remplissent ; à 30,5 s, coupe sur le devoir noté.
+ * 7 · résultats d'un quiz côté enseignant (web) et étudiant (téléphone), les barres des
+ * équipes se remplissent ; à 5 s, coupe sur le devoir noté (3 s).
  */
 export const S7Resultats: React.FC = () => {
   const frame = useCurrentFrame();
@@ -69,7 +69,7 @@ export const S7Resultats: React.FC = () => {
     return (
       <AbsoluteFill style={{ background: C.bg }}>
         <BrowserFrame width={BW_DEVOIR} style={{ left: (1920 - BW_DEVOIR) / 2, top: (900 - hDevoir) / 2 + 10 }}>
-          <Screen src="captures/web-26-devoir-notes.png" srcW={1920} srcH={1080} width={BW_DEVOIR} origin="50% 35%" duration={75} />
+          <Screen src="captures/web-26-devoir-notes.png" srcW={1920} srcH={1080} width={BW_DEVOIR} origin="50% 35%" duration={90} />
         </BrowserFrame>
         <Line size={52} style={{ ...fadeUp(l2), position: "absolute", left: 0, right: 0, top: 930, textAlign: "center" }}>
           Les résultats restent à l'école.

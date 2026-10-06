@@ -2,12 +2,12 @@ import React from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { Embleme } from "../components/Embleme";
 import { Line, PhoneFrame, Screen } from "../components/Frames";
-import { fadeUp, ramp, useEnter } from "../components/motion";
+import { fadeUp, ramp, useEnter, usePortrait } from "../components/motion";
 import { C, FONT_TEXT, FONT_TITLE } from "../theme";
-import { PHONE_LEFT, PHONE_SCREEN_H, PHONE_TOP, phoneGeometry } from "./S3Convergence";
+import { PHONE_LEFT, PHONE_SCREEN_H, PHONE_TOP, PORTRAIT_SCREEN_H, PORTRAIT_TOP, phoneGeometry, portraitLeft } from "./S3Convergence";
 
-const ENTREE = 30; // 18,0 s du film
-const SORTIE = 90; // 20,0 s
+const ENTREE = 45; // 1,5 s dans la scène
+const SORTIE = 135; // l'alerte reste 3 s
 const LOUPE = 1.5;
 
 /**
@@ -43,38 +43,56 @@ const Notification: React.FC<{ w: number }> = ({ w }) => {
   );
 };
 
-/** 5 · 17–22 s : l'accueil de l'app ; une alerte de report descend, reste 2 s, puis remonte. */
+/** 5 · l'accueil de l'application ; une alerte de report descend (1,5 s), reste 3 s, puis remonte. */
 export const S5Alerte: React.FC = () => {
   const frame = useCurrentFrame();
+  const portrait = usePortrait();
   const l1 = useEnter(6);
   const l2 = useEnter(ENTREE);
+  const l3 = useEnter(ENTREE + 30);
   const entre = useEnter(ENTREE, 18);
   const sort = ramp(frame, SORTIE, SORTIE + 10);
-  const { screenW, phoneW } = phoneGeometry();
+  const screenH = portrait ? PORTRAIT_SCREEN_H : PHONE_SCREEN_H;
+  const { screenW, phoneW } = phoneGeometry(screenH);
+  const left = portrait ? portraitLeft() : PHONE_LEFT;
+  const top = portrait ? PORTRAIT_TOP : PHONE_TOP;
+  const largeur = Math.min(screenW * LOUPE, portrait ? 1000 : 9999);
 
   return (
     <AbsoluteFill style={{ background: C.bg }}>
-      <div style={{ position: "absolute", left: 140, top: 380, width: 900 }}>
-        <Line size={88} style={fadeUp(l1)}>Prévenu à la seconde,</Line>
-        <Line size={88} color={C.inkSoft} style={{ ...fadeUp(l2), marginTop: 12 }}>
-          sur son téléphone.
-        </Line>
-      </div>
-      <PhoneFrame screenHeight={PHONE_SCREEN_H} style={{ left: PHONE_LEFT, top: PHONE_TOP }}>
+      {portrait ? (
+        <div style={{ position: "absolute", left: 80, right: 80, top: 150, textAlign: "center" }}>
+          <Line size={80} style={fadeUp(l1)}>Prévenu à la seconde,</Line>
+          <Line size={80} color={C.inkSoft} style={{ ...fadeUp(l2), marginTop: 10 }}>
+            sur son téléphone.
+          </Line>
+        </div>
+      ) : (
+        <div style={{ position: "absolute", left: 140, top: 380, width: 900 }}>
+          <Line size={88} style={fadeUp(l1)}>Prévenu à la seconde,</Line>
+          <Line size={88} color={C.inkSoft} style={{ ...fadeUp(l2), marginTop: 12 }}>
+            sur son téléphone.
+          </Line>
+          <Line size={46} weight={400} color={C.inkSoft} style={{ ...fadeUp(l3), marginTop: 40 }}>
+            Report, annulation, changement de salle.
+          </Line>
+        </div>
+      )}
+      <PhoneFrame screenHeight={screenH} style={{ left, top }}>
         <Screen src="captures/mobile-38-tableau.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 30%" />
       </PhoneFrame>
       {/* Bannière agrandie (1,5 × l'écran) et centrée sur le téléphone : lisible au fond d'une salle */}
       <div
         style={{
           position: "absolute",
-          left: PHONE_LEFT + phoneW / 2 - (screenW * LOUPE) / 2,
-          top: PHONE_TOP + PHONE_SCREEN_H * 0.06,
-          width: screenW * LOUPE,
+          left: left + phoneW / 2 - largeur / 2,
+          top: top + screenH * 0.06,
+          width: largeur,
           transform: `translateY(${(1 - entre) * -260 - sort * 260}px)`,
           opacity: frame < ENTREE ? 0 : Math.min(entre * 2, 1) * (1 - sort),
         }}
       >
-        <Notification w={screenW * LOUPE} />
+        <Notification w={largeur} />
       </div>
     </AbsoluteFill>
   );

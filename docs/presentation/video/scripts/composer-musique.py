@@ -5,7 +5,7 @@ donc aucun problème de licence). 120 BPM : un temps = 0,5 s, une mesure = 2 s.
 Musique calée sur le storyboard (src/Root.tsx) :
 - intro douce ;
 - pulsation tendue sur les outils éparpillés ;
-- montée jusqu'au « drop » à 12 s ;
+- montée jusqu'au « drop » au début de l'agenda ;
 - boucle C – G – Am – F ;
 - allègement sur les chiffres ;
 - accord final tenu.
@@ -203,9 +203,10 @@ TEMPS = 0.5
 MESURE = 2.0
 
 
-def section_groove(sec, musique, debut, fin, *, legere=False):
-    """Boucle C – G – Am – F à partir de `debut` (calée sur les mesures)."""
-    m = 0
+def section_groove(sec, musique, debut, fin, *, legere=False, origine=None):
+    """Boucle C – G – Am – F de `debut` à `fin` ; l'accord suit les mesures comptées depuis `origine`."""
+    origine = debut if origine is None else origine
+    m = int(round((debut - origine) / MESURE))
     t0 = debut
     while t0 < fin - 1e-6:
         accord = PROGRESSION[m % 4]
@@ -287,62 +288,79 @@ def maitriser(piste_list, duree, fondu_fin=1.0):
     return (total * 32767).astype(np.int16)
 
 
-# ── Les deux bandes-son ──────────────────────────────────────────────────────────────────
-def film_42s():
-    D = 42.0
+# ── Bandes-son par scène, calées sur src/Root.tsx ────────────────────────────────────────
+import re
+
+
+def lire_storyboard():
+    """Durées des scènes (TIMINGS, en temps) et scènes du teaser vertical (VERTICAL), lues dans Root.tsx."""
+    racine = open(os.path.join(ICI, "..", "src", "Root.tsx"), encoding="utf-8").read()
+    bloc = racine[racine.index("export const TIMINGS") : racine.index("} as const;")]
+    durees = {nom: int(n) * TEMPS for nom, n in re.findall(r"(\w+): (\d+) \* BEAT", bloc)}
+    vertical = re.findall(r'"(\w+)"', racine[racine.index("const VERTICAL") :].split("\n")[0])
+    return durees, vertical
+
+
+GROOVE = {"agenda", "alerte", "supports", "resultats"}
+
+
+def composer(ids, durees):
+    debuts = {}
+    t = 0.0
+    for i in ids:
+        debuts[i] = t
+        t += durees[i]
+    D = t
     musique, sec, sfx = Piste(D), Piste(D), Piste(D)
-    section_intro(musique, 0.0, 4.0)
-    cascade(sfx, 0.3)
-    volets(sfx, 1.6, 2.9)
-    section_tension(sec, musique, 4.0, 9.0)
-    for i in range(6):  # un outil par temps, puis barré
-        volets(sfx, 4.0 + i * 0.5, 4.0 + i * 0.5 + 0.55, 0.16)
-        sfx.ajouter(7.0 + i * 0.2, zip_(), 0.28, -0.5 + 0.2 * i)
-    sfx.ajouter(9.0, souffle(0.9), 0.8)
-    sfx.ajouter(10.0, montee(2.0), 0.9)
-    # Nappe de dominante (G) qui enfle de 9 à 12 s : pas de trou avant le drop
-    tension = nappe([43, 55, 59, 62, 67], 3.2) * np.linspace(0.3, 1.0, int(3.2 * SR))
-    musique.ajouter(9.0, tension, 0.8)
-    roulement(sec, 11.0, 12.0)
-    sec.ajouter(12.0, impact(profond=False), 0.6)
-    section_groove(sec, musique, 12.0, 33.0)
-    sfx.ajouter(14.5, toucher(), 0.5)
-    sfx.ajouter(14.85, souffle(0.35, haut=True), 0.35)
-    sfx.ajouter(18.0, carillon(), 0.42)
-    sfx.ajouter(20.0, souffle(0.35, haut=True), 0.25)
-    sfx.ajouter(24.4, souffle(0.7), 0.5)
-    sfx.ajouter(30.5, souffle(0.3, haut=True), 0.3)
-    section_groove(sec, musique, 33.0, 38.0, legere=True)
-    volets(sfx, 33.0, 33.6)
-    volets(sfx, 34.5, 35.3)
-    volets(sfx, 36.0, 37.0)
-    roulement(sec, 37.25, 38.0)
-    final(musique, sec, 38.0, 42.0)
-    volets(sfx, 38.73, 39.5)
-    volets(sfx, 39.8, 40.6, 0.16)
+    origine_groove = min((debuts[i] for i in ids if i in GROOVE), default=0.0)
+
+    for i in ids:
+        s, d = debuts[i], durees[i]
+        if i == "title":
+            section_intro(musique, s, s + d)
+            cascade(sfx, s + 0.3)
+            volets(sfx, s + 1.6, s + 3.2)
+        elif i == "outils":
+            section_tension(sec, musique, s, s + d)
+            for k in range(6):  # un outil par temps, puis barrés à 4 s
+                volets(sfx, s + k * 0.5, s + k * 0.5 + 0.55, 0.16)
+                sfx.ajouter(s + 4.0 + k * 0.2, zip_(), 0.28, -0.5 + 0.2 * k)
+        elif i == "convergence":
+            sfx.ajouter(s, souffle(0.9), 0.8)
+            tension = nappe([43, 55, 59, 62, 67], d + 0.2) * np.linspace(0.3, 1.0, int((d + 0.2) * SR))
+            musique.ajouter(s, tension, 0.8)
+            sfx.ajouter(s + d - 2.0, montee(2.0), 0.9)
+            roulement(sec, s + d - 1.0, s + d)
+            sec.ajouter(s + d, impact(profond=False), 0.6)  # le « drop » au début de la scène suivante
+        elif i in GROOVE:
+            section_groove(sec, musique, s, s + d, origine=origine_groove)
+            if i == "agenda":
+                sfx.ajouter(s + 3.5, toucher(), 0.5)
+                sfx.ajouter(s + 3.85, souffle(0.35, haut=True), 0.35)
+            elif i == "alerte":
+                sfx.ajouter(s + 1.5, carillon(), 0.42)
+                sfx.ajouter(s + 4.5, souffle(0.35, haut=True), 0.25)
+            elif i == "supports":
+                sfx.ajouter(s + 3.4, souffle(0.7), 0.5)
+            elif i == "resultats":
+                sfx.ajouter(s + 5.0, souffle(0.3, haut=True), 0.3)
+        elif i == "chiffres":
+            section_groove(sec, musique, s, s + d, legere=True, origine=s)
+            volets(sfx, s, s + 0.6)
+            volets(sfx, s + 2.0, s + 2.8)
+            volets(sfx, s + 4.0, s + 5.0)
+            roulement(sec, s + d - 0.75, s + d)
+        elif i == "fin":
+            final(musique, sec, s, s + d)
+            volets(sfx, s + 0.73, s + 1.5)
+            volets(sfx, s + 1.8, s + 2.6, 0.16)
     return maitriser([musique, sec, sfx], D, 1.2)
-
-
-def film_vertical_13s():
-    """Version 9:16 : scènes 1 (0–4 s), 4 (4–9 s) et 9 (9–13 s)."""
-    D = 13.0
-    musique, sec, sfx = Piste(D), Piste(D), Piste(D)
-    section_intro(musique, 0.0, 4.0)
-    cascade(sfx, 0.3)
-    volets(sfx, 1.6, 3.2)
-    sec.ajouter(4.0, impact(profond=False), 0.5)
-    section_groove(sec, musique, 4.0, 9.0)
-    sfx.ajouter(6.5, toucher(), 0.5)
-    sfx.ajouter(6.85, souffle(0.35, haut=True), 0.35)
-    final(musique, sec, 9.0, 13.0)
-    volets(sfx, 9.73, 10.6)
-    volets(sfx, 10.8, 11.6, 0.16)
-    return maitriser([musique, sec, sfx], D, 1.0)
 
 
 if __name__ == "__main__":
     os.makedirs(SORTIE, exist_ok=True)
-    for nom, fabrique in (("hestim-planner.wav", film_42s), ("hestim-planner-9x16.wav", film_vertical_13s)):
-        donnees = fabrique()
+    durees, vertical = lire_storyboard()
+    for nom, ids in (("hestim-planner.wav", list(durees)), ("hestim-planner-9x16.wav", vertical)):
+        donnees = composer(ids, durees)
         wavfile.write(os.path.join(SORTIE, nom), SR, donnees)
-        print(f"{nom} : {len(donnees) / SR:.2f} s")
+        print(f"{nom} : {len(donnees) / SR:.2f} s ({', '.join(ids)})")

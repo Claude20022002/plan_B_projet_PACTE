@@ -14,15 +14,15 @@ import { BEAT, C, FPS } from "./theme";
 // ─── Timings (en temps à 120 BPM ; 1 temps = 15 images = 0,5 s) ─────────────────────────
 // Chaque coupe tombe sur un temps. Modifier une durée décale les scènes suivantes.
 export const TIMINGS = {
-  title: 8 * BEAT, //        0,0 –  4,0 s  logo qui s'assemble, nom
-  outils: 10 * BEAT, //      4,0 –  9,0 s  six outils éparpillés, barrés
-  convergence: 6 * BEAT, //  9,0 – 12,0 s  une seule application
-  agenda: 10 * BEAT, //     12,0 – 17,0 s  le mois, le détail d'une séance
-  alerte: 10 * BEAT, //     17,0 – 22,0 s  alerte de report
-  supports: 10 * BEAT, //   22,0 – 27,0 s  supports de cours, PDF officiel
-  resultats: 12 * BEAT, //  27,0 – 33,0 s  quiz, défis, devoirs notés
-  chiffres: 10 * BEAT, //   33,0 – 38,0 s  90 s · 1 compte · 0 publicité
-  fin: 8 * BEAT, //         38,0 – 42,0 s  emblème, nom, adresse
+  title: 10 * BEAT, //       0 –  5 s  logo qui s'assemble, nom, phrase
+  outils: 14 * BEAT, //      5 – 12 s  « Aujourd'hui, à l'école : » six outils, barrés
+  convergence: 8 * BEAT, // 12 – 16 s  une seule application, pour toute l'école
+  agenda: 14 * BEAT, //     16 – 23 s  le mois, puis le détail d'une séance
+  alerte: 12 * BEAT, //     23 – 29 s  alerte de report (3 s à l'écran)
+  supports: 14 * BEAT, //   29 – 36 s  supports de cours, PDF officiel
+  resultats: 16 * BEAT, //  36 – 44 s  quiz, défis, devoirs notés
+  chiffres: 14 * BEAT, //   44 – 51 s  90 s · 1 compte · 0 publicité
+  fin: 10 * BEAT, //        51 – 56 s  emblème, nom, web · iPhone · Android
 } as const;
 
 const SCENES: { id: keyof typeof TIMINGS; C: React.FC }[] = [
@@ -37,8 +37,8 @@ const SCENES: { id: keyof typeof TIMINGS; C: React.FC }[] = [
   { id: "fin", C: S9Fin },
 ];
 
-/** Version réseaux sociaux (9:16) : scènes 1, 4 et 9 enchaînées (13 s). */
-const VERTICAL: (keyof typeof TIMINGS)[] = ["title", "agenda", "fin"];
+/** Teaser réseaux sociaux (9:16, 34 s) : toute l'histoire, du problème à la fin, sans supports, résultats ni chiffres. */
+export const VERTICAL: (keyof typeof TIMINGS)[] = ["title", "outils", "convergence", "agenda", "alerte", "fin"];
 
 const total = (ids: (keyof typeof TIMINGS)[]) => ids.reduce((s, id) => s + TIMINGS[id], 0);
 

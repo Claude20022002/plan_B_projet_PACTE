@@ -5,13 +5,13 @@ import { fadeUp, ramp, useEnter } from "../components/motion";
 import { C } from "../theme";
 import { phoneGeometry } from "./S3Convergence";
 
-const NAVIGATEUR = 75; // 24,5 s du film
+const NAVIGATEUR = 105; // 3,5 s dans la scène
 const SCREEN_H = 780;
 const BW = 1040;
 const GAP = 70;
 
 /**
- * 6 · 22–27 s : les supports d'un cours sur le téléphone, centré ; à 24,5 s le téléphone se
+ * 6 · les supports d'un cours sur le téléphone, centré ; à 3,5 s le téléphone se
  * décale à gauche et le PDF officiel du mois entre par la droite dans le navigateur.
  */
 export const S6Supports: React.FC = () => {
@@ -36,7 +36,7 @@ export const S6Supports: React.FC = () => {
         width={BW}
         style={{ left: gauche + phoneW + GAP, top: top + (phoneH - browserH) / 2, opacity: nav, transform: `translateX(${(1 - nav) * 420}px)` }}
       >
-        <Screen src="captures/web-09-edt-mensuel.png" srcW={1920} srcH={1080} width={BW} origin="55% 40%" duration={75} />
+        <Screen src="captures/web-09-edt-mensuel.png" srcW={1920} srcH={1080} width={BW} origin="55% 40%" duration={105} />
       </BrowserFrame>
       <div style={{ position: "absolute", left: 0, right: 0, top: 920, textAlign: "center" }}>
         <Line size={52} style={{ ...fadeUp(l1), opacity: l1 * (1 - ramp(frame, NAVIGATEUR, NAVIGATEUR + 6)), position: "absolute", left: 0, right: 0 }}>
