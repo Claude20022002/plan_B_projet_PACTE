@@ -17,13 +17,24 @@ export const debutGrilleMois = (mois) => {
   return decaler(premier, -((premier.getDay() + 6) % 7));
 };
 
-const ETIQUETTES_MAX = 2;
+const ETIQUETTES_MAX = 3;
 // Jours sans cours : la case est teintée
 const TYPES_LIBRES = new Set(['vacances', 'ferie']);
 const ICONE_EVENEMENT = { vacances: 'beach', ferie: 'flag-variant-outline', examen: 'school-outline', ramadan: 'moon-waning-crescent', stage: 'briefcase-outline', autre: 'calendar-star' };
 
 /** Nom court d'un cours pour une case du calendrier : CPI-1-ANA1 → ANA1 */
 const nomCourt = (s) => (s.courseCode ? s.courseCode.split('-').pop() : (s.course || '').slice(0, 4)).slice(0, 5);
+
+/** Une étiquette par cours dans la journée (deux séances du même cours n'en font qu'une) ; un report ou une annulation reste visible */
+const coursDuJour = (liste) => {
+  const parCours = new Map();
+  for (const s of liste) {
+    const cle = s.courseCode || s.course;
+    const deja = parCours.get(cle);
+    if (!deja || (['reporte', 'annule'].includes(s.status) && !['reporte', 'annule'].includes(deja.status))) parCours.set(cle, s);
+  }
+  return [...parCours.values()];
+};
 
 const heureCourte = (h) => (typeof h === 'string' ? h.slice(0, 5) : '');
 
@@ -78,8 +89,9 @@ export default function VueMois({ mois, seances, evenements = [], examens = [], 
               const exams = examensDuJour(iso);
               const evts = evenementsDuJour(iso);
               const libre = evts.some((e) => TYPES_LIBRES.has(e.type));
-              const etiquettes = liste.slice(0, exams.length ? ETIQUETTES_MAX - 1 : ETIQUETTES_MAX);
-              const reste = liste.length - etiquettes.length;
+              const cours = coursDuJour(liste);
+              const etiquettes = cours.slice(0, exams.length ? ETIQUETTES_MAX - 1 : ETIQUETTES_MAX);
+              const reste = cours.length - etiquettes.length;
               const resume = [
                 t('app.semaine.nbSeances', { count: liste.length }),
                 exams.length ? t('app.mois.nbExamens', { count: exams.length }) : null,
