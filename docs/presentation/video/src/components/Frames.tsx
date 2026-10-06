@@ -4,7 +4,7 @@ import { C, FONT_TEXT, RADIUS, SHADOW } from "../theme";
 
 export const BROWSER_BAR = 44;
 
-/** Cadre de navigateur sobre : barre sombre et adresse du site. `width` = largeur du contenu (16:9). */
+/** Cadre de navigateur sobre : barre sombre et nom de l'application (pas d'adresse : le domaine de démonstration n'est pas montré). `width` = largeur du contenu (16:9). */
 export const BrowserFrame: React.FC<{
   width: number;
   style?: React.CSSProperties;
@@ -50,7 +50,7 @@ export const BrowserFrame: React.FC<{
             <rect x="1" y="6" width="10" height="7.5" rx="1.5" fill={C.inkSoft} />
             <path d="M3.2 6V4.3a2.8 2.8 0 0 1 5.6 0V6" stroke={C.inkSoft} strokeWidth="1.5" />
           </svg>
-          planner.finadmintech.fr
+          HESTIM Planner
         </div>
       </div>
       <div style={{ position: "relative", width, height: contentH, overflow: "hidden", background: "#fff" }}>

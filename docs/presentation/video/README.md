@@ -40,7 +40,7 @@ node scripts/verifier.mjs HestimPlanner 0 1 4 7.5 9.5 12 15 18.5 22 25 27 31 33 
 | 6 | 22–27 s | Supports d'un cours, puis PDF officiel du mois dans le navigateur | `S6Supports.tsx` |
 | 7 | 27–33 s | Résultats d'un quiz (web + mobile, barres d'équipes), puis devoir noté | `S7Resultats.tsx` |
 | 8 | 33–38 s | `90 S` · `1 COMPTE` · `0 PUBLICITÉ`, avec leur légende | `S8Chiffres.tsx` |
-| 9 | 38–42 s | L'emblème se réassemble, `HESTIM PLANNER`, « L'école, à l'heure. », `PLANNER.FINADMINTECH.FR` ; dernière seconde immobile | `S9Fin.tsx` |
+| 9 | 38–42 s | L'emblème se réassemble, `HESTIM PLANNER`, « L'école, à l'heure. », `WEB · IPHONE · ANDROID` ; dernière seconde immobile | `S9Fin.tsx` |
 
 ## Bande-son
 

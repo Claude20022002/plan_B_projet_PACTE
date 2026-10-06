@@ -7,7 +7,8 @@ import { fadeUp, useEnter, usePortrait } from "../components/motion";
 import { C } from "../theme";
 
 /**
- * 9 · 38–42 s : l'emblème se réassemble en accéléré, le nom et l'adresse basculent en volets ;
+ * 9 · 38–42 s : l'emblème se réassemble en accéléré, le nom et les supports (web, iPhone, Android)
+ * basculent en volets ;
  * dernière seconde immobile pour enchaîner sur la première slide.
  */
 export const S9Fin: React.FC = () => {
@@ -33,11 +34,11 @@ export const S9Fin: React.FC = () => {
         </Line>
         {portrait ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
-            <FlapText text="PLANNER." start={54} fontSize={62} stagger={1} flip={4} hiddenBefore />
-            <FlapText text="FINADMINTECH.FR" start={60} fontSize={62} stagger={1} flip={4} hiddenBefore />
+            <FlapText text="WEB · IPHONE" start={54} fontSize={62} stagger={1} flip={4} hiddenBefore />
+            <FlapText text="ANDROID" start={62} fontSize={62} stagger={1} flip={4} hiddenBefore />
           </div>
         ) : (
-          <FlapText text="PLANNER.FINADMINTECH.FR" start={54} fontSize={50} stagger={1} flip={4} hiddenBefore />
+          <FlapText text="WEB · IPHONE · ANDROID" start={54} fontSize={50} stagger={1} flip={4} hiddenBefore />
         )}
       </div>
     </AbsoluteFill>

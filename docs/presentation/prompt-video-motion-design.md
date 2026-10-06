@@ -24,7 +24,8 @@ HESTIM Planner est l'application qui réunit toute la vie de l'école HESTIM (Ma
 
 ## Ressources (dossier `captures/`)
 
-Écrans réels de l'application en ligne (planner.finadmintech.fr), dans leur version actuelle :
+Écrans réels de l'application, dans leur version actuelle. Le domaine de démonstration (finadmintech) ne doit **jamais** apparaître dans la vidéo : il sert seulement à faire tourner l'application sur les appareils.
+
 
 | Fichier | Contenu |
 | --- | --- |
@@ -74,7 +75,7 @@ Si un fichier manque, saute le plan correspondant plutôt que d'inventer un écr
   - **Barlow Condensed** 600/700, en capitales espacées (0,06 à 0,16 em), pour les titres et les chiffres ;
   - **Barlow** 400/600 pour les phrases.
 - Cadres :
-  - captures web dans un cadre de navigateur sobre (barre sombre, URL `planner.finadmintech.fr`) ;
+  - captures web dans un cadre de navigateur sobre (barre sombre avec le nom « HESTIM Planner », sans adresse) ;
   - captures mobiles dans un cadre de téléphone fin et sombre ;
   - coins arrondis de 14 px, ombre douce, jamais de reflet ni de dégradé arc-en-ciel.
 - Mouvement :
@@ -96,7 +97,7 @@ Si un fichier manque, saute le plan correspondant plutôt que d'inventer un écr
 | 6 | 22,0–27,0 s | 10 | téléphone `mobile-39-supports-module`, à côté de `web-09-edt-mensuel` dans le navigateur | « Les supports de chaque cours, à un geste. » puis « Le PDF officiel, toujours disponible. » | le téléphone à gauche, le navigateur entre par la droite à 24,5 s et s'arrête à côté ; la deuxième phrase remplace la première sur ce temps |
 | 7 | 27,0–33,0 s | 12 | `mobile-13-resultats` dans le téléphone et `web-21-resultats-enseignant` dans le navigateur, puis `web-26-devoir-notes` | « Quiz, défis, devoirs notés. » puis « Les résultats restent à l'école. » | les deux écrans glissent l'un vers l'autre et s'arrêtent côte à côte ; la barre de l'équipe gagnante se remplit ; à 30,5 s, coupe sur le devoir noté (zoom lent) |
 | 8 | 33,0–38,0 s | 10 | fond noir, trois chiffres en volets | `90 S` · « pour planifier tout un semestre » ; `1 COMPTE` · « au lieu de six outils » ; `0 PUBLICITÉ` · « pour les jeux et les quiz » | un chiffre par groupe de 3 temps (33,0 / 34,5 / 36,0 s) ; chaque chiffre bascule en volets, la légende apparaît en fondu dessous ; les trois restent alignés jusqu'à 38,0 s |
-| 9 | 38,0–42,0 s | 8 | fond noir, cadre marine fin | emblème sur sa tuile, `HESTIM PLANNER`, « L'école, à l'heure. », `PLANNER.FINADMINTECH.FR` | l'emblème se réassemble en accéléré (0,8 s) ; le titre et l'adresse basculent en volets ; dernière seconde immobile, pour enchaîner sur la slide 1 |
+| 9 | 38,0–42,0 s | 8 | fond noir, cadre marine fin | emblème sur sa tuile, `HESTIM PLANNER`, « L'école, à l'heure. », `WEB · IPHONE · ANDROID` | l'emblème se réassemble en accéléré (0,8 s) ; le titre et l'adresse basculent en volets ; dernière seconde immobile, pour enchaîner sur la slide 1 |
 
 ## Contraintes de qualité
 
