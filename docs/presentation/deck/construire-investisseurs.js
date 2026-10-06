@@ -136,7 +136,7 @@ async function construire() {
             ["discussion", "Groupes WhatsApp", "Reports et changements de salle de dernière minute"],
             ["classe", "Google Classroom", "Devoirs et échanges avec les enseignants"],
             ["livre", "Moodle", "Cours et supports en ligne"],
-            ["manette", "Sites de jeux externes", "Quiz et jeux en anglais et dans d'autres matières"],
+            ["manette", "Sites de jeux", "Quiz et jeux externes, en anglais et dans d'autres matières"],
         ];
         const W = 2.45, H = 2.15, G = 0.25;
         outils.forEach(([ic, nom, usage], i) => {
@@ -248,10 +248,11 @@ async function construire() {
             ["1", "compte et une application, au lieu de six outils"],
             ["0", "publicité ni compte externe pour les jeux et les quiz"],
         ];
+        // Chiffre au-dessus, légende dessous : trois colonnes alignées sur les cartes
         chiffres.forEach(([n, legende], i) => {
-            const x = 0.6 + i * 4.1;
-            s.addText(n, { x, y: 1.45, w: 1.55, h: 1.15, fontFace: THEME.headFontFace, fontSize: 54, bold: true, color: i === 0 ? C.accent1 : C.text2, valign: "middle", margin: 0, isTextBox: true, objectName: `chiffre-${i + 1}` });
-            s.addText(legende, { x: x + 1.65, y: 1.45, w: 2.25, h: 1.15, fontFace: THEME.bodyFontFace, fontSize: 14, color: C.accent4, valign: "middle", margin: 0, isTextBox: true, objectName: `chiffre-${i + 1}-legende` });
+            const x = 0.6 + i * 4.13;
+            s.addText(n, { x, y: 1.3, w: 3.8, h: 0.9, fontFace: THEME.headFontFace, fontSize: 54, bold: true, color: i === 0 ? C.accent1 : C.text2, valign: "middle", margin: 0, isTextBox: true, objectName: `chiffre-${i + 1}` });
+            s.addText(legende, { x, y: 2.2, w: 3.8, h: 0.6, fontFace: THEME.bodyFontFace, fontSize: 14, color: C.accent4, valign: "top", margin: 0, isTextBox: true, objectName: `chiffre-${i + 1}-legende` });
         });
 
         const publics = [
@@ -262,7 +263,7 @@ async function construire() {
         ];
         const W = 2.85, G = 0.233;
         publics.forEach(([ic, titre, texte], i) => {
-            const x = 0.6 + i * (W + G), y = 3.0, h = 3.55;
+            const x = 0.6 + i * (W + G), y = 3.1, h = 3.45;
             s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w: W, h, rectRadius: 0.12, fill: { color: C.background2 }, line: { color: C.background2 }, objectName: `public-${i + 1}-carte` });
             pastille(s, I[ic], { x: x + 0.28, y: y + 0.3, d: 0.66, nom: `public-${i + 1}` });
             s.addText(titre, { x: x + 0.28, y: y + 1.12, w: W - 0.5, h: 0.45, fontFace: THEME.headFontFace, fontSize: 20, bold: true, color: C.text2, valign: "middle", margin: 0, isTextBox: true, objectName: `public-${i + 1}-titre` });
@@ -284,14 +285,14 @@ async function construire() {
 
         s.addText("DISPONIBLE AUJOURD'HUI", { x: 0.7, y: 1.7, w: 5.6, h: 0.4, fontFace: THEME.headFontFace, fontSize: 16, bold: true, charSpacing: 3, color: C.accent1, margin: 0, isTextBox: true, objectName: "disponible-titre" });
         const disponible = [
-            "Le site pour l'administration, les enseignants et les étudiants",
+            "Le site web, pour toute l'école",
             "L'application mobile, sur iPhone et Android",
             "La bibliothèque de cours",
             "Les jeux, les quiz et les devoirs notés",
         ];
         disponible.forEach((texte, i) => {
-            const y = 2.3 + i * 0.78;
-            s.addImage({ data: I.cocheOrange, x: 0.7, y: y + 0.08, w: 0.36, h: 0.36, objectName: `disponible-${i + 1}-coche` });
+            const y = 2.32 + i * 0.88;
+            s.addImage({ data: I.cocheOrange, x: 0.7, y: y + 0.1, w: 0.36, h: 0.36, objectName: `disponible-${i + 1}-coche` });
             s.addText(texte, { x: 1.25, y, w: 5.2, h: 0.55, fontFace: THEME.bodyFontFace, fontSize: 17, color: C.background1, valign: "middle", margin: 0, isTextBox: true, objectName: `disponible-${i + 1}` });
         });
 

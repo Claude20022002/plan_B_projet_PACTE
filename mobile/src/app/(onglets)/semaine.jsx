@@ -178,7 +178,7 @@ export default function Semaine() {
           {aJour && resultat.erreur ? (
             vide
           ) : (
-            <VueMois mois={mois} seances={seances} evenements={aJour ? resultat.evenements : AUCUNE} examens={aJour ? resultat.examens : AUCUNE} jourChoisi={jourChoisi} choisir={setJourChoisi} onSeance={setFiche} />
+            <VueMois mois={mois} chargement={!aJour} seances={seances} evenements={aJour ? resultat.evenements : AUCUNE} examens={aJour ? resultat.examens : AUCUNE} jourChoisi={jourChoisi} choisir={setJourChoisi} onSeance={setFiche} />
           )}
         </ScrollView>
       ) : null}

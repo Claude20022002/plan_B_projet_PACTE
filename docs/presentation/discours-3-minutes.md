@@ -1,57 +1,64 @@
 # HESTIM Planner — déroulé de la présentation (3 minutes)
 
-Déroulé conseillé : la vidéo d'ouverture (36 s), puis trois slides. Les temps sont cumulés.
-Les phrases sont écrites pour être dites, pas lues : garde les chiffres en tête, le reste peut varier.
+Support : `HESTIM-Planner-presentation.pptx` (6 slides ; le même texte est dans les notes de chaque slide).
+Public : direction, investisseurs, jury, pas forcément informaticiens. On parle de **services rendus**, jamais de technique.
+La vidéo d'ouverture (36 s) reste possible avant la slide 1 ; sans elle, on tient en 3 minutes.
 
 ---
 
-## 0:00 – 0:36 · Vidéo d'ouverture
+## 0:00 – 0:20 · Slide 1 — HESTIM Planner
 
-Lancer la vidéo sans rien dire. Laisser la dernière image (l'adresse du site) à l'écran pendant que tu prends la parole.
-
-## 0:36 – 1:10 · Slide 1 — Le problème
-
-> « Chaque mois, HESTIM publie un nouvel emploi du temps. Il est préparé à la main, dans des tableurs, puis envoyé en PDF. Quand un cours est reporté, l'information circule par WhatsApp, et certains l'apprennent devant une salle vide.
+> « Bonjour. Une école, ce sont des centaines de cours chaque mois, des salles qui changent, des supports, des devoirs, des quiz… et des étudiants qui doivent savoir, à chaque instant, où aller et quoi préparer.
 >
-> Les supports de cours sont éparpillés entre Drive et les groupes de discussion. Les quiz passent par des sites extérieurs, Kahoot ou Wooclap, et les résultats sont perdus.
->
-> Bref : tout existe, mais rien ne se parle. »
+> HESTIM Planner réunit tout cela dans une seule application, sur le téléphone de chaque étudiant et sur l'ordinateur de chaque enseignant. Elle est déjà en ligne. »
 
-## 1:10 – 2:25 · Slide 2 — La solution (et la démo)
+## 0:20 – 0:55 · Slide 2 — Aujourd'hui, l'information est éparpillée
 
-> « HESTIM Planner réunit tout cela dans une seule plateforme.
+> « Aujourd'hui, l'école communique avec six outils différents. Les informations partent par Gmail, à tout le monde. L'emploi du temps est envoyé en PDF chaque mois, et il faut le re-télécharger à chaque changement. Les reports de dernière minute passent par des groupes WhatsApp. Les devoirs vivent dans Classroom, les cours dans Moodle, et pour jouer en anglais ou réviser, on passe par des sites extérieurs.
 >
-> **Un : le semestre se construit tout seul.** Un solveur d'optimisation, Timefold, place les cours en respectant toutes les règles de l'école : disponibilités des enseignants, salles, campus Gandhi et Stendhal, pause du vendredi, Ramadan. Sur le serveur en ligne, en 90 secondes, il a placé 261 enseignements et déployé 2 620 séances sur le semestre, et il signale lui-même ce qui reste à arbitrer.
->
-> **Deux : chacun voit sa journée en temps réel.** L'écran s'inspire des panneaux d'aéroport : la prochaine séance, la salle, et les changements en orange. Sur mobile, l'étudiant reçoit une notification au moindre report.
->
-> **Trois : une seule connexion pour tout.** Les supports du cours s'ouvrent depuis la séance, et l'enseignant lance un quiz en un clic : ses étudiants sont prévenus et rejoignent la partie sans saisir de code. »
+> Résultat : l'information arrive en retard, les équipes saisissent la même chose plusieurs fois, et les données de nos étudiants sont éparpillées chez des services externes. »
 
-*Si le temps le permet (20 s) :* montrer sur ton téléphone l'écran **Jeux**, ou ouvrir `planner.finadmintech.fr` en direct.
+## 0:55 – 1:30 · Slide 3 — Une seule application, quatre services
 
-## 2:25 – 3:00 · Slide 3 — Ce que ça change
-
-> « Pour la scolarité, des heures gagnées chaque mois et un emploi du temps sans conflit. Pour les enseignants, un service suivi et des quiz intégrés. Pour les étudiants, la bonne information, au bon moment, dans leur poche.
+> « HESTIM Planner remplace cet éparpillement par une seule application, avec un seul compte.
 >
-> Le projet est en ligne aujourd'hui, à l'adresse planner.finadmintech.fr. Il est construit comme une vraie plateforme : six services qui se parlent, une connexion unique sécurisée, et plus de 440 tests automatiques.
+> Quatre services. Un emploi du temps vivant : la semaine, le mois, le détail de chaque cours, toujours à jour. Des alertes instantanées : si un cours est reporté ou change de salle, l'étudiant le sait tout de suite, sur son téléphone. Une bibliothèque de cours : tous les supports rangés par module. Et des jeux et des quiz intégrés : en classe ou en devoir, corrigés automatiquement, et les résultats restent à l'école. »
+
+*Si le temps le permet (15 s) :* montrer l'application sur le téléphone, onglet **Semaine** (vue Mois) puis **Jeux**.
+
+## 1:30 – 2:05 · Slide 4 — Ce que la plateforme remplace
+
+> « Concrètement, outil par outil. Les informations de cours ne partent plus à tout le monde par Gmail : elles arrivent aux seuls étudiants concernés. Le PDF du mois devient un emploi du temps vivant, et le PDF officiel reste disponible. Les reports ne passent plus par WhatsApp : l'alerte est automatique, avec la nouvelle salle et la nouvelle heure. Classroom et Moodle sont remplacés par la bibliothèque et les devoirs en quiz, corrigés tout seuls. Et les jeux sont dans l'application : pas de publicité, pas de compte externe, et l'école garde les résultats. »
+
+## 2:05 – 2:40 · Slide 5 — Ce que chacun y gagne
+
+> « Pour la direction et la scolarité : l'emploi du temps d'un semestre entier est proposé automatiquement — 2 620 séances placées en 90 secondes — et les conflits sont signalés avant qu'ils ne posent problème.
+>
+> Pour les enseignants : un seul endroit pour leurs cours, leurs supports et leurs quiz. Pour les étudiants : toute leur vie d'école dans la poche, en français ou en anglais. Et pour l'école : une image moderne, et des données qui restent chez elle. »
+
+## 2:40 – 3:00 · Slide 6 — Déjà en ligne, prêt pour un pilote
+
+> « Tout ce que je viens de vous montrer est en ligne aujourd'hui : le site, l'application sur iPhone et Android, la bibliothèque et les jeux.
+>
+> Nous proposons de commencer par un pilote d'un semestre avec une filière, d'ajouter les annonces ciblées pour remplacer les envois Gmail, puis d'ouvrir la plateforme à toute l'école — et demain à d'autres établissements.
 >
 > HESTIM Planner : l'école, à l'heure. Merci. »
 
 ---
 
-## Chiffres à connaître (questions du jury)
+## Chiffres à connaître
 
 | Sujet | Chiffre |
-|---|---|
-| Génération (serveur en ligne) | 2 620 séances déployées, 261 enseignements placés en 90 s (25 incomplets signalés), ~20 000 essais par seconde |
-| Bibliothèque | 82 supports de cours importés depuis Drive, rattachés à leur module |
+| --- | --- |
+| Emploi du temps automatique | 2 620 séances placées sur un semestre en 90 secondes (données de démonstration HESTIM) |
+| Bibliothèque | 82 supports de cours importés, rangés par module |
 | Données de démonstration | 11 filières, 149 modules, 76 enseignants, 684 étudiants, 41 salles sur 2 campus |
-| Tests automatiques | 199 intégration + 74 unitaires (Planner), 142 (StudyLib), 14 (solveur Java), 13 (mobile) |
-| Architecture | Planner (Node.js), web (React), solveur (Java, Timefold), bibliothèque (Laravel), jeux (ClassQuiz, Python), mobile (Expo / React Native) |
-| Sécurité | connexion unique par jetons signés RS256 et OpenID Connect, protection CSRF, secrets hors du code |
+| Langues | français et anglais |
 
 ## Questions probables
 
-- **« Pourquoi pas un outil existant ? »** Les logiciels d'EDT du marché ne connaissent ni les deux campus, ni le rythme mensuel, ni les séances en demi-journée d'HESTIM ; et ils ne relient pas l'EDT aux supports et aux quiz.
-- **« Et si le solveur ne trouve pas ? »** Il place le maximum et liste ce qui manque (par exemple un vacataire pas assez disponible) ; l'administration tranche, et chaque modification manuelle repasse par les mêmes règles.
-- **« Les données des étudiants ? »** Hébergées sur un serveur à nous, pas de revente, comptes créés par l'école, avis de stage publiés uniquement avec l'accord explicite de l'étudiant.
+- **« Pourquoi ne pas continuer avec Gmail, Classroom et Moodle ? »** Ce sont de bons outils, mais séparés : aucun ne connaît l'emploi du temps de l'étudiant. HESTIM Planner part de son emploi du temps pour lui envoyer la bonne information au bon moment, et relie chaque cours à ses supports et à ses quiz.
+- **« Et les annonces générales de l'école ? »** Aujourd'hui, l'application prévient automatiquement pour tout ce qui touche aux cours (reports, salles, devoirs, quiz). Les annonces ciblées par filière ou par groupe sont la prochaine étape ; d'ici là, Gmail reste utile pour les messages généraux.
+- **« Combien de temps pour la mettre en place ? »** Elle est déjà en ligne avec les données de l'école. Un pilote d'un semestre sur une filière permet de la valider avant de l'étendre.
+- **« Les données des étudiants ? »** Hébergées sur un serveur maîtrisé, sans publicité ni revente ; les comptes sont créés par l'école ; un avis de stage n'est publié qu'avec l'accord de l'étudiant.
+- **« Et si l'emploi du temps automatique ne convient pas ? »** Il propose, la scolarité décide : chaque cas qu'il ne peut pas placer est signalé, et toute modification à la main repasse par les mêmes règles.

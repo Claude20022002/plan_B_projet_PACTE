@@ -43,7 +43,7 @@ const heureCourte = (h) => (typeof h === 'string' ? h.slice(0, 5) : '');
  * couleur du cours), ses examens et les jours de vacances ou fériés (case teintée). Dessous, le
  * bilan du mois puis le détail du jour choisi : événements, examens et séances.
  */
-export default function VueMois({ mois, seances, evenements = [], examens = [], jourChoisi, choisir, onSeance }) {
+export default function VueMois({ mois, chargement = false, seances, evenements = [], examens = [], jourChoisi, choisir, onSeance }) {
   const { t, i18n } = useTranslation();
   const theme = useTheme();
   const styles = useStyles();
@@ -132,9 +132,10 @@ export default function VueMois({ mois, seances, evenements = [], examens = [], 
 
       {/* Bilan du mois */}
       <View style={styles.bilan}>
-        <Bilan icone="calendar-check-outline" valeur={nbSeances} libelle={t('app.mois.seances', { count: nbSeances })} />
-        <Bilan icone="school-outline" valeur={nbExamens} libelle={t('app.mois.examens', { count: nbExamens })} />
-        <Bilan icone="beach" valeur={joursLibres} libelle={t('app.mois.joursLibres', { count: joursLibres })} />
+        {/* Pendant le chargement, un tiret plutôt qu'un zéro trompeur */}
+        <Bilan icone="calendar-check-outline" valeur={chargement ? '–' : nbSeances} libelle={t('app.mois.seances', { count: nbSeances })} />
+        <Bilan icone="school-outline" valeur={chargement ? '–' : nbExamens} libelle={t('app.mois.examens', { count: nbExamens })} />
+        <Bilan icone="beach" valeur={chargement ? '–' : joursLibres} libelle={t('app.mois.joursLibres', { count: joursLibres })} />
       </View>
 
       <Text style={styles.titreJour} accessibilityRole="header">
