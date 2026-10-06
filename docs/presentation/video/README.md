@@ -8,20 +8,21 @@ Vidéo motion design de **42 s** qui ouvre la présentation (voir `../discours-3
 
 | Fichier | Format |
 | --- | --- |
-| `out/hestim-planner.mp4` | 1920 × 1080, 30 i/s, H.264 (yuv420p), 42 s, 1260 images, sans son |
-| `out/hestim-planner-9x16.mp4` | 1080 × 1920, scènes 1, 4 et 9 enchaînées (13 s), pour les réseaux sociaux |
+| `out/hestim-planner.mp4` | 1920 × 1080, 30 i/s, H.264 (yuv420p), 42 s, 1260 images, son AAC stéréo |
+| `out/hestim-planner-9x16.mp4` | 1080 × 1920, scènes 1, 4 et 9 enchaînées (13 s), avec sa propre bande-son, pour les réseaux sociaux |
 
 ## Commandes
 
 ```bash
 npm install
-npm run render            # copie les captures dans public/ puis rend out/hestim-planner.mp4
+npm run render            # copie les captures, compose la bande-son, puis rend out/hestim-planner.mp4
+npm run musique           # seulement la bande-son : public/audio/*.wav (Python, numpy, scipy)
 npm run render:vertical   # version 9:16
 npm run studio            # aperçu interactif pour ajuster les timings
 node scripts/verifier.mjs HestimPlanner 0 1 4 7.5 9.5 12 15 18.5 22 25 27 31 33 36.5 38 41.5   # images fixes dans out/stills/
 ```
 
-`npm run render` équivaut à `npm run assets && npx remotion render HestimPlanner out/hestim-planner.mp4`.
+`npm run render` équivaut à `npm run assets && npm run musique && npx remotion render HestimPlanner out/hestim-planner.mp4`.
 
 ## Rythme
 
@@ -40,6 +41,28 @@ node scripts/verifier.mjs HestimPlanner 0 1 4 7.5 9.5 12 15 18.5 22 25 27 31 33 
 | 7 | 27–33 s | Résultats d'un quiz (web + mobile, barres d'équipes), puis devoir noté | `S7Resultats.tsx` |
 | 8 | 33–38 s | `90 S` · `1 COMPTE` · `0 PUBLICITÉ`, avec leur légende | `S8Chiffres.tsx` |
 | 9 | 38–42 s | L'emblème se réassemble, `HESTIM PLANNER`, « L'école, à l'heure. », `PLANNER.FINADMINTECH.FR` ; dernière seconde immobile | `S9Fin.tsx` |
+
+## Bande-son
+
+- La bande-son est originale : `scripts/composer-musique.py` la synthétise, sans aucun échantillon externe, donc sans question de licence.
+- Elle est en do majeur, à 120 BPM, et suit les scènes :
+  - intro douce ;
+  - pulsation tendue sur les outils éparpillés ;
+  - montée et « drop » à 12 s ;
+  - boucle C – G – Am – F ;
+  - allègement sur les chiffres ;
+  - accord final tenu, puis fondu.
+- Bruitages calés sur les animations :
+  - une note par triangle du logo ;
+  - cliquetis des volets ;
+  - « zips » quand les outils sont barrés ;
+  - souffle de convergence ;
+  - toucher ;
+  - carillon de la notification ;
+  - impacts.
+- Pour la changer :
+  - modifier les fonctions `film_42s()` et `film_vertical_13s()` (temps en secondes, ceux du storyboard), puis relancer `npm run render` ;
+  - ou remplacer `public/audio/hestim-planner.wav` par sa propre musique (même nom) et lancer seulement `npx remotion render HestimPlanner out/hestim-planner.mp4`.
 
 ## Notes
 
