@@ -1,6 +1,6 @@
 import { resetDatabase, closeDatabase, createUser, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Affectation, AnneeUniversitaire, Appartenir, Campus, Cours, CoursComposante, Creneau, Enseignement, Filiere, Groupe, Periode, Salle } from "../../models/index.js";
+import { Affectation, AnneeUniversitaire, Appartenir, Campus, Cours, CoursComposante, Creneau, Enseignement, Evenement, Filiere, Groupe, Periode, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle } from "../../models/index.js";
 
 /**
  * Phase D2 : emploi du temps de l'étudiant connecté pour l'application mobile.
@@ -78,6 +78,37 @@ describe("GET /api/emplois-du-temps/moi", () => {
         const { body } = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-06&au=2027-03-06");
         expect(body.seances).toHaveLength(1);
         expect(body.seances[0]).toMatchObject({ statut: "reporte", date_seance: "2027-03-06", date_seance_initiale: "2027-03-01", creneauInitial: { heure_debut: "14:00:00", heure_fin: "15:45:00" } });
+    });
+
+    test("agenda : les événements qui le concernent et ses examens publiés", async () => {
+        const { admin, promo, td1, td2, autre, cours, salle } = ref;
+        const ev = (extra) => ({ date_debut: "2027-03-01", date_fin: "2027-03-01", id_user_createur: admin.id_user, bloque_affectations: false, ...extra });
+        await Evenement.bulkCreate([
+            ev({ titre: "Fête du Trône", type_evenement: "ferie", portee: "etablissement" }),
+            ev({ titre: "Vacances de printemps", type_evenement: "vacances", portee: "filiere", id_cible: promo.id_filiere, date_debut: "2027-03-04", date_fin: "2027-03-12" }),
+            ev({ titre: "Journée 4e année", type_evenement: "autre", portee: "niveau", id_cible: promo.id_filiere, niveau: "4ème année" }),
+            ev({ titre: "Sortie du TD voisin", type_evenement: "autre", portee: "groupe", id_cible: td2.id_groupe }),
+            ev({ titre: "Vacances autre filière", type_evenement: "vacances", portee: "filiere", id_cible: autre.id_filiere }),
+            ev({ titre: "Réunion pédagogique", type_evenement: "reunion", portee: "etablissement" }),
+            ev({ titre: "Hors période", type_evenement: "ferie", portee: "etablissement", date_debut: "2027-05-01", date_fin: "2027-05-01" }),
+        ]);
+        const base = { id_cours: cours.id_cours, heure_debut: "09:00", heure_fin: "11:00", id_createur: admin.id_user };
+        const [publie, brouillon, voisin] = await SessionExamen.bulkCreate([
+            { ...base, titre: "Examen d'anglais", date: "2027-03-02", statut: "publiee" },
+            { ...base, titre: "Brouillon", date: "2027-03-02", statut: "brouillon" },
+            { ...base, titre: "Examen du TD voisin", date: "2027-03-02", statut: "publiee" },
+        ]);
+        await SessionExamenGroupe.bulkCreate([
+            { id_session: publie.id_session, id_groupe: promo.id_groupe },
+            { id_session: brouillon.id_session, id_groupe: td1.id_groupe },
+            { id_session: voisin.id_session, id_groupe: td2.id_groupe },
+        ]);
+        await SessionExamenSalle.create({ id_session: publie.id_session, id_salle: salle.id_salle });
+
+        const { body } = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-01&au=2027-03-07");
+        expect(body.evenements.map((e) => e.titre).sort()).toEqual(["Fête du Trône", "Journée 4e année", "Vacances de printemps"]);
+        expect(body.evenements.find((e) => e.type === "vacances")).toEqual(expect.objectContaining({ date_debut: "2027-03-04", date_fin: "2027-03-12" }));
+        expect(body.examens).toEqual([expect.objectContaining({ titre: "Examen d'anglais", date: "2027-03-02", cours: { code: "MOB-ANG", nom: "Anglais" }, salles: ["G-MOB1"] })]);
     });
 
     test("réservé aux étudiants ; période validée", async () => {

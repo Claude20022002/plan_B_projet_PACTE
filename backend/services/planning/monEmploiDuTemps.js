@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementGroupe, Groupe, Salle, Users } from "../../models/index.js";
+import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementGroupe, Evenement, Filiere, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { ancetres } from "./groupes.js";
 import { appliquerRamadan } from "./ramadan.js";
@@ -23,6 +23,67 @@ const ajouterJours = (iso, n) => {
     return d.toISOString().slice(0, 10);
 };
 
+// Événements internes au personnel : pas dans l'agenda des étudiants
+const TYPES_EVENEMENT_ETUDIANT = ["vacances", "examen", "ferie", "ramadan", "stage", "autre"];
+
+/**
+ * Événements du calendrier qui concernent l'étudiant (vacances, jours fériés, examens, stage…) :
+ * ceux de l'établissement, du campus de sa filière, de sa filière, de son niveau ou de ses groupes.
+ */
+const evenementsDeLEtudiant = async (groupes, debut, fin) => {
+    const filieres = [...new Set(groupes.map((g) => g.id_filiere))];
+    const campus = (await Filiere.findAll({ where: { id_filiere: filieres }, attributes: ["id_campus_prefere"] })).map((f) => f.id_campus_prefere).filter(Boolean);
+    const niveaux = [...new Set(groupes.map((g) => g.niveau).filter(Boolean))];
+    const evenements = await Evenement.findAll({
+        where: {
+            date_debut: { [Op.lte]: fin },
+            date_fin: { [Op.gte]: debut },
+            type_evenement: TYPES_EVENEMENT_ETUDIANT,
+            [Op.or]: [
+                { portee: "etablissement" },
+                ...(campus.length ? [{ portee: "campus", id_cible: campus }] : []),
+                { portee: "filiere", id_cible: filieres },
+                ...(niveaux.length ? [{ portee: "niveau", id_cible: filieres, niveau: niveaux }] : []),
+                { portee: "groupe", id_cible: groupes.map((g) => g.id_groupe) },
+            ],
+        },
+        order: [["date_debut", "ASC"]],
+    });
+    return evenements.map((e) => ({
+        id: e.id_evenement,
+        titre: e.titre,
+        type: e.type_evenement,
+        date_debut: e.date_debut,
+        date_fin: e.date_fin,
+        heure_debut: e.heure_debut ?? null,
+        heure_fin: e.heure_fin ?? null,
+        date_confirmee: e.date_confirmee,
+    }));
+};
+
+/** Examens publiés de ses groupes (et de leurs parents) sur la période. */
+const examensDeLEtudiant = async (ids, debut, fin) => {
+    const liens = await SessionExamenGroupe.findAll({ where: { id_groupe: ids }, attributes: ["id_session"] });
+    if (!liens.length) return [];
+    const examens = await SessionExamen.findAll({
+        where: { id_session: [...new Set(liens.map((l) => l.id_session))], statut: "publiee", date: { [Op.between]: [debut, fin] } },
+        include: [
+            { model: Cours, as: "cours", attributes: ["code_cours", "nom_cours"] },
+            { model: SessionExamenSalle, as: "salles", include: [{ model: Salle, as: "salle", attributes: ["nom_salle"] }] },
+        ],
+        order: [["date", "ASC"], ["heure_debut", "ASC"]],
+    });
+    return examens.map((x) => ({
+        id: x.id_session,
+        titre: x.titre,
+        date: x.date,
+        heure_debut: x.heure_debut,
+        heure_fin: x.heure_fin,
+        cours: x.cours ? { code: x.cours.code_cours, nom: x.cours.nom_cours } : null,
+        salles: (x.salles ?? []).map((s) => s.salle?.nom_salle).filter(Boolean),
+    }));
+};
+
 export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
     const invalide = () => new ErreurMetier("Période invalide (du et au au format AAAA-MM-JJ)", 400);
     // Une chaîne seulement (?du=a&du=b donnerait un tableau), validée avant tout calcul
@@ -34,7 +95,7 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
 
     const appartenances = await Appartenir.findAll({ where: { id_user_etudiant: idUser }, include: [{ model: Groupe, as: "groupe" }] });
     const directs = appartenances.map((a) => a.groupe).filter(Boolean);
-    if (!directs.length) return { du: debut, au: fin, groupes: [], seances: [] };
+    if (!directs.length) return { du: debut, au: fin, groupes: [], seances: [], evenements: [], examens: [] };
 
     // Groupes de l'étudiant et leurs ancêtres (TP → TD → promotion), dans leurs filières
     const tous = await Groupe.findAll({ where: { id_filiere: [...new Set(directs.map((g) => g.id_filiere))] } });
@@ -65,6 +126,7 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
         ],
     });
     await appliquerRamadan(seances);
+    const [evenements, examens] = await Promise.all([evenementsDeLEtudiant(ids.map((id) => parId.get(id)).filter(Boolean), debut, fin), examensDeLEtudiant(ids, debut, fin)]);
 
     return {
         du: debut,
@@ -78,5 +140,7 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
                 salle: salle ? { id_salle: salle.id_salle, nom_salle: salle.nom_salle, etage: salle.etage ?? null, type_salle: salle.type_salle, batiment: salle.batiment ?? null, campus: salle.campus ? { code: salle.campus.code, nom: salle.campus.nom } : null } : null,
             };
         }),
+        evenements,
+        examens,
     };
 };
