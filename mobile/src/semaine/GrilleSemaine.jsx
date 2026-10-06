@@ -3,6 +3,7 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { toLocalISODate } from '../../../shared/session.js';
 import { couleurStatut, creerStyles, lineColor, useTheme } from '../theme';
+import { useMargeOnglets } from '../verre/Verre';
 
 const HEURE = 60; // hauteur d'une heure (points)
 const JOURS = 6; // du lundi au samedi
@@ -50,6 +51,7 @@ export default function GrilleSemaine({ lundi, seances, onSeance }) {
   const { i18n } = useTranslation();
   const theme = useTheme();
   const styles = useStyles();
+  const margeBas = useMargeOnglets();
   const [maintenant, setMaintenant] = useState(() => new Date());
   useEffect(() => {
     const id = setInterval(() => setMaintenant(new Date()), 60_000);
@@ -83,7 +85,7 @@ export default function GrilleSemaine({ lundi, seances, onSeance }) {
         })}
       </View>
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView contentContainerStyle={{ paddingBottom: margeBas }} scrollIndicatorInsets={{ bottom: margeBas }}>
         <View style={{ flexDirection: 'row', height: heures.length * HEURE }}>
           {/* Heures */}
           <View style={{ width: LARGEUR_HEURES }}>

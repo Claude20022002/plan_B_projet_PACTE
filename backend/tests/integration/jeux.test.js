@@ -57,6 +57,15 @@ describe("Catalogue des jeux", () => {
         expect((await anonymous().get("/api/jeux")).status).toBe(401);
     });
 
+    test("l'administration ne gère pas les jeux", async () => {
+        const direction = await loginAs(admin);
+        expect((await direction.get("/api/jeux")).status).toBe(403);
+        expect((await direction.get("/api/jeux/historique")).status).toBe(403);
+        expect((await direction.send("post", "/api/jeux/terminal-linux/modules", { id_cours: fixture.cours.id_cours })).status).toBe(403);
+        expect((await direction.get("/api/quiz/config")).body.peutLancer).toBe(false);
+        expect((await direction.get("/api/quiz/parties/historique")).body.data).toEqual([]);
+    });
+
     test("l'enseignant voit ses modules, même sans jeu proposé ; pas ceux des autres", async () => {
         const res = await (await loginAs(enseignant)).get("/api/jeux");
         expect(res.body.modules).toEqual([{ id_cours: fixture.cours.id_cours, code: fixture.cours.code_cours, nom: "Algorithmique", jeux: [] }]);
@@ -190,11 +199,23 @@ describe("Suivi du module par l'enseignant", () => {
         expect(JSON.stringify(res.body)).not.toMatch(/email|password/);
     });
 
-    test("réservé aux enseignants du module et à l'administration", async () => {
+    test("réservé aux enseignants du module", async () => {
         const url = `/api/jeux/terminal-linux/modules/${fixture.cours.id_cours}/suivi`;
         expect((await (await loginAs(etudiant)).get(url)).status).toBe(403);
         expect((await (await loginAs(autreEnseignant)).get(url)).status).toBe(403);
-        expect((await (await loginAs(admin)).get(url)).status).toBe(200);
+        expect((await (await loginAs(admin)).get(url)).status).toBe(403);
+    });
+
+    test("historique de l'enseignant : défis réussis par ses étudiants, jour par jour, sans noms", async () => {
+        const res = await (await loginAs(enseignant)).get("/api/jeux/historique");
+        expect(res.status).toBe(200);
+        const defis = res.body.data.filter((e) => e.type === "defis");
+        expect(defis).toHaveLength(1);
+        expect(defis[0]).toEqual(expect.objectContaining({ module: expect.objectContaining({ code: fixture.cours.code_cours }), nb_defis: 2, nb_etudiants: 1 }));
+        expect(JSON.stringify(res.body)).not.toMatch(/Mintsa|Obame|email/);
+        // Un autre enseignant ne voit rien de ce module ; l'historique est réservé aux enseignants
+        expect((await (await loginAs(autreEnseignant)).get("/api/jeux/historique")).body.data).toEqual([]);
+        expect((await (await loginAs(etudiant)).get("/api/jeux/historique")).status).toBe(403);
     });
 
     test("retirer le jeu du module le fait disparaître pour les étudiants", async () => {

@@ -53,6 +53,7 @@ export default function Jeux() {
   const [quiz, setQuiz] = useState({ config: null, parties: [] });
   const [suivi, setSuivi] = useState(null); // { module, etudiants } | { chargement: true }
   const [historique, setHistorique] = useState([]);
+  const [historiqueProf, setHistoriqueProf] = useState(null); // enseignant : quiz, devoirs, défis
   const [resultats, setResultats] = useState(null); // id de la partie affichée
 
   const charger = useCallback(() => {
@@ -68,6 +69,27 @@ export default function Jeux() {
   useEffect(() => {
     charger();
   }, [charger]);
+
+  useEffect(() => {
+    if (!enseignant) return undefined;
+    let actif = true;
+    jeuxAPI
+      .getHistorique()
+      .then((r) => actif && setHistoriqueProf(r?.data ?? []))
+      .catch(() => actif && setHistoriqueProf([]));
+    return () => {
+      actif = false;
+    };
+  }, [enseignant]);
+
+  const detailHistorique = (e) => {
+    if (e.type === 'quiz') return t('jeux.historiqueProf.quiz', { count: e.nb_joueurs ?? 0, moyenne: e.moyenne ?? 0 });
+    if (e.type === 'devoir') {
+      const rendus = t('jeux.historiqueProf.devoir', { count: e.rendus ?? 0 });
+      return e.moyenne == null ? rendus : `${rendus} · ${t('jeux.historiqueProf.devoirMoyenne', { moyenne: e.moyenne })}`;
+    }
+    return `${t('jeux.historiqueProf.defis', { count: e.nb_defis })} ${t('jeux.historiqueProf.etudiants', { count: e.nb_etudiants })}`;
+  };
 
   // Quiz en direct : configuration une fois, parties en cours toutes les 20 s
   useEffect(() => {
@@ -193,9 +215,42 @@ export default function Jeux() {
           </Panneau>
         )}
 
-        {/* ── Quiz terminés : résultats, défi par équipes, nuages de mots ── */}
-        {historique.length > 0 && (
-          <Panneau titre={t(enseignant ? 'jeux.resultats.historiqueEnseignant' : 'jeux.resultats.historique')} titreId="historique-titre">
+        {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
+        {enseignant && (
+          <Panneau titre={t('jeux.historiqueProf.titre')} titreId="historique-titre">
+            {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
+            {historiqueProf?.length === 0 && (
+              <LignePanneau premier>
+                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide')}</Typography>
+              </LignePanneau>
+            )}
+            {(historiqueProf ?? []).map((e, i) => (
+              <LignePanneau
+                key={e.id}
+                premier={i === 0}
+                action={
+                  e.type === 'quiz' ? (
+                    <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(e.id_partie)}>
+                      {t('jeux.resultats.voir')}
+                    </Button>
+                  ) : null
+                }
+              >
+                <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>
+                  {t(`jeux.historiqueProf.types.${e.type}`)} · {new Date(e.date).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
+                </Capitales>
+                <Box sx={{ fontWeight: 600 }}>{e.type === 'defis' ? libelle(e.titre, i18n.language) : e.titre}</Box>
+                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
+                  {[e.module ? `${e.module.code} · ${e.module.nom}` : null, detailHistorique(e)].filter(Boolean).join(' · ')}
+                </Box>
+              </LignePanneau>
+            ))}
+          </Panneau>
+        )}
+
+        {/* ── Étudiant : quiz terminés (résultats, défi par équipes, nuages de mots) ── */}
+        {!enseignant && historique.length > 0 && (
+          <Panneau titre={t('jeux.resultats.historique')} titreId="historique-titre">
             {historique.slice(0, 8).map((h, i) => (
               <LignePanneau
                 key={h.id}
@@ -211,9 +266,7 @@ export default function Jeux() {
                   {[
                     h.module?.nom,
                     h.terminee_le ? new Date(h.terminee_le).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }) : null,
-                    enseignant
-                      ? t('jeux.resultats.resumeEnseignant', { count: h.nb_joueurs ?? 0, moyenne: h.moyenne })
-                      : t('jeux.resultats.resumeEtudiant', { score: h.score, count: h.rang, ordinal: true, total: h.nb_joueurs }),
+                    t('jeux.resultats.resumeEtudiant', { score: h.score, count: h.rang, ordinal: true, total: h.nb_joueurs }),
                   ]
                     .filter(Boolean)
                     .join(' · ')}

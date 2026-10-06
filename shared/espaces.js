@@ -47,10 +47,12 @@ export const ESPACES = [
  * @returns {string|null} null si l'espace n'est pas disponible
  */
 export const adresseEspace = (code, { role, urlQuiz } = {}) => {
+  // L'administration ne gère pas les jeux ni les quiz
+  if (role === 'admin' && (code === 'jeux' || code === 'quiz')) return null;
   if (code === 'quiz') {
     if (typeof urlQuiz !== 'string' || !/^https?:\/\//.test(urlQuiz)) return null;
     const base = urlQuiz.replace(/\/$/, '');
-    return ['enseignant', 'admin'].includes(role) ? `${base}/dashboard` : `${base}/play`;
+    return role === 'enseignant' ? `${base}/dashboard` : `${base}/play`;
   }
   return ESPACES.find((e) => e.code === code)?.chemin ?? null;
 };

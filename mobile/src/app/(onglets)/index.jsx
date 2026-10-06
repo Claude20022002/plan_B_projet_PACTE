@@ -15,6 +15,7 @@ import { ecrireCache, lireCache } from '../../cache';
 import useRafraichissement from '../../hooks/useRafraichissement';
 import { HORIZON_TABLEAU_JOURS } from '../../config';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
+import { useMargeOnglets } from '../../verre/Verre';
 
 const heure = (iso) => new Date(iso).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 // Les dates reviennent du cache en texte : on refait des objets Date
@@ -46,6 +47,7 @@ const lireTableau = async (utilisateur, silencieux) => {
 export default function Tableau() {
   const { couleurs } = useTheme();
   const styles = useStyles();
+  const margeBas = useMargeOnglets();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { utilisateur } = useAuth();
@@ -105,7 +107,7 @@ export default function Tableau() {
 
   return (
     <Ecran titre={t('board.title')} droite={cloche}>
-      <ScrollView refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => { setEtat((e) => ({ ...e, rafraichit: true })); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
+      <ScrollView contentContainerStyle={{ paddingBottom: margeBas }} scrollIndicatorInsets={{ bottom: margeBas }} refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => { setEtat((e) => ({ ...e, rafraichit: true })); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
         {etat.le ? <Message discret>{t(etat.horsLigne ? 'app.tableau.horsLigne' : 'app.tableau.misAJour', { heure: heure(etat.le) })}</Message> : null}
         {etat.erreur ? (
           <View>

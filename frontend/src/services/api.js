@@ -637,4 +637,6 @@ export const jeuxAPI = {
     proposer: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules`, { method: 'POST', body: { id_cours: idCours } }),
     retirer: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}`, { method: 'DELETE' }),
     getSuivi: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}/suivi`),
+    // Enseignant : { data: [{ type: quiz|devoir|defis, id, date, titre, module, … }] }
+    getHistorique: () => request('/jeux/historique'),
 };

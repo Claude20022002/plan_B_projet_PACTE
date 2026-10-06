@@ -237,3 +237,11 @@ describe("Créneaux et conflits", () => {
         expect((await clients.admin.get("/api/conflits/non-resolus/liste")).status).toBe(200);
     });
 });
+
+describe("Route inconnue", () => {
+    test("404, pas 500", async () => {
+        const reponse = await clients.admin.get("/api/route-inexistante");
+        expect(reponse.status).toBe(404);
+        expect(reponse.body.message).toMatch(/Route non trouvée/);
+    });
+});

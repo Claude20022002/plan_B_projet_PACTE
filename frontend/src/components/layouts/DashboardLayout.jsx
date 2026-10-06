@@ -92,7 +92,6 @@ const navigationFor = (user) => {
           { key: 'nav.tracking', icon: <Timeline />, path: '/gestion/suivi' },
           { key: 'nav.monthly', icon: <Print />, path: '/emploi-du-temps/mensuel' },
           { key: 'nav.statistics', icon: <Insights />, path: '/statistiques' },
-          { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
         ],
       },
       {

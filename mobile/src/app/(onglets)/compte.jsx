@@ -7,11 +7,13 @@ import { useAuth } from '../../auth/AuthContext';
 import { changerLangue } from '../../i18n';
 import { desinscrireDesNotifications, inscrireAuxNotifications, notificationsActives } from '../../push';
 import { CIBLE_TACTILE, creerStyles, espace, FAMILLES, MODES, themePour, usePreferenceTheme, useTheme } from '../../theme';
+import { useMargeOnglets } from '../../verre/Verre';
 
 /** Compte : profil, apparence (thème Planner ou StudyLib, clair ou sombre), langue, notifications, déconnexion. */
 export default function Compte() {
   const { couleurs } = useTheme();
   const styles = useStyles();
+  const margeBas = useMargeOnglets();
   const { t, i18n } = useTranslation();
   const { utilisateur, deconnexion } = useAuth();
   const [alertes, setAlertes] = useState(false);
@@ -38,7 +40,7 @@ export default function Compte() {
 
   return (
     <Ecran titre={t('app.onglets.compte')}>
-      <ScrollView contentContainerStyle={styles.contenu}>
+      <ScrollView contentContainerStyle={{ paddingBottom: margeBas }} scrollIndicatorInsets={{ bottom: margeBas }}>
         <Text style={styles.section}>{t('app.compte.profil')}</Text>
         <View style={styles.bloc}>
           <Text style={styles.nom}>{[utilisateur?.prenom, utilisateur?.nom].filter(Boolean).join(' ')}</Text>
@@ -137,7 +139,6 @@ function Apparence() {
 }
 
 const useStyles = creerStyles((t) => ({
-  contenu: { paddingBottom: 32 },
   section: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1.2), paddingHorizontal: 16, paddingTop: 20, paddingBottom: 6 },
   bloc: { marginHorizontal: 16, padding: 14, backgroundColor: t.couleurs.cellule, borderRadius: t.rayons.md, gap: 4 },
   ligne: { flexDirection: 'row', alignItems: 'center', gap: 12 },

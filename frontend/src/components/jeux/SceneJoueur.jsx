@@ -12,7 +12,8 @@ import { Capitales } from './Panneau';
  */
 const image = (chemin) => `/img/jeux/${chemin}`;
 
-export function Personnage({ avatar, idUser, taille = 48, anime = false, sx }) {
+/** Personnage statique (pas d'animation) */
+export function Personnage({ avatar, idUser, taille = 48, sx }) {
   return (
     <Box
       component="img"
@@ -24,14 +25,6 @@ export function Personnage({ avatar, idUser, taille = 48, anime = false, sx }) {
         height: taille,
         objectFit: 'contain',
         flexShrink: 0,
-        ...(anime && {
-          animation: 'sautille 1.3s ease-in-out infinite',
-          '@keyframes sautille': {
-            '0%, 100%': { transform: 'translateY(0) rotate(-3deg)' },
-            '50%': { transform: `translateY(-${Math.round(taille * 0.08)}px) rotate(3deg)` },
-          },
-          '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
-        }),
         ...sx,
       }}
     />
@@ -76,7 +69,7 @@ export default function SceneJoueur({ user, profil, jeux, onChoisir }) {
           aria-label={t('jeux.joueur.changer')}
           sx={{ position: 'relative', borderRadius: `${ds.radius.md}px`, p: 0.5, '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 2 } }}
         >
-          <Personnage avatar={avatar} idUser={user?.id_user} taille={72} anime />
+          <Personnage avatar={avatar} idUser={user?.id_user} taille={72} />
           <Box aria-hidden sx={{ position: 'absolute', right: 0, bottom: 2, width: 22, height: 22, borderRadius: '50%', bgcolor: ds.board.letter, color: ds.board.ground, display: 'grid', placeItems: 'center', border: `2px solid ${ds.brand.navy}` }}>
             <EditIcon sx={{ fontSize: 12 }} />
           </Box>
@@ -119,7 +112,7 @@ export default function SceneJoueur({ user, profil, jeux, onChoisir }) {
                     '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.navy}`, outlineOffset: 2 },
                   }}
                 >
-                  <Personnage avatar={a} taille={56} anime={actif} />
+                  <Personnage avatar={a} taille={56} />
                 </ButtonBase>
               );
             })}

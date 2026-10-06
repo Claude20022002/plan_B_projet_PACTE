@@ -1,13 +1,13 @@
 import { useEffect, useState } from 'react';
-import { Modal, Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ESPACES, adresseEspace } from '../../../shared/espaces.js';
 import { libelle } from '../../../shared/jeux/catalogue.js';
 import { chargerConfigQuiz } from '../api/donnees';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
+import Feuille from '../verre/Feuille';
 import { apresFermeture, ouvrirSurLeWeb } from './ouvrir';
 
 /** Écran de l'application pour chaque espace (le Quiz n'existe que sur le web) */
@@ -30,9 +30,7 @@ export default function BoutonEspaces() {
       <Pressable onPress={() => setOuvert(true)} style={styles.bouton} accessibilityRole="button" accessibilityLabel={t('app.espaces.ouvrir')} hitSlop={4}>
         <MaterialCommunityIcons name="apps" size={24} color={couleurs.surCadre} />
       </Pressable>
-      <Modal visible={ouvert} transparent animationType="slide" onRequestClose={() => setOuvert(false)} statusBarTranslucent>
-        <FeuilleEspaces fermer={() => setOuvert(false)} />
-      </Modal>
+      {ouvert ? <FeuilleEspaces fermer={() => setOuvert(false)} /> : null}
     </>
   );
 }
@@ -42,7 +40,6 @@ function FeuilleEspaces({ fermer }) {
   const router = useRouter();
   const { couleurs } = useTheme();
   const styles = useStyles();
-  const marges = useSafeAreaInsets();
   const [urlQuiz, setUrlQuiz] = useState(null);
 
   useEffect(() => {
@@ -68,71 +65,57 @@ function FeuilleEspaces({ fermer }) {
   };
 
   return (
-    <View style={styles.voile}>
-      <Pressable style={styles.fond} onPress={fermer} accessibilityRole="button" accessibilityLabel={t('app.commun.fermer')} />
-      <View style={[styles.feuille, { paddingBottom: marges.bottom + 12 }]}>
-        <View style={styles.poignee} />
-        <View style={styles.entete}>
-          <Text style={styles.titre} accessibilityRole="header">
-            {t('app.espaces.titre')}
-          </Text>
-          <Pressable onPress={fermer} style={styles.fermer} accessibilityRole="button" accessibilityLabel={t('app.commun.fermer')}>
-            <MaterialCommunityIcons name="close" size={22} color={couleurs.lettre} />
-          </Pressable>
-        </View>
-        <ScrollView>
-          {ESPACES.map((e) => {
-            const disponible = e.code !== 'quiz' || urlQuiz;
-            const chemin = e.code === 'quiz' ? null : adresseEspace(e.code);
-            return (
-              <View key={e.code} style={[styles.ligne, !disponible && styles.inactif]}>
-                <Pressable
-                  onPress={() => allerA(e.code)}
-                  disabled={!disponible}
-                  style={styles.principal}
-                  accessibilityRole="button"
-                  accessibilityLabel={`${libelle(e.titre, i18n.language)}. ${libelle(e.resume, i18n.language)}`}
-                  accessibilityState={{ disabled: !disponible }}
-                >
-                  <View style={styles.pastille}>
-                    <MaterialCommunityIcons name={ICONE[e.code]} size={24} color={couleurs.accent} />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.nom}>{libelle(e.titre, i18n.language)}</Text>
-                    <Text style={styles.resume} numberOfLines={2}>
-                      {disponible ? libelle(e.resume, i18n.language) : t('app.espaces.indisponible')}
-                    </Text>
-                  </View>
-                </Pressable>
-                {chemin ? (
-                  <Pressable onPress={() => surLeWeb(chemin)} style={styles.web} accessibilityRole="link" accessibilityLabel={t('app.espaces.siteDe', { espace: libelle(e.titre, i18n.language) })}>
-                    <MaterialCommunityIcons name="open-in-new" size={18} color={couleurs.lettre} />
-                    <Text style={styles.webTexte}>{t('app.espaces.web')}</Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            );
-          })}
-          <Text style={styles.aide}>{t('app.espaces.aide')}</Text>
-        </ScrollView>
+    <Feuille fermer={fermer} style={styles.feuille}>
+      <View style={styles.entete}>
+        <Text style={styles.titre} accessibilityRole="header">
+          {t('app.espaces.titre')}
+        </Text>
+        <Pressable onPress={fermer} style={styles.fermer} accessibilityRole="button" accessibilityLabel={t('app.commun.fermer')}>
+          <MaterialCommunityIcons name="close" size={22} color={couleurs.lettre} />
+        </Pressable>
       </View>
-    </View>
+      <ScrollView>
+        {ESPACES.map((e) => {
+          const disponible = e.code !== 'quiz' || urlQuiz;
+          const chemin = e.code === 'quiz' ? null : adresseEspace(e.code);
+          return (
+            <View key={e.code} style={[styles.ligne, !disponible && styles.inactif]}>
+              <Pressable
+                onPress={() => allerA(e.code)}
+                disabled={!disponible}
+                style={styles.principal}
+                accessibilityRole="button"
+                accessibilityLabel={`${libelle(e.titre, i18n.language)}. ${libelle(e.resume, i18n.language)}`}
+                accessibilityState={{ disabled: !disponible }}
+              >
+                <View style={styles.pastille}>
+                  <MaterialCommunityIcons name={ICONE[e.code]} size={24} color={couleurs.accent} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.nom}>{libelle(e.titre, i18n.language)}</Text>
+                  <Text style={styles.resume} numberOfLines={2}>
+                    {disponible ? libelle(e.resume, i18n.language) : t('app.espaces.indisponible')}
+                  </Text>
+                </View>
+              </Pressable>
+              {chemin ? (
+                <Pressable onPress={() => surLeWeb(chemin)} style={styles.web} accessibilityRole="link" accessibilityLabel={t('app.espaces.siteDe', { espace: libelle(e.titre, i18n.language) })}>
+                  <MaterialCommunityIcons name="open-in-new" size={18} color={couleurs.lettre} />
+                  <Text style={styles.webTexte}>{t('app.espaces.web')}</Text>
+                </Pressable>
+              ) : null}
+            </View>
+          );
+        })}
+        <Text style={styles.aide}>{t('app.espaces.aide')}</Text>
+      </ScrollView>
+    </Feuille>
   );
 }
 
 const useStyles = creerStyles((t) => ({
   bouton: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },
-  voile: { flex: 1, justifyContent: 'flex-end' },
-  fond: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, backgroundColor: 'rgba(0, 0, 0, 0.55)' },
-  feuille: {
-    backgroundColor: t.couleurs.fond,
-    borderTopLeftRadius: t.rayons.lg + 6,
-    borderTopRightRadius: t.rayons.lg + 6,
-    borderTopWidth: t.famille === 'planner' ? 3 : 1,
-    borderTopColor: t.famille === 'planner' ? t.couleurs.cadre : t.couleurs.filet,
-    maxHeight: '85%',
-  },
-  poignee: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, backgroundColor: t.couleurs.filet, marginTop: 8 },
+  feuille: { maxHeight: '85%' },
   entete: { flexDirection: 'row', alignItems: 'center', paddingLeft: 16, paddingRight: 4, paddingTop: 4 },
   titre: { flex: 1, color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: 20, textTransform: t.capitales, letterSpacing: espace(t, 1.2) },
   fermer: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },

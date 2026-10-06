@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import Ecran, { Message } from '../../board/Ecran';
 import { chargerAvisStage, chargerIdeesProjet, chargerSeances, chargerSupports } from '../../api/donnees';
 import { CIBLE_TACTILE, creerStyles, espace, lineColor, useTheme } from '../../theme';
+import { useMargeOnglets } from '../../verre/Verre';
 
 const JOURS_MODULES = 42;
 
@@ -25,6 +26,7 @@ const lireBibliotheque = async () => {
 export default function Bibliotheque() {
   const { couleurs } = useTheme();
   const styles = useStyles();
+  const margeBas = useMargeOnglets();
   const { t } = useTranslation();
   const router = useRouter();
   const [modules, setModules] = useState([]);
@@ -54,7 +56,7 @@ export default function Bibliotheque() {
 
   return (
     <Ecran titre={t('app.onglets.bibliotheque')}>
-      <ScrollView refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => { setEtat((e) => ({ ...e, rafraichit: true })); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
+      <ScrollView contentContainerStyle={{ paddingBottom: margeBas }} scrollIndicatorInsets={{ bottom: margeBas }} refreshControl={<RefreshControl refreshing={etat.rafraichit} onRefresh={() => { setEtat((e) => ({ ...e, rafraichit: true })); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
         {etat.indisponible ? <Message>{t('app.bibliotheque.indisponible')}</Message> : null}
 
         <Text style={styles.section}>{t('app.bibliotheque.mesModules')}</Text>

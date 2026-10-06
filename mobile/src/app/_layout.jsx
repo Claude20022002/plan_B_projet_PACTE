@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Stack, useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -11,6 +11,7 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { restaurerLangue } from '../i18n';
 import { AuthProvider } from '../auth/AuthContext';
 import { restaurerTheme, ThemeProvider, useTheme } from '../theme';
+import IntroLogo from '../intro/IntroLogo';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
 
@@ -69,13 +70,22 @@ export default function Racine() {
   );
 }
 
-/** Navigation de l'application, aux couleurs du thème choisi */
+// L'animation du logo n'est jouée qu'au lancement de l'application
+let introJouee = false;
+
+/** Navigation de l'application, aux couleurs du thème choisi ; le logo s'assemble par-dessus au lancement */
 function Pile() {
-  const { couleurs, barreStatut } = useTheme();
+  const { couleurs, barreStatut, polices } = useTheme();
+  const [intro, setIntro] = useState(!introJouee);
+  const finIntro = useCallback(() => {
+    introJouee = true;
+    setIntro(false);
+  }, []);
   return (
     <>
-      <StatusBar style={barreStatut} />
+      <StatusBar style={intro ? 'light' : barreStatut} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: couleurs.fond }, animation: 'fade' }} />
+      {intro ? <IntroLogo titre="HESTIM Planner" police={polices.panneauGras} onFin={finIntro} /> : null}
     </>
   );
 }

@@ -12,6 +12,7 @@ import Scene from '../../jeux/Scene';
 import { adresseEspace } from '../../../../shared/espaces.js';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
+import { useMargeOnglets } from '../../verre/Verre';
 
 const RAFRAICHISSEMENT_QUIZ_MS = 20000;
 // Écran de chaque jeu intégré
@@ -36,6 +37,7 @@ const lireTout = () =>
 export default function Jeux() {
   const { couleurs } = useTheme();
   const styles = useStyles();
+  const margeBas = useMargeOnglets();
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { utilisateur } = useAuth();
@@ -83,12 +85,12 @@ export default function Jeux() {
 
   return (
     <Ecran titre={t('app.jeux.titre')}>
-      <ScrollView refreshControl={<RefreshControl refreshing={rafraichit} onRefresh={() => { setRafraichit(true); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
+      <ScrollView contentContainerStyle={{ paddingBottom: margeBas }} scrollIndicatorInsets={{ bottom: margeBas }} refreshControl={<RefreshControl refreshing={rafraichit} onRefresh={() => { setRafraichit(true); charger(); }} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}>
         {/* Le joueur dans sa scène */}
         <Scene>
           <View style={styles.joueur}>
             <Pressable onPress={() => setChoix(true)} style={styles.personnage} accessibilityRole="button" accessibilityLabel={t('app.jeux.changerPersonnage')}>
-              <Personnage avatar={avatar} idUser={utilisateur?.id_user} taille={64} anime />
+              <Personnage avatar={avatar} idUser={utilisateur?.id_user} taille={64} />
               <View style={styles.crayon}>
                 <MaterialCommunityIcons name="pencil" size={12} color={couleurs.surAccent} />
               </View>

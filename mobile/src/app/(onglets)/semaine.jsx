@@ -13,6 +13,7 @@ import FicheSeance from '../../semaine/FicheSeance';
 import GrilleSemaine from '../../semaine/GrilleSemaine';
 import VueMois, { debutGrilleMois } from '../../semaine/VueMois';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
+import { useMargeOnglets } from '../../verre/Verre';
 
 const VUES = ['liste', 'grille', 'mois'];
 const ICONES_VUES = { liste: 'format-list-bulleted', grille: 'view-week-outline', mois: 'calendar-month-outline' };
@@ -51,6 +52,7 @@ const lirePeriode = async (du, au, cle) => {
 export default function Semaine() {
   const { couleurs } = useTheme();
   const styles = useStyles();
+  const margeBas = useMargeOnglets();
   const { t, i18n } = useTranslation();
   const [vue, setVue] = useState('liste');
   const [lundi, setLundi] = useState(() => lundiDe(new Date()));
@@ -154,13 +156,15 @@ export default function Semaine() {
           renderItem={({ item }) => <CarteSeance seance={item} onPress={() => setFiche(item)} />}
           renderSectionHeader={({ section }) => <Text style={styles.jour}>{section.title}</Text>}
           stickySectionHeadersEnabled
+          contentContainerStyle={{ paddingBottom: margeBas }}
+          scrollIndicatorInsets={{ bottom: margeBas }}
           refreshControl={rafraichissement}
           ListEmptyComponent={vide}
         />
       ) : null}
       {vue === 'grille' ? <GrilleSemaine lundi={lundi} seances={seances} onSeance={setFiche} /> : null}
       {vue === 'mois' ? (
-        <ScrollView refreshControl={rafraichissement} contentContainerStyle={{ paddingBottom: 24 }}>
+        <ScrollView refreshControl={rafraichissement} contentContainerStyle={{ paddingBottom: margeBas }} scrollIndicatorInsets={{ bottom: margeBas }}>
           <VueMois mois={mois} seances={seances} jourChoisi={jourChoisi} choisir={setJourChoisi} onSeance={setFiche} />
         </ScrollView>
       ) : null}

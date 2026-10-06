@@ -73,6 +73,8 @@ export const THEMES = {
     volet: { fond: tokens.board.cell, lettre: tokens.board.letter, charniere: tokens.board.cellHinge },
     statuts: statutsPanneau,
     // Scène des jeux : décor Kenney (silhouettes teintées) derrière le personnage du joueur
+    // Verre dépoli (barre d'onglets, feuilles) : teinte du flou, couleur du voile, liseré
+    verre: { teinte: 'dark', rgb: '11, 11, 13', bord: 'rgba(255, 255, 255, 0.10)' },
     scene: { ciel: tokens.brand.navy, collines: tokens.brand.navyDeep, nuages: '#24397F', arbres: tokens.brand.navyDeep, texte: '#FFFFFF', texteAttenue: '#C9D1EC' },
   },
   'planner-clair': {
@@ -100,6 +102,8 @@ export const THEMES = {
     volet: { fond: '#0D1326', lettre: tokens.board.letter, charniere: '#000000' },
     statuts: statutsBureau,
     // Scène des jeux : décor Kenney (silhouettes teintées) derrière le personnage du joueur
+    // Verre dépoli (barre d'onglets, feuilles) : teinte du flou, couleur du voile, liseré
+    verre: { teinte: 'light', rgb: '243, 244, 247', bord: 'rgba(13, 19, 38, 0.10)' },
     scene: { ciel: tokens.brand.navy, collines: tokens.brand.navyDeep, nuages: '#24397F', arbres: tokens.brand.navyDeep, texte: '#FFFFFF', texteAttenue: '#C9D1EC' },
   },
   'studylib-clair': {
@@ -126,6 +130,8 @@ export const THEMES = {
     volet: { fond: '#DBEAFE', lettre: '#1E3A8A', charniere: 'transparent' },
     statuts: { planifie: '#334155', confirme: '#15803D', reporte: '#B45309', annule: '#DC2626', realise: '#64748B' },
     // Scène des jeux : décor Kenney (silhouettes teintées) derrière le personnage du joueur
+    // Verre dépoli (barre d'onglets, feuilles) : teinte du flou, couleur du voile, liseré
+    verre: { teinte: 'light', rgb: '255, 255, 255', bord: 'rgba(15, 23, 42, 0.08)' },
     scene: { ciel: '#EFF6FF', collines: '#DBEAFE', nuages: '#FFFFFF', arbres: '#BFDBFE', texte: '#0F172A', texteAttenue: '#334155' },
   },
   'studylib-sombre': {
@@ -152,6 +158,8 @@ export const THEMES = {
     volet: { fond: '#1E3A8A', lettre: '#DBEAFE', charniere: 'transparent' },
     statuts: { planifie: '#E2E8F0', confirme: '#4ADE80', reporte: '#FB923C', annule: '#F87171', realise: '#94A3B8' },
     // Scène des jeux : décor Kenney (silhouettes teintées) derrière le personnage du joueur
+    // Verre dépoli (barre d'onglets, feuilles) : teinte du flou, couleur du voile, liseré
+    verre: { teinte: 'dark', rgb: '15, 23, 42', bord: 'rgba(255, 255, 255, 0.08)' },
     scene: { ciel: '#1E293B', collines: '#0F172A', nuages: '#334155', arbres: '#0F172A', texte: '#F1F5F9', texteAttenue: '#CBD5E1' },
   },
 };

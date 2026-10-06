@@ -242,7 +242,7 @@ export const devoirsDe = async (user) => {
         const rendus = devoirs.length ? await DevoirRendu.findAll({ where: { id_devoir: devoirs.map((d) => d.id_devoir) }, attributes: ["id_devoir", "note"] }) : [];
         return devoirs.map((d) => {
             const notes = rendus.filter((r) => r.id_devoir === d.id_devoir).map((r) => Number(r.note));
-            return { ...enTete(d), rendus: notes.length, moyenne: notes.length ? Math.round((100 * notes.reduce((a, b) => a + b, 0)) / notes.length) / 100 : null };
+            return { ...enTete(d), donne_le: d.createdAt, rendus: notes.length, moyenne: notes.length ? Math.round((100 * notes.reduce((a, b) => a + b, 0)) / notes.length) / 100 : null };
         });
     }
     const modules = await modulesDuJoueur(user);

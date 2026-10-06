@@ -225,7 +225,8 @@ describe("Fin de partie : scores, équipes et nuages de mots", () => {
 
         expect((await (await loginAs(etrangere)).get(url)).status).toBe(404);
         expect((await (await loginAs(await createUser("enseignant"))).get(url)).status).toBe(404);
-        expect((await (await loginAs(admin)).get(url)).body.classement).toHaveLength(6);
+        // L'administration ne suit pas les jeux
+        expect((await (await loginAs(admin)).get(url)).status).toBe(404);
         expect((await (await loginAs(enseignant)).get("/api/quiz/parties/abc/resultats")).status).toBe(404);
     });
 

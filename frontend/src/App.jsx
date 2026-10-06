@@ -305,14 +305,14 @@ export default function App() {
             </PrivateRoute>
           } />
 
-          {/* ── Jeux (tous les rôles) ─────────────────────────────────── */}
+          {/* ── Jeux (étudiants et enseignants : l'administration ne gère pas les jeux) ── */}
           <Route path="/jeux" element={
-            <PrivateRoute>
+            <PrivateRoute requiredRole={['etudiant', 'enseignant']}>
               <AppPage><Jeux /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/jeux/terminal-linux" element={
-            <PrivateRoute>
+            <PrivateRoute requiredRole={['etudiant', 'enseignant']}>
               <AppPage><JeuTerminal /></AppPage>
             </PrivateRoute>
           } />
