@@ -30,7 +30,13 @@ export const versSeance = (a) => {
 /** Séances de l'étudiant connecté entre deux dates (annulées comprises) */
 export const chargerSeances = async (du, au) => {
   const reponse = await planner(`/emplois-du-temps/moi?du=${toLocalISODate(du)}&au=${toLocalISODate(au)}`);
-  return { groupes: reponse.groupes, seances: (reponse.seances || []).map(versSeance).sort(byStart) };
+  return {
+    groupes: reponse.groupes,
+    seances: (reponse.seances || []).map(versSeance).sort(byStart),
+    // Agenda : vacances, jours fériés… et examens publiés de l'étudiant
+    evenements: reponse.evenements || [],
+    examens: reponse.examens || [],
+  };
 };
 
 export const chargerTableau = async (horizonJours, maintenant = new Date()) => chargerSeances(maintenant, ajouterJours(maintenant, horizonJours));

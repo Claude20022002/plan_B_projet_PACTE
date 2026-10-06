@@ -32,15 +32,21 @@ const decaler = (date, jours) => {
 const AUCUNE = [];
 const reviver = (s) => ({ ...s, start: s.start ? new Date(s.start) : null, end: s.end ? new Date(s.end) : null });
 
-/** Séances d'une période ; à défaut, la dernière copie en cache (lecture seule). */
+/**
+ * Séances, événements et examens d'une période ; sans réseau, la dernière copie enregistrée sur
+ * le téléphone (horsLigne, avec son heure), ou une erreur s'il n'y en a pas.
+ */
 const lirePeriode = async (du, au, cle) => {
   try {
-    const { seances } = await chargerSeances(du, au);
-    ecrireCache(cle, seances);
-    return { cle, seances, erreur: false };
+    const { seances, evenements, examens } = await chargerSeances(du, au);
+    ecrireCache(cle, { seances, evenements, examens });
+    return { cle, seances, evenements, examens, erreur: false, horsLigne: null };
   } catch {
     const cache = await lireCache(cle);
-    return { cle, seances: cache ? cache.donnees.map(reviver) : [], erreur: !cache };
+    if (!cache) return { cle, seances: [], evenements: [], examens: [], erreur: true, horsLigne: null };
+    // Anciennes copies : la liste des séances seule
+    const d = Array.isArray(cache.donnees) ? { seances: cache.donnees } : cache.donnees;
+    return { cle, seances: (d.seances ?? []).map(reviver), evenements: d.evenements ?? [], examens: d.examens ?? [], erreur: false, horsLigne: cache.le };
   }
 };
 
@@ -59,7 +65,7 @@ export default function Semaine() {
   const [mois, setMois] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
   const [jourChoisi, setJourChoisi] = useState(() => toLocalISODate(new Date()));
   const [fiche, setFiche] = useState(null);
-  const [resultat, setResultat] = useState({ cle: null, seances: [], erreur: false });
+  const [resultat, setResultat] = useState({ cle: null, seances: [], evenements: [], examens: [], erreur: false, horsLigne: null });
   const [rafraichit, setRafraichit] = useState(false);
 
   useEffect(() => {
@@ -134,6 +140,10 @@ export default function Semaine() {
         })}
       </View>
 
+      {aJour && resultat.horsLigne ? (
+        <Text style={styles.horsLigne}>{t('app.semaine.horsLigne', { heure: new Date(resultat.horsLigne).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) })}</Text>
+      ) : null}
+
       <View style={styles.navigation}>
         <Pressable onPress={() => avancer(-1)} style={styles.fleche} accessibilityRole="button" accessibilityLabel={t(parMois ? 'app.semaine.moisPrecedent' : 'app.semaine.precedente')}>
           <MaterialCommunityIcons name="chevron-left" size={28} color={couleurs.lettre} />
@@ -165,7 +175,11 @@ export default function Semaine() {
       {vue === 'grille' ? <GrilleSemaine lundi={lundi} seances={seances} onSeance={setFiche} /> : null}
       {vue === 'mois' ? (
         <ScrollView refreshControl={rafraichissement} contentContainerStyle={{ paddingBottom: margeBas }} scrollIndicatorInsets={{ bottom: margeBas }}>
-          <VueMois mois={mois} seances={seances} jourChoisi={jourChoisi} choisir={setJourChoisi} onSeance={setFiche} />
+          {aJour && resultat.erreur ? (
+            vide
+          ) : (
+            <VueMois mois={mois} seances={seances} evenements={aJour ? resultat.evenements : AUCUNE} examens={aJour ? resultat.examens : AUCUNE} jourChoisi={jourChoisi} choisir={setJourChoisi} onSeance={setFiche} />
+          )}
         </ScrollView>
       ) : null}
 
