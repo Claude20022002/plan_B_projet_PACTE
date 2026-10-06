@@ -189,6 +189,7 @@ export default function Semaine() {
 }
 
 const useStyles = creerStyles((t) => ({
+  horsLigne: { marginHorizontal: 16, marginTop: 10, paddingVertical: 8, paddingHorizontal: 12, borderRadius: t.rayons.sm, backgroundColor: t.couleurs.cellule, color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13 },
   vues: { flexDirection: 'row', gap: 6, marginHorizontal: 16, marginTop: 12, padding: 3, borderRadius: t.rayons.md, backgroundColor: t.couleurs.cellule },
   vue: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, minHeight: 40, borderRadius: t.rayons.sm },
   vueActive: { backgroundColor: t.couleurs.accent },
