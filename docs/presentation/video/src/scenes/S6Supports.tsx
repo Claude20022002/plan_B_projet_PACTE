@@ -1,7 +1,7 @@
 import React from "react";
-import { AbsoluteFill, interpolate } from "remotion";
+import { AbsoluteFill, interpolate, useCurrentFrame } from "remotion";
 import { BrowserFrame, BROWSER_BAR, Line, PhoneFrame, Screen } from "../components/Frames";
-import { fadeUp, useEnter } from "../components/motion";
+import { fadeUp, ramp, useEnter } from "../components/motion";
 import { C } from "../theme";
 import { phoneGeometry } from "./S3Convergence";
 
@@ -15,6 +15,7 @@ const GAP = 70;
  * décale à gauche et le PDF officiel du mois entre par la droite dans le navigateur.
  */
 export const S6Supports: React.FC = () => {
+  const frame = useCurrentFrame();
   const l1 = useEnter(6);
   const nav = useEnter(NAVIGATEUR, 26);
   const l2 = useEnter(NAVIGATEUR + 6);
@@ -38,7 +39,7 @@ export const S6Supports: React.FC = () => {
         <Screen src="captures/web-09-edt-mensuel.png" srcW={1920} srcH={1080} width={BW} origin="55% 40%" duration={75} />
       </BrowserFrame>
       <div style={{ position: "absolute", left: 0, right: 0, top: 920, textAlign: "center" }}>
-        <Line size={52} style={{ ...fadeUp(l1), opacity: l1 * (1 - nav), position: "absolute", left: 0, right: 0 }}>
+        <Line size={52} style={{ ...fadeUp(l1), opacity: l1 * (1 - ramp(frame, NAVIGATEUR, NAVIGATEUR + 6)), position: "absolute", left: 0, right: 0 }}>
           Les supports de chaque cours, à un geste.
         </Line>
         <Line size={52} style={{ ...fadeUp(l2), position: "absolute", left: 0, right: 0 }}>
