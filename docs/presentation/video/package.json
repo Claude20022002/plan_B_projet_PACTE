@@ -1,0 +1,23 @@
+{
+  "name": "hestim-planner-video",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vidéo motion design d'ouverture — HESTIM Planner (Remotion)",
+  "scripts": {
+    "studio": "remotion studio",
+    "assets": "node scripts/copier-captures.mjs",
+    "render": "npm run assets && remotion render HestimPlanner out/hestim-planner.mp4",
+    "render:vertical": "npm run assets && remotion render HestimPlannerVertical out/hestim-planner-9x16.mp4"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.533",
+    "@remotion/google-fonts": "4.0.533",
+    "remotion": "4.0.533",
+    "react": "19.3.0",
+    "react-dom": "19.3.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.0.0",
+    "typescript": "^5.6.0"
+  }
+}
