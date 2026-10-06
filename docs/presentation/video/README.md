@@ -1,6 +1,6 @@
 # Vidéo d'ouverture — HESTIM Planner (Remotion)
 
-Vidéo motion design de **42 s** qui ouvre la présentation (voir `../discours-3-minutes.md` et
+Vidéo motion design de **56 s** qui ouvre la présentation (voir `../discours-3-minutes.md` et
 `../HESTIM-Planner-presentation.pptx`), réalisée d'après `../prompt-video-motion-design.md`.
 
 - Public visé : non technique (investisseurs, direction, jury). On montre des services, pas des technologies.
@@ -8,8 +8,8 @@ Vidéo motion design de **42 s** qui ouvre la présentation (voir `../discours-3
 
 | Fichier | Format |
 | --- | --- |
-| `out/hestim-planner.mp4` | 1920 × 1080, 30 i/s, H.264 (yuv420p), 42 s, 1260 images, son AAC stéréo |
-| `out/hestim-planner-9x16.mp4` | 1080 × 1920, scènes 1, 4 et 9 enchaînées (13 s), avec sa propre bande-son, pour les réseaux sociaux |
+| `out/hestim-planner.mp4` | 1920 × 1080, 30 i/s, H.264 (yuv420p), 56 s, 1680 images, son AAC stéréo |
+| `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 9), avec sa propre bande-son, pour les réseaux sociaux |
 
 ## Commandes
 
@@ -27,20 +27,23 @@ node scripts/verifier.mjs HestimPlanner 0 1 4 7.5 9.5 12 15 18.5 22 25 27 31 33 
 ## Rythme
 
 - Pensé pour une musique à **120 BPM** : un temps = 15 images, et chaque coupe tombe sur un temps.
-- 42 s = 84 temps.
+- 56 s = 112 temps.
+- La bande-son lit ces durées et la liste `VERTICAL` dans `Root.tsx` : modifier un timing puis relancer `npm run render` suffit.
 - Les durées des scènes sont des constantes en haut de `src/Root.tsx` (`TIMINGS`).
 
 | # | Temps | Scène | Fichier |
 | --- | --- | --- | --- |
-| 1 | 0–4 s | Les 12 triangles de l'emblème s'assemblent sur la tuile blanche, puis `HESTIM PLANNER` en volets et « Toute la vie de l'école, dans une seule application. » | `S1Intro.tsx` |
-| 2 | 4–9 s | GMAIL · PDF · WHATSAPP · CLASSROOM · MOODLE · JEUX EXTERNES, un par temps, puis barrés en orange : « 6 outils qui ne se parlent pas. » | `S2Outils.tsx` |
-| 3 | 9–12 s | Les six outils convergent et se fondent dans l'emblème, qui rejoint le téléphone : « Une seule application. » | `S3Convergence.tsx` |
-| 4 | 12–17 s | Agenda du mois, toucher sur un jour, détail de la séance (feuille en verre) | `S4Agenda.tsx` |
-| 5 | 17–22 s | Accueil de l'app ; une alerte « Cours reporté » descend puis remonte | `S5Alerte.tsx` |
-| 6 | 22–27 s | Supports d'un cours, puis PDF officiel du mois dans le navigateur | `S6Supports.tsx` |
-| 7 | 27–33 s | Résultats d'un quiz (web + mobile, barres d'équipes), puis devoir noté | `S7Resultats.tsx` |
-| 8 | 33–38 s | `90 S` · `1 COMPTE` · `0 PUBLICITÉ`, avec leur légende | `S8Chiffres.tsx` |
-| 9 | 38–42 s | L'emblème se réassemble, `HESTIM PLANNER`, « L'école, à l'heure. », `WEB · IPHONE · ANDROID` ; dernière seconde immobile | `S9Fin.tsx` |
+| 1 | 0–5 s | Les 12 triangles de l'emblème s'assemblent, `HESTIM PLANNER` en volets, « Toute la vie de l'école, dans une seule application. » | `S1Intro.tsx` |
+| 2 | 5–12 s | « Aujourd'hui, à l'école : » GMAIL · PDF · WHATSAPP · CLASSROOM · MOODLE · JEUX EXTERNES, barrés à 4 s : « 6 outils qui ne se parlent pas. » | `S2Outils.tsx` |
+| 3 | 12–16 s | Les outils se fondent dans l'emblème, qui rejoint le téléphone : « Une seule application, pour toute l'école. » | `S3Convergence.tsx` |
+| 4 | 16–23 s | Agenda du mois (3,5 s), toucher, détail de la séance : « Chaque cours : salle, heure, enseignant. » | `S4Agenda.tsx` |
+| 5 | 23–29 s | Alerte « Cours reporté » (3 s à l'écran) : « Report, annulation, changement de salle. » | `S5Alerte.tsx` |
+| 6 | 29–36 s | Supports d'un cours, puis PDF officiel du mois | `S6Supports.tsx` |
+| 7 | 36–44 s | Résultats d'un quiz (web + mobile), puis devoir noté | `S7Resultats.tsx` |
+| 8 | 44–51 s | `90 S` · `1 COMPTE` · `0 PUBLICITÉ`, un toutes les 2 s | `S8Chiffres.tsx` |
+| 9 | 51–56 s | Emblème, `HESTIM PLANNER`, « L'école, à l'heure. », `WEB · IPHONE · ANDROID` ; dernière seconde immobile | `S9Fin.tsx` |
+
+Le teaser vertical reprend les scènes 1 à 5 puis 9 (34 s), avec des mises en page 9:16 propres.
 
 ## Bande-son
 

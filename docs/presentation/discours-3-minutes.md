@@ -2,7 +2,7 @@
 
 Support : `HESTIM-Planner-presentation.pptx` (6 slides ; le même texte est dans les notes de chaque slide).
 Public : direction, investisseurs, jury, pas forcément informaticiens. On parle de **services rendus**, jamais de technique.
-La vidéo d'ouverture (36 s) reste possible avant la slide 1 ; sans elle, on tient en 3 minutes.
+La vidéo d'ouverture (`video/out/hestim-planner.mp4`, 56 s) peut passer avant la slide 1 ; elle dit déjà le constat et les services, on peut alors raccourcir les slides 2 et 3. Sans elle, on tient en 3 minutes.
 
 ---
 
