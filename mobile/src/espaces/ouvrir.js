@@ -1,3 +1,4 @@
+import { Linking } from 'react-native';
 import * as WebBrowser from 'expo-web-browser';
 import { planner } from '../api/client';
 import { ORIGINE } from '../config';
@@ -11,9 +12,23 @@ import { ORIGINE } from '../config';
 
 const optionsNavigateur = (couleurs) => ({ toolbarColor: couleurs.cadre, controlsColor: couleurs.surCadre, dismissButtonStyle: 'close' });
 
-/** Adresse absolue https ouverte telle quelle (quiz, documents signés) */
-export const ouvrirAdresse = (url, couleurs) =>
-  typeof url === 'string' && /^https?:\/\//.test(url) ? WebBrowser.openBrowserAsync(url, optionsNavigateur(couleurs)).catch(() => {}) : Promise.resolve();
+/**
+ * Adresse absolue https ouverte telle quelle (quiz, documents signés). Si le navigateur intégré
+ * refuse de s'ouvrir (déjà ouvert, fenêtre en cours de fermeture), le lien part dans le
+ * navigateur du téléphone plutôt que de ne rien faire.
+ */
+export const ouvrirAdresse = async (url, couleurs) => {
+  if (typeof url !== 'string' || !/^https?:\/\//.test(url)) return;
+  try {
+    const resultat = await WebBrowser.openBrowserAsync(url, optionsNavigateur(couleurs));
+    if (resultat?.type === 'locked') throw new Error('navigateur occupé');
+  } catch {
+    await Linking.openURL(url).catch(() => {});
+  }
+};
+
+/** Laisse une fenêtre (feuille, modale) finir de se fermer avant d'ouvrir le navigateur */
+export const apresFermeture = (action) => setTimeout(action, 450);
 
 /** Chemin de la plateforme (« / », « /biblio/ »…) ouvert avec la session de l'application */
 export const ouvrirSurLeWeb = async (chemin, couleurs) => {

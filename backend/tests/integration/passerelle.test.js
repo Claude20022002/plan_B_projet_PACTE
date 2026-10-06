@@ -35,8 +35,9 @@ describe("Passerelle mobile → web", () => {
 
         const navigateur = request.agent(app);
         const suite = await suivre(reponse.body.code, navigateur);
-        expect(suite.status).toBe(303);
-        expect(suite.headers.location).toBe("/biblio/");
+        // Page qui se redirige elle-même (cookies SameSite=Strict envoyés à la page suivante)
+        expect(suite.status).toBe(200);
+        expect(suite.text).toContain('<meta http-equiv="refresh" content="0;url=/biblio/">');
         expect(suite.headers["cache-control"]).toBe("no-store");
         expect(cookieAcces(suite)).toBeDefined();
         // Le navigateur est connecté avec le compte de l'application
@@ -47,7 +48,7 @@ describe("Passerelle mobile → web", () => {
 
     test("usage unique", async () => {
         const { code } = (await demander({ suite: "/jeux" })).body;
-        expect((await suivre(code)).headers.location).toBe("/jeux");
+        expect((await suivre(code)).text).toContain("url=/jeux");
         const rejoue = await suivre(code);
         expect(rejoue.status).toBe(303);
         expect(rejoue.headers.location).toBe("/");
@@ -72,7 +73,9 @@ describe("Passerelle mobile → web", () => {
         for (const suite of ["//exemple.org", "https://exemple.org", "/\\exemple.org", "javascript:alert(1)", "biblio", "/a b", `/${"x".repeat(300)}`, 42]) {
             expect((await demander({ suite })).status).toBe(400);
         }
-        expect((await demander({ suite: "/emploi-du-temps?semaine=2026-10-05" })).status).toBe(201);
+        const { code } = (await demander({ suite: "/emploi-du-temps?semaine=2026-10-05&vue=liste" })).body;
+        // Chemin échappé dans la page
+        expect((await suivre(code)).text).toContain("url=/emploi-du-temps?semaine=2026-10-05&amp;vue=liste");
     });
 
     test("réservé à l'application connectée", async () => {

@@ -54,6 +54,10 @@ export const toBoardSession = (a) => {
       : null;
   return {
     previousLabel,
+    // Report : date et heures d'origine (pour le détail de la séance)
+    initial: initialDate
+      ? { date: initialDate, startLabel: formatHeure(a.creneauInitial?.heure_debut) || null, endLabel: formatHeure(a.creneauInitial?.heure_fin) || null }
+      : null,
     id: a.id_affectation,
     date: String(a.date_seance || '').slice(0, 10),
     start,

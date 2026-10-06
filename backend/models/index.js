@@ -326,6 +326,11 @@ Affectation.belongsTo(Creneau, {
     foreignKey: "id_creneau",
     as: "creneau",
 });
+// Séance reportée : créneau d'origine (heure d'avant le report)
+Affectation.belongsTo(Creneau, {
+    foreignKey: "id_creneau_initial",
+    as: "creneauInitial",
+});
 
 // Creneau -> Disponibilite (1:n)
 Creneau.hasMany(Disponibilite, {

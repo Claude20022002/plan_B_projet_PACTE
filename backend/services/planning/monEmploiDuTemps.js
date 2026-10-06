@@ -56,6 +56,7 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
             { model: Users, as: "enseignant", attributes: ["id_user", "nom", "prenom"] },
             { model: Salle, as: "salle" },
             { model: Creneau, as: "creneau" },
+            { model: Creneau, as: "creneauInitial", attributes: ["heure_debut", "heure_fin"], required: false },
             { model: Enseignement, as: "enseignement", attributes: ["id_enseignement"], include: [{ model: CoursComposante, as: "composante", attributes: ["type", "modalite", "mention"] }] },
         ],
         order: [

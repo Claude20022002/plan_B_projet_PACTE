@@ -248,7 +248,17 @@ export const suivrePasserelle = asyncHandler(async (req, res) => {
     if (!user?.actif || !CHEMIN_PLATEFORME.test(passerelle.suite)) return res.redirect(303, "/");
 
     await createAuthSession(req, res, user);
-    res.redirect(303, passerelle.suite);
+    // Pas de redirection HTTP : le navigateur, ouvert depuis l'application, traite cette navigation
+    // comme intersite et n'enverrait pas les cookies SameSite=Strict à la page suivante (StudyLib,
+    // rendue par le serveur, s'afficherait déconnectée). Une page de la plateforme qui se redirige
+    // elle-même rend la navigation suivante interne au site.
+    const suite = passerelle.suite.replace(/&/g, "&amp;");
+    res.status(200).type("html").send(
+        `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">` +
+            `<meta http-equiv="refresh" content="0;url=${suite}"><title>HESTIM</title></head>` +
+            `<body style="background:#0b0b0d;color:#f2efe9;font-family:system-ui,sans-serif;padding:24px">` +
+            `<a href="${suite}" style="color:#f2efe9">Continuer</a></body></html>`
+    );
 });
 
 /**

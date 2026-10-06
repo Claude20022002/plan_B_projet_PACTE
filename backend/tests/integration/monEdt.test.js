@@ -72,6 +72,14 @@ describe("GET /api/emplois-du-temps/moi", () => {
         expect(JSON.stringify(reponse.body)).not.toMatch(/password|@hestim/);
     });
 
+    test("séance reportée : date et créneau d'origine fournis pour le détail", async () => {
+        const avant = await Creneau.create({ jour_semaine: "lundi", heure_debut: "14:00", heure_fin: "15:45", duree_minutes: 105, rang: 3 });
+        await Affectation.create(seance({ id_user_admin: ref.admin.id_user, id_groupe: ref.td1.id_groupe, date_seance: "2027-03-06", statut: "reporte", date_seance_initiale: "2027-03-01", id_creneau_initial: avant.id_creneau }));
+        const { body } = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-06&au=2027-03-06");
+        expect(body.seances).toHaveLength(1);
+        expect(body.seances[0]).toMatchObject({ statut: "reporte", date_seance: "2027-03-06", date_seance_initiale: "2027-03-01", creneauInitial: { heure_debut: "14:00:00", heure_fin: "15:45:00" } });
+    });
+
     test("réservé aux étudiants ; période validée", async () => {
         expect((await clients.enseignant.get("/api/emplois-du-temps/moi")).status).toBe(403);
         expect((await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-07&au=2027-03-01")).status).toBe(400);

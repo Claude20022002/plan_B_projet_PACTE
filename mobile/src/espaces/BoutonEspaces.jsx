@@ -8,7 +8,7 @@ import { ESPACES, adresseEspace } from '../../../shared/espaces.js';
 import { libelle } from '../../../shared/jeux/catalogue.js';
 import { chargerConfigQuiz } from '../api/donnees';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
-import { ouvrirSurLeWeb } from './ouvrir';
+import { apresFermeture, ouvrirSurLeWeb } from './ouvrir';
 
 /** Écran de l'application pour chaque espace (le Quiz n'existe que sur le web) */
 const ECRAN = { planner: '/', bibliotheque: '/bibliotheque', jeux: '/jeux' };
@@ -61,9 +61,10 @@ function FeuilleEspaces({ fermer }) {
     // Quiz : la page de jeu de ClassQuiz s'ouvre dans l'application (écran /quiz)
     else if (urlQuiz) router.push({ pathname: '/quiz', params: { url: adresseEspace(code, { role: 'etudiant', urlQuiz }) } });
   };
+  // Sur iPhone, le navigateur ne s'ouvre pas tant que la feuille se ferme : on attend la fin
   const surLeWeb = (chemin) => {
     fermer();
-    ouvrirSurLeWeb(chemin, couleurs);
+    apresFermeture(() => ouvrirSurLeWeb(chemin, couleurs));
   };
 
   return (

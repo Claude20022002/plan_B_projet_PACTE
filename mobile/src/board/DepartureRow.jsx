@@ -1,12 +1,16 @@
-import { Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { couleurStatut, creerStyles, espace, lineColor, useTheme } from '../theme';
 
+/** Statuts affichés : une séance montrée a lieu ; seuls l'en-cours, le report et l'annulation se signalent */
+export const STATUTS_SIGNALES = new Set(['live', 'reporte', 'annule']);
+
 /**
- * Une ligne du panneau : heure, carré de la filière, cours (type CM/TD/TP), salle et campus,
- * statut. Lue d'une traite par TalkBack (« 11 h, Analyse numérique, salle G-LAB003, confirmée »).
+ * Une ligne du panneau : heure, carré de la filière, cours (type CM/TD/TP), salle et campus, et
+ * le statut s'il sort de l'ordinaire. Lue d'une traite par TalkBack (« 11 h, Analyse numérique,
+ * salle G-LAB003, reportée »). Toucher la ligne ouvre le détail de la séance.
  */
-export default function DepartureRow({ seance: s, enVedette = false }) {
+export default function DepartureRow({ seance: s, enVedette = false, onPress }) {
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = useStyles();
@@ -14,15 +18,18 @@ export default function DepartureRow({ seance: s, enVedette = false }) {
   const libelleStatut = t(`status.${statut}`);
   const couleur = statut === 'live' ? theme.couleurs.enCours : couleurStatut(theme, s.status);
   const annule = s.status === 'annule';
+  const signale = STATUTS_SIGNALES.has(statut);
   const lieu = s.distanciel ? [t('app.distanciel'), s.mention].filter(Boolean).join(' · ') : [s.room, s.building].filter(Boolean).join(' · ');
 
   return (
-    <View
-      style={styles.ligne}
-      accessible
-      accessibilityLabel={`${s.startLabel}, ${s.course}${s.courseType ? ` ${s.courseType}` : ''}, ${s.distanciel ? t('app.aDistance') : `${t('board.room')} ${s.room || '?'}`}, ${libelleStatut}`}
+    <Pressable
+      onPress={onPress}
+      disabled={!onPress}
+      style={({ pressed }) => [styles.ligne, ['reporte', 'annule'].includes(s.status) && { borderLeftWidth: 3, borderLeftColor: couleur, paddingLeft: 13 }, pressed && styles.presse]}
+      accessibilityRole={onPress ? 'button' : undefined}
+      accessibilityLabel={`${s.startLabel}, ${s.course}${s.courseType ? ` ${s.courseType}` : ''}, ${s.distanciel ? t('app.aDistance') : `${t('board.room')} ${s.room || '?'}`}${signale ? `, ${libelleStatut}` : ''}`}
     >
-      <Text style={[styles.heure, annule && styles.barre]} maxFontSizeMultiplier={1.4}>
+      <Text style={[styles.heure, s.status === 'reporte' && { color: couleur }, annule && styles.barre]} maxFontSizeMultiplier={1.4}>
         {s.startLabel}
       </Text>
       <View style={[styles.carre, { backgroundColor: lineColor(s.lineKey) }]} />
@@ -36,10 +43,12 @@ export default function DepartureRow({ seance: s, enVedette = false }) {
           {s.previousLabel ? `  ·  ${t('board.previously', { value: s.previousLabel })}` : ''}
         </Text>
       </View>
-      <Text style={[styles.statut, { color: couleur }]} maxFontSizeMultiplier={1.4}>
-        {libelleStatut}
-      </Text>
-    </View>
+      {signale ? (
+        <Text style={[styles.statut, { color: couleur }]} maxFontSizeMultiplier={1.4}>
+          {libelleStatut}
+        </Text>
+      ) : null}
+    </Pressable>
   );
 }
 
@@ -62,4 +71,5 @@ const useStyles = creerStyles((t) => ({
   lieu: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13, marginTop: 2 },
   statut: { fontFamily: t.polices.panneau, fontSize: t.famille === 'planner' ? 14 : 13, textTransform: t.capitales, letterSpacing: espace(t, 0.8) },
   barre: { textDecorationLine: 'line-through', color: t.couleurs.lettreAttenuee },
+  presse: { opacity: 0.7 },
 }));

@@ -59,3 +59,18 @@ describe('jetons partagés', () => {
     expect(lineColor(null)).toBe(tokens.lineUnknown);
   });
 });
+
+describe('séance reportée', () => {
+  test('date et heures d’origine pour le détail ; rien sans report', () => {
+    const reportee = toBoardSession({
+      id_affectation: 9,
+      date_seance: '2027-03-06',
+      statut: 'reporte',
+      date_seance_initiale: '2027-03-01',
+      creneau: { heure_debut: '09:00:00', heure_fin: '10:45:00' },
+      creneauInitial: { heure_debut: '14:00:00', heure_fin: '15:45:00' },
+    });
+    expect(reportee.initial).toEqual({ date: '2027-03-01', startLabel: formatHeure('14:00:00'), endLabel: formatHeure('15:45:00') });
+    expect(seance(1, '2027-03-02', '09:00:00', '10:45:00').initial).toBeNull();
+  });
+});

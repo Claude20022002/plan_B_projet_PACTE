@@ -7,6 +7,7 @@ import { findSpotlight, formatDayLabel, groupByDay, toLocalISODate } from '../..
 import Ecran, { Message } from '../../board/Ecran';
 import Spotlight from '../../board/Spotlight';
 import DepartureRow from '../../board/DepartureRow';
+import FicheSeance from '../../semaine/FicheSeance';
 import { useAuth } from '../../auth/AuthContext';
 import { chargerAlertes, chargerSupports, chargerTableau } from '../../api/donnees';
 import { ErreurApi } from '../../api/client';
@@ -53,6 +54,7 @@ export default function Tableau() {
   const [supports, setSupports] = useState({});
   const [etat, setEtat] = useState({ chargement: true, erreur: false, horsLigne: false, le: null, rafraichit: false });
   const [maintenant, setMaintenant] = useState(new Date());
+  const [fiche, setFiche] = useState(null);
 
   const charger = useCallback(
     ({ silencieux = false } = {}) =>
@@ -127,7 +129,7 @@ export default function Tableau() {
           <View>
             <Text style={styles.section}>{t('app.tableau.aujourdhui')}</Text>
             {duJour.map((s) => (
-              <DepartureRow key={s.id} seance={s} enVedette={vedette?.session.id === s.id && vedette.phase === 'live'} />
+              <DepartureRow key={s.id} seance={s} enVedette={vedette?.session.id === s.id && vedette.phase === 'live'} onPress={() => setFiche(s)} />
             ))}
           </View>
         ) : null}
@@ -136,7 +138,7 @@ export default function Tableau() {
           <View>
             <Text style={styles.section}>{formatDayLabel(prochainJour.date, i18n.language)}</Text>
             {prochainJour.items.map((s) => (
-              <DepartureRow key={s.id} seance={s} />
+              <DepartureRow key={s.id} seance={s} onPress={() => setFiche(s)} />
             ))}
           </View>
         ) : null}
@@ -155,6 +157,7 @@ export default function Tableau() {
           </View>
         ) : null}
       </ScrollView>
+      <FicheSeance seance={fiche} fermer={() => setFiche(null)} />
     </Ecran>
   );
 }
