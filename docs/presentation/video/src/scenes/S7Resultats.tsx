@@ -7,6 +7,8 @@ import { BEAT, C } from "../theme";
 const BW = 1120;
 const SCREEN_H = 740;
 const GAP = 64;
+const DEVOIR = 105; // 30,5 s du film
+const BW_DEVOIR = 1380;
 
 /**
  * Barres du « défi par équipes » relevées au pixel sur les captures : on recouvre la partie
@@ -14,12 +16,12 @@ const GAP = 64;
  */
 type Bar = { x0: number; x1: number; y0: number; y1: number; track: string };
 const WEB_BARS: Bar[] = [
-  { x0: 734, x1: 1189, y0: 414, y1: 426, track: "#EEF0F5" }, // CPI-1B, gagnante
-  { x0: 734, x1: 1127, y0: 453, y1: 465, track: "#EEF0F5" }, // CPI-1A
+  { x0: 735, x1: 1186, y0: 340, y1: 350, track: "#EEF0F5" }, // équipe gagnante
+  { x0: 735, x1: 1125, y0: 379, y1: 389, track: "#EEF0F5" },
 ];
 const MOBILE_BARS: Bar[] = [
-  { x0: 131, x1: 1038, y0: 1078, y1: 1103, track: "#2C2C30" },
-  { x0: 131, x1: 929, y0: 1215, y1: 1240, track: "#2C2C30" },
+  { x0: 131, x1: 1037, y0: 1080, y1: 1101, track: "#DADDE5" }, // CPI-1B, gagnante
+  { x0: 132, x1: 927, y0: 1218, y1: 1239, track: "#DADDE5" },
 ];
 
 const BarMask: React.FC<{ bar: Bar; p: number; radius: number }> = ({ bar, p, radius }) => {
@@ -39,12 +41,15 @@ const BarMask: React.FC<{ bar: Bar; p: number; radius: number }> = ({ bar, p, ra
   );
 };
 
-/** 6 · 22–27 s : résultats du quiz sur le web et sur mobile ; les barres des équipes se remplissent. */
-export const S6Results: React.FC = () => {
+/**
+ * 7 · 27–33 s : résultats d'un quiz côté enseignant (web) et étudiant (téléphone), les barres
+ * des équipes se remplissent ; à 30,5 s, coupe sur le devoir noté.
+ */
+export const S7Resultats: React.FC = () => {
   const frame = useCurrentFrame();
   const enter = useEnter(0, 30);
-  const caption = useEnter(BEAT * 2);
-  // La gagnante finit en dernier : elle a le plus long chemin.
+  const l1 = useEnter(BEAT * 2);
+  const l2 = useEnter(DEVOIR + 6);
   const fill = (i: number) => {
     const p = ramp(frame, BEAT * 2 + i * 4, BEAT * 2 + 40 + i * 4);
     return 1 - Math.pow(1 - p, 3);
@@ -56,9 +61,22 @@ export const S6Results: React.FC = () => {
   const left = (1920 - total) / 2;
   const browserH = (BW * 9) / 16 + BROWSER_BAR;
   const top = 92;
-
   const fromLeft = interpolate(enter, [0, 1], [-260, 0]);
   const fromRight = interpolate(enter, [0, 1], [260, 0]);
+
+  if (frame >= DEVOIR) {
+    const hDevoir = (BW_DEVOIR * 9) / 16 + BROWSER_BAR;
+    return (
+      <AbsoluteFill style={{ background: C.bg }}>
+        <BrowserFrame width={BW_DEVOIR} style={{ left: (1920 - BW_DEVOIR) / 2, top: (900 - hDevoir) / 2 + 10 }}>
+          <Screen src="captures/web-26-devoir-notes.png" srcW={1920} srcH={1080} width={BW_DEVOIR} origin="50% 35%" duration={75} />
+        </BrowserFrame>
+        <Line size={52} style={{ ...fadeUp(l2), position: "absolute", left: 0, right: 0, top: 930, textAlign: "center" }}>
+          Les résultats restent à l'école.
+        </Line>
+      </AbsoluteFill>
+    );
+  }
 
   return (
     <AbsoluteFill style={{ background: C.bg }}>
@@ -66,26 +84,21 @@ export const S6Results: React.FC = () => {
         width={BW}
         style={{ left, top: top + (SCREEN_H * 1.028 - browserH) / 2, transform: `translateX(${fromLeft}px)`, opacity: enter }}
       >
-        <Screen src="captures/web-17-resultats-etudiant.png" srcW={1920} srcH={1080} width={BW} origin="50% 38%">
+        <Screen src="captures/web-21-resultats-enseignant.png" srcW={1920} srcH={1080} width={BW} origin="50% 38%">
           {WEB_BARS.map((b, i) => (
-            <BarMask key={i} bar={b} p={fill(i === 0 ? 1 : 0)} radius={6} />
+            <BarMask key={i} bar={b} p={fill(i === 0 ? 1 : 0)} radius={5} />
           ))}
         </Screen>
       </BrowserFrame>
-
-      <PhoneFrame
-        screenHeight={SCREEN_H}
-        style={{ left: left + BW + GAP, top, transform: `translateX(${fromRight}px)`, opacity: enter }}
-      >
-        <Screen src="captures/mobile-23-resultats-planner-sombre.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1]}>
+      <PhoneFrame screenHeight={SCREEN_H} style={{ left: left + BW + GAP, top, transform: `translateX(${fromRight}px)`, opacity: enter }}>
+        <Screen src="captures/mobile-13-resultats.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1]}>
           {MOBILE_BARS.map((b, i) => (
-            <BarMask key={i} bar={b} p={fill(i === 0 ? 1 : 0)} radius={12} />
+            <BarMask key={i} bar={b} p={fill(i === 0 ? 1 : 0)} radius={10} />
           ))}
         </Screen>
       </PhoneFrame>
-
-      <Line size={50} style={{ ...fadeUp(caption), position: "absolute", left: 0, right: 0, top: 902, textAlign: "center" }}>
-        Quiz, équipes, devoirs : une seule connexion.
+      <Line size={52} style={{ ...fadeUp(l1), position: "absolute", left: 0, right: 0, top: 902, textAlign: "center" }}>
+        Quiz, défis, devoirs notés.
       </Line>
     </AbsoluteFill>
   );

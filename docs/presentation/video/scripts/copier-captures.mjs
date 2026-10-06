@@ -10,17 +10,14 @@ const frontend = join(ici, "..", "..", "..", "..", "frontend", "public");
 const publicDir = join(ici, "..", "public");
 
 const fichiers = [
-  "web-07-preparation.png",
-  "web-08-generation.png",
+  "mobile-37-mois.png",
+  "mobile-36-fiche-verre.png",
+  "mobile-38-tableau.png",
+  "mobile-39-supports-module.png",
+  "mobile-13-resultats.png",
   "web-09-edt-mensuel.png",
-  "web-17-resultats-etudiant.png",
-  "web-22-nuage-de-mots.png",
+  "web-21-resultats-enseignant.png",
   "web-26-devoir-notes.png",
-  "mobile-21-tableau-planner-sombre.png",
-  "mobile-21-tableau-studylib-clair.png",
-  "mobile-23-resultats-planner-sombre.png",
-  "mobile-26-terminal-reussite.png",
-  "video/web-tableau-etudiant.webm",
 ];
 
 let manquants = 0;
