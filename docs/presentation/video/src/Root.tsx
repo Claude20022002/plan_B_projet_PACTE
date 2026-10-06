@@ -1,5 +1,5 @@
 import React from "react";
-import { AbsoluteFill, Composition, Sequence } from "remotion";
+import { AbsoluteFill, Audio, Composition, Sequence, staticFile } from "remotion";
 import { S1Intro } from "./scenes/S1Intro";
 import { S2Outils } from "./scenes/S2Outils";
 import { S3Convergence } from "./scenes/S3Convergence";
@@ -62,8 +62,19 @@ const Timeline: React.FC<{ ids: (keyof typeof TIMINGS)[] }> = ({ ids }) => {
 
 const ALL = SCENES.map((s) => s.id);
 
-export const HestimPlanner: React.FC = () => <Timeline ids={ALL} />;
-export const HestimPlannerVertical: React.FC = () => <Timeline ids={VERTICAL} />;
+// Bande-son originale (scripts/composer-musique.py), calée sur les scènes
+export const HestimPlanner: React.FC = () => (
+  <>
+    <Timeline ids={ALL} />
+    <Audio src={staticFile("audio/hestim-planner.wav")} />
+  </>
+);
+export const HestimPlannerVertical: React.FC = () => (
+  <>
+    <Timeline ids={VERTICAL} />
+    <Audio src={staticFile("audio/hestim-planner-9x16.wav")} />
+  </>
+);
 
 export const RemotionRoot: React.FC = () => (
   <>

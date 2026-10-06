@@ -6,8 +6,9 @@
   "scripts": {
     "studio": "remotion studio",
     "assets": "node scripts/copier-captures.mjs",
-    "render": "npm run assets && remotion render HestimPlanner out/hestim-planner.mp4",
-    "render:vertical": "npm run assets && remotion render HestimPlannerVertical out/hestim-planner-9x16.mp4"
+    "musique": "python scripts/composer-musique.py",
+    "render": "npm run assets && npm run musique && remotion render HestimPlanner out/hestim-planner.mp4",
+    "render:vertical": "npm run assets && npm run musique && remotion render HestimPlannerVertical out/hestim-planner-9x16.mp4"
   },
   "dependencies": {
     "@remotion/cli": "4.0.533",
