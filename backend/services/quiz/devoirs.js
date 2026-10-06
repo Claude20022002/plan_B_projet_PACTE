@@ -51,7 +51,7 @@ const cheminSigne = (chemin, params) => `${chemin}?${new URLSearchParams(params)
 
 /** Quiz de l'enseignant dans ClassQuiz : [{ id, titre, nb_questions }] */
 export const quizDisponibles = async (user) => {
-    if (!["enseignant", "admin"].includes(user.role)) throw new ErreurMetier("Réservé aux enseignants", 403);
+    if (user.role !== "enseignant") throw new ErreurMetier("Réservé aux enseignants", 403);
     return (await clientClassQuiz(cheminSigne("/api/v1/hestim/quizzes", { email: user.email }))) ?? [];
 };
 
@@ -168,7 +168,7 @@ const estVise = async (devoir, user) => {
 };
 
 const peutGerer = async (user, devoir) =>
-    user.role === "admin" || devoir.id_user_enseignant === user.id_user || (user.role === "enseignant" && (await peutProposerDansModule(user, await Cours.findByPk(devoir.id_cours))));
+    devoir.id_user_enseignant === user.id_user || (user.role === "enseignant" && (await peutProposerDansModule(user, await Cours.findByPk(devoir.id_cours))));
 
 const devoirOuErreur = async (id) => {
     const n = Number(id);
@@ -193,7 +193,7 @@ const enTete = (d) => ({
  * copiées depuis ClassQuiz (quiz de l'enseignant) ; les étudiants visés sont prévenus.
  */
 export const creerDevoir = async (user, { quiz_id: quizId, id_cours: idCours, id_groupe: idGroupe = null, date_limite: dateLimite } = {}) => {
-    if (!["enseignant", "admin"].includes(user.role)) throw new ErreurMetier("Réservé aux enseignants", 403);
+    if (user.role !== "enseignant") throw new ErreurMetier("Réservé aux enseignants", 403);
     const cours = await coursOuErreur(idCours);
     if (!(await peutProposerDansModule(user, cours))) throw new ErreurMetier("Vous ne pouvez donner un devoir que dans vos modules", 403);
     const limite = new Date(dateLimite);
@@ -236,7 +236,8 @@ export const creerDevoir = async (user, { quiz_id: quizId, id_cours: idCours, id
 /** Devoirs d'un utilisateur : à rendre et rendus (étudiant), donnés avec leurs statistiques (enseignant) */
 export const devoirsDe = async (user) => {
     const include = [{ model: Cours, as: "cours", attributes: ["id_cours", "code_cours", "nom_cours"] }, { model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe"] }];
-    if (["enseignant", "admin"].includes(user.role)) {
+    if (user.role === "admin") return [];
+    if (user.role === "enseignant") {
         const devoirs = await Devoir.findAll({ where: { id_user_enseignant: user.id_user }, include, order: [["date_limite", "DESC"]], limit: 50 });
         const rendus = devoirs.length ? await DevoirRendu.findAll({ where: { id_devoir: devoirs.map((d) => d.id_devoir) }, attributes: ["id_devoir", "note"] }) : [];
         return devoirs.map((d) => {
@@ -311,7 +312,7 @@ export const rendreDevoir = async (user, id, reponses) => {
     return { note: Number(rendu.note), bonnes, notees };
 };
 
-/** Résultats d'un devoir (enseignant du module, administration) : notes, non rendus, moyennes par groupe */
+/** Résultats d'un devoir (enseignant du module) : notes, non rendus, moyennes par groupe */
 export const resultatsDuDevoir = async (user, id) => {
     const devoir = await devoirOuErreur(id);
     if (!(await peutGerer(user, devoir))) throw new ErreurMetier("Résultats réservés aux enseignants du module", 403);

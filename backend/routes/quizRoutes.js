@@ -47,7 +47,7 @@ const router = express.Router();
 
 router.get("/config", authenticateToken, (req, res) => {
     const url = urlQuiz();
-    res.json({ actif: Boolean(url), url, peutLancer: Boolean(url) && ["enseignant", "admin"].includes(req.user.role) });
+    res.json({ actif: Boolean(url), url, peutLancer: Boolean(url) && req.user.role === "enseignant" });
 });
 
 router.get("/parties/en-cours", authenticateToken, asyncHandler(async (req, res) => {

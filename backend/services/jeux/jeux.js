@@ -55,9 +55,8 @@ export const modulesDuJoueur = async (user) => {
     return [];
 };
 
-/** Proposer un jeu dans un module : administration, responsable de la filière ou enseignant du module. */
+/** Proposer un jeu dans un module : responsable de la filière ou enseignant du module (l'administration ne gère pas les jeux). */
 export const peutProposerDansModule = async (user, cours) => {
-    if (user.role === "admin") return true;
     if (user.role !== "enseignant") return false;
     if (await peutGererFiliere(user, cours.id_filiere)) return true;
     return (await modulesDuJoueur(user)).includes(cours.id_cours);
@@ -163,7 +162,7 @@ const coursOuErreur = async (idCours) => {
     return cours;
 };
 
-/** Modules où un jeu est proposé (vue de l'administration et des enseignants). */
+/** Modules où un jeu est proposé (vue des enseignants). */
 export const modulesDuJeu = async (code) => {
     const jeu = jeuOuErreur(code);
     const propositions = await JeuModule.findAll({ where: { code_jeu: jeu.code }, include: [{ model: Cours, as: "cours", attributes: ["id_cours", "code_cours", "nom_cours"] }] });
