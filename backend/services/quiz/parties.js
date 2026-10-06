@@ -25,7 +25,8 @@ const DUREE_PROPOSEE_MIN = 120;
 // Lancer le quiz un peu avant le début de la séance compte encore pour elle
 const AVANCE_SEANCE_MIN = 15;
 
-const ROLES_ENSEIGNANT = ["enseignant", "admin"];
+// Les jeux et quiz concernent les enseignants et les étudiants, pas l'administration
+const ROLES_ENSEIGNANT = ["enseignant"];
 
 export const urlQuiz = () => process.env.QUIZ_URL?.replace(/\/$/, "") || null;
 
@@ -164,6 +165,7 @@ const enVue = (partie, user) => {
  * groupes parents) ; pour un enseignant, les siennes.
  */
 export const partiesEnCours = async (user) => {
+    if (!ROLES_ENSEIGNANT.includes(user.role) && user.role !== "etudiant") return [];
     const depuis = new Date(Date.now() - DUREE_PROPOSEE_MIN * 60 * 1000);
     const include = [{ model: Affectation, as: "affectation", required: false, include: [{ model: Cours, as: "cours", attributes: ["code_cours", "nom_cours"] }] }];
 
@@ -326,7 +328,7 @@ const equipesDeLaPartie = async (partie, resultats) => {
 const moduleDe = (partie) => (partie.affectation?.cours ? { code: partie.affectation.cours.code_cours, nom: partie.affectation.cours.nom_cours } : null);
 
 /**
- * Résultats d'une partie. L'enseignant qui l'a lancée (et l'administration) voit le classement
+ * Résultats d'une partie. L'enseignant qui l'a lancée voit le classement
  * complet avec les étudiants ; un étudiant de la séance voit son score, le podium (affiché en
  * classe), les équipes et les nuages de mots.
  * @returns {object|null} null si la partie n'existe pas ou ne le concerne pas
@@ -342,7 +344,7 @@ export const resultatsPartie = async (user, idPartie) => {
         order: [["rang", "ASC"], ["pseudo", "ASC"]],
     });
 
-    const complet = partie.id_user_enseignant === user.id_user || user.role === "admin";
+    const complet = partie.id_user_enseignant === user.id_user;
     let moi = null;
     if (!complet) {
         if (user.role !== "etudiant") return null;
@@ -385,6 +387,7 @@ export const resultatsPartie = async (user, idPartie) => {
  * l'étudiant, ses derniers scores.
  */
 export const historiqueQuiz = async (user, limite = 20) => {
+    if (!ROLES_ENSEIGNANT.includes(user.role) && user.role !== "etudiant") return [];
     if (ROLES_ENSEIGNANT.includes(user.role)) {
         const parties = await QuizPartie.findAll({ where: { id_user_enseignant: user.id_user, terminee_le: { [Op.ne]: null } }, include: includeSeance, order: [["terminee_le", "DESC"]], limit: limite });
         const moyennes = parties.length
