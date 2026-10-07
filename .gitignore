@@ -27,3 +27,5 @@ csrf_token=*
 Thumbs.db
 google-drive.json
 StudyLib-*.json
+# Paquets de mise à jour du serveur (deploy/vps/preparer-maj.sh)
+deploy/vps/paquets/
