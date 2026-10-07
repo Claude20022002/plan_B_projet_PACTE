@@ -297,8 +297,9 @@ def lire_storyboard():
     racine = open(os.path.join(ICI, "..", "src", "Root.tsx"), encoding="utf-8").read()
     bloc = racine[racine.index("export const TIMINGS") : racine.index("} as const;")]
     durees = {nom: int(n) * TEMPS for nom, n in re.findall(r"(\w+): (\d+) \* BEAT", bloc)}
-    vertical = re.findall(r'"(\w+)"', racine[racine.index("const VERTICAL") :].split("\n")[0])
-    return durees, vertical
+    vertical = re.findall(r'"(\w+)"', racine[racine.index("const VERTICAL:") :].split("\n")[0])
+    accroche = re.findall(r'"(\w+)"', racine[racine.index("const VERTICAL_ACCROCHE") :].split("\n")[0])
+    return durees, vertical, accroche
 
 
 GROOVE = {"agenda", "alerte", "supports", "resultats"}
@@ -359,8 +360,8 @@ def composer(ids, durees):
 
 if __name__ == "__main__":
     os.makedirs(SORTIE, exist_ok=True)
-    durees, vertical = lire_storyboard()
-    for nom, ids in (("hestim-planner.wav", list(durees)), ("hestim-planner-9x16.wav", vertical)):
+    durees, vertical, accroche = lire_storyboard()
+    for nom, ids in (("hestim-planner.wav", list(durees)), ("hestim-planner-9x16.wav", vertical), ("hestim-planner-9x16-accroche.wav", accroche)):
         donnees = composer(ids, durees)
         wavfile.write(os.path.join(SORTIE, nom), SR, donnees)
         print(f"{nom} : {len(donnees) / SR:.2f} s ({', '.join(ids)})")

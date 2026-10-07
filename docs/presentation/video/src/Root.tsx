@@ -40,6 +40,12 @@ const SCENES: { id: keyof typeof TIMINGS; C: React.FC }[] = [
 /** Teaser réseaux sociaux (9:16, 34 s) : toute l'histoire, du problème à la fin, sans supports, résultats ni chiffres. */
 export const VERTICAL: (keyof typeof TIMINGS)[] = ["title", "outils", "convergence", "agenda", "alerte", "fin"];
 
+/**
+ * Teaser B (9:16, 29 s), à comparer au premier : l'accroche d'abord. La vidéo s'ouvre sur l'alerte
+ * « cours reporté » (ce que vit chaque étudiant), puis le problème, la réponse, l'agenda et la fin.
+ */
+export const VERTICAL_ACCROCHE: (keyof typeof TIMINGS)[] = ["alerte", "outils", "convergence", "agenda", "fin"];
+
 const total = (ids: (keyof typeof TIMINGS)[]) => ids.reduce((s, id) => s + TIMINGS[id], 0);
 
 const Timeline: React.FC<{ ids: (keyof typeof TIMINGS)[] }> = ({ ids }) => {
@@ -75,6 +81,12 @@ export const HestimPlannerVertical: React.FC = () => (
     <Audio src={staticFile("audio/hestim-planner-9x16.wav")} />
   </>
 );
+export const HestimPlannerAccroche: React.FC = () => (
+  <>
+    <Timeline ids={VERTICAL_ACCROCHE} />
+    <Audio src={staticFile("audio/hestim-planner-9x16-accroche.wav")} />
+  </>
+);
 
 export const RemotionRoot: React.FC = () => (
   <>
@@ -90,6 +102,14 @@ export const RemotionRoot: React.FC = () => (
       id="HestimPlannerVertical"
       component={HestimPlannerVertical}
       durationInFrames={total(VERTICAL)}
+      fps={FPS}
+      width={1080}
+      height={1920}
+    />
+    <Composition
+      id="HestimPlannerAccroche"
+      component={HestimPlannerAccroche}
+      durationInFrames={total(VERTICAL_ACCROCHE)}
       fps={FPS}
       width={1080}
       height={1920}

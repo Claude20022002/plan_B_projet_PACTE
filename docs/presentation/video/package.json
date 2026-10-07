@@ -8,7 +8,8 @@
     "assets": "node scripts/copier-captures.mjs",
     "musique": "python scripts/composer-musique.py",
     "render": "npm run assets && npm run musique && remotion render HestimPlanner out/hestim-planner.mp4",
-    "render:vertical": "npm run assets && npm run musique && remotion render HestimPlannerVertical out/hestim-planner-9x16.mp4"
+    "render:vertical": "npm run assets && npm run musique && remotion render HestimPlannerVertical out/hestim-planner-9x16.mp4",
+    "render:accroche": "npm run assets && npm run musique && remotion render HestimPlannerAccroche out/hestim-planner-9x16-accroche.mp4"
   },
   "dependencies": {
     "@remotion/cli": "4.0.533",
