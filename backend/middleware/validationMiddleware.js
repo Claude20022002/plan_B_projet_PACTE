@@ -536,6 +536,7 @@ export const validateExamen = (requis) => {
         champ("titre").trim().notEmpty().isLength({ max: 255 }).withMessage("Le titre est requis"),
         champ("id_cours").isInt({ min: 1 }).withMessage("Module invalide"),
         body("id_periode").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Période invalide"),
+        body("nature").optional().isIn(["examen", "controle"]).withMessage("Nature invalide (examen ou controle)"),
         champ("date").isISO8601({ strict: true }).withMessage("Date invalide (AAAA-MM-JJ)"),
         champ("heure_debut").matches(HEURE_RESA).withMessage("Heure de début invalide (HH:MM)"),
         champ("heure_fin").matches(HEURE_RESA).withMessage("Heure de fin invalide (HH:MM)"),

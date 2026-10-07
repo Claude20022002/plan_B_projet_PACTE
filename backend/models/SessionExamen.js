@@ -13,6 +13,8 @@ const SessionExamen = sequelize.define(
         heure_debut: { type: DataTypes.TIME, allowNull: false },
         heure_fin: { type: DataTypes.TIME, allowNull: false },
         statut: { type: DataTypes.ENUM("brouillon", "publiee", "annulee"), allowNull: false, defaultValue: "brouillon" },
+        // examen : surveillé par l'administration ; controle : surveillé par les enseignants du module
+        nature: { type: DataTypes.ENUM("examen", "controle"), allowNull: false, defaultValue: "examen" },
         id_createur: { type: DataTypes.INTEGER, allowNull: false },
     },
     { tableName: "SessionsExamen", freezeTableName: true }

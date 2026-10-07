@@ -30,6 +30,7 @@ const hhmm = (h) => String(h).slice(0, 5);
 const depuisSeance = (a) => ({
     source: "seance",
     id: a.id_affectation,
+    id_cours: a.id_cours,
     libelle: `${a.cours?.nom_cours ?? "Séance"} (${hhmm(a.creneau.heure_debut)}-${hhmm(a.creneau.heure_fin)})`,
     heure_debut: a.creneau.heure_debut,
     heure_fin: a.creneau.heure_fin,

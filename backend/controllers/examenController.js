@@ -20,7 +20,7 @@ import {
  * leurs surveillances, les étudiants les épreuves publiées de leurs groupes.
  */
 
-const CHAMPS = ["titre", "id_cours", "id_periode", "date", "heure_debut", "heure_fin"];
+const CHAMPS = ["titre", "id_cours", "id_periode", "nature", "date", "heure_debut", "heure_fin"];
 
 const lire = (body) => {
     const donnees = pick(body, CHAMPS);
