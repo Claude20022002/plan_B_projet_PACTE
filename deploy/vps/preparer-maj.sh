@@ -8,9 +8,13 @@
 # Puis, depuis la racine du dépôt, dans Git Bash :
 #   bash deploy/vps/preparer-maj.sh maj8
 # Résultat : deploy/vps/paquets/maj8.tar.gz (ignoré par git), à appliquer avec appliquer-maj.sh.
+#
+# Option --classquiz : ajoute le site ClassQuiz (fork ../ClassQuiz, thème HESTIM), construit avant :
+#   cd ../ClassQuiz/frontend && rm -rf build && NODE_ENV=production npx vite build
 set -euo pipefail
 
-NOM="${1:?usage : preparer-maj.sh <nom, par ex. maj8>}"
+NOM="${1:?usage : preparer-maj.sh <nom, par ex. maj8> [--classquiz]}"
+AVEC_CLASSQUIZ="${2:-}"
 RACINE="$(cd "$(dirname "$0")/../.." && pwd)"
 SORTIE="$RACINE/deploy/vps/paquets"
 TRAVAIL="$SORTIE/$NOM"
@@ -42,6 +46,22 @@ cp frontend/nginx.conf "$TRAVAIL/site/nginx.conf"
 # Scripts d'exploitation à jour (renommage, mots de passe de démonstration…)
 mkdir -p "$TRAVAIL/deploy-vps"
 cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh "$TRAVAIL/deploy-vps/"
+
+if [ "$AVEC_CLASSQUIZ" = "--classquiz" ]; then
+    CQ="$RACINE/../ClassQuiz/frontend/build"
+    [ -f "$CQ/index.js" ] || { echo "ClassQuiz non construit : $CQ/index.js absent" >&2; exit 1; }
+    mkdir -p "$TRAVAIL/classquiz"
+    cp -r "$CQ" "$TRAVAIL/classquiz/build"
+    # Le site Node de SvelteKit (adapter-node) est autonome : on remplace son dossier de construction
+    cat > "$TRAVAIL/Dockerfile.classquiz" <<'EOF'
+FROM claude20022002/hestim-classquiz-frontend:latest
+USER root
+RUN rm -rf /app/client /app/server /app/prerendered /app/index.js /app/handler.js /app/env.js /app/shims.js
+COPY classquiz/build/ /app/
+RUN chown -R node:node /app
+USER node
+EOF
+fi
 
 cat > "$TRAVAIL/Dockerfile.backend" <<'EOF'
 FROM claude20022002/hestim-backend:latest
