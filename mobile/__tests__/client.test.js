@@ -42,8 +42,7 @@ test("envoie à Planner l'identifiant de l'installation, stable et gardé à la 
   const premier = fetch.mock.calls[0][1].headers['X-Appareil'];
   expect(premier).toMatch(/^[0-9a-f]{48}$/);
   await client.definirJetons(null);
-  jest.resetModules();
-  client = require('../src/api/client');
+  expect(SecureStore.__coffre.get('hestim.installation')).toBe(premier);
   await client.planner('/presences/scanner', { method: 'POST', body: { code: 'x' }, auth: false });
   expect(fetch.mock.calls[1][1].headers['X-Appareil']).toBe(premier);
 });
@@ -69,7 +68,8 @@ test('renouvellement refusé : jetons effacés et session perdue', async () => {
   fetch.mockImplementation(async (url) => (url.endsWith('/auth/refresh') ? reponse(403, { code: 'REFRESH_REUSE_DETECTED' }) : reponse(401, { code: 'TOKEN_EXPIRED' })));
   await expect(client.planner('/a')).rejects.toMatchObject({ statut: 401 });
   expect(perdue).toHaveBeenCalledTimes(1);
-  expect(SecureStore.__coffre.size).toBe(0);
+  // Seul reste l'identifiant de l'installation (il survit à la déconnexion)
+  expect([...SecureStore.__coffre.keys()]).toEqual(['hestim.installation']);
 });
 
 test('hors ligne : erreur réseau, la session est gardée', async () => {

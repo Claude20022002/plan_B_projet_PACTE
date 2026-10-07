@@ -693,6 +693,8 @@ export const presenceAPI = {
     liste: (id) => request(`/presences/seances/${encodeURIComponent(id)}`),
     marquer: (id, idUser, present) => request(`/presences/seances/${encodeURIComponent(id)}/etudiants/${encodeURIComponent(idUser)}`, { method: 'PUT', body: { present } }),
     fermer: (id) => request(`/presences/seances/${encodeURIComponent(id)}/fermer`, { method: 'POST' }),
-    // Étudiant : { seance, deja }
-    scanner: (code) => request('/presences/scanner', { method: 'POST', body: { code } }),
+    // Vérification surprise facultative : { etudiants: [{ id_user, nom, prenom }], restants }
+    tirerVerification: (id, nombre) => request(`/presences/seances/${encodeURIComponent(id)}/verification`, { method: 'POST', body: { nombre } }),
+    verifier: (id, idUser, present) => request(`/presences/seances/${encodeURIComponent(id)}/verification/${encodeURIComponent(idUser)}`, { method: 'PUT', body: { present } }),
+    // Le scan étudiant ne passe que par l'application mobile
 };
