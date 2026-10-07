@@ -10,6 +10,10 @@ const Presence = sequelize.define(
         id_user: { type: DataTypes.INTEGER, allowNull: false },
         source: { type: DataTypes.ENUM("qr", "manuel"), allowNull: false, defaultValue: "qr" },
         marque_le: { type: DataTypes.DATE, allowNull: false },
+        // Empreinte de l'installation de l'application qui a scanné (un téléphone = un étudiant par séance)
+        appareil: { type: DataTypes.STRING(64), allowNull: true },
+        // Vu dans la salle lors d'une vérification surprise
+        verifie_le: { type: DataTypes.DATE, allowNull: true },
     },
     { tableName: "Presences", freezeTableName: true }
 );

@@ -35,6 +35,7 @@ import AbonnementCalendrier from "./AbonnementCalendrier.js";
 import EnvoiEdt from "./EnvoiEdt.js";
 import AppelSeance from "./AppelSeance.js";
 import Presence from "./Presence.js";
+import SignalementPresence from "./SignalementPresence.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
 import JeuProfil from "./JeuProfil.js";
@@ -534,6 +535,9 @@ Affectation.hasOne(AppelSeance, { foreignKey: "id_affectation", as: "appel", onD
 Affectation.hasMany(Presence, { foreignKey: "id_affectation", as: "presences", onDelete: "CASCADE" });
 Presence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
 Presence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
+SignalementPresence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
+SignalementPresence.belongsTo(Users, { foreignKey: "id_user_lie", as: "lie", targetKey: "id_user" });
+SignalementPresence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
 
 // Jeux intégrés : proposés dans un module, progression par joueur
 Cours.hasMany(JeuModule, { foreignKey: "id_cours", as: "jeux", onDelete: "CASCADE" });
@@ -611,6 +615,7 @@ export {
     EnvoiEdt,
     AppelSeance,
     Presence,
+    SignalementPresence,
     JeuModule,
     JeuProgression,
     JeuProfil,
