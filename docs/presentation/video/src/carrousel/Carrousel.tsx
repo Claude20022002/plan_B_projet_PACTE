@@ -29,7 +29,7 @@ const Texte: React.FC<{ children: React.ReactNode; taille?: number; style?: Reac
 const Page: React.FC<{ n: number; total: number; children: React.ReactNode }> = ({ n, total, children }) => (
   <AbsoluteFill style={{ background: C.bg, padding: MARGE }}>
     <div style={{ display: "flex", alignItems: "center", gap: 18 }}>
-      <Embleme start={FINI} size={40} tile />
+      <Embleme start={FINI} tileStart={FINI} size={40} tile />
       <div style={{ fontFamily: FONT_TITLE, fontWeight: 700, fontSize: 30, letterSpacing: "0.14em", color: C.ink }}>HESTIM PLANNER</div>
     </div>
     <div style={{ position: "relative", flex: 1, marginTop: 56 }}>{children}</div>
@@ -37,7 +37,7 @@ const Page: React.FC<{ n: number; total: number; children: React.ReactNode }> = 
       <span>
         {String(n).padStart(2, "0")} / {String(total).padStart(2, "0")}
       </span>
-      {n < total ? <span style={{ color: C.ink }}>GLISSEZ →</span> : <span>L'ÉCOLE, À L'HEURE.</span>}
+      {n < total ? <span style={{ color: C.ink }}>GLISSEZ →</span> : null}
     </div>
   </AbsoluteFill>
 );
@@ -60,7 +60,7 @@ const Notification: React.FC<{ titre: string; detail: string; pastille: string; 
         ...style,
       }}
     >
-      <Embleme start={FINI} size={30 * k} tile style={{ flex: "none", borderRadius: 9 * k }} />
+      <Embleme start={FINI} tileStart={FINI} size={30 * k} tile style={{ flex: "none", borderRadius: 9 * k }} />
       <div style={{ minWidth: 0 }}>
         <div style={{ fontSize: 13 * k, color: C.inkSoft }}>HESTIM Planner · maintenant</div>
         <div style={{ display: "flex", alignItems: "center", gap: 7 * k, marginTop: 2 * k }}>
@@ -100,12 +100,12 @@ const Liste: React.FC<{ lignes: string[]; style?: React.CSSProperties }> = ({ li
 /** Page à deux colonnes : texte à gauche, téléphone à droite. */
 const AvecTelephone: React.FC<{ titre: React.ReactNode; texte: string; lignes: string[]; capture: string }> = ({ titre, texte, lignes, capture }) => (
   <>
-    <div style={{ position: "absolute", left: 0, top: 0, width: 470 }}>
+    <div style={{ position: "absolute", left: 0, top: 0, width: 430 }}>
       <Titre taille={78}>{titre}</Titre>
       <Texte style={{ marginTop: 28 }}>{texte}</Texte>
       <Liste lignes={lignes} style={{ marginTop: 40 }} />
     </div>
-    <Telephone capture={capture} hauteur={900} style={{ right: -8, top: 20 }} />
+    <Telephone capture={capture} hauteur={880} style={{ right: -8, top: 20 }} />
   </>
 );
 
@@ -241,7 +241,7 @@ const PAGES: React.FC[] = [
   // 9 · La fin et la question
   () => (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", height: "100%" }}>
-      <Embleme start={FINI} size={190} tile style={{ marginTop: 70 }} />
+      <Embleme start={FINI} tileStart={FINI} size={190} tile style={{ marginTop: 70 }} />
       <Titre taille={110} style={{ marginTop: 56, letterSpacing: "0.06em" }}>
         HESTIM Planner
       </Titre>
