@@ -302,7 +302,7 @@ def lire_storyboard():
     return durees, vertical, accroche
 
 
-GROOVE = {"agenda", "alerte", "supports", "resultats"}
+GROOVE = {"agenda", "alerte", "supports", "resultats", "appel"}
 
 
 def composer(ids, durees):
@@ -345,6 +345,12 @@ def composer(ids, durees):
                 sfx.ajouter(s + 3.4, souffle(0.7), 0.5)
             elif i == "resultats":
                 sfx.ajouter(s + 5.0, souffle(0.3, haut=True), 0.3)
+            elif i == "appel":
+                volets(sfx, s, s + 0.9, 0.18)  # titre en volets
+                sfx.ajouter(s + 0.5, souffle(0.35, haut=True), 0.3)  # le QR entre
+                sfx.ajouter(s + 2.0, toucher(), 0.45)  # premier scan
+                volets(sfx, s + 2.0, s + 2.5, 0.14)  # compteur de présents
+                volets(sfx, s + 3.0, s + 3.25, 0.22)  # le code se renouvelle
         elif i == "chiffres":
             section_groove(sec, musique, s, s + d, legere=True, origine=s)
             volets(sfx, s, s + 0.6)

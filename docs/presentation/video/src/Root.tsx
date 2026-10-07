@@ -7,6 +7,7 @@ import { S4Agenda } from "./scenes/S4Agenda";
 import { S5Alerte } from "./scenes/S5Alerte";
 import { S6Supports } from "./scenes/S6Supports";
 import { S7Resultats } from "./scenes/S7Resultats";
+import { S8Appel } from "./scenes/S8Appel";
 import { S8Chiffres } from "./scenes/S8Chiffres";
 import { S9Fin } from "./scenes/S9Fin";
 import { BEAT, C, FPS } from "./theme";
@@ -22,8 +23,9 @@ export const TIMINGS = {
   alerte: 12 * BEAT, //     23 – 29 s  alerte de report (3 s à l'écran)
   supports: 14 * BEAT, //   29 – 36 s  supports de cours, PDF officiel
   resultats: 16 * BEAT, //  36 – 44 s  quiz, défis, devoirs notés
-  chiffres: 14 * BEAT, //   44 – 51 s  90 s · 1 compte · 0 publicité
-  fin: 10 * BEAT, //        51 – 56 s  emblème, nom, web · iPhone · Android
+  appel: 12 * BEAT, //      44 – 50 s  l'appel par QR code : ce que l'école y gagne
+  chiffres: 14 * BEAT, //   50 – 57 s  90 s · 1 compte · 0 publicité
+  fin: 10 * BEAT, //        57 – 62 s  emblème, nom, web · iPhone · Android
 } as const;
 
 const SCENES: { id: keyof typeof TIMINGS; C: React.FC }[] = [
@@ -34,6 +36,7 @@ const SCENES: { id: keyof typeof TIMINGS; C: React.FC }[] = [
   { id: "alerte", C: S5Alerte },
   { id: "supports", C: S6Supports },
   { id: "resultats", C: S7Resultats },
+  { id: "appel", C: S8Appel },
   { id: "chiffres", C: S8Chiffres },
   { id: "fin", C: S9Fin },
 ];
