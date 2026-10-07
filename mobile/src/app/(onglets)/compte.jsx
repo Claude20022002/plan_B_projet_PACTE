@@ -8,6 +8,7 @@ import { changerLangue } from '../../i18n';
 import { desinscrireDesNotifications, inscrireAuxNotifications, notificationsActives } from '../../push';
 import { CIBLE_TACTILE, creerStyles, espace, FAMILLES, MODES, themePour, usePreferenceTheme, useTheme } from '../../theme';
 import { useMargeOnglets } from '../../verre/Verre';
+import { ajouterAuCalendrier } from '../../agenda';
 
 /** Compte : profil, apparence (thème Planner ou StudyLib, clair ou sombre), langue, notifications, déconnexion. */
 export default function Compte() {
@@ -16,6 +17,7 @@ export default function Compte() {
   const margeBas = useMargeOnglets();
   const { t, i18n } = useTranslation();
   const { utilisateur, deconnexion } = useAuth();
+  const [erreurAgenda, setErreurAgenda] = useState(false);
   const [alertes, setAlertes] = useState(false);
   const [occupe, setOccupe] = useState(false);
 
@@ -66,6 +68,19 @@ export default function Compte() {
         <View style={[styles.bloc, styles.ligne]}>
           <Text style={[styles.detail, { flex: 1 }]}>{t('app.compte.notificationsAide')}</Text>
           <Switch value={alertes} disabled={occupe} onValueChange={basculerAlertes} trackColor={{ true: couleurs.enCours, false: couleurs.filet }} accessibilityLabel={t('app.compte.notifications')} />
+        </View>
+
+        <Text style={styles.section}>{t('app.compte.agenda')}</Text>
+        <View style={styles.bloc}>
+          <Text style={styles.detail}>{t('app.compte.agendaAide')}</Text>
+          <Pressable
+            onPress={() => ajouterAuCalendrier(couleurs).catch(() => setErreurAgenda(true))}
+            style={({ pressed }) => [styles.option, styles.optionActive, { marginTop: 12, minHeight: CIBLE_TACTILE, justifyContent: 'center' }, pressed && { opacity: 0.7 }]}
+            accessibilityRole="button"
+          >
+            <Text style={styles.agendaBouton}>{t('app.compte.agendaAjouter')}</Text>
+          </Pressable>
+          {erreurAgenda ? <Text style={[styles.detail, { marginTop: 8 }]}>{t('app.compte.agendaErreur')}</Text> : null}
         </View>
 
         <Pressable onPress={deconnexion} style={styles.deconnexion} accessibilityRole="button">
@@ -144,6 +159,7 @@ const useStyles = creerStyles((t) => ({
   ligne: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   nom: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 17 },
   detail: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 14 },
+  agendaBouton: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 15, textAlign: 'center' },
   choix: { flexDirection: 'row', marginHorizontal: 16, gap: 8 },
   option: { flex: 1, minHeight: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center', backgroundColor: t.couleurs.cellule, borderRadius: t.rayons.sm, borderWidth: 1, borderColor: t.sombre ? t.couleurs.cellule : t.couleurs.filet },
   optionActive: { borderColor: t.famille === 'planner' ? t.couleurs.lettre : t.couleurs.accent, borderWidth: 2 },
