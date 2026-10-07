@@ -31,6 +31,8 @@ import QuizResultat from "./QuizResultat.js";
 import Devoir from "./Devoir.js";
 import DevoirRendu from "./DevoirRendu.js";
 import FichierDevoir from "./FichierDevoir.js";
+import AbonnementCalendrier from "./AbonnementCalendrier.js";
+import EnvoiEdt from "./EnvoiEdt.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
 import JeuProfil from "./JeuProfil.js";
@@ -521,6 +523,10 @@ DevoirRendu.belongsTo(Devoir, { foreignKey: "id_devoir", as: "devoir" });
 DevoirRendu.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
 Devoir.hasMany(FichierDevoir, { foreignKey: "id_devoir", as: "fichiers", onDelete: "CASCADE" });
 
+// Calendrier et envois de l'emploi du temps (R4)
+AbonnementCalendrier.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
+EnvoiEdt.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
+
 // Jeux intégrés : proposés dans un module, progression par joueur
 Cours.hasMany(JeuModule, { foreignKey: "id_cours", as: "jeux", onDelete: "CASCADE" });
 JeuModule.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
@@ -593,6 +599,8 @@ export {
     Devoir,
     DevoirRendu,
     FichierDevoir,
+    AbonnementCalendrier,
+    EnvoiEdt,
     JeuModule,
     JeuProgression,
     JeuProfil,
