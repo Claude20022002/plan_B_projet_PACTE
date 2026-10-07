@@ -1,12 +1,14 @@
-import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs } from "./helpers/testApp.js";
+import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs, anonymous, PASSWORD } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Affectation, Appartenir, Groupe } from "../../models/index.js";
+import { Affectation, Appartenir, Groupe, SignalementPresence } from "../../models/index.js";
 import { scannerCode } from "../../services/presences/appel.js";
 
 /**
  * I1 — appel par QR code : l'enseignant ouvre l'appel le jour de la séance, le code change toutes
  * les 30 s et ne vaut qu'une minute, seuls les étudiants des groupes de la séance sont acceptés,
  * l'enseignant coche à la main et ferme l'appel (séance réalisée).
+ * Anti-fraude : scan depuis l'application seulement, un téléphone = un étudiant par séance
+ * (signalement des deux), vérification surprise facultative.
  */
 
 let admin;
@@ -19,7 +21,22 @@ let fixture;
 let seance;
 let code;
 
+const TELEPHONE_A = "installation-telephone-a";
+const TELEPHONE_B = "installation-telephone-b";
+const TELEPHONE_C = "installation-telephone-c";
+
 const aujourdhui = () => new Date().toLocaleDateString("en-CA", { timeZone: "Africa/Casablanca" });
+
+/** Session de l'application mobile : Bearer, X-Client: mobile et identifiant d'installation. */
+const application = async (user, appareil) => {
+    const { access_token } = (await anonymous().post("/api/auth/login").set("X-Client", "mobile").send({ email: user.email, password: PASSWORD })).body;
+    return {
+        scanner: (corps) => {
+            const requete = anonymous().post("/api/presences/scanner").set("X-Client", "mobile").set("Authorization", `Bearer ${access_token}`);
+            return (appareil ? requete.set("X-Appareil", appareil) : requete).send(corps);
+        },
+    };
+};
 
 beforeAll(async () => {
     await resetDatabase();
@@ -68,50 +85,97 @@ describe("Ouvrir l'appel", () => {
 });
 
 describe("Scanner", () => {
-    test("un étudiant d'un groupe de la séance est présent, une seule fois", async () => {
-        const session = await loginAs(etudiant);
-        const premier = await session.send("post", "/api/presences/scanner", { code });
-        expect(premier.status).toBe(200);
-        expect(premier.body).toMatchObject({ deja: false, seance: { id: seance.id_affectation, cours: "Algorithmique" } });
-        expect((await session.send("post", "/api/presences/scanner", { code })).body.deja).toBe(true);
+    test("seulement depuis l'application : le site (cookie) et une application sans identifiant sont refusés", async () => {
+        expect((await (await loginAs(etudiant)).send("post", "/api/presences/scanner", { code })).status).toBe(403);
+        expect((await (await application(etudiant, null)).scanner({ code })).status).toBe(403);
+        expect((await (await application(etudiant, "court")).scanner({ code })).status).toBe(403);
     });
 
-    test("le QR scanné par l'appareil photo (adresse du site) marche aussi, pour un sous-groupe", async () => {
-        const res = await (await loginAs(etudiantTp)).send("post", "/api/presences/scanner", { code: `https://planner.exemple/presence?c=${encodeURIComponent(code)}` });
+    test("un étudiant d'un groupe de la séance est présent, une seule fois", async () => {
+        const app = await application(etudiant, TELEPHONE_A);
+        const premier = await app.scanner({ code });
+        expect(premier.status).toBe(200);
+        expect(premier.body).toMatchObject({ deja: false, seance: { id: seance.id_affectation, cours: "Algorithmique" } });
+        expect((await app.scanner({ code })).body.deja).toBe(true);
+    });
+
+    test("un téléphone ne pointe qu'un étudiant par séance : refus et signalement des deux", async () => {
+        const res = await (await application(etudiantTp, TELEPHONE_A)).scanner({ code });
+        expect(res.status).toBe(409);
+        const signalements = await SignalementPresence.findAll({ where: { id_affectation: seance.id_affectation, motif: "appareil_partage" } });
+        expect(signalements.map((s) => [s.id_user, s.id_user_lie]).sort()).toEqual([[etudiant.id_user, etudiantTp.id_user], [etudiantTp.id_user, etudiant.id_user]].sort());
+        // Une nouvelle tentative ne duplique pas les signalements
+        await (await application(etudiantTp, TELEPHONE_A)).scanner({ code });
+        expect(await SignalementPresence.count({ where: { id_affectation: seance.id_affectation } })).toBe(2);
+    });
+
+    test("le QR scanné (adresse du site) marche aussi, pour un sous-groupe, avec son propre téléphone", async () => {
+        const res = await (await application(etudiantTp, TELEPHONE_B)).scanner({ code: `https://planner.exemple/presence?c=${encodeURIComponent(code)}` });
         expect(res.status).toBe(200);
     });
 
     test("refus : autre groupe, code trafiqué, code expiré, pas un étudiant", async () => {
-        expect((await (await loginAs(etranger)).send("post", "/api/presences/scanner", { code })).status).toBe(403);
+        const app = await application(etranger, TELEPHONE_C);
+        expect((await app.scanner({ code })).status).toBe(403);
         const trafique = code.replace(/.$/, (c) => (c === "A" ? "B" : "A"));
-        expect((await (await loginAs(etranger)).send("post", "/api/presences/scanner", { code: trafique })).status).toBe(400);
-        expect((await (await loginAs(etudiant)).send("post", "/api/presences/scanner", { code: "bonjour" })).status).toBe(400);
-        await expect(scannerCode({ role: "etudiant", id_user: etudiant.id_user }, code, new Date(Date.now() + 2 * 60 * 1000))).rejects.toMatchObject({ status: 410 });
+        expect((await app.scanner({ code: trafique })).status).toBe(400);
+        expect((await app.scanner({ code: "bonjour" })).status).toBe(400);
+        await expect(scannerCode({ role: "etudiant", id_user: etudiant.id_user }, code, new Date(Date.now() + 2 * 60 * 1000), TELEPHONE_A)).rejects.toMatchObject({ status: 410 });
         expect((await (await loginAs(enseignant)).send("post", "/api/presences/scanner", { code })).status).toBe(403);
     });
 });
 
-describe("Liste d'appel et fermeture", () => {
-    test("attendus et présents ; l'enseignant coche et décoche à la main", async () => {
+describe("Liste d'appel et vérification surprise", () => {
+    test("attendus, présents et signalements ; l'enseignant coche et décoche à la main", async () => {
         const prof = await loginAs(enseignant);
         const liste = (await prof.get(`/api/presences/seances/${seance.id_affectation}`)).body;
         expect(liste.etudiants.map((e) => e.id_user).sort()).toEqual([etudiant.id_user, etudiantTp.id_user].sort());
         expect(liste.presents).toBe(2);
         expect(liste.appel.ouvert).toBe(true);
+        expect(liste.etudiants.find((e) => e.id_user === etudiant.id_user).signalements).toEqual([{ motif: "appareil_partage", lie: "Yassine Alami" }]);
 
         expect((await prof.send("put", `/api/presences/seances/${seance.id_affectation}/etudiants/${etudiantTp.id_user}`, { present: false })).status).toBe(200);
         expect((await prof.get(`/api/presences/seances/${seance.id_affectation}/code`)).body.presents).toBe(1);
         await prof.send("put", `/api/presences/seances/${seance.id_affectation}/etudiants/${etudiantTp.id_user}`, { present: true });
         const apres = (await prof.get(`/api/presences/seances/${seance.id_affectation}`)).body;
-        expect(apres.etudiants.find((e) => e.id_user === etudiantTp.id_user)).toMatchObject({ present: true, source: "manuel" });
+        expect(apres.etudiants.find((e) => e.id_user === etudiantTp.id_user)).toMatchObject({ present: true, source: "manuel", verifie: false });
         expect((await prof.send("put", `/api/presences/seances/${seance.id_affectation}/etudiants/${etranger.id_user}`, { present: true })).status).toBe(404);
     });
 
+    test("tirage parmi les présents par scan non vérifiés ; vu dans la salle → vérifié", async () => {
+        const prof = await loginAs(enseignant);
+        expect((await (await loginAs(etudiant)).send("post", `/api/presences/seances/${seance.id_affectation}/verification`, {})).status).toBe(403);
+        const tirage = (await prof.send("post", `/api/presences/seances/${seance.id_affectation}/verification`, { nombre: 3 })).body;
+        // etudiantTp a été coché à la main : seul le présent par scan est tiré
+        expect(tirage).toEqual({ etudiants: [{ id_user: etudiant.id_user, nom: "Bennani", prenom: "Salma" }], restants: 0 });
+        expect((await prof.send("put", `/api/presences/seances/${seance.id_affectation}/verification/${etudiant.id_user}`, { present: true })).body).toEqual({ present: true });
+        expect((await prof.send("post", `/api/presences/seances/${seance.id_affectation}/verification`, {})).body.etudiants).toEqual([]);
+        expect((await prof.get(`/api/presences/seances/${seance.id_affectation}`)).body.etudiants.find((e) => e.id_user === etudiant.id_user).verifie).toBe(true);
+    });
+
+    test("absent à la vérification : présence retirée et signalement", async () => {
+        const prof = await loginAs(enseignant);
+        expect((await prof.send("put", `/api/presences/seances/${seance.id_affectation}/verification/${etudiantTp.id_user}`, { present: false })).body).toEqual({ present: false });
+        expect((await prof.send("put", `/api/presences/seances/${seance.id_affectation}/verification/${etudiantTp.id_user}`, { present: false })).status).toBe(404);
+        const liste = (await prof.get(`/api/presences/seances/${seance.id_affectation}`)).body;
+        expect(liste.etudiants.find((e) => e.id_user === etudiantTp.id_user)).toMatchObject({ present: false });
+        expect(liste.etudiants.find((e) => e.id_user === etudiantTp.id_user).signalements.map((s) => s.motif)).toEqual(["appareil_partage", "absent_verification"]);
+    });
+
+    test("signalements : réservés à l'administration", async () => {
+        expect((await (await loginAs(enseignant)).get("/api/presences/signalements")).status).toBe(403);
+        const { data } = (await (await loginAs(admin)).get("/api/presences/signalements")).body;
+        expect(data).toHaveLength(3);
+        expect(data[0]).toMatchObject({ motif: "absent_verification", etudiant: "Yassine Alami", seance: { id: seance.id_affectation, cours: "Algorithmique" } });
+    });
+});
+
+describe("Fermeture", () => {
     test("fermer : séance réalisée, plus aucun scan accepté", async () => {
         const res = await (await loginAs(enseignant)).send("post", `/api/presences/seances/${seance.id_affectation}/fermer`);
-        expect(res.body).toMatchObject({ presents: 2, statut: "realise" });
+        expect(res.body).toMatchObject({ presents: 1, statut: "realise" });
         expect((await Affectation.findByPk(seance.id_affectation)).statut).toBe("realise");
-        expect((await (await loginAs(etudiant)).send("post", "/api/presences/scanner", { code })).status).toBe(409);
+        expect((await (await application(etudiant, TELEPHONE_A)).scanner({ code })).status).toBe(409);
         expect((await (await loginAs(etudiant)).get("/api/presences/miennes")).body.data.map((p) => p.id_affectation)).toContain(seance.id_affectation);
     });
 });

@@ -1,5 +1,6 @@
 import crypto from "crypto";
-import { Affectation, AppelSeance, Appartenir, Cours, Creneau, Enseignement, EnseignementEnseignant, Groupe, Presence, Salle, Users } from "../../models/index.js";
+import { UniqueConstraintError } from "sequelize";
+import { Affectation, AppelSeance, Appartenir, Cours, Creneau, Enseignement, EnseignementEnseignant, Groupe, Presence, Salle, SignalementPresence, Users } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
 
@@ -11,17 +12,26 @@ import { groupesANotifier } from "../planning/seances.js";
  * depuis l'application (ou l'appareil photo du téléphone : le QR est une adresse du site). Seuls
  * les étudiants des groupes de la séance sont acceptés. L'enseignant peut cocher à la main ; en
  * fermant l'appel, la séance est marquée réalisée (suivi du réalisé, P7).
+ *
+ * Anti-fraude : le scan ne passe que par l'application (identifiant d'installation), et un même
+ * téléphone ne pointe qu'un seul étudiant par séance (sinon refus et signalement des deux). Si
+ * l'enseignant le souhaite (facultatif), une vérification surprise tire quelques présents au
+ * hasard : il les appelle, un absent perd sa présence et est signalé.
  */
 
 const FUSEAU = process.env.APP_TIMEZONE || "Africa/Casablanca";
 export const FENETRE_MS = 30 * 1000;
 const CODE = /^(\d{1,10})\.(\d{1,12})\.([A-Za-z0-9_-]{22})$/;
 const STATUTS_FERMABLES = ["planifie", "confirme", "reporte"];
+const APPAREIL = /^[A-Za-z0-9_-]{16,64}$/;
+export const VERIFICATION_MAX = 5;
 
 const aujourdhui = (maintenant = new Date()) => maintenant.toLocaleDateString("en-CA", { timeZone: FUSEAU });
 const fenetreDe = (maintenant = new Date()) => Math.floor(maintenant.getTime() / FENETRE_MS);
 const signature = (secret, idSeance, fenetre) => crypto.createHmac("sha256", secret).update(`${idSeance}.${fenetre}`).digest("base64url").slice(0, 22);
 const egal = (a, b) => a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
+const empreinteAppareil = (appareil) => crypto.createHash("sha256").update(appareil).digest("hex");
+const nomComplet = (u) => (u ? `${u.prenom} ${u.nom}` : null);
 export const adresseDuCode = (code) => `${(process.env.FRONTEND_URL || "").replace(/\/$/, "")}/presence?c=${encodeURIComponent(code)}`;
 
 const seanceOuErreur = async (id) => {
@@ -115,12 +125,18 @@ export const codeDeLAppel = async (user, id, maintenant = new Date()) => {
 /** Liste d'appel : attendus, présents (et comment), état de l'appel. */
 export const listeDAppel = async (user, id) => {
     const seance = await seanceDeLEnseignant(user, id);
-    const [attendus, presences, appel] = await Promise.all([
+    const [attendus, presences, appel, signalements] = await Promise.all([
         etudiantsAttendus(seance),
         Presence.findAll({ where: { id_affectation: seance.id_affectation } }),
         AppelSeance.findByPk(seance.id_affectation),
+        SignalementPresence.findAll({
+            where: { id_affectation: seance.id_affectation },
+            include: [{ model: Users, as: "lie", attributes: ["nom", "prenom"] }],
+            order: [["createdAt", "ASC"], ["id_signalement", "ASC"]],
+        }),
     ]);
     const parEtudiant = new Map(presences.map((p) => [p.id_user, p]));
+    const signalesDe = (idUser) => signalements.filter((s) => s.id_user === idUser).map((s) => ({ motif: s.motif, lie: nomComplet(s.lie) }));
     return {
         seance: resume(seance),
         appel: appel ? { ouvert: !appel.ferme_le, ouvert_le: appel.ouvert_le, ferme_le: appel.ferme_le } : null,
@@ -132,6 +148,8 @@ export const listeDAppel = async (user, id) => {
             present: parEtudiant.has(e.id_user),
             source: parEtudiant.get(e.id_user)?.source ?? null,
             marque_le: parEtudiant.get(e.id_user)?.marque_le ?? null,
+            verifie: Boolean(parEtudiant.get(e.id_user)?.verifie_le),
+            signalements: signalesDe(e.id_user),
         })),
     };
 };
@@ -148,6 +166,42 @@ export const marquerPresence = async (user, id, idEtudiant, present) => {
     return { present: Boolean(present) };
 };
 
+/**
+ * Vérification surprise, facultative (l'enseignant la lance s'il le souhaite) : tire au hasard des
+ * étudiants présents par scan et pas encore vérifiés, qu'il appelle à voix haute.
+ */
+export const tirerVerification = async (user, id, nombre = 3) => {
+    const seance = await seanceDeLEnseignant(user, id);
+    const n = Math.min(VERIFICATION_MAX, Math.max(1, Number.parseInt(nombre, 10) || 3));
+    const candidats = await Presence.findAll({
+        where: { id_affectation: seance.id_affectation, source: "qr", verifie_le: null },
+        include: [{ model: Users, as: "etudiant", attributes: ["id_user", "nom", "prenom"] }],
+    });
+    // Mélange de Fisher-Yates avec un hasard non prévisible
+    for (let i = candidats.length - 1; i > 0; i -= 1) {
+        const j = crypto.randomInt(i + 1);
+        [candidats[i], candidats[j]] = [candidats[j], candidats[i]];
+    }
+    return {
+        etudiants: candidats.slice(0, n).map((p) => ({ id_user: p.id_user, nom: p.etudiant?.nom, prenom: p.etudiant?.prenom })),
+        restants: Math.max(0, candidats.length - n),
+    };
+};
+
+/** Résultat de la vérification : vu dans la salle (présence confirmée) ou absent (présence retirée, signalement). */
+export const verifierEtudiant = async (user, id, idEtudiant, present, maintenant = new Date()) => {
+    const seance = await seanceDeLEnseignant(user, id);
+    const presence = await Presence.findOne({ where: { id_affectation: seance.id_affectation, id_user: idEtudiant } });
+    if (!presence) throw new ErreurMetier("Cet étudiant n'est pas marqué présent", 404);
+    if (present) {
+        await presence.update({ verifie_le: maintenant });
+        return { present: true };
+    }
+    await presence.destroy();
+    await SignalementPresence.create({ id_affectation: seance.id_affectation, id_user: idEtudiant, motif: "absent_verification", id_user_auteur: user.id_user });
+    return { present: false };
+};
+
 /** Fermer l'appel : les codes ne passent plus, la séance est marquée réalisée. */
 export const fermerAppel = async (user, id, maintenant = new Date()) => {
     const seance = await seanceDeLEnseignant(user, id);
@@ -160,9 +214,22 @@ export const fermerAppel = async (user, id, maintenant = new Date()) => {
 
 // ── Étudiant ─────────────────────────────────────────────────────────────
 
-/** Scan d'un code (ou de l'adresse du QR) : présence enregistrée une fois. */
-export const scannerCode = async (user, brut, maintenant = new Date()) => {
+const signalerAppareilPartage = async (idSeance, a, b) => {
+    for (const [id_user, id_user_lie] of [[a, b], [b, a]]) {
+        await SignalementPresence.findOrCreate({ where: { id_affectation: idSeance, id_user, id_user_lie, motif: "appareil_partage" } });
+    }
+};
+
+const refusAppareilPartage = () =>
+    new ErreurMetier("Ce téléphone a déjà servi à l'appel d'un autre étudiant pour cette séance : chacun scanne avec son propre téléphone. L'enseignant en est averti.", 409);
+
+/**
+ * Scan d'un code (ou de l'adresse du QR) depuis l'application : présence enregistrée une fois.
+ * `appareil` est l'identifiant d'installation de l'application ; seule son empreinte est conservée.
+ */
+export const scannerCode = async (user, brut, maintenant = new Date(), appareil = null) => {
     if (user.role !== "etudiant") throw new ErreurMetier("Réservé aux étudiants", 403);
+    if (typeof appareil !== "string" || !APPAREIL.test(appareil)) throw new ErreurMetier("Scannez le QR code avec l'application HESTIM à jour (icône QR de l'accueil)", 403);
     let texte = String(brut ?? "").trim();
     // Le QR contient une adresse « …/presence?c=CODE » : on en extrait le code
     const dansAdresse = /[?&]c=([^&#]+)/.exec(texte);
@@ -179,8 +246,28 @@ export const scannerCode = async (user, brut, maintenant = new Date()) => {
 
     const seance = await seanceOuErreur(appel.id_affectation);
     if (!(await etudiantsAttendus(seance)).some((e) => e.id_user === user.id_user)) throw new ErreurMetier("Vous n'êtes pas inscrit dans un groupe de cette séance", 403);
-    const [, cree] = await Presence.findOrCreate({ where: { id_affectation: seance.id_affectation, id_user: user.id_user }, defaults: { source: "qr", marque_le: maintenant } });
-    return { seance: resume(seance), deja: !cree };
+    if (await Presence.findOne({ where: { id_affectation: seance.id_affectation, id_user: user.id_user } })) return { seance: resume(seance), deja: true };
+
+    // Un téléphone = un étudiant par séance
+    const empreinte = empreinteAppareil(appareil);
+    const dejaPointe = await Presence.findOne({ where: { id_affectation: seance.id_affectation, appareil: empreinte } });
+    if (dejaPointe) {
+        await signalerAppareilPartage(seance.id_affectation, user.id_user, dejaPointe.id_user);
+        throw refusAppareilPartage();
+    }
+    try {
+        await Presence.create({ id_affectation: seance.id_affectation, id_user: user.id_user, source: "qr", marque_le: maintenant, appareil: empreinte });
+    } catch (erreur) {
+        if (!(erreur instanceof UniqueConstraintError)) throw erreur;
+        // Deux scans simultanés : même étudiant (déjà présent) ou même téléphone (partagé)
+        const gagnant = await Presence.findOne({ where: { id_affectation: seance.id_affectation, appareil: empreinte } });
+        if (gagnant && gagnant.id_user !== user.id_user) {
+            await signalerAppareilPartage(seance.id_affectation, user.id_user, gagnant.id_user);
+            throw refusAppareilPartage();
+        }
+        return { seance: resume(seance), deja: true };
+    }
+    return { seance: resume(seance), deja: false };
 };
 
 /** Mes présences récentes (étudiant) : séances passées de mes groupes, présent ou non. */
@@ -188,4 +275,36 @@ export const mesPresences = async (user) => {
     if (user.role !== "etudiant") throw new ErreurMetier("Réservé aux étudiants", 403);
     const presences = await Presence.findAll({ where: { id_user: user.id_user }, attributes: ["id_affectation", "marque_le"], order: [["marque_le", "DESC"]], limit: 100 });
     return presences.map((p) => ({ id_affectation: p.id_affectation, marque_le: p.marque_le }));
+};
+
+// ── Administration ───────────────────────────────────────────────────────
+
+/** Signalements récents (administration) : téléphones partagés et absents à une vérification. */
+export const signalementsRecents = async (user, limite = 200) => {
+    if (user.role !== "admin") throw new ErreurMetier("Réservé à l'administration", 403);
+    const lignes = await SignalementPresence.findAll({
+        include: [
+            { model: Users, as: "etudiant", attributes: ["nom", "prenom"] },
+            { model: Users, as: "lie", attributes: ["nom", "prenom"] },
+            {
+                model: Affectation,
+                as: "seance",
+                attributes: ["id_affectation", "date_seance"],
+                include: [
+                    { model: Cours, as: "cours", attributes: ["nom_cours"] },
+                    { model: Groupe, as: "groupe", attributes: ["nom_groupe"] },
+                ],
+            },
+        ],
+        order: [["createdAt", "DESC"], ["id_signalement", "DESC"]],
+        limit: limite,
+    });
+    return lignes.map((l) => ({
+        id: l.id_signalement,
+        motif: l.motif,
+        le: l.createdAt,
+        etudiant: nomComplet(l.etudiant),
+        lie: nomComplet(l.lie),
+        seance: { id: l.id_affectation, date: String(l.seance?.date_seance ?? "").slice(0, 10), cours: l.seance?.cours?.nom_cours ?? null, groupe: l.seance?.groupe?.nom_groupe ?? null },
+    }));
 };
