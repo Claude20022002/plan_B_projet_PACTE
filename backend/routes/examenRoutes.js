@@ -20,7 +20,7 @@ const router = express.Router();
 router.use(authenticateToken);
 
 // Vues personnelles (avant /:id)
-router.get("/mes-surveillances", requireRole("enseignant"), asyncHandler(getMesSurveillances));
+router.get("/mes-surveillances", requireRole("enseignant", "admin"), asyncHandler(getMesSurveillances));
 router.get("/mes-examens", requireRole("etudiant"), asyncHandler(getMesExamens));
 router.get("/surveillances/charge", requireAdmin, asyncHandler(getChargeSurveillances));
 

@@ -20,6 +20,7 @@ import { groupesANotifier } from "../planning/seances.js";
 import { filieresDuResponsable } from "../planning/droits.js";
 import { ancetres } from "../planning/groupes.js";
 import { sendEmail } from "../../utils/sendEmail.js";
+import { TYPES_IMAGES_PDF, verifierFichier } from "../../utils/fichiers.js";
 
 /**
  * Annonces ciblées (phase R1, remplace les e-mails d'information de l'école).
@@ -35,14 +36,7 @@ const TITRE_MAX = 200;
 const CORPS_MAX = 10000;
 const DELAI_RELANCE_MS = 12 * 3600 * 1000;
 export const TAILLE_MAX_PIECE = 5 * 1024 * 1024;
-// Type annoncé → signature attendue au début du fichier (un fichier renommé est refusé)
-const SIGNATURES = {
-    "application/pdf": (b) => b.subarray(0, 4).toString("latin1") === "%PDF",
-    "image/png": (b) => b.subarray(0, 8).equals(Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a])),
-    "image/jpeg": (b) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff,
-    "image/webp": (b) => b.subarray(0, 4).toString("latin1") === "RIFF" && b.subarray(8, 12).toString("latin1") === "WEBP",
-};
-export const TYPES_PIECE = Object.keys(SIGNATURES);
+export const TYPES_PIECE = TYPES_IMAGES_PDF;
 
 const lienAnnonce = (id) => `/annonces/${id}`;
 const unique = (valeurs) => [...new Set(valeurs.filter((v) => v !== null && v !== undefined))];
@@ -403,18 +397,10 @@ export const supprimerAnnonce = async (user, id) => {
 
 // ── Pièce jointe ─────────────────────────────────────────────────────────
 
-/** Nom de fichier sûr : sans chemin ni caractère de contrôle, 200 caractères au plus. */
-const nomSur = (nom) => String(nom ?? "").split(/[\\/]/).pop().replace(/[\u0000-\u001f\u007f"]/g, "").trim().slice(0, 200) || "piece-jointe";
-
 /** Ajoute ou remplace la pièce jointe (l'auteur seulement). */
 export const deposerPieceJointe = async (user, id, { contenu, type, nom }) => {
     await annonceDeLAuteur(user, id);
-    const typeMime = String(type ?? "").split(";")[0].trim().toLowerCase();
-    if (!SIGNATURES[typeMime]) throw new ErreurMetier("Pièce jointe : PDF, PNG, JPEG ou WebP seulement", 415);
-    if (!Buffer.isBuffer(contenu) || !contenu.length) throw new ErreurMetier("Fichier vide");
-    if (contenu.length > TAILLE_MAX_PIECE) throw new ErreurMetier("Pièce jointe : 5 Mo au plus", 413);
-    if (!SIGNATURES[typeMime](contenu)) throw new ErreurMetier("Le contenu du fichier ne correspond pas à son type", 415);
-    const donnees = { id_annonce: id, nom: nomSur(nom), type_mime: typeMime, taille: contenu.length, contenu };
+    const donnees = { id_annonce: id, ...verifierFichier({ contenu, type, nom }, { types: TYPES_PIECE, tailleMax: TAILLE_MAX_PIECE, libelleTypes: "PDF, PNG, JPEG ou WebP" }) };
     await AnnoncePieceJointe.upsert(donnees);
     return pieceVue(donnees);
 };

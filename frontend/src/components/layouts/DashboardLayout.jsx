@@ -95,6 +95,7 @@ const navigationFor = (user) => {
           { key: 'nav.incidents', icon: <Healing />, path: '/gestion/imprevus' },
           { key: 'nav.bookings', icon: <BookOnline />, path: '/reservations' },
           { key: 'nav.exams', icon: <FactCheck />, path: '/gestion/examens' },
+          { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
           { key: 'nav.tracking', icon: <Timeline />, path: '/gestion/suivi' },
           { key: 'nav.monthly', icon: <Print />, path: '/emploi-du-temps/mensuel' },
           { key: 'nav.statistics', icon: <Insights />, path: '/statistiques' },

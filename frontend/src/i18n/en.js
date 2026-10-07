@@ -133,7 +133,7 @@ const en = {
     },
   },
   exams: {
-    intro: 'One paper per module: groups, rooms at exam capacity (students are split across them), invigilators assigned to the least-used free teachers. Publishing notifies invigilators and students.',
+    intro: 'One paper per module: groups, rooms at exam capacity (students are split across them), invigilators assigned automatically: administration staff for an exam, the module’s teachers for an in-class test. Publishing notifies invigilators and students.',
     add: 'Schedule a paper',
     edit: 'Edit paper',
     defaultTitle: 'Exam: {{name}}',
@@ -153,7 +153,12 @@ const en = {
     emptyBody: 'Schedule the papers of the exam session.',
     statuses: { brouillon: 'Draft', publiee: 'Published', annulee: 'Cancelled' },
     cols: { exam: 'Paper', groups: 'Groups', rooms: 'Rooms and invigilators' },
-    fields: { title: 'Title', module: 'Module', groups: 'Groups', rooms: 'Rooms' },
+    fields: { title: 'Title', module: 'Module', groups: 'Groups', rooms: 'Rooms', nature: 'Type' },
+    natures: { examen: 'Exam', controle: 'In-class test' },
+    natureHelp: {
+      examen: 'Invigilated by administration staff.',
+      controle: 'Invigilated by the module’s teachers; it can take place during their class.',
+    },
     mineTeacher: 'Published papers you invigilate, with your room.',
     mineStudent: 'Published papers for your group, with rooms.',
     noneTitle: 'Nothing scheduled',

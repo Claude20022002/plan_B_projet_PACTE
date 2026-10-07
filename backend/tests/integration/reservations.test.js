@@ -2,14 +2,19 @@ import { resetDatabase, closeDatabase, createUser, loginAs } from "./helpers/tes
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import {
     Affectation,
+    AnneeUniversitaire,
     Appartenir,
     Campus,
     Cours,
+    CoursComposante,
     Creneau,
+    Enseignement,
+    EnseignementEnseignant,
     Disponibilite,
     Filiere,
     Groupe,
     Notification,
+    Periode,
     Reservation,
     Salle,
     SessionExamenSalle,
@@ -18,10 +23,12 @@ import {
 
 /**
  * Phase P5 — réservations hors cours et examens : demande puis validation, mêmes occupations
- * que les séances (dans les deux sens), surveillances équilibrées.
+ * que les séances (dans les deux sens). Examens surveillés par le personnel de l'administration
+ * (équilibré), contrôles par les enseignants du module.
  */
 
 let admin;
+let personnel;
 let profA;
 let profB;
 let profs;
@@ -34,6 +41,8 @@ const LUNDI = "2027-04-05";
 beforeAll(async () => {
     await resetDatabase();
     admin = await createUser("admin");
+    // Personnel de l'administration qui surveille les examens (comptes administrateurs)
+    personnel = [await createUser("admin"), await createUser("admin"), await createUser("admin"), await createUser("admin"), await createUser("admin")];
     profA = await createUser("enseignant");
     profB = await createUser("enseignant");
     profs = [await createUser("enseignant"), await createUser("enseignant"), await createUser("enseignant"), await createUser("enseignant")];
@@ -183,14 +192,13 @@ describe("Examens et surveillances", () => {
         expect(codes(pendantCours)).toContain("conflit_groupe");
     });
 
-    test("surveillants d'office : deux par salle, parmi les enseignants libres", async () => {
-        // profA a cours à 9 h ce jour-là : il ne peut pas surveiller
-        await clients.admin.send("post", "/api/affectations", { date_seance: "2027-04-19", id_cours: ref.cours.id_cours, id_groupe: ref.td1.id_groupe, id_creneau: ref.lun1.id_creneau, id_user_enseignant: profA.id_user, id_salle: ref.salles.s2.id_salle, forcer: true, justification: "Cours maintenu pendant l'examen de la promotion (test)" });
+    test("surveillants d'office d'un examen : deux par salle, parmi le personnel de l'administration, jamais un enseignant", async () => {
         const response = await clients.admin.send("post", `/api/examens/${examen.id_session}/surveillants/auto`);
         expect(response.status).toBe(200);
         const surveillants = await Surveillance.findAll({ where: { id_session: examen.id_session } });
         expect(surveillants).toHaveLength(4);
-        expect(surveillants.map((s) => s.id_user)).not.toContain(profA.id_user);
+        const administration = new Set([admin, ...personnel].map((u) => u.id_user));
+        expect(surveillants.every((s) => administration.has(s.id_user))).toBe(true);
     });
 
     test("une seconde épreuve prend d'abord les enseignants qui n'ont pas encore surveillé", async () => {
@@ -198,7 +206,7 @@ describe("Examens et surveillances", () => {
         await clients.admin.send("post", `/api/examens/${seconde.body.examen.id_session}/surveillants/auto`);
         const premiers = new Set((await Surveillance.findAll({ where: { id_session: examen.id_session } })).map((s) => s.id_user));
         const nouveaux = await Surveillance.findAll({ where: { id_session: seconde.body.examen.id_session } });
-        // 6 enseignants, 4 déjà pris : les 2 restants passent en premier
+        // 6 personnes de l'administration, 4 déjà prises : les 2 restantes passent en premier
         expect(nouveaux.every((s) => !premiers.has(s.id_user))).toBe(true);
         const charge = await clients.admin.get("/api/examens/surveillances/charge");
         expect(Math.max(...charge.body.map((c) => c.surveillances))).toBe(1);
@@ -211,6 +219,35 @@ describe("Examens et surveillances", () => {
         const surveillant = (await Surveillance.findOne({ where: { id_session: examen.id_session } })).id_user;
         const client = await loginAs({ email: (await Reservation.sequelize.models.Users.findByPk(surveillant)).email });
         expect((await client.get("/api/examens/mes-surveillances")).body.map((e) => e.id_session)).toContain(examen.id_session);
+    });
+
+    test("contrôle : surveillé par l'enseignant du module, pendant sa propre séance sans conflit", async () => {
+        const annee = await AnneeUniversitaire.create({ libelle: "2026-2027", date_debut: "2026-09-01", date_fin: "2027-07-31", active: true });
+        const periode = await Periode.create({ id_annee: annee.id_annee, code: "S2", date_debut: "2027-02-01", date_fin: "2027-06-30", nb_semaines: 16 });
+        const composante = await CoursComposante.create({ id_cours: ref.cours.id_cours, type: "CM", volume_heures: 30, niveau_groupe: "td" });
+        const enseignement = await Enseignement.create({ id_composante: composante.id_composante, id_periode: periode.id_periode, heures_prevues: 30 });
+        await enseignement.setGroupes([ref.td1.id_groupe]);
+        await EnseignementEnseignant.create({ id_enseignement: enseignement.id_enseignement, id_user: profB.id_user, role: "principal", statut_service: "accepte" });
+        // Séance du module de profB dans G-RSV2, le lundi 26 avril de 9 h à 10 h 45
+        const seance = await clients.admin.send("post", "/api/affectations", { date_seance: "2027-04-26", id_cours: ref.cours.id_cours, id_groupe: ref.td1.id_groupe, id_creneau: ref.lun1.id_creneau, id_user_enseignant: profB.id_user, id_salle: ref.salles.s2.id_salle });
+        expect(seance.status).toBe(201);
+
+        const controle = await clients.admin.send("post", "/api/examens", epreuve({ titre: "Contrôle PFE", nature: "controle", date: "2027-04-26", heure_debut: "09:30", heure_fin: "10:30", groupes: [ref.td1.id_groupe], salles: [{ id_salle: ref.salles.s2.id_salle }] }));
+        expect(controle.status).toBe(201);
+        expect(controle.body.examen.nature).toBe("controle");
+        await clients.admin.send("post", `/api/examens/${controle.body.examen.id_session}/surveillants/auto`);
+        const surveillants = await Surveillance.findAll({ where: { id_session: controle.body.examen.id_session } });
+        expect(surveillants.map((s) => s.id_user)).toEqual([profB.id_user]);
+
+        // Le même créneau en examen reste un conflit avec la séance
+        const examenPendantSeance = await clients.admin.send("post", "/api/examens", epreuve({ titre: "Examen pendant cours", date: "2027-04-26", heure_debut: "09:30", heure_fin: "10:30", groupes: [ref.td1.id_groupe], salles: [{ id_salle: ref.salles.s2.id_salle }] }));
+        expect(codes(examenPendantSeance)).toEqual(expect.arrayContaining(["conflit_salle", "conflit_groupe"]));
+    });
+
+    test("le personnel de l'administration voit ses surveillances publiées", async () => {
+        const surveillant = (await Surveillance.findOne({ where: { id_session: examen.id_session } })).id_user;
+        const client = await loginAs({ email: (await Reservation.sequelize.models.Users.findByPk(surveillant)).email });
+        expect((await client.get("/api/examens/mes-surveillances")).status).toBe(200);
     });
 
     test("une séance ne peut pas prendre une salle d'examen pendant l'épreuve", async () => {

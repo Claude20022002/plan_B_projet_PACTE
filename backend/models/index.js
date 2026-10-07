@@ -30,6 +30,7 @@ import QuizPartie from "./QuizPartie.js";
 import QuizResultat from "./QuizResultat.js";
 import Devoir from "./Devoir.js";
 import DevoirRendu from "./DevoirRendu.js";
+import FichierDevoir from "./FichierDevoir.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
 import JeuProfil from "./JeuProfil.js";
@@ -518,6 +519,7 @@ Devoir.belongsTo(Users, { foreignKey: "id_user_enseignant", as: "enseignant", ta
 Devoir.hasMany(DevoirRendu, { foreignKey: "id_devoir", as: "rendus", onDelete: "CASCADE" });
 DevoirRendu.belongsTo(Devoir, { foreignKey: "id_devoir", as: "devoir" });
 DevoirRendu.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
+Devoir.hasMany(FichierDevoir, { foreignKey: "id_devoir", as: "fichiers", onDelete: "CASCADE" });
 
 // Jeux intégrés : proposés dans un module, progression par joueur
 Cours.hasMany(JeuModule, { foreignKey: "id_cours", as: "jeux", onDelete: "CASCADE" });
@@ -590,6 +592,7 @@ export {
     QuizResultat,
     Devoir,
     DevoirRendu,
+    FichierDevoir,
     JeuModule,
     JeuProgression,
     JeuProfil,

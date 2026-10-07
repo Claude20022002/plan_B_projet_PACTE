@@ -19,7 +19,8 @@ export default function MesExamens() {
     const { t, i18n } = useTranslation();
     const toast = useToast();
     const { user } = useAuth();
-    const enseignant = user?.role === 'enseignant';
+    // Enseignant ou personnel de l'administration : ses surveillances ; étudiant : ses examens
+    const enseignant = user?.role !== 'etudiant';
     const [examens, setExamens] = useState([]);
     const [loading, setLoading] = useState(true);
 

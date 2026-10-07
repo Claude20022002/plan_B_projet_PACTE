@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+    MenuItem,
     Autocomplete,
     Box,
     Button,
@@ -32,7 +33,7 @@ import { fetchAll } from '../../utils/fetchAll';
 import { ds } from '../../design-system/tokens';
 
 const hhmm = (h) => String(h || '').slice(0, 5);
-const VIDE = { titre: '', cours: null, date: '', heure_debut: '09:00', heure_fin: '11:00', groupes: [], salles: [] };
+const VIDE = { titre: '', nature: 'examen', cours: null, date: '', heure_debut: '09:00', heure_fin: '11:00', groupes: [], salles: [] };
 
 /**
  * Examens (phase P5) : une épreuve par module et groupes, répartie sur des salles en capacité
@@ -78,6 +79,7 @@ export default function Examens() {
                 ? {
                       id: examen.id_session,
                       titre: examen.titre,
+                      nature: examen.nature ?? 'examen',
                       cours: ref.cours.find((c) => c.id_cours === examen.id_cours) ?? null,
                       date: examen.date,
                       heure_debut: hhmm(examen.heure_debut),
@@ -91,6 +93,7 @@ export default function Examens() {
     const enregistrer = async (extra = {}) => {
         const corps = {
             titre: dialog.titre.trim(),
+            nature: dialog.nature,
             id_cours: dialog.cours?.id_cours,
             date: dialog.date,
             heure_debut: dialog.heure_debut,
@@ -173,6 +176,7 @@ export default function Examens() {
                                                 <Typography variant="body2" sx={{ fontWeight: 600 }}>
                                                     {e.titre}
                                                 </Typography>
+                                                {e.nature === 'controle' && <StateChip tone="neutral">{t('exams.natures.controle')}</StateChip>}
                                                 {e.statut !== 'publiee' && <StateChip tone={e.statut === 'annulee' ? 'neutral' : 'info'}>{t(`exams.statuses.${e.statut}`)}</StateChip>}
                                             </Stack>
                                             <Typography variant="caption" color="text.secondary">
@@ -243,6 +247,10 @@ export default function Examens() {
                     <DialogContent>
                         {dialog && (
                             <Stack spacing={2} sx={{ mt: 1 }}>
+                                <TextField select label={t('exams.fields.nature')} value={dialog.nature} onChange={champ('nature')} helperText={t(`exams.natureHelp.${dialog.nature}`)}>
+                                    <MenuItem value="examen">{t('exams.natures.examen')}</MenuItem>
+                                    <MenuItem value="controle">{t('exams.natures.controle')}</MenuItem>
+                                </TextField>
                                 <TextField label={t('exams.fields.title')} value={dialog.titre} onChange={champ('titre')} required />
                                 <Autocomplete
                                     options={ref.cours}

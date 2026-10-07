@@ -1,6 +1,7 @@
 import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { planification } from "../utils/erreursPlanning.js";
+import { enTetesTelechargement } from "../utils/fichiers.js";
 import {
     TAILLE_MAX_PIECE,
     TYPES_PIECE,
@@ -87,12 +88,7 @@ router.put(
 
 router.get("/:id/piece-jointe", planification(async (req, res) => {
     const piece = await lirePieceJointe(req.user, idAnnonce(req));
-    res.set({
-        "Content-Type": piece.type_mime,
-        "Content-Length": String(piece.taille),
-        "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(piece.nom)}`,
-        "Cache-Control": "private, no-store",
-    });
+    res.set(enTetesTelechargement(piece));
     res.end(piece.contenu);
 }));
 
