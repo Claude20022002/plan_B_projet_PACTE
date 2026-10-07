@@ -2,8 +2,30 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
-import { Alert, Box, Button, Checkbox, LinearProgress, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Paper, Skeleton, Stack, Typography } from '@mui/material';
-import { ArrowBack } from '@mui/icons-material';
+import {
+  Alert,
+  Box,
+  Button,
+  Checkbox,
+  Chip,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  LinearProgress,
+  List,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  MenuItem,
+  Paper,
+  Skeleton,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material';
+import { ArrowBack, ReportProblemOutlined } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { presenceAPI } from '../services/api';
@@ -16,6 +38,9 @@ const RAFRAICHIR_LISTE_MS = 5000;
  * Appel par QR code (I1), écran de l'enseignant : le QR à projeter, qui change toutes les 30 s
  * (un code photographié ne sert plus longtemps), les présents qui arrivent en direct, la liste
  * pour cocher à la main, et la fin de l'appel (la séance est marquée réalisée).
+ * Facultatif : une vérification surprise tire quelques présents au hasard, à appeler à voix haute ;
+ * un absent perd sa présence et est signalé. Les signalements (téléphone partagé…) s'affichent
+ * dans la liste.
  */
 export default function Appel() {
   const { t } = useTranslation();
@@ -29,6 +54,7 @@ export default function Appel() {
   const [reste, setReste] = useState(30);
   const [terminer, setTerminer] = useState(false);
   const [ferme, setFerme] = useState(false);
+  const [verification, setVerification] = useState(null); // { nombre, tirage: { etudiants, restants } | null, resultats: { [id_user]: bool } }
   const minuterie = useRef(null);
 
   const dessiner = useCallback(async ({ url, expire_dans_ms }) => {
@@ -105,6 +131,27 @@ export default function Appel() {
     }
   };
 
+  const tirer = async () => {
+    try {
+      const tirage = await presenceAPI.tirerVerification(id, verification.nombre);
+      setVerification((v) => ({ ...v, tirage, resultats: {} }));
+    } catch (e) {
+      toast.error(e?.message || t('appel.erreur'));
+    }
+  };
+
+  const constater = async (etudiant, present) => {
+    try {
+      await presenceAPI.verifier(id, etudiant.id_user, present);
+      setVerification((v) => ({ ...v, resultats: { ...v.resultats, [etudiant.id_user]: present } }));
+      chargerListe();
+    } catch (e) {
+      toast.error(e?.message || t('appel.erreur'));
+    }
+  };
+
+  const libelleSignalement = (s) => t(`appel.signalement.${s.motif}`, { lie: s.lie ?? '?' });
+
   const attendus = liste?.etudiants.length ?? 0;
   const presents = liste?.presents ?? 0;
 
@@ -144,11 +191,16 @@ export default function Appel() {
         <Paper sx={{ p: 2 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
             <Typography variant="h6">{t('appel.liste')}</Typography>
-            {!ferme && (
-              <Button variant="contained" onClick={() => setTerminer(true)} disabled={!seance}>
-                {t('appel.terminer')}
+            <Stack direction="row" spacing={1}>
+              <Button variant="outlined" onClick={() => setVerification({ nombre: 3, tirage: null, resultats: {} })} disabled={!seance || presents === 0} title={t('appel.verifierAide')}>
+                {t('appel.verifier')}
               </Button>
-            )}
+              {!ferme && (
+                <Button variant="contained" onClick={() => setTerminer(true)} disabled={!seance}>
+                  {t('appel.terminer')}
+                </Button>
+              )}
+            </Stack>
           </Stack>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('appel.aideListe')}</Typography>
           {!liste && <Skeleton variant="rectangular" height={160} />}
@@ -160,13 +212,71 @@ export default function Appel() {
                   <ListItemIcon sx={{ minWidth: 40 }}>
                     <Checkbox edge="start" checked={e.present} tabIndex={-1} disableRipple inputProps={{ 'aria-label': `${e.prenom} ${e.nom}` }} />
                   </ListItemIcon>
-                  <ListItemText primary={`${e.nom} ${e.prenom}`} secondary={e.present ? t(e.source === 'manuel' ? 'appel.coche' : 'appel.scanne') : null} />
+                  <ListItemText
+                    primary={`${e.nom} ${e.prenom}`}
+                    secondary={e.present ? [t(e.source === 'manuel' ? 'appel.coche' : 'appel.scanne'), e.verifie && t('appel.verifie')].filter(Boolean).join(' · ') : null}
+                  />
+                  {e.signalements?.length > 0 && (
+                    <Stack direction="row" spacing={0.5} sx={{ ml: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }} aria-label={t('appel.signalements')}>
+                      {e.signalements.map((s) => (
+                        <Chip key={`${s.motif}-${s.lie}`} size="small" color="warning" variant="outlined" icon={<ReportProblemOutlined />} label={libelleSignalement(s)} />
+                      ))}
+                    </Stack>
+                  )}
                 </ListItemButton>
               </ListItem>
             ))}
           </List>
         </Paper>
       </Box>
+
+      <Dialog open={Boolean(verification)} onClose={() => setVerification(null)} fullWidth maxWidth="xs">
+        <DialogTitle>{t('appel.verifierTitre')}</DialogTitle>
+        <DialogContent>
+          {verification && !verification.tirage && (
+            <>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('appel.verifierAide')}</Typography>
+              <TextField select fullWidth size="small" label={t('appel.verifierNombre')} value={verification.nombre} onChange={(ev) => setVerification((v) => ({ ...v, nombre: Number(ev.target.value) }))}>
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <MenuItem key={n} value={n}>{n}</MenuItem>
+                ))}
+              </TextField>
+            </>
+          )}
+          {verification?.tirage && (
+            <>
+              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('appel.verifierConsigne')}</Typography>
+              {verification.tirage.etudiants.length === 0 && <Alert severity="info">{t('appel.aucunATirer')}</Alert>}
+              <List dense>
+                {verification.tirage.etudiants.map((e) => {
+                  const resultat = verification.resultats[e.id_user];
+                  return (
+                    <ListItem key={e.id_user} disableGutters secondaryAction={
+                      resultat === undefined ? (
+                        <Stack direction="row" spacing={1}>
+                          <Button size="small" variant="contained" color="success" onClick={() => constater(e, true)}>{t('appel.vu')}</Button>
+                          <Button size="small" variant="outlined" color="error" onClick={() => constater(e, false)}>{t('appel.absent')}</Button>
+                        </Stack>
+                      ) : (
+                        <Chip size="small" color={resultat ? 'success' : 'error'} label={t(resultat ? 'appel.vu' : 'appel.absent')} />
+                      )
+                    }>
+                      <ListItemText primary={`${e.nom} ${e.prenom}`} primaryTypographyProps={{ fontWeight: 600 }} />
+                    </ListItem>
+                  );
+                })}
+              </List>
+              {verification.tirage.restants > 0 && (
+                <Typography variant="caption" color="text.secondary">{t('appel.restants', { count: verification.tirage.restants })}</Typography>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setVerification(null)}>{t('appel.fermerVerification')}</Button>
+          <Button variant="contained" onClick={tirer}>{t('appel.tirer')}</Button>
+        </DialogActions>
+      </Dialog>
 
       <ConfirmDialog
         open={terminer}
