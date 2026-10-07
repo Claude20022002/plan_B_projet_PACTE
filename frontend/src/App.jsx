@@ -33,6 +33,7 @@ const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
 const ResetPassword  = lazy(() => import('./pages/ResetPassword'));
 const ChangerMotDePasse = lazy(() => import('./pages/ChangerMotDePasse'));
 const Accueil        = lazy(() => import('./pages/Accueil'));
+const Annonces       = lazy(() => import('./pages/Annonces'));
 
 // ── Dashboards (chunk par rôle) ───────────────────────────────────────────
 const AdminDashboard      = lazy(() => import('./pages/dashboard/AdminDashboard'));
@@ -263,6 +264,16 @@ export default function App() {
           <Route path="/notifications" element={
             <PrivateRoute>
               <AppPage><Notifications /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/annonces" element={
+            <PrivateRoute>
+              <AppPage><Annonces /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/annonces/:id" element={
+            <PrivateRoute>
+              <AppPage><Annonces /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/parametres" element={

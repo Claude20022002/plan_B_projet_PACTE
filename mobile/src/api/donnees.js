@@ -47,6 +47,17 @@ export const chargerAlertes = async (idUser, { nonLues = true } = {}) => {
   return reponse?.data || reponse || [];
 };
 
+/** Annonces reçues (R1) : { annonces: [{ id, titre, corps, cible, auteur, date, lu_le, piece_jointe }], non_lues } */
+export const chargerAnnonces = async () => {
+  const reponse = await planner('/annonces?limite=30');
+  return { annonces: reponse?.annonces || [], non_lues: reponse?.non_lues || 0 };
+};
+
+export const chargerAnnonce = async (id) => planner(`/annonces/${encodeURIComponent(id)}`);
+
+/** Accusé de lecture ; la notification de l'annonce passe aussi en lue */
+export const marquerAnnonceLue = async (id) => planner(`/annonces/${encodeURIComponent(id)}/lue`, { method: 'POST' });
+
 // ── Bibliothèque (StudyLib) ──────────────────────────────────────────────
 
 /** { CODE: { module_id, documents, url } } pour les codes de modules demandés (50 au plus) */

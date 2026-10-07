@@ -68,7 +68,10 @@ async function request(endpoint, options = {}) {
 
     // Ajouter le body si présent
     if (options.body) {
-        if (typeof options.body === 'object') {
+        // Fichier envoyé tel quel (pièce jointe) ; son type est donné par options.headers
+        if (options.body instanceof Blob) {
+            config.body = options.body;
+        } else if (typeof options.body === 'object') {
             config.body = JSON.stringify(options.body);
         } else {
             config.body = options.body;
@@ -639,4 +642,23 @@ export const jeuxAPI = {
     getSuivi: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}/suivi`),
     // Enseignant : { data: [{ type: quiz|devoir|defis, id, date, titre, module, … }] }
     getHistorique: () => request('/jeux/historique'),
+};
+
+// ==================== ANNONCES CIBLÉES (R1) ====================
+export const annonceAPI = {
+    // { annonces: [{ id, titre, corps, cible, auteur, date, lu_le, piece_jointe }], non_lues }
+    getRecues: () => request('/annonces'),
+    // { portees, publics, campus, filieres: [{ id, code, nom, niveaux }], groupes }
+    getCibles: () => request('/annonces/cibles'),
+    // { data: [{ …, destinataires, lus, relancee_le }] }
+    getEnvoyees: () => request('/annonces/envoyees'),
+    get: (id) => request(`/annonces/${encodeURIComponent(id)}`),
+    publier: (donnees) => request('/annonces', { method: 'POST', body: donnees }),
+    marquerLue: (id) => request(`/annonces/${encodeURIComponent(id)}/lue`, { method: 'POST' }),
+    getLecteurs: (id) => request(`/annonces/${encodeURIComponent(id)}/lecteurs`),
+    relancer: (id) => request(`/annonces/${encodeURIComponent(id)}/relancer`, { method: 'POST' }),
+    deposerPieceJointe: (id, fichier) =>
+        request(avecQuery(`/annonces/${encodeURIComponent(id)}/piece-jointe`, { nom: fichier.name }), { method: 'PUT', body: fichier, headers: { 'Content-Type': fichier.type } }),
+    telechargerPieceJointe: (id, nom) => telecharger(`/annonces/${encodeURIComponent(id)}/piece-jointe`, nom),
+    supprimer: (id) => request(`/annonces/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };

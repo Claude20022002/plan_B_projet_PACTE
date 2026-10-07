@@ -20,6 +20,8 @@ const ECRANS_AUTORISES = new Set(['/', '/semaine', '/alertes', '/jeux']);
 const ecranDeLien = (lien) => {
   if (typeof lien !== 'string') return '/alertes';
   if (lien.startsWith('/emploi-du-temps')) return '/semaine';
+  const annonce = /^\/annonces\/(\d+)$/.exec(lien);
+  if (annonce) return `/annonce/${annonce[1]}`;
   return ECRANS_AUTORISES.has(lien) ? lien : '/alertes';
 };
 

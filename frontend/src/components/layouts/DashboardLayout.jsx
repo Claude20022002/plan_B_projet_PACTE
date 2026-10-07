@@ -23,6 +23,7 @@ import {
   useMediaQuery,
 } from '@mui/material';
 import { LocalLibrary,
+  Campaign,
   Apartment,
   Assignment,
   AssignmentInd,
@@ -76,7 +77,12 @@ const navigationFor = (user) => {
   const role = user?.role;
   if (role === 'admin') {
     return [
-      { items: [{ key: 'nav.dashboard', icon: <BoardIcon />, path: '/dashboard/admin' }] },
+      {
+        items: [
+          { key: 'nav.dashboard', icon: <BoardIcon />, path: '/dashboard/admin' },
+          { key: 'nav.announcements', icon: <Campaign />, path: '/annonces' },
+        ],
+      },
       {
         section: 'nav.planning',
         items: [
@@ -129,6 +135,7 @@ const navigationFor = (user) => {
       {
         items: [
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
+          { key: 'nav.announcements', icon: <Campaign />, path: '/annonces' },
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
           { key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' },
           { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
@@ -162,6 +169,7 @@ const navigationFor = (user) => {
     {
       items: [
         { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/etudiant' },
+        { key: 'nav.announcements', icon: <Campaign />, path: '/annonces' },
         { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/etudiant' },
         { key: 'nav.monthly', icon: <Print />, path: '/emploi-du-temps/mensuel' },
         { key: 'nav.myExams', icon: <FactCheck />, path: '/mes-examens' },
@@ -210,6 +218,7 @@ const TITLE_KEYS = {
   '/gestion/enseignements': 'nav.teaching',
   '/statistiques': 'nav.statistics',
   '/notifications': 'nav.notifications',
+  '/annonces': 'nav.announcements',
   '/parametres': 'nav.settings',
   '/mes-affectations': 'nav.mySessions',
   '/mes-services': 'nav.myServices',
@@ -311,7 +320,7 @@ export default function DashboardLayout({ children }) {
   };
 
   // Pages des jeux (/jeux/devoirs/12…) : titre de l'espace Jeux
-  const title = t(TITLE_KEYS[location.pathname] || (location.pathname.startsWith('/jeux/') ? 'nav.games' : 'app.name'));
+  const title = t(TITLE_KEYS[location.pathname] || (location.pathname.startsWith('/jeux/') ? 'nav.games' : location.pathname.startsWith('/annonces/') ? 'nav.announcements' : 'app.name'));
   const initials = `${user?.prenom?.[0] || ''}${user?.nom?.[0] || ''}`.toUpperCase();
 
   const rail = (
@@ -361,7 +370,7 @@ export default function DashboardLayout({ children }) {
             <List disablePadding>
               {group.items.map((item) => {
                 // Jeux : la rubrique reste active dans chaque jeu (/jeux/terminal-linux…)
-                const selected = location.pathname === item.path || (item.path === '/jeux' && location.pathname.startsWith('/jeux/'));
+                const selected = location.pathname === item.path || (item.path === '/jeux' && location.pathname.startsWith('/jeux/')) || (item.path === '/annonces' && location.pathname.startsWith('/annonces/'));
                 return (
                   <ListItemButton
                     key={item.path}

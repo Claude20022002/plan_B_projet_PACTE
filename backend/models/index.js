@@ -34,6 +34,9 @@ import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
 import JeuProfil from "./JeuProfil.js";
 import PasserelleWeb from "./PasserelleWeb.js";
+import Annonce from "./Annonce.js";
+import AnnonceDestinataire from "./AnnonceDestinataire.js";
+import AnnoncePieceJointe from "./AnnoncePieceJointe.js";
 // Cycle volontaire : services/push.js n'utilise les modèles qu'à l'appel, jamais au chargement
 import { planifierPush } from "../services/push.js";
 import AuthSession from "./AuthSession.js";
@@ -523,6 +526,13 @@ Users.hasMany(JeuProgression, { foreignKey: "id_user", as: "progressionsJeux", o
 Users.hasOne(JeuProfil, { foreignKey: "id_user", as: "profilJeux", onDelete: "CASCADE" });
 Users.hasMany(PasserelleWeb, { foreignKey: "id_user", as: "passerellesWeb", onDelete: "CASCADE" });
 
+// Annonces ciblées (R1)
+Annonce.belongsTo(Users, { foreignKey: "id_user_auteur", as: "auteur", targetKey: "id_user" });
+Annonce.hasMany(AnnonceDestinataire, { foreignKey: "id_annonce", as: "destinataires", onDelete: "CASCADE" });
+Annonce.hasOne(AnnoncePieceJointe, { foreignKey: "id_annonce", as: "pieceJointe", onDelete: "CASCADE" });
+AnnonceDestinataire.belongsTo(Annonce, { foreignKey: "id_annonce", as: "annonce" });
+AnnonceDestinataire.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
+
 // Push (D3) : chaque notification part aussi vers les appareils du destinataire, une fois validée
 // la transaction qui l'a créée (jamais pour un changement finalement annulé).
 Notification.afterCreate((notification, options) => {
@@ -584,4 +594,7 @@ export {
     JeuProgression,
     JeuProfil,
     PasserelleWeb,
+    Annonce,
+    AnnonceDestinataire,
+    AnnoncePieceJointe,
 };

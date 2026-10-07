@@ -124,6 +124,15 @@ const fr = {
       aide: 'Toucher un espace l’ouvre dans l’application ; « Site web » ouvre son interface complète, sans vous reconnecter.',
     },
     alertes: { titre: 'Alertes', vide: 'Aucune alerte.' },
+    annonces: {
+      titre: 'Annonces',
+      nonLues_one: '{{count}} non lue',
+      nonLues_other: '{{count}} non lues',
+      toutes: 'Voir aussi les alertes ci-dessous',
+      introuvable: 'Annonce introuvable.',
+      pieceJointe: 'Ouvrir la pièce jointe',
+      pieceJointeAide: 'Elle s’ouvre sur le site, déjà connecté.',
+    },
     jeux: {
       titre: 'Jeux',
       enCours: 'Quiz en cours',
@@ -328,6 +337,15 @@ const en = {
       aide: 'Tap a space to open it in the app; “Website” opens its full interface without signing in again.',
     },
     alertes: { titre: 'Alerts', vide: 'No alerts.' },
+    annonces: {
+      titre: 'Announcements',
+      nonLues_one: '{{count}} unread',
+      nonLues_other: '{{count}} unread',
+      toutes: 'See also the alerts below',
+      introuvable: 'Announcement not found.',
+      pieceJointe: 'Open the attachment',
+      pieceJointeAide: 'It opens on the website, already signed in.',
+    },
     jeux: {
       titre: 'Games',
       enCours: 'Quiz in progress',
