@@ -445,22 +445,23 @@ for (const fil of HESTIM_CONFIG.filieres) {
     }
 }
 
-// Noms fictifs (aucun enseignant réel de l'école)
+// Noms marocains fictifs (aucun enseignant réel de l'école).
+// Listes recopiées dans deploy/vps/noms-marocains.mjs (renomme une base déjà remplie) : garder les mêmes rangs.
 const NOMS_ENS = [
     'BENKIRANE','OUAZZANI','SQUALLI','LAZRAK','BOUHLAL','TOUIMI','ZNIBER','GUESSOUS','SLAOUI','BELKHAYAT',
-    'BONNET','LAMBERT','LEDOUX','MERCIER','LEMONNIER','GUYON','PERROT','DANIEL','BENOIT','NORMAND',
-    'DURAND','CHARLES','MARTIN','BERNARD','THOMAS','PETIT','ROBERT','RICHARD','SIMON','MICHEL',
-    'LEBLANC','GARCIA','ROUSSEAU','FONTAINE','MOREAU','LEROY','ROUX','DUPONT','FAURE','GIRARD',
-    'MOREL','BOURGEOIS','LEFEBVRE','HENRY','MASSON','CHEVALIER','MARCHAND','BLANC','GUERIN','BOULANGER',
-    'RENAUD','GIRAUD','ADAM','LUCAS','GARNIER','AUBERT','CLEMENT','GAUTHIER','PICARD','BERTRAND',
-    'MOULIN','BARBIER','ARNAUD','LEGRAND','MALLET','NOEL','GROS','ROGER','GUILLAUME','BARON',
-    'COLLET','MARTEL','CARON','FLEURY','MULLER','VIDAL','GALLET','MARY','BRIAND','PICHON',
-    'CARLIER','LECOMTE','DELMAS','MEUNIER','GRONDIN','BAUDRY','FERRAND','MICHAUD','LECLERCQ','RENARD',
+    'SENHAJI','BENNIS','TOUZANI','JAZOULI','RAMI','ZIANI','OUAHBI','BENABDALLAH','ELOUAFI','LAMRANI',
+    'BOUZOUBAA','CHAMI','HAKIMI','NAJI','ELMALKI','BENSOUDA','RIFFI','SAADI','KADIRI','OUARDI',
+    'GHAZI','MANSOURI','BENCHEKROUN','ELKHATIB','AZZOUZI','BOUAZZA','BENMOUSSA','TALBI','BELMAHI','HAMDOUCHI',
+    'ESSAIDI','BOUCHTA','MOUFID','ELYOUSFI','BENHIMA','SOUSSI','RHAZI','JABRI','AMMOR','BELGHITI',
+    'ELGHAZOUANI','BOUJEMAA','ZEROUALI','CHAOUI','ELHARTI','TAOUFIK','MESBAHI','RAISSOUNI','ELOMARI','BENZAKOUR',
+    'ALLOUCH','HADDAOUI','NEJJARI','BOUSSETTA','KHATTABI','OUMLIL','SABRI','MAAROUFI','DAOUDI','ZAKI',
+    'BENNOUNA','ERRAJI','MOKHTARI','HILALI','BENAISSA','SBAI','MOUNIR','CHAFIK','LAHRICHI','ELBAZ',
+    'BOUABID','GUERRAOUI','ZAIDI','RAHMOUNI','OUAKRIM','AFILAL','BELAHCEN','SKALLI','DOUKKALI','MEZIANE',
 ];
 const PRENOMS_ENS = [
-    'Alain','Nadia','Samira','Houda','Mohamed','Fatima','Mehdi','Leila','Younes','Omar',
-    'Jean','Pierre','Marie','Sophie','François','Claire','Thomas','Nicolas','Isabelle','Laurent',
-    'Éric','Sylvie','Patrick','Nathalie','Philippe','Céline','Luc','Anne','Charlotte','Maxime',
+    'Adil','Nadia','Samira','Houda','Mohamed','Fatima','Mehdi','Leila','Younes','Omar',
+    'Rachida','Abdelkader','Khadija','Hicham','Naima','Mustapha','Latifa','Driss','Souad','Abdellah',
+    'Btissam','Said','Malika','Jamal','Wafae','Hassan','Siham','Noureddine','Karima','Abdelaziz',
 ];
 const NOMS_ETU = [
     'BENALI','TAZI','CHERKAOUI','OUALI','HAJJI','IDRISSI','ALAMI','BENSAID','ZAHIR','BOUKHRISS',

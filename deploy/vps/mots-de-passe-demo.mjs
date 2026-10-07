@@ -14,7 +14,7 @@ const premier = (role, email) =>
 
 const demo = [
     ["admin", await premier("admin", "admin@hestim.ma")],
-    ["enseignant", (await premier("enseignant", "alain.benkirane0@hestim.ma")) || (await premier("enseignant"))],
+    ["enseignant", (await premier("enseignant", "adil.benkirane0@hestim.ma")) || (await premier("enseignant"))],
     ["etudiant", await premier("etudiant")],
 ].filter(([, user]) => user);
 

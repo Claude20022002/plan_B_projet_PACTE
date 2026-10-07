@@ -1,5 +1,8 @@
 # Prompt — vidéo motion design « HESTIM Planner » (42 s)
 
+> **Historique.** Ce prompt a produit la version de 42 s. La vidéo actuelle dure **56 s** (9 scènes, bande-son
+> originale) et le teaser vertical **34 s** : la référence à jour est `video/README.md` (scènes, durées, commandes).
+
 > À coller tel quel dans Claude Code (modèle Claude Opus 5.5), lancé dans le dossier
 > `docs/presentation/` qui contient `captures/` et le projet Remotion `video/`.
 

@@ -4,7 +4,8 @@ import { couleurStatut, creerStyles, lineColor, useTheme } from '../theme';
 
 /**
  * Séance en carte d'agenda : barre de la couleur du cours à gauche, heures de début et de fin,
- * cours et type, salle et campus, enseignant ; le statut n'apparaît que s'il sort de l'ordinaire.
+ * cours et type (sur deux lignes si besoin), salle et campus, puis enseignant en dessous pour ne pas
+ * rogner le titre ; le statut n'apparaît à droite que s'il sort de l'ordinaire.
  */
 export default function CarteSeance({ seance: s, onPress }) {
   const { t } = useTranslation();
@@ -26,16 +27,18 @@ export default function CarteSeance({ seance: s, onPress }) {
         <Text style={styles.fin}>{s.endLabel}</Text>
       </View>
       <View style={styles.centre}>
-        <Text style={[styles.cours, annule && styles.barreTexte]} numberOfLines={1}>
+        <Text style={[styles.cours, annule && styles.barreTexte]} numberOfLines={2}>
           {s.course}
           {s.courseType ? <Text style={styles.type}>  {s.courseType}</Text> : null}
         </Text>
         <Text style={styles.lieu} numberOfLines={1}>{lieu}</Text>
-      </View>
-      <View style={styles.droite}>
-        {special ? <Text style={[styles.statut, { color: couleurStatut(theme, s.status) }]}>{t(`status.${s.status}`)}</Text> : null}
         {s.teacher ? <Text style={styles.enseignant} numberOfLines={1}>{s.teacher}</Text> : null}
       </View>
+      {special ? (
+        <View style={styles.droite}>
+          <Text style={[styles.statut, { color: couleurStatut(theme, s.status) }]}>{t(`status.${s.status}`)}</Text>
+        </View>
+      ) : null}
     </Pressable>
   );
 }
@@ -61,8 +64,8 @@ const useStyles = creerStyles((t) => ({
   cours: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 16 },
   type: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13 },
   lieu: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13, marginTop: 2 },
-  droite: { maxWidth: '32%', alignItems: 'flex-end', gap: 2 },
+  droite: { alignItems: 'flex-end' },
   statut: { fontFamily: t.polices.texteGras, fontSize: 12 },
-  enseignant: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 12 },
+  enseignant: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 12, marginTop: 2 },
   barreTexte: { textDecorationLine: 'line-through', color: t.couleurs.lettreAttenuee },
 }));

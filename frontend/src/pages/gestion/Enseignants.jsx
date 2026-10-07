@@ -52,7 +52,7 @@ const FICHE_VIDE = {
 const MODELE_CSV = [
     'nom;prenom;email;telephone;specialite;departement;grade;bureau;statut;service_annuel_heures;max_heures_semaine;entreprise',
     'SQUALLI;Nadia;nadia.squalli@hestim.ma;+212600000000;Bases de données;Informatique;Professeur;G-204;permanent;192;18;',
-    'MERCIER;Jean;jean.mercier@hestim.ma;;Cloud;Informatique;Vacataire;;vacataire;;9;ESN casablancaise',
+    'TOUZANI;Karim;karim.touzani@hestim.ma;;Cloud;Informatique;Vacataire;;vacataire;;9;ESN casablancaise',
 ].join('\n');
 
 const nombreOuNull = (v) => (v === '' || v === null || v === undefined ? null : Number(v));

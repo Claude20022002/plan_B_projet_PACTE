@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { toLocalISODate } from '../../../shared/session.js';
 import { couleurStatut, creerStyles, lineColor, useTheme } from '../theme';
 import { useMargeOnglets } from '../verre/Verre';
+import { abregerCours } from './abreger';
 
 const HEURE = 60; // hauteur d'une heure (points)
 const JOURS = 6; // du lundi au samedi
@@ -45,7 +46,8 @@ const disposer = (seances) => {
 /**
  * Semaine en grille horaire (à la manière d'un agenda d'étudiant) : une colonne par jour du
  * lundi au samedi, chaque séance en bloc à la couleur de son cours ; reportée ou annulée, elle
- * prend la couleur de son statut. Trait de l'heure courante sur aujourd'hui.
+ * prend la couleur de son statut. Titres abrégés (abreger.js) : la colonne est trop étroite pour
+ * un mot long. Trait de l'heure courante sur aujourd'hui.
  */
 export default function GrilleSemaine({ lundi, seances, onSeance }) {
   const { i18n } = useTranslation();
@@ -127,7 +129,7 @@ export default function GrilleSemaine({ lundi, seances, onSeance }) {
                       accessibilityLabel={`${s.startLabel}–${s.endLabel}, ${s.course}, ${s.room || ''}`}
                     >
                       <Text style={[styles.blocCours, statut === 'annule' && styles.barre]} numberOfLines={Math.max(1, Math.floor(hauteur / 15) - 1)}>
-                        {s.course}
+                        {abregerCours(s.course)}
                       </Text>
                       {hauteur > 44 ? <Text style={styles.blocDetail} numberOfLines={2}>{[s.courseType, s.distanciel ? null : s.room].filter(Boolean).join(' · ')}</Text> : null}
                     </Pressable>

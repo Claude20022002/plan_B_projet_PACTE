@@ -64,7 +64,7 @@ Le teaser vertical reprend les scènes 1 à 5 puis 9 (34 s), avec des mises en p
   - carillon de la notification ;
   - impacts.
 - Pour la changer :
-  - modifier les fonctions `film_42s()` et `film_vertical_13s()` (temps en secondes, ceux du storyboard), puis relancer `npm run render` ;
+  - modifier `composer()` dans `scripts/composer-musique.py` : la musique suit d'elle-même `TIMINGS` et `VERTICAL` de `src/Root.tsx`, une scène = une section ; puis relancer `npm run render` ;
   - ou remplacer `public/audio/hestim-planner.wav` par sa propre musique (même nom) et lancer seulement `npx remotion render HestimPlanner out/hestim-planner.mp4`.
 
 ## Notes
