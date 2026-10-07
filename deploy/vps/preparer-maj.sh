@@ -30,6 +30,13 @@ tar -C backend -cf - \
     --exclude=node_modules --exclude='.env' --exclude='.env.*' --exclude='*.log' \
     --exclude=tests --exclude=.impeccable --exclude='storage' . | tar -C "$TRAVAIL/backend" -xf -
 tar -C shared -cf - --exclude=node_modules . | tar -C "$TRAVAIL/shared" -xf -
+# Paquets npm du backend mis à jour pour un correctif de sécurité, sans changement de dépendances
+# (même arbre) : superposés dans /app/node_modules au lieu de reconstruire l'image.
+MODULES_SUPERPOSES=(proxy-addr)
+for module in "${MODULES_SUPERPOSES[@]}"; do
+    mkdir -p "$TRAVAIL/backend/node_modules"
+    cp -r "backend/node_modules/$module" "$TRAVAIL/backend/node_modules/$module"
+done
 cp -r frontend/dist "$TRAVAIL/site/dist"
 cp frontend/nginx.conf "$TRAVAIL/site/nginx.conf"
 # Scripts d'exploitation à jour (renommage, mots de passe de démonstration…)

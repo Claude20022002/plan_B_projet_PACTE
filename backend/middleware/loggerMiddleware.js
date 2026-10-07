@@ -4,6 +4,19 @@ import dotenv from "dotenv";
 dotenv.config();
 
 /**
+ * Adresse journalisée sans ses secrets : le jeton de l'agenda ICS (/api/agenda/<jeton>.ics, qui
+ * suffit à lire l'emploi du temps d'un compte), le code à usage unique de la passerelle web et
+ * les jetons de réinitialisation ou de vérification passés en paramètre.
+ */
+export const urlMasquee = (url = "") =>
+    String(url)
+        .replace(/(\/api\/agenda\/)[^/?#]+(\.ics)/i, "$1***$2")
+        .replace(/([?&](?:code|token|jeton|c)=)[^&#]*/gi, "$1***");
+
+// Remplace le jeton « :url » de morgan pour tous les formats
+morgan.token("url", (req) => urlMasquee(req.originalUrl || req.url));
+
+/**
  * Configuration du logger Morgan
  * Format différent selon l'environnement
  */
@@ -34,7 +47,7 @@ export const errorLogger = (err, req, res, next) => {
     console.error("❌ Erreur:", {
         timestamp: new Date().toISOString(),
         method: req.method,
-        url: req.originalUrl,
+        url: urlMasquee(req.originalUrl),
         ip: req.ip,
         user: req.user ? req.user.id_user : "non authentifié",
         error: err.message,
