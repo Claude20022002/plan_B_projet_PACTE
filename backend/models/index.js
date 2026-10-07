@@ -33,6 +33,8 @@ import DevoirRendu from "./DevoirRendu.js";
 import FichierDevoir from "./FichierDevoir.js";
 import AbonnementCalendrier from "./AbonnementCalendrier.js";
 import EnvoiEdt from "./EnvoiEdt.js";
+import AppelSeance from "./AppelSeance.js";
+import Presence from "./Presence.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
 import JeuProfil from "./JeuProfil.js";
@@ -527,6 +529,12 @@ Devoir.hasMany(FichierDevoir, { foreignKey: "id_devoir", as: "fichiers", onDelet
 AbonnementCalendrier.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
 EnvoiEdt.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
 
+// Appel par QR code (I1)
+Affectation.hasOne(AppelSeance, { foreignKey: "id_affectation", as: "appel", onDelete: "CASCADE" });
+Affectation.hasMany(Presence, { foreignKey: "id_affectation", as: "presences", onDelete: "CASCADE" });
+Presence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
+Presence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
+
 // Jeux intégrés : proposés dans un module, progression par joueur
 Cours.hasMany(JeuModule, { foreignKey: "id_cours", as: "jeux", onDelete: "CASCADE" });
 JeuModule.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
@@ -601,6 +609,8 @@ export {
     FichierDevoir,
     AbonnementCalendrier,
     EnvoiEdt,
+    AppelSeance,
+    Presence,
     JeuModule,
     JeuProgression,
     JeuProfil,

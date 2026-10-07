@@ -45,6 +45,7 @@ import quizRoutes, { webhookQuiz } from "./routes/quizRoutes.js";
 import jeuxRoutes from "./routes/jeuxRoutes.js";
 import annonceRoutes from "./routes/annonceRoutes.js";
 import agendaRoutes from "./routes/agendaRoutes.js";
+import presenceRoutes from "./routes/presenceRoutes.js";
 import devoirRoutes from "./routes/devoirRoutes.js";
 import { MONTAGE as OIDC_MONTAGE } from "./services/oidc/provider.js";
 
@@ -160,6 +161,7 @@ app.use("/api/quiz", quizRoutes);
 app.use("/api/jeux", jeuxRoutes);
 app.use("/api/annonces", annonceRoutes);
 app.use("/api/agenda", agendaRoutes);
+app.use("/api/presences", presenceRoutes);
 app.use("/api/devoirs", devoirRoutes);
 
 app.get("/", (req, res) => {
