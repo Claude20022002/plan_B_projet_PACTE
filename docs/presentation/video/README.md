@@ -1,6 +1,6 @@
 # Vidéo d'ouverture — HESTIM Planner (Remotion)
 
-Vidéo motion design de **56 s** qui ouvre la présentation (voir `../discours-3-minutes.md` et
+Vidéo motion design de **62 s** qui ouvre la présentation (voir `../discours-3-minutes.md` et
 `../HESTIM-Planner-presentation.pptx`), réalisée d'après `../prompt-video-motion-design.md`.
 
 - Public visé : non technique (investisseurs, direction, jury). On montre des services, pas des technologies.
@@ -8,8 +8,10 @@ Vidéo motion design de **56 s** qui ouvre la présentation (voir `../discours-3
 
 | Fichier | Format |
 | --- | --- |
-| `out/hestim-planner.mp4` | 1920 × 1080, 30 i/s, H.264 (yuv420p), 56 s, 1680 images, son AAC stéréo |
-| `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 9), avec sa propre bande-son, pour les réseaux sociaux |
+| `out/hestim-planner.mp4` | 1920 × 1080, 30 i/s, H.264 (yuv420p), 62 s, 1860 images, son AAC stéréo |
+| `out/hestim-planner-9x16-accroche.mp4` | teaser B 1080 × 1920, 29 s : l'alerte d'abord (scènes 5, 2, 3, 4 puis 10), pour LinkedIn |
+| `out/carrousel/hestim-planner-carrousel.pdf` | carrousel LinkedIn, 9 pages 1080 × 1350 (`npm run carrousel`) |
+| `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 10), avec sa propre bande-son, pour les réseaux sociaux |
 
 ## Commandes
 
@@ -27,7 +29,7 @@ node scripts/verifier.mjs HestimPlanner 0 1 4 7.5 9.5 12 15 18.5 22 25 27 31 33 
 ## Rythme
 
 - Pensé pour une musique à **120 BPM** : un temps = 15 images, et chaque coupe tombe sur un temps.
-- 56 s = 112 temps.
+- 62 s = 124 temps.
 - La bande-son lit ces durées et la liste `VERTICAL` dans `Root.tsx` : modifier un timing puis relancer `npm run render` suffit.
 - Les durées des scènes sont des constantes en haut de `src/Root.tsx` (`TIMINGS`).
 
@@ -40,10 +42,11 @@ node scripts/verifier.mjs HestimPlanner 0 1 4 7.5 9.5 12 15 18.5 22 25 27 31 33 
 | 5 | 23–29 s | Alerte « Cours reporté » (3 s à l'écran) : « Report, annulation, changement de salle. » | `S5Alerte.tsx` |
 | 6 | 29–36 s | Supports d'un cours, puis PDF officiel du mois | `S6Supports.tsx` |
 | 7 | 36–44 s | Résultats d'un quiz (web + mobile), puis devoir noté | `S7Resultats.tsx` |
-| 8 | 44–51 s | `90 S` · `1 COMPTE` · `0 PUBLICITÉ`, un toutes les 2 s | `S8Chiffres.tsx` |
-| 9 | 51–56 s | Emblème, `HESTIM PLANNER`, « L'école, à l'heure. », `WEB · IPHONE · ANDROID` ; dernière seconde immobile | `S9Fin.tsx` |
+| 8 | 44–50 s | `L'APPEL EN 5 SECONDES` en volets, QR projeté qui se renouvelle à 3 s, compteur `28` présents sur 30 : ce que l'école y gagne (animation typographique, pas de fausse capture) | `S8Appel.tsx` |
+| 9 | 50–57 s | `90 S` · `1 COMPTE` · `0 PUBLICITÉ`, un toutes les 2 s | `S8Chiffres.tsx` |
+| 10 | 57–62 s | Emblème, `HESTIM PLANNER`, « L'école, à l'heure. », `WEB · IPHONE · ANDROID` ; dernière seconde immobile | `S9Fin.tsx` |
 
-Le teaser vertical reprend les scènes 1 à 5 puis 9 (34 s), avec des mises en page 9:16 propres.
+Le teaser vertical reprend les scènes 1 à 5 puis 10 (34 s), avec des mises en page 9:16 propres.
 
 ## Bande-son
 
