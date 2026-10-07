@@ -10,6 +10,7 @@ import { S7Resultats } from "./scenes/S7Resultats";
 import { S8Chiffres } from "./scenes/S8Chiffres";
 import { S9Fin } from "./scenes/S9Fin";
 import { BEAT, C, FPS } from "./theme";
+import { Carrousel, HAUTEUR, LARGEUR, NB_PAGES } from "./carrousel/Carrousel";
 
 // ─── Timings (en temps à 120 BPM ; 1 temps = 15 images = 0,5 s) ─────────────────────────
 // Chaque coupe tombe sur un temps. Modifier une durée décale les scènes suivantes.
@@ -114,5 +115,7 @@ export const RemotionRoot: React.FC = () => (
       width={1080}
       height={1920}
     />
+    {/* Carrousel LinkedIn : une image par page (npm run carrousel) */}
+    <Composition id="Carrousel" component={Carrousel} durationInFrames={NB_PAGES} fps={FPS} width={LARGEUR} height={HAUTEUR} />
   </>
 );

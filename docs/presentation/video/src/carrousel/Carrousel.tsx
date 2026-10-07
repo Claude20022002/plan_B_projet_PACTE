@@ -161,7 +161,7 @@ const PAGES: React.FC[] = [
       <div style={{ display: "flex", flexDirection: "column", gap: 28, marginTop: 70 }}>
         <Notification titre="COURS REPORTÉ" detail="Big Data · jeudi 13:30 · salle ST-S02" pastille={C.delayed} />
         <Notification titre="NOUVELLE ANNONCE" detail="Réunion pédagogique des 4A · vendredi 10:00" pastille={C.ink} />
-        <Notification titre="EMPLOI DU TEMPS DE NOVEMBRE" detail="IIIA 4A : 64 séances · consultable et imprimable" pastille={C.onTime} />
+        <Notification titre="EMPLOI DU TEMPS DE NOVEMBRE" detail="IIIA 4A : 64 séances · consultable et imprimable" pastille={C.inkSoft} />
       </div>
     </>
   ),
