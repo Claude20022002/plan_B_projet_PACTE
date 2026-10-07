@@ -239,7 +239,7 @@ export const evenementsDuCompte = async (user, maintenant = new Date()) => {
 
 const nouveauJeton = () => crypto.randomBytes(32).toString("base64url");
 const JETON = /^[A-Za-z0-9_-]{43}$/;
-export const cheminFlux = (jeton) => `/api/calendrier/${jeton}.ics`;
+export const cheminFlux = (jeton) => `/api/agenda/${jeton}.ics`;
 
 /** Adresse de l'abonnement du compte (créée à la première demande). */
 export const abonnementDe = async (user) => {

@@ -4,6 +4,7 @@ import { testConnection } from "./config/db.js";
 import { Users } from "./models/index.js";
 import { runMigrations } from "./migrations/migrator.js";
 import { marquerRealisees } from "./services/planning/suivi.js";
+import { demarrerRenvoiQuotidien } from "./services/calendrier/envoiEdt.js";
 
 dotenv.config();
 
@@ -54,6 +55,9 @@ const seedIfRequested = async () => {
                 .catch((error) => console.error("--> Suivi du réalisé :", error.message));
         actualiserRealise();
         setInterval(actualiserRealise, 60 * 60 * 1000).unref();
+
+        // Emploi du temps du mois (R4) : chaque soir, les mois publiés qui ont changé sont renvoyés aux classes
+        demarrerRenvoiQuotidien();
     } catch (error) {
         console.error("--> Erreur serveur :", error);
         process.exit(1);
