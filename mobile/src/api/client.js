@@ -1,11 +1,12 @@
 import { API_BIBLIO, API_PLANNER, configurationSure } from '../config';
-import { effacerJetons, enregistrerJetons, lireJetons } from '../auth/stockage';
+import { effacerJetons, enregistrerJetons, lireIdentifiantInstallation, lireJetons } from '../auth/stockage';
 
 /**
  * Client HTTP de l'application : jeton d'accès de Planner en Bearer, en-tête X-Client: mobile
- * (Planner renvoie alors ses jetons dans le corps). Un jeton expiré est renouvelé une seule fois
- * (une seule requête de renouvellement même si plusieurs appels échouent en même temps) ; si le
- * renouvellement échoue, la session est perdue et l'application revient à la connexion.
+ * (Planner renvoie alors ses jetons dans le corps), et X-Appareil, l'identifiant de l'installation
+ * (appel par QR). Un jeton expiré est renouvelé une seule fois (une seule requête de renouvellement
+ * même si plusieurs appels échouent en même temps) ; si le renouvellement échoue, la session est
+ * perdue et l'application revient à la connexion.
  */
 
 export class ErreurApi extends Error {
@@ -22,6 +23,10 @@ const DELAI_MS = 15_000;
 let jetons = null;
 let renouvellementEnCours = null;
 let surSessionPerdue = () => {};
+let installation = null;
+
+// Lu une fois ; sans trousseau disponible, l'en-tête est simplement absent
+const identifiantInstallation = () => (installation ??= lireIdentifiantInstallation().catch(() => null));
 
 export const definirSurSessionPerdue = (rappel) => {
   surSessionPerdue = rappel;
@@ -42,6 +47,7 @@ export const jetonsCourants = () => jetons;
 
 const appeler = async (url, { method = 'GET', body, auth = true } = {}) => {
   if (!configurationSure) throw new ErreurApi(0, 'Configuration non sécurisée', 'CONFIG_HTTP');
+  const appareil = url.startsWith(API_PLANNER) ? await identifiantInstallation() : null;
   const controleur = new AbortController();
   const minuterie = setTimeout(() => controleur.abort(), DELAI_MS);
   try {
@@ -50,6 +56,7 @@ const appeler = async (url, { method = 'GET', body, auth = true } = {}) => {
       headers: {
         Accept: 'application/json',
         'X-Client': 'mobile',
+        ...(appareil ? { 'X-Appareil': appareil } : {}),
         ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
         ...(auth && jetons?.acces ? { Authorization: `Bearer ${jetons.acces}` } : {}),
       },

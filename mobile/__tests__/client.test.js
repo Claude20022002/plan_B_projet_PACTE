@@ -36,6 +36,18 @@ test('envoie le jeton en Bearer et se présente comme client mobile', async () =
   expect(options.headers).toMatchObject({ Authorization: 'Bearer acces-1', 'X-Client': 'mobile' });
 });
 
+test("envoie à Planner l'identifiant de l'installation, stable et gardé à la déconnexion", async () => {
+  fetch.mockResolvedValue(reponse(200, { ok: true }));
+  await client.planner('/auth/me');
+  const premier = fetch.mock.calls[0][1].headers['X-Appareil'];
+  expect(premier).toMatch(/^[0-9a-f]{48}$/);
+  await client.definirJetons(null);
+  jest.resetModules();
+  client = require('../src/api/client');
+  await client.planner('/presences/scanner', { method: 'POST', body: { code: 'x' }, auth: false });
+  expect(fetch.mock.calls[1][1].headers['X-Appareil']).toBe(premier);
+});
+
 test('jeton expiré : un seul renouvellement pour des appels simultanés, puis nouvel essai', async () => {
   fetch.mockImplementation(async (url, options) => {
     if (url.endsWith('/auth/refresh')) return reponse(200, { access_token: 'acces-2', refresh_token: 'renouv-2' });
