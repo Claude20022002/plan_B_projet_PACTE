@@ -1,7 +1,8 @@
-import { Navigate } from 'react-router-dom';
+import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import { CircularProgress, Box } from '@mui/material';
 import { estResponsable } from '../../utils/droits';
+import { cheminSuivantSur } from '../../utils/redirection';
 
 /**
  * Route protégée.
@@ -10,6 +11,7 @@ import { estResponsable } from '../../utils/droits';
  */
 export default function PrivateRoute({ children, requiredRole = null, allowResponsable = false }) {
     const { isAuthenticated, loading, user } = useAuth();
+    const location = useLocation();
 
     if (loading) {
         return (
@@ -27,7 +29,9 @@ export default function PrivateRoute({ children, requiredRole = null, allowRespo
     }
 
     if (!isAuthenticated) {
-        return <Navigate to="/connexion" replace />;
+        // Retour après connexion, seulement vers un chemin autorisé (QR de l'appel…)
+        const suivant = cheminSuivantSur(`${location.pathname}${location.search}`);
+        return <Navigate to={suivant ? `/connexion?next=${encodeURIComponent(suivant)}` : '/connexion'} replace />;
     }
 
     // Mot de passe provisoire : rien d'autre tant qu'il n'est pas changé (le serveur bloque aussi)

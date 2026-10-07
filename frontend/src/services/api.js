@@ -683,3 +683,16 @@ export const agendaAPI = {
     // { publie, dernier_envoi, destinataires }
     etatEdt: (mois, idFiliere) => request(avecQuery('/agenda/edt-mensuel/etat', { mois, id_filiere: idFiliere })),
 };
+
+// ==================== APPEL PAR QR CODE (I1) ====================
+export const presenceAPI = {
+    // Enseignant : { seance, code, url, expire_dans_ms }
+    ouvrir: (id) => request(`/presences/seances/${encodeURIComponent(id)}/ouvrir`, { method: 'POST' }),
+    code: (id) => request(`/presences/seances/${encodeURIComponent(id)}/code`),
+    // { seance, appel, presents, etudiants: [{ id_user, nom, prenom, present, source }] }
+    liste: (id) => request(`/presences/seances/${encodeURIComponent(id)}`),
+    marquer: (id, idUser, present) => request(`/presences/seances/${encodeURIComponent(id)}/etudiants/${encodeURIComponent(idUser)}`, { method: 'PUT', body: { present } }),
+    fermer: (id) => request(`/presences/seances/${encodeURIComponent(id)}/fermer`, { method: 'POST' }),
+    // Étudiant : { seance, deja }
+    scanner: (code) => request('/presences/scanner', { method: 'POST', body: { code } }),
+};

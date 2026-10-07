@@ -22,7 +22,8 @@ import {
     Snackbar,
     CircularProgress,
 } from '@mui/material';
-import { CheckCircle, EventRepeat, TaskAlt } from '@mui/icons-material';
+import { CheckCircle, EventRepeat, QrCode2, TaskAlt } from '@mui/icons-material';
+import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import { affectationAPI, demandeReportAPI, suiviAPI } from '../services/api';
 import MesRetours from '../components/planning/MesRetours';
@@ -44,6 +45,9 @@ const reportSchema = yup.object({
 });
 
 export default function MesAffectations() {
+    const navigate = useNavigate();
+    // Appel par QR (I1) : seulement le jour de la séance (date locale du navigateur)
+    const aujourdhui = new Date().toLocaleDateString('en-CA');
     const { user } = useAuth();
     const [affectations, setAffectations]     = useState([]);
     const [loading, setLoading]               = useState(true);
@@ -185,6 +189,13 @@ export default function MesAffectations() {
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
+                                                    {aff.statut !== 'annule' && String(aff.date_seance).slice(0, 10) === aujourdhui && (
+                                                        <Tooltip title="Faire l'appel (QR code)">
+                                                            <IconButton size="small" color="primary" onClick={() => navigate(`/appel/${aff.id_affectation}`)}>
+                                                                <QrCode2 fontSize="small" />
+                                                            </IconButton>
+                                                        </Tooltip>
+                                                    )}
                                                     {aff.statut === 'planifie' && (
                                                         <Tooltip title="Confirmer la séance">
                                                             <span>

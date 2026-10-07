@@ -34,6 +34,8 @@ const ResetPassword  = lazy(() => import('./pages/ResetPassword'));
 const ChangerMotDePasse = lazy(() => import('./pages/ChangerMotDePasse'));
 const Accueil        = lazy(() => import('./pages/Accueil'));
 const Annonces       = lazy(() => import('./pages/Annonces'));
+const Appel          = lazy(() => import('./pages/Appel'));
+const Presence       = lazy(() => import('./pages/Presence'));
 
 // ── Dashboards (chunk par rôle) ───────────────────────────────────────────
 const AdminDashboard      = lazy(() => import('./pages/dashboard/AdminDashboard'));
@@ -264,6 +266,16 @@ export default function App() {
           <Route path="/notifications" element={
             <PrivateRoute>
               <AppPage><Notifications /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/appel/:id" element={
+            <PrivateRoute requiredRole={['enseignant', 'admin']}>
+              <AppPage><Appel /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/presence" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><Presence /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/annonces" element={
