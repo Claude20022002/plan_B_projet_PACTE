@@ -98,6 +98,9 @@ export default function Tableau() {
 
   const cloche = (
     <View style={{ flexDirection: 'row' }}>
+      <Pressable onPress={() => router.push('/scanner')} style={styles.cloche} accessibilityRole="button" accessibilityLabel={t('app.appel.titre')}>
+        <MaterialCommunityIcons name="qrcode-scan" size={24} color={couleurs.surCadre} />
+      </Pressable>
       <Pressable onPress={() => router.push('/alertes')} style={styles.cloche} accessibilityRole="button" accessibilityLabel={`${t('app.tableau.alertes')} : ${alertes.length}`}>
         <MaterialCommunityIcons name="bell-outline" size={24} color={couleurs.surCadre} />
         {alertes.length > 0 ? <View style={styles.pastille} /> : null}
