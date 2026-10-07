@@ -40,6 +40,7 @@
     "jspdf-autotable": "^5.0.2",
     "motion": "^12.23.26",
     "papaparse": "^5.5.3",
+    "qrcode": "^1.5.4",
     "react": "^19.1.1",
     "react-dom": "^19.1.1",
     "react-i18next": "^17.0.15",
