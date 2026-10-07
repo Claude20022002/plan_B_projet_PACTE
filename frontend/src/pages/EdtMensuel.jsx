@@ -2,11 +2,13 @@ import { Fragment, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { Autocomplete, Box, Button, GlobalStyles, Paper, Stack, TextField, Typography } from '@mui/material';
-import { Print } from '@mui/icons-material';
+import ConfirmDialog from '../components/common/ConfirmDialog';
+import { Print, Send } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import EmptyState from '../design-system/components/EmptyState';
 import { TableSkeleton } from '../design-system/components/PremiumSkeleton';
-import { appartenanceAPI, groupeAPI, preparationAPI } from '../services/api';
+import { agendaAPI, appartenanceAPI, groupeAPI, preparationAPI } from '../services/api';
+import { estResponsable } from '../utils/droits';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { fetchAll } from '../utils/fetchAll';
@@ -48,6 +50,12 @@ export default function EdtMensuel() {
     const [edt, setEdt] = useState(null);
     const [loading, setLoading] = useState(false);
     const etudiant = user?.role === 'etudiant';
+    // Publier et envoyer le mois (R4) : administration ou responsable de filière
+    const peutPublier = user?.role === 'admin' || estResponsable(user);
+    const [envoi, setEnvoi] = useState(null); // { publie, dernier_envoi, destinataires }
+    const [confirmer, setConfirmer] = useState(false);
+    const [publication, setPublication] = useState(false);
+    const groupe = groupes.find((g) => g.id_groupe === idGroupe) ?? null;
 
     useEffect(() => {
         if (etudiant) {
@@ -71,6 +79,29 @@ export default function EdtMensuel() {
             .finally(() => setLoading(false));
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [idGroupe, mois]);
+
+    useEffect(() => {
+        if (!peutPublier || !groupe?.id_filiere || !mois) return undefined;
+        let actif = true;
+        agendaAPI.etatEdt(mois, groupe.id_filiere).then((e) => actif && setEnvoi(e)).catch(() => actif && setEnvoi(null));
+        return () => {
+            actif = false;
+        };
+    }, [peutPublier, groupe?.id_filiere, mois]);
+
+    const publier = async () => {
+        setConfirmer(false);
+        setPublication(true);
+        try {
+            const bilan = await agendaAPI.publierEdt(mois, groupe.id_filiere);
+            toast.success(t('monthly.envoi.bilan', { envoye: bilan.envoye, modifie: bilan.modifie, inchange: bilan.inchange }));
+            setEnvoi(await agendaAPI.etatEdt(mois, groupe.id_filiere));
+        } catch (error) {
+            toast.error(error.message);
+        } finally {
+            setPublication(false);
+        }
+    };
 
     const nbMatin = edt?.grille.matin.length ?? 0;
     const nbApres = edt?.grille.apres_midi.length ?? 0;
@@ -146,6 +177,11 @@ export default function EdtMensuel() {
                     )}
                     <TextField type="month" size="small" label={t('tracking.month')} value={mois} onChange={(e) => setMois(e.target.value)} InputLabelProps={{ shrink: true }} />
                     <Box sx={{ flex: 1 }} />
+                    {peutPublier && groupe && (
+                        <Button variant="outlined" startIcon={<Send />} onClick={() => setConfirmer(true)} disabled={!edt || publication}>
+                            {envoi?.publie ? t('monthly.envoi.renvoyer') : t('monthly.envoi.publier')}
+                        </Button>
+                    )}
                     <Button variant="contained" startIcon={<Print />} onClick={() => window.print()} disabled={!edt}>
                         {t('monthly.print')}
                     </Button>
@@ -153,6 +189,22 @@ export default function EdtMensuel() {
                 <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
                     {t('monthly.help')}
                 </Typography>
+                {peutPublier && groupe && envoi && (
+                    <Typography variant="caption" sx={{ display: 'block', mt: 0.5 }} color={envoi.publie ? 'success.main' : 'text.secondary'}>
+                        {envoi.publie
+                            ? t('monthly.envoi.etatPublie', { date: new Date(envoi.dernier_envoi).toLocaleString(), count: envoi.destinataires })
+                            : t('monthly.envoi.etatNonPublie')}
+                    </Typography>
+                )}
+                <ConfirmDialog
+                    open={confirmer}
+                    title={t('monthly.envoi.confirmerTitre')}
+                    message={t('monthly.envoi.confirmerMessage', { filiere: groupe?.filiere?.code_filiere ?? groupe?.nom_groupe ?? '' })}
+                    confirmLabel={t('monthly.envoi.publier')}
+                    confirmColor="primary"
+                    onConfirm={publier}
+                    onCancel={() => setConfirmer(false)}
+                />
             </Paper>
 
             {loading ? (

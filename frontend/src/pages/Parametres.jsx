@@ -13,6 +13,7 @@ import {
 } from '@mui/material';
 import { PhotoCamera } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
+import AbonnementAgenda from '../components/agenda/AbonnementAgenda';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
 import { useFormik } from 'formik';
@@ -317,6 +318,8 @@ export default function Parametres() {
                         </Box>
                     </form>
                 </Paper>
+
+                <AbonnementAgenda />
             </Box>
         </DashboardLayout>
     );

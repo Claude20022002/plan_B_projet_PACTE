@@ -672,3 +672,14 @@ export const annonceAPI = {
     telechargerPieceJointe: (id, nom) => telecharger(`/annonces/${encodeURIComponent(id)}/piece-jointe`, nom),
     supprimer: (id) => request(`/annonces/${encodeURIComponent(id)}`, { method: 'DELETE' }),
 };
+
+// ==================== AGENDA ET ENVOI DE L'EMPLOI DU TEMPS (R4) ====================
+export const agendaAPI = {
+    // { chemin: '/api/agenda/<jeton>.ics', cree_le }
+    abonnement: () => request('/agenda/abonnement'),
+    renouveler: () => request('/agenda/abonnement/renouveler', { method: 'POST' }),
+    // { classes, envoye, modifie, inchange, vide }
+    publierEdt: (mois, idFiliere) => request('/agenda/edt-mensuel/publier', { method: 'POST', body: { mois, id_filiere: idFiliere } }),
+    // { publie, dernier_envoi, destinataires }
+    etatEdt: (mois, idFiliere) => request(avecQuery('/agenda/edt-mensuel/etat', { mois, id_filiere: idFiliere })),
+};
