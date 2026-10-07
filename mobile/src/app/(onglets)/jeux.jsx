@@ -148,7 +148,7 @@ export default function Jeux() {
             <Text style={styles.section} accessibilityRole="header">{t('app.jeux.devoirs')}</Text>
             {devoirs.map((dv) => {
               const aRendre = dv.ouvert && !dv.rendu;
-              const etat = dv.rendu ? t('app.devoirs.note', { note: dv.rendu.note }) : aRendre ? t('app.devoirs.avant', { date: dateCourte(dv.date_limite) }) : t('app.devoirs.nonRendu');
+              const etat = dv.rendu ? (dv.rendu.note === null ? t('app.devoirs.enCorrection') : t('app.devoirs.note', { note: dv.rendu.note })) : aRendre ? t('app.devoirs.avant', { date: dateCourte(dv.date_limite) }) : t('app.devoirs.nonRendu');
               return (
                 <Pressable key={dv.id} onPress={() => router.push(`/devoir/${dv.id}`)} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${dv.titre}, ${etat}`}>
                   <View style={[styles.lampe, aRendre && { backgroundColor: couleurs.lettre, borderColor: couleurs.lettre }, dv.rendu && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
