@@ -5,10 +5,11 @@ import { fadeUp, ramp, useEnter, usePortrait } from "../components/motion";
 import { C } from "../theme";
 import { PHONE_LEFT, PHONE_SCREEN_H, PHONE_TOP, PORTRAIT_SCREEN_H, PORTRAIT_TOP, phoneGeometry, portraitLeft } from "./S3Convergence";
 
+const THEME = 45; // 1,5 s : le mois passe du thème Planner sombre au thème StudyLib clair
 const TOUCHER = 105; // 3,5 s dans la scène
 const FICHE = 116;
-// Jour sélectionné (6 octobre) sur mobile-37-mois.png, en pixels de la capture
-const JOUR = { x: 239, y: 990 };
+// Lundi 5 octobre (la séance de la fiche) sur mobile-37-mois-clair.png, en pixels de la capture
+const JOUR = { x: 88, y: 965 };
 
 /** Rond de toucher : s'agrandit et s'efface. */
 const Toucher: React.FC<{ frame: number }> = ({ frame }) => {
@@ -32,23 +33,35 @@ const Toucher: React.FC<{ frame: number }> = ({ frame }) => {
   );
 };
 
-/** 4 · le mois, chaque jour avec ses cours (3,5 s) ; un toucher ouvre le détail de la séance. */
+/**
+ * 4 · le mois, chaque jour avec ses cours : d'abord dans le thème Planner sombre, puis un volet
+ * le fait passer au thème StudyLib clair (« Sombre ou clair, au choix. ») ; un toucher ouvre le
+ * détail de la séance, en clair. Toutes les captures sont réelles.
+ */
 export const S4Agenda: React.FC = () => {
   const frame = useCurrentFrame();
   const portrait = usePortrait();
   const phrase = useEnter(6);
   const detail = useEnter(FICHE + 12);
   const fiche = ramp(frame, FICHE, FICHE + 8);
+  // Volet du haut vers le bas, comme une tuile du panneau qui tombe
+  const volet = ramp(frame, THEME, THEME + 10);
+  const choix = useEnter(THEME + 6);
+  // Deuxième ligne : le choix du thème, puis le détail d'un cours à l'ouverture de la fiche
+  const versDetail = ramp(frame, FICHE, FICHE + 8);
   const screenH = portrait ? PORTRAIT_SCREEN_H : PHONE_SCREEN_H;
   const { screenW } = phoneGeometry(screenH);
 
   const ecran = (
     <>
-      <Screen src="captures/mobile-37-mois.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.05]} origin="25% 42%" duration={FICHE}>
-        <Toucher frame={frame} />
-      </Screen>
+      <Screen src="captures/mobile-37-mois.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.05]} origin="25% 42%" duration={FICHE} />
+      <div style={{ position: "absolute", inset: 0, clipPath: `inset(0 0 ${(1 - volet) * 100}% 0)` }}>
+        <Screen src="captures/mobile-37-mois-clair.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.05]} origin="10% 40%" duration={FICHE}>
+          <Toucher frame={frame} />
+        </Screen>
+      </div>
       <div style={{ position: "absolute", inset: 0, opacity: fiche, transform: `translateY(${(1 - fiche) * 60}px)` }}>
-        <Screen src="captures/mobile-36-fiche-verre.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1]} />
+        <Screen src="captures/mobile-36-fiche-verre-clair.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1]} />
       </div>
     </>
   );
@@ -58,9 +71,14 @@ export const S4Agenda: React.FC = () => {
       <AbsoluteFill style={{ background: C.bg }}>
         <div style={{ position: "absolute", left: 80, right: 80, top: 150, textAlign: "center" }}>
           <Line size={80} style={fadeUp(phrase)}>Un emploi du temps toujours à jour.</Line>
-          <Line size={50} weight={400} color={C.inkSoft} style={{ ...fadeUp(detail), marginTop: 18 }}>
-            Chaque cours : salle, heure, enseignant.
-          </Line>
+          <div style={{ position: "relative", marginTop: 18 }}>
+            <Line size={50} weight={400} color={C.inkSoft} style={{ ...fadeUp(choix), opacity: choix * (1 - versDetail) }}>
+              Sombre ou clair, au choix.
+            </Line>
+            <Line size={50} weight={400} color={C.inkSoft} style={{ ...fadeUp(detail), position: "absolute", left: 0, right: 0, top: 0 }}>
+              Chaque cours : salle, heure, enseignant.
+            </Line>
+          </div>
         </div>
         <PhoneFrame screenHeight={screenH} style={{ left: portraitLeft(), top: PORTRAIT_TOP }}>
           {ecran}
@@ -76,9 +94,14 @@ export const S4Agenda: React.FC = () => {
         <Line size={88} color={C.inkSoft} style={{ ...fadeUp(phrase), marginTop: 12 }}>
           toujours à jour.
         </Line>
-        <Line size={46} weight={400} color={C.inkSoft} style={{ ...fadeUp(detail), marginTop: 40 }}>
-          Chaque cours : salle, heure, enseignant.
-        </Line>
+        <div style={{ position: "relative", marginTop: 40 }}>
+          <Line size={46} weight={400} color={C.inkSoft} style={{ ...fadeUp(choix), opacity: choix * (1 - versDetail) }}>
+            Sombre ou clair, au choix.
+          </Line>
+          <Line size={46} weight={400} color={C.inkSoft} style={{ ...fadeUp(detail), position: "absolute", left: 0, top: 0 }}>
+            Chaque cours : salle, heure, enseignant.
+          </Line>
+        </div>
       </div>
       <PhoneFrame screenHeight={PHONE_SCREEN_H} style={{ left: PHONE_LEFT, top: PHONE_TOP }}>
         {ecran}

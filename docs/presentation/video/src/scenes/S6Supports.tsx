@@ -30,7 +30,7 @@ export const S6Supports: React.FC = () => {
   return (
     <AbsoluteFill style={{ background: C.bg }}>
       <PhoneFrame screenHeight={SCREEN_H} style={{ left: phoneLeft, top }}>
-        <Screen src="captures/mobile-39-supports-module.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 20%" />
+        <Screen src="captures/mobile-39-supports-module-clair.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 20%" />
       </PhoneFrame>
       <BrowserFrame
         width={BW}

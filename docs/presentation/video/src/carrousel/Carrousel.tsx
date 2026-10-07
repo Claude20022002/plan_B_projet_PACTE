@@ -179,7 +179,7 @@ const PAGES: React.FC[] = [
       }
       texte="Fini les supports perdus dans les e-mails."
       lignes={["Supports rangés par module", "Devoirs à rendre en un fichier", "Notes et commentaires du professeur"]}
-      capture="mobile-39-supports-module.png"
+      capture="mobile-39-supports-module-clair.png"
     />
   ),
   // 6 · Les jeux

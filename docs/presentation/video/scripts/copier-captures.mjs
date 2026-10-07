@@ -11,6 +11,9 @@ const publicDir = join(ici, "..", "public");
 
 const fichiers = [
   "mobile-37-mois.png",
+  "mobile-37-mois-clair.png",
+  "mobile-36-fiche-verre-clair.png",
+  "mobile-39-supports-module-clair.png",
   "mobile-36-fiche-verre.png",
   "mobile-38-tableau.png",
   "mobile-39-supports-module.png",
