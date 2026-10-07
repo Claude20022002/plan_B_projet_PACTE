@@ -40,7 +40,7 @@ export const S6Supports: React.FC = () => {
       </BrowserFrame>
       <div style={{ position: "absolute", left: 0, right: 0, top: 920, textAlign: "center" }}>
         <Line size={52} style={{ ...fadeUp(l1), opacity: l1 * (1 - ramp(frame, NAVIGATEUR, NAVIGATEUR + 6)), position: "absolute", left: 0, right: 0 }}>
-          Les supports de chaque cours, à un geste.
+          Les supports de chaque cours, et les retours de stage des anciens.
         </Line>
         <Line size={52} style={{ ...fadeUp(l2), position: "absolute", left: 0, right: 0 }}>
           Le PDF officiel, toujours disponible.

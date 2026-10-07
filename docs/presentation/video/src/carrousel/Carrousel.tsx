@@ -182,7 +182,30 @@ const PAGES: React.FC[] = [
       capture="mobile-39-supports-module-clair.png"
     />
   ),
-  // 6 · Les jeux
+  // 6 · Les retours de stage
+  () => (
+    <>
+      <Titre taille={92}>
+        Le bon stage,
+        <br />
+        grâce aux anciens.
+      </Titre>
+      <Texte style={{ marginTop: 28, maxWidth: 880 }}>
+        Chaque étudiant peut partager son retour de stage. Les promotions suivantes choisissent en connaissance de cause.
+      </Texte>
+      <Liste
+        lignes={[
+          "Missions, encadrement et conseils, racontés par un étudiant",
+          "Entreprise, ville, poste, stage rémunéré ou non",
+          "Une note sur l'expérience",
+          "Publié seulement avec l'accord de l'auteur",
+          "Visible des seuls étudiants HESTIM",
+        ]}
+        style={{ marginTop: 64 }}
+      />
+    </>
+  ),
+  // 7 · Les jeux
   () => (
     <AvecTelephone
       titre={
@@ -197,7 +220,7 @@ const PAGES: React.FC[] = [
       capture="mobile-13-resultats.png"
     />
   ),
-  // 7 · L'appel par QR code
+  // 8 · L'appel par QR code
   () => (
     <>
       <Titre taille={92}>L'appel en 5 secondes.</Titre>
@@ -218,7 +241,7 @@ const PAGES: React.FC[] = [
       </div>
     </>
   ),
-  // 8 · Les chiffres
+  // 9 · Les chiffres
   () => (
     <>
       <Titre taille={80}>En chiffres</Titre>
@@ -238,7 +261,7 @@ const PAGES: React.FC[] = [
       </div>
     </>
   ),
-  // 9 · La fin et la question
+  // 10 · La fin et la question
   () => (
     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", height: "100%" }}>
       <Embleme start={FINI} tileStart={FINI} size={190} tile style={{ marginTop: 70 }} />

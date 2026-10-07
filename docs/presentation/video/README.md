@@ -10,7 +10,7 @@ Vidéo motion design de **62 s** qui ouvre la présentation (voir `../discours-3
 | --- | --- |
 | `out/hestim-planner.mp4` | 1920 × 1080, 30 i/s, H.264 (yuv420p), 62 s, 1860 images, son AAC stéréo |
 | `out/hestim-planner-9x16-accroche.mp4` | teaser B 1080 × 1920, 29 s : l'alerte d'abord (scènes 5, 2, 3, 4 puis 10), pour LinkedIn |
-| `out/carrousel/hestim-planner-carrousel.pdf` | carrousel LinkedIn, 9 pages 1080 × 1350 (`npm run carrousel`) |
+| `out/carrousel/hestim-planner-carrousel.pdf` | carrousel LinkedIn, 10 pages 1080 × 1350 (`npm run carrousel`) |
 | `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 10), avec sa propre bande-son, pour les réseaux sociaux |
 
 ## Commandes
@@ -38,9 +38,9 @@ node scripts/verifier.mjs HestimPlanner 0 1 4 7.5 9.5 12 15 18.5 22 25 27 31 33 
 | 1 | 0–5 s | Les 12 triangles de l'emblème s'assemblent, `HESTIM PLANNER` en volets, « Toute la vie de l'école, dans une seule application. » | `S1Intro.tsx` |
 | 2 | 5–12 s | « Aujourd'hui, à l'école : » GMAIL · PDF · WHATSAPP · CLASSROOM · MOODLE · JEUX EXTERNES, barrés à 4 s : « 6 outils qui ne se parlent pas. » | `S2Outils.tsx` |
 | 3 | 12–16 s | Les outils se fondent dans l'emblème, qui rejoint le téléphone : « Une seule application, pour toute l'école. » | `S3Convergence.tsx` |
-| 4 | 16–23 s | Agenda du mois (3,5 s), toucher, détail de la séance : « Chaque cours : salle, heure, enseignant. » | `S4Agenda.tsx` |
+| 4 | 16–23 s | Agenda du mois en thème Planner sombre, puis volet vers le thème StudyLib clair à 1,5 s (« Sombre ou clair, au choix. »), toucher, détail de la séance en clair : « Chaque cours : salle, heure, enseignant. » | `S4Agenda.tsx` |
 | 5 | 23–29 s | Alerte « Cours reporté » (3 s à l'écran) : « Report, annulation, changement de salle. » | `S5Alerte.tsx` |
-| 6 | 29–36 s | Supports d'un cours, puis PDF officiel du mois | `S6Supports.tsx` |
+| 6 | 29–36 s | Supports d'un cours (thème StudyLib clair) : « Les supports de chaque cours, et les retours de stage des anciens. », puis PDF officiel du mois | `S6Supports.tsx` |
 | 7 | 36–44 s | Résultats d'un quiz (web + mobile), puis devoir noté | `S7Resultats.tsx` |
 | 8 | 44–50 s | `L'APPEL EN 5 SECONDES` en volets, QR projeté qui se renouvelle à 3 s, compteur `28` présents sur 30 : ce que l'école y gagne (animation typographique, pas de fausse capture) | `S8Appel.tsx` |
 | 9 | 50–57 s | `90 S` · `1 COMPTE` · `0 PUBLICITÉ`, un toutes les 2 s | `S8Chiffres.tsx` |
