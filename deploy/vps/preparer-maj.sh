@@ -50,8 +50,9 @@ cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh "$TRAVAIL/deploy-vps/"
 if [ "$AVEC_CLASSQUIZ" = "--classquiz" ]; then
     CQ="$RACINE/../ClassQuiz/frontend/build"
     [ -f "$CQ/index.js" ] || { echo "ClassQuiz non construit : $CQ/index.js absent" >&2; exit 1; }
-    mkdir -p "$TRAVAIL/classquiz"
-    cp -r "$CQ" "$TRAVAIL/classquiz/build"
+    mkdir -p "$TRAVAIL/classquiz/build"
+    # Sans les cartes de sources (.map) : inutiles en production, et 4 fois plus lourdes
+    tar -C "$CQ" -cf - --exclude='*.map' . | tar -C "$TRAVAIL/classquiz/build" -xf -
     # Le site Node de SvelteKit (adapter-node) est autonome : on remplace son dossier de construction
     cat > "$TRAVAIL/Dockerfile.classquiz" <<'EOF'
 FROM claude20022002/hestim-classquiz-frontend:latest
