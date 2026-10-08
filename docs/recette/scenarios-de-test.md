@@ -101,7 +101,16 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Pendant une question, l'étudiant passe sur une autre application 5 s puis revient : une sortie est comptée.
 - [ ] Sortie très courte (moins d'une seconde) ou après avoir répondu : rien n'est compté.
 - [ ] Sur ordinateur, passer à une autre fenêtre pendant une question compte aussi une sortie.
-- [ ] Même test depuis l'onglet Activités de l'application mobile (quiz ouvert dans l'application) : la sortie est-elle comptée sur iPhone ? Sur Android ? (à noter, le lot 4 renforcera ce point).
+- [ ] Application mobile, sans partie en cours : aucun quiz ni « Saisir un code » dans Activités, ni dans le menu des espaces.
+- [ ] L'enseignant lance une partie pendant la séance : dans les 20 s, la ligne « Quiz en cours » apparaît dans Activités ; « Rejoindre » ouvre la partie **dans l'application** (pas de page web), avec le prénom et l'initiale de l'étudiant.
+- [ ] Chaque type de question se joue : QCM (tuiles colorées), cases à cocher + « Valider », réponse libre, curseur (-10, -1, +1, +10), ordre (flèches) ; le compte à rebours s'arrête à 0 (« Temps écoulé »).
+- [ ] Après chaque question : « Bonne réponse » et les points gagnés, ou « Mauvaise réponse » ; en fin de partie, le bilan puis « Voir le classement ».
+- [ ] Mode « kahoot » : le téléphone affiche les quatre formes du projecteur, dans les mêmes couleurs.
+- [ ] Pendant une question, passer l'application en arrière-plan 5 s puis revenir : la sortie est comptée (iPhone et Android).
+- [ ] Capture d'écran pendant la partie : bloquée sur Android (image noire ou refus) ; sur iPhone, l'enregistrement de l'écran est masqué.
+- [ ] Téléphone mis en veille quelques secondes pendant l'attente : « Connexion perdue, reconnexion… » puis la partie reprend.
+- [ ] Deux étudiants au même prénom et même initiale : le second joue sous « Prénom N. 2 », et chaque score revient au bon étudiant dans Planner.
+- [ ] La croix demande confirmation avant de quitter la partie.
 - [ ] Fin de partie : dans Planner, les résultats du quiz montrent à l'enseignant la colonne « Sorties » (nombre · durée), en orange pour les étudiants concernés.
 - [ ] Un étudiant qui consulte les résultats ne voit aucune colonne « Sorties », ni pour lui ni pour les autres.
 - [ ] Le projecteur n'affiche jamais de nom ni de sortie.

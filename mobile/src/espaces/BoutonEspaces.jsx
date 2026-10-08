@@ -1,23 +1,24 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { ESPACES, adresseEspace } from '../../../shared/espaces.js';
 import { libelle } from '../../../shared/jeux/catalogue.js';
-import { chargerConfigQuiz } from '../api/donnees';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
 import Feuille from '../verre/Feuille';
 import { apresFermeture, ouvrirSurLeWeb } from './ouvrir';
 
-/** Écran de l'application pour chaque espace (le Quiz n'existe que sur le web) */
+/** Écran de l'application pour chaque espace */
 const ECRAN = { planner: '/', bibliotheque: '/bibliotheque', jeux: '/jeux' };
-const ICONE = { planner: 'calendar-month-outline', bibliotheque: 'bookshelf', jeux: 'gamepad-variant-outline', quiz: 'head-question-outline' };
+const ICONE = { planner: 'calendar-month-outline', bibliotheque: 'bookshelf', jeux: 'gamepad-variant-outline' };
+// Pas d'espace Quiz : un quiz n'apparaît que lorsqu'un enseignant lance une partie (onglet Activités)
+const ESPACES_APPLICATION = ESPACES.filter((e) => ECRAN[e.code]);
 
 /**
  * Bouton des espaces HESTIM (barre de titre de chaque onglet) : la feuille liste Planner, la
- * Bibliothèque, les Jeux et le Quiz. Toucher un espace l'ouvre dans l'application ; « Site web »
- * ouvre son interface complète, déjà connecté. Tout espace est donc à deux gestes.
+ * Bibliothèque et les Jeux. Toucher un espace l'ouvre dans l'application ; « Site web » ouvre son
+ * interface complète, déjà connecté. Tout espace est donc à deux gestes.
  */
 export default function BoutonEspaces() {
   const { t } = useTranslation();
@@ -40,23 +41,9 @@ function FeuilleEspaces({ fermer }) {
   const router = useRouter();
   const { couleurs } = useTheme();
   const styles = useStyles();
-  const [urlQuiz, setUrlQuiz] = useState(null);
-
-  useEffect(() => {
-    let actif = true;
-    chargerConfigQuiz()
-      .then((c) => actif && c?.actif && /^https:\/\//.test(c.url ?? '') && setUrlQuiz(c.url))
-      .catch(() => {});
-    return () => {
-      actif = false;
-    };
-  }, []);
-
   const allerA = (code) => {
     fermer();
-    if (ECRAN[code]) router.navigate(ECRAN[code]);
-    // Quiz : la page de jeu de ClassQuiz s'ouvre dans l'application (écran /quiz)
-    else if (urlQuiz) router.push({ pathname: '/quiz', params: { url: adresseEspace(code, { role: 'etudiant', urlQuiz }) } });
+    router.navigate(ECRAN[code]);
   };
   // Sur iPhone, le navigateur ne s'ouvre pas tant que la feuille se ferme : on attend la fin
   const surLeWeb = (chemin) => {
@@ -75,18 +62,15 @@ function FeuilleEspaces({ fermer }) {
         </Pressable>
       </View>
       <ScrollView>
-        {ESPACES.map((e) => {
-          const disponible = e.code !== 'quiz' || urlQuiz;
-          const chemin = e.code === 'quiz' ? null : adresseEspace(e.code);
+        {ESPACES_APPLICATION.map((e) => {
+          const chemin = adresseEspace(e.code);
           return (
-            <View key={e.code} style={[styles.ligne, !disponible && styles.inactif]}>
+            <View key={e.code} style={styles.ligne}>
               <Pressable
                 onPress={() => allerA(e.code)}
-                disabled={!disponible}
                 style={styles.principal}
                 accessibilityRole="button"
                 accessibilityLabel={`${libelle(e.titre, i18n.language)}. ${libelle(e.resume, i18n.language)}`}
-                accessibilityState={{ disabled: !disponible }}
               >
                 <View style={styles.pastille}>
                   <MaterialCommunityIcons name={ICONE[e.code]} size={24} color={couleurs.accent} />
@@ -94,7 +78,7 @@ function FeuilleEspaces({ fermer }) {
                 <View style={{ flex: 1 }}>
                   <Text style={styles.nom}>{libelle(e.titre, i18n.language)}</Text>
                   <Text style={styles.resume} numberOfLines={2}>
-                    {disponible ? libelle(e.resume, i18n.language) : t('app.espaces.indisponible')}
+                    {libelle(e.resume, i18n.language)}
                   </Text>
                 </View>
               </Pressable>
@@ -120,7 +104,6 @@ const useStyles = creerStyles((t) => ({
   titre: { flex: 1, color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: 20, textTransform: t.capitales, letterSpacing: espace(t, 1.2) },
   fermer: { width: CIBLE_TACTILE, height: CIBLE_TACTILE, alignItems: 'center', justifyContent: 'center' },
   ligne: { flexDirection: 'row', alignItems: 'center', paddingRight: 12, borderTopWidth: 1, borderTopColor: t.couleurs.filet },
-  inactif: { opacity: 0.5 },
   principal: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 14, paddingHorizontal: 16, paddingVertical: 14, minHeight: CIBLE_TACTILE + 20 },
   pastille: {
     width: 44,
