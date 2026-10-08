@@ -286,6 +286,8 @@ export const scannerCode = async (user, brut, maintenant = new Date(), appareil 
         await signalerAppareilPartage(seance.id_affectation, user.id_user, dejaPointe.id_user);
         throw refusAppareilPartage();
     }
+    // Un compte = un téléphone (au-delà de cette séance)
+    await verifierTelephoneDuCompte(seance.id_affectation, user.id_user, empreinte, maintenant);
     try {
         await Presence.create({ id_affectation: seance.id_affectation, id_user: user.id_user, source: "qr", marque_le: maintenant, appareil: empreinte });
     } catch (erreur) {
