@@ -36,6 +36,7 @@ import EnvoiEdt from "./EnvoiEdt.js";
 import AppelSeance from "./AppelSeance.js";
 import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
+import AppareilEtudiant from "./AppareilEtudiant.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
 import JeuProfil from "./JeuProfil.js";
@@ -538,6 +539,7 @@ Presence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "i
 SignalementPresence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
 SignalementPresence.belongsTo(Users, { foreignKey: "id_user_lie", as: "lie", targetKey: "id_user" });
 SignalementPresence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
+Users.hasOne(AppareilEtudiant, { foreignKey: "id_user", as: "appareilAppel", onDelete: "CASCADE" });
 
 // Jeux intégrés : proposés dans un module, progression par joueur
 Cours.hasMany(JeuModule, { foreignKey: "id_cours", as: "jeux", onDelete: "CASCADE" });
@@ -616,6 +618,7 @@ export {
     AppelSeance,
     Presence,
     SignalementPresence,
+    AppareilEtudiant,
     JeuModule,
     JeuProgression,
     JeuProfil,
