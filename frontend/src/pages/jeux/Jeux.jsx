@@ -11,12 +11,14 @@ import {
   DialogTitle,
   LinearProgress,
   Link,
+  MenuItem,
   Skeleton,
   Table,
   TableBody,
   TableCell,
   TableHead,
   TableRow,
+  TextField,
   Typography,
 } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
@@ -52,6 +54,7 @@ export default function Jeux() {
   const [erreur, setErreur] = useState(false);
   const [quiz, setQuiz] = useState({ config: null, parties: [] });
   const [suivi, setSuivi] = useState(null); // { module, etudiants } | { chargement: true }
+  const [proposition, setProposition] = useState(null); // { module, jeu, but, notion } : fenêtre « proposer »
   const [historique, setHistorique] = useState([]);
   const [historiqueProf, setHistoriqueProf] = useState(null); // enseignant : quiz, devoirs, défis
   const [resultats, setResultats] = useState(null); // id de la partie affichée
@@ -122,12 +125,31 @@ export default function Jeux() {
     }
   };
 
-  const basculer = async (module, code) => {
-    const propose = module.jeux.includes(code);
+  // But et notion déjà choisis pour un jeu dans un module
+  const detailDe = (module, code) => (module.details ?? []).find((d) => d.code === code);
+
+  const basculer = async (module, jeu) => {
+    if (!module.jeux.includes(jeu.code)) {
+      // Proposer : l'enseignant choisit d'abord le but et, s'il le souhaite, la notion
+      setProposition({ module, jeu, but: 'entrainer', notion: '' });
+      return;
+    }
     try {
-      if (propose) await jeuxAPI.retirer(code, module.id_cours);
-      else await jeuxAPI.proposer(code, module.id_cours);
-      toast.success(propose ? t('jeux.modules.retire', { module: module.nom }) : t('jeux.modules.propose', { module: module.nom }));
+      await jeuxAPI.retirer(jeu.code, module.id_cours);
+      toast.success(t('jeux.modules.retire', { module: module.nom }));
+      charger();
+    } catch (e) {
+      toast.error(e?.message || t('jeux.erreurAction'));
+    }
+  };
+
+  const enregistrerProposition = async () => {
+    const { module, jeu, but, notion } = proposition;
+    const nouveau = !module.jeux.includes(jeu.code);
+    try {
+      await jeuxAPI.proposer(jeu.code, module.id_cours, { but, notion: notion.trim() });
+      toast.success(nouveau ? t('jeux.modules.propose', { module: module.nom }) : t('jeux.modules.modifie'));
+      setProposition(null);
       charger();
     } catch (e) {
       toast.error(e?.message || t('jeux.erreurAction'));
@@ -304,7 +326,12 @@ export default function Jeux() {
                               {t('jeux.modules.suivi')}
                             </Button>
                           )}
-                          <Button size="small" variant={propose ? 'outlined' : 'contained'} sx={propose ? boutonPanneau : boutonPanneauPlein} onClick={() => basculer(m, jeu.code)}>
+                          {propose && (
+                            <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setProposition({ module: m, jeu, but: detailDe(m, jeu.code)?.but ?? 'entrainer', notion: detailDe(m, jeu.code)?.notion ?? '' })}>
+                              {t('jeux.modules.modifier')}
+                            </Button>
+                          )}
+                          <Button size="small" variant={propose ? 'outlined' : 'contained'} sx={propose ? boutonPanneau : boutonPanneauPlein} onClick={() => basculer(m, jeu)}>
                             {propose ? t('jeux.modules.retirer') : t('jeux.modules.proposer')}
                           </Button>
                         </Box>
@@ -312,7 +339,9 @@ export default function Jeux() {
                     >
                       <Capitales sx={{ display: 'block', fontSize: '1rem' }}>{m.code} · {m.nom}</Capitales>
                       <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                        {libelle(jeu.titre, i18n.language)} ({propose ? t('jeux.modules.estPropose') : t('jeux.modules.nonPropose')})
+                        {propose
+                          ? [libelle(jeu.titre, i18n.language), t(`jeux.buts.${detailDe(m, jeu.code)?.but ?? 'entrainer'}`), detailDe(m, jeu.code)?.notion].filter(Boolean).join(' · ')
+                          : `${libelle(jeu.titre, i18n.language)} (${t('jeux.modules.nonPropose')})`}
                       </Box>
                     </LignePanneau>
                   );
@@ -384,6 +413,26 @@ export default function Jeux() {
       </Box>
 
       <ResultatsQuiz idPartie={resultats} onClose={() => setResultats(null)} />
+
+      {/* Proposer un jeu dans un module : but et notion visée */}
+      <Dialog open={Boolean(proposition)} onClose={() => setProposition(null)} fullWidth maxWidth="xs">
+        <DialogTitle>{proposition ? t('jeux.modules.proposerTitre', { jeu: libelle(proposition.jeu.titre, i18n.language), module: proposition.module.nom }) : ''}</DialogTitle>
+        <DialogContent>
+          <Box sx={{ display: 'grid', gap: 2, pt: 1 }}>
+            <TextField select label={t('jeux.modules.but')} value={proposition?.but ?? 'entrainer'} onChange={(e) => setProposition((p) => ({ ...p, but: e.target.value }))}>
+              <MenuItem value="verifier">{t('jeux.buts.verifier')}</MenuItem>
+              <MenuItem value="entrainer">{t('jeux.buts.entrainer')}</MenuItem>
+            </TextField>
+            <TextField label={t('jeux.modules.notion')} value={proposition?.notion ?? ''} onChange={(e) => setProposition((p) => ({ ...p, notion: e.target.value }))} inputProps={{ maxLength: 120 }} helperText={t('jeux.modules.notionAide')} />
+          </Box>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setProposition(null)}>{t('common.cancel')}</Button>
+          <Button variant="contained" onClick={enregistrerProposition}>
+            {proposition && !proposition.module.jeux.includes(proposition.jeu.code) ? t('jeux.modules.proposer') : t('jeux.modules.modifier')}
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       <Dialog open={Boolean(suivi)} onClose={() => setSuivi(null)} fullWidth maxWidth="sm">
         <DialogTitle>{t('jeux.modules.suiviTitre', { module: suivi?.module ? `${suivi.module.code} · ${suivi.module.nom}` : '' })}</DialogTitle>

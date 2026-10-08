@@ -45,7 +45,7 @@ function DonnerDevoir({ ouvert, modules, fermer, cree }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [quiz, setQuiz] = useState(null);
-  const [choix, setChoix] = useState({ type: 'fichier', titre: '', consignes: '', quiz_id: '', id_cours: '', date_limite: dansUneSemaine() });
+  const [choix, setChoix] = useState({ type: 'fichier', titre: '', consignes: '', quiz_id: '', id_cours: '', date_limite: dansUneSemaine(), but: 'verifier', notion: '' });
   const [enonce, setEnonce] = useState(null);
   const [erreurEnonce, setErreurEnonce] = useState('');
   const [envoi, setEnvoi] = useState(false);
@@ -76,7 +76,7 @@ function DonnerDevoir({ ouvert, modules, fermer, cree }) {
   const valider = async () => {
     setEnvoi(true);
     try {
-      const commun = { id_cours: Number(choix.id_cours), date_limite: new Date(choix.date_limite).toISOString() };
+      const commun = { id_cours: Number(choix.id_cours), date_limite: new Date(choix.date_limite).toISOString(), but: choix.but, notion: choix.notion.trim() };
       const r = await devoirsAPI.creer(fichier ? { ...commun, type: 'fichier', titre: choix.titre.trim(), consignes: choix.consignes.trim() } : { ...commun, quiz_id: choix.quiz_id });
       if (fichier && enonce) {
         try {
@@ -134,6 +134,11 @@ function DonnerDevoir({ ouvert, modules, fermer, cree }) {
               </MenuItem>
             ))}
           </TextField>
+          <TextField select label={t('jeux.modules.but')} value={choix.but} onChange={(e) => setChoix((c) => ({ ...c, but: e.target.value }))}>
+            <MenuItem value="verifier">{t('jeux.buts.verifier')}</MenuItem>
+            <MenuItem value="entrainer">{t('jeux.buts.entrainer')}</MenuItem>
+          </TextField>
+          <TextField label={t('jeux.modules.notion')} value={choix.notion} onChange={(e) => setChoix((c) => ({ ...c, notion: e.target.value }))} inputProps={{ maxLength: 120 }} />
           <TextField type="datetime-local" label={t('jeux.devoirs.dateLimite')} value={choix.date_limite} onChange={(e) => setChoix((c) => ({ ...c, date_limite: e.target.value }))} InputLabelProps={{ shrink: true }} />
           <Typography variant="body2" color="text.secondary">
             {t(fichier ? 'jeux.devoirs.aideFichier' : 'jeux.devoirs.aide')}

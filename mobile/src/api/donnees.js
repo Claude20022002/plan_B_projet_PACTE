@@ -110,6 +110,16 @@ export const chargerPartiesQuiz = async () => {
   return (reponse.data || []).filter((p) => typeof p.url !== 'string' || /^https:\/\//.test(p.url));
 };
 
+/**
+ * Activités par module (quiz en cours, devoirs, jeux choisis par les enseignants, avec leur but et
+ * leur notion) : { profil, modules: [{ code, nom, quiz, devoirs, jeux }] } ; liens de quiz https seulement
+ */
+export const chargerActivites = async () => {
+  const reponse = await planner('/activites');
+  const https = (p) => typeof p.url !== 'string' || /^https:\/\//.test(p.url);
+  return { ...reponse, modules: (reponse.modules || []).map((m) => ({ ...m, quiz: (m.quiz || []).filter(https) })) };
+};
+
 /** Adresse de ClassQuiz et droit de lancer une partie ({ actif, url, peutLancer }) */
 export const chargerConfigQuiz = () => planner('/quiz/config');
 

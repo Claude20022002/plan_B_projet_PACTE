@@ -12,7 +12,7 @@ const fr = {
   ...partageFr,
   app: {
     nom: 'HESTIM Planner',
-    onglets: { tableau: 'Tableau', semaine: 'Semaine', jeux: 'Jeux', bibliotheque: 'Bibliothèque', compte: 'Compte' },
+    onglets: { tableau: 'Tableau', semaine: 'Semaine', jeux: 'Activités', bibliotheque: 'Bibliothèque', compte: 'Compte' },
     connexion: {
       titre: 'Connexion',
       email: 'Email HESTIM',
@@ -190,6 +190,11 @@ const fr = {
       pieceJointe: 'Ouvrir la pièce jointe',
       pieceJointeAide: 'Elle s’ouvre sur le site, déjà connecté.',
     },
+    activites: {
+      titre: 'Activités',
+      rien: 'Vos enseignants n’ont encore rien proposé dans vos modules.',
+      buts: { verifier: 'Vérifier', entrainer: 'S’entraîner' },
+    },
     jeux: {
       titre: 'Jeux',
       enCours: 'Quiz en cours',
@@ -297,7 +302,7 @@ const en = {
   ...partageEn,
   app: {
     nom: 'HESTIM Planner',
-    onglets: { tableau: 'Board', semaine: 'Week', jeux: 'Games', bibliotheque: 'Library', compte: 'Account' },
+    onglets: { tableau: 'Board', semaine: 'Week', jeux: 'Activities', bibliotheque: 'Library', compte: 'Account' },
     connexion: {
       titre: 'Sign in',
       email: 'HESTIM email',
@@ -474,6 +479,11 @@ const en = {
       introuvable: 'Announcement not found.',
       pieceJointe: 'Open the attachment',
       pieceJointeAide: 'It opens on the website, already signed in.',
+    },
+    activites: {
+      titre: 'Activities',
+      rien: 'Your teachers have not suggested anything in your courses yet.',
+      buts: { verifier: 'Check', entrainer: 'Practice' },
     },
     jeux: {
       titre: 'Games',

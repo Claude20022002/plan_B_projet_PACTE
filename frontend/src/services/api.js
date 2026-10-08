@@ -647,7 +647,8 @@ export const jeuxAPI = {
     // commandes : les lignes tapées depuis le début de la partie, rejouées par le serveur
     reussir: (code, idDefi, indices, commandes) =>
         request(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices, commandes } }),
-    proposer: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules`, { method: 'POST', body: { id_cours: idCours } }),
+    // Proposer (ou modifier) un jeu dans un module, avec son but (verifier | entrainer) et la notion visée
+    proposer: (code, idCours, { but, notion } = {}) => request(`/jeux/${encodeURIComponent(code)}/modules`, { method: 'POST', body: { id_cours: idCours, but, notion } }),
     retirer: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}`, { method: 'DELETE' }),
     getSuivi: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}/suivi`),
     // Enseignant : { data: [{ type: quiz|devoir|defis, id, date, titre, module, … }] }
