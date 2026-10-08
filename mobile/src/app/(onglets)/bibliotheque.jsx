@@ -77,7 +77,7 @@ export default function Bibliotheque() {
                   pied={t('app.bibliotheque.documents', { count: n })}
                   couleur={lineColor(m.ligne)}
                   largeur={largeur}
-                  onPress={() => router.push(`/module/${encodeURIComponent(m.code)}`)}
+                  onPress={() => router.push({ pathname: '/module/[code]', params: { code: m.code, ligne: m.ligne ?? '', nom: m.nom } })}
                   disabled={!supports[m.code]}
                   accessibilityLabel={`${m.nom}, ${t('app.bibliotheque.documents', { count: n })}`}
                 />
