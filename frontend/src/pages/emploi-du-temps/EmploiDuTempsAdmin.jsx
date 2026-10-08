@@ -6,6 +6,7 @@ import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetabl
 import TimetableExportMenu from '../../components/emploi-du-temps/TimetableExportMenu';
 import { affectationAPI, enseignantAPI, groupeAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
+import OngletsEmploisDuTemps from '../../components/gestion/OngletsEmploisDuTemps';
 
 /**
  * Vue admin : par défaut l'emploi du temps d'un groupe (comme les plannings PDF diffusés par l'école),
@@ -63,6 +64,7 @@ export default function EmploiDuTempsAdmin() {
 
   return (
     <DashboardLayout>
+      <OngletsEmploisDuTemps />
       <Box className="hp-no-print" sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, mb: 2 }}>
         <ToggleButtonGroup
           size="small"

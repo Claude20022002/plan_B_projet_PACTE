@@ -82,7 +82,6 @@ const Examens        = lazy(() => import('./pages/gestion/Examens'));
 const Imprevus       = lazy(() => import('./pages/gestion/Imprevus'));
 const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
 const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
-const SallesDisponibles = lazy(() => import('./pages/SallesDisponibles'));
 const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
@@ -345,11 +344,8 @@ export default function App() {
             </PrivateRoute>
           } />
 
-          <Route path="/salles-disponibles" element={
-            <PrivateRoute requiredRole={['enseignant', 'admin']}>
-              <AppPage><SallesDisponibles /></AppPage>
-            </PrivateRoute>
-          } />
+          {/* Ancienne page « Salles disponibles » : la recherche de salle libre se fait dans Réservations */}
+          <Route path="/salles-disponibles" element={<Navigate to="/reservations" replace />} />
 
           {/* ── Phases P4 à P7 ────────────────────────────────────────── */}
           <Route path="/reservations" element={

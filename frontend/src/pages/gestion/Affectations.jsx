@@ -45,6 +45,7 @@ import DataToolbar from '../../design-system/components/DataToolbar';
 import EmptyState from '../../design-system/components/EmptyState';
 import StatusBadge from '../../design-system/components/StatusBadge';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
+import OngletsEmploisDuTemps from '../../components/gestion/OngletsEmploisDuTemps';
 
 const validationSchema = yup.object({
     date_seance: yup.date().required('La date est requise'),
@@ -323,6 +324,7 @@ export default function Affectations() {
 
     return (
         <DashboardLayout>
+            <OngletsEmploisDuTemps />
             <Box>
                 <Snackbar
                     open={!!error}

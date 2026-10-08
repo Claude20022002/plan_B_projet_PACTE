@@ -12,6 +12,7 @@ import { estResponsable } from '../utils/droits';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { fetchAll } from '../utils/fetchAll';
+import OngletsEmploisDuTemps from '../components/gestion/OngletsEmploisDuTemps';
 
 // Couleurs du document officiel (EDT HESTIM) : hors du style « panneau », réservé à l'impression
 const DOC = { rouge: '#C00000', marine: '#001861', orange: '#F8CBAD', orangeTexte: '#843C0C', vide: '#F2F2F2', evenement: '#DDEBF7', bord: '#7F7F7F' };
@@ -160,6 +161,7 @@ export default function EdtMensuel() {
 
     return (
         <DashboardLayout>
+            {user?.role === 'admin' && <OngletsEmploisDuTemps />}
             {styleImpression}
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider', mb: 2 }}>
                 <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} alignItems={{ sm: 'center' }}>

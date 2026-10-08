@@ -54,7 +54,6 @@ import { LocalLibrary,
   Notifications,
   People,
   PersonOutline,
-  Schedule,
   School,
   Search,
   SportsEsports,
@@ -87,8 +86,8 @@ const navigationFor = (user) => {
         section: 'nav.planning',
         items: [
           { key: 'nav.preparation', icon: <Checklist />, path: '/gestion/preparation' },
-          { key: 'nav.sessions', icon: <Schedule />, path: '/gestion/affectations' },
-          { key: 'nav.timetables', icon: <ViewWeek />, path: '/gestion/emplois-du-temps' },
+          // Une entrée pour les trois vues des séances : grille, liste, mois (onglets dans la page)
+          { key: 'nav.timetables', icon: <ViewWeek />, path: '/gestion/emplois-du-temps', aussi: ['/gestion/affectations', '/emploi-du-temps/mensuel'] },
           { key: 'nav.reports', icon: <EventRepeat />, path: '/gestion/demandes-report' },
           { key: 'nav.conflicts', icon: <WarningAmber />, path: '/gestion/conflits' },
           { key: 'nav.generation', icon: <AutoAwesome />, path: '/gestion/generation-automatique' },
@@ -97,7 +96,6 @@ const navigationFor = (user) => {
           { key: 'nav.exams', icon: <FactCheck />, path: '/gestion/examens' },
           { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
           { key: 'nav.tracking', icon: <Timeline />, path: '/gestion/suivi' },
-          { key: 'nav.monthly', icon: <Print />, path: '/emploi-du-temps/mensuel' },
           { key: 'nav.statistics', icon: <Insights />, path: '/statistiques' },
         ],
       },
@@ -124,7 +122,6 @@ const navigationFor = (user) => {
           { key: 'nav.calendar', icon: <Event />, path: '/gestion/calendrier' },
           { key: 'nav.campus', icon: <Apartment />, path: '/gestion/campus' },
           { key: 'nav.rooms', icon: <MeetingRoom />, path: '/gestion/salles' },
-          { key: 'nav.availableRooms', icon: <EventAvailable />, path: '/salles-disponibles' },
           { key: 'nav.slots', icon: <CalendarMonth />, path: '/gestion/creneaux' },
           { key: 'nav.planningSettings', icon: <Tune />, path: '/gestion/parametres-planning' },
         ],
@@ -144,7 +141,6 @@ const navigationFor = (user) => {
           { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
           { key: 'nav.bookings', icon: <BookOnline />, path: '/reservations' },
           { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
-          { key: 'nav.availableRooms', icon: <MeetingRoom />, path: '/salles-disponibles' },
           { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
           { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
         ],
@@ -232,7 +228,6 @@ const TITLE_KEYS = {
   '/emploi-du-temps/mensuel': 'nav.monthly',
   '/disponibilites': 'nav.myAvailability',
   '/demandes-report': 'nav.myReports',
-  '/salles-disponibles': 'nav.availableRooms',
   '/emploi-du-temps/enseignant': 'nav.timetable',
   '/emploi-du-temps/etudiant': 'nav.timetable',
   '/jeux': 'nav.games',
@@ -371,7 +366,8 @@ export default function DashboardLayout({ children }) {
             <List disablePadding>
               {group.items.map((item) => {
                 // Jeux : la rubrique reste active dans chaque jeu (/jeux/terminal-linux…)
-                const selected = location.pathname === item.path || (item.path === '/jeux' && location.pathname.startsWith('/jeux/')) || (item.path === '/annonces' && location.pathname.startsWith('/annonces/'));
+                // Emplois du temps : aussi active sur ses vues Liste et Mois
+                const selected = location.pathname === item.path || (item.aussi ?? []).includes(location.pathname) || (item.path === '/jeux' && location.pathname.startsWith('/jeux/')) || (item.path === '/annonces' && location.pathname.startsWith('/annonces/'));
                 return (
                   <ListItemButton
                     key={item.path}
