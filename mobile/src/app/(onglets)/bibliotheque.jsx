@@ -4,6 +4,8 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import Ecran, { Message } from '../../board/Ecran';
 import { chargerAvisStage, chargerIdeesProjet, chargerSeances, chargerSupports } from '../../api/donnees';
+import Etagere, { Couverture, useLargeurCouverture } from '../../bibliotheque/Etagere';
+import CarteStage from '../../bibliotheque/CarteStage';
 import { CIBLE_TACTILE, creerStyles, espace, lineColor, useTheme } from '../../theme';
 import { useMargeOnglets } from '../../verre/Verre';
 
@@ -21,7 +23,8 @@ const lireBibliotheque = async () => {
 
 /**
  * Bibliothèque (StudyLib) : les modules suivis (tirés de l'emploi du temps des six prochaines
- * semaines) et leurs supports, puis les avis de stage et les idées de projets.
+ * semaines) rangés comme des livres sur une étagère, puis les retours de stage des anciens (avec
+ * photo) et les idées de projets.
  */
 export default function Bibliotheque() {
   const { couleurs } = useTheme();
@@ -29,6 +32,7 @@ export default function Bibliotheque() {
   const margeBas = useMargeOnglets();
   const { t } = useTranslation();
   const router = useRouter();
+  const largeur = useLargeurCouverture();
   const [modules, setModules] = useState([]);
   const [supports, setSupports] = useState({});
   const [stages, setStages] = useState([]);
@@ -61,25 +65,26 @@ export default function Bibliotheque() {
 
         <Text style={styles.section}>{t('app.bibliotheque.mesModules')}</Text>
         {!etat.chargement && modules.length === 0 ? <Message discret>{t('app.bibliotheque.aucunModule')}</Message> : null}
-        {modules.map((m) => {
-          const n = supports[m.code]?.documents ?? 0;
-          return (
-            <Pressable
-              key={m.code}
-              onPress={() => router.push(`/module/${encodeURIComponent(m.code)}`)}
-              disabled={!supports[m.code]}
-              style={styles.ligne}
-              accessibilityRole="button"
-              accessibilityLabel={`${m.nom}, ${t('app.bibliotheque.documents', { count: n })}`}
-            >
-              <View style={[styles.carre, { backgroundColor: lineColor(m.ligne) }]} />
-              <Text style={styles.nom} numberOfLines={1}>
-                {m.nom}
-              </Text>
-              <Text style={styles.compte}>{t('app.bibliotheque.documents', { count: n })}</Text>
-            </Pressable>
-          );
-        })}
+        {modules.length ? (
+          <Etagere accessibilityLabel={t('app.bibliotheque.etagere')}>
+            {modules.map((m) => {
+              const n = supports[m.code]?.documents ?? 0;
+              return (
+                <Couverture
+                  key={m.code}
+                  titre={m.nom}
+                  etiquette={m.code}
+                  pied={t('app.bibliotheque.documents', { count: n })}
+                  couleur={lineColor(m.ligne)}
+                  largeur={largeur}
+                  onPress={() => router.push(`/module/${encodeURIComponent(m.code)}`)}
+                  disabled={!supports[m.code]}
+                  accessibilityLabel={`${m.nom}, ${t('app.bibliotheque.documents', { count: n })}`}
+                />
+              );
+            })}
+          </Etagere>
+        ) : null}
 
         <View style={styles.entete}>
           <Text style={[styles.section, styles.sectionLigne]}>{t('app.bibliotheque.stages')}</Text>
@@ -87,13 +92,9 @@ export default function Bibliotheque() {
             <Text style={styles.actionTexte}>{t('app.bibliotheque.partagerStage')}</Text>
           </Pressable>
         </View>
+        {!etat.chargement && !etat.indisponible && stages.length === 0 ? <Message discret>{t('app.bibliotheque.aucunStage')}</Message> : null}
         {stages.map((a) => (
-          <View key={a.id} style={styles.carte}>
-            <Text style={styles.nom}>{a.company?.name ?? a.company_name}</Text>
-            <Text style={styles.detail} numberOfLines={3}>
-              {'★'.repeat(a.rating || 0)}  {a.description}
-            </Text>
-          </View>
+          <CarteStage key={a.id} avis={a} />
         ))}
 
         <Text style={styles.section}>{t('app.bibliotheque.projets')}</Text>
@@ -119,10 +120,7 @@ const useStyles = creerStyles((t) => ({
   entete: { flexDirection: 'row', alignItems: 'flex-end' },
   action: { minHeight: CIBLE_TACTILE, justifyContent: 'flex-end', paddingHorizontal: 16, paddingBottom: 6 },
   actionTexte: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 14, textDecorationLine: 'underline' },
-  ligne: { flexDirection: 'row', alignItems: 'center', gap: 10, minHeight: 56, paddingHorizontal: 16, borderBottomWidth: 1, borderBottomColor: t.couleurs.filet },
-  carre: { width: 10, height: 10, borderRadius: t.famille === 'planner' ? 1 : 5 },
   nom: { flex: 1, color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 15 },
-  compte: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales },
   carte: { paddingHorizontal: 16, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: t.couleurs.filet, gap: 4 },
   detail: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 14, lineHeight: 20 },
 }));
