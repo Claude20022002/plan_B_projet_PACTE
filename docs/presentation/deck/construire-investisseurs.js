@@ -1,6 +1,7 @@
 // Présentation « HESTIM Planner » pour un public non technique (investisseurs, direction, jury) :
 // ce que l'école utilise aujourd'hui, ce que la plateforme apporte, ce que chacun y gagne.
 // Usage : NODE_PATH=<dossier contenant pptxgenjs, react-icons, react, react-dom, sharp> node construire-investisseurs.js [sortie.pptx]
+// Puis les animations (transitions et apparitions, que pptxgenjs n'écrit pas) : python animer.py <sortie.pptx>
 const path = require("path");
 const React = require("react");
 const ReactDOMServer = require("react-dom/server");
