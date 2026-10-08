@@ -11,8 +11,9 @@
 #
 # Option --classquiz : ajoute le site ClassQuiz (fork ../ClassQuiz, thème HESTIM), construit avant :
 #   cd ../ClassQuiz/frontend && rm -rf build && NODE_ENV=production npx vite build
-# Option --studylib : ajoute le code PHP de StudyLib (../StudyLib : app, routes, database), sans
-# changement de dépendances Composer ni de fichiers CSS/JS (sinon reconstruire l'image).
+# Option --studylib : ajoute StudyLib (../StudyLib : app, routes, database, resources et le CSS/JS
+# compilé public/build), construit avant : cd ../StudyLib && npm run build. Sans changement de
+# dépendances Composer ni npm (sinon reconstruire l'image).
 set -euo pipefail
 
 NOM="${1:?usage : preparer-maj.sh <nom, par ex. maj8> [--classquiz] [--studylib]}"
@@ -62,8 +63,9 @@ cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh "$TRAVAIL/deploy-vps/"
 if [ "$AVEC_STUDYLIB" = "--studylib" ]; then
     SL="$RACINE/../StudyLib"
     [ -f "$SL/artisan" ] || { echo "StudyLib introuvable : $SL" >&2; exit 1; }
+    [ -f "$SL/public/build/manifest.json" ] || { echo "StudyLib non construit : cd ../StudyLib && npm run build" >&2; exit 1; }
     mkdir -p "$TRAVAIL/studylib"
-    for dossier in app routes database; do
+    for dossier in app routes database resources public/build; do
         tar -C "$SL" -cf - "$dossier" | tar -C "$TRAVAIL/studylib" -xf -
     done
     # Nouvelles classes : l'image charge les classes par une carte figée (classmap-authoritative)
@@ -72,6 +74,8 @@ FROM claude20022002/hestim-studylib:latest
 COPY --chown=www-data:www-data studylib/app/ /var/www/html/app/
 COPY --chown=www-data:www-data studylib/routes/ /var/www/html/routes/
 COPY --chown=www-data:www-data studylib/database/ /var/www/html/database/
+COPY --chown=www-data:www-data studylib/resources/ /var/www/html/resources/
+COPY --chown=www-data:www-data studylib/public/build/ /var/www/html/public/build/
 RUN composer dump-autoload --optimize --no-dev --classmap-authoritative --working-dir=/var/www/html
 EOF
 fi
