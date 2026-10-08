@@ -1,6 +1,7 @@
 import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs, anonymous, PASSWORD } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Affectation, Appartenir, Groupe, SignalementPresence } from "../../models/index.js";
+import crypto from "crypto";
+import { Affectation, AppareilEtudiant, Appartenir, Groupe, SignalementPresence } from "../../models/index.js";
 import { scannerCode } from "../../services/presences/appel.js";
 
 /**
@@ -8,7 +9,8 @@ import { scannerCode } from "../../services/presences/appel.js";
  * les 30 s et ne vaut qu'une minute, seuls les étudiants des groupes de la séance sont acceptés,
  * l'enseignant coche à la main et ferme l'appel (séance réalisée).
  * Anti-fraude : scan depuis l'application seulement, un téléphone = un étudiant par séance
- * (signalement des deux), vérification surprise facultative.
+ * (signalement des deux), un compte = un téléphone (déliaison par l'administration),
+ * vérification surprise facultative.
  */
 
 let admin;
@@ -170,10 +172,63 @@ describe("Liste d'appel et vérification surprise", () => {
     });
 });
 
+describe("Un compte = un téléphone", () => {
+    const empreinte = (appareil) => crypto.createHash("sha256").update(appareil).digest("hex");
+
+    test("le premier scan accepté lie le compte au téléphone", async () => {
+        expect((await AppareilEtudiant.findByPk(etudiant.id_user)).appareil).toBe(empreinte(TELEPHONE_A));
+        expect((await AppareilEtudiant.findByPk(etudiantTp.id_user)).appareil).toBe(empreinte(TELEPHONE_B));
+        // Un scan refusé (autre groupe) ne lie rien
+        expect(await AppareilEtudiant.findByPk(etranger.id_user)).toBeNull();
+    });
+
+    test("depuis un autre téléphone que celui du compte : refus et signalement", async () => {
+        const res = await (await application(etudiantTp, TELEPHONE_C)).scanner({ code });
+        expect(res.status).toBe(409);
+        expect(res.body.error).toMatch(/lié à un autre téléphone/);
+        expect(await SignalementPresence.count({ where: { id_affectation: seance.id_affectation, id_user: etudiantTp.id_user, motif: "autre_telephone" } })).toBe(1);
+        const liste = (await (await loginAs(enseignant)).get(`/api/presences/seances/${seance.id_affectation}`)).body;
+        expect(liste.etudiants.find((e) => e.id_user === etudiantTp.id_user).present).toBe(false);
+    });
+
+    test("depuis le téléphone lié au compte d'un autre étudiant : refus, signalement et pas de liaison", async () => {
+        const nouveau = await createUser("etudiant", { prenom: "Imane", nom: "Tazi" });
+        await Appartenir.create({ id_user_etudiant: nouveau.id_user, id_groupe: fixture.groupe.id_groupe });
+        const res = await (await application(nouveau, TELEPHONE_B)).scanner({ code });
+        expect(res.status).toBe(409);
+        expect(res.body.error).toMatch(/compte d'un autre étudiant/);
+        const signalement = await SignalementPresence.findOne({ where: { id_user: nouveau.id_user, motif: "telephone_d_un_autre" } });
+        expect(signalement.id_user_lie).toBe(etudiantTp.id_user);
+        expect(await AppareilEtudiant.findByPk(nouveau.id_user)).toBeNull();
+    });
+
+    test("l'administration voit le téléphone lié et le délie ; le scan suivant lie le nouveau", async () => {
+        const urlTelephone = `/api/presences/etudiants/${etudiantTp.id_user}/telephone`;
+        expect((await (await loginAs(enseignant)).get(urlTelephone)).status).toBe(403);
+        expect((await (await loginAs(etudiantTp)).send("delete", urlTelephone)).status).toBe(403);
+        const direction = await loginAs(admin);
+        expect((await direction.get(`/api/presences/etudiants/${enseignant.id_user}/telephone`)).status).toBe(404);
+        expect((await direction.get(urlTelephone)).body).toMatchObject({ lie: true });
+
+        // Les signalements portent l'étudiant et l'état de son téléphone (pour le délier)
+        const { data } = (await direction.get("/api/presences/signalements")).body;
+        expect(data.find((s) => s.motif === "autre_telephone")).toMatchObject({ id_user: etudiantTp.id_user, etudiant: "Yassine Alami" });
+        expect(data.find((s) => s.motif === "autre_telephone").telephone_lie_le).not.toBeNull();
+
+        expect((await direction.send("delete", urlTelephone)).body).toEqual({ delie: true });
+        expect((await direction.get(urlTelephone)).body).toEqual({ lie: false, lie_le: null });
+        expect((await direction.send("delete", urlTelephone)).body).toEqual({ delie: false });
+
+        expect((await (await application(etudiantTp, TELEPHONE_C)).scanner({ code })).status).toBe(200);
+        expect((await AppareilEtudiant.findByPk(etudiantTp.id_user)).appareil).toBe(empreinte(TELEPHONE_C));
+    });
+});
+
 describe("Fermeture", () => {
     test("fermer : séance réalisée, plus aucun scan accepté", async () => {
         const res = await (await loginAs(enseignant)).send("post", `/api/presences/seances/${seance.id_affectation}/fermer`);
-        expect(res.body).toMatchObject({ presents: 1, statut: "realise" });
+        // Salma (scan vérifié) et Yassine (pointé avec son nouveau téléphone après la déliaison)
+        expect(res.body).toMatchObject({ presents: 2, statut: "realise" });
         expect((await Affectation.findByPk(seance.id_affectation)).statut).toBe("realise");
         expect((await (await application(etudiant, TELEPHONE_A)).scanner({ code })).status).toBe(409);
         expect((await (await loginAs(etudiant)).get("/api/presences/miennes")).body.data.map((p) => p.id_affectation)).toContain(seance.id_affectation);

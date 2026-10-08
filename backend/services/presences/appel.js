@@ -332,12 +332,39 @@ export const signalementsRecents = async (user, limite = 200) => {
         order: [["createdAt", "DESC"], ["id_signalement", "DESC"]],
         limit: limite,
     });
+    const telephones = await AppareilEtudiant.findAll({ where: { id_user: [...new Set(lignes.map((l) => l.id_user))] }, attributes: ["id_user", "lie_le"] });
+    const lieLe = new Map(telephones.map((t) => [t.id_user, t.lie_le]));
     return lignes.map((l) => ({
         id: l.id_signalement,
         motif: l.motif,
         le: l.createdAt,
+        id_user: l.id_user,
         etudiant: nomComplet(l.etudiant),
+        // Téléphone lié au compte de l'étudiant signalé (date de la liaison), null s'il n'en a pas
+        telephone_lie_le: lieLe.get(l.id_user) ?? null,
         lie: nomComplet(l.lie),
         seance: { id: l.id_affectation, date: String(l.seance?.date_seance ?? "").slice(0, 10), cours: l.seance?.cours?.nom_cours ?? null, groupe: l.seance?.groupe?.nom_groupe ?? null },
     }));
+};
+
+const etudiantOuErreur = async (idEtudiant) => {
+    const etudiant = Number.isInteger(idEtudiant) && idEtudiant > 0 ? await Users.findByPk(idEtudiant, { attributes: ["id_user", "role"] }) : null;
+    if (etudiant?.role !== "etudiant") throw new ErreurMetier("Étudiant introuvable", 404);
+    return etudiant;
+};
+
+/** Téléphone lié au compte d'un étudiant (administration) : { lie, lie_le }. */
+export const telephoneDeLEtudiant = async (user, idEtudiant) => {
+    if (user.role !== "admin") throw new ErreurMetier("Réservé à l'administration", 403);
+    await etudiantOuErreur(idEtudiant);
+    const telephone = await AppareilEtudiant.findByPk(idEtudiant);
+    return { lie: Boolean(telephone), lie_le: telephone?.lie_le ?? null };
+};
+
+/** Délier le téléphone d'un étudiant (nouveau téléphone) : son prochain scan liera le nouveau. */
+export const delierTelephone = async (user, idEtudiant) => {
+    if (user.role !== "admin") throw new ErreurMetier("Réservé à l'administration", 403);
+    await etudiantOuErreur(idEtudiant);
+    const supprimes = await AppareilEtudiant.destroy({ where: { id_user: idEtudiant } });
+    return { delie: supprimes > 0 };
 };

@@ -4,6 +4,7 @@ import { ACCESS_COOKIE } from "../config/authCookies.js";
 import { planification } from "../utils/erreursPlanning.js";
 import {
     codeDeLAppel,
+    delierTelephone,
     fermerAppel,
     listeDAppel,
     marquerPresence,
@@ -11,6 +12,7 @@ import {
     ouvrirAppel,
     scannerCode,
     signalementsRecents,
+    telephoneDeLEtudiant,
     tirerVerification,
     verifierEtudiant,
 } from "../services/presences/appel.js";
@@ -27,6 +29,8 @@ import {
  *  - POST /api/presences/scanner                             { code } : l'étudiant scanne le QR, depuis l'application
  *  - GET  /api/presences/miennes                             mes présences (étudiant)
  *  - GET  /api/presences/signalements                        soupçons de fraude récents (administration)
+ *  - GET  /api/presences/etudiants/:idUser/telephone         téléphone lié au compte : { lie, lie_le } (administration)
+ *  - DELETE /api/presences/etudiants/:idUser/telephone       délier (nouveau téléphone) : { delie } (administration)
  */
 const router = express.Router();
 router.use(authenticateToken);
@@ -80,6 +84,14 @@ router.put("/seances/:id/verification/:idUser", planification(async (req, res) =
 
 router.get("/signalements", planification(async (req, res) => {
     res.json({ data: await signalementsRecents(req.user) });
+}));
+
+router.get("/etudiants/:idUser/telephone", planification(async (req, res) => {
+    res.json(await telephoneDeLEtudiant(req.user, idEtudiant(req)));
+}));
+
+router.delete("/etudiants/:idUser/telephone", planification(async (req, res) => {
+    res.json(await delierTelephone(req.user, idEtudiant(req)));
 }));
 
 export default router;
