@@ -83,10 +83,14 @@ export const chargerAvisStage = async () => (await biblio('/internship-reviews/r
 /** Photo d'un retour de stage : servie par l'API, avec le jeton (jamais par un lien public) */
 export const sourcePhotoStage = (id) => ({ uri: `${API_BIBLIO}/internship-reviews/${encodeURIComponent(id)}/photo`, headers: entetesAuthentifies() });
 
-export const chargerIdeesProjet = async () => {
-  const reponse = await biblio('/project-ideas');
-  return reponse?.data || reponse || [];
+/** Idées de projets (12 par page), avec recherche facultative : { idees, suite } */
+export const chargerIdeesProjet = async (q = '', page = 1) => {
+  const reponse = await biblio(`/project-ideas/mobile?q=${encodeURIComponent(q)}&page=${page}`);
+  return { idees: reponse?.data ?? [], suite: Boolean(reponse?.has_more) };
 };
+
+/** Documents publiés dont le titre ou le module contient le texte (2 caractères au moins) */
+export const rechercherDocuments = async (q) => (await biblio(`/documents/search?q=${encodeURIComponent(q)}`))?.data ?? [];
 
 /** Publie un retour de stage ; avec une photo (déjà réduite), l'envoi passe en formulaire multipart */
 export const partagerStage = (avis, photo = null) => {

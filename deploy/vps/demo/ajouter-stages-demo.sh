@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Ajoute dans StudyLib les retours de stage de démonstration (texte et photo de ce dossier).
-# Sans effet si un retour existe déjà. À lancer en root sur le serveur, après la mise à jour :
+# Ajoute dans StudyLib les contenus de démonstration : retours de stage (texte et photo de ce
+# dossier) et idées de projets rattachées aux filières HESTIM. Rejouable sans doublon.
+# À lancer en root sur le serveur, après la mise à jour :
 #   bash /opt/hestim/deploy/vps/demo/ajouter-stages-demo.sh
 set -euo pipefail
 
@@ -26,3 +27,6 @@ docker exec "$CONTENEUR" php artisan studylib:add-internship-review \
     --consent
 
 docker exec "$CONTENEUR" rm -rf /tmp/demo-stages
+
+# Idées de projets (128, mises à jour par titre) rattachées aux filières HESTIM
+docker exec "$CONTENEUR" php artisan db:seed --class=ProjectIdeaSeeder --force
