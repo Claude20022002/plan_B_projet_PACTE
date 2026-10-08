@@ -1,6 +1,7 @@
 import { Appartenir, Cours, CoursComposante, Enseignement, EnseignementEnseignant, EnseignementGroupe, Groupe, JeuModule, JeuProfil, JeuProgression, Users } from "../../models/index.js";
 import { ancetres } from "../planning/groupes.js";
 import { peutGererFiliere } from "../planning/droits.js";
+import { butEtNotion } from "../activites/but.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { JEUX, defiDuJeu, jeuParCode, pointsMax } from "../../../shared/jeux/catalogue.js";
 import { AVATARS, avatarDe, avatarValide } from "../../../shared/jeux/avatars.js";
@@ -99,18 +100,34 @@ export const accueilJeux = async (user) => {
     for (const p of propositions) {
         if (!jeuParCode(p.code_jeu)) continue;
         if (!modules.has(p.id_cours)) modules.set(p.id_cours, { id_cours: p.id_cours, code: p.cours.code_cours, nom: p.cours.nom_cours, jeux: [] });
-        modules.get(p.id_cours).jeux.push(p.code_jeu);
+        const module = modules.get(p.id_cours);
+        module.jeux.push(p.code_jeu);
+        // But et notion choisis par l'enseignant pour ce jeu dans ce module
+        (module.details ??= []).push({ code: p.code_jeu, but: p.but ?? "entrainer", notion: p.notion ?? null });
     }
+    for (const module of modules.values()) module.details ??= [];
+    // L'étudiant ne voit que les jeux choisis par ses enseignants ; l'enseignant, tout le catalogue pour choisir
+    const proposes = new Set(propositions.map((p) => p.code_jeu));
+    const catalogue = user.role === "etudiant" ? JEUX.filter((jeu) => proposes.has(jeu.code)) : JEUX;
     return {
         profil,
-        jeux: JEUX.map((jeu) => ({ code: jeu.code, type: jeu.type, discipline: jeu.discipline, titre: jeu.titre, resume: jeu.resume, source: jeu.source, progression: resumeProgression(jeu, lignes) })),
+        jeux: catalogue.map((jeu) => ({ code: jeu.code, type: jeu.type, discipline: jeu.discipline, titre: jeu.titre, resume: jeu.resume, source: jeu.source, progression: resumeProgression(jeu, lignes) })),
         modules: [...modules.values()],
     };
 };
 
 /** Défis réussis par l'utilisateur dans un jeu. */
+/** Un étudiant ne joue qu'aux jeux proposés dans l'un de ses modules. */
+const jeuAccessible = async (user, jeu) => {
+    if (user.role !== "etudiant") return;
+    const modules = await modulesDuJoueur(user);
+    const propose = modules.length ? await JeuModule.count({ where: { code_jeu: jeu.code, id_cours: modules } }) : 0;
+    if (!propose) throw new ErreurMetier("Ce jeu n'est pas proposé dans vos modules", 403);
+};
+
 export const progressionDuJeu = async (user, code) => {
     const jeu = jeuOuErreur(code);
+    await jeuAccessible(user, jeu);
     const lignes = await JeuProgression.findAll({ where: { id_user: user.id_user, code_jeu: jeu.code }, order: [["reussi_le", "ASC"], ["id_jeu_progression", "ASC"]] });
     return {
         ...resumeProgression(jeu, lignes),
@@ -138,6 +155,7 @@ const commandesOuErreur = (commandes) => {
  */
 export const enregistrerReussite = async (user, code, idDefi, indices, commandes) => {
     const jeu = jeuOuErreur(code);
+    await jeuAccessible(user, jeu);
     const defi = defiDuJeu(jeu, String(idDefi ?? ""));
     if (!defi) throw new ErreurMetier("Défi inconnu", 404);
     const n = Number(indices ?? 0);
@@ -169,12 +187,15 @@ export const modulesDuJeu = async (code) => {
     return propositions.map((p) => ({ id_cours: p.id_cours, code: p.cours?.code_cours, nom: p.cours?.nom_cours }));
 };
 
-export const proposerDansModule = async (user, code, idCours) => {
+/** Proposer (ou modifier) un jeu dans un module, avec son but et la notion visée. */
+export const proposerDansModule = async (user, code, idCours, donnees = {}) => {
     const jeu = jeuOuErreur(code);
     const cours = await coursOuErreur(idCours);
     if (!(await peutProposerDansModule(user, cours))) throw new ErreurMetier("Vous ne pouvez proposer un jeu que dans vos modules", 403);
-    const [, cree] = await JeuModule.findOrCreate({ where: { code_jeu: jeu.code, id_cours: cours.id_cours }, defaults: { id_user_auteur: user.id_user } });
-    return { cree, module: { id_cours: cours.id_cours, code: cours.code_cours, nom: cours.nom_cours } };
+    const choix = butEtNotion(donnees, "entrainer");
+    const [proposition, cree] = await JeuModule.findOrCreate({ where: { code_jeu: jeu.code, id_cours: cours.id_cours }, defaults: { id_user_auteur: user.id_user, ...choix } });
+    if (!cree && (donnees.but !== undefined || donnees.notion !== undefined)) await proposition.update(choix);
+    return { cree, module: { id_cours: cours.id_cours, code: cours.code_cours, nom: cours.nom_cours }, but: proposition.but, notion: proposition.notion };
 };
 
 export const retirerDuModule = async (user, code, idCours) => {

@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import sequelize from "../../config/db.js";
 import { Appartenir, Cours, Devoir, DevoirRendu, FichierDevoir, Groupe, Users } from "../../models/index.js";
+import { butEtNotion } from "../activites/but.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
 import { groupesDeLEtudiant, inscritsDuModule, modulesDuJoueur, peutProposerDansModule } from "../jeux/jeux.js";
@@ -192,6 +193,8 @@ const enTete = (d) => ({
     date_limite: d.date_limite,
     module: d.cours ? { id_cours: d.cours.id_cours, code: d.cours.code_cours, nom: d.cours.nom_cours } : null,
     groupe: d.groupe ? { id_groupe: d.groupe.id_groupe, nom: d.groupe.nom_groupe } : null,
+    but: d.but ?? "verifier",
+    notion: d.notion ?? null,
     nb_questions: d.questions?.length ?? 0,
     nb_notees: (d.questions ?? []).filter((q) => TYPES_NOTES.has(q.type)).length,
     ouvert: new Date(d.date_limite) > new Date(),
@@ -236,6 +239,7 @@ export const creerDevoir = async (user, donnees = {}) => {
 
     const devoir = await Devoir.create({
         ...champs,
+        ...butEtNotion(donnees, "verifier"),
         id_cours: cours.id_cours,
         id_groupe: groupe?.id_groupe ?? null,
         id_user_enseignant: user.id_user,

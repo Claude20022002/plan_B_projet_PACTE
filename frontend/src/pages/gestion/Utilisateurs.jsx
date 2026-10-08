@@ -14,6 +14,7 @@ import {
     Chip,
     TextField,
     Dialog,
+    Link,
     DialogTitle,
     DialogContent,
     DialogActions,
@@ -24,12 +25,8 @@ import {
     MenuItem,
     Alert,
     Snackbar,
-    List,
-    ListItem,
-    ListItemText,
-    CircularProgress,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, ArrowBack, UploadFile, SupervisedUserCircle } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, ArrowBack, SupervisedUserCircle } from '@mui/icons-material';
 import { TableSortLabel } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { userAPI } from '../../services/api';
@@ -39,8 +36,7 @@ import EmptyState from '../../components/common/EmptyState';
 import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
-import { parseFile, validateUserData } from '../../utils/fileImport';
+import { Link as RouterLink, useNavigate } from 'react-router-dom';
 
 const validationSchema = yup.object({
     nom: yup.string().required('Le nom est requis'),
@@ -73,9 +69,6 @@ export default function Utilisateurs() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
-    const [importOpen, setImportOpen] = useState(false);
-    const [importLoading, setImportLoading] = useState(false);
-    const [importErrors, setImportErrors] = useState([]);
     const [invitation, setInvitation] = useState(null);
     const { sorted: sortedUsers, requestSort, getSortDir } = useSortableTable(utilisateurs);
 
@@ -102,7 +95,7 @@ export default function Utilisateurs() {
             nom: '',
             prenom: '',
             email: '',
-            role: 'etudiant',
+            role: 'admin',
             telephone: '',
             password: '',
             actif: true,
@@ -171,62 +164,6 @@ export default function Utilisateurs() {
         }
     };
 
-    const handleFileImport = async (file) => {
-        setImportLoading(true);
-        setImportErrors([]);
-        try {
-            const data = await parseFile(file);
-            console.log('Données parsées depuis le fichier:', data);
-            
-            if (!data || data.length === 0) {
-                setError('Le fichier est vide ou ne contient pas de données valides');
-                setImportLoading(false);
-                return;
-            }
-            
-            const validation = validateUserData(data);
-            
-            if (!validation.valid) {
-                setImportErrors(validation.errors);
-                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
-                return;
-            }
-
-            // Préparer les données pour l'import
-            const usersToImport = data.map((row) => ({
-                nom: row.nom?.trim(),
-                prenom: row.prenom?.trim(),
-                email: row.email?.trim().toLowerCase(),
-                role: row.role?.trim().toLowerCase(),
-                telephone: row.telephone?.trim() || '',
-                password: row.password?.trim() || 'password123', // Mot de passe par défaut
-                actif: row.actif !== undefined ? row.actif : true,
-            }));
-
-            const result = await userAPI.importBulk({ users: usersToImport });
-            
-            // Afficher les résultats détaillés
-            const successCount = result.successCount || result.success?.length || 0;
-            const errorCount = result.errorCount || result.errors?.length || 0;
-            
-            if (successCount > 0) {
-                setSuccess(`${successCount} utilisateur(s) importé(s) avec succès${errorCount > 0 ? `, ${errorCount} erreur(s)` : ''}`);
-            }
-            
-            if (errorCount > 0 && result.errors) {
-                setImportErrors(result.errors.map(e => `${e.email || 'N/A'}: ${e.error || 'Erreur inconnue'}`));
-            }
-            
-            setImportOpen(false);
-            loadUtilisateurs();
-        } catch (error) {
-            console.error('Erreur lors de l\'import:', error);
-            setError(error.message || 'Erreur lors de l\'import du fichier');
-        } finally {
-            setImportLoading(false);
-        }
-    };
-
     const filteredUsers = utilisateurs.filter(
         (user) =>
             user.nom?.toLowerCase().includes(search.toLowerCase()) ||
@@ -253,16 +190,6 @@ export default function Utilisateurs() {
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         <Button
-                            variant="outlined"
-                            startIcon={<UploadFile />}
-                            onClick={() => {
-                                setImportOpen(true);
-                                setImportErrors([]);
-                            }}
-                        >
-                            Importer (Excel/CSV)
-                        </Button>
-                        <Button
                             variant="contained"
                             startIcon={<Add />}
                             onClick={() => {
@@ -273,7 +200,7 @@ export default function Utilisateurs() {
                                 setOpen(true);
                             }}
                         >
-                            Ajouter un utilisateur
+                            Ajouter un administrateur
                         </Button>
                     </Box>
                 </Box>
@@ -314,8 +241,8 @@ export default function Utilisateurs() {
                     <EmptyState
                         icon={SupervisedUserCircle}
                         title="Aucun utilisateur enregistré"
-                        description="Ajoutez votre premier utilisateur ou importez un fichier Excel."
-                        actionLabel="Ajouter un utilisateur"
+                        description="Les étudiants et les enseignants s'ajoutent dans leurs pages ; ici, les comptes administrateurs."
+                        actionLabel="Ajouter un administrateur"
                         onAction={() => { setEditing(null); setError(''); formik.resetForm(); setOpen(true); }}
                     />
                 ) : (
@@ -418,13 +345,22 @@ export default function Utilisateurs() {
                                     error={formik.touched.email && Boolean(formik.errors.email)}
                                     helperText={formik.touched.email && formik.errors.email}
                                 />
-                                <FormControl fullWidth>
+                                {!editing && (
+                                    <Alert severity="info">
+                                        Ce formulaire crée un compte administrateur. Les étudiants et les enseignants s'ajoutent, un par un ou par import, dans les pages{' '}
+                                        <Link component={RouterLink} to="/gestion/etudiants">Étudiants</Link> et{' '}
+                                        <Link component={RouterLink} to="/gestion/enseignants">Enseignants</Link>.
+                                    </Alert>
+                                )}
+                                {/* Le rôle d'un compte existant ne change pas ici : son profil (étudiant, enseignant) en dépend */}
+                                <FormControl fullWidth sx={{ display: editing ? undefined : 'none' }}>
                                     <InputLabel>Rôle</InputLabel>
                                     <Select
                                         name="role"
                                         value={formik.values.role}
                                         onChange={formik.handleChange}
                                         label="Rôle"
+                                        disabled
                                     >
                                         <MenuItem value="admin">Administrateur</MenuItem>
                                         <MenuItem value="enseignant">Enseignant</MenuItem>
@@ -453,23 +389,6 @@ export default function Utilisateurs() {
                                             : "Sans mot de passe, un lien d'invitation lui est envoyé pour choisir le sien")
                                     }
                                 />
-                                {formik.values.role === 'etudiant' && (
-                                    <FormControl fullWidth>
-                                        <InputLabel>Niveau</InputLabel>
-                                        <Select
-                                            name="niveau"
-                                            value={formik.values.niveau}
-                                            onChange={formik.handleChange}
-                                            label="Niveau"
-                                        >
-                                            <MenuItem value="1A">1ère année</MenuItem>
-                                            <MenuItem value="2A">2ème année</MenuItem>
-                                            <MenuItem value="3A">3ème année</MenuItem>
-                                            <MenuItem value="4A">4ème année</MenuItem>
-                                            <MenuItem value="5A">5ème année</MenuItem>
-                                        </Select>
-                                    </FormControl>
-                                )}
                             </Box>
                         </DialogContent>
                         <DialogActions>
@@ -498,83 +417,6 @@ export default function Utilisateurs() {
                     </DialogActions>
                 </Dialog>
 
-                {/* Dialog d'import */}
-                <Dialog open={importOpen} onClose={() => setImportOpen(false)} maxWidth="md" fullWidth>
-                    <DialogTitle>Importer des utilisateurs (Excel/CSV)</DialogTitle>
-                    <DialogContent>
-                        <Box sx={{ mt: 2 }}>
-                            <Alert severity="info" sx={{ mb: 2 }}>
-                                <Typography variant="body2" gutterBottom>
-                                    <strong>Format du fichier requis :</strong>
-                                </Typography>
-                                <Typography variant="body2" component="div">
-                                    Les colonnes requises sont : <strong>nom</strong>, <strong>prenom</strong>, <strong>email</strong>, <strong>role</strong>
-                                </Typography>
-                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
-                                    Colonnes optionnelles : <strong>telephone</strong>, <strong>password</strong>, <strong>actif</strong>
-                                </Typography>
-                                <Typography variant="body2" component="div" sx={{ mt: 1 }}>
-                                    Les rôles acceptés sont : <strong>admin</strong>, <strong>enseignant</strong>, <strong>etudiant</strong>
-                                </Typography>
-                            </Alert>
-                            
-                            <input
-                                accept=".csv,.xlsx,.xls"
-                                style={{ display: 'none' }}
-                                id="import-file-input"
-                                type="file"
-                                onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        handleFileImport(file);
-                                    }
-                                }}
-                            />
-                            <label htmlFor="import-file-input">
-                                <Button
-                                    variant="outlined"
-                                    component="span"
-                                    startIcon={<UploadFile />}
-                                    fullWidth
-                                    disabled={importLoading}
-                                >
-                                    {importLoading ? 'Import en cours...' : 'Sélectionner un fichier'}
-                                </Button>
-                            </label>
-
-                            {importLoading && (
-                                <Box sx={{ display: 'flex', justifyContent: 'center', mt: 2 }}>
-                                    <CircularProgress />
-                                </Box>
-                            )}
-
-                            {importErrors.length > 0 && (
-                                <Box sx={{ mt: 2 }}>
-                                    <Alert severity="error">
-                                        <Typography variant="subtitle2" gutterBottom>
-                                            Erreurs détectées ({importErrors.length}) :
-                                        </Typography>
-                                        <List dense sx={{ maxHeight: 200, overflow: 'auto' }}>
-                                            {importErrors.map((err, index) => (
-                                                <ListItem key={index}>
-                                                    <ListItemText primary={err} />
-                                                </ListItem>
-                                            ))}
-                                        </List>
-                                    </Alert>
-                                </Box>
-                            )}
-                        </Box>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => {
-                            setImportOpen(false);
-                            setImportErrors([]);
-                        }}>
-                            Fermer
-                        </Button>
-                    </DialogActions>
-                </Dialog>
             </Box>
         </DashboardLayout>
     );

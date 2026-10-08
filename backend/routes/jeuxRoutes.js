@@ -63,7 +63,7 @@ router.get("/:code/modules", enseignantSeul, planification(async (req, res) => {
 }));
 
 router.post("/:code/modules", enseignantSeul, planification(async (req, res) => {
-    const resultat = await proposerDansModule(req.user, req.params.code, req.body?.id_cours);
+    const resultat = await proposerDansModule(req.user, req.params.code, req.body?.id_cours, { but: req.body?.but, notion: req.body?.notion });
     res.status(resultat.cree ? 201 : 200).json(resultat);
 }));
 

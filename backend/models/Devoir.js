@@ -18,6 +18,9 @@ const Devoir = sequelize.define(
         id_groupe: { type: DataTypes.INTEGER, allowNull: true },
         id_user_enseignant: { type: DataTypes.INTEGER, allowNull: false },
         date_limite: { type: DataTypes.DATE, allowNull: false },
+        // Activités : but (vérifier la compréhension ou s'entraîner) et notion visée, facultative
+        but: { type: DataTypes.ENUM("verifier", "entrainer"), allowNull: false, defaultValue: "verifier" },
+        notion: { type: DataTypes.STRING(120), allowNull: true },
     },
     { tableName: "Devoirs", freezeTableName: true }
 );
