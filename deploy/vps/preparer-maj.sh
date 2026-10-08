@@ -101,8 +101,6 @@ cat > "$TRAVAIL/Dockerfile.backend" <<'EOF'
 FROM claude20022002/hestim-backend:latest
 COPY --chown=hestim:hestim backend/ /app/
 COPY --chown=hestim:hestim shared/ /shared/
-# Base des fuseaux à jour (Maroc à UTC+0 depuis le 20 septembre 2026), voir backend/tzdata/LISEZMOI.md
-ENV ICU_TIMEZONE_FILES_DIR=/app/tzdata
 EOF
 
 cat > "$TRAVAIL/Dockerfile.frontend" <<'EOF'

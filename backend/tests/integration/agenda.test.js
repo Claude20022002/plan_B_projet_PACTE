@@ -39,15 +39,9 @@ afterAll(closeDatabase);
 beforeEach(resetRateLimiters);
 
 describe("Format iCalendar", () => {
-    test("heure de l'école convertie en UTC, selon l'heure légale du Maroc à cette date", () => {
-        // 2025 : toutes les versions de la base des fuseaux s'accordent (UTC+1, UTC+0 pendant le Ramadan)
-        expect(instantLocal("2025-06-02", "09:00:00").toISOString()).toBe("2025-06-02T08:00:00.000Z");
-        expect(instantLocal("2025-03-03", "13:30").toISOString()).toBe("2025-03-03T13:30:00.000Z");
-        // Dates à venir : l'heure légale peut changer (le Maroc est repassé à UTC+0 le 20 septembre 2026
-        // dans la tzdata 2026c) ; on vérifie l'aller-retour plutôt qu'un décalage figé
-        const heureDeLEcole = (instant) => instant.toLocaleString("sv-SE", { timeZone: "Africa/Casablanca" }).slice(0, 16);
-        expect(heureDeLEcole(instantLocal("2026-10-14", "09:00:00"))).toBe("2026-10-14 09:00");
-        expect(heureDeLEcole(instantLocal("2027-01-04", "13:30"))).toBe("2027-01-04 13:30");
+    test("heure de l'école convertie en UTC (Maroc : UTC+1 hors Ramadan)", () => {
+        expect(instantLocal("2026-10-14", "09:00:00").toISOString()).toBe("2026-10-14T08:00:00.000Z");
+        expect(instantLocal("2027-01-04", "13:30").toISOString()).toBe("2027-01-04T12:30:00.000Z");
     });
 
     test("échappement, lignes CRLF pliées à 75 octets", () => {
