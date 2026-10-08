@@ -1,5 +1,6 @@
 import { byStart, toBoardSession, toLocalISODate } from '../../../shared/session.js';
-import { biblio, planner } from './client';
+import { API_BIBLIO } from '../config';
+import { biblio, entetesAuthentifies, planner } from './client';
 
 /**
  * Données de l'application : emploi du temps et alertes (Planner), bibliothèque (StudyLib).
