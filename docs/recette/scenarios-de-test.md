@@ -3,9 +3,12 @@
 Version visée : **maj23** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026, dont ClassQuiz).
 Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout écart sous le scénario.
 
-### Préparation
+## Préparation
 
 - Comptes : 1 admin, 2 enseignants, 3 étudiants du même groupe (A, B, C), 1 étudiant d'un autre groupe.
+- Étudiants de test et séance du jour pour l'appel : script `deploy/vps/demo/etudiants-test-appel.mjs` (groupe « TEST APPEL », `test.appel1@hestim.ma`…, mots de passe ajoutés au fichier des identifiants du serveur ; `RESET=1` remet l'essai à zéro).
+- Quiz de test : script `deploy/vps/demo/quiz-test.py` (« Test HESTIM : culture numérique », 7 questions), après une première connexion de l'enseignant à quiz.finadmintech.fr.
+- Expo Go : chaque testeur scanne le QR de `npx expo start` avec l'appareil photo de l'iPhone (ou depuis Expo Go sur Android), sur le même Wi-Fi que le PC, sinon `npx expo start --tunnel` ; chacun se connecte avec **son** compte étudiant.
 - Appareils : un ordinateur (site), au moins deux téléphones avec l'application (Expo Go), idéalement un iPhone et un Android.
 - Une séance **aujourd'hui** pour l'enseignant et le groupe des étudiants A, B, C (sinon l'appel ne s'ouvre pas).
 
