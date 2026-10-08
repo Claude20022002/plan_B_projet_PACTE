@@ -7,7 +7,8 @@ const ReactDOMServer = require("react-dom/server");
 const sharp = require("sharp");
 const pptxgen = require("pptxgenjs");
 const Lu = require("react-icons/lu");
-const { applyTheme } = require("C:/Users/clusa/.claude/skills/synced/7073e5c3-c1b6-49bc-ae64-a5086124f95c_833feeb0-80fa-42de-b146-e532fc01e609/pptx/scripts/apply_theme.js");
+// Outil de la compétence pptx qui écrit les couleurs du thème (chemin modifiable : APPLY_THEME=...)
+const { applyTheme } = require(process.env.APPLY_THEME || "C:/Users/clusa/.claude/skills/synced/84d264cd-866e-403c-9dca-00468d42ffa1_15fe0107-fc4f-42d8-ad08-9255a1582756/pptx/scripts/apply_theme.js");
 
 const CAPTURES = path.join(__dirname, "..", "captures");
 const CAPTURE = (f) => path.join(CAPTURES, f);
@@ -29,8 +30,8 @@ const HEX = THEME.colors;
 
 const pres = new pptxgen();
 pres.layout = "LAYOUT_WIDE"; // 13,333 × 7,5 po
-pres.title = "HESTIM Planner — l'école, à l'heure";
-pres.author = "Projet PACTE — HESTIM";
+pres.title = "HESTIM Planner, l'école à l'heure";
+pres.author = "Projet PACTE, HESTIM";
 pres.theme = { headFontFace: THEME.headFontFace, bodyFontFace: THEME.bodyFontFace };
 const C = pres.SchemeColor;
 
@@ -48,7 +49,7 @@ async function construire() {
     const EMBLEME = await png(svgEmbleme, 600);
     const I = {};
     const icones = {
-        mail: Lu.LuMail, pdf: Lu.LuFileText, discussion: Lu.LuMessageCircle, classe: Lu.LuGraduationCap, livre: Lu.LuBookOpen, manette: Lu.LuGamepad2,
+        mail: Lu.LuMail, pdf: Lu.LuFileText, discussion: Lu.LuMessageCircle, qr: Lu.LuQrCode ?? Lu.LuScan, classe: Lu.LuGraduationCap, livre: Lu.LuBookOpen, manette: Lu.LuGamepad2,
         horloge: Lu.LuClockAlert ?? Lu.LuClock, copie: Lu.LuCopy, cadenas: Lu.LuShieldAlert ?? Lu.LuShield, fleche: Lu.LuArrowRight, coche: Lu.LuCheck,
         ecole: Lu.LuBuilding2, prof: Lu.LuPresentation, etudiant: Lu.LuSmartphone, bouclier: Lu.LuShieldCheck,
     };
@@ -111,7 +112,7 @@ async function construire() {
         s.addImage({ data: EMBLEME, x: 0.92, y: 0.97, w: 1.31, h: 1.31, altText: "Emblème HESTIM", objectName: "embleme" });
         s.addText("HESTIM Planner", { placeholder: "title" });
         s.addText("Toute la vie de l'école dans une seule application", { x: 0.7, y: 4.2, w: 7.2, h: 0.95, fontFace: THEME.bodyFontFace, fontSize: 26, color: C.background1, valign: "top", margin: 0, isTextBox: true, objectName: "accroche" });
-        s.addText("Emploi du temps · Alertes · Cours · Jeux et quiz", { x: 0.7, y: 5.25, w: 7.2, h: 0.45, fontFace: THEME.headFontFace, fontSize: 20, bold: true, charSpacing: 1, color: C.accent1, margin: 0, isTextBox: true, objectName: "services" });
+        s.addText("Emploi du temps · Annonces · Bibliothèque · Activités", { x: 0.7, y: 5.25, w: 7.2, h: 0.45, fontFace: THEME.headFontFace, fontSize: 20, bold: true, charSpacing: 1, color: C.accent1, margin: 0, isTextBox: true, objectName: "services" });
         s.addText("En ligne aujourd'hui · planner.finadmintech.fr", { x: 0.7, y: 6.55, w: 7.2, h: 0.4, fontFace: THEME.bodyFontFace, fontSize: 14, color: C.background2, margin: 0, isTextBox: true, objectName: "adresse" });
 
         telephone(s, "mobile-37-mois.png", { x: 8.3, y: 1.55, h: 4.95, nom: "telephone-agenda", alt: "Application : le mois en calendrier, chaque jour avec ses cours en couleur" });
@@ -119,7 +120,7 @@ async function construire() {
 
         s.addNotes([
             "≈ 20 s.",
-            "« Bonjour. Une école, ce sont des centaines de cours chaque mois, des salles qui changent, des supports, des devoirs, des quiz… et des étudiants qui doivent savoir, à chaque instant, où aller et quoi préparer.",
+            "« Bonjour. Une école, ce sont des centaines de cours chaque mois, des salles qui changent, des annonces, des supports, des devoirs, des quiz… et des étudiants qui doivent savoir, à chaque instant, où aller et quoi préparer.",
             "HESTIM Planner réunit tout cela dans une seule application, sur le téléphone de chaque étudiant et sur l'ordinateur de chaque enseignant. Elle est déjà en ligne. »",
         ].join("\n\n"));
     }
@@ -133,14 +134,15 @@ async function construire() {
         const outils = [
             ["mail", "Gmail", "Annonces et informations envoyées à tout le monde"],
             ["pdf", "PDF par e-mail", "L'emploi du temps du mois, à re-télécharger à chaque changement"],
-            ["discussion", "Groupes WhatsApp", "Reports et changements de salle de dernière minute"],
             ["classe", "Google Classroom", "Devoirs et échanges avec les enseignants"],
             ["livre", "Moodle", "Cours et supports en ligne"],
             ["manette", "Sites de jeux", "Quiz et jeux externes, en anglais et dans d'autres matières"],
         ];
         const W = 2.45, H = 2.15, G = 0.25;
         outils.forEach(([ic, nom, usage], i) => {
-            const x = 0.6 + (i % 3) * (W + G), y = 1.6 + Math.floor(i / 3) * (H + G);
+            // Trois cartes en haut, deux centrées en bas
+            const ligne = Math.floor(i / 3), decalage = ligne === 1 ? (W + G) / 2 : 0;
+            const x = 0.6 + decalage + (i % 3) * (W + G), y = 1.6 + ligne * (H + G);
             s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x, y, w: W, h: H, rectRadius: 0.12, fill: { color: C.background2 }, line: { color: C.background2 }, objectName: `outil-${i + 1}-carte` });
             pastille(s, I[ic], { x: x + 0.25, y: y + 0.25, d: 0.6, nom: `outil-${i + 1}` });
             s.addText(nom, { x: x + 0.25, y: y + 0.95, w: W - 0.45, h: 0.4, fontFace: THEME.headFontFace, fontSize: 19, bold: true, color: C.text2, valign: "middle", margin: 0, isTextBox: true, objectName: `outil-${i + 1}-nom` });
@@ -150,7 +152,7 @@ async function construire() {
         // Les conséquences, sur un panneau marine
         const X = 8.85, Y = 1.6, PW = 3.88, PH = 4.55;
         s.addShape(pres.shapes.ROUNDED_RECTANGLE, { x: X, y: Y, w: PW, h: PH, rectRadius: 0.12, fill: { color: C.text2 }, line: { color: C.text2 }, objectName: "consequences-panneau" });
-        s.addText("6 outils qui ne se parlent pas", { x: X + 0.3, y: Y + 0.25, w: PW - 0.6, h: 0.5, fontFace: THEME.headFontFace, fontSize: 22, bold: true, color: C.accent1, valign: "middle", margin: 0, isTextBox: true, objectName: "consequences-titre" });
+        s.addText("5 outils qui ne se parlent pas", { x: X + 0.3, y: Y + 0.25, w: PW - 0.6, h: 0.5, fontFace: THEME.headFontFace, fontSize: 22, bold: true, color: C.accent1, valign: "middle", margin: 0, isTextBox: true, objectName: "consequences-titre" });
         const consequences = [
             ["horlogeOrange", "L'information arrive tard : un report se découvre devant une salle vide."],
             ["copieOrange", "Les équipes saisissent et renvoient la même information plusieurs fois."],
@@ -164,8 +166,9 @@ async function construire() {
 
         s.addNotes([
             "≈ 35 s.",
-            "« Aujourd'hui, l'école communique avec six outils différents. Les informations partent par Gmail, à tout le monde. L'emploi du temps est envoyé en PDF chaque mois, et il faut le re-télécharger à chaque changement. Les reports de dernière minute passent par des groupes WhatsApp. Les devoirs vivent dans Classroom, les cours dans Moodle, et pour jouer en anglais ou réviser, on passe par des sites extérieurs.",
+            "« Aujourd'hui, l'école travaille avec cinq outils différents. Les informations partent par Gmail, à tout le monde. L'emploi du temps est envoyé en PDF chaque mois, et il faut le re-télécharger à chaque changement. Les devoirs vivent dans Classroom, les cours dans Moodle, et pour jouer en anglais ou réviser, on passe par des sites extérieurs.",
             "Résultat : l'information arrive en retard, les équipes saisissent la même chose plusieurs fois, et les données de nos étudiants sont éparpillées chez des services externes. »",
+            "Si on demande : WhatsApp reste le moyen de joindre les parents (absences, retards de paiement) et certains cas particuliers ; la plateforme ne le remplace pas.",
         ].join("\n\n"));
     }
 
@@ -177,10 +180,10 @@ async function construire() {
         s.addText("Un seul compte école, sur le téléphone et sur l'ordinateur", { x: 0.6, y: 1.2, w: 12.1, h: 0.4, fontFace: THEME.bodyFontFace, fontSize: 16, color: C.accent4, margin: 0, isTextBox: true, objectName: "sous-titre" });
 
         const services = [
-            ["mobile-37-mois.png", "Emploi du temps vivant", "Semaine, mois et détail de chaque cours : toujours à jour, sans PDF à rechercher."],
-            ["mobile-38-tableau.png", "Alertes instantanées", "Un cours reporté, une salle qui change : l'étudiant est prévenu sur son téléphone."],
-            ["mobile-39-supports-module.png", "Bibliothèque de cours", "Les supports de chaque cours, rangés par module, à portée de main."],
-            ["mobile-13-resultats.png", "Jeux et quiz", "Quiz en classe, devoirs notés automatiquement, défis : les résultats restent à l'école."],
+            ["mobile-37-mois.png", "Emploi du temps vivant", "Toujours à jour, et dans l'agenda du téléphone ou Google Agenda."],
+            ["mobile-38-tableau.png", "Annonces et alertes", "Un report, une salle qui change, une annonce : seuls les concernés sont prévenus."],
+            ["mobile-39-supports-module.png", "Bibliothèque", "Supports par module, lisibles même hors ligne, retours de stage et idées de projets."],
+            ["mobile-13-resultats.png", "Activités", "Quiz, devoirs et jeux choisis par l'enseignant pour vérifier ou s'entraîner."],
         ];
         const CW = 2.75, CG = 0.367;
         services.forEach(([capture, titre, texte], i) => {
@@ -194,8 +197,8 @@ async function construire() {
         s.addNotes([
             "≈ 35 s.",
             "« HESTIM Planner remplace cet éparpillement par une seule application, avec un seul compte.",
-            "Quatre services. Un emploi du temps vivant : la semaine, le mois, le détail de chaque cours, toujours à jour. Des alertes instantanées : si un cours est reporté ou change de salle, l'étudiant le sait tout de suite, sur son téléphone. Une bibliothèque de cours : tous les supports rangés par module. Et des jeux et des quiz intégrés : en classe ou en devoir, corrigés automatiquement, et les résultats restent à l'école. »",
-            "Démonstration possible : ouvrir l'application sur le téléphone (onglets Semaine puis Jeux).",
+            "Quatre services. Un emploi du temps vivant : la semaine, le mois, le détail de chaque cours, toujours à jour, et il s'ajoute même à l'agenda du téléphone. Des annonces et des alertes : un cours reporté, une salle qui change, une information pour une filière ou un groupe, et seuls les étudiants concernés sont prévenus. Une bibliothèque : les supports de chaque module, lisibles même sans connexion, avec les retours de stage des anciens et des idées de projets. Et des activités : quiz, devoirs et jeux, choisis par l'enseignant pour vérifier qu'une notion est comprise ou pour s'entraîner. »",
+            "Démonstration possible : ouvrir l'application sur le téléphone (onglets Semaine, Bibliothèque puis Activités).",
         ].join("\n\n"));
     }
 
@@ -209,11 +212,11 @@ async function construire() {
         s.addText("AVEC HESTIM PLANNER", { x: XD, y: 1.3, w: WD, h: 0.3, fontFace: THEME.headFontFace, fontSize: 13, bold: true, charSpacing: 3, color: C.accent2, margin: 0, isTextBox: true, objectName: "entete-apres" });
 
         const lignes = [
-            ["Gmail", "pour les informations", "Les informations de cours arrivent aux seuls concernés", " : report, salle, devoir, quiz, directement sur leur téléphone."],
-            ["PDF par e-mail", "pour l'emploi du temps", "Un emploi du temps vivant, à jour en temps réel", " ; le PDF officiel du mois reste disponible en un clic."],
-            ["WhatsApp", "pour les reports", "Une alerte automatique", " avec la nouvelle date, l'heure et la salle."],
-            ["Classroom et Moodle", "pour les cours et devoirs", "Les supports rangés par cours", " et des devoirs en quiz, corrigés et notés automatiquement."],
-            ["Sites de jeux externes", "pour réviser en jouant", "Quiz, défis et jeux intégrés", " : sans publicité ni compte externe, résultats conservés par l'école."],
+            ["Gmail", "pour les informations", "Des annonces ciblées", " (filière, groupe, classe) et une alerte automatique à chaque report, sur le téléphone des seuls concernés."],
+            ["PDF par e-mail", "pour l'emploi du temps", "Un emploi du temps vivant", ", ajouté à l'agenda du téléphone ; le PDF officiel du mois reste disponible."],
+            ["Classroom", "pour les devoirs", "Des devoirs en quiz corrigés tout seuls", " ou en fichier à rendre, notés et commentés par l'enseignant."],
+            ["Moodle", "pour les cours", "Une bibliothèque rangée par module", " : recherche, lecture sur téléphone, même hors ligne."],
+            ["Sites de jeux externes", "pour réviser en jouant", "Des activités choisies par l'enseignant", " : sans publicité ni compte externe, résultats conservés par l'école."],
         ];
         lignes.forEach(([outil, usage, fort, suite], i) => {
             const y = 1.72 + i * 0.97, h = 0.8;
@@ -232,8 +235,8 @@ async function construire() {
 
         s.addNotes([
             "≈ 35 s.",
-            "« Concrètement, outil par outil. Les informations de cours ne partent plus à tout le monde par Gmail : elles arrivent aux seuls étudiants concernés. Le PDF du mois devient un emploi du temps vivant, et le PDF officiel reste disponible. Les reports ne passent plus par WhatsApp : l'alerte est automatique, avec la nouvelle salle et la nouvelle heure. Classroom et Moodle sont remplacés par la bibliothèque et les devoirs en quiz, corrigés tout seuls. Et les jeux sont dans l'application : pas de publicité, pas de compte externe, et l'école garde les résultats. »",
-            "Si on demande : les annonces générales (vie de l'école) restent sur Gmail pour l'instant ; les annonces ciblées par filière et par groupe sont la prochaine étape.",
+            "« Concrètement, outil par outil. Les informations ne partent plus à tout le monde par Gmail : l'école publie des annonces ciblées, par filière, par groupe ou par classe, et chaque report déclenche une alerte automatique. Le PDF du mois devient un emploi du temps vivant, qui s'ajoute à l'agenda du téléphone, et le PDF officiel reste disponible. Classroom est remplacé par des devoirs en quiz, corrigés tout seuls, ou en fichier à rendre, notés par l'enseignant. Moodle est remplacé par une bibliothèque rangée par module, qu'on lit sur son téléphone, même sans connexion. Et les jeux deviennent des activités choisies par l'enseignant : pas de publicité, pas de compte externe, et l'école garde les résultats. »",
+            "Si on demande : WhatsApp reste pour joindre les parents ; l'appel en classe se fait aussi dans l'application, par un QR code que les étudiants scannent.",
         ].join("\n\n"));
     }
 
@@ -245,7 +248,7 @@ async function construire() {
 
         const chiffres = [
             ["90 s", "pour proposer l'emploi du temps d'un semestre entier (2 620 séances)"],
-            ["1", "compte et une application, au lieu de six outils"],
+            ["1", "compte et une application, au lieu de cinq outils"],
             ["0", "publicité ni compte externe pour les jeux et les quiz"],
         ];
         // Chiffre au-dessus, légende dessous : trois colonnes alignées sur les cartes
@@ -256,8 +259,8 @@ async function construire() {
         });
 
         const publics = [
-            ["ecole", "Direction et scolarité", "Le planning du semestre proposé automatiquement, les conflits signalés, le suivi des heures en un coup d'œil."],
-            ["prof", "Enseignants", "Leurs cours, leurs supports, leurs quiz et leurs demandes de report au même endroit."],
+            ["ecole", "Direction et scolarité", "Le planning du semestre proposé automatiquement, les conflits signalés, les heures et les présences suivies en un coup d'œil."],
+            ["prof", "Enseignants", "Leurs cours, l'appel en un QR code, leurs devoirs et leurs activités au même endroit."],
             ["etudiant", "Étudiants", "Leur journée, leurs cours et leurs résultats dans la poche, en français ou en anglais."],
             ["bouclier", "L'école", "Une image moderne et des données hébergées et maîtrisées par l'école."],
         ];
@@ -272,8 +275,8 @@ async function construire() {
 
         s.addNotes([
             "≈ 35 s.",
-            "« Ce que chacun y gagne. Pour la direction et la scolarité : l'emploi du temps d'un semestre entier est proposé automatiquement — 2 620 séances placées en 90 secondes sur notre serveur — et les conflits sont signalés avant qu'ils ne posent problème.",
-            "Pour les enseignants : un seul endroit pour leurs cours, leurs supports et leurs quiz. Pour les étudiants : toute leur vie d'école dans la poche, en français ou en anglais. Et pour l'école : une image moderne, et des données qui restent chez elle. »",
+            "« Ce que chacun y gagne. Pour la direction et la scolarité : l'emploi du temps d'un semestre entier est proposé automatiquement, 2 620 séances placées en 90 secondes, les conflits sont signalés avant qu'ils ne posent problème, et les présences remontent toutes seules.",
+            "Pour les enseignants : l'appel se fait en un QR code, et leurs cours, leurs devoirs et leurs activités sont au même endroit. Pour les étudiants : toute leur vie d'école dans la poche, en français ou en anglais. Et pour l'école : une image moderne, et des données qui restent chez elle. »",
         ].join("\n\n"));
     }
 
@@ -285,10 +288,10 @@ async function construire() {
 
         s.addText("DISPONIBLE AUJOURD'HUI", { x: 0.7, y: 1.7, w: 5.6, h: 0.4, fontFace: THEME.headFontFace, fontSize: 16, bold: true, charSpacing: 3, color: C.accent1, margin: 0, isTextBox: true, objectName: "disponible-titre" });
         const disponible = [
-            "Le site web, pour toute l'école",
-            "L'application mobile, sur iPhone et Android",
-            "La bibliothèque de cours",
-            "Les jeux, les quiz et les devoirs notés",
+            "Le site web et l'application iPhone et Android",
+            "Les annonces ciblées et l'agenda synchronisé",
+            "La bibliothèque, les devoirs et les activités",
+            "L'appel en classe par QR code",
         ];
         disponible.forEach((texte, i) => {
             const y = 2.32 + i * 0.88;
@@ -299,7 +302,7 @@ async function construire() {
         s.addText("LA SUITE", { x: 7.1, y: 1.7, w: 5.5, h: 0.4, fontFace: THEME.headFontFace, fontSize: 16, bold: true, charSpacing: 3, color: C.accent1, margin: 0, isTextBox: true, objectName: "suite-titre" });
         const etapes = [
             "Un pilote d'un semestre, avec une filière",
-            "Les annonces ciblées par filière et par groupe, à la place des envois Gmail",
+            "Les notifications sur le téléphone et la publication sur les stores",
             "Toute l'école, puis d'autres établissements",
         ];
         etapes.forEach((texte, i) => {
@@ -309,14 +312,14 @@ async function construire() {
             s.addText(texte, { x: 7.9, y: y - 0.12, w: 4.8, h: 0.82, fontFace: THEME.bodyFontFace, fontSize: 17, color: C.background1, valign: "middle", margin: 0, isTextBox: true, objectName: `etape-${i + 1}` });
         });
 
-        s.addText("HESTIM Planner — l'école, à l'heure.", { x: 0.7, y: 5.95, w: 7.5, h: 0.6, fontFace: THEME.headFontFace, fontSize: 30, bold: true, italic: true, color: C.background1, valign: "middle", margin: 0, isTextBox: true, objectName: "signature" });
+        s.addText("HESTIM Planner, l'école à l'heure.", { x: 0.7, y: 5.95, w: 7.5, h: 0.6, fontFace: THEME.headFontFace, fontSize: 30, bold: true, italic: true, color: C.background1, valign: "middle", margin: 0, isTextBox: true, objectName: "signature" });
         s.addText("planner.finadmintech.fr", { x: 8.4, y: 5.95, w: 4.3, h: 0.6, fontFace: THEME.bodyFontFace, fontSize: 18, color: C.background2, align: "right", valign: "middle", margin: 0, isTextBox: true, objectName: "adresse-fin" });
 
         s.addNotes([
             "≈ 25 s.",
-            "« Tout ce que je viens de vous montrer est en ligne aujourd'hui : le site, l'application sur iPhone et Android, la bibliothèque et les jeux.",
-            "Nous proposons de commencer par un pilote d'un semestre avec une filière, d'ajouter les annonces ciblées pour remplacer les envois Gmail, puis d'ouvrir la plateforme à toute l'école — et demain à d'autres établissements.",
-            "HESTIM Planner : l'école, à l'heure. Merci. »",
+            "« Tout ce que je viens de vous montrer est en ligne aujourd'hui : le site, l'application sur iPhone et Android, les annonces, l'agenda, la bibliothèque, les devoirs, les activités et l'appel par QR code.",
+            "Nous proposons de commencer par un pilote d'un semestre avec une filière, d'activer les notifications sur le téléphone et de publier l'application sur les stores, puis d'ouvrir la plateforme à toute l'école, et demain à d'autres établissements.",
+            "HESTIM Planner, l'école à l'heure. Merci. »",
         ].join("\n\n"));
     }
 
