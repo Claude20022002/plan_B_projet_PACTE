@@ -67,16 +67,42 @@ describe("Connexion", () => {
         expect(response.status).toBe(400);
     });
 
-    test("bloque après 20 tentatives (429)", async () => {
+    test("bloque un compte après 10 échecs, même depuis des adresses différentes (429)", async () => {
+        const user = await createUser("etudiant");
         const statuses = [];
-        for (let i = 0; i < 21; i += 1) {
+        for (let i = 0; i < 11; i += 1) {
             const response = await anonymous()
                 .post("/api/auth/login")
-                .send({ email: "brute@x.test", password: `Essai@${i}` });
+                .set("X-Forwarded-For", `198.51.100.${i + 1}`)
+                .send({ email: ` ${user.email.toUpperCase()} `, password: `Essai@${i}` });
             statuses.push(response.status);
         }
-        expect(statuses.slice(0, 20).every((status) => status === 401)).toBe(true);
-        expect(statuses[20]).toBe(429);
+        expect(statuses.slice(0, 10).every((status) => status === 401)).toBe(true);
+        expect(statuses[10]).toBe(429);
+        // Le bon mot de passe ne passe pas non plus tant que le compte est bloqué
+        const right = await anonymous().post("/api/auth/login").set("X-Forwarded-For", "198.51.100.99").send({ email: user.email, password: PASSWORD });
+        expect(right.status).toBe(429);
+    });
+
+    test("bloque une adresse après 30 échecs sur des comptes différents (429)", async () => {
+        const statuses = [];
+        for (let i = 0; i < 31; i += 1) {
+            const response = await anonymous()
+                .post("/api/auth/login")
+                .set("X-Forwarded-For", "203.0.113.7")
+                .send({ email: `brute${i}@x.test`, password: `Essai@${i}` });
+            statuses.push(response.status);
+        }
+        expect(statuses.slice(0, 30).every((status) => status === 401)).toBe(true);
+        expect(statuses[30]).toBe(429);
+    });
+
+    test("les connexions réussies d'une même adresse (campus) ne sont pas comptées", async () => {
+        const user = await createUser("etudiant");
+        for (let i = 0; i < 35; i += 1) {
+            const response = await anonymous().post("/api/auth/login").set("X-Forwarded-For", "203.0.113.8").send({ email: user.email, password: PASSWORD });
+            expect(response.status).toBe(200);
+        }
     });
 });
 

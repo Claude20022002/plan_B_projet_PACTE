@@ -16,7 +16,7 @@ import {
 import { authenticateToken, optionalAuth } from "../middleware/authMiddleware.js";
 import { issueCsrfToken } from "../middleware/csrfMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { authRateLimiter } from "../middleware/rateLimiterMiddleware.js";
+import { authRateLimiter, loginCompteRateLimiter, loginIpRateLimiter } from "../middleware/rateLimiterMiddleware.js";
 
 const router = express.Router();
 
@@ -26,7 +26,7 @@ const router = express.Router();
 router.get("/csrf-token", issueCsrfToken);
 
 // 🔐 POST /api/auth/login - Connexion
-router.post("/login", authRateLimiter, asyncHandler(login));
+router.post("/login", loginIpRateLimiter, loginCompteRateLimiter, asyncHandler(login));
 
 // 🔐 POST /api/auth/logout - Déconnexion
 router.post("/logout", optionalAuth, asyncHandler(logout));

@@ -108,6 +108,28 @@ describe("Modification de son propre profil", () => {
         expect(ok.status).toBe(200);
     });
 
+    test("changer son mot de passe ferme ses autres sessions, pas la courante", async () => {
+        const user = await createUser("etudiant");
+        const ici = await loginAs(user);
+        const ailleurs = await loginAs(user);
+
+        const ok = await ici.send("put", `/api/users/${user.id_user}`, { password: "Nouveau@2026", current_password: PASSWORD });
+        expect(ok.status).toBe(200);
+        expect((await ici.get("/api/auth/me")).status).toBe(200);
+        expect((await ailleurs.get("/api/auth/me")).status).toBe(401);
+    });
+
+    test("un mot de passe réinitialisé par l'admin ferme toutes les sessions du compte", async () => {
+        const user = await createUser("etudiant");
+        const session = await loginAs(user);
+
+        const ok = await clients.admin.send("put", `/api/users/${user.id_user}`, { password: "Provisoire@2026" });
+        expect(ok.status).toBe(200);
+        expect((await session.get("/api/auth/me")).status).toBe(401);
+        // La session de l'admin reste ouverte
+        expect((await clients.admin.get("/api/auth/me")).status).toBe(200);
+    });
+
     test("un étudiant ne modifie pas sa fiche de scolarité", async () => {
         const response = await clients.etudiant.send("put", `/api/etudiants/${etudiant.id_user}`, {
             numero_etudiant: "HACK001",

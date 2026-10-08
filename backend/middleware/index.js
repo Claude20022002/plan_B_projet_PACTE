@@ -72,6 +72,8 @@ export { logger, errorLogger, requestLogger } from "./loggerMiddleware.js";
 export {
     createRateLimiter,
     authRateLimiter,
+    loginIpRateLimiter,
+    loginCompteRateLimiter,
     apiRateLimiter,
     publicRateLimiter,
 } from "./rateLimiterMiddleware.js";

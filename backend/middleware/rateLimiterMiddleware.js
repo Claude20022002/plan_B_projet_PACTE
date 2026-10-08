@@ -27,15 +27,18 @@ const defaultOptions = {
 
 /**
  * Créer un rate limiter personnalisé
- * @param {Object} options - Options de configuration
+ * @param {Object} options - Options de configuration ; `keyGenerator(req)` choisit la clé
+ *   comptée (l'adresse IP par défaut), une clé nulle laisse passer sans compter
  */
 export const createRateLimiter = (options = {}) => {
     const config = { ...defaultOptions, ...options };
     const requestCounts = new Map();
     allStores.add(requestCounts);
+    const keyGenerator = config.keyGenerator ?? ((req) => req.ip || req.socket?.remoteAddress);
 
     return (req, res, next) => {
-        const key = req.ip || req.socket?.remoteAddress;
+        const key = keyGenerator(req);
+        if (key === null || key === undefined) return next();
         const now = Date.now();
         const windowStart = now - config.windowMs;
 
@@ -120,6 +123,27 @@ export const authRateLimiter = createRateLimiter({
     max: 20, // 20 tentatives de connexion (augmenté)
     message:
         "Trop de tentatives de connexion, veuillez réessayer dans 15 minutes.",
+});
+
+/**
+ * Connexion : seuls les échecs comptent (tout un campus partage la même adresse IP et se
+ * connecte à 8 h), par adresse et par compte. La limite par compte arrête aussi une attaque
+ * répartie sur de nombreuses adresses ; le compte visé est bloqué 15 minutes au plus.
+ */
+export const loginIpRateLimiter = createRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 30,
+    skipSuccessfulRequests: true,
+    message: "Trop de tentatives de connexion, veuillez réessayer dans 15 minutes.",
+});
+
+export const loginCompteRateLimiter = createRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    max: 10,
+    skipSuccessfulRequests: true,
+    // Email non textuel : refusé par la connexion (400), rien à compter par compte
+    keyGenerator: (req) => (typeof req.body?.email === "string" ? `compte:${req.body.email.trim().toLowerCase()}` : null),
+    message: "Trop de tentatives de connexion sur ce compte, veuillez réessayer dans 15 minutes.",
 });
 
 /**
