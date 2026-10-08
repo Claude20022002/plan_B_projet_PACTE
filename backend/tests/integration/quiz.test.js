@@ -168,8 +168,9 @@ describe("Fin de partie : scores, équipes et nuages de mots", () => {
         const [hMintsa, hYanis, hSara] = [jeton(await lienDe(etudiant)), jeton(await lienDe(yanis)), jeton(await lienDe(sara))];
         const corps = fin({
             joueurs: [
-                { pseudo: "Mintsa O.", score: 2400, bonnes: 3, hid: hMintsa },
-                { pseudo: "Yanis A.", score: 1800, bonnes: 2, hid: hYanis },
+                { pseudo: "Mintsa O.", score: 2400, bonnes: 3, hid: hMintsa, sorties: 3, sorties_duree_ms: 42000 },
+                // Valeurs hors plafond (50 sorties) ramenées au plafond
+                { pseudo: "Yanis A.", score: 1800, bonnes: 2, hid: hYanis, sorties: 999, sorties_duree_ms: -5 },
                 { pseudo: "Sara B.", score: 1800, bonnes: 2, hid: hSara },
                 { pseudo: "Invité", score: 900, bonnes: 1 },
                 { pseudo: "Pirate", score: 3000, bonnes: 3, hid: `${etrangere.id_user}.${"A".repeat(32)}` },
@@ -210,6 +211,9 @@ describe("Fin de partie : scores, équipes et nuages de mots", () => {
         expect(body.partie).toMatchObject({ titre: "Spark", nb_joueurs: 6, nb_questions: 3, module: { code: fixture.cours.code_cours } });
         expect(body.classement).toHaveLength(6);
         expect(body.classement[1]).toMatchObject({ pseudo: "Mintsa O.", etudiant: { prenom: "Mintsa", nom: "Obame" } });
+        // Journal des sorties, pour l'enseignant de la partie
+        const sorties = Object.fromEntries(body.classement.map((c) => [c.pseudo, [c.sorties, c.sorties_duree_ms]]));
+        expect(sorties).toMatchObject({ "Mintsa O.": [3, 42000], "Yanis A.": [50, 0], Invité: [0, 0] });
         expect(body.equipes.map((e) => [e.nom, e.joueurs, e.moyenne, e.rang])).toEqual([["TP1", 1, 2400, 1], ["TP2", 2, 1800, 2]]);
         expect(body.nuages).toEqual([{ index: 2, question: "Un mot pour Spark ?", mots: [{ texte: "Rapide", nombre: 3 }, { texte: "Distribué", nombre: 2 }] }]);
     });
@@ -220,7 +224,7 @@ describe("Fin de partie : scores, équipes et nuages de mots", () => {
         const { body } = await (await loginAs(yanis)).get(url);
         expect(body.moi).toEqual({ pseudo: "Yanis A.", score: 1800, bonnes: 2, rang: 3 });
         expect(body.classement.map((c) => c.pseudo)).toEqual(["Pirate", "Mintsa O.", "Sara B.", "Yanis A."]);
-        expect(JSON.stringify(body.classement)).not.toMatch(/etudiant|Obame/);
+        expect(JSON.stringify(body.classement)).not.toMatch(/etudiant|Obame|sorties/);
         expect(body.equipes).toHaveLength(2);
 
         expect((await (await loginAs(etrangere)).get(url)).status).toBe(404);
