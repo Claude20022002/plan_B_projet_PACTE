@@ -5,6 +5,7 @@ const en = {
     name: 'HESTIM Planner',
     school: 'Engineering & Business School',
   },
+  vuesEdt: { grille: 'Grid', liste: 'Session list', mois: 'Month (print)' },
   common: {
     aucun: 'None',
     loading: 'Loading…',
