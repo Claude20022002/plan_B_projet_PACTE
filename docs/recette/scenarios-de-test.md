@@ -1,6 +1,6 @@
 # Scénarios de test à faire sur écran (recette)
 
-Version visée : **maj22** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026).
+Version visée : **maj23** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026, dont ClassQuiz).
 Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout écart sous le scénario.
 
 ### Préparation
@@ -13,7 +13,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 
 ## 0. Mise en production
 
-- [ ] Le script `appliquer-maj.sh` se termine sans erreur et affiche les contrôles 404, 400, 200, 200, 401.
+- [ ] Le script `appliquer-maj.sh` se termine sans erreur et affiche les contrôles 404, 400, 200, 200, puis 200 (quiz), 401 (API ClassQuiz) et 401 (bibliothèque).
 - [ ] `docker exec hestim_backend node -p process.versions.tz` répond `2026c`.
 - [ ] `https://planner.finadmintech.fr/api/activites` répond 401 (et non 404).
 - [ ] Le script de démo des stages s'exécute (retour de stage Cybel avec photo, 128 idées de projets).
@@ -87,6 +87,21 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Devoir « fichier » : l'enseignant dépose l'énoncé, l'étudiant dépose sa copie (PDF), l'enseignant la note ; l'étudiant est prévenu.
 - [ ] Un fichier renommé (par ex. une image en `.pdf`) est refusé.
 - [ ] L'administration ne gère pas les activités (pas d'accès).
+
+### Quiz en direct : anti-triche (lot 3)
+
+À faire avec une partie ClassQuiz lancée par l'enseignant depuis Planner, et deux étudiants côte à côte.
+
+- [ ] Mode « normal » : sur deux téléphones voisins, les réponses d'un QCM ne sont pas dans le même ordre ; chacun est noté juste s'il choisit la bonne réponse.
+- [ ] Question à cases à cocher en mode « normal » : ordre différent d'un téléphone à l'autre, et la bonne combinaison est bien comptée juste.
+- [ ] Mode « kahoot » : les formes et couleurs du téléphone correspondent toujours à celles du projecteur (ordre non mélangé).
+- [ ] Pendant une question, l'étudiant passe sur une autre application 5 s puis revient : une sortie est comptée.
+- [ ] Sortie très courte (moins d'une seconde) ou après avoir répondu : rien n'est compté.
+- [ ] Sur ordinateur, passer à une autre fenêtre pendant une question compte aussi une sortie.
+- [ ] Même test depuis l'onglet Activités de l'application mobile (quiz ouvert dans l'application) : la sortie est-elle comptée sur iPhone ? Sur Android ? (à noter, le lot 4 renforcera ce point).
+- [ ] Fin de partie : dans Planner, les résultats du quiz montrent à l'enseignant la colonne « Sorties » (nombre · durée), en orange pour les étudiants concernés.
+- [ ] Un étudiant qui consulte les résultats ne voit aucune colonne « Sorties », ni pour lui ni pour les autres.
+- [ ] Le projecteur n'affiche jamais de nom ni de sortie.
 
 ## 5. Application mobile : bibliothèque et stages
 
