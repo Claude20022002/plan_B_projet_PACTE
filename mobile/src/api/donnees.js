@@ -73,17 +73,28 @@ export const chargerDocuments = async (moduleId) => (await biblio(`/documents?mo
 /** URL signée de 5 minutes, ouverte dans le navigateur du téléphone */
 export const lienTelechargement = async (idDocument) => (await biblio(`/documents/${encodeURIComponent(idDocument)}/download`, { method: 'POST' })).url;
 
-export const chargerAvisStage = async () => {
-  const reponse = await biblio('/internship-reviews');
-  return reponse?.data || reponse || [];
-};
+/** Derniers retours de stage publiés (liste légère : entreprise, poste, note, photo ou non) */
+export const chargerAvisStage = async () => (await biblio('/internship-reviews/recent'))?.data ?? [];
+
+/** Photo d'un retour de stage : servie par l'API, avec le jeton (jamais par un lien public) */
+export const sourcePhotoStage = (id) => ({ uri: `${API_BIBLIO}/internship-reviews/${encodeURIComponent(id)}/photo`, headers: entetesAuthentifies() });
 
 export const chargerIdeesProjet = async () => {
   const reponse = await biblio('/project-ideas');
   return reponse?.data || reponse || [];
 };
 
-export const partagerStage = (avis) => biblio('/internship-reviews', { method: 'POST', body: avis });
+/** Publie un retour de stage ; avec une photo (déjà réduite), l'envoi passe en formulaire multipart */
+export const partagerStage = (avis, photo = null) => {
+  if (!photo) return biblio('/internship-reviews', { method: 'POST', body: avis });
+  const formulaire = new FormData();
+  Object.entries(avis).forEach(([cle, valeur]) => {
+    if (valeur === null || valeur === undefined || valeur === '') return;
+    formulaire.append(cle, typeof valeur === 'boolean' ? (valeur ? '1' : '0') : String(valeur));
+  });
+  formulaire.append('photo', { uri: photo.uri, name: 'stage.jpg', type: 'image/jpeg' });
+  return biblio('/internship-reviews', { method: 'POST', body: formulaire });
+};
 
 /** Parties ClassQuiz en cours dans les séances de l'étudiant (lien de jeu https uniquement) */
 export const chargerPartiesQuiz = async () => {

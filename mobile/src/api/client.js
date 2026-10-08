@@ -45,6 +45,9 @@ export const definirJetons = async (nouveaux) => {
 
 export const jetonsCourants = () => jetons;
 
+/** En-têtes d'une image ou d'un fichier lu hors de fetch (composant Image, téléchargement) */
+export const entetesAuthentifies = () => ({ 'X-Client': 'mobile', ...(jetons?.acces ? { Authorization: `Bearer ${jetons.acces}` } : {}) });
+
 const appeler = async (url, { method = 'GET', body, auth = true } = {}) => {
   if (!configurationSure) throw new ErreurApi(0, 'Configuration non sécurisée', 'CONFIG_HTTP');
   const appareil = url.startsWith(API_PLANNER) ? await identifiantInstallation() : null;
@@ -57,10 +60,11 @@ const appeler = async (url, { method = 'GET', body, auth = true } = {}) => {
         Accept: 'application/json',
         'X-Client': 'mobile',
         ...(appareil ? { 'X-Appareil': appareil } : {}),
-        ...(body !== undefined ? { 'Content-Type': 'application/json' } : {}),
+        // Formulaire avec fichier (photo) : le type multipart et sa limite sont posés par fetch
+        ...(body !== undefined && !(body instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
         ...(auth && jetons?.acces ? { Authorization: `Bearer ${jetons.acces}` } : {}),
       },
-      body: body !== undefined ? JSON.stringify(body) : undefined,
+      body: body instanceof FormData ? body : body !== undefined ? JSON.stringify(body) : undefined,
       signal: controleur.signal,
     });
     const texte = await reponse.text();

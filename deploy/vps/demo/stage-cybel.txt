@@ -1,0 +1,7 @@
+Stage de quatre mois (mai à août 2026) au FabLab de HESTIM, consacré à la reconstruction du système robotique Cybel, le robot d'accueil de l'école.
+
+Missions :
+- mise en service d'un protocole de communication avec le robot (Android) ;
+- développement d'une plateforme de monitoring pour le contrôleur ;
+- développement d'une application de réception automatique des visiteurs ;
+- travail de recherche : proposition d'une méthode de reconstruction, présentée dans un article pour la conférence ICRA 2027.

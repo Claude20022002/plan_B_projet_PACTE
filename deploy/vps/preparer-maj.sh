@@ -11,10 +11,20 @@
 #
 # Option --classquiz : ajoute le site ClassQuiz (fork ../ClassQuiz, thème HESTIM), construit avant :
 #   cd ../ClassQuiz/frontend && rm -rf build && NODE_ENV=production npx vite build
+# Option --studylib : ajoute le code PHP de StudyLib (../StudyLib : app, routes, database), sans
+# changement de dépendances Composer ni de fichiers CSS/JS (sinon reconstruire l'image).
 set -euo pipefail
 
-NOM="${1:?usage : preparer-maj.sh <nom, par ex. maj8> [--classquiz]}"
-AVEC_CLASSQUIZ="${2:-}"
+NOM="${1:?usage : preparer-maj.sh <nom, par ex. maj8> [--classquiz] [--studylib]}"
+AVEC_CLASSQUIZ=""
+AVEC_STUDYLIB=""
+for option in "${@:2}"; do
+    case "$option" in
+        --classquiz) AVEC_CLASSQUIZ="--classquiz" ;;
+        --studylib) AVEC_STUDYLIB="--studylib" ;;
+        *) echo "option inconnue : $option" >&2; exit 1 ;;
+    esac
+done
 RACINE="$(cd "$(dirname "$0")/../.." && pwd)"
 SORTIE="$RACINE/deploy/vps/paquets"
 TRAVAIL="$SORTIE/$NOM"
@@ -46,6 +56,25 @@ cp frontend/nginx.conf "$TRAVAIL/site/nginx.conf"
 # Scripts d'exploitation à jour (renommage, mots de passe de démonstration…)
 mkdir -p "$TRAVAIL/deploy-vps"
 cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh "$TRAVAIL/deploy-vps/"
+# Contenus de démonstration (retours de stage et leurs photos)
+[ -d deploy/vps/demo ] && cp -r deploy/vps/demo "$TRAVAIL/deploy-vps/demo"
+
+if [ "$AVEC_STUDYLIB" = "--studylib" ]; then
+    SL="$RACINE/../StudyLib"
+    [ -f "$SL/artisan" ] || { echo "StudyLib introuvable : $SL" >&2; exit 1; }
+    mkdir -p "$TRAVAIL/studylib"
+    for dossier in app routes database; do
+        tar -C "$SL" -cf - "$dossier" | tar -C "$TRAVAIL/studylib" -xf -
+    done
+    # Nouvelles classes : l'image charge les classes par une carte figée (classmap-authoritative)
+    cat > "$TRAVAIL/Dockerfile.studylib" <<'EOF'
+FROM claude20022002/hestim-studylib:latest
+COPY --chown=www-data:www-data studylib/app/ /var/www/html/app/
+COPY --chown=www-data:www-data studylib/routes/ /var/www/html/routes/
+COPY --chown=www-data:www-data studylib/database/ /var/www/html/database/
+RUN composer dump-autoload --optimize --no-dev --classmap-authoritative --working-dir=/var/www/html
+EOF
+fi
 
 if [ "$AVEC_CLASSQUIZ" = "--classquiz" ]; then
     CQ="$RACINE/../ClassQuiz/frontend/build"
@@ -80,6 +109,10 @@ EOF
 
 git rev-parse --short HEAD > "$TRAVAIL/VERSION"
 git status --porcelain >> "$TRAVAIL/VERSION"
+if [ "$AVEC_STUDYLIB" = "--studylib" ]; then
+    echo "StudyLib : $(git -C "$RACINE/../StudyLib" rev-parse --short HEAD)" >> "$TRAVAIL/VERSION"
+    git -C "$RACINE/../StudyLib" status --porcelain >> "$TRAVAIL/VERSION"
+fi
 
 tar -C "$SORTIE" -czf "$SORTIE/$NOM.tar.gz" "$NOM"
 rm -rf "$TRAVAIL"
