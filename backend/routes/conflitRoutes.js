@@ -2,6 +2,7 @@ import express from "express";
 import { Op } from "sequelize";
 import { Conflit, ConflitAffectation, Affectation } from "../models/index.js";
 import { authenticateToken, requireAdmin } from "../middleware/index.js";
+import { detailErreur } from "../middleware/errorHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { pick } from "../utils/validationHelper.js";
 
@@ -38,7 +39,7 @@ router.get("/", async (req, res) => {
 
         res.json(createPaginationResponse(conflits, count, page, limit));
     } catch (error) {
-        res.status(500).json({ message: "Erreur de récupération des conflits", error: error.message });
+        res.status(500).json({ message: "Erreur de récupération des conflits", error: detailErreur(error) });
     }
 });
 
@@ -63,7 +64,7 @@ router.get("/non-resolus/liste", async (req, res) => {
 
         res.json(createPaginationResponse(conflits, count, page, limit));
     } catch (error) {
-        res.status(500).json({ message: "Erreur de récupération des conflits non résolus", error: error.message });
+        res.status(500).json({ message: "Erreur de récupération des conflits non résolus", error: detailErreur(error) });
     }
 });
 
@@ -84,7 +85,7 @@ router.get("/:id", async (req, res) => {
         }
         res.json(conflit);
     } catch (error) {
-        res.status(500).json({ message: "Erreur de récupération du conflit", error: error.message });
+        res.status(500).json({ message: "Erreur de récupération du conflit", error: detailErreur(error) });
     }
 });
 
@@ -103,7 +104,7 @@ router.post("/", async (req, res) => {
         });
         res.status(201).json(conflitComplete);
     } catch (error) {
-        res.status(400).json({ message: "Erreur lors de la création du conflit", error: error.message });
+        res.status(400).json({ message: "Erreur lors de la création du conflit", error: detailErreur(error) });
     }
 });
 
@@ -126,7 +127,7 @@ router.put("/:id", async (req, res) => {
         });
         res.json(conflitComplete);
     } catch (error) {
-        res.status(400).json({ message: "Erreur lors de la mise à jour du conflit", error: error.message });
+        res.status(400).json({ message: "Erreur lors de la mise à jour du conflit", error: detailErreur(error) });
     }
 });
 
@@ -140,7 +141,7 @@ router.delete("/:id", async (req, res) => {
         await conflit.destroy();
         res.json({ message: "Conflit supprimé avec succès" });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la suppression du conflit", error: error.message });
+        res.status(500).json({ message: "Erreur lors de la suppression du conflit", error: detailErreur(error) });
     }
 });
 
@@ -153,7 +154,7 @@ router.post("/:id_conflit/affectation/:id_affectation", async (req, res) => {
         });
         res.status(201).json(conflitAffectation);
     } catch (error) {
-        res.status(400).json({ message: "Erreur lors de l'association du conflit à l'affectation", error: error.message });
+        res.status(400).json({ message: "Erreur lors de l'association du conflit à l'affectation", error: detailErreur(error) });
     }
 });
 
@@ -172,7 +173,7 @@ router.delete("/:id_conflit/affectation/:id_affectation", async (req, res) => {
         await conflitAffectation.destroy();
         res.json({ message: "Association supprimée avec succès" });
     } catch (error) {
-        res.status(500).json({ message: "Erreur lors de la dissociation", error: error.message });
+        res.status(500).json({ message: "Erreur lors de la dissociation", error: detailErreur(error) });
     }
 });
 

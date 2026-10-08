@@ -2,6 +2,7 @@ import express from "express";
 import { Appartenir, Etudiant, Groupe, Users } from "../models/index.js";
 import { authenticateToken, requireAdmin, requireEnseignant } from "../middleware/index.js";
 import { requireSelfOrStaff } from "../middleware/accessMiddleware.js";
+import { detailErreur } from "../middleware/errorHandler.js";
 import { pick } from "../utils/validationHelper.js";
 
 const router = express.Router();
@@ -26,7 +27,7 @@ router.get("/", requireEnseignant, async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Erreur de récupération des appartenances",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -53,7 +54,7 @@ router.post("/", requireAdmin, async (req, res) => {
     } catch (error) {
         res.status(400).json({
             message: "Erreur lors de l'ajout de l'étudiant au groupe",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -77,7 +78,7 @@ router.delete("/etudiant/:id_etudiant/groupe/:id_groupe", requireAdmin, async (r
     } catch (error) {
         res.status(500).json({
             message: "Erreur lors du retrait de l'étudiant",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -98,7 +99,7 @@ router.get("/etudiant/:id_etudiant", requireSelfOrStaff("id_etudiant"), async (r
     } catch (error) {
         res.status(500).json({
             message: "Erreur de récupération du groupe",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -120,7 +121,7 @@ router.get("/groupe/:id_groupe", requireEnseignant, async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Erreur de récupération des étudiants",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });

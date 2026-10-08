@@ -1,4 +1,5 @@
-import { Users } from "../models/index.js";
+import { Op } from "sequelize";
+import { AuthSession, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
@@ -156,7 +157,23 @@ export const updateUser = asyncHandler(async (req, res) => {
     }
 
     await user.update(updateData);
-    
+
+    // Nouveau mot de passe : les sessions ouvertes avec l'ancien sont fermées (un compte volé ne
+    // reste pas ouvert chez le voleur). Son propre compte : toutes sauf la session courante.
+    if (updateData.password_hash) {
+        const isOwnAccount = user.id_user === req.user.id_user;
+        await AuthSession.update(
+            { revoked_at: new Date(), revoked_reason: isOwnAccount ? "password_change" : "password_reset_admin" },
+            {
+                where: {
+                    id_user: user.id_user,
+                    revoked_at: null,
+                    ...(isOwnAccount ? { session_id: { [Op.ne]: req.auth?.sessionId ?? "" } } : {}),
+                },
+            }
+        );
+    }
+
     // Recharger l'utilisateur pour obtenir les données à jour
     await user.reload();
 

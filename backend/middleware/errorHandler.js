@@ -3,6 +3,12 @@
  */
 
 /**
+ * Détail technique d'une erreur pour la réponse : en production il n'est jamais renvoyé
+ * (il révélerait la structure de la base ou du code), seulement journalisé.
+ */
+export const detailErreur = (err) => (process.env.NODE_ENV === "production" ? undefined : err?.message);
+
+/**
  * Middleware de gestion globale des erreurs
  * Doit être placé en dernier dans le fichier server.js
  */
@@ -45,7 +51,7 @@ export const errorHandler = (err, req, res, next) => {
         error = {
             message: "Erreur de référence",
             error: "La ressource référencée n'existe pas",
-            details: err.message,
+            details: detailErreur(err),
         };
         return res.status(400).json(error);
     }
@@ -76,13 +82,12 @@ export const errorHandler = (err, req, res, next) => {
         return res.status(401).json(error);
     }
 
-    // Erreur par défaut
-    res.status(error.statusCode || 500).json({
-        message: error.message || "Erreur serveur",
-        error:
-            process.env.NODE_ENV === "production"
-                ? "Une erreur s'est produite"
-                : err.message,
+    // Erreur par défaut : le message d'une erreur interne (500) n'est renvoyé qu'en développement
+    const statut = error.statusCode || 500;
+    const production = process.env.NODE_ENV === "production";
+    res.status(statut).json({
+        message: statut >= 500 && production ? "Erreur serveur" : error.message || "Erreur serveur",
+        error: production ? "Une erreur s'est produite" : err.message,
         ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
     });
 };

@@ -5,6 +5,7 @@ import {
     requireAdmin,
     requireEnseignant,
 } from "../middleware/index.js";
+import { detailErreur } from "../middleware/errorHandler.js";
 import { pick } from "../utils/validationHelper.js";
 
 const router = express.Router();
@@ -24,7 +25,7 @@ router.get("/", authenticateToken, requireAdmin, async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Erreur de récupération des disponibilités",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -41,7 +42,7 @@ router.get("/enseignant/:id_enseignant", authenticateToken, requireEnseignant, a
     } catch (error) {
         res.status(500).json({
             message: "Erreur de récupération des disponibilités",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -61,7 +62,7 @@ router.get("/enseignant/:id_enseignant/indisponibilites", authenticateToken, req
     } catch (error) {
         res.status(500).json({
             message: "Erreur de récupération des indisponibilités",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -84,7 +85,7 @@ router.get("/:id", authenticateToken, requireEnseignant, async (req, res) => {
     } catch (error) {
         res.status(500).json({
             message: "Erreur de récupération de la disponibilité",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -119,7 +120,7 @@ router.post("/", authenticateToken, requireEnseignant, async (req, res) => {
     } catch (error) {
         res.status(400).json({
             message: "Erreur lors de la création de la disponibilité",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -150,7 +151,7 @@ router.put("/:id", authenticateToken, requireEnseignant, async (req, res) => {
     } catch (error) {
         res.status(400).json({
             message: "Erreur lors de la mise à jour de la disponibilité",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
@@ -172,7 +173,7 @@ router.delete("/:id", authenticateToken, requireEnseignant, async (req, res) => 
     } catch (error) {
         res.status(500).json({
             message: "Erreur lors de la suppression de la disponibilité",
-            error: error.message,
+            error: detailErreur(error),
         });
     }
 });
