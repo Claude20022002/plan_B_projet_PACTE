@@ -33,12 +33,14 @@ for s in backend frontend; do
     docker tag "claude20022002/hestim-$s:latest" "claude20022002/hestim-$s:avant-$DATE"
 done
 [ -f "$PAQUET/Dockerfile.classquiz" ] && docker tag claude20022002/hestim-classquiz-frontend:latest "claude20022002/hestim-classquiz-frontend:avant-$DATE"
+[ -f "$PAQUET/Dockerfile.classquiz-api" ] && docker tag claude20022002/hestim-classquiz-api:latest "claude20022002/hestim-classquiz-api:avant-$DATE"
 [ -f "$PAQUET/Dockerfile.studylib" ] && docker tag claude20022002/hestim-studylib:latest "claude20022002/hestim-studylib:avant-$DATE"
 
 echo "== Superposition"
 docker build -q -t claude20022002/hestim-backend:latest -f "$PAQUET/Dockerfile.backend" "$PAQUET"
 docker build -q -t claude20022002/hestim-frontend:latest -f "$PAQUET/Dockerfile.frontend" "$PAQUET"
 [ -f "$PAQUET/Dockerfile.classquiz" ] && docker build -q -t claude20022002/hestim-classquiz-frontend:latest -f "$PAQUET/Dockerfile.classquiz" "$PAQUET"
+[ -f "$PAQUET/Dockerfile.classquiz-api" ] && docker build -q -t claude20022002/hestim-classquiz-api:latest -f "$PAQUET/Dockerfile.classquiz-api" "$PAQUET"
 [ -f "$PAQUET/Dockerfile.studylib" ] && docker build -q -t claude20022002/hestim-studylib:latest -f "$PAQUET/Dockerfile.studylib" "$PAQUET"
 
 echo "== Scripts d'exploitation"
@@ -61,6 +63,11 @@ attendre_sain hestim_backend
 echo "== Site"
 "${COMPOSE[@]}" up -d --no-deps frontend
 attendre_sain hestim_frontend
+if [ -f "$PAQUET/Dockerfile.classquiz-api" ]; then
+    echo "== API ClassQuiz et son worker"
+    "${COMPOSE[@]}" up -d --no-deps quiz-api quiz-worker
+    sleep 10
+fi
 if [ -f "$PAQUET/Dockerfile.classquiz" ]; then
     echo "== Site ClassQuiz (thème HESTIM)"
     "${COMPOSE[@]}" up -d --no-deps quiz-frontend
@@ -79,6 +86,7 @@ echo "login vide        : $(code -X POST -H 'Content-Type: application/json' -d 
 echo "site HESTIM       : $(code https://planner.finadmintech.fr/)"
 echo "FinAdminTech      : $(code https://finadmintech.fr/)"
 [ -f "$PAQUET/Dockerfile.classquiz" ] && echo "Quiz (ClassQuiz)  : $(code https://quiz.finadmintech.fr/)"
+[ -f "$PAQUET/Dockerfile.classquiz-api" ] && echo "API ClassQuiz     : $(code https://quiz.finadmintech.fr/api/v1/users/me) (attendu : 401 sans session)"
 [ -f "$PAQUET/Dockerfile.studylib" ] && echo "API bibliothèque  : $(code -H 'Accept: application/json' https://planner.finadmintech.fr/biblio/api/internship-reviews/recent) (attendu : 401 sans jeton)"
 
 cat <<EOF
@@ -89,6 +97,7 @@ Retour arrière si besoin :
   cd $HESTIM && ${COMPOSE[*]} up -d --no-deps backend frontend
   (StudyLib, si le paquet le contenait : docker tag claude20022002/hestim-studylib:avant-$DATE claude20022002/hestim-studylib:latest puis up -d --no-deps studylib studylib-queue studylib-scheduler ; base : /root/sauvegardes/studylib-$DATE.sql.gz)
   (site ClassQuiz, si le paquet le contenait : docker tag claude20022002/hestim-classquiz-frontend:avant-$DATE claude20022002/hestim-classquiz-frontend:latest puis up -d --no-deps quiz-frontend)
+  (API ClassQuiz, si le paquet la contenait : docker tag claude20022002/hestim-classquiz-api:avant-$DATE claude20022002/hestim-classquiz-api:latest puis up -d --no-deps quiz-api quiz-worker)
   (si une migration a été appliquée, restaurer aussi la base ; ses nouvelles tables restent, à supprimer avant de redéployer :)
   gunzip -c /root/sauvegardes/hestim-$DATE.sql.gz | docker exec -i hestim_mysql sh -c 'MYSQL_PWD="\$MYSQL_ROOT_PASSWORD" mysql -uroot "\$MYSQL_DATABASE"'
 EOF

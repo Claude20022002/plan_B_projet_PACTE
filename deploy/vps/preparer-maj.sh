@@ -9,7 +9,8 @@
 #   bash deploy/vps/preparer-maj.sh maj8
 # Résultat : deploy/vps/paquets/maj8.tar.gz (ignoré par git), à appliquer avec appliquer-maj.sh.
 #
-# Option --classquiz : ajoute le site ClassQuiz (fork ../ClassQuiz, thème HESTIM), construit avant :
+# Option --classquiz : ajoute ClassQuiz (fork ../ClassQuiz, thème HESTIM) : le code Python de l'API
+# et du worker, et le site, construit avant :
 #   cd ../ClassQuiz/frontend && rm -rf build && NODE_ENV=production npx vite build
 # Option --studylib : ajoute StudyLib (../StudyLib : app, routes, database, resources et le CSS/JS
 # compilé public/build), construit avant : cd ../StudyLib && npm run build. Sans changement de
@@ -94,6 +95,14 @@ RUN rm -rf /app/client /app/server /app/prerendered /app/index.js /app/handler.j
 COPY classquiz/build/ /app/
 RUN chown -R node:node /app
 USER node
+EOF
+    # Code Python de l'API (et du worker), superposé à l'image en ligne : sans changement de
+    # dépendances (Pipfile), sinon reconstruire l'image
+    mkdir -p "$TRAVAIL/classquiz-api"
+    tar -C "$RACINE/../ClassQuiz" -cf - --exclude=__pycache__ --exclude=tests classquiz | tar -C "$TRAVAIL/classquiz-api" -xf -
+    cat > "$TRAVAIL/Dockerfile.classquiz-api" <<'EOF'
+FROM claude20022002/hestim-classquiz-api:latest
+COPY classquiz-api/classquiz/ /app/classquiz/
 EOF
 fi
 
