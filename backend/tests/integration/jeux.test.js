@@ -68,17 +68,19 @@ describe("Catalogue des jeux", () => {
 
     test("l'enseignant voit ses modules, même sans jeu proposé ; pas ceux des autres", async () => {
         const res = await (await loginAs(enseignant)).get("/api/jeux");
-        expect(res.body.modules).toEqual([{ id_cours: fixture.cours.id_cours, code: fixture.cours.code_cours, nom: "Algorithmique", jeux: [] }]);
+        expect(res.body.modules).toEqual([{ id_cours: fixture.cours.id_cours, code: fixture.cours.code_cours, nom: "Algorithmique", jeux: [], details: [] }]);
         expect((await (await loginAs(autreEnseignant)).get("/api/jeux")).body.modules).toEqual([]);
     });
 
-    test("présente le terminal Linux avec sa source et une progression vide", async () => {
-        const client = await loginAs(etudiant);
-        const res = await client.get("/api/jeux");
+    test("l'enseignant voit tout le catalogue (pour choisir) ; l'étudiant, rien tant qu'aucun jeu n'est proposé", async () => {
+        const res = await (await loginAs(enseignant)).get("/api/jeux");
         expect(res.status).toBe(200);
         const terminal = res.body.jeux.find((j) => j.code === "terminal-linux");
         expect(terminal).toMatchObject({ type: "terminal", source: { licence: "MIT" }, progression: { reussis: 0, total: 66, points: 0 } });
-        expect(res.body.modules).toEqual([]);
+        const eleve = await (await loginAs(etudiant)).get("/api/jeux");
+        expect(eleve.body).toMatchObject({ jeux: [], modules: [] });
+        // Ni progression ni défi pour un jeu qui n'est pas proposé dans ses modules
+        expect((await (await loginAs(etudiant)).get("/api/jeux/terminal-linux/progression")).status).toBe(403);
     });
 });
 
@@ -108,13 +110,25 @@ describe("Proposer un jeu dans un module", () => {
         const prof = await loginAs(enseignant);
         const res = await prof.send("post", "/api/jeux/terminal-linux/modules", { id_cours: fixture.cours.id_cours });
         expect(res.status).toBe(201);
-        // Idempotent
-        expect((await prof.send("post", "/api/jeux/terminal-linux/modules", { id_cours: fixture.cours.id_cours })).status).toBe(200);
+        // But par défaut : s'entraîner
+        expect(res.body).toMatchObject({ but: "entrainer", notion: null });
+        // Idempotent ; la seconde fois précise le but et la notion
+        const precise = await prof.send("post", "/api/jeux/terminal-linux/modules", { id_cours: fixture.cours.id_cours, but: "verifier", notion: "  les droits des fichiers  " });
+        expect(precise.status).toBe(200);
+        expect(precise.body).toMatchObject({ but: "verifier", notion: "les droits des fichiers" });
+        expect((await prof.send("post", "/api/jeux/terminal-linux/modules", { id_cours: fixture.cours.id_cours, but: "jouer" })).status).toBe(400);
 
         for (const user of [etudiant, etudiantTp]) {
             const vue = await (await loginAs(user)).get("/api/jeux");
-            expect(vue.body.modules).toEqual([{ id_cours: fixture.cours.id_cours, code: fixture.cours.code_cours, nom: "Algorithmique", jeux: ["terminal-linux"] }]);
+            expect(vue.body.modules).toEqual([{ id_cours: fixture.cours.id_cours, code: fixture.cours.code_cours, nom: "Algorithmique", jeux: ["terminal-linux"], details: [{ code: "terminal-linux", but: "verifier", notion: "les droits des fichiers" }] }]);
+            expect(vue.body.jeux.map((j) => j.code)).toEqual(["terminal-linux"]);
         }
+        // Espace Activités : le jeu apparaît dans le module, avec son but et sa notion
+        const activites = await (await loginAs(etudiant)).get("/api/activites");
+        expect(activites.status).toBe(200);
+        expect(activites.body.modules).toHaveLength(1);
+        expect(activites.body.modules[0]).toMatchObject({ code: fixture.cours.code_cours, quiz: [], jeux: [{ code: "terminal-linux", but: "verifier", notion: "les droits des fichiers" }] });
+        expect((await (await loginAs(admin)).get("/api/activites")).body.modules).toEqual([]);
         const autre = await (await loginAs(etranger)).get("/api/jeux");
         expect(autre.body.modules).toEqual([]);
         // L'enseignant voit aussi le jeu dans son module
