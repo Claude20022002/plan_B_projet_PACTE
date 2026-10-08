@@ -1,4 +1,4 @@
-name: CI — HESTIM Planner
+name: CI HESTIM Planner
 
 # Vérifications à chaque push sur main et à chaque pull request vers main.
 # Pas de déploiement automatique : la production tourne sur le VPS (une seule origine Docker,
