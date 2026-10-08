@@ -132,12 +132,25 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
         du: debut,
         au: fin,
         groupes: directs.map((g) => ({ id_groupe: g.id_groupe, nom_groupe: g.nom_groupe })),
+        // Seulement les champs lus par le web et l'application (shared/session.js) : ni commentaire
+        // interne, ni identifiants de génération, ni dates techniques (≈ 3 fois moins lourd)
         seances: seances.map((s) => {
             const json = s.toJSON();
-            const { salle } = json;
+            const { salle, cours, groupe, enseignant, creneau, creneauInitial } = json;
+            const composante = json.enseignement?.composante;
             return {
-                ...json,
+                id_affectation: json.id_affectation,
+                date_seance: json.date_seance,
+                date_seance_initiale: json.date_seance_initiale ?? null,
+                statut: json.statut,
+                id_user_enseignant: json.id_user_enseignant,
+                cours: cours ? { code_cours: cours.code_cours, nom_cours: cours.nom_cours, type_cours: cours.type_cours, id_filiere: cours.id_filiere } : null,
+                groupe: groupe ? { nom_groupe: groupe.nom_groupe, id_filiere: groupe.id_filiere } : null,
+                enseignant: enseignant ? { id_user: enseignant.id_user, nom: enseignant.nom, prenom: enseignant.prenom } : null,
                 salle: salle ? { id_salle: salle.id_salle, nom_salle: salle.nom_salle, etage: salle.etage ?? null, type_salle: salle.type_salle, batiment: salle.batiment ?? null, campus: salle.campus ? { code: salle.campus.code, nom: salle.campus.nom } : null } : null,
+                creneau: creneau ? { heure_debut: creneau.heure_debut, heure_fin: creneau.heure_fin } : null,
+                creneauInitial: creneauInitial ? { heure_debut: creneauInitial.heure_debut, heure_fin: creneauInitial.heure_fin } : null,
+                enseignement: composante ? { composante: { type: composante.type, modalite: composante.modalite, mention: composante.mention } } : null,
             };
         }),
         evenements,
