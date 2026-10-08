@@ -698,4 +698,9 @@ export const presenceAPI = {
     tirerVerification: (id, nombre) => request(`/presences/seances/${encodeURIComponent(id)}/verification`, { method: 'POST', body: { nombre } }),
     verifier: (id, idUser, present) => request(`/presences/seances/${encodeURIComponent(id)}/verification/${encodeURIComponent(idUser)}`, { method: 'PUT', body: { present } }),
     // Le scan étudiant ne passe que par l'application mobile
+    // Administration : { data: [{ id, motif, le, id_user, etudiant, lie, telephone_lie_le, seance }] }
+    signalements: () => request('/presences/signalements'),
+    // Un compte = un téléphone : { lie, lie_le } ; délier (nouveau téléphone) : { delie }
+    telephone: (idUser) => request(`/presences/etudiants/${encodeURIComponent(idUser)}/telephone`),
+    delierTelephone: (idUser) => request(`/presences/etudiants/${encodeURIComponent(idUser)}/telephone`, { method: 'DELETE' }),
 };
