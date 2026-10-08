@@ -90,6 +90,12 @@ export const authenticateToken = async (req, res, next) => {
             });
         }
 
+        // Déjà vérifié par optionalAuth pour ce même jeton (session et utilisateur chargés) :
+        // pas de seconde lecture en base dans la même requête
+        if (req.user && req.jetonVerifie === token) {
+            return next();
+        }
+
         // Vérifier et décoder le token
         let decoded;
         try {
@@ -152,7 +158,9 @@ export const optionalAuth = async (req, res, next) => {
 
         if (token) {
             const decoded = verifyAccessToken(token);
-            await attachUserFromToken(req, decoded);
+            const erreur = await attachUserFromToken(req, decoded);
+            // Session et utilisateur valides : authenticateToken n'aura pas à les relire
+            if (!erreur) req.jetonVerifie = token;
         }
         next();
     } catch (error) {

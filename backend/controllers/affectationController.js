@@ -38,28 +38,36 @@ export const getAllAffectations = asyncHandler(async (req, res) => {
         where.date_seance = { [Op.gte]: req.query.date_from };
     }
 
-    const { count, rows: affectations } = await Affectation.findAndCountAll({
-        where,
-        include: [
-            { model: Cours, as: "cours" },
-            { model: Groupe, as: "groupe" },
-            {
-                model: Users,
-                as: "enseignant",
-                attributes: { exclude: ["password_hash"] },
-            },
-            { model: Salle, as: "salle" },
-            { model: Creneau, as: "creneau" },
-            {
-                model: Users,
-                as: "admin_createur",
-                attributes: { exclude: ["password_hash"] },
-            },
-        ],
-        limit,
-        offset,
-        order: [["date_seance", "DESC"], ["id_affectation", "DESC"]],
-    });
+    // En deux temps : total et identifiants de la page sans jointure (lus dans l'index de date),
+    // puis ces seules séances avec leurs détails. Trier le résultat joint complet avant LIMIT
+    // coûtait ~230 ms sur une année de séances.
+    const ordre = [["date_seance", "DESC"], ["id_affectation", "DESC"]];
+    const [count, pageIds] = await Promise.all([
+        Affectation.count({ where }),
+        Affectation.findAll({ where, attributes: ["id_affectation"], order: ordre, limit, offset, raw: true }),
+    ]);
+    const affectations = !pageIds.length
+        ? []
+        : await Affectation.findAll({
+            where: { id_affectation: pageIds.map((p) => p.id_affectation) },
+            include: [
+                { model: Cours, as: "cours" },
+                { model: Groupe, as: "groupe" },
+                {
+                    model: Users,
+                    as: "enseignant",
+                    attributes: { exclude: ["password_hash"] },
+                },
+                { model: Salle, as: "salle" },
+                { model: Creneau, as: "creneau" },
+                {
+                    model: Users,
+                    as: "admin_createur",
+                    attributes: { exclude: ["password_hash"] },
+                },
+            ],
+            order: ordre,
+        });
     await appliquerRamadan(affectations);
 
     res.json(createPaginationResponse(affectations, count, page, limit));
