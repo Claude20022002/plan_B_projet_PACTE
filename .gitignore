@@ -25,6 +25,8 @@ csrf_token=*
 # Fichiers système
 .DS_Store
 Thumbs.db
+# Fichiers de verrouillage d'Office (document ouvert dans Word, PowerPoint ou Excel)
+~$*
 google-drive.json
 StudyLib-*.json
 # Paquets de mise à jour du serveur (deploy/vps/preparer-maj.sh)
