@@ -60,6 +60,11 @@ export default function Document() {
     [format.lecture, doc]
   );
 
+  const erreurLecture = useCallback(() => {
+    setLecture(false);
+    setErreur(true);
+  }, []);
+
   const lancerTelechargement = async () => {
     setErreur(false);
     setProgression(0);
@@ -111,10 +116,7 @@ export default function Document() {
           fichier={fichier}
           mime={doc.mime_type}
           lecture={format.lecture}
-          surErreur={() => {
-            setLecture(false);
-            setErreur(true);
-          }}
+          surErreur={erreurLecture}
         />
       </Ecran>
     );

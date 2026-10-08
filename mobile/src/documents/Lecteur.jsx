@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ActivityIndicator, Platform, StyleSheet, View } from 'react-native';
 import { WebView } from 'react-native-webview';
 import { creerStyles, useTheme } from '../theme';
@@ -77,19 +77,28 @@ const pageImage = (fond, mime, base64) => `<!doctype html><html><head><meta char
 img { max-width: 100%; max-height: 100%; }</style></head>
 <body><img src="data:${mime};base64,${base64}" alt=""></body></html>`;
 
+/** `surErreur` doit être stable (useCallback) : elle relancerait sinon la lecture de l'image. */
 export default function Lecteur({ fichier, mime, lecture, surErreur }) {
   const { couleurs } = useTheme();
   const styles = useStyles();
   const vue = useRef(null);
-  const [html, setHtml] = useState(null);
+  const [htmlImage, setHtmlImage] = useState(null);
   const [pret, setPret] = useState(false);
   const pdfNatif = lecture === 'pdf' && Platform.OS === 'ios';
+  const htmlPdf = useMemo(() => (lecture === 'pdf' && !pdfNatif ? pagePdfJs(couleurs.fond, couleurs.filet) : null), [lecture, pdfNatif, couleurs.fond, couleurs.filet]);
+  const html = htmlPdf ?? htmlImage;
 
   useEffect(() => {
-    if (pdfNatif) return;
-    if (lecture === 'pdf') setHtml(pagePdfJs(couleurs.fond, couleurs.filet));
-    else fichier.base64().then((b64) => setHtml(pageImage(couleurs.fond, mime, b64)), surErreur);
-  }, [fichier, mime, lecture, pdfNatif, couleurs, surErreur]);
+    if (lecture !== 'image') return undefined;
+    let actif = true;
+    fichier.base64().then(
+      (b64) => actif && setHtmlImage(pageImage(couleurs.fond, mime, b64)),
+      (e) => actif && surErreur(e)
+    );
+    return () => {
+      actif = false;
+    };
+  }, [fichier, mime, lecture, couleurs.fond, surErreur]);
 
   const message = async ({ nativeEvent }) => {
     let donnees;

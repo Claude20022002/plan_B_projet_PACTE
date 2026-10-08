@@ -39,6 +39,14 @@
       "expo-font",
       "expo-web-browser",
       [
+        "expo-image-picker",
+        {
+          "photosPermission": "HESTIM Planner accède à vos photos seulement pour celle que vous choisissez d'ajouter à un retour de stage.",
+          "cameraPermission": false,
+          "microphonePermission": false
+        }
+      ],
+      [
         "expo-camera",
         {
           "cameraPermission": "HESTIM Planner utilise l'appareil photo pour scanner le QR code de l'appel en classe.",
