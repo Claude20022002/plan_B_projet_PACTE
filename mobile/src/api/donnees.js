@@ -69,6 +69,9 @@ export const chargerSupports = async (codes) => {
   return (await biblio(`/modules/supports?${requete}`)).supports || {};
 };
 
+/** Un document (titre, format, taille), pour ouvrir le lecteur sans passer par la liste */
+export const chargerDocument = async (id) => (await biblio(`/documents/${encodeURIComponent(id)}`))?.data;
+
 export const chargerDocuments = async (moduleId) => (await biblio(`/documents?module_id=${encodeURIComponent(moduleId)}`)).data || [];
 
 /** URL signée de 5 minutes, ouverte dans le navigateur du téléphone */
