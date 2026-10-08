@@ -230,7 +230,7 @@ export default function Reservations() {
                                             <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{r.salle?.nom_salle ?? t('assistant.remote')}</TableCell>
                                             <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                                                 <Typography variant="body2">
-                                                    {[...r.participants.filter((p) => p.user).map((p) => nom(p.user)), ...r.participants.filter((p) => p.groupe).map((p) => p.groupe.nom_groupe)].join(', ') || '—'}
+                                                    {[...r.participants.filter((p) => p.user).map((p) => nom(p.user)), ...r.participants.filter((p) => p.groupe).map((p) => p.groupe.nom_groupe)].join(', ') || '-'}
                                                 </Typography>
                                             </TableCell>
                                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>

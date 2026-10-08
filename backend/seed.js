@@ -87,15 +87,15 @@ const HESTIM_CONFIG = {
         },
         // Spécialités de dernière année de l'ingénierie informatique
         {
-            code:'IIIA-IABD', nom:'Ingénierie Informatique — IA & Big Data', abrege:'IABD', cycle:'Ingénieur', campus:'G', dept:'IA & Data',
+            code:'IIIA-IABD', nom:'Ingénierie Informatique (IA & Big Data)', abrege:'IABD', cycle:'Ingénieur', campus:'G', dept:'IA & Data',
             niveaux:[ { label:'5ème année', semestre:'S9', effectif:18, nb_groupes:1 } ],
         },
         {
-            code:'IIIA-CYB', nom:'Ingénierie Informatique — Cybersécurité', abrege:'CYB', cycle:'Ingénieur', campus:'G', dept:'Cybersécurité',
+            code:'IIIA-CYB', nom:'Ingénierie Informatique (Cybersécurité)', abrege:'CYB', cycle:'Ingénieur', campus:'G', dept:'Cybersécurité',
             niveaux:[ { label:'5ème année', semestre:'S9', effectif:16, nb_groupes:1 } ],
         },
         {
-            code:'IIIA-GL', nom:'Ingénierie Informatique — Génie Logiciel', abrege:'GL', cycle:'Ingénieur', campus:'G', dept:'Informatique',
+            code:'IIIA-GL', nom:'Ingénierie Informatique (Génie Logiciel)', abrege:'GL', cycle:'Ingénieur', campus:'G', dept:'Informatique',
             niveaux:[ { label:'5ème année', semestre:'S9', effectif:16, nb_groupes:1 } ],
         },
         {
@@ -125,7 +125,7 @@ const HESTIM_CONFIG = {
             ],
         },
         {
-            code:'PGE-MDI', nom:'Programme Grande École — Marketing Digital et Innovation', abrege:'MDI', cycle:'PGE', campus:'ST', dept:'Marketing',
+            code:'PGE-MDI', nom:'Programme Grande École (Marketing Digital et Innovation)', abrege:'MDI', cycle:'PGE', campus:'ST', dept:'Marketing',
             niveaux:[
                 { label:'4ème année', semestre:'S7', effectif:25, nb_groupes:1 },
                 { label:'5ème année', semestre:'S9', effectif:22, nb_groupes:1 },
@@ -185,7 +185,7 @@ const HESTIM_CONFIG = {
             ['IIIA-4-FDS',   'Fondamentaux de la Data Science',                           'CM15 TP15', 'IA & Data'],
             ['IIIA-4-NIS2',  'Introduction à la cybersécurité et la directive NIS2',      'CM30',      'Cybersécurité', { rythme:[2, 4, 5] }],
             ['IIIA-4-FSSI',  "Fondamentaux de la sécurité des systèmes d'information",    'CM21 TD9',  'Cybersécurité'],
-            ['IIIA-4-IBMDS', 'IBM Data Science — certificat professionnel (cours 1 à 4)', 'CM24',      'IA & Data', { modalite:'distanciel', mention:'Blended Coursera' }],
+            ['IIIA-4-IBMDS', 'IBM Data Science, certificat professionnel (cours 1 à 4)', 'CM24',      'IA & Data', { modalite:'distanciel', mention:'Blended Coursera' }],
             ['IIIA-4-PIC',   'Projet PIC',                                                'PRJ30',     'Informatique', { co:true }],
             // Modules du S7 vus dans les supports partagés (Drive StudyLib, 2024-2025) ; HESTIM publie un
             // nouvel emploi du temps chaque mois, la liste se complète au fil des EDT (volumes supposés)
@@ -600,7 +600,7 @@ async function seed() {
                 defaults: {
                     code_filiere: f.code,
                     nom_filiere: f.nom,
-                    description: `${f.cycle} — ${f.nom}`,
+                    description: `${f.cycle} : ${f.nom}`,
                     ...(CYCLES_SEED[f.cycle] || {}),
                     id_campus_prefere: campusParCode[f.campus] ?? null,
                     partenaire: f.partenaire ?? null,

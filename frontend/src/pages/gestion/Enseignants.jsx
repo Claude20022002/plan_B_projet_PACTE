@@ -301,13 +301,13 @@ export default function Enseignants() {
                                                 )}
                                             </TableCell>
                                             <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' }, fontVariantNumeric: 'tabular-nums' }}>
-                                                {e.service_annuel_heures ? `${nombre.format(e.service_annuel_heures)} h` : '—'}
+                                                {e.service_annuel_heures ? `${nombre.format(e.service_annuel_heures)} h` : '-'}
                                             </TableCell>
                                             <TableCell align="right">
                                                 <Charge charge={charges.parId.get(e.id_user)} nombre={nombre} />
                                             </TableCell>
                                             <TableCell align="right" sx={{ display: { xs: 'none', md: 'table-cell' }, fontVariantNumeric: 'tabular-nums' }}>
-                                                {e.max_heures_semaine ? `${nombre.format(e.max_heures_semaine)} h` : '—'}
+                                                {e.max_heures_semaine ? `${nombre.format(e.max_heures_semaine)} h` : '-'}
                                             </TableCell>
                                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                                                 <IconButton size="small" onClick={() => ouvrirCompetences(e)} aria-label={t('ref.staff.skillsTitle', { name: nom })} title={t('ref.staff.skills')}>
@@ -417,7 +417,7 @@ export default function Enseignants() {
                         multiple
                         disableCloseOnSelect
                         options={[...modules].sort((a, b) => (a.filiere?.code_filiere || '').localeCompare(b.filiere?.code_filiere || '') || a.code_cours.localeCompare(b.code_cours))}
-                        groupBy={(m) => m.filiere?.code_filiere || '—'}
+                        groupBy={(m) => m.filiere?.code_filiere || '-'}
                         value={competences?.choix ?? []}
                         onChange={(_, valeur) => setCompetences((c) => ({ ...c, choix: valeur }))}
                         getOptionLabel={(m) => `${m.code_cours} · ${m.nom_cours}`}
@@ -460,7 +460,7 @@ export default function Enseignants() {
  */
 function Charge({ charge, nombre }) {
     const { t } = useTranslation();
-    if (!charge) return '—';
+    if (!charge) return '-';
     const { heures_prevues: prevues, heures_proposees: proposees, service_du: du } = charge;
     const pastille = du && prevues > du ? <StateChip tone="warning" title={t('ref.staff.overTitle')}>{t('ref.staff.over', { hours: nombre.format(prevues - du) })}</StateChip> : null;
     return (

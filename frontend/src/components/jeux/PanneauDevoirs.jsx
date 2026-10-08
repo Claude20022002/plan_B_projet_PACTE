@@ -380,7 +380,7 @@ export default function PanneauDevoirs({ enseignant, modules }) {
               </Box>
               <Capitales sx={{ display: 'block', mt: 0.5, fontSize: '0.875rem', color: ds.board.letter }}>
                 {enseignant
-                  ? [t('jeux.devoirs.resumeEnseignant', { count: d.rendus, moyenne: d.moyenne === null ? '—' : d.moyenne.toLocaleString(i18n.language) }), d.a_corriger ? t('jeux.devoirs.aCorriger', { count: d.a_corriger }) : null].filter(Boolean).join(' · ')
+                  ? [t('jeux.devoirs.resumeEnseignant', { count: d.rendus, moyenne: d.moyenne === null ? '-' : d.moyenne.toLocaleString(i18n.language) }), d.a_corriger ? t('jeux.devoirs.aCorriger', { count: d.a_corriger }) : null].filter(Boolean).join(' · ')
                   : d.rendu
                     ? d.rendu.note === null
                       ? t('jeux.devoirs.enCorrection')

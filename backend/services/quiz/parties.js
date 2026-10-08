@@ -112,7 +112,7 @@ export const enregistrerPartie = async (evenement) => {
             await creerNotificationsMultiples({
                 id_users: etudiants,
                 titre: "Quiz en cours",
-                message: `${partie.titre} — ${seance.cours?.nom_cours ?? "votre séance"}. Rejoignez la partie depuis l'application.`,
+                message: `${partie.titre} (${seance.cours?.nom_cours ?? "votre séance"}). Rejoignez la partie depuis l'application.`,
                 type_notification: "info",
                 lien: "/jeux",
             });

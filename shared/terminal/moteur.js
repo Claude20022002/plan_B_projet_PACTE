@@ -928,7 +928,7 @@ registerCommand("unzip", {
 });
 registerCommand("man", {
   category: "Shell", description: "Read a concise manual page.", examples: ["man grep", "man chmod"], help: "man command\n\nOpen Terminal Quest's short, task-oriented reference for a command.",
-  execute: (args) => { const name = args[0]; const entry = name && COMMANDS[name]; if (!entry) return commandError("man", `${name || ""}: no manual entry`); const options = entry.options?.length ? `\nCOMMON OPTIONS\n  ${entry.options.join("\n  ")}\n` : ""; return result(`NAME\n  ${entry.name} — ${entry.description}\n\nSYNOPSIS\n  ${entry.help.split("\n")[0]}\n\nGUIDE\n  ${entry.help.split("\n").slice(2).join(" ").trim()}\n${options}\nEXAMPLE\n  ${(entry.examples || [entry.name])[0]}\n`); }
+  execute: (args) => { const name = args[0]; const entry = name && COMMANDS[name]; if (!entry) return commandError("man", `${name || ""}: no manual entry`); const options = entry.options?.length ? `\nCOMMON OPTIONS\n  ${entry.options.join("\n  ")}\n` : ""; return result(`NAME\n  ${entry.name} - ${entry.description}\n\nSYNOPSIS\n  ${entry.help.split("\n")[0]}\n\nGUIDE\n  ${entry.help.split("\n").slice(2).join(" ").trim()}\n${options}\nEXAMPLE\n  ${(entry.examples || [entry.name])[0]}\n`); }
 });
 registerCommand("history", {
   category: "Shell", description: "Review commands from this session.", examples: ["history"], help: "history\n\nPrint commands entered in the current simulated session.",

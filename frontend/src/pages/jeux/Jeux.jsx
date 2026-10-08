@@ -312,7 +312,7 @@ export default function Jeux() {
                     >
                       <Capitales sx={{ display: 'block', fontSize: '1rem' }}>{m.code} · {m.nom}</Capitales>
                       <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                        {libelle(jeu.titre, i18n.language)} — {propose ? t('jeux.modules.estPropose') : t('jeux.modules.nonPropose')}
+                        {libelle(jeu.titre, i18n.language)} ({propose ? t('jeux.modules.estPropose') : t('jeux.modules.nonPropose')})
                       </Box>
                     </LignePanneau>
                   );

@@ -285,7 +285,7 @@ export const sendAnnulationSeance = async ({ to, affectation, nouvelle_date }) =
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     });
 
-    const subject = `⚠️ Séance reportée — ${coursNom}`;
+    const subject = `⚠️ Séance reportée : ${coursNom}`;
 
     const text = `
 Bonjour,
@@ -359,7 +359,7 @@ HESTIM Planner
       </div>
       <p style="font-size:13px;color:#666">Veuillez consulter votre emploi du temps sur HESTIM Planner pour confirmer les détails.</p>
     </div>
-    <div class="footer">HESTIM Planner — Système de gestion des plannings</div>
+    <div class="footer">HESTIM Planner, gestion des emplois du temps</div>
   </div>
 </body>
 </html>

@@ -301,7 +301,7 @@ export default function Cours() {
 
     const libelleSeance = (n) => (Number(n) === 2 ? t('ref.curriculum.halfDay') : t('ref.curriculum.slots', { count: Number(n) }));
     const rythme = (c) => {
-        if (!c.semaine_debut && !c.seances_par_semaine) return '—';
+        if (!c.semaine_debut && !c.seances_par_semaine) return '-';
         const semaines = c.semaine_debut ? t('ref.curriculum.weeksRange', { from: c.semaine_debut, to: c.semaine_fin || c.semaine_debut }) : '';
         const parSemaine = c.seances_par_semaine ? t('ref.curriculum.perWeek', { count: c.seances_par_semaine }) : '';
         return [semaines, parSemaine].filter(Boolean).join(' · ');
@@ -309,7 +309,7 @@ export default function Cours() {
     const volumeTotal = (m) => m.composantes.reduce((total, c) => total + (Number(c.volume_heures) || 0), 0);
     const nomEnseignant = (id) => {
         const e = enseignants.find((x) => x.id_user === id);
-        return e ? `${e.user?.prenom || ''} ${e.user?.nom || ''}`.trim() : '—';
+        return e ? `${e.user?.prenom || ''} ${e.user?.nom || ''}`.trim() : '-';
     };
 
     return (
@@ -402,12 +402,12 @@ export default function Cours() {
                                                 <TableCell sx={{ fontFamily: ds.font.board, fontWeight: 600 }}>{module.semestre}</TableCell>
                                                 <TableCell>
                                                     <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
-                                                        {module.composantes.map((c) => `${c.type} ${nombre.format(c.volume_heures)} h`).join(' · ') || '—'}
+                                                        {module.composantes.map((c) => `${c.type} ${nombre.format(c.volume_heures)} h`).join(' · ') || '-'}
                                                     </Typography>
                                                 </TableCell>
                                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{nombre.format(volumeTotal(module))} h</TableCell>
-                                                <TableCell align="right" sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{module.ects ?? '—'}</TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{module.id_responsable ? nomEnseignant(module.id_responsable) : '—'}</TableCell>
+                                                <TableCell align="right" sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{module.ects ?? '-'}</TableCell>
+                                                <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{module.id_responsable ? nomEnseignant(module.id_responsable) : '-'}</TableCell>
                                                 <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
                                                     <IconButton size="small" onClick={() => ouvrirModule(module)} aria-label={t('ref.common.editItem', { name: module.nom_cours })}>
                                                         <Edit fontSize="small" />
@@ -453,7 +453,7 @@ export default function Cours() {
                                                                                 )}
                                                                             </TableCell>
                                                                             <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                                                                                {c.type_salle_requis ? t(`ref.roomTypes.${c.type_salle_requis}`, { defaultValue: c.type_salle_requis }) : '—'}
+                                                                                {c.type_salle_requis ? t(`ref.roomTypes.${c.type_salle_requis}`, { defaultValue: c.type_salle_requis }) : '-'}
                                                                             </TableCell>
                                                                             <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{rythme(c)}</TableCell>
                                                                             <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
@@ -529,7 +529,7 @@ export default function Cours() {
                                 <TextField fullWidth type="number" label={t('ref.curriculum.fields.ects')} value={moduleDialog.form.ects} onChange={champModule('ects')} inputProps={{ min: 0, step: 0.5 }} />
                                 <TextField fullWidth type="number" label={t('ref.curriculum.fields.coefficient')} value={moduleDialog.form.coefficient} onChange={champModule('coefficient')} inputProps={{ min: 0, step: 0.5 }} />
                                 <TextField select fullWidth label={t('ref.curriculum.fields.lead')} value={moduleDialog.form.id_responsable} onChange={champModule('id_responsable')}>
-                                    <MenuItem value="">—</MenuItem>
+                                    <MenuItem value="">{t('common.aucun')}</MenuItem>
                                     {enseignants.map((e) => (
                                         <MenuItem key={e.id_user} value={e.id_user}>
                                             {e.user?.prenom} {e.user?.nom}

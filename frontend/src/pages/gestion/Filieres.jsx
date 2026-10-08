@@ -246,7 +246,7 @@ export default function Filieres() {
                                         </TableCell>
                                         <TableCell>{t(`ref.schools.${f.ecole}`)}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                                            {f.intitule_cycle || (f.cycle ? t(`ref.cycles.${f.cycle}`) : '—')}
+                                            {f.intitule_cycle || (f.cycle ? t(`ref.cycles.${f.cycle}`) : '-')}
                                             {f.premiere_annee_cycle && (
                                                 <Typography component="span" variant="body2" color="text.secondary">
                                                     {' · '}
@@ -255,8 +255,8 @@ export default function Filieres() {
                                             )}
                                         </TableCell>
                                         <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t(`ref.regimes.${f.regime}`)}</TableCell>
-                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{f.campus_prefere?.nom || '—'}</TableCell>
-                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{f.partenaire || '—'}</TableCell>
+                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{f.campus_prefere?.nom || '-'}</TableCell>
+                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{f.partenaire || '-'}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', sm: 'table-cell' } }}>
                                             {f.responsables?.length ? (
                                                 f.responsables.map((r) => `${r.user?.prenom?.[0] ?? ''}. ${r.user?.nom ?? ''}`).join(', ')
@@ -312,7 +312,7 @@ export default function Filieres() {
                             </Stack>
                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                 <TextField select fullWidth label={t('ref.programs.fields.cycle')} value={dialog.form.cycle} onChange={champ('cycle')}>
-                                    <MenuItem value="">—</MenuItem>
+                                    <MenuItem value="">{t('common.aucun')}</MenuItem>
                                     {CYCLES.map((c) => (
                                         <MenuItem key={c} value={c}>
                                             {t(`ref.cycles.${c}`)}
@@ -330,7 +330,7 @@ export default function Filieres() {
                             />
                             <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                                 <TextField select fullWidth label={t('ref.programs.fields.campus')} value={dialog.form.id_campus_prefere} onChange={champ('id_campus_prefere')}>
-                                    <MenuItem value="">—</MenuItem>
+                                    <MenuItem value="">{t('common.aucun')}</MenuItem>
                                     {campus.map((c) => (
                                         <MenuItem key={c.id_campus} value={c.id_campus}>
                                             {c.nom}

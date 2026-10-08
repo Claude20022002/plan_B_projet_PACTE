@@ -83,7 +83,7 @@ function QueuePanel({ conflicts, conflictsTotal, reports, loading }) {
               key={`r-${r.id_demande}`}
               tone={ds.colors.warning.text}
               title={t('admin.reportTitle', {
-                teacher: [r.enseignant?.prenom, r.enseignant?.nom].filter(Boolean).join(' ') || '—',
+                teacher: [r.enseignant?.prenom, r.enseignant?.nom].filter(Boolean).join(' ') || '-',
               })}
               detail={[
                 r.affectation?.cours?.nom_cours,
@@ -132,7 +132,7 @@ function IndicatorsStrip({ kpis, loading }) {
                 {item.label}
               </Box>
               <Box component="td" sx={{ textAlign: 'right', px: 2, py: 1.25, fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.125rem', letterSpacing: '0.04em', whiteSpace: 'nowrap' }}>
-                {loading ? <Skeleton width={48} sx={{ ml: 'auto' }} /> : item.value === undefined || item.value === null ? '—' : number.format(item.value)}
+                {loading ? <Skeleton width={48} sx={{ ml: 'auto' }} /> : item.value === undefined || item.value === null ? '-' : number.format(item.value)}
                 {!loading && item.value !== undefined && item.value !== null && item.unit && (
                   <Box component="span" sx={{ ml: 0.25, fontSize: '0.875rem', color: 'text.secondary' }}>
                     {item.unit}

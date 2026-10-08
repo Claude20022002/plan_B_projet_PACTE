@@ -80,7 +80,7 @@ export default function SessionSpotlight({ session: s, phase, variant = 'board',
         >
           {t('board.room')}
         </Box>
-        <FlapTiles value={s.room || '—'} variant={variant} size="clamp(2rem, 9vw, 2.75rem)" />
+        <FlapTiles value={s.room || '-'} variant={variant} size="clamp(2rem, 9vw, 2.75rem)" />
         {where && (
           <Box sx={{ mt: 1, fontSize: '0.9375rem', color: dim }}>{where}</Box>
         )}

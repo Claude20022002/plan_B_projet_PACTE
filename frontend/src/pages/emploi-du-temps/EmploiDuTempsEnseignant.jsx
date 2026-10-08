@@ -44,7 +44,7 @@ export default function EmploiDuTempsEnseignant() {
           <TimetableExportMenu
             affectations={affectations}
             fileBase={fileBase}
-            title={`${t('nav.timetable')} — ${user?.prenom || ''} ${user?.nom || ''}`}
+            title={`${t('nav.timetable')} · ${user?.prenom || ''} ${user?.nom || ''}`}
             role="enseignant"
           />
         }

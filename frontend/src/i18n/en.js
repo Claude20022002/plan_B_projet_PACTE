@@ -6,6 +6,7 @@ const en = {
     school: 'Engineering & Business School',
   },
   common: {
+    aucun: 'None',
     loading: 'Loading…',
     retry: 'Try again',
     seeAll: 'See all',
@@ -838,6 +839,7 @@ const en = {
   // School reference data (phase P1): campuses, rooms, calendar, time grids, settings
   ref: {
     common: {
+    aucun: 'None',
       delete: 'Delete',
       editItem: 'Edit {{name}}',
       deleteItem: 'Delete {{name}}',

@@ -190,7 +190,7 @@ export default function Creneaux() {
                                             if (!creneau) {
                                                 return (
                                                     <TableCell key={jour} sx={{ color: 'text.disabled' }}>
-                                                        —
+                                                        -
                                                     </TableCell>
                                                 );
                                             }

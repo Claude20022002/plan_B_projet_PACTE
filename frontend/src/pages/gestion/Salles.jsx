@@ -216,7 +216,7 @@ export default function Salles() {
 
     const libelleType = (type) => t(`ref.roomTypes.${type}`, { defaultValue: type });
     const libelleEtage = (etage) => {
-        if (etage === null || etage === undefined) return '—';
+        if (etage === null || etage === undefined) return '-';
         if (etage === 0) return t('ref.rooms.groundFloor');
         if (etage < 0) return t('ref.rooms.basement');
         return t('ref.rooms.floorN', { n: etage });
@@ -290,13 +290,13 @@ export default function Salles() {
                                     <TableRow key={salle.id_salle} hover>
                                         <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>{salle.nom_salle}</TableCell>
                                         <TableCell sx={{ whiteSpace: 'nowrap' }}>{libelleType(salle.type_salle)}</TableCell>
-                                        <TableCell>{salle.campus?.nom ?? '—'}</TableCell>
+                                        <TableCell>{salle.campus?.nom ?? '-'}</TableCell>
                                         <TableCell align="right">{salle.capacite}</TableCell>
-                                        <TableCell align="right">{salle.capacite_examen ?? '—'}</TableCell>
+                                        <TableCell align="right">{salle.capacite_examen ?? '-'}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' }, whiteSpace: 'nowrap' }}>{libelleEtage(salle.etage)}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' }, maxWidth: 260 }}>
                                             <Typography variant="body2" color="text.secondary" noWrap title={(salle.equipements || []).join(', ')}>
-                                                {(salle.equipements || []).join(', ') || '—'}
+                                                {(salle.equipements || []).join(', ') || '-'}
                                             </Typography>
                                         </TableCell>
                                         <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
@@ -480,7 +480,7 @@ export default function Salles() {
                                         {importState.erreurs.map((erreur) => (
                                             <TableRow key={erreur.ligne}>
                                                 <TableCell sx={{ whiteSpace: 'nowrap', width: 110 }}>{t('ref.rooms.line', { n: erreur.ligne })}</TableCell>
-                                                <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 600 }}>{erreur.nom_salle || '—'}</TableCell>
+                                                <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 600 }}>{erreur.nom_salle || '-'}</TableCell>
                                                 <TableCell>{erreur.erreurs.join(' · ')}</TableCell>
                                             </TableRow>
                                         ))}

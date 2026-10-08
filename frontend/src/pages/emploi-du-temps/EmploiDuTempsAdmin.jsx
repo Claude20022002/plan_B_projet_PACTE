@@ -116,7 +116,7 @@ export default function EmploiDuTempsAdmin() {
           <TimetableExportMenu
             affectations={affectations}
             fileBase={`emploi-du-temps-${(subject || 'campus').toLowerCase().replace(/\s+/g, '-')}`}
-            title={`${t('nav.timetable')} — ${subject || ''}`}
+            title={[t('nav.timetable'), subject].filter(Boolean).join(' · ')}
             role="admin"
           />
         }

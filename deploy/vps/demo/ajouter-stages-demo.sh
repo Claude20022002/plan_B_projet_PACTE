@@ -13,7 +13,7 @@ docker cp "$DEMO/stage-cybel.jpg" "$CONTENEUR:/tmp/demo-stages/stage-cybel.jpg"
 
 # Retour de Claudia LUSAMOTE KIMFUTA (accord donné), stage Cybel au FabLab
 docker exec "$CONTENEUR" php artisan studylib:add-internship-review \
-    --company="HESTIM — FabLab" \
+    --company="HESTIM FabLab" \
     --city=Casablanca \
     --sector=Robotique \
     --position="Stage en robotique : reconstruction du système robotique Cybel" \

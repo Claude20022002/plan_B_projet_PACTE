@@ -29,7 +29,7 @@ export default function Spotlight({ seance: s, phase, maintenant, supports, onSu
         {s.courseType ? `  ${s.courseType}` : ''}
       </Text>
       <Text style={styles.salle} maxFontSizeMultiplier={1.4} accessibilityLabel={s.distanciel ? t('app.distanciel') : `${t('board.room')} ${s.room}`}>
-        {s.distanciel ? t('app.distanciel').toUpperCase() : s.room || '—'}
+        {s.distanciel ? t('app.distanciel').toUpperCase() : s.room || '-'}
       </Text>
       <Text style={styles.details} maxFontSizeMultiplier={1.4}>
         {[s.building, s.floor !== null && s.floor !== undefined ? t('board.floor', { floor: s.floor }) : null, `${s.startLabel}–${s.endLabel}`, s.teacher].filter(Boolean).join('  ·  ')}

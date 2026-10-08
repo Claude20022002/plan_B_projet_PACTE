@@ -262,5 +262,5 @@ export const fluxIcs = async (jeton, maintenant = new Date()) => {
     const abonnement = await AbonnementCalendrier.findOne({ where: { jeton }, include: [{ model: Users, as: "user", attributes: ["id_user", "role", "prenom", "nom", "actif"] }] });
     if (!abonnement?.user?.actif) return null;
     const evenements = await evenementsDuCompte(abonnement.user, maintenant);
-    return calendrierIcs(`HESTIM — ${abonnement.user.prenom} ${abonnement.user.nom}`, evenements, maintenant);
+    return calendrierIcs(`HESTIM · ${abonnement.user.prenom} ${abonnement.user.nom}`, evenements, maintenant);
 };

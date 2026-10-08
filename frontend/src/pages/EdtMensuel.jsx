@@ -216,7 +216,7 @@ export default function EdtMensuel() {
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <img src="/HESTIM.png" alt="HESTIM" style={{ height: 42 }} />
                         <span style={{ fontSize: 13, fontWeight: 700 }}>
-                            {t('monthly.year')} : {edt.entete.annee_universitaire ?? '—'}
+                            {t('monthly.year')} : {edt.entete.annee_universitaire ?? '-'}
                         </span>
                     </Box>
                     <div style={{ textAlign: 'center', fontSize: 20, fontWeight: 700 }}>{t('monthly.title')}</div>

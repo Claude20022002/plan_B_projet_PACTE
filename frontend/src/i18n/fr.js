@@ -6,6 +6,7 @@ const fr = {
     school: 'Engineering & Business School',
   },
   common: {
+    aucun: 'Aucun',
     loading: 'Chargement…',
     retry: 'Réessayer',
     seeAll: 'Tout voir',

@@ -146,7 +146,7 @@ function ChargeResume({ charge, nombre }) {
     const valeurs = [
         { label: t('ref.services.accepted'), value: `${nombre.format(charge.heures_acceptees)} h` },
         { label: t('ref.services.pending'), value: `${nombre.format(charge.heures_proposees)} h` },
-        { label: t('ref.services.due'), value: charge.service_du ? `${nombre.format(charge.service_du)} h` : '—' },
+        { label: t('ref.services.due'), value: charge.service_du ? `${nombre.format(charge.service_du)} h` : '-' },
     ];
     return (
         <Box sx={{ border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.xs}px`, px: 1.5, py: 1, minWidth: 260 }}>

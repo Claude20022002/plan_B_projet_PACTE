@@ -246,7 +246,7 @@ export const creerDevoir = async (user, donnees = {}) => {
         await creerNotificationsMultiples({
             id_users: etudiants,
             titre: "Nouveau devoir",
-            message: `${devoir.titre} — ${cours.nom_cours}. À rendre avant le ${limite.toLocaleString("fr-FR", { timeZone: process.env.APP_TIMEZONE || "Africa/Casablanca", dateStyle: "short", timeStyle: "short" })}.`,
+            message: `${devoir.titre} (${cours.nom_cours}). À rendre avant le ${limite.toLocaleString("fr-FR", { timeZone: process.env.APP_TIMEZONE || "Africa/Casablanca", dateStyle: "short", timeStyle: "short" })}.`,
             type_notification: "info",
             lien: "/jeux",
         });
@@ -480,7 +480,7 @@ export const noterCopie = async (user, id, idEtudiant, { note, commentaire } = {
     await creerNotificationsMultiples({
         id_users: [idEtudiant],
         titre: dejaNotee ? "Note de devoir modifiée" : "Devoir corrigé",
-        message: `${devoir.titre} — ${devoir.cours?.nom_cours ?? ""} : ${String(Number(rendu.note)).replace(".", ",")}/20.`,
+        message: `${devoir.titre}${devoir.cours?.nom_cours ? ` (${devoir.cours.nom_cours})` : ""} : ${String(Number(rendu.note)).replace(".", ",")}/20.`,
         type_notification: "success",
         lien: "/jeux",
     }).catch(() => {});

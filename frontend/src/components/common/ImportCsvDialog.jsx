@@ -52,7 +52,7 @@ export default function ImportCsvDialog({ open, onClose, titre, intro, modele, n
             setErreurs(resultat.erreurs || []);
             setBilan(resultat);
         } catch (error) {
-            setErreurs([{ ligne: '—', libelle: '', message: error.message }]);
+            setErreurs([{ ligne: '-', libelle: '', message: error.message }]);
         } finally {
             setEnCours(false);
         }
@@ -96,7 +96,7 @@ export default function ImportCsvDialog({ open, onClose, titre, intro, modele, n
                                     {erreurs.map((erreur, index) => (
                                         <TableRow key={`${erreur.ligne}-${index}`}>
                                             <TableCell sx={{ whiteSpace: 'nowrap', width: 100 }}>{t('ref.import.line', { n: erreur.ligne })}</TableCell>
-                                            <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 600 }}>{erreur.libelle || '—'}</TableCell>
+                                            <TableCell sx={{ whiteSpace: 'nowrap', fontWeight: 600 }}>{erreur.libelle || '-'}</TableCell>
                                             <TableCell>{erreur.message}</TableCell>
                                         </TableRow>
                                     ))}

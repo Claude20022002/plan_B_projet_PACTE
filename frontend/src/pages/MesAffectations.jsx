@@ -118,7 +118,7 @@ export default function MesAffectations() {
                     motif:              values.motif,
                     statut_demande:     'en_attente',
                 });
-                setSuccess('Demande de report envoyée — en attente de validation par l\'admin');
+                setSuccess('Demande de report envoyée, en attente de validation par l\'administration.');
                 closeReportDialog();
             } catch (err) {
                 setError(err.response?.data?.message || err.message || 'Erreur lors de la demande de report');
@@ -175,9 +175,9 @@ export default function MesAffectations() {
                                     const isConfirming = confirmingId === aff.id_affectation;
                                     return (
                                         <TableRow key={aff.id_affectation} hover>
-                                            <TableCell>{aff.cours?.nom_cours || '—'}</TableCell>
-                                            <TableCell>{aff.groupe?.nom_groupe || '—'}</TableCell>
-                                            <TableCell>{aff.salle?.nom_salle || '—'}</TableCell>
+                                            <TableCell>{aff.cours?.nom_cours || '-'}</TableCell>
+                                            <TableCell>{aff.groupe?.nom_groupe || '-'}</TableCell>
+                                            <TableCell>{aff.salle?.nom_salle || '-'}</TableCell>
                                             <TableCell>
                                                 {new Date(aff.date_seance).toLocaleDateString('fr-FR')}
                                             </TableCell>

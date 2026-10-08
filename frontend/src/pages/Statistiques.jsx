@@ -48,7 +48,7 @@ function KpiStrip({ items }) {
                                 {item.title}
                             </Box>
                             <Box component="td" sx={{ px: 2, py: 1.25, textAlign: 'right', whiteSpace: 'nowrap', fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.125rem', letterSpacing: '0.04em', color: item.tone || 'text.primary' }}>
-                                {item.value === undefined || item.value === null ? '—' : numberFr.format(item.value)}
+                                {item.value === undefined || item.value === null ? '-' : numberFr.format(item.value)}
                                 {item.unit && <Box component="span" sx={{ ml: 0.5, fontSize: '0.875rem', color: 'text.secondary' }}>{item.unit}</Box>}
                             </Box>
                             <Box component="td" sx={{ px: 2, py: 1.25, color: 'text.secondary', fontSize: '0.875rem', display: { xs: 'none', sm: 'table-cell' } }}>
@@ -297,7 +297,7 @@ export default function Statistiques() {
                                     </BarChart>
                                 </ResponsiveContainer>
                                 <Box sx={{ display: 'flex', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
-                                    {[[ds.colors.success.text,'< 40 % — Faible'],[ds.colors.warning.text,'40–70 % — Moyen'],[ds.colors.danger.text,'> 70 % — Élevé']].map(([c, l]) => (
+                                    {[[ds.colors.success.text,'Faible (< 40 %)'],[ds.colors.warning.text,'Moyen (40–70 %)'],[ds.colors.danger.text,'Élevé (> 70 %)']].map(([c, l]) => (
                                         <Box key={l} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                             <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: c }} />
                                             <Typography variant="caption" color="text.secondary">{l}</Typography>

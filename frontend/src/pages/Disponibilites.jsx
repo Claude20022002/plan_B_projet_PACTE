@@ -93,7 +93,7 @@ export default function Disponibilites() {
         [creneaux]
     );
 
-    const libelleCreneau = (c) => (c ? `${t(`ref.days.${c.jour_semaine}`)} ${hhmm(c.heure_debut)}–${hhmm(c.heure_fin)}` : '—');
+    const libelleCreneau = (c) => (c ? `${t(`ref.days.${c.jour_semaine}`)} ${hhmm(c.heure_debut)}–${hhmm(c.heure_fin)}` : '-');
 
     const triees = useMemo(
         () =>

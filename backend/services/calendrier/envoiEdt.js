@@ -92,9 +92,9 @@ export const changementsEntre = (avant, apres) => {
         }
         const details = [];
         if (ancien.date !== l.date || ancien.debut !== l.debut || ancien.fin !== l.fin) details.push(`${quand(ancien)} → ${quand(l)}`);
-        if (ancien.salle !== l.salle) details.push(`salle ${ancien.salle ?? "—"} → ${l.salle ?? "—"}`);
-        if (ancien.enseignant !== l.enseignant) details.push(`enseignant ${ancien.enseignant ?? "—"} → ${l.enseignant ?? "—"}`);
-        if (details.length) changements.push({ date: l.date, texte: `Modifié : ${nomSeance(l)} — ${details.join(" ; ")}` });
+        if (ancien.salle !== l.salle) details.push(`salle ${ancien.salle ?? "non attribuée"} → ${l.salle ?? "non attribuée"}`);
+        if (ancien.enseignant !== l.enseignant) details.push(`enseignant ${ancien.enseignant ?? "non attribué"} → ${l.enseignant ?? "non attribué"}`);
+        if (details.length) changements.push({ date: l.date, texte: `Modifié : ${nomSeance(l)} (${details.join(" ; ")})` });
     }
     for (const l of avant.filter((x) => !restants.has(x.id))) changements.push({ date: l.date, texte: `Annulé ou retiré : ${quand(l)} · ${nomSeance(l)}` });
     return changements.sort((x, y) => x.date.localeCompare(y.date)).map((c) => c.texte);

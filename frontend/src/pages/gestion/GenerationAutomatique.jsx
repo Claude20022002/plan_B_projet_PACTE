@@ -233,7 +233,7 @@ function Rapport({ rapport }) {
                 <Chiffre libelle={t('gen.report.teachings')} valeur={rapport.enseignements.length} />
                 <Chiffre libelle={t('gen.report.incomplete')} valeur={incomplets.length} alerte={incomplets.length > 0} />
                 <Chiffre libelle={t('gen.report.excluded')} valeur={rapport.exclus.length} alerte={rapport.exclus.length > 0} />
-                <Chiffre libelle={t('gen.report.hard')} valeur={rapport.regles_dures_enfreintes ?? '—'} alerte={rapport.regles_dures_enfreintes < 0} />
+                <Chiffre libelle={t('gen.report.hard')} valeur={rapport.regles_dures_enfreintes ?? '-'} alerte={rapport.regles_dures_enfreintes < 0} />
             </Stack>
 
             {rapport.lecons_en_conflit.length > 0 && (
@@ -276,7 +276,7 @@ function Rapport({ rapport }) {
                                 <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' }, fontVariantNumeric: 'tabular-nums' }}>{e.seances}</TableCell>
                                 <TableCell>
                                     {e.sautees.length === 0 ? (
-                                        <Typography variant="body2" color="text.secondary">—</Typography>
+                                        <Typography variant="body2" color="text.secondary">-</Typography>
                                     ) : (
                                         e.sautees.map((s) => (
                                             <Typography key={s.date} variant="caption" component="div" color="text.secondary">

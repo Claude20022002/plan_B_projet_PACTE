@@ -187,7 +187,7 @@ export default function DepartureBoard({
               }}
             >
               {/* Un changement de salle bascule comme un statut */}
-              <FlapText value={s.room || '—'} />
+              <FlapText value={s.room || '-'} />
             </Box>
             {s.building && (
               <Box sx={{ fontSize: '0.75rem', color: palette.dim, whiteSpace: 'nowrap' }}>{s.building}</Box>
