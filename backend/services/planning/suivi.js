@@ -21,7 +21,7 @@ import {
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, aujourdhui, minutes } from "./affectationRules.js";
 import { ancetres } from "./groupes.js";
-import { appliquerRamadan } from "./ramadan.js";
+import { appliquerRamadan, horairesSurPlage } from "./ramadan.js";
 import { filieresDuResponsable } from "./droits.js";
 
 /**
@@ -100,11 +100,31 @@ export const suiviModules = async ({ id_periode, id_filiere = null, user }) => {
             { model: Groupe, as: "groupes", attributes: ["id_groupe", "nom_groupe"], through: { attributes: [] } },
         ],
     });
+    // Lignes brutes et créneaux à part : une année compte des milliers de séances, dont seules
+    // la durée et le statut servent (des instances Sequelize coûteraient plus que la requête)
     const seances = await Affectation.findAll({
         where: { id_enseignement: enseignements.map((e) => e.id_enseignement), statut: STATUTS_ACTIFS },
-        include: [{ model: Creneau, as: "creneau" }],
+        attributes: ["id_enseignement", "statut", "date_seance", "id_creneau"],
+        raw: true,
     });
-    await appliquerRamadan(seances);
+    const creneaux = new Map((await Creneau.findAll({ where: { id_creneau: [...new Set(seances.map((s) => s.id_creneau))] } })).map((c) => [c.id_creneau, c]));
+    let premiere = null;
+    let derniere = null;
+    for (const s of seances) {
+        const date = String(s.date_seance).slice(0, 10);
+        if (!premiere || date < premiere) premiere = date;
+        if (!derniere || date > derniere) derniere = date;
+    }
+    const horaires = await horairesSurPlage(premiere, derniere);
+    // Heures planifiées et réalisées par enseignement, en une passe sur les séances
+    const totaux = new Map();
+    for (const s of seances) {
+        const duree = heures(horaires(creneaux.get(s.id_creneau), String(s.date_seance).slice(0, 10)));
+        const total = totaux.get(s.id_enseignement) ?? { planifiees: 0, realisees: 0 };
+        total.planifiees += duree;
+        if (s.statut === "realise") total.realisees += duree;
+        totaux.set(s.id_enseignement, total);
+    }
 
     const today = aujourdhui();
     const debut = new Date(`${periode.date_debut}T12:00:00Z`);
@@ -113,9 +133,7 @@ export const suiviModules = async ({ id_periode, id_filiere = null, user }) => {
 
     return enseignements
         .map((e) => {
-            const siennes = seances.filter((s) => s.id_enseignement === e.id_enseignement);
-            const planifiees = siennes.reduce((t, s) => t + heures(s.creneau), 0);
-            const realisees = siennes.filter((s) => s.statut === "realise").reduce((t, s) => t + heures(s.creneau), 0);
+            const { planifiees, realisees } = totaux.get(e.id_enseignement) ?? { planifiees: 0, realisees: 0 };
             const attendues = e.heures_prevues * partAttendue;
             return {
                 id_enseignement: e.id_enseignement,
