@@ -52,8 +52,9 @@ export {
 export {
     hashPassword,
     comparePassword,
-    generateRandomPassword,
-    validatePasswordStrength,
+    empreinteARenouveler,
+    reglesMotDePasse,
+    verifierMotDePasse,
 } from "./passwordHelper.js";
 
 // Validations

@@ -33,6 +33,11 @@ const defaults = {
     // Double authentification obligatoire pour l'administration : activée seulement dans mfa.test.js
     // (les autres fichiers connectent leurs administrateurs par mot de passe seul)
     MFA_ADMINS_OBLIGATOIRE: "false",
+    // bcrypt au coût minimal (les tests créent beaucoup de comptes) ; pas d'appel à Have I Been Pwned
+    BCRYPT_COST: "4",
+    MOTS_DE_PASSE_FUITES: "false",
+    // Limiteurs en mémoire (vidés entre les tests) ; le magasin en base a son propre test
+    RATE_LIMIT_PERSISTANT: "false",
 };
 
 for (const [key, value] of Object.entries(defaults)) {

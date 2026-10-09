@@ -44,16 +44,14 @@ const validationSchema = yup.object({
     email: yup.string().email('Email invalide').required('L\'email est requis'),
     role: yup.string().oneOf(['admin', 'enseignant', 'etudiant']).required('Le rôle est requis'),
     telephone: yup.string(),
-    // Mêmes règles que le serveur (validatePasswordStrength). Facultatif : sans mot de passe,
-    // le compte reçoit un lien d'invitation ; un mot de passe saisi est provisoire.
+    // Longueur comme le serveur (utils/passwordHelper.js) ; mots de passe courants, personnels ou
+    // divulgués : refusés par le serveur. Facultatif : sans mot de passe, le compte reçoit un lien
+    // d'invitation ; un mot de passe saisi est provisoire.
     password: yup
         .string()
         .transform((valeur) => valeur || undefined)
-        .min(8, 'Au moins 8 caractères')
-        .matches(/[a-z]/, 'Au moins une minuscule')
-        .matches(/[A-Z]/, 'Au moins une majuscule')
-        .matches(/[0-9]/, 'Au moins un chiffre')
-        .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Au moins un caractère spécial'),
+        .min(12, 'Au moins 12 caractères (une phrase de passe convient)')
+        .max(64, 'Au plus 64 caractères'),
 });
 
 export default function Utilisateurs() {

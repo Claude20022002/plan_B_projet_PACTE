@@ -640,6 +640,16 @@ export const exportToExcel = (affectations, filename = 'emploi-du-temps') => {
 };
 
 /**
+ * Cellule CSV : échappée (guillemets, « ; », retours à la ligne) et neutralisée si elle commence
+ * par = + - @ (sinon exécutée comme formule par Excel ou LibreOffice : injection CSV, OWASP).
+ */
+export const champCsv = (valeur) => {
+    let texte = String(valeur ?? '');
+    if (/^[=+\-@\t\r]/.test(texte)) texte = `'${texte}`;
+    return /[;"\r\n]/.test(texte) ? `"${texte.replace(/"/g, '""')}"` : texte;
+};
+
+/**
  * Exporte en CSV
  */
 export const exportToCSV = (affectations, filename = 'emploi-du-temps') => {
@@ -657,15 +667,15 @@ export const exportToCSV = (affectations, filename = 'emploi-du-temps') => {
             aff.creneau?.heure_debut || '',
             aff.creneau?.heure_fin || '',
             aff.cours?.code_cours || '',
-            `"${aff.cours?.nom_cours || ''}"`,
+            aff.cours?.nom_cours || '',
             aff.cours?.type_cours || '',
             aff.groupe?.nom_groupe || '',
-            aff.enseignant ? `"${aff.enseignant.prenom} ${aff.enseignant.nom}"` : '',
+            aff.enseignant ? `${aff.enseignant.prenom} ${aff.enseignant.nom}` : '',
             aff.salle?.nom_salle || '',
             aff.statut || '',
         ]);
 
-    const csvContent = [headers.join(';'), ...rows.map((r) => r.join(';'))].join('\n');
+    const csvContent = [headers, ...rows].map((r) => r.map(champCsv).join(';')).join('\r\n');
     const blob = new Blob(['\uFEFF' + csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

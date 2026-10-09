@@ -3,7 +3,7 @@ import { Op } from "sequelize";
 import { Appartenir, AuthSession, Users, Enseignant, Etudiant, Filiere, Groupe, PasserelleWeb, PasswordResetToken } from "../models/index.js";
 import { signerJetonAcces } from "../utils/jetons.js";
 import { filieresDuResponsable } from "../services/planning/droits.js";
-import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
+import { hashPassword, comparePassword, empreinteARenouveler, verifierMotDePasse } from "../utils/passwordHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { creerDefi, mfaAConfigurer, resoudreDefi } from "../services/mfa.js";
@@ -183,6 +183,11 @@ export const login = asyncHandler(async (req, res) => {
         return res.status(401).json(INVALID_CREDENTIALS);
     }
 
+    // Empreinte d'un coût bcrypt inférieur au coût actuel : recalculée avec le mot de passe juste
+    if (empreinteARenouveler(user.password_hash)) {
+        await user.update({ password_hash: await hashPassword(password) });
+    }
+
     // Le statut du compte n'est révélé qu'à quelqu'un qui connaît le mot de passe
     if (!user.actif) {
         await journaliser(contexteDe(req), { evenement: "connexion_compte_desactive", user });
@@ -313,9 +318,9 @@ export const changePassword = asyncHandler(async (req, res) => {
     if (await comparePassword(password, user.password_hash)) {
         return res.status(400).json({ message: "Mot de passe inchangé", error: "Choisissez un mot de passe différent de l'actuel" });
     }
-    const verification = validatePasswordStrength(password);
+    const verification = await verifierMotDePasse(password, { user });
     if (!verification.valid) {
-        return res.status(400).json({ message: "Mot de passe invalide", errors: verification.errors, error: verification.errors[0] });
+        return res.status(400).json({ message: verification.errors[0], error: verification.errors[0], errors: verification.errors });
     }
     await user.update({ password_hash: await hashPassword(password), must_change_password: false });
     await AuthSession.update(
@@ -719,12 +724,9 @@ export const resetPassword = asyncHandler(async (req, res) => {
     }
 
     // Validation du mot de passe
-    const passwordValidation = validatePasswordStrength(password);
-    if (!passwordValidation.valid) {
-        return res.status(400).json({
-            message: "Mot de passe invalide",
-            errors: passwordValidation.errors,
-        });
+    const verification = await verifierMotDePasse(password, { user: resetToken.user });
+    if (!verification.valid) {
+        return res.status(400).json({ message: verification.errors[0], error: verification.errors[0], errors: verification.errors });
     }
 
     // Mettre à jour le mot de passe

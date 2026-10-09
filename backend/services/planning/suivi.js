@@ -188,9 +188,15 @@ export const suiviEnseignants = async ({ mois }) => {
         .sort((a, b) => a.nom.localeCompare(b.nom));
 };
 
-const champCsv = (v) => {
-    const texte = String(v ?? "");
-    return /[;"\n]/.test(texte) ? `"${texte.replace(/"/g, '""')}"` : texte;
+/**
+ * Cellule CSV. Une valeur qui commence par = + - @ (ou tabulation, retour chariot) serait
+ * exécutée comme formule par Excel ou LibreOffice (injection CSV, OWASP) : elle est préfixée
+ * d'une apostrophe, lue comme du texte.
+ */
+export const champCsv = (v) => {
+    let texte = String(v ?? "");
+    if (/^[=+\-@\t\r]/.test(texte)) texte = `'${texte}`;
+    return /[;"\r\n]/.test(texte) ? `"${texte.replace(/"/g, '""')}"` : texte;
 };
 
 /** Export CSV (séparateur « ; ») des heures réalisées par les vacataires sur un mois, une ligne par séance. */

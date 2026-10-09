@@ -5,6 +5,7 @@ import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import sequelize from "../../config/db.js";
 import { JournalSecurite } from "../../models/index.js";
 import { ECHECS_MAX } from "../../services/mfa.js";
+import { purgerJournal } from "../../services/journalSecurite.js";
 import { codeDuPas, depuisBase32, pasDe } from "../../utils/totp.js";
 
 /**
@@ -128,5 +129,18 @@ describe("Double authentification : codes faux limités par compte", () => {
         expect(await evenements({ evenement: "connexion_reussie", id_user: enseignant.id_user })).toEqual(
             expect.arrayContaining([expect.objectContaining({ details: { mobile: false, mfa: true } })])
         );
+    });
+});
+
+describe("Conservation", () => {
+    test("les événements de plus d'un an sont purgés, les récents gardés", async () => {
+        await JournalSecurite.bulkCreate([
+            { evenement: "connexion_echec", email: "vieux@hestim.test" },
+            { evenement: "connexion_echec", email: "recent@hestim.test" },
+        ]);
+        await sequelize.query("UPDATE JournalSecurite SET createdAt = createdAt - INTERVAL 400 DAY WHERE email = 'vieux@hestim.test'");
+        expect(await purgerJournal()).toBe(1);
+        expect(await JournalSecurite.count({ where: { email: "vieux@hestim.test" } })).toBe(0);
+        expect(await JournalSecurite.count({ where: { email: "recent@hestim.test" } })).toBe(1);
     });
 });

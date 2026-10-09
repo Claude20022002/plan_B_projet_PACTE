@@ -57,7 +57,7 @@ const fr = {
     current: 'Mot de passe provisoire',
     new: 'Nouveau mot de passe',
     confirm: 'Confirmer le nouveau mot de passe',
-    rules: '8 caractères au moins, avec une majuscule, une minuscule, un chiffre et un caractère spécial.',
+    rules: '12 caractères au moins : une phrase de passe facile à retenir convient. Évitez votre nom et les mots de passe courants ou déjà utilisés ailleurs.',
     mismatch: 'Les deux mots de passe ne correspondent pas',
     submit: 'Enregistrer et continuer',
   },

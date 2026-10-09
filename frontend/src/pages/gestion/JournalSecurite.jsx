@@ -95,7 +95,7 @@ export default function JournalSecurite() {
                     <TextField type="date" size="small" label={t('journalSecurite.du')} value={filtres.du} onChange={(e) => filtrer({ du: e.target.value })} InputLabelProps={{ shrink: true }} />
                     <TextField type="date" size="small" label={t('journalSecurite.au')} value={filtres.au} onChange={(e) => filtrer({ au: e.target.value })} InputLabelProps={{ shrink: true }} />
                     {filtres.compte && (
-                        <Chip label={t('journalSecurite.compteFiltre', { compte: filtres.compte.email ?? `#${filtres.compte.id_user}` })} onDelete={() => filtrer({ compte: null })} deleteIcon={<Close />} />
+                        <Chip label={t('journalSecurite.compteFiltre', { compte: filtres.compte.email ?? `#${filtres.compte.id_user}` })} onDelete={() => filtrer({ compte: null })} deleteIcon={<Close />} sx={{ textTransform: 'none', letterSpacing: 'normal' }} />
                     )}
                     <Typography variant="body2" color="text.secondary" sx={{ ml: { md: 'auto' } }}>
                         {t('journalSecurite.total', { count: resultat.total })}
@@ -142,7 +142,8 @@ export default function JournalSecurite() {
                                                 <Button
                                                     size="small"
                                                     variant="text"
-                                                    sx={{ p: 0, minWidth: 0, textTransform: 'none', verticalAlign: 'baseline' }}
+                                                    // Lien discret dans la phrase : typographie du texte, pas celle des boutons
+                                                    sx={{ p: 0, minWidth: 0, font: 'inherit', fontWeight: 600, letterSpacing: 'normal', textTransform: 'none', verticalAlign: 'baseline' }}
                                                     disabled={!e.id_user}
                                                     onClick={() => filtrer({ compte: { id_user: e.id_user, email: e.email } })}
                                                 >

@@ -36,8 +36,8 @@ export const customSecurityHeaders = (req, res, next) => {
     // Ajouter un header X-Frame-Options
     res.set("X-Frame-Options", "DENY");
 
-    // Ajouter un header X-XSS-Protection
-    res.set("X-XSS-Protection", "1; mode=block");
+    // X-XSS-Protection : laissé à Helmet (« 0 »). Le filtre XSS des anciens navigateurs est retiré
+    // des navigateurs actuels et pouvait lui-même ouvrir des failles ; la protection vient de la CSP.
 
     next();
 };

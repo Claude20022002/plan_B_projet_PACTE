@@ -26,14 +26,12 @@ const validationSchema = yup.object({
     prenom: yup.string().required('Le prénom est requis'),
     email: yup.string().email('Email invalide').required('L\'email est requis'),
     telephone: yup.string(),
-    // Mêmes règles que le serveur (validatePasswordStrength)
+    // Longueur comme le serveur (utils/passwordHelper.js) ; mots de passe courants, personnels ou
+    // divulgués : refusés par le serveur
     password: yup
         .string()
-        .min(8, 'Au moins 8 caractères')
-        .matches(/[a-z]/, 'Au moins une minuscule')
-        .matches(/[A-Z]/, 'Au moins une majuscule')
-        .matches(/[0-9]/, 'Au moins un chiffre')
-        .matches(/[!@#$%^&*(),.?":{}|<>]/, 'Au moins un caractère spécial'),
+        .min(12, 'Au moins 12 caractères (une phrase de passe convient)')
+        .max(64, 'Au plus 64 caractères'),
     confirmPassword: yup.string().oneOf([yup.ref('password'), null], 'Les mots de passe ne correspondent pas'),
     currentPassword: yup.string().when('password', {
         is: (value) => Boolean(value),
@@ -100,7 +98,8 @@ export default function Parametres() {
                 let errorMessage = error.message || 'Erreur lors de la mise à jour';
                 if (error.response?.data?.errors) {
                     const validationErrors = error.response.data.errors;
-                    errorMessage = validationErrors.map(err => `${err.field || err.param || 'Champ'}: ${err.msg || err.message || 'Erreur de validation'}`).join(', ');
+                    // Politique des mots de passe : des phrases ; express-validator : { field, msg }
+                    errorMessage = validationErrors.map(err => (typeof err === 'string' ? err : `${err.field || err.param || 'Champ'}: ${err.msg || err.message || 'Erreur de validation'}`)).join(', ');
                 } else if (error.response?.data?.message) {
                     errorMessage = error.response.data.message;
                 } else if (error.response?.data?.error) {

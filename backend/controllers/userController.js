@@ -2,7 +2,7 @@ import { Op } from "sequelize";
 import { AuthSession, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
-import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
+import { hashPassword, comparePassword, verifierMotDePasse } from "../utils/passwordHelper.js";
 import { pick } from "../utils/validationHelper.js";
 import sequelize from "../config/db.js";
 import { creerLienInvitation, creerProfil, empreinteInutilisable, envoyerInvitation } from "../services/comptes.js";
@@ -67,12 +67,9 @@ export const createUser = asyncHandler(async (req, res) => {
     // Mot de passe provisoire facultatif : sans lui, le compte reçoit un lien d'invitation
     const motDePasse = typeof req.body.password === "string" && req.body.password ? req.body.password : null;
     if (motDePasse) {
-        const passwordValidation = validatePasswordStrength(motDePasse);
-        if (!passwordValidation.valid) {
-            return res.status(400).json({
-                message: "Mot de passe invalide",
-                errors: passwordValidation.errors,
-            });
+        const verification = await verifierMotDePasse(motDePasse, { user: req.body });
+        if (!verification.valid) {
+            return res.status(400).json({ message: verification.errors[0], error: verification.errors[0], errors: verification.errors });
         }
     }
 
@@ -132,12 +129,9 @@ export const updateUser = asyncHandler(async (req, res) => {
     }
 
     if (req.body.password) {
-        const passwordValidation = validatePasswordStrength(String(req.body.password));
-        if (!passwordValidation.valid) {
-            return res.status(400).json({
-                message: "Mot de passe invalide",
-                errors: passwordValidation.errors,
-            });
+        const verification = await verifierMotDePasse(String(req.body.password), { user: { ...user.get({ plain: true }), ...updateData } });
+        if (!verification.valid) {
+            return res.status(400).json({ message: verification.errors[0], error: verification.errors[0], errors: verification.errors });
         }
 
         // Changer son propre mot de passe exige l'actuel (session volée ≠ compte volé).
@@ -256,7 +250,15 @@ export const importUsers = asyncHandler(async (req, res) => {
                 actif: userData.actif !== undefined ? userData.actif : true,
             };
 
-            // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion
+            // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion.
+            // Provisoire, il suit quand même la politique : il reste valable jusqu'à la première connexion
+            if (userData.password) {
+                const verification = await verifierMotDePasse(String(userData.password), { user: userData });
+                if (!verification.valid) {
+                    results.errors.push({ email: userData.email, error: verification.errors[0] });
+                    continue;
+                }
+            }
             userCreateData.password_hash = userData.password ? await hashPassword(String(userData.password)) : await empreinteInutilisable();
             userCreateData.must_change_password = true;
 

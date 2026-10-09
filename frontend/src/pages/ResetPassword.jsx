@@ -60,8 +60,8 @@ export default function ResetPassword() {
             return;
         }
 
-        if (formData.password.length < 8) {
-            setError('Le mot de passe doit contenir au moins 8 caractères');
+        if (formData.password.length < 12) {
+            setError('Le mot de passe doit contenir au moins 12 caractères (une phrase de passe convient)');
             return;
         }
 
@@ -183,7 +183,7 @@ export default function ResetPassword() {
                                                 </InputAdornment>
                                             ),
                                         }}
-                                        helperText="Minimum 8 caractères"
+                                        helperText="12 caractères au moins : une phrase de passe convient"
                                     />
 
                                     <TextField

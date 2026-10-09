@@ -64,6 +64,23 @@ export const journaliser = async (contexte, { evenement, user = null, id_user = 
 export const compterRecents = (idUser, evenement, depuis, { transaction } = {}) =>
     JournalSecurite.count({ where: { id_user: idUser, evenement, createdAt: { [Op.gte]: depuis } }, transaction });
 
+/**
+ * Conservation : JOURNAL_SECURITE_JOURS jours (365 par défaut, durée habituelle pour un journal
+ * de sécurité ; 30 au minimum, la limite de la double authentification lit les échecs récents).
+ * Suppression par lots : la table n'est jamais verrouillée longtemps. Renvoie le nombre supprimé.
+ */
+export const purgerJournal = async (maintenant = new Date()) => {
+    const jours = Math.max(30, Number(process.env.JOURNAL_SECURITE_JOURS) || 365);
+    const limite = new Date(maintenant.getTime() - jours * 24 * 3600 * 1000);
+    const LOT = 5000;
+    let total = 0;
+    for (;;) {
+        const supprimes = await JournalSecurite.destroy({ where: { createdAt: { [Op.lt]: limite } }, limit: LOT });
+        total += supprimes;
+        if (supprimes < LOT) return total;
+    }
+};
+
 const PAR_PAGE_MAX = 100;
 
 /** Consultation (administration) : filtres facultatifs, les plus récents d'abord, par pages. */

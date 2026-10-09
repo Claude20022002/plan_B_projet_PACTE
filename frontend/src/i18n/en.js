@@ -57,7 +57,7 @@ const en = {
     current: 'Temporary password',
     new: 'New password',
     confirm: 'Confirm the new password',
-    rules: 'At least 8 characters, with an uppercase letter, a lowercase letter, a digit and a special character.',
+    rules: 'At least 12 characters: an easy-to-remember passphrase works. Avoid your name and common passwords or ones used elsewhere.',
     mismatch: 'The two passwords do not match',
     submit: 'Save and continue',
   },
