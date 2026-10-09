@@ -160,6 +160,16 @@ export const authAPI = {
     getMe: () => request('/auth/me'),
     changePassword: (current_password, password) => request('/auth/change-password', { method: 'POST', body: { current_password, password } }),
     refreshToken: () => request('/auth/refresh', { method: 'POST' }),
+    // Double authentification : second temps de la connexion { defi, code } → { user }
+    mfaVerifier: (defi, code) => request('/auth/mfa/verifier', { method: 'POST', body: { defi, code } }),
+    // { active, obligatoire, possible, codes_restants }
+    mfaEtat: () => request('/auth/mfa'),
+    // { secret, adresse } (adresse otpauth du QR code)
+    mfaInscription: () => request('/auth/mfa/inscription', { method: 'POST' }),
+    // { codes_secours } : montrés une seule fois
+    mfaConfirmation: (code) => request('/auth/mfa/confirmation', { method: 'POST', body: { code } }),
+    mfaCodesSecours: (code) => request('/auth/mfa/codes-secours', { method: 'POST', body: { code } }),
+    mfaDesactivation: (password, code) => request('/auth/mfa/desactivation', { method: 'POST', body: { password, code } }),
 };
 
 // ==================== UTILISATEURS ====================
@@ -173,6 +183,8 @@ export const userAPI = {
     update: (id, data) => request(`/users/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/users/${id}`, { method: 'DELETE' }),
     importBulk: (data) => request('/users/import', { method: 'POST', body: data }),
+    // Téléphone perdu : retire la double authentification du compte et ferme ses sessions
+    reinitialiserMfa: (id) => request(`/users/${id}/mfa`, { method: 'DELETE' }),
 };
 
 // ==================== ENSEIGNANTS ====================

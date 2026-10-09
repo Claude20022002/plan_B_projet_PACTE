@@ -39,6 +39,11 @@ export default function PrivateRoute({ children, requiredRole = null, allowRespo
         return <Navigate to="/changer-mot-de-passe" replace />;
     }
 
+    // Administrateur sans double authentification : à configurer d'abord (le serveur bloque aussi)
+    if (user?.mfa_a_configurer && location.pathname !== '/securite') {
+        return <Navigate to="/securite" replace />;
+    }
+
     const allowed = requiredRole === null || [].concat(requiredRole).includes(user?.role) || (allowResponsable && estResponsable(user));
     if (!allowed) {
         // Mauvais rôle : retour à son propre tableau plutôt qu'à la page publique
