@@ -1,6 +1,6 @@
 # Scénarios de test à faire sur écran (recette)
 
-Version visée : **maj27** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026, dont ClassQuiz).
+Version visée : **maj28** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026 : ClassQuiz, double authentification, optimisation des requêtes, journal de sécurité et durcissements OWASP).
 Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout écart sous le scénario.
 
 ## Préparation
@@ -20,7 +20,8 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] `docker exec hestim_backend node -p process.versions.tz` répond `2026c`.
 - [ ] `https://planner.finadmintech.fr/api/activites` répond 401 (et non 404).
 - [ ] Le script de démo des stages s'exécute (retour de stage Cybel avec photo, 128 idées de projets).
-- [ ] Sur GitHub, la CI de `main` est verte (Build Frontend, Test Backend, Test Mobile, Test Solveur).
+- [ ] Sur GitHub, la CI de `main` est verte (Build Frontend, Test Backend avec l'étape « Banc des requêtes SQL », Test Mobile, Test Solveur).
+- [ ] Au démarrage, le journal du backend indique les migrations 0035 (index), 0036 (journal de sécurité) et 0037 (compteurs de connexion) appliquées, sans erreur.
 
 ## 1. Connexion et sécurité
 
@@ -29,6 +30,18 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Plusieurs étudiants qui se connectent correctement depuis le Wi-Fi de l'école ne sont jamais bloqués.
 - [ ] Changer son mot de passe (profil) sur l'ordinateur : la session du téléphone est fermée, celle de l'ordinateur reste ouverte.
 - [ ] L'admin réinitialise le mot de passe d'un étudiant : l'étudiant est déconnecté partout et doit choisir un nouveau mot de passe à la connexion suivante.
+- [ ] 10 mauvais mots de passe sur un compte, puis `docker restart hestim_backend` : le compte reste bloqué (les compteurs de connexion survivent au redémarrage).
+
+### Choix du mot de passe (NIST)
+
+À faire sur un compte de test, par « Changer mon mot de passe » (profil) et par le lien « Mot de passe oublié ».
+
+- [ ] Une phrase de passe sans majuscule ni chiffre (`le train de nuit pour fes`) est acceptée.
+- [ ] Moins de 12 caractères : refusé, avec le message « au moins 12 caractères ».
+- [ ] Un mot de passe courant (`motdepasse123`) ou contenant le nom, le prénom ou l'email du compte : refusé, avec la raison affichée.
+- [ ] Un mot de passe connu des fuites (`Password1234!`) : refusé (« figure dans une fuite de données connue »).
+- [ ] Les comptes existants se connectent toujours avec leur mot de passe actuel, même s'il ne suit pas les nouvelles règles.
+- [ ] Import d'utilisateurs avec un mot de passe provisoire trop court : la ligne est refusée et signalée dans le rapport, les autres sont créées.
 
 ### Double authentification
 
@@ -39,6 +52,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Un code de secours fonctionne une seule fois (avec ou sans tiret, majuscules ou minuscules).
 - [ ] Le même code de l'application, réutilisé tout de suite, est refusé.
 - [ ] 5 codes faux : retour au mot de passe (« Connexion expirée ou trop d'essais »).
+- [ ] 10 codes faux en tout, sur plusieurs connexions de suite : même le bon code est refusé (« Trop de codes incorrects : réessayez dans 15 minutes ») ; il passe à nouveau après 15 minutes.
 - [ ] Paramètres : bloc « Double authentification » (Activée / Non activée) et bouton « Gérer » ; nouveaux codes de secours sur présentation d'un code.
 - [ ] Un administrateur ne peut pas la désactiver ; un enseignant peut l'activer puis la désactiver (mot de passe + code).
 - [ ] Page Utilisateurs : sur un compte où elle est active, l'icône « Réinitialiser la double authentification » demande confirmation, déconnecte la personne ; sa propre réinitialisation est refusée.
@@ -46,6 +60,23 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Mot de passe oublié : l'email arrive, le lien fonctionne une fois, puis est refusé.
 - [ ] Depuis l'application, ouvrir la bibliothèque ou le site : on arrive connecté, sans ressaisir le mot de passe.
 - [ ] Une erreur serveur (si on en provoque une) n'affiche qu'un message générique, jamais de détail technique.
+
+### Journal de sécurité (menu Personnes, administration)
+
+- [ ] Les essais des scénarios ci-dessus y apparaissent, du plus récent au plus ancien : connexions réussies et refusées (en rouge), codes faux, blocage, changements de mot de passe, double authentification réinitialisée.
+- [ ] L'adresse IP affichée est celle du testeur, pas une adresse interne du serveur (`172.…`, `10.…`).
+- [ ] L'admin désactive puis réactive un compte : deux lignes « Compte modifié », « par » son nom, avec « Statut : actif → désactivé » puis l'inverse.
+- [ ] Les filtres (type d'événement, dates) fonctionnent ; un clic sur un email n'affiche que ce compte, la croix de la pastille retire le filtre.
+- [ ] Aucun mot de passe ni code n'apparaît, même dans les détails.
+- [ ] Un enseignant ou un étudiant n'a pas accès à cet écran.
+- [ ] L'écran s'affiche correctement en anglais et sur un téléphone.
+
+### Navigateur (politique de contenu)
+
+- [ ] `curl -sI https://planner.finadmintech.fr/ | grep -i content-security` montre `Content-Security-Policy` (appliquée) ; sur `/biblio/`, seulement `Content-Security-Policy-Report-Only`.
+- [ ] Console du navigateur (F12) ouverte en parcourant le tableau de bord, les emplois du temps, les statistiques, Paramètres et le journal de sécurité : aucun message « Content Security Policy » ou « Refused to ».
+- [ ] L'impression de l'emploi du temps et les exports (PDF, Excel, CSV, agenda) fonctionnent toujours.
+- [ ] StudyLib (`/biblio`) fonctionne comme avant.
 
 ## 2. Appel par QR code (enseignant et étudiants)
 
@@ -95,6 +126,9 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Statistiques : par défaut sur l'année universitaire en cours (rappel « Année 2026-2027 · du … au … » sous les filtres).
 - [ ] Le sélecteur « Périmètre » propose chaque année, « Toutes les années » et « Période personnalisée » (deux dates) ; les chiffres changent en conséquence.
 - [ ] La liste des séances s'affiche vite, même sur un mois chargé.
+- [ ] Suivi du réalisé, onglet des modules : s'affiche en moins d'une seconde.
+- [ ] Export CSV des heures des vacataires et export CSV de l'emploi du temps : s'ouvrent dans Excel avec les bonnes colonnes, même pour une salle ou un groupe dont le nom contient « ; » ou des guillemets.
+- [ ] Un nom qui commence par `=` (par ex. une entreprise de vacataire `=1+1`) s'affiche tel quel dans Excel, sans être calculé.
 - [ ] L'EDT du mois s'imprime en PDF au format HESTIM.
 
 ## 4. Activités (quiz, devoirs, jeux)
@@ -171,6 +205,8 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Annonce ciblée sur un groupe avec pièce jointe : reçue par les étudiants du groupe seulement, accusés de lecture visibles par l'auteur.
 - [ ] Réservation de salle par un enseignant, validée ou refusée par l'admin.
 - [ ] Examen créé par l'admin, surveillants affectés, publication visible par les étudiants concernés.
+- [ ] Notifications : la page affiche les plus récentes (200 au plus) ; le badge compte toutes les non lues.
+- [ ] Emploi du temps de l'étudiant (application) : les séances mutualisées avec un autre groupe apparaissent.
 
 ---
 
