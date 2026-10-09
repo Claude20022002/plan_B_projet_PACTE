@@ -1,6 +1,6 @@
 # Scénarios de test à faire sur écran (recette)
 
-Version visée : **maj26** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026, dont ClassQuiz).
+Version visée : **maj27** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026, dont ClassQuiz).
 Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout écart sous le scénario.
 
 ## Préparation
@@ -29,6 +29,20 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Plusieurs étudiants qui se connectent correctement depuis le Wi-Fi de l'école ne sont jamais bloqués.
 - [ ] Changer son mot de passe (profil) sur l'ordinateur : la session du téléphone est fermée, celle de l'ordinateur reste ouverte.
 - [ ] L'admin réinitialise le mot de passe d'un étudiant : l'étudiant est déconnecté partout et doit choisir un nouveau mot de passe à la connexion suivante.
+
+### Double authentification
+
+- [ ] Après la mise à jour, chaque administrateur est conduit à la page « Double authentification » et ne peut rien faire d'autre avant de l'avoir configurée.
+- [ ] Le QR code se scanne dans Google Authenticator (ou Microsoft Authenticator, 2FAS) ; la clé affichée sous le QR fonctionne aussi à la main.
+- [ ] Un code faux est refusé ; le bon code active la double authentification et affiche 10 codes de secours (copier, télécharger, « J'ai rangé ces codes » obligatoire).
+- [ ] Connexion suivante : mot de passe, puis écran « Double authentification » ; le code de l'application ouvre la session.
+- [ ] Un code de secours fonctionne une seule fois (avec ou sans tiret, majuscules ou minuscules).
+- [ ] Le même code de l'application, réutilisé tout de suite, est refusé.
+- [ ] 5 codes faux : retour au mot de passe (« Connexion expirée ou trop d'essais »).
+- [ ] Paramètres : bloc « Double authentification » (Activée / Non activée) et bouton « Gérer » ; nouveaux codes de secours sur présentation d'un code.
+- [ ] Un administrateur ne peut pas la désactiver ; un enseignant peut l'activer puis la désactiver (mot de passe + code).
+- [ ] Page Utilisateurs : sur un compte où elle est active, l'icône « Réinitialiser la double authentification » demande confirmation, déconnecte la personne ; sa propre réinitialisation est refusée.
+- [ ] Les étudiants ne voient rien de nouveau et se connectent comme avant (site et application).
 - [ ] Mot de passe oublié : l'email arrive, le lien fonctionne une fois, puis est refusé.
 - [ ] Depuis l'application, ouvrir la bibliothèque ou le site : on arrive connecté, sans ressaisir le mot de passe.
 - [ ] Une erreur serveur (si on en provoque une) n'affiche qu'un message générique, jamais de détail technique.
