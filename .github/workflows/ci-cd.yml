@@ -102,6 +102,19 @@ jobs:
           DB_USER: root
           DB_PASSWORD: root
 
+      # Base de 18 000 séances, puis chaque route principale : statut 200 et nombre de requêtes
+      # SQL dans son budget (une boucle N+1 introduite fait échouer la CI)
+      - name: Banc des requêtes SQL (budget par route)
+        run: |
+          npm run banc:preparer
+          npm run banc:requetes -- --verifier
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_NAME: hestim_bench_test
+          DB_USER: root
+          DB_PASSWORD: root
+
   # ── 3. Application mobile (Expo) ─────────────────────────────────────────
   test-mobile:
     name: Test Mobile

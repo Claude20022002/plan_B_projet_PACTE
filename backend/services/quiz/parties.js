@@ -254,7 +254,16 @@ export const enregistrerFinPartie = async (evenement) => {
         // Un même étudiant ne compte qu'une fois (lien partagé : seul le premier pseudo est rattaché)
         if (idUser !== null && etudiantsVus.has(idUser)) idUser = null;
         if (idUser !== null) etudiantsVus.add(idUser);
-        joueurs.push({ pseudo, score: entierPositif(j.score), bonnes: entierPositif(j.bonnes), id_user: idUser });
+        joueurs.push({
+            pseudo,
+            score: entierPositif(j.score),
+            bonnes: entierPositif(j.bonnes),
+            id_user: idUser,
+            // Journal des sorties (plafonds du fork : 50 sorties, une heure chacune)
+            sorties: Math.min(entierPositif(j.sorties), 50),
+            sorties_duree_ms: Math.min(entierPositif(j.sorties_duree_ms), 50 * 3_600_000),
+            captures: Math.min(entierPositif(j.captures), 50),
+        });
     }
     // Un jeton ne vaut que pour un compte étudiant actif : sinon le score reste anonyme
     const ids = joueurs.map((j) => j.id_user).filter((id) => id !== null);
@@ -362,7 +371,15 @@ export const resultatsPartie = async (user, idPartie) => {
         score: r.score,
         bonnes: r.bonnes,
         rang: r.rang,
-        ...(complet ? { etudiant: r.joueur ? { id_user: r.joueur.id_user, nom: r.joueur.nom, prenom: r.joueur.prenom } : null } : {}),
+        // Identité et journal des sorties : pour l'enseignant de la partie seulement
+        ...(complet
+            ? {
+                  etudiant: r.joueur ? { id_user: r.joueur.id_user, nom: r.joueur.nom, prenom: r.joueur.prenom } : null,
+                  sorties: r.sorties,
+                  sorties_duree_ms: r.sorties_duree_ms,
+                  captures: r.captures,
+              }
+            : {}),
     });
     return {
         partie: {

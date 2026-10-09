@@ -41,48 +41,102 @@ const etapeCalendrier = async (periode) => {
     return { cle: "calendrier", avancement, etat: etat(avancement), detail: { feries, examens, a_confirmer: aConfirmer }, lien: "/gestion/calendrier" };
 };
 
-const etapesFiliere = async ({ filiere, periode, anneeScolaire }) => {
-    const modules = (await Cours.findAll({ where: { id_filiere: filiere.id_filiere }, include: [{ model: CoursComposante, as: "composantes", attributes: ["id_composante"] }] })).filter(
-        (c) => periodeDuSemestre(c.semestre) === periode.code
-    );
+/**
+ * Données de l'assistant pour plusieurs filières, lues en une passe (une requête par nature de
+ * donnée, quel que soit le nombre de filières) puis rangées par filière : l'écran ne fait plus
+ * une série de requêtes par filière.
+ */
+const chargerDonnees = async ({ filieres, periode }) => {
+    const idsFilieres = filieres.map((f) => f.id_filiere);
+    const parFiliere = (liste, cle) => {
+        const rangement = new Map(idsFilieres.map((id) => [id, []]));
+        for (const element of liste) rangement.get(cle(element))?.push(element);
+        return rangement;
+    };
+
+    const [cours, groupes, enseignements] = await Promise.all([
+        Cours.findAll({ where: { id_filiere: idsFilieres }, include: [{ model: CoursComposante, as: "composantes", attributes: ["id_composante"] }] }),
+        Groupe.findAll({ where: { id_filiere: idsFilieres } }),
+        Enseignement.findAll({
+            where: { id_periode: periode.id_periode },
+            include: [
+                { model: CoursComposante, as: "composante", required: true, include: [{ model: Cours, as: "cours", required: true, where: { id_filiere: idsFilieres }, attributes: ["id_cours", "id_filiere"] }] },
+                { model: EnseignementEnseignant, as: "services", required: false },
+            ],
+        }),
+    ]);
+    const filiereDe = new Map(enseignements.map((e) => [e.id_enseignement, e.composante.cours.id_filiere]));
+
+    // Vacataires engagés (toutes filières) et ceux qui ont déclaré des disponibilités sur la période
+    const idsEngages = [...new Set(enseignements.flatMap((e) => e.services.filter((s) => s.statut_service !== "refuse").map((s) => s.id_user)))];
+    const vacataires = idsEngages.length ? await Enseignant.findAll({ where: { id_user: idsEngages, statut: "vacataire" }, include: [{ model: Users, as: "user", attributes: ["id_user", "nom", "prenom"] }] }) : [];
+    const [disponibilites, seances, conflits] = await Promise.all([
+        vacataires.length
+            ? Disponibilite.findAll({ where: { id_user_enseignant: vacataires.map((v) => v.id_user), disponible: true, date_debut: { [Op.lte]: periode.date_fin }, date_fin: { [Op.gte]: periode.date_debut } }, attributes: ["id_user_enseignant"] })
+            : [],
+        enseignements.length
+            ? Affectation.findAll({
+                  where: { id_enseignement: [...filiereDe.keys()], statut: STATUTS_ACTIFS, date_seance: { [Op.between]: [periode.date_debut, periode.date_fin] } },
+                  attributes: ["id_affectation", "id_enseignement", "statut"],
+              })
+            : [],
+        // Conflits non résolus touchant une séance de la période : filtrés par jointure (pas de longue liste d'identifiants)
+        enseignements.length
+            ? Conflit.findAll({
+                  where: { resolu: false },
+                  attributes: ["id_conflit"],
+                  include: [
+                      {
+                          model: Affectation,
+                          as: "affectations",
+                          attributes: ["id_affectation", "id_enseignement"],
+                          through: { attributes: [] },
+                          where: { id_enseignement: [...filiereDe.keys()], statut: STATUTS_ACTIFS, date_seance: { [Op.between]: [periode.date_debut, periode.date_fin] } },
+                      },
+                  ],
+              })
+            : [],
+    ]);
+    const declarants = new Set(disponibilites.map((d) => d.id_user_enseignant));
+
+    return {
+        cours: parFiliere(cours, (c) => c.id_filiere),
+        groupes: parFiliere(groupes, (g) => g.id_filiere),
+        enseignements: parFiliere(enseignements, (e) => filiereDe.get(e.id_enseignement)),
+        seances: parFiliere(seances, (s) => filiereDe.get(s.id_enseignement)),
+        // Un conflit compte une fois pour chaque filière dont il touche une séance
+        conflits: new Map(idsFilieres.map((id) => [id, conflits.filter((c) => c.affectations.some((a) => filiereDe.get(a.id_enseignement) === id)).length])),
+        vacataires: new Map(vacataires.map((v) => [v.id_user, v])),
+        declarants,
+    };
+};
+
+const etapesFiliere = ({ filiere, periode, anneeScolaire, donnees }) => {
+    const modules = donnees.cours.get(filiere.id_filiere).filter((c) => periodeDuSemestre(c.semestre) === periode.code);
     const avecComposantes = modules.filter((m) => m.composantes.length).length;
     const maquette = pourcent(avecComposantes, modules.length);
 
-    const groupes = (await Groupe.findAll({ where: { id_filiere: filiere.id_filiere } })).filter((g) => normaliserAnnee(g.annee_scolaire) === anneeScolaire);
+    const groupes = donnees.groupes.get(filiere.id_filiere).filter((g) => normaliserAnnee(g.annee_scolaire) === anneeScolaire);
     const anneesAttendues = [...new Set(modules.map((m) => anneeDepuisNiveau(m.niveau)).filter(Boolean))];
     const anneesCouvertes = anneesAttendues.filter((a) => groupes.some((g) => g.type_groupe === "promotion" && (g.annee ?? anneeDepuisNiveau(g.niveau)) === a && g.effectif > 0));
     const groupesEtape = pourcent(anneesCouvertes.length, anneesAttendues.length);
 
-    const enseignements = await Enseignement.findAll({
-        where: { id_periode: periode.id_periode },
-        include: [
-            { model: CoursComposante, as: "composante", required: true, include: [{ model: Cours, as: "cours", required: true, where: { id_filiere: filiere.id_filiere }, attributes: [] }] },
-            { model: EnseignementEnseignant, as: "services", required: false },
-        ],
-    });
+    const enseignements = donnees.enseignements.get(filiere.id_filiere);
     const pourvus = enseignements.filter((e) => e.services.some((s) => s.role === "principal" && s.statut_service === "accepte")).length;
     const aAccepter = enseignements.filter((e) => e.services.some((s) => s.statut_service === "propose")).length;
     const services = pourcent(pourvus, enseignements.length);
 
     // Vacataires engagés sur la filière : il faut leurs disponibilités (opt-in)
     const idsEngages = [...new Set(enseignements.flatMap((e) => e.services.filter((s) => s.statut_service !== "refuse").map((s) => s.id_user)))];
-    const vacataires = await Enseignant.findAll({ where: { id_user: idsEngages, statut: "vacataire" }, include: [{ model: Users, as: "user", attributes: ["id_user", "nom", "prenom"] }] });
-    const declarants = new Set(
-        (await Disponibilite.findAll({ where: { id_user_enseignant: vacataires.map((v) => v.id_user), disponible: true, date_debut: { [Op.lte]: periode.date_fin }, date_fin: { [Op.gte]: periode.date_debut } }, attributes: ["id_user_enseignant"] })).map((d) => d.id_user_enseignant)
-    );
-    const sansDispo = vacataires.filter((v) => !declarants.has(v.id_user));
+    const vacataires = idsEngages.map((id) => donnees.vacataires.get(id)).filter(Boolean);
+    const sansDispo = vacataires.filter((v) => !donnees.declarants.has(v.id_user));
     const disponibilites = vacataires.length ? pourcent(vacataires.length - sansDispo.length, vacataires.length) : enseignements.length ? 100 : 0;
 
-    const seances = await Affectation.findAll({
-        where: { id_enseignement: enseignements.map((e) => e.id_enseignement), statut: STATUTS_ACTIFS, date_seance: { [Op.between]: [periode.date_debut, periode.date_fin] } },
-        attributes: ["id_affectation", "id_enseignement", "statut"],
-    });
+    const seances = donnees.seances.get(filiere.id_filiere);
     const planifies = new Set(seances.map((s) => s.id_enseignement)).size;
     const generation = pourcent(planifies, enseignements.length);
 
-    const conflits = seances.length
-        ? await Conflit.count({ where: { resolu: false }, include: [{ model: Affectation, as: "affectations", where: { id_affectation: seances.map((s) => s.id_affectation) }, attributes: [] }], distinct: true })
-        : 0;
+    const conflits = donnees.conflits.get(filiere.id_filiere);
     const revue = generation === 0 ? 0 : conflits ? 50 : 100;
     const publication = generation === 100 && conflits === 0 ? 100 : 0;
 
@@ -109,11 +163,11 @@ export const etatPreparation = async ({ id_periode, user }) => {
     const anneeScolaire = normaliserAnnee(periode.annee?.libelle);
     const ids = user.role === "admin" ? null : await filieresDuResponsable(user.id_user);
     const filieres = await Filiere.findAll({ where: ids ? { id_filiere: ids } : {}, order: [["code_filiere", "ASC"]] });
-    const calendrier = await etapeCalendrier(periode);
+    const [calendrier, donnees] = await Promise.all([etapeCalendrier(periode), chargerDonnees({ filieres, periode })]);
 
     const lignes = [];
     for (const filiere of filieres) {
-        const etapes = [calendrier, ...(await etapesFiliere({ filiere, periode, anneeScolaire }))];
+        const etapes = [calendrier, ...etapesFiliere({ filiere, periode, anneeScolaire, donnees })];
         lignes.push({
             filiere: { id_filiere: filiere.id_filiere, code_filiere: filiere.code_filiere, nom_filiere: filiere.nom_filiere },
             avancement: Math.round(etapes.reduce((t, e) => t + e.avancement, 0) / etapes.length),
@@ -128,7 +182,8 @@ export const relancerVacataires = async ({ id_periode, id_filiere }) => {
     const periode = await Periode.findByPk(id_periode, { include: [{ model: AnneeUniversitaire, as: "annee" }] });
     const filiere = await Filiere.findByPk(id_filiere);
     if (!periode || !filiere) throw new ErreurMetier("Période ou filière introuvable", 404);
-    const etapes = await etapesFiliere({ filiere, periode, anneeScolaire: normaliserAnnee(periode.annee?.libelle) });
+    const donnees = await chargerDonnees({ filieres: [filiere], periode });
+    const etapes = etapesFiliere({ filiere, periode, anneeScolaire: normaliserAnnee(periode.annee?.libelle), donnees });
     const manquants = etapes.find((e) => e.cle === "disponibilites").detail.sans_disponibilite;
     if (manquants.length) {
         await creerNotificationsMultiples({

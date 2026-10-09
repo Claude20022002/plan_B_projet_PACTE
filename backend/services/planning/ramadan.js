@@ -41,6 +41,16 @@ export const creneauEffectif = async (creneau, date, { transaction, cache = null
 };
 
 /**
+ * Pour les calculs en masse sur des lignes brutes (sans instances à modifier) : renvoie
+ * (créneau, date) → créneau ramadan correspondant, ou le créneau lui-même. Une seule lecture
+ * du calendrier pour toute la plage.
+ */
+export const horairesSurPlage = async (debut, fin, { transaction } = {}) => {
+    const variantes = debut ? await variantesEntre(debut, fin, transaction) : null;
+    return (creneau, date) => (variantes && creneau && creneau.variante !== "ramadan" && variantes.estRamadan(date) && variantes.variante(creneau)) || creneau;
+};
+
+/**
  * Remplace, dans des séances chargées avec leur créneau, les horaires des jours de Ramadan
  * (pour l'affichage et pour les calculs d'occupation). Modifie les instances en mémoire.
  */

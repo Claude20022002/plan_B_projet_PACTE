@@ -1,4 +1,4 @@
-import { Affectation, Salle, Creneau, Users, Groupe, Cours, Filiere, Conflit } from "../models/index.js";
+import { Affectation, AnneeUniversitaire, Salle, Creneau, Users, Groupe, Cours, Filiere, Conflit } from "../models/index.js";
 import { Op } from "sequelize";
 import sequelize from "../config/db.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
@@ -19,7 +19,38 @@ const filtreSeances = ({ date_debut, date_fin }, autres = {}) => ({
     ...autres,
 });
 
-const periodeDe = ({ date_debut, date_fin }) => (date_debut && date_fin ? { date_debut, date_fin } : null);
+const periodeDe = ({ date_debut, date_fin, annee_libelle }) => (date_debut && date_fin ? { date_debut, date_fin, annee: annee_libelle ?? null } : null);
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Périmètre des statistiques. Par défaut, l'année universitaire en cours (celle qui contient
+ * aujourd'hui, sinon l'année active, sinon la dernière commencée) : les calculs ne lisent que ses
+ * séances (index sur la date) au lieu de tout l'historique, qui grandit chaque année.
+ * L'administration peut aussi choisir : ?date_debut=…&date_fin=… (période libre), ?id_annee=…
+ * (une autre année) ou ?portee=tout (toutes les années).
+ */
+export const perimetreStatistiques = async (req, res, next) => {
+    const { date_debut, date_fin, id_annee, portee } = req.query;
+    if (DATE.test(String(date_debut ?? "")) && DATE.test(String(date_fin ?? ""))) return next();
+    delete req.query.date_debut;
+    delete req.query.date_fin;
+    if (portee === "tout") return next();
+
+    const aujourdhui = new Date().toLocaleDateString("en-CA", { timeZone: process.env.APP_TIMEZONE || "Africa/Casablanca" });
+    const annee = id_annee
+        ? await AnneeUniversitaire.findByPk(Number(id_annee) || 0)
+        : (await AnneeUniversitaire.findOne({ where: { date_debut: { [Op.lte]: aujourdhui }, date_fin: { [Op.gte]: aujourdhui } } })) ||
+          (await AnneeUniversitaire.findOne({ where: { active: true } })) ||
+          (await AnneeUniversitaire.findOne({ where: { date_debut: { [Op.lte]: aujourdhui } }, order: [["date_debut", "DESC"]] }));
+    if (id_annee && !annee) return res.status(404).json({ message: "Année universitaire introuvable" });
+    if (annee) {
+        req.query.date_debut = String(annee.date_debut).slice(0, 10);
+        req.query.date_fin = String(annee.date_fin).slice(0, 10);
+        req.query.annee_libelle = annee.libelle;
+    }
+    return next();
+};
 
 /**
  * Nombre de séances par combinaison de colonnes (`cles`), avec la première séance rencontrée
@@ -38,6 +69,24 @@ const compter = (where, cles, include) =>
         order: [[sequelize.literal("premiere"), "ASC"]],
         raw: true,
     }).then((lignes) => lignes.map((l) => ({ ...l, n: Number(l.n) })));
+
+/**
+ * Regroupe des lignes de compter() sur une partie de leurs clés, quand une lecture plus fine sert
+ * aussi à autre chose. Les lignes arrivent par `premiere` croissante, donc la première rencontrée
+ * pour une clé porte sa plus petite `premiere` : même résultat, et même ordre, que compter()
+ * appelé directement sur ces clés. À réserver aux clés qui groupent peu : fusionner des
+ * dimensions indépendantes (salle × enseignant × groupe…) rend presque une ligne par séance.
+ */
+const regrouper = (lignes, cles) => {
+    const parCle = new Map();
+    for (const l of lignes) {
+        const cle = cles.map((c) => l[c]).join("|");
+        const groupe = parCle.get(cle);
+        if (groupe) groupe.n += l.n;
+        else parCle.set(cle, { ...Object.fromEntries(cles.map((c) => [c, l[c]])), n: l.n, premiere: l.premiere });
+    }
+    return [...parCle.values()];
+};
 
 const creneauxParId = async () => new Map((await Creneau.findAll({ raw: true })).map((c) => [c.id_creneau, c]));
 const heuresDe = (ligne, creneaux) => (ligne.n * (creneaux.get(ligne.id_creneau)?.duree_minutes ?? 0)) / 60;
@@ -215,22 +264,25 @@ export const getPicsActivite = asyncHandler(async (req, res) => {
  * Charge de travail des enseignants
  */
 export const getChargeEnseignants = asyncHandler(async (req, res) => {
-    const where = filtreSeances(req.query);
-    const [lignes, coursDistincts, creneaux] = await Promise.all([
-        compter(where, ["id_user_enseignant", "id_creneau"]),
-        Affectation.findAll({
-            where,
-            include: [{ model: Cours, as: "cours", attributes: [] }],
-            attributes: ["id_user_enseignant", [sequelize.literal("COUNT(DISTINCT CAST(`cours`.`nom_cours` AS BINARY))"), "nombre"]],
-            group: ["Affectation.id_user_enseignant"],
-            raw: true,
-        }),
-        creneauxParId(),
+    // Une lecture des séances (enseignant × créneau × module, peu de combinaisons) au lieu de deux :
+    // heures par enseignant, et modules différents par leur nom
+    const [lignes, creneaux] = await Promise.all([compter(filtreSeances(req.query), ["id_user_enseignant", "id_creneau", "id_cours"]), creneauxParId()]);
+    const parEnseignant = cumuler(regrouper(lignes, ["id_user_enseignant", "id_creneau"]), creneaux, "id_user_enseignant");
+    const [enseignants, cours] = await Promise.all([
+        Users.findAll({ where: { id_user: [...parEnseignant.keys()] }, attributes: ["id_user", "nom", "prenom"], raw: true }),
+        Cours.findAll({ where: { id_cours: [...new Set(lignes.map((l) => l.id_cours))] }, attributes: ["id_cours", "nom_cours"], raw: true }),
     ]);
-    const parEnseignant = cumuler(lignes, creneaux, "id_user_enseignant");
-    const nbCours = new Map(coursDistincts.map((c) => [c.id_user_enseignant, Number(c.nombre)]));
-    const enseignants = await Users.findAll({ where: { id_user: [...parEnseignant.keys()] }, attributes: ["id_user", "nom", "prenom"], raw: true });
     const parId = new Map(enseignants.map((e) => [e.id_user, e]));
+    // Noms distincts à la casse près, comme COUNT(DISTINCT CAST(nom_cours AS BINARY)) : deux modules homonymes comptent une fois
+    const nomCours = new Map(cours.map((c) => [c.id_cours, c.nom_cours]));
+    const nomsParEnseignant = new Map();
+    for (const l of lignes) {
+        const nom = nomCours.get(l.id_cours);
+        if (nom == null) continue;
+        if (!nomsParEnseignant.has(l.id_user_enseignant)) nomsParEnseignant.set(l.id_user_enseignant, new Set());
+        nomsParEnseignant.get(l.id_user_enseignant).add(nom);
+    }
+    const nbCours = new Map([...nomsParEnseignant].map(([id, noms]) => [id, noms.size]));
 
     const result = [...parEnseignant]
         .filter(([id]) => parId.has(id))

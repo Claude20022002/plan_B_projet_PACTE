@@ -20,8 +20,8 @@ import {
 } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, aujourdhui, minutes } from "./affectationRules.js";
-import { ancetres } from "./groupes.js";
-import { appliquerRamadan } from "./ramadan.js";
+import { avecAncetres } from "./groupes.js";
+import { appliquerRamadan, horairesSurPlage } from "./ramadan.js";
 import { filieresDuResponsable } from "./droits.js";
 
 /**
@@ -100,11 +100,31 @@ export const suiviModules = async ({ id_periode, id_filiere = null, user }) => {
             { model: Groupe, as: "groupes", attributes: ["id_groupe", "nom_groupe"], through: { attributes: [] } },
         ],
     });
+    // Lignes brutes et créneaux à part : une année compte des milliers de séances, dont seules
+    // la durée et le statut servent (des instances Sequelize coûteraient plus que la requête)
     const seances = await Affectation.findAll({
         where: { id_enseignement: enseignements.map((e) => e.id_enseignement), statut: STATUTS_ACTIFS },
-        include: [{ model: Creneau, as: "creneau" }],
+        attributes: ["id_enseignement", "statut", "date_seance", "id_creneau"],
+        raw: true,
     });
-    await appliquerRamadan(seances);
+    const creneaux = new Map((await Creneau.findAll({ where: { id_creneau: [...new Set(seances.map((s) => s.id_creneau))] } })).map((c) => [c.id_creneau, c]));
+    let premiere = null;
+    let derniere = null;
+    for (const s of seances) {
+        const date = String(s.date_seance).slice(0, 10);
+        if (!premiere || date < premiere) premiere = date;
+        if (!derniere || date > derniere) derniere = date;
+    }
+    const horaires = await horairesSurPlage(premiere, derniere);
+    // Heures planifiées et réalisées par enseignement, en une passe sur les séances
+    const totaux = new Map();
+    for (const s of seances) {
+        const duree = heures(horaires(creneaux.get(s.id_creneau), String(s.date_seance).slice(0, 10)));
+        const total = totaux.get(s.id_enseignement) ?? { planifiees: 0, realisees: 0 };
+        total.planifiees += duree;
+        if (s.statut === "realise") total.realisees += duree;
+        totaux.set(s.id_enseignement, total);
+    }
 
     const today = aujourdhui();
     const debut = new Date(`${periode.date_debut}T12:00:00Z`);
@@ -113,9 +133,7 @@ export const suiviModules = async ({ id_periode, id_filiere = null, user }) => {
 
     return enseignements
         .map((e) => {
-            const siennes = seances.filter((s) => s.id_enseignement === e.id_enseignement);
-            const planifiees = siennes.reduce((t, s) => t + heures(s.creneau), 0);
-            const realisees = siennes.filter((s) => s.statut === "realise").reduce((t, s) => t + heures(s.creneau), 0);
+            const { planifiees, realisees } = totaux.get(e.id_enseignement) ?? { planifiees: 0, realisees: 0 };
             const attendues = e.heures_prevues * partAttendue;
             return {
                 id_enseignement: e.id_enseignement,
@@ -170,9 +188,15 @@ export const suiviEnseignants = async ({ mois }) => {
         .sort((a, b) => a.nom.localeCompare(b.nom));
 };
 
-const champCsv = (v) => {
-    const texte = String(v ?? "");
-    return /[;"\n]/.test(texte) ? `"${texte.replace(/"/g, '""')}"` : texte;
+/**
+ * Cellule CSV. Une valeur qui commence par = + - @ (ou tabulation, retour chariot) serait
+ * exécutée comme formule par Excel ou LibreOffice (injection CSV, OWASP) : elle est préfixée
+ * d'une apostrophe, lue comme du texte.
+ */
+export const champCsv = (v) => {
+    let texte = String(v ?? "");
+    if (/^[=+\-@\t\r]/.test(texte)) texte = `'${texte}`;
+    return /[;"\r\n]/.test(texte) ? `"${texte.replace(/"/g, '""')}"` : texte;
 };
 
 /** Export CSV (séparateur « ; ») des heures réalisées par les vacataires sur un mois, une ligne par séance. */
@@ -197,14 +221,7 @@ export const exportVacataires = async ({ mois }) => {
 /** Groupes d'un étudiant et groupes qui les contiennent (une séance de promotion le concerne). */
 const groupesDeLEtudiant = async (idUser) => {
     const appartenances = await Appartenir.findAll({ where: { id_user_etudiant: idUser }, attributes: ["id_groupe"] });
-    const ids = new Set();
-    for (const { id_groupe } of appartenances) {
-        const groupe = await Groupe.findByPk(id_groupe);
-        if (!groupe) continue;
-        const famille = await Groupe.findAll({ where: { id_filiere: groupe.id_filiere } });
-        [groupe, ...ancetres(groupe, new Map(famille.map((g) => [g.id_groupe, g])))].forEach((g) => ids.add(g.id_groupe));
-    }
-    return ids;
+    return new Set(await avecAncetres(appartenances.map((a) => a.id_groupe)));
 };
 
 const ilYA = (jours) => {

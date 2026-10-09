@@ -41,27 +41,37 @@ const Users = sequelize.define(
             defaultValue: false,
         },
         avatar_url: DataTypes.TEXT, // Utiliser TEXT au lieu de STRING pour permettre les images base64 longues
+        // Double authentification (services/mfa.js) : secret TOTP chiffré, état, dernier pas utilisé
+        mfa_secret: { type: DataTypes.STRING(255), allowNull: true },
+        mfa_active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        mfa_dernier_pas: { type: DataTypes.BIGINT, allowNull: true },
     },
     {
         tableName: "Users",
         freezeTableName: true,
-        // Le hash ne sort jamais par défaut, y compris via les `include` d'autres modèles.
-        // Seul le login le charge explicitement : Users.scope("withPassword").
+        // Le hash et le secret de double authentification ne sortent jamais par défaut, y compris
+        // via les `include` d'autres modèles. Le login charge le hash (« withPassword »), la
+        // vérification d'un code le secret (« withMfa »).
         defaultScope: {
-            attributes: { exclude: ["password_hash"] },
+            attributes: { exclude: ["password_hash", "mfa_secret", "mfa_dernier_pas"] },
         },
         scopes: {
             withPassword: {
                 attributes: { include: ["password_hash"] },
             },
+            withMfa: {
+                attributes: { include: ["mfa_secret", "mfa_dernier_pas"] },
+            },
         },
     }
 );
 
-// Filet de sécurité : même une instance chargée avec le hash ne le sérialise jamais en JSON.
+// Filet de sécurité : même une instance chargée avec le hash ou le secret ne les sérialise jamais en JSON.
 Users.prototype.toJSON = function toJSON() {
     const values = { ...this.get() };
     delete values.password_hash;
+    delete values.mfa_secret;
+    delete values.mfa_dernier_pas;
     return values;
 };
 

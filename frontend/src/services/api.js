@@ -160,6 +160,16 @@ export const authAPI = {
     getMe: () => request('/auth/me'),
     changePassword: (current_password, password) => request('/auth/change-password', { method: 'POST', body: { current_password, password } }),
     refreshToken: () => request('/auth/refresh', { method: 'POST' }),
+    // Double authentification : second temps de la connexion { defi, code } → { user }
+    mfaVerifier: (defi, code) => request('/auth/mfa/verifier', { method: 'POST', body: { defi, code } }),
+    // { active, obligatoire, possible, codes_restants }
+    mfaEtat: () => request('/auth/mfa'),
+    // { secret, adresse } (adresse otpauth du QR code)
+    mfaInscription: () => request('/auth/mfa/inscription', { method: 'POST' }),
+    // { codes_secours } : montrés une seule fois
+    mfaConfirmation: (code) => request('/auth/mfa/confirmation', { method: 'POST', body: { code } }),
+    mfaCodesSecours: (code) => request('/auth/mfa/codes-secours', { method: 'POST', body: { code } }),
+    mfaDesactivation: (password, code) => request('/auth/mfa/desactivation', { method: 'POST', body: { password, code } }),
 };
 
 // ==================== UTILISATEURS ====================
@@ -173,6 +183,8 @@ export const userAPI = {
     update: (id, data) => request(`/users/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/users/${id}`, { method: 'DELETE' }),
     importBulk: (data) => request('/users/import', { method: 'POST', body: data }),
+    // Téléphone perdu : retire la double authentification du compte et ferme ses sessions
+    reinitialiserMfa: (id) => request(`/users/${id}/mfa`, { method: 'DELETE' }),
 };
 
 // ==================== ENSEIGNANTS ====================
@@ -424,10 +436,6 @@ export const emploiDuTempsAPI = {
     getBySalle: (id, params) => {
         const query = new URLSearchParams(params).toString();
         return request(`/emplois-du-temps/salle/${id}${query ? `?${query}` : ''}`);
-    },
-    getConsolide: (params) => {
-        const query = new URLSearchParams(params).toString();
-        return request(`/emplois-du-temps/consolide${query ? `?${query}` : ''}`);
     },
     generer: (data) => request('/emplois-du-temps/generer', { method: 'POST', body: data }),
 };
@@ -698,4 +706,18 @@ export const presenceAPI = {
     tirerVerification: (id, nombre) => request(`/presences/seances/${encodeURIComponent(id)}/verification`, { method: 'POST', body: { nombre } }),
     verifier: (id, idUser, present) => request(`/presences/seances/${encodeURIComponent(id)}/verification/${encodeURIComponent(idUser)}`, { method: 'PUT', body: { present } }),
     // Le scan étudiant ne passe que par l'application mobile
+    // Administration : { data: [{ id, motif, le, id_user, etudiant, lie, telephone_lie_le, seance }] }
+    signalements: () => request('/presences/signalements'),
+    // Un compte = un téléphone : { lie, lie_le } ; délier (nouveau téléphone) : { delie }
+    telephone: (idUser) => request(`/presences/etudiants/${encodeURIComponent(idUser)}/telephone`),
+    delierTelephone: (idUser) => request(`/presences/etudiants/${encodeURIComponent(idUser)}/telephone`, { method: 'DELETE' }),
+};
+
+// Journal de sécurité (administration) : { total, page, par_page, evenements: [{ id_evenement, evenement, id_user, email, acteur, ip, user_agent, details, createdAt }] }
+export const journalSecuriteAPI = {
+    lister: (filtres = {}) => {
+        const params = Object.fromEntries(Object.entries(filtres).filter(([, v]) => v !== '' && v !== null && v !== undefined));
+        return request(`/journal-securite?${new URLSearchParams(params).toString()}`);
+    },
+    evenements: () => request('/journal-securite/evenements'),
 };

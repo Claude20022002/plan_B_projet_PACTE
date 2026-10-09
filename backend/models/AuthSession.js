@@ -44,7 +44,7 @@ const AuthSession = sequelize.define(
             { fields: ["id_user"] },
             { fields: ["session_id"] },
             { fields: ["family_id"] },
-            { fields: ["refresh_token_hash"] },
+            // refresh_token_hash : déjà indexé par sa contrainte unique
         ],
     }
 );

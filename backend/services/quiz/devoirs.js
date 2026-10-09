@@ -280,12 +280,11 @@ export const devoirsDe = async (user) => {
     const modules = await modulesDuJoueur(user);
     if (!modules.length) return [];
     const candidats = await Devoir.findAll({ where: { id_cours: modules }, include, order: [["date_limite", "ASC"]] });
-    const mesGroupes = await groupesDeLEtudiant(user.id_user);
-    const visibles = [];
-    for (const d of candidats) {
-        if (d.id_groupe && !(await groupesANotifier([d.id_groupe])).some((g) => mesGroupes.includes(g))) continue;
-        visibles.push(d);
-    }
+    // Devoir d'un groupe : visible si l'un de mes groupes est ce groupe ou l'un de ses descendants.
+    // Mes groupes comprennent tous leurs ancêtres : cela revient à « son groupe est parmi les miens »
+    // (sans lire la descendance de chaque devoir)
+    const mesGroupes = new Set(await groupesDeLEtudiant(user.id_user));
+    const visibles = candidats.filter((d) => !d.id_groupe || mesGroupes.has(d.id_groupe));
     const mesRendus = visibles.length ? await DevoirRendu.findAll({ where: { id_devoir: visibles.map((d) => d.id_devoir), id_user: user.id_user } }) : [];
     return visibles.map((d) => {
         const r = mesRendus.find((x) => x.id_devoir === d.id_devoir);

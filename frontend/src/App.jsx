@@ -69,6 +69,7 @@ const EmploiDuTempsEtudiant  = lazy(() => import('./pages/emploi-du-temps/Emploi
 // ── Pages partagées ───────────────────────────────────────────────────────
 const Notifications  = lazy(() => import('./pages/Notifications'));
 const Parametres     = lazy(() => import('./pages/Parametres'));
+const Securite       = lazy(() => import('./pages/Securite'));
 const Statistiques   = lazy(() => import('./pages/Statistiques'));
 const MesAffectations= lazy(() => import('./pages/MesAffectations'));
 const DemandesReport = lazy(() => import('./pages/DemandesReport'));
@@ -82,6 +83,8 @@ const Examens        = lazy(() => import('./pages/gestion/Examens'));
 const Imprevus       = lazy(() => import('./pages/gestion/Imprevus'));
 const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
 const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
+const SignalementsPresence = lazy(() => import('./pages/gestion/SignalementsPresence'));
+const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
 const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
@@ -292,6 +295,12 @@ export default function App() {
               <AppPage><Parametres /></AppPage>
             </PrivateRoute>
           } />
+          {/* Double authentification : page autonome (obligatoire pour l'administration) */}
+          <Route path="/securite" element={
+            <PrivateRoute requiredRole={['admin', 'enseignant']}>
+              <Securite />
+            </PrivateRoute>
+          } />
           <Route path="/statistiques" element={
             <PrivateRoute requiredRole="admin">
               <AppPage><Statistiques /></AppPage>
@@ -376,6 +385,16 @@ export default function App() {
           <Route path="/gestion/preparation" element={
             <PrivateRoute requiredRole="admin" allowResponsable>
               <AppPage><Preparation /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/signalements-presence" element={
+            <PrivateRoute requiredRole="admin">
+              <AppPage><SignalementsPresence /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/journal-securite" element={
+            <PrivateRoute requiredRole="admin">
+              <AppPage><JournalSecurite /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/emploi-du-temps/mensuel" element={

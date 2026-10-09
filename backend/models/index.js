@@ -36,6 +36,10 @@ import EnvoiEdt from "./EnvoiEdt.js";
 import AppelSeance from "./AppelSeance.js";
 import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
+import AppareilEtudiant from "./AppareilEtudiant.js";
+import MfaCodeSecours from "./MfaCodeSecours.js";
+import JournalSecurite from "./JournalSecurite.js";
+import MfaDefi from "./MfaDefi.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
 import JeuProfil from "./JeuProfil.js";
@@ -538,6 +542,11 @@ Presence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "i
 SignalementPresence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
 SignalementPresence.belongsTo(Users, { foreignKey: "id_user_lie", as: "lie", targetKey: "id_user" });
 SignalementPresence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
+Users.hasOne(AppareilEtudiant, { foreignKey: "id_user", as: "appareilAppel", onDelete: "CASCADE" });
+
+// Double authentification
+Users.hasMany(MfaCodeSecours, { foreignKey: "id_user", as: "codesSecours", onDelete: "CASCADE" });
+MfaDefi.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
 
 // Jeux intégrés : proposés dans un module, progression par joueur
 Cours.hasMany(JeuModule, { foreignKey: "id_cours", as: "jeux", onDelete: "CASCADE" });
@@ -616,6 +625,10 @@ export {
     AppelSeance,
     Presence,
     SignalementPresence,
+    AppareilEtudiant,
+    MfaCodeSecours,
+    JournalSecurite,
+    MfaDefi,
     JeuModule,
     JeuProgression,
     JeuProfil,

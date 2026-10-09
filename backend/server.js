@@ -4,6 +4,8 @@ import { testConnection } from "./config/db.js";
 import { Users } from "./models/index.js";
 import { runMigrations } from "./migrations/migrator.js";
 import { marquerRealisees } from "./services/planning/suivi.js";
+import { purgerJournal } from "./services/journalSecurite.js";
+import { purgerCompteursDebit } from "./middleware/rateLimiterMiddleware.js";
 import { demarrerRenvoiQuotidien } from "./services/calendrier/envoiEdt.js";
 
 dotenv.config();
@@ -55,6 +57,17 @@ const seedIfRequested = async () => {
                 .catch((error) => console.error("--> Suivi du réalisé :", error.message));
         actualiserRealise();
         setInterval(actualiserRealise, 60 * 60 * 1000).unref();
+
+        // Journal de sécurité (au-delà de la durée de conservation) et compteurs des limiteurs de
+        // connexion (fenêtres terminées) : au démarrage puis chaque jour
+        const purgerSecurite = () => {
+            purgerJournal()
+                .then((n) => n && console.log(`--> Journal de sécurité : ${n} événement(s) ancien(s) supprimé(s)`))
+                .catch((error) => console.error("--> Journal de sécurité :", error.message));
+            purgerCompteursDebit().catch((error) => console.error("--> Limiteurs de débit :", error.message));
+        };
+        purgerSecurite();
+        setInterval(purgerSecurite, 24 * 60 * 60 * 1000).unref();
 
         // Emploi du temps du mois (R4) : chaque soir, les mois publiés qui ont changé sont renvoyés aux classes
         demarrerRenvoiQuotidien();

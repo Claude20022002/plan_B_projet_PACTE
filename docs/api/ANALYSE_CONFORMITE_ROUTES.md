@@ -199,7 +199,6 @@ GET    /api/emplois-du-temps/enseignant/:id             # Emploi du temps enseig
 GET    /api/emplois-du-temps/groupe/:id                 # Emploi du temps groupe
 GET    /api/emplois-du-temps/salle/:id                  # Emploi du temps salle
 GET    /api/emplois-du-temps/etudiant/:id               # Emploi du temps étudiant
-GET    /api/emplois-du-temps/consolide                 # Emploi du temps consolidé
 ```
 
 **Contraintes à prendre en compte :**

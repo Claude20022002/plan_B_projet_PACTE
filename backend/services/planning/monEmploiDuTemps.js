@@ -105,11 +105,17 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
     // Enseignements mutualisés qui réunissent l'un de ces groupes
     const mutualises = (await EnseignementGroupe.findAll({ where: { id_groupe: ids }, attributes: ["id_enseignement"] })).map((e) => e.id_enseignement);
 
-    const seances = await Affectation.findAll({
-        where: {
-            date_seance: { [Op.between]: [debut, fin] },
-            [Op.or]: [{ id_groupe: ids }, ...(mutualises.length ? [{ id_enseignement: mutualises }] : [])],
-        },
+    // Deux lectures dans les index (groupe + date, enseignement + date) plutôt qu'un OR, qui fait
+    // parcourir à MySQL toutes les séances de l'école sur la période ; puis les séances par clé
+    const plage = { date_seance: { [Op.between]: [debut, fin] } };
+    const [parGroupe, parMutualisation] = await Promise.all([
+        Affectation.findAll({ where: { ...plage, id_groupe: ids }, attributes: ["id_affectation"], raw: true }),
+        mutualises.length ? Affectation.findAll({ where: { ...plage, id_enseignement: mutualises }, attributes: ["id_affectation"], raw: true }) : [],
+    ]);
+    const idsSeances = [...new Set([...parGroupe, ...parMutualisation].map((s) => s.id_affectation))];
+
+    const seances = !idsSeances.length ? [] : await Affectation.findAll({
+        where: { id_affectation: idsSeances },
         include: [
             { model: Cours, as: "cours", attributes: ["id_cours", "code_cours", "nom_cours", "type_cours", "id_filiere"] },
             { model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe", "id_filiere"] },
@@ -123,6 +129,8 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
         order: [
             ["date_seance", "ASC"],
             [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
+            // Séances simultanées (groupes différents) : ordre stable
+            ["id_affectation", "ASC"],
         ],
     });
     await appliquerRamadan(seances);

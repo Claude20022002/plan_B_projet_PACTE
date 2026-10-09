@@ -85,7 +85,7 @@ export default function Connexion() {
   const [params] = useSearchParams();
   // Retour vers la bibliothèque (StudyLib) si la connexion a été demandée par elle
   const suivant = cheminSuivantSur(params.get('next'));
-  const { login, loading: chargementSession, isAuthenticated } = useAuth();
+  const { login, verifierMfa, loading: chargementSession, isAuthenticated } = useAuth();
 
   // Session encore valide (ou renouvelée au chargement) : retour direct à la bibliothèque
   useEffect(() => {
@@ -96,6 +96,36 @@ export default function Connexion() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorKey, setErrorKey] = useState('');
   const [loading, setLoading] = useState(false);
+  // Double authentification : défi reçu après le mot de passe, en attente du code
+  const [defi, setDefi] = useState(null);
+  const [code, setCode] = useState('');
+  const [erreurCode, setErreurCode] = useState('');
+
+  const allerApres = (data) => {
+    // Le rôle vient du compte : aucune saisie de « fonction » n'est demandée
+    const role = data?.user?.role;
+    if (suivant) window.location.assign(suivant);
+    else navigate(role ? `/dashboard/${role}` : '/');
+  };
+
+  const envoyerCode = async (event) => {
+    event.preventDefault();
+    if (!code.trim()) return;
+    setErreurCode('');
+    setLoading(true);
+    const result = await verifierMfa(defi, code.trim());
+    setLoading(false);
+    if (result.success) return allerApres(result.data);
+    setCode('');
+    // Défi expiré ou trop d'essais : retour au mot de passe
+    if (/recommencez|start again/i.test(result.error ?? '')) {
+      setDefi(null);
+      setErrorKey('login.mfa.expire');
+      return undefined;
+    }
+    setErreurCode(result.error || t('login.mfa.incorrect'));
+    return undefined;
+  };
 
   const handleSubmit = async (event) => {
     event.preventDefault();
@@ -113,10 +143,11 @@ export default function Connexion() {
     try {
       const result = await login(emailValue, passwordValue);
       if (result.success) {
-        // Le rôle vient du compte : aucune saisie de « fonction » n'est demandée
-        const role = result.data?.user?.role;
-        if (suivant) window.location.assign(suivant);
-        else navigate(role ? `/dashboard/${role}` : '/');
+        allerApres(result.data);
+      } else if (result.mfa) {
+        setDefi(result.defi);
+        setCode('');
+        setErreurCode('');
       } else {
         setErrorKey(errorKeyFor(result.error));
       }
@@ -175,6 +206,41 @@ export default function Connexion() {
         </Box>
 
         <Box sx={{ flexGrow: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', px: { xs: 2, sm: 4 }, py: { xs: 4, sm: 6 } }}>
+          {defi ? (
+            <Box component="form" onSubmit={envoyerCode} noValidate sx={{ width: '100%', maxWidth: 400 }}>
+              <Typography component="h1" sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: { xs: '2rem', sm: '2.25rem' }, lineHeight: 1.1 }}>
+                {t('login.mfa.title')}
+              </Typography>
+              <Typography sx={{ mt: 1, mb: 3.5, color: 'text.secondary', fontSize: '1rem' }}>{t('login.mfa.aide')}</Typography>
+              {erreurCode && (
+                <Alert severity="error" sx={{ mb: 2.5 }}>
+                  {erreurCode}
+                </Alert>
+              )}
+              <TextField
+                required
+                fullWidth
+                autoFocus
+                label={t('login.mfa.code')}
+                name="code"
+                autoComplete="one-time-code"
+                value={code}
+                onChange={(e) => {
+                  setCode(e.target.value);
+                  setErreurCode('');
+                }}
+                disabled={loading}
+                inputProps={{ maxLength: 12, style: { fontFamily: ds.font.board, fontSize: '1.5rem', letterSpacing: '0.2em' } }}
+                helperText={t('login.mfa.secours')}
+              />
+              <Button type="submit" fullWidth variant="contained" size="large" disabled={loading || !code.trim()} sx={{ mt: 3, minHeight: 48, fontSize: '1rem' }}>
+                {loading ? <CircularProgress size={22} color="inherit" aria-label={t('login.submitting')} /> : t('login.mfa.valider')}
+              </Button>
+              <Button fullWidth onClick={() => setDefi(null)} disabled={loading} sx={{ mt: 1.5 }}>
+                {t('login.mfa.retour')}
+              </Button>
+            </Box>
+          ) : (
           <Box component="form" onSubmit={handleSubmit} noValidate sx={{ width: '100%', maxWidth: 400 }}>
             <Typography component="h1" sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: { xs: '2rem', sm: '2.25rem' }, lineHeight: 1.1 }}>
               {t('login.title')}
@@ -253,6 +319,7 @@ export default function Connexion() {
 
             <Typography sx={{ mt: 3, color: 'text.secondary', fontSize: '0.875rem' }}>{t('login.accountsByAdmin')}</Typography>
           </Box>
+          )}
         </Box>
       </Box>
     </Box>

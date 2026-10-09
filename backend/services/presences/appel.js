@@ -1,8 +1,9 @@
 import crypto from "crypto";
 import { UniqueConstraintError } from "sequelize";
-import { Affectation, AppelSeance, Appartenir, Cours, Creneau, Enseignement, EnseignementEnseignant, Groupe, Presence, Salle, SignalementPresence, Users } from "../../models/index.js";
+import { Affectation, AppareilEtudiant, AppelSeance, Appartenir, Cours, Creneau, Enseignement, EnseignementEnseignant, Groupe, Presence, Salle, SignalementPresence, Users } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
+import { journaliser } from "../journalSecurite.js";
 
 /**
  * Appel par QR code en séance (phase I1). L'enseignant ouvre l'appel le jour de la séance et
@@ -14,7 +15,10 @@ import { groupesANotifier } from "../planning/seances.js";
  * fermant l'appel, la séance est marquée réalisée (suivi du réalisé, P7).
  *
  * Anti-fraude : le scan ne passe que par l'application (identifiant d'installation), et un même
- * téléphone ne pointe qu'un seul étudiant par séance (sinon refus et signalement des deux). Si
+ * téléphone ne pointe qu'un seul étudiant par séance (sinon refus et signalement des deux). Un
+ * compte = un téléphone : au premier scan, le compte est lié au téléphone ; ensuite un scan depuis
+ * un autre téléphone, ou depuis le téléphone lié à un autre compte, est refusé et signalé
+ * (l'administration délie en cas de changement de téléphone). Si
  * l'enseignant le souhaite (facultatif), une vérification surprise tire quelques présents au
  * hasard : il les appelle, un absent perd sa présence et est signalé.
  */
@@ -224,6 +228,34 @@ const refusAppareilPartage = () =>
     new ErreurMetier("Ce téléphone a déjà servi à l'appel d'un autre étudiant pour cette séance : chacun scanne avec son propre téléphone. L'enseignant en est averti.", 409);
 
 /**
+ * Un compte = un téléphone. Premier scan : le compte est lié à ce téléphone. Ensuite, refus et
+ * signalement si le compte est lié à un autre téléphone, ou si ce téléphone est lié à un autre compte.
+ */
+const verifierTelephoneDuCompte = async (idSeance, idUser, empreinte, maintenant) => {
+    const [duCompte, duTelephone] = await Promise.all([AppareilEtudiant.findByPk(idUser), AppareilEtudiant.findOne({ where: { appareil: empreinte } })]);
+    if (duCompte?.appareil === empreinte) return;
+    if (duCompte) {
+        await SignalementPresence.findOrCreate({ where: { id_affectation: idSeance, id_user: idUser, motif: "autre_telephone" } });
+        throw new ErreurMetier("Votre compte est lié à un autre téléphone. Pointez avec votre téléphone habituel ; si vous en avez changé, demandez à l'administration de délier l'ancien. L'enseignant en est averti.", 409);
+    }
+    const refusTelephoneDUnAutre = async (proprietaire) => {
+        await SignalementPresence.findOrCreate({ where: { id_affectation: idSeance, id_user: idUser, id_user_lie: proprietaire, motif: "telephone_d_un_autre" } });
+        return new ErreurMetier("Ce téléphone est lié au compte d'un autre étudiant : chacun pointe avec son propre téléphone. L'enseignant en est averti.", 409);
+    };
+    if (duTelephone) throw await refusTelephoneDUnAutre(duTelephone.id_user);
+    try {
+        await AppareilEtudiant.create({ id_user: idUser, appareil: empreinte, lie_le: maintenant });
+    } catch (erreur) {
+        if (!(erreur instanceof UniqueConstraintError)) throw erreur;
+        // Deux premiers scans simultanés : on relit qui a gagné
+        const gagnant = await AppareilEtudiant.findOne({ where: { appareil: empreinte } });
+        if (gagnant?.id_user === idUser) return;
+        if (gagnant) throw await refusTelephoneDUnAutre(gagnant.id_user);
+        return verifierTelephoneDuCompte(idSeance, idUser, empreinte, maintenant);
+    }
+};
+
+/**
  * Scan d'un code (ou de l'adresse du QR) depuis l'application : présence enregistrée une fois.
  * `appareil` est l'identifiant d'installation de l'application ; seule son empreinte est conservée.
  */
@@ -255,6 +287,8 @@ export const scannerCode = async (user, brut, maintenant = new Date(), appareil 
         await signalerAppareilPartage(seance.id_affectation, user.id_user, dejaPointe.id_user);
         throw refusAppareilPartage();
     }
+    // Un compte = un téléphone (au-delà de cette séance)
+    await verifierTelephoneDuCompte(seance.id_affectation, user.id_user, empreinte, maintenant);
     try {
         await Presence.create({ id_affectation: seance.id_affectation, id_user: user.id_user, source: "qr", marque_le: maintenant, appareil: empreinte });
     } catch (erreur) {
@@ -299,12 +333,40 @@ export const signalementsRecents = async (user, limite = 200) => {
         order: [["createdAt", "DESC"], ["id_signalement", "DESC"]],
         limit: limite,
     });
+    const telephones = await AppareilEtudiant.findAll({ where: { id_user: [...new Set(lignes.map((l) => l.id_user))] }, attributes: ["id_user", "lie_le"] });
+    const lieLe = new Map(telephones.map((t) => [t.id_user, t.lie_le]));
     return lignes.map((l) => ({
         id: l.id_signalement,
         motif: l.motif,
         le: l.createdAt,
+        id_user: l.id_user,
         etudiant: nomComplet(l.etudiant),
+        // Téléphone lié au compte de l'étudiant signalé (date de la liaison), null s'il n'en a pas
+        telephone_lie_le: lieLe.get(l.id_user) ?? null,
         lie: nomComplet(l.lie),
         seance: { id: l.id_affectation, date: String(l.seance?.date_seance ?? "").slice(0, 10), cours: l.seance?.cours?.nom_cours ?? null, groupe: l.seance?.groupe?.nom_groupe ?? null },
     }));
+};
+
+const etudiantOuErreur = async (idEtudiant) => {
+    const etudiant = Number.isInteger(idEtudiant) && idEtudiant > 0 ? await Users.findByPk(idEtudiant, { attributes: ["id_user", "role"] }) : null;
+    if (etudiant?.role !== "etudiant") throw new ErreurMetier("Étudiant introuvable", 404);
+    return etudiant;
+};
+
+/** Téléphone lié au compte d'un étudiant (administration) : { lie, lie_le }. */
+export const telephoneDeLEtudiant = async (user, idEtudiant) => {
+    if (user.role !== "admin") throw new ErreurMetier("Réservé à l'administration", 403);
+    await etudiantOuErreur(idEtudiant);
+    const telephone = await AppareilEtudiant.findByPk(idEtudiant);
+    return { lie: Boolean(telephone), lie_le: telephone?.lie_le ?? null };
+};
+
+/** Délier le téléphone d'un étudiant (nouveau téléphone) : son prochain scan liera le nouveau. */
+export const delierTelephone = async (user, idEtudiant, contexte = null) => {
+    if (user.role !== "admin") throw new ErreurMetier("Réservé à l'administration", 403);
+    await etudiantOuErreur(idEtudiant);
+    const supprimes = await AppareilEtudiant.destroy({ where: { id_user: idEtudiant } });
+    if (supprimes) await journaliser(contexte, { evenement: "appareil_delie", id_user: Number(idEtudiant), acteur: user });
+    return { delie: supprimes > 0 };
 };

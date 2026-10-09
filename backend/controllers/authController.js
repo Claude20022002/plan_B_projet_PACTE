@@ -3,9 +3,12 @@ import { Op } from "sequelize";
 import { Appartenir, AuthSession, Users, Enseignant, Etudiant, Filiere, Groupe, PasserelleWeb, PasswordResetToken } from "../models/index.js";
 import { signerJetonAcces } from "../utils/jetons.js";
 import { filieresDuResponsable } from "../services/planning/droits.js";
-import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
+import { hashPassword, comparePassword, empreinteARenouveler, verifierMotDePasse } from "../utils/passwordHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import { creerDefi, mfaAConfigurer, resoudreDefi } from "../services/mfa.js";
+import { contexteDe, journaliser } from "../services/journalSecurite.js";
+import { ErreurMetier } from "../services/planning/enseignements.js";
 import {
     ACCESS_TOKEN_TTL_SECONDS,
     clearAuthCookies,
@@ -81,6 +84,8 @@ const sanitizeUser = (user, additionalInfo = {}) => {
     return {
         ...userResponse,
         ...additionalInfo,
+        // Administrateur sans double authentification : il doit la configurer avant tout le reste
+        mfa_a_configurer: mfaAConfigurer(user),
     };
 };
 
@@ -174,26 +179,61 @@ export const login = asyncHandler(async (req, res) => {
     // Toujours exécuter bcrypt, même si l'utilisateur n'existe pas
     const isPasswordValid = await comparePassword(password, user?.password_hash || (await getDummyHash()));
     if (!user || !isPasswordValid) {
+        await journaliser(contexteDe(req), { evenement: "connexion_echec", user, email: email.trim() });
         return res.status(401).json(INVALID_CREDENTIALS);
+    }
+
+    // Empreinte d'un coût bcrypt inférieur au coût actuel : recalculée avec le mot de passe juste
+    if (empreinteARenouveler(user.password_hash)) {
+        await user.update({ password_hash: await hashPassword(password) });
     }
 
     // Le statut du compte n'est révélé qu'à quelqu'un qui connaît le mot de passe
     if (!user.actif) {
+        await journaliser(contexteDe(req), { evenement: "connexion_compte_desactive", user });
         return res.status(403).json({
             message: "Compte désactivé",
             error: "Votre compte a été désactivé. Contactez l'administrateur.",
         });
     }
 
+    // Double authentification : pas encore de session, un défi attend le code (POST /mfa/verifier)
+    if (user.mfa_active) {
+        if (modeMobile(req)) {
+            return res.status(403).json({ message: "Double authentification : connectez-vous sur le site web", code: "MFA_SITE_WEB" });
+        }
+        return res.json({ message: "Code de double authentification requis", mfa_requis: true, defi: await creerDefi(user) });
+    }
+
     // Récupérer les informations complémentaires selon le rôle
     const additionalInfo = await getAdditionalInfo(user);
     const session = await createAuthSession(req, res, user);
+    await journaliser(contexteDe(req), { evenement: "connexion_reussie", user, details: { mobile: modeMobile(req), mfa: false } });
 
     res.json({
         message: "Connexion réussie",
         user: sanitizeUser(user, additionalInfo),
         ...(modeMobile(req) ? jetonsMobile(session) : {}),
     });
+});
+
+/**
+ * POST /api/auth/mfa/verifier — { defi, code } : second temps de la connexion (code de
+ * l'application d'authentification ou code de secours) ; ouvre la session.
+ */
+export const verifierMfa = asyncHandler(async (req, res) => {
+    let resultat;
+    try {
+        resultat = await resoudreDefi(req.body?.defi, req.body?.code, contexteDe(req));
+    } catch (erreur) {
+        if (erreur instanceof ErreurMetier) return res.status(erreur.status).json({ message: erreur.message, error: erreur.message, code: "MFA_INVALIDE" });
+        throw erreur;
+    }
+    const { user } = resultat;
+    const additionalInfo = await getAdditionalInfo(user);
+    await createAuthSession(req, res, user);
+    await journaliser(contexteDe(req), { evenement: "connexion_reussie", user, details: { mobile: false, mfa: true } });
+    res.json({ message: "Connexion réussie", user: sanitizeUser(user, additionalInfo) });
 });
 
 // ── Passerelle de l'application mobile vers les sites web ──────────────────
@@ -278,15 +318,16 @@ export const changePassword = asyncHandler(async (req, res) => {
     if (await comparePassword(password, user.password_hash)) {
         return res.status(400).json({ message: "Mot de passe inchangé", error: "Choisissez un mot de passe différent de l'actuel" });
     }
-    const verification = validatePasswordStrength(password);
+    const verification = await verifierMotDePasse(password, { user });
     if (!verification.valid) {
-        return res.status(400).json({ message: "Mot de passe invalide", errors: verification.errors, error: verification.errors[0] });
+        return res.status(400).json({ message: verification.errors[0], error: verification.errors[0], errors: verification.errors });
     }
     await user.update({ password_hash: await hashPassword(password), must_change_password: false });
     await AuthSession.update(
         { revoked_at: new Date(), revoked_reason: "password_change" },
         { where: { id_user: user.id_user, revoked_at: null, session_id: { [Op.ne]: req.auth?.sessionId ?? "" } } }
     );
+    await journaliser(contexteDe(req), { evenement: "mot_de_passe_change", user });
     res.json({ message: "Mot de passe modifié" });
 });
 
@@ -394,6 +435,8 @@ export const refreshToken = asyncHandler(async (req, res) => {
                 },
             }
         );
+        // Jeton déjà remplacé présenté à nouveau : signe d'un vol de session
+        await journaliser(contexteDe(req), { evenement: "refresh_reutilise", id_user: tokenRecord.id_user });
 
         clearAuthCookies(res);
         return res.status(403).json({
@@ -476,6 +519,7 @@ export const logoutAllDevices = asyncHandler(async (req, res) => {
         }
     );
 
+    await journaliser(contexteDe(req), { evenement: "deconnexion_partout", user: req.user });
     clearAuthCookies(res);
     res.json({ message: "Déconnexion de tous les appareils réussie" });
 });
@@ -523,6 +567,7 @@ export const revokeSession = asyncHandler(async (req, res) => {
         clearAuthCookies(res);
     }
 
+    await journaliser(contexteDe(req), { evenement: "session_revoquee", user: req.user });
     res.json({ message: "Session révoquée" });
 });
 
@@ -679,12 +724,9 @@ export const resetPassword = asyncHandler(async (req, res) => {
     }
 
     // Validation du mot de passe
-    const passwordValidation = validatePasswordStrength(password);
-    if (!passwordValidation.valid) {
-        return res.status(400).json({
-            message: "Mot de passe invalide",
-            errors: passwordValidation.errors,
-        });
+    const verification = await verifierMotDePasse(password, { user: resetToken.user });
+    if (!verification.valid) {
+        return res.status(400).json({ message: verification.errors[0], error: verification.errors[0], errors: verification.errors });
     }
 
     // Mettre à jour le mot de passe
@@ -701,6 +743,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
         { revoked_at: new Date(), revoked_reason: "password_reset" },
         { where: { id_user: user.id_user, revoked_at: null } }
     );
+    await journaliser(contexteDe(req), { evenement: "mot_de_passe_reinitialise", user });
 
     res.json({
         message: "Mot de passe réinitialisé avec succès",

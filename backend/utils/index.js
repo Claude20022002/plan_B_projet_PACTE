@@ -5,7 +5,6 @@
 // Détection de conflits
 export {
     detecterConflitsPourAffectation,
-    detecterTousLesConflits,
     creerConflit,
     verifierEtCreerConflits,
 } from "./detectConflicts.js";
@@ -53,8 +52,9 @@ export {
 export {
     hashPassword,
     comparePassword,
-    generateRandomPassword,
-    validatePasswordStrength,
+    empreinteARenouveler,
+    reglesMotDePasse,
+    verifierMotDePasse,
 } from "./passwordHelper.js";
 
 // Validations

@@ -5,6 +5,7 @@ import "./models/index.js"; // Import pour initialiser les relations
 import { parseCookies } from "./middleware/cookieMiddleware.js";
 import { csrfProtection } from "./middleware/csrfMiddleware.js";
 import { exigerChangementMotDePasse } from "./middleware/passwordChangeMiddleware.js";
+import { exigerDoubleAuthentification } from "./middleware/mfaMiddleware.js";
 
 // Import des routes
 import userRoutes from "./routes/userRoutes.js";
@@ -48,6 +49,7 @@ import annonceRoutes from "./routes/annonceRoutes.js";
 import agendaRoutes from "./routes/agendaRoutes.js";
 import presenceRoutes from "./routes/presenceRoutes.js";
 import devoirRoutes from "./routes/devoirRoutes.js";
+import journalSecuriteRoutes from "./routes/journalSecuriteRoutes.js";
 import { MONTAGE as OIDC_MONTAGE } from "./services/oidc/provider.js";
 
 // Import des middlewares
@@ -124,6 +126,9 @@ app.use(csrfProtection);
 // Mot de passe provisoire ou invitation : rien d'autre tant qu'il n'est pas changé
 app.use(exigerChangementMotDePasse);
 
+// Administrateur sans double authentification : rien d'autre tant qu'elle n'est pas configurée
+app.use(exigerDoubleAuthentification);
+
 app.use("/api/auth", authRoutes);
 // JWKS (public) et référentiel pour StudyLib (jeton de service) : connexion unique, phase C
 app.use("/api", integrationRoutes);
@@ -165,6 +170,7 @@ app.use("/api/annonces", annonceRoutes);
 app.use("/api/agenda", agendaRoutes);
 app.use("/api/presences", presenceRoutes);
 app.use("/api/devoirs", devoirRoutes);
+app.use("/api/journal-securite", journalSecuriteRoutes);
 
 app.get("/", (req, res) => {
     res.json({

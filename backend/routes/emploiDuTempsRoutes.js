@@ -4,7 +4,6 @@ import {
     getEmploiDuTempsGroupe,
     getEmploiDuTempsEtudiant,
     getEmploiDuTempsSalle,
-    getEmploiDuTempsConsolide,
     genererEmploiDuTemps,
 } from "../controllers/emploiDuTempsController.js";
 import { authenticateToken, requireAdmin, requireOwnResourceOrAdmin } from "../middleware/index.js";
@@ -61,14 +60,6 @@ router.get(
     "/salle/:id",
     authenticateToken,
     asyncHandler(getEmploiDuTempsSalle)
-);
-
-// 📅 GET /api/emplois-du-temps/consolide - Emploi du temps consolidé
-router.get(
-    "/consolide",
-    authenticateToken,
-    requireAdmin,
-    asyncHandler(getEmploiDuTempsConsolide)
 );
 
 // 🤖 POST /api/emplois-du-temps/generer - Génération automatique

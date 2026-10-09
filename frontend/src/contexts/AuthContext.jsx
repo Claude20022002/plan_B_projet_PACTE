@@ -47,9 +47,28 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const ouvrirSession = (data) => {
+        setUser(data.user);
+        setIsAuthenticated(true);
+        window.dispatchEvent(new CustomEvent('auth:payload', { detail: data }));
+    };
+
+    // Second temps de la connexion (double authentification) : code de l'application ou de secours
+    const verifierMfa = async (defi, code) => {
+        try {
+            const data = await authAPI.mfaVerifier(defi, code);
+            ouvrirSession(data);
+            return { success: true, data };
+        } catch (error) {
+            return { success: false, error: error.message };
+        }
+    };
+
     const login = async (email, password) => {
         try {
             const data = await authAPI.login({ email, password });
+            // Double authentification : pas encore de session, le code est demandé
+            if (data.mfa_requis) return { success: false, mfa: true, defi: data.defi };
             setUser(data.user);
             setIsAuthenticated(true);
             window.dispatchEvent(new CustomEvent('auth:payload', { detail: data }));
@@ -77,6 +96,7 @@ export const AuthProvider = ({ children }) => {
         loading,
         isAuthenticated,
         login,
+        verifierMfa,
         logout,
         checkAuth,
     };

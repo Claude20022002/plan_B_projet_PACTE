@@ -5,11 +5,10 @@ import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
 import { useAuth } from '../../auth/AuthContext';
-import { chargerActivites, chargerConfigQuiz, chargerHistoriqueQuiz, choisirAvatar } from '../../api/donnees';
+import { chargerActivites, chargerHistoriqueQuiz, choisirAvatar } from '../../api/donnees';
 import ChoixPersonnage from '../../jeux/ChoixPersonnage';
 import Personnage from '../../jeux/Personnage';
 import Scene from '../../jeux/Scene';
-import { adresseEspace } from '../../../../shared/espaces.js';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
 import { useMargeOnglets } from '../../verre/Verre';
@@ -20,9 +19,8 @@ const ECRAN_JEU = { 'terminal-linux': '/terminal' };
 
 // Lecture seule : le composant applique le résultat dans le .then (aucun état modifié ici)
 const lireTout = () =>
-  Promise.allSettled([chargerActivites(), chargerConfigQuiz(), chargerHistoriqueQuiz()]).then(([activites, config, historique]) => ({
+  Promise.allSettled([chargerActivites(), chargerHistoriqueQuiz()]).then(([activites, historique]) => ({
     activites: activites.status === 'fulfilled' ? activites.value : null,
-    config: config.status === 'fulfilled' ? config.value : null,
     historique: historique.status === 'fulfilled' ? historique.value : null,
     erreur: activites.status === 'rejected',
   }));
@@ -61,16 +59,15 @@ export default function Jeux() {
     return () => clearInterval(id);
   }, [charger]);
 
-  const urlQuiz = donnees?.config?.actif && /^https:\/\//.test(donnees.config.url ?? '') ? donnees.config.url : null;
-  const saisirCode = adresseEspace('quiz', { role: 'etudiant', urlQuiz });
   const modules = donnees?.activites?.modules ?? [];
   const avatar = avatarChoisi ?? donnees?.activites?.profil?.avatar;
   // Score : chaque jeu compte une fois, même proposé dans plusieurs modules
   const jeux = [...new Map(modules.flatMap((m) => m.jeux).map((j) => [j.code, j])).values()];
   const total = jeux.reduce((somme, j) => ({ points: somme.points + j.progression.points, reussis: somme.reussis + j.progression.reussis }), { points: 0, reussis: 0 });
   const rien = donnees && !donnees.erreur && !modules.some((m) => m.quiz.length || m.devoirs.length || m.jeux.length);
-  // La partie se joue dans l'application (écran /quiz, page de ClassQuiz intégrée)
-  const ouvrir = (url) => router.push({ pathname: '/quiz', params: { url } });
+  // La partie se joue dans l'application (écran /quiz, joueur natif) ; un quiz n'apparaît que
+  // lorsqu'un enseignant lance une partie dans une séance de l'étudiant
+  const ouvrir = (p) => router.push({ pathname: '/quiz', params: { url: p.url, id: String(p.id), titre: p.titre } });
   const historique = donnees?.historique ?? [];
   const dateCourte = (iso) => new Date(iso).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -126,7 +123,7 @@ export default function Jeux() {
                     <Text style={styles.code}>{t('app.jeux.code', { pin: p.pin })}</Text>
                   </View>
                   {p.url ? (
-                    <Pressable onPress={() => ouvrir(p.url)} style={styles.plein} accessibilityRole="button" accessibilityLabel={`${t('app.jeux.rejoindre')} : ${p.titre}`}>
+                    <Pressable onPress={() => ouvrir(p)} style={styles.plein} accessibilityRole="button" accessibilityLabel={`${t('app.jeux.rejoindre')} : ${p.titre}`}>
                       <Text style={styles.pleinTexte}>{t('app.jeux.rejoindre')}</Text>
                     </Pressable>
                   ) : null}
@@ -175,17 +172,6 @@ export default function Jeux() {
             </View>
           );
         })}
-
-        {/* Un quiz lancé hors de l'application : saisir son code */}
-        {urlQuiz && saisirCode && donnees && !modules.some((m) => m.quiz.length) ? (
-          <View style={styles.ligne}>
-            <View style={styles.lampe} />
-            <Text style={[styles.detail, styles.contenu]}>{t('app.jeux.vide')}</Text>
-            <Pressable onPress={() => ouvrir(saisirCode)} style={styles.contour} accessibilityRole="button">
-              <Text style={styles.contourTexte}>{t('app.jeux.saisirCode')}</Text>
-            </Pressable>
-          </View>
-        ) : null}
 
         {/* Mes derniers quiz : score, rang, équipes et nuages */}
         {historique.length ? (
@@ -258,6 +244,4 @@ const useStyles = creerStyles((t) => ({
   barrePleine: { height: 6, borderRadius: 3, backgroundColor: t.couleurs.enCours },
   plein: { minHeight: CIBLE_TACTILE, paddingHorizontal: 18, justifyContent: 'center', borderRadius: t.rayons.md, backgroundColor: t.couleurs.accent },
   pleinTexte: { color: t.couleurs.surAccent, fontFamily: t.polices.panneauGras, fontSize: 16, letterSpacing: espace(t, 1), textTransform: t.capitales },
-  contour: { minHeight: CIBLE_TACTILE, paddingHorizontal: 12, justifyContent: 'center', borderRadius: t.rayons.sm, borderWidth: 1, borderColor: t.couleurs.filet },
-  contourTexte: { color: t.couleurs.lettre, fontFamily: t.polices.panneau, fontSize: 14, letterSpacing: espace(t, 0.8), textTransform: t.capitales },
 }));

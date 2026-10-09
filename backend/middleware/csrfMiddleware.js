@@ -7,6 +7,7 @@ const csrfExemptPaths = new Set([
     "/api/auth/csrf-token",
     "/api/auth/refresh",
     "/api/auth/login",
+    "/api/auth/mfa/verifier",
     "/api/auth/forgot-password",
     "/api/auth/reset-password",
 ]);

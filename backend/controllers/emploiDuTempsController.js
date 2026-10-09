@@ -406,61 +406,6 @@ export const getEmploiDuTempsSalle = asyncHandler(async (req, res) => {
 });
 
 /**
- * GET /api/emplois-du-temps/consolide
- * Récupérer l'emploi du temps consolidé (toutes les affectations)
- */
-export const getEmploiDuTempsConsolide = asyncHandler(async (req, res) => {
-    const { date_debut, date_fin } = req.query;
-
-    const whereConditions = {
-        statut: { [Op.ne]: "annule" },
-    };
-
-    if (date_debut && date_fin) {
-        whereConditions.date_seance = {
-            [Op.between]: [date_debut, date_fin],
-        };
-    } else if (date_debut) {
-        whereConditions.date_seance = {
-            [Op.gte]: date_debut,
-        };
-    }
-
-    const affectations = await Affectation.findAll({
-        where: whereConditions,
-        include: [
-            { model: Cours, as: "cours" },
-            { model: Groupe, as: "groupe" },
-            {
-                model: Users,
-                as: "enseignant",
-                attributes: { exclude: ["password_hash"] },
-            },
-            { model: Salle, as: "salle" },
-            { model: Creneau, as: "creneau" },
-        ],
-        order: [
-            ["date_seance", "ASC"],
-            [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
-        ],
-    });
-    await appliquerRamadan(affectations);
-
-    const emploiParJour = formatEmploiDuTemps(affectations);
-
-    res.json({
-        periode: date_debut && date_fin ? { date_debut, date_fin } : null,
-        total_affectations: affectations.length,
-        emploi_du_temps: emploiParJour,
-        resume: {
-            par_groupe: {},
-            par_enseignant: {},
-            par_salle: {},
-        },
-    });
-});
-
-/**
  * POST /api/emplois-du-temps/generer
  * Génération automatique d'emploi du temps (algorithme basique)
  * Note: Cette fonction est une version simplifiée. Une version complète nécessiterait

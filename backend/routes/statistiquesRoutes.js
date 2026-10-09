@@ -9,11 +9,16 @@ import {
     getOccupationGroupes,
     getDashboard,
     getKPIs,
+    perimetreStatistiques,
 } from "../controllers/statistiquesController.js";
 import { authenticateToken, requireAdmin } from "../middleware/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
+
+// Toutes les statistiques : administration, sur l'année universitaire en cours par défaut
+// (?id_annee, ?portee=tout ou ?date_debut&date_fin pour un autre périmètre)
+router.use(authenticateToken, requireAdmin, asyncHandler(perimetreStatistiques));
 
 // GET /api/statistiques/salles/occupation - Taux d'occupation global
 router.get(

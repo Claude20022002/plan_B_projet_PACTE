@@ -185,9 +185,9 @@ describe("Invitations et mot de passe provisoire (phase B)", () => {
 
         // Le lien d'invitation permet de choisir son mot de passe, et lève l'obligation
         const lien = new URL(response.body.invitation.lien);
-        const reset = await anonymous().post("/api/auth/reset-password").send({ token: lien.searchParams.get("token"), id_user: lien.searchParams.get("id"), password: "Choisi@2026" });
+        const reset = await anonymous().post("/api/auth/reset-password").send({ token: lien.searchParams.get("token"), id_user: lien.searchParams.get("id"), password: "Choisi-au-printemps-2026" });
         expect(reset.status).toBe(200);
-        const client = await loginAs({ email: "omar.lazrak@hestim.test" }, "Choisi@2026");
+        const client = await loginAs({ email: "omar.lazrak@hestim.test" }, "Choisi-au-printemps-2026");
         expect((await client.get("/api/auth/me")).body.user.must_change_password).toBe(false);
     });
 

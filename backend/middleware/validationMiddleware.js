@@ -1,4 +1,5 @@
 import { body, param, query, validationResult } from "express-validator";
+import { LONGUEUR_MIN } from "../utils/passwordHelper.js";
 import {
     TYPES_SALLE,
     RESERVABLE_PAR,
@@ -58,8 +59,8 @@ export const validateUserCreation = [
     body("password")
         .optional({ checkFalsy: true })
         .isString()
-        .isLength({ min: 8 })
-        .withMessage("Le mot de passe doit contenir au moins 8 caractères"),
+        .isLength({ min: LONGUEUR_MIN })
+        .withMessage(`Le mot de passe doit contenir au moins ${LONGUEUR_MIN} caractères (une phrase de passe convient)`),
     body("role")
         .optional()
         .isIn(["admin", "enseignant", "etudiant"])
@@ -96,8 +97,8 @@ export const validateUserUpdate = [
     body("password")
         .optional({ values: "falsy" })
         .isString()
-        .isLength({ min: 8 })
-        .withMessage("Le mot de passe doit contenir au moins 8 caractères"),
+        .isLength({ min: LONGUEUR_MIN })
+        .withMessage(`Le mot de passe doit contenir au moins ${LONGUEUR_MIN} caractères (une phrase de passe convient)`),
     body("actif")
         .optional()
         .isBoolean()
