@@ -1,6 +1,6 @@
 # Scénarios de test à faire sur écran (recette)
 
-Version visée : **maj23** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026, dont ClassQuiz).
+Version visée : **maj26** (tout ce qui a changé depuis maj13, en ligne au 8 octobre 2026, dont ClassQuiz).
 Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout écart sous le scénario.
 
 ## Préparation
@@ -78,6 +78,8 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] « Utilisateurs » ne crée que des comptes administrateurs ; étudiants et enseignants se créent depuis leurs pages.
 - [ ] Le rôle d'un compte n'est pas modifiable depuis l'écran « Utilisateurs ».
 - [ ] Le tableau de bord admin est inchangé et ses statistiques s'affichent vite (moins d'une seconde).
+- [ ] Statistiques : par défaut sur l'année universitaire en cours (rappel « Année 2026-2027 · du … au … » sous les filtres).
+- [ ] Le sélecteur « Périmètre » propose chaque année, « Toutes les années » et « Période personnalisée » (deux dates) ; les chiffres changent en conséquence.
 - [ ] La liste des séances s'affiche vite, même sur un mois chargé.
 - [ ] L'EDT du mois s'imprime en PDF au format HESTIM.
 
@@ -108,6 +110,8 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Mode « kahoot » : le téléphone affiche les quatre formes du projecteur, dans les mêmes couleurs.
 - [ ] Pendant une question, passer l'application en arrière-plan 5 s puis revenir : la sortie est comptée (iPhone et Android).
 - [ ] Capture d'écran pendant la partie : bloquée sur Android (image noire ou refus) ; sur iPhone, l'enregistrement de l'écran est masqué.
+- [ ] iPhone : une capture faite pendant une question apparaît en fin de partie dans la colonne « Sorties / captures » de l'enseignant (« 1 capture »).
+- [ ] Lancement d'une partie dans ClassQuiz : le choix « Projecteur (recommandé) » est sélectionné par défaut, l'autre s'appelle « Sur chaque téléphone », chacun avec son explication.
 - [ ] Téléphone mis en veille quelques secondes pendant l'attente : « Connexion perdue, reconnexion… » puis la partie reprend.
 - [ ] Deux étudiants au même prénom et même initiale : le second joue sous « Prénom N. 2 », et chaque score revient au bon étudiant dans Planner.
 - [ ] La croix demande confirmation avant de quitter la partie.

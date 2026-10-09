@@ -145,11 +145,17 @@ export default function ResultatsQuiz({ idPartie, onClose }) {
                         {c.etudiant !== undefined && <TableCell>{c.etudiant ? `${c.etudiant.prenom} ${c.etudiant.nom}` : <Typography component="span" variant="body2" color="text.secondary">{t('jeux.resultats.nonRelie')}</Typography>}</TableCell>}
                         <TableCell align="right">{c.bonnes}</TableCell>
                         <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>{nombre(c.score)}</TableCell>
-                        {c.sorties !== undefined && (
-                          <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums', color: c.sorties > 0 ? 'warning.main' : 'text.secondary', fontWeight: c.sorties > 0 ? 600 : 400 }}>
-                            {c.sorties > 0 ? t('jeux.resultats.sortiesValeur', { count: c.sorties, duree: Math.round(c.sorties_duree_ms / 1000) }) : '-'}
-                          </TableCell>
-                        )}
+                        {c.sorties !== undefined && (() => {
+                          const signes = [
+                            c.sorties > 0 && t('jeux.resultats.sortiesValeur', { count: c.sorties, duree: Math.round(c.sorties_duree_ms / 1000) }),
+                            c.captures > 0 && t('jeux.resultats.capturesValeur', { count: c.captures }),
+                          ].filter(Boolean);
+                          return (
+                            <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums', color: signes.length ? 'warning.main' : 'text.secondary', fontWeight: signes.length ? 600 : 400 }}>
+                              {signes.length ? signes.join(' · ') : '-'}
+                            </TableCell>
+                          );
+                        })()}
                       </TableRow>
                     ))}
                   </TableBody>

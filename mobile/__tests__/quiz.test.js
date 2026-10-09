@@ -1,4 +1,5 @@
 jest.mock('socket.io-client', () => ({ io: jest.fn() }));
+jest.mock('expo-screen-capture', () => ({ addScreenshotListener: jest.fn(() => ({ remove: jest.fn() })) }));
 
 import { dureeSortie, lireLienPartie, monBilan, monResultat, ordreAffichage, reponseCases, texteSimple } from '../src/quiz/partie';
 

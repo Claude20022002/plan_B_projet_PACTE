@@ -15,6 +15,8 @@ const QuizResultat = sequelize.define(
         // Journal des sorties de l'onglet ou de l'application pendant les questions (enseignant seulement)
         sorties: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
         sorties_duree_ms: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
+        // Captures d'écran pendant les questions (iPhone : détectées, pas empêchées)
+        captures: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     },
     { tableName: "QuizResultats", freezeTableName: true }
 );

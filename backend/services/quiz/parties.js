@@ -262,6 +262,7 @@ export const enregistrerFinPartie = async (evenement) => {
             // Journal des sorties (plafonds du fork : 50 sorties, une heure chacune)
             sorties: Math.min(entierPositif(j.sorties), 50),
             sorties_duree_ms: Math.min(entierPositif(j.sorties_duree_ms), 50 * 3_600_000),
+            captures: Math.min(entierPositif(j.captures), 50),
         });
     }
     // Un jeton ne vaut que pour un compte étudiant actif : sinon le score reste anonyme
@@ -376,6 +377,7 @@ export const resultatsPartie = async (user, idPartie) => {
                   etudiant: r.joueur ? { id_user: r.joueur.id_user, nom: r.joueur.nom, prenom: r.joueur.prenom } : null,
                   sorties: r.sorties,
                   sorties_duree_ms: r.sorties_duree_ms,
+                  captures: r.captures,
               }
             : {}),
     });

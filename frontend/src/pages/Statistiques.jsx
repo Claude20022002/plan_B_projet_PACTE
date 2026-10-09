@@ -1,12 +1,12 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import {
     Box, Grid, Card, CardContent, Paper, Typography, Button, Chip,
     Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
     LinearProgress, CircularProgress, Divider, TextField, Alert,
-    Tab, Tabs, Avatar,
+    Tab, Tabs, Avatar, MenuItem,
 } from '@mui/material';
 import {
-    BarChart as BarChartIcon, Refresh, FilterList, TrendingUp,
+    BarChart as BarChartIcon, Refresh, TrendingUp,
     Room, School, People, Timer, Warning, CheckCircle, Download,
 } from '@mui/icons-material';
 import {
@@ -15,7 +15,7 @@ import {
 } from 'recharts';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import { ds, lineColor } from '../design-system/tokens';
-import { statistiquesAPI } from '../services/api';
+import { calendrierAPI, statistiquesAPI } from '../services/api';
 import { exportMultiSheet, COLS_CHARGE_ENSEIGNANTS, COLS_OCCUPATION_GROUPES } from '../utils/exportExcel';
 
 
@@ -71,17 +71,33 @@ export default function Statistiques() {
     const [tab,       setTab]       = useState(0);
     const [dateDebut, setDateDebut] = useState('');
     const [dateFin,   setDateFin]   = useState('');
+    // Périmètre : '' = année universitaire en cours (par défaut côté serveur), 'annee:<id>',
+    // 'tout' (toutes les années) ou 'libre' (dates choisies)
+    const [perimetre, setPerimetre] = useState('');
+    const [annees,    setAnnees]    = useState([]);
+    const [periode,   setPeriode]   = useState(null);
+
+    useEffect(() => {
+        calendrierAPI.getAnnees().then((liste) => setAnnees(Array.isArray(liste) ? liste : [])).catch(() => setAnnees([]));
+    }, []);
+
+    const params = useMemo(() => {
+        if (perimetre === 'tout') return { portee: 'tout' };
+        if (perimetre.startsWith('annee:')) return { id_annee: perimetre.slice(6) };
+        if (perimetre === 'libre' && dateDebut && dateFin) return { date_debut: dateDebut, date_fin: dateFin };
+        return {};
+    }, [perimetre, dateDebut, dateFin]);
 
     const load = useCallback(async () => {
         setLoading(true);
         setError('');
         try {
-            const params = dateDebut && dateFin ? { date_debut: dateDebut, date_fin: dateFin } : {};
             const [kpisData, chargeData, groupesData] = await Promise.all([
                 statistiquesAPI.getKPIs(params),
                 statistiquesAPI.getChargeEnseignants(params),
                 statistiquesAPI.getOccupationGroupes(params),
             ]);
+            setPeriode(kpisData?.periode ?? null);
             setKpis(kpisData?.kpis || null);
             setCharge(chargeData?.charge_enseignants || []);
             setGroupes(groupesData?.occupation_groupes || []);
@@ -90,7 +106,7 @@ export default function Statistiques() {
         } finally {
             setLoading(false);
         }
-    }, [dateDebut, dateFin]);
+    }, [params]);
 
     useEffect(() => { load(); }, [load]);
 
@@ -148,19 +164,28 @@ export default function Statistiques() {
                 <Box sx={{ mb: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                            <TextField size="small" type="date" label="Début"
-                                value={dateDebut} onChange={e => setDateDebut(e.target.value)}
-                                InputLabelProps={{ shrink: true }} sx={{ width: 160 }} />
-                            <TextField size="small" type="date" label="Fin"
-                                value={dateFin} onChange={e => setDateFin(e.target.value)}
-                                InputLabelProps={{ shrink: true }} sx={{ width: 160 }} />
-                            <Button variant="outlined" startIcon={<FilterList />}
+                            <TextField select size="small" label="Périmètre" value={perimetre}
+                                onChange={e => setPerimetre(e.target.value)} sx={{ minWidth: 220 }}>
+                                <MenuItem value="">Année universitaire en cours</MenuItem>
+                                {annees.map((a) => (
+                                    <MenuItem key={a.id_annee} value={`annee:${a.id_annee}`}>Année {a.libelle}</MenuItem>
+                                ))}
+                                <MenuItem value="tout">Toutes les années</MenuItem>
+                                <MenuItem value="libre">Période personnalisée</MenuItem>
+                            </TextField>
+                            {perimetre === 'libre' && (
+                                <>
+                                    <TextField size="small" type="date" label="Début"
+                                        value={dateDebut} onChange={e => setDateDebut(e.target.value)}
+                                        InputLabelProps={{ shrink: true }} sx={{ width: 160 }} />
+                                    <TextField size="small" type="date" label="Fin"
+                                        value={dateFin} onChange={e => setDateFin(e.target.value)}
+                                        InputLabelProps={{ shrink: true }} sx={{ width: 160 }} />
+                                </>
+                            )}
+                            <Button variant="outlined" startIcon={<Refresh />}
                                 onClick={load} disabled={loading} size="small">
-                                Filtrer
-                            </Button>
-                            <Button variant="outlined" startIcon={<Refresh />} size="small"
-                                onClick={() => { setDateDebut(''); setDateFin(''); }}>
-                                Tout
+                                Actualiser
                             </Button>
                             <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small"
                                 disabled={!charge.length && !groupes.length}>
@@ -169,6 +194,12 @@ export default function Statistiques() {
                         </Box>
                     </Box>
                 </Box>
+
+                <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                    {periode
+                        ? `${periode.annee ? `Année ${periode.annee} · ` : ''}du ${new Date(`${periode.date_debut}T12:00:00`).toLocaleDateString('fr-FR')} au ${new Date(`${periode.date_fin}T12:00:00`).toLocaleDateString('fr-FR')}`
+                        : 'Toutes les années'}
+                </Typography>
 
                 {loading && <LinearProgress sx={{ mb: 2 }} />}
                 {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}

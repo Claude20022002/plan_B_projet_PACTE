@@ -425,10 +425,6 @@ export const emploiDuTempsAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/emplois-du-temps/salle/${id}${query ? `?${query}` : ''}`);
     },
-    getConsolide: (params) => {
-        const query = new URLSearchParams(params).toString();
-        return request(`/emplois-du-temps/consolide${query ? `?${query}` : ''}`);
-    },
     generer: (data) => request('/emplois-du-temps/generer', { method: 'POST', body: data }),
 };
 

@@ -1,4 +1,4 @@
-import { Affectation, Salle, Creneau, Users, Groupe, Cours, Filiere, Conflit } from "../models/index.js";
+import { Affectation, AnneeUniversitaire, Salle, Creneau, Users, Groupe, Cours, Filiere, Conflit } from "../models/index.js";
 import { Op } from "sequelize";
 import sequelize from "../config/db.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
@@ -19,7 +19,38 @@ const filtreSeances = ({ date_debut, date_fin }, autres = {}) => ({
     ...autres,
 });
 
-const periodeDe = ({ date_debut, date_fin }) => (date_debut && date_fin ? { date_debut, date_fin } : null);
+const periodeDe = ({ date_debut, date_fin, annee_libelle }) => (date_debut && date_fin ? { date_debut, date_fin, annee: annee_libelle ?? null } : null);
+
+const DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+/**
+ * Périmètre des statistiques. Par défaut, l'année universitaire en cours (celle qui contient
+ * aujourd'hui, sinon l'année active, sinon la dernière commencée) : les calculs ne lisent que ses
+ * séances (index sur la date) au lieu de tout l'historique, qui grandit chaque année.
+ * L'administration peut aussi choisir : ?date_debut=…&date_fin=… (période libre), ?id_annee=…
+ * (une autre année) ou ?portee=tout (toutes les années).
+ */
+export const perimetreStatistiques = async (req, res, next) => {
+    const { date_debut, date_fin, id_annee, portee } = req.query;
+    if (DATE.test(String(date_debut ?? "")) && DATE.test(String(date_fin ?? ""))) return next();
+    delete req.query.date_debut;
+    delete req.query.date_fin;
+    if (portee === "tout") return next();
+
+    const aujourdhui = new Date().toLocaleDateString("en-CA", { timeZone: process.env.APP_TIMEZONE || "Africa/Casablanca" });
+    const annee = id_annee
+        ? await AnneeUniversitaire.findByPk(Number(id_annee) || 0)
+        : (await AnneeUniversitaire.findOne({ where: { date_debut: { [Op.lte]: aujourdhui }, date_fin: { [Op.gte]: aujourdhui } } })) ||
+          (await AnneeUniversitaire.findOne({ where: { active: true } })) ||
+          (await AnneeUniversitaire.findOne({ where: { date_debut: { [Op.lte]: aujourdhui } }, order: [["date_debut", "DESC"]] }));
+    if (id_annee && !annee) return res.status(404).json({ message: "Année universitaire introuvable" });
+    if (annee) {
+        req.query.date_debut = String(annee.date_debut).slice(0, 10);
+        req.query.date_fin = String(annee.date_fin).slice(0, 10);
+        req.query.annee_libelle = annee.libelle;
+    }
+    return next();
+};
 
 /**
  * Nombre de séances par combinaison de colonnes (`cles`), avec la première séance rencontrée

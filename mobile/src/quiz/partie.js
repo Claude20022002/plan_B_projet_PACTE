@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { AppState } from 'react-native';
+import { addScreenshotListener } from 'expo-screen-capture';
 import { io } from 'socket.io-client';
 
 /**
@@ -14,7 +15,7 @@ import { io } from 'socket.io-client';
  *
  * Anti-triche : le passage de l'application en arrière-plan pendant une question (plus d'une
  * seconde, avant d'avoir répondu) est signalé (hestim_sortie), de façon fiable (état de
- * l'application, pas celui d'une page web).
+ * l'application, pas celui d'une page web) ; une capture d'écran aussi (hestim_capture).
  */
 
 const SORTIE_MIN_MS = 1000;
@@ -189,7 +190,13 @@ export function usePartie({ origine, pin, nom, hid }) {
       if (duree !== null && index !== null) envoyer('hestim_sortie', { question_index: Number(index), duree_ms: duree });
     });
 
+    // Captures d'écran : bloquées sur Android ; l'iPhone ne permet que de les détecter, on les signale
+    const captures = addScreenshotListener(() => {
+      if (question.current.active) envoyer('hestim_capture', { question_index: Number(question.current.index) });
+    });
+
     return () => {
+      captures.remove();
       abonnement.remove();
       s.removeAllListeners();
       s.disconnect();
