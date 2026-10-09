@@ -6,6 +6,8 @@ import { filieresDuResponsable } from "../services/planning/droits.js";
 import { hashPassword, comparePassword, validatePasswordStrength } from "../utils/passwordHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
+import { creerDefi, mfaAConfigurer, resoudreDefi } from "../services/mfa.js";
+import { ErreurMetier } from "../services/planning/enseignements.js";
 import {
     ACCESS_TOKEN_TTL_SECONDS,
     clearAuthCookies,
@@ -81,6 +83,8 @@ const sanitizeUser = (user, additionalInfo = {}) => {
     return {
         ...userResponse,
         ...additionalInfo,
+        // Administrateur sans double authentification : il doit la configurer avant tout le reste
+        mfa_a_configurer: mfaAConfigurer(user),
     };
 };
 
@@ -185,6 +189,14 @@ export const login = asyncHandler(async (req, res) => {
         });
     }
 
+    // Double authentification : pas encore de session, un défi attend le code (POST /mfa/verifier)
+    if (user.mfa_active) {
+        if (modeMobile(req)) {
+            return res.status(403).json({ message: "Double authentification : connectez-vous sur le site web", code: "MFA_SITE_WEB" });
+        }
+        return res.json({ message: "Code de double authentification requis", mfa_requis: true, defi: await creerDefi(user) });
+    }
+
     // Récupérer les informations complémentaires selon le rôle
     const additionalInfo = await getAdditionalInfo(user);
     const session = await createAuthSession(req, res, user);
@@ -194,6 +206,24 @@ export const login = asyncHandler(async (req, res) => {
         user: sanitizeUser(user, additionalInfo),
         ...(modeMobile(req) ? jetonsMobile(session) : {}),
     });
+});
+
+/**
+ * POST /api/auth/mfa/verifier — { defi, code } : second temps de la connexion (code de
+ * l'application d'authentification ou code de secours) ; ouvre la session.
+ */
+export const verifierMfa = asyncHandler(async (req, res) => {
+    let resultat;
+    try {
+        resultat = await resoudreDefi(req.body?.defi, req.body?.code);
+    } catch (erreur) {
+        if (erreur instanceof ErreurMetier) return res.status(erreur.status).json({ message: erreur.message, error: erreur.message, code: "MFA_INVALIDE" });
+        throw erreur;
+    }
+    const { user } = resultat;
+    const additionalInfo = await getAdditionalInfo(user);
+    await createAuthSession(req, res, user);
+    res.json({ message: "Connexion réussie", user: sanitizeUser(user, additionalInfo) });
 });
 
 // ── Passerelle de l'application mobile vers les sites web ──────────────────

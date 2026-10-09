@@ -5,6 +5,7 @@ import "./models/index.js"; // Import pour initialiser les relations
 import { parseCookies } from "./middleware/cookieMiddleware.js";
 import { csrfProtection } from "./middleware/csrfMiddleware.js";
 import { exigerChangementMotDePasse } from "./middleware/passwordChangeMiddleware.js";
+import { exigerDoubleAuthentification } from "./middleware/mfaMiddleware.js";
 
 // Import des routes
 import userRoutes from "./routes/userRoutes.js";
@@ -123,6 +124,9 @@ app.use(csrfProtection);
 
 // Mot de passe provisoire ou invitation : rien d'autre tant qu'il n'est pas changé
 app.use(exigerChangementMotDePasse);
+
+// Administrateur sans double authentification : rien d'autre tant qu'elle n'est pas configurée
+app.use(exigerDoubleAuthentification);
 
 app.use("/api/auth", authRoutes);
 // JWKS (public) et référentiel pour StudyLib (jeton de service) : connexion unique, phase C

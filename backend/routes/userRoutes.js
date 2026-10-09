@@ -1,4 +1,6 @@
 import express from "express";
+import { reinitialiser as reinitialiserMfa } from "../services/mfa.js";
+import { planification } from "../utils/erreursPlanning.js";
 import {
     getAllUsers,
     getUserById,
@@ -48,6 +50,14 @@ router.put(
     validateUserUpdate,
     handleValidationErrors,
     asyncHandler(updateUser)
+);
+
+// Réinitialiser la double authentification d'un compte (téléphone perdu) : sessions fermées (Admin seulement)
+router.delete(
+    "/:id/mfa",
+    authenticateToken,
+    requireAdmin,
+    planification(async (req, res) => res.json(await reinitialiserMfa(req.user, req.params.id)))
 );
 
 // 🗑️ Supprimer un utilisateur (Admin seulement)

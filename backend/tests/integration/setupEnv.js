@@ -30,6 +30,9 @@ const defaults = {
     QUIZ_URL: "",
     OIDC_COOKIE_KEYS: "",
     QUIZ_WEBHOOK_SECRET: "",
+    // Double authentification obligatoire pour l'administration : activée seulement dans mfa.test.js
+    // (les autres fichiers connectent leurs administrateurs par mot de passe seul)
+    MFA_ADMINS_OBLIGATOIRE: "false",
 };
 
 for (const [key, value] of Object.entries(defaults)) {
