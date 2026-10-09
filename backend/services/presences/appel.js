@@ -3,6 +3,7 @@ import { UniqueConstraintError } from "sequelize";
 import { Affectation, AppareilEtudiant, AppelSeance, Appartenir, Cours, Creneau, Enseignement, EnseignementEnseignant, Groupe, Presence, Salle, SignalementPresence, Users } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
+import { journaliser } from "../journalSecurite.js";
 
 /**
  * Appel par QR code en séance (phase I1). L'enseignant ouvre l'appel le jour de la séance et
@@ -362,9 +363,10 @@ export const telephoneDeLEtudiant = async (user, idEtudiant) => {
 };
 
 /** Délier le téléphone d'un étudiant (nouveau téléphone) : son prochain scan liera le nouveau. */
-export const delierTelephone = async (user, idEtudiant) => {
+export const delierTelephone = async (user, idEtudiant, contexte = null) => {
     if (user.role !== "admin") throw new ErreurMetier("Réservé à l'administration", 403);
     await etudiantOuErreur(idEtudiant);
     const supprimes = await AppareilEtudiant.destroy({ where: { id_user: idEtudiant } });
+    if (supprimes) await journaliser(contexte, { evenement: "appareil_delie", id_user: Number(idEtudiant), acteur: user });
     return { delie: supprimes > 0 };
 };

@@ -7,6 +7,7 @@ import { hashPassword, comparePassword, validatePasswordStrength } from "../util
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { sendEmail } from "../utils/sendEmail.js";
 import { creerDefi, mfaAConfigurer, resoudreDefi } from "../services/mfa.js";
+import { contexteDe, journaliser } from "../services/journalSecurite.js";
 import { ErreurMetier } from "../services/planning/enseignements.js";
 import {
     ACCESS_TOKEN_TTL_SECONDS,
@@ -178,11 +179,13 @@ export const login = asyncHandler(async (req, res) => {
     // Toujours exécuter bcrypt, même si l'utilisateur n'existe pas
     const isPasswordValid = await comparePassword(password, user?.password_hash || (await getDummyHash()));
     if (!user || !isPasswordValid) {
+        await journaliser(contexteDe(req), { evenement: "connexion_echec", user, email: email.trim() });
         return res.status(401).json(INVALID_CREDENTIALS);
     }
 
     // Le statut du compte n'est révélé qu'à quelqu'un qui connaît le mot de passe
     if (!user.actif) {
+        await journaliser(contexteDe(req), { evenement: "connexion_compte_desactive", user });
         return res.status(403).json({
             message: "Compte désactivé",
             error: "Votre compte a été désactivé. Contactez l'administrateur.",
@@ -200,6 +203,7 @@ export const login = asyncHandler(async (req, res) => {
     // Récupérer les informations complémentaires selon le rôle
     const additionalInfo = await getAdditionalInfo(user);
     const session = await createAuthSession(req, res, user);
+    await journaliser(contexteDe(req), { evenement: "connexion_reussie", user, details: { mobile: modeMobile(req), mfa: false } });
 
     res.json({
         message: "Connexion réussie",
@@ -215,7 +219,7 @@ export const login = asyncHandler(async (req, res) => {
 export const verifierMfa = asyncHandler(async (req, res) => {
     let resultat;
     try {
-        resultat = await resoudreDefi(req.body?.defi, req.body?.code);
+        resultat = await resoudreDefi(req.body?.defi, req.body?.code, contexteDe(req));
     } catch (erreur) {
         if (erreur instanceof ErreurMetier) return res.status(erreur.status).json({ message: erreur.message, error: erreur.message, code: "MFA_INVALIDE" });
         throw erreur;
@@ -223,6 +227,7 @@ export const verifierMfa = asyncHandler(async (req, res) => {
     const { user } = resultat;
     const additionalInfo = await getAdditionalInfo(user);
     await createAuthSession(req, res, user);
+    await journaliser(contexteDe(req), { evenement: "connexion_reussie", user, details: { mobile: false, mfa: true } });
     res.json({ message: "Connexion réussie", user: sanitizeUser(user, additionalInfo) });
 });
 
@@ -317,6 +322,7 @@ export const changePassword = asyncHandler(async (req, res) => {
         { revoked_at: new Date(), revoked_reason: "password_change" },
         { where: { id_user: user.id_user, revoked_at: null, session_id: { [Op.ne]: req.auth?.sessionId ?? "" } } }
     );
+    await journaliser(contexteDe(req), { evenement: "mot_de_passe_change", user });
     res.json({ message: "Mot de passe modifié" });
 });
 
@@ -424,6 +430,8 @@ export const refreshToken = asyncHandler(async (req, res) => {
                 },
             }
         );
+        // Jeton déjà remplacé présenté à nouveau : signe d'un vol de session
+        await journaliser(contexteDe(req), { evenement: "refresh_reutilise", id_user: tokenRecord.id_user });
 
         clearAuthCookies(res);
         return res.status(403).json({
@@ -506,6 +514,7 @@ export const logoutAllDevices = asyncHandler(async (req, res) => {
         }
     );
 
+    await journaliser(contexteDe(req), { evenement: "deconnexion_partout", user: req.user });
     clearAuthCookies(res);
     res.json({ message: "Déconnexion de tous les appareils réussie" });
 });
@@ -553,6 +562,7 @@ export const revokeSession = asyncHandler(async (req, res) => {
         clearAuthCookies(res);
     }
 
+    await journaliser(contexteDe(req), { evenement: "session_revoquee", user: req.user });
     res.json({ message: "Session révoquée" });
 });
 
@@ -731,6 +741,7 @@ export const resetPassword = asyncHandler(async (req, res) => {
         { revoked_at: new Date(), revoked_reason: "password_reset" },
         { where: { id_user: user.id_user, revoked_at: null } }
     );
+    await journaliser(contexteDe(req), { evenement: "mot_de_passe_reinitialise", user });
 
     res.json({
         message: "Mot de passe réinitialisé avec succès",

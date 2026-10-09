@@ -18,6 +18,7 @@ import { Users } from "../models/index.js";
 import { comparePassword } from "../utils/passwordHelper.js";
 import { planification } from "../utils/erreursPlanning.js";
 import { confirmerInscription, demarrerInscription, desactiver, etatMfa, regenererCodesSecours } from "../services/mfa.js";
+import { contexteDe } from "../services/journalSecurite.js";
 import { authenticateToken, optionalAuth } from "../middleware/authMiddleware.js";
 import { issueCsrfToken } from "../middleware/csrfMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
@@ -40,8 +41,8 @@ router.post("/mfa/verifier", loginIpRateLimiter, asyncHandler(verifierMfa));
 router.get("/mfa", authenticateToken, planification(async (req, res) => res.json(await etatMfa(req.user))));
 // Inscription : secret et adresse du QR code, puis confirmation par un premier code → codes de secours
 router.post("/mfa/inscription", authRateLimiter, authenticateToken, planification(async (req, res) => res.json(await demarrerInscription(req.user))));
-router.post("/mfa/confirmation", authRateLimiter, authenticateToken, planification(async (req, res) => res.json(await confirmerInscription(req.user, req.body?.code))));
-router.post("/mfa/codes-secours", authRateLimiter, authenticateToken, planification(async (req, res) => res.json(await regenererCodesSecours(req.user, req.body?.code))));
+router.post("/mfa/confirmation", authRateLimiter, authenticateToken, planification(async (req, res) => res.json(await confirmerInscription(req.user, req.body?.code, { contexte: contexteDe(req) }))));
+router.post("/mfa/codes-secours", authRateLimiter, authenticateToken, planification(async (req, res) => res.json(await regenererCodesSecours(req.user, req.body?.code, contexteDe(req)))));
 // Désactivation (enseignant seulement) : mot de passe et code
 router.post(
     "/mfa/desactivation",
@@ -52,7 +53,7 @@ router.post(
         if (typeof req.body?.password !== "string" || !(await comparePassword(req.body.password, avecHash.password_hash))) {
             return res.status(400).json({ message: "Mot de passe incorrect", error: "Mot de passe incorrect" });
         }
-        return res.json(await desactiver(req.user, req.body?.code));
+        return res.json(await desactiver(req.user, req.body?.code, contexteDe(req)));
     })
 );
 

@@ -6,6 +6,10 @@ import { hashPassword, comparePassword, validatePasswordStrength } from "../util
 import { pick } from "../utils/validationHelper.js";
 import sequelize from "../config/db.js";
 import { creerLienInvitation, creerProfil, empreinteInutilisable, envoyerInvitation } from "../services/comptes.js";
+import { contexteDe, journaliser } from "../services/journalSecurite.js";
+
+// Champs dont un changement est une décision de sécurité (journalisée avec avant / après)
+const CHAMPS_SENSIBLES = ["role", "actif", "email"];
 
 /**
  * Contrôleur pour les utilisateurs
@@ -86,6 +90,7 @@ export const createUser = asyncHandler(async (req, res) => {
         return { user: compte, lien: motDePasse ? null : await creerLienInvitation(compte, transaction) };
     });
     const envoyee = lien ? await envoyerInvitation(user, lien) : false;
+    await journaliser(contexteDe(req), { evenement: "compte_cree", user, acteur: req.user, details: { role: user.role } });
 
     // Retourner l'utilisateur sans le mot de passe
     const userResponse = user.toJSON();
@@ -156,7 +161,13 @@ export const updateUser = asyncHandler(async (req, res) => {
         updateData.must_change_password = !isOwnAccount;
     }
 
+    const changements = Object.fromEntries(
+        CHAMPS_SENSIBLES.filter((champ) => champ in updateData && String(updateData[champ]) !== String(user[champ])).map((champ) => [champ, { avant: user[champ], apres: updateData[champ] }])
+    );
     await user.update(updateData);
+    if (Object.keys(changements).length) {
+        await journaliser(contexteDe(req), { evenement: "compte_modifie", user, acteur: req.user, details: changements });
+    }
 
     // Nouveau mot de passe : les sessions ouvertes avec l'ancien sont fermées (un compte volé ne
     // reste pas ouvert chez le voleur). Son propre compte : toutes sauf la session courante.
@@ -172,6 +183,7 @@ export const updateUser = asyncHandler(async (req, res) => {
                 },
             }
         );
+        await journaliser(contexteDe(req), { evenement: isOwnAccount ? "mot_de_passe_change" : "mot_de_passe_reinitialise_admin", user, acteur: req.user });
     }
 
     // Recharger l'utilisateur pour obtenir les données à jour
@@ -199,6 +211,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
     }
 
     await user.destroy();
+    await journaliser(contexteDe(req), { evenement: "compte_supprime", user, acteur: req.user, details: { role: user.role } });
 
     res.json({
         message: "Utilisateur supprimé avec succès",
@@ -265,6 +278,7 @@ export const importUsers = asyncHandler(async (req, res) => {
         }
     }
 
+    await journaliser(contexteDe(req), { evenement: "comptes_importes", acteur: req.user, id_user: req.user.id_user, details: { crees: results.success.length, erreurs: results.errors.length } });
     res.status(201).json({
         message: `${results.success.length} utilisateur(s) créé(s) avec succès`,
         success: results.success,

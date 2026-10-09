@@ -2,6 +2,7 @@ import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { ACCESS_COOKIE } from "../config/authCookies.js";
 import { planification } from "../utils/erreursPlanning.js";
+import { contexteDe } from "../services/journalSecurite.js";
 import {
     codeDeLAppel,
     delierTelephone,
@@ -91,7 +92,7 @@ router.get("/etudiants/:idUser/telephone", planification(async (req, res) => {
 }));
 
 router.delete("/etudiants/:idUser/telephone", planification(async (req, res) => {
-    res.json(await delierTelephone(req.user, idEtudiant(req)));
+    res.json(await delierTelephone(req.user, idEtudiant(req), contexteDe(req)));
 }));
 
 export default router;

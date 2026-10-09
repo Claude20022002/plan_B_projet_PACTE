@@ -38,6 +38,7 @@ import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
 import AppareilEtudiant from "./AppareilEtudiant.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
+import JournalSecurite from "./JournalSecurite.js";
 import MfaDefi from "./MfaDefi.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
@@ -626,6 +627,7 @@ export {
     SignalementPresence,
     AppareilEtudiant,
     MfaCodeSecours,
+    JournalSecurite,
     MfaDefi,
     JeuModule,
     JeuProgression,

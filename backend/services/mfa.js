@@ -4,6 +4,7 @@ import sequelize from "../config/db.js";
 import { AuthSession, MfaCodeSecours, MfaDefi, Users } from "../models/index.js";
 import { ErreurMetier } from "./planning/enseignements.js";
 import { adresseOtpauth, nouveauSecret, verifierCode } from "../utils/totp.js";
+import { compterRecents, journaliser } from "./journalSecurite.js";
 
 /**
  * Double authentification (TOTP) : obligatoire pour l'administration (variable
@@ -19,6 +20,10 @@ const ROLES_POSSIBLES = ["admin", "enseignant"];
 const NB_CODES_SECOURS = 10;
 const DEFI_MS = 5 * 60 * 1000;
 const DEFI_ESSAIS = 5;
+// Codes faux tolérés par compte (tous défis confondus : un mot de passe connu ne suffit pas à
+// essayer des codes sans fin) ; au-delà, même le bon code est refusé jusqu'à la fin de la fenêtre
+export const ECHECS_MAX = 10;
+export const FENETRE_ECHECS_MS = 15 * 60 * 1000;
 const ALPHABET_SECOURS = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
 
 const sha256 = (v) => crypto.createHash("sha256").update(v).digest("hex");
@@ -70,24 +75,44 @@ const chargerAvecSecret = (idUser) => Users.scope("withMfa").findByPk(idUser);
 
 /**
  * Vérifie un code de l'application (6 chiffres) ou un code de secours (consommé). Met à jour le
- * dernier pas utilisé : un même code ne sert qu'une fois.
+ * dernier pas utilisé : un même code ne sert qu'une fois. Les vérifications d'un même compte
+ * passent l'une après l'autre (verrou sur sa ligne) : des requêtes simultanées ne dépassent pas
+ * la limite de codes faux. Chaque code faux est journalisé ; au-delà de ECHECS_MAX dans la
+ * fenêtre, erreur 429 (même avec le bon code).
  */
-export const verifierCodeUtilisateur = async (idUser, code, maintenant = new Date()) => {
-    const user = await chargerAvecSecret(idUser);
-    if (!user?.mfa_active || !user.mfa_secret) return false;
-    const saisi = String(code ?? "").trim();
-    // 6 chiffres : code de l'application ; sinon, code de secours (8 caractères, tiret facultatif)
-    if (/^\d{6}$/.test(saisi.replace(/\s/g, ""))) {
-        const pas = verifierCode(dechiffrer(user.mfa_secret), saisi, { maintenant, dernierPas: user.mfa_dernier_pas });
-        if (pas === null) return false;
-        // Mise à jour conditionnelle : deux requêtes simultanées ne passent pas avec le même code
-        const [nb] = await Users.update({ mfa_dernier_pas: pas }, { where: { id_user: idUser, [Op.or]: [{ mfa_dernier_pas: null }, { mfa_dernier_pas: { [Op.lt]: pas } }] } });
-        return nb === 1;
+export const verifierCodeUtilisateur = async (idUser, code, { maintenant = new Date(), contexte = null } = {}) => {
+    const resultat = await sequelize.transaction(async (transaction) => {
+        const user = await Users.scope("withMfa").findByPk(idUser, { transaction, lock: transaction.LOCK.UPDATE });
+        if (!user?.mfa_active || !user.mfa_secret) return { ok: false };
+        const echecs = await compterRecents(idUser, "mfa_echec", new Date(maintenant.getTime() - FENETRE_ECHECS_MS), { transaction });
+        if (echecs >= ECHECS_MAX) return { bloque: true, user };
+
+        const saisi = String(code ?? "").trim();
+        let ok = false;
+        let secours = false;
+        // 6 chiffres : code de l'application ; sinon, code de secours (8 caractères, tiret facultatif)
+        if (/^\d{6}$/.test(saisi.replace(/\s/g, ""))) {
+            const pas = verifierCode(dechiffrer(user.mfa_secret), saisi, { maintenant, dernierPas: user.mfa_dernier_pas });
+            if (pas !== null) {
+                // Mise à jour conditionnelle : un même code ne passe pas deux fois
+                const [nb] = await Users.update({ mfa_dernier_pas: pas }, { where: { id_user: idUser, [Op.or]: [{ mfa_dernier_pas: null }, { mfa_dernier_pas: { [Op.lt]: pas } }] }, transaction });
+                ok = nb === 1;
+            }
+        } else if (normaliserSecours(saisi).length === 8) {
+            const empreinte = sha256(normaliserSecours(saisi));
+            const [nb] = await MfaCodeSecours.update({ utilise_le: maintenant }, { where: { id_user: idUser, code_hash: empreinte, utilise_le: null }, transaction });
+            ok = nb === 1;
+            secours = ok;
+        }
+        if (!ok) await journaliser(contexte, { evenement: "mfa_echec", user }, { transaction });
+        else if (secours) await journaliser(contexte, { evenement: "mfa_code_secours_utilise", user }, { transaction });
+        return { ok, user, secours };
+    });
+    if (resultat.bloque) {
+        await journaliser(contexte, { evenement: "mfa_bloque", user: resultat.user });
+        throw new ErreurMetier(`Trop de codes incorrects : réessayez dans ${FENETRE_ECHECS_MS / 60000} minutes`, 429);
     }
-    const empreinte = sha256(normaliserSecours(saisi));
-    if (normaliserSecours(saisi).length !== 8) return false;
-    const [nb] = await MfaCodeSecours.update({ utilise_le: maintenant }, { where: { id_user: idUser, code_hash: empreinte, utilise_le: null } });
-    return nb === 1;
+    return resultat.ok;
 };
 
 // ── Inscription ─────────────────────────────────────────────────────────
@@ -110,22 +135,26 @@ export const demarrerInscription = async (user) => {
 };
 
 /** Étape 2 : premier code juste → active, codes de secours (montrés une seule fois). */
-export const confirmerInscription = async (user, code, maintenant = new Date()) => {
+export const confirmerInscription = async (user, code, { maintenant = new Date(), contexte = null } = {}) => {
     const avecSecret = await chargerAvecSecret(user.id_user);
     if (avecSecret.mfa_active) throw new ErreurMetier("La double authentification est déjà active", 409);
     if (!avecSecret.mfa_secret) throw new ErreurMetier("Commencez par scanner le QR code", 400);
     const pas = verifierCode(dechiffrer(avecSecret.mfa_secret), code, { maintenant });
     if (pas === null) throw new ErreurMetier("Code incorrect : vérifiez l'heure du téléphone et saisissez le code affiché", 400);
-    return sequelize.transaction(async (transaction) => {
+    const resultat = await sequelize.transaction(async (transaction) => {
         await Users.update({ mfa_active: true, mfa_dernier_pas: pas }, { where: { id_user: user.id_user }, transaction });
         return { codes_secours: await nouveauxCodesSecours(user.id_user, transaction) };
     });
+    await journaliser(contexte, { evenement: "mfa_activee", user });
+    return resultat;
 };
 
 /** Nouveaux codes de secours (les anciens ne valent plus), sur présentation d'un code. */
-export const regenererCodesSecours = async (user, code) => {
-    if (!(await verifierCodeUtilisateur(user.id_user, code))) throw new ErreurMetier("Code incorrect", 400);
-    return { codes_secours: await nouveauxCodesSecours(user.id_user) };
+export const regenererCodesSecours = async (user, code, contexte = null) => {
+    if (!(await verifierCodeUtilisateur(user.id_user, code, { contexte }))) throw new ErreurMetier("Code incorrect", 400);
+    const codes = await nouveauxCodesSecours(user.id_user);
+    await journaliser(contexte, { evenement: "mfa_codes_regeneres", user });
+    return { codes_secours: codes };
 };
 
 const retirer = async (idUser) => {
@@ -137,10 +166,11 @@ const retirer = async (idUser) => {
 };
 
 /** Désactiver sa double authentification (enseignant) : mot de passe vérifié par l'appelant, code exigé. */
-export const desactiver = async (user, code) => {
+export const desactiver = async (user, code, contexte = null) => {
     if (mfaObligatoire(user)) throw new ErreurMetier("La double authentification est obligatoire pour l'administration", 403);
-    if (!(await verifierCodeUtilisateur(user.id_user, code))) throw new ErreurMetier("Code incorrect", 400);
+    if (!(await verifierCodeUtilisateur(user.id_user, code, { contexte }))) throw new ErreurMetier("Code incorrect", 400);
     await retirer(user.id_user);
+    await journaliser(contexte, { evenement: "mfa_desactivee", user });
     return { active: false };
 };
 
@@ -149,13 +179,14 @@ export const desactiver = async (user, code) => {
  * double authentification est retirée et toutes les sessions du compte fermées ; s'il s'agit
  * d'un administrateur, il devra la reconfigurer à sa prochaine connexion.
  */
-export const reinitialiser = async (admin, idUser) => {
+export const reinitialiser = async (admin, idUser, contexte = null) => {
     if (admin.role !== "admin") throw new ErreurMetier("Réservé à l'administration", 403);
     if (Number(idUser) === admin.id_user) throw new ErreurMetier("Demandez à un autre administrateur de réinitialiser la vôtre", 403);
     const cible = await Users.findByPk(Number(idUser) || 0);
     if (!cible) throw new ErreurMetier("Utilisateur introuvable", 404);
     await retirer(cible.id_user);
     await AuthSession.update({ revoked_at: new Date(), revoked_reason: "mfa_reset" }, { where: { id_user: cible.id_user, revoked_at: null } });
+    await journaliser(contexte, { evenement: "mfa_reinitialisee", user: cible, acteur: admin });
     return { reinitialisee: true };
 };
 
@@ -169,17 +200,35 @@ export const creerDefi = async (user, { mobile = false } = {}) => {
     return defi;
 };
 
-/** Présente le code d'un défi : renvoie l'utilisateur (défi consommé) ou lève une erreur. */
-export const resoudreDefi = async (defi, code) => {
-    if (typeof defi !== "string" || defi.length > 100) throw new ErreurMetier("Connexion expirée : recommencez", 401);
-    const enCours = await MfaDefi.findByPk(sha256(defi));
-    if (!enCours || new Date(enCours.expire_le) <= new Date()) {
-        if (enCours) await enCours.destroy();
-        throw new ErreurMetier("Connexion expirée : recommencez", 401);
+/**
+ * Présente le code d'un défi : renvoie l'utilisateur (défi consommé) ou lève une erreur. Un
+ * essai est réservé avant la vérification (mise à jour conditionnelle) : des requêtes simultanées
+ * sur un même défi n'en obtiennent pas plus de DEFI_ESSAIS.
+ */
+export const resoudreDefi = async (defi, code, contexte = null) => {
+    const expiree = () => new ErreurMetier("Connexion expirée : recommencez", 401);
+    if (typeof defi !== "string" || defi.length > 100) throw expiree();
+    const defiHash = sha256(defi);
+    const [reserve] = await MfaDefi.update(
+        { essais: sequelize.literal("essais + 1") },
+        { where: { defi_hash: defiHash, essais: { [Op.lt]: DEFI_ESSAIS }, expire_le: { [Op.gt]: new Date() } } }
+    );
+    if (!reserve) {
+        await MfaDefi.destroy({ where: { defi_hash: defiHash } });
+        throw expiree();
     }
-    if (!(await verifierCodeUtilisateur(enCours.id_user, code))) {
-        await enCours.increment("essais");
-        if (enCours.essais + 1 >= DEFI_ESSAIS) {
+    const enCours = await MfaDefi.findByPk(defiHash);
+    if (!enCours) throw expiree();
+    let juste;
+    try {
+        juste = await verifierCodeUtilisateur(enCours.id_user, code, { contexte });
+    } catch (erreur) {
+        // Compte bloqué (trop de codes faux) : la connexion est à recommencer après l'attente
+        if (erreur instanceof ErreurMetier) await enCours.destroy();
+        throw erreur;
+    }
+    if (!juste) {
+        if (enCours.essais >= DEFI_ESSAIS) {
             await enCours.destroy();
             throw new ErreurMetier("Trop d'essais : recommencez la connexion", 401);
         }
