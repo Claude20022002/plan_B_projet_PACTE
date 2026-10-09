@@ -1,15 +1,5 @@
 import * as XLSX from 'xlsx';
 
-// Couleurs par type de cours
-const TYPE_COLORS = {
-    CM:      [26,  58, 143],  // Bleu HESTIM
-    TD:      [0,  119, 189],  // Bleu clair
-    TP:      [0,  121,  99],  // Vert
-    Projet:  [232, 160,  32], // Jaune HESTIM
-    Examen:  [198,  40,  40], // Rouge
-    default: [90,  90,  90],  // Gris
-};
-
 const JOURS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
 const JOURS_LABELS = { lundi: 'Lundi', mardi: 'Mardi', mercredi: 'Mercredi', jeudi: 'Jeudi', vendredi: 'Vendredi', samedi: 'Samedi' };
 
@@ -123,17 +113,6 @@ function buildWeeklyBlocks(affectations) {
     });
 
     return { semaines, blocks };
-}
-
-/**
- * Obtient la couleur RGB selon le type de cours
- */
-function getTypeColor(typeCours) {
-    if (!typeCours) return TYPE_COLORS.default;
-    const key = Object.keys(TYPE_COLORS).find((k) =>
-        typeCours.toLowerCase().includes(k.toLowerCase())
-    );
-    return key ? TYPE_COLORS[key] : TYPE_COLORS.default;
 }
 
 /**
@@ -532,7 +511,7 @@ thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
  * @param {String} title        - titre affiché dans le document
  * @param {String} role         - 'enseignant' | 'etudiant' | 'admin'
  */
-export const exportToPDF = async (affectations, filename = 'emploi-du-temps', title = 'Emploi du Temps', role = 'enseignant') => {
+export const exportToPDF = async (affectations, _filename = 'emploi-du-temps', title = 'Emploi du Temps', role = 'enseignant') => {
     // Chargement du logo HESTIM en base64 (évite les problèmes CORS dans la fenêtre print)
     let logoBase64 = '';
     try {

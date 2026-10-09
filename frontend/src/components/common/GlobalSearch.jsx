@@ -56,7 +56,7 @@ const getEntityIcon = (type) => {
     return icons[type] || <Search />;
 };
 
-const getEntityPath = (type, id) => {
+const getEntityPath = (type) => {
     const paths = {
         salle: `/gestion/salles`,
         enseignant: `/gestion/enseignants`,
@@ -127,7 +127,7 @@ export default function GlobalSearch({ open, onClose }) {
     };
 
     const handleResultClick = (result) => {
-        const path = getEntityPath(result.type, result.id);
+        const path = getEntityPath(result.type);
         navigate(path);
         onClose();
         setSearchTerm('');

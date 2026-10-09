@@ -41,6 +41,8 @@ import { useToast } from '../../contexts/ToastContext';
 import { getUserMessage } from '../../services/errors';
 import { sallesAPI } from '../../services/domains/salles.api';
 import { QK } from './_shared/queryKeys';
+import { usePagination } from './_shared/usePagination';
+import { useFilters } from './_shared/useFilters';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // QUERIES (lecture)
@@ -288,10 +290,6 @@ export function useDeleteSalle() {
  * @param {{ defaultLimit?: number }} [opts]
  */
 export function useSallesPage({ defaultLimit = 10 } = {}) {
-  // On importe usePagination et useFilters ici pour le hook composite
-  const { usePagination } = require('./_shared/usePagination');
-  const { useFilters }    = require('./_shared/useFilters');
-
   const pg      = usePagination({ defaultLimit });
   const filters = useFilters({ search: '' }, { onFilterChange: pg.resetPage });
 

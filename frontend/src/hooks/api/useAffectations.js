@@ -8,7 +8,7 @@ import {
   useQuery, useMutation, useQueryClient, keepPreviousData,
 } from '@tanstack/react-query';
 import { useToast } from '../../contexts/ToastContext';
-import { getUserMessage, getFieldErrors } from '../../services/errors';
+import { getUserMessage } from '../../services/errors';
 import { affectationsAPI } from '../../services/domains/affectations.api';
 import { QK } from './_shared/queryKeys';
 

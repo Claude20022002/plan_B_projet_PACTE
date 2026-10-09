@@ -30,10 +30,16 @@ import { etudiantAPI, userAPI, groupeAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { useNavigate } from 'react-router-dom';
-import { parseFile, validateEtudiantData } from '../../utils/fileImport';
+import ImportCsvDialog from '../../components/common/ImportCsvDialog';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_ETUDIANTS } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+
+// Modèle d'import : le groupe par son nom (celui affiché dans Groupes), pas par son identifiant
+const MODELE_CSV = [
+    'nom;prenom;email;telephone;numero_etudiant;niveau;groupe',
+    'BENALI;Hamza;hamza.benali@hestim.ma;+212600000000;E2026001;3A;IIIA-3A-TD1',
+].join('\n');
 
 const validationSchema = yup.object({
     id_user: yup.number().required('L\'utilisateur est requis'),
@@ -54,9 +60,7 @@ export default function Etudiants() {
     const [search, setSearch] = useState('');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [importOpen, setImportOpen] = useState(false);
-    const [importLoading, setImportLoading] = useState(false);
-    const [importErrors, setImportErrors] = useState([]);
+    const [importOuvert, setImportOuvert] = useState(false);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -156,54 +160,30 @@ export default function Etudiants() {
         }
     };
 
-    const handleFileImport = async (file) => {
-        setImportLoading(true);
-        setImportErrors([]);
-        try {
-            const data = await parseFile(file);
-            console.log('Données parsées depuis le fichier:', data);
-            
-            if (!data || data.length === 0) {
-                setError('Le fichier est vide ou ne contient pas de données valides');
-                setImportLoading(false);
+    // Groupe désigné par son nom (casse et espaces ignorés) ; l'import serveur traite le reste du
+    // fichier et ses erreurs (par email) sont ramenées aux lignes
+    const importer = async (lignes) => {
+        const parNom = new Map(groupes.map((g) => [String(g.nom_groupe).trim().toLowerCase(), g.id_groupe]));
+        const erreurs = [];
+        const valides = [];
+        lignes.forEach((l, index) => {
+            const propre = Object.fromEntries(Object.entries(l).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]));
+            const nomGroupe = String(propre.groupe ?? '').toLowerCase();
+            if (nomGroupe && !parNom.has(nomGroupe)) {
+                erreurs.push({ ligne: index + 2, libelle: propre.email, message: `Groupe inconnu : ${propre.groupe}` });
                 return;
             }
-            
-            const validation = validateEtudiantData(data);
-            
-            if (!validation.valid) {
-                setImportErrors(validation.errors);
-                setError('Le fichier contient des erreurs. Veuillez les corriger avant de continuer.');
-                return;
-            }
-
-            // Préparer les données pour l'import
-            const etudiantsToImport = data.map((row) => ({
-                nom: row.nom?.trim() || '',
-                prenom: row.prenom?.trim() || '',
-                email: row.email?.trim().toLowerCase() || '',
-                telephone: row.telephone?.trim() || '',
-                numero_etudiant: row.numero_etudiant?.trim() || '',
-                niveau: row.niveau?.trim() || '',
-                id_groupe: row.id_groupe ? Number(row.id_groupe) : null,
-                actif: row.actif !== undefined ? row.actif : true,
-            }));
-
-            const result = await etudiantAPI.importEtudiants(etudiantsToImport);
-            setSuccess(`${result.successCount || result.success?.length || 0} étudiant(s) importé(s) avec succès`);
-            if (result.errors && result.errors.length > 0) {
-                setImportErrors(result.errors.map(e => e.error || e.message || 'Erreur inconnue'));
-            }
-            setImportOpen(false);
+            valides.push({ ...propre, email: String(propre.email ?? '').toLowerCase(), id_groupe: nomGroupe ? parNom.get(nomGroupe) : null });
+        });
+        if (valides.length) {
+            const reponse = await etudiantAPI.importEtudiants(valides);
+            const ligneDe = (email) => lignes.findIndex((l) => String(l.email || '').trim().toLowerCase() === String(email || '').toLowerCase()) + 2;
+            erreurs.push(...(reponse.errors || []).map((e) => ({ ligne: ligneDe(e.email), libelle: e.email, message: e.error || e.message })));
             loadEtudiants();
             loadUsers();
-            loadGroupes();
-        } catch (error) {
-            console.error('Erreur lors de l\'import:', error);
-            setError(error.message || 'Erreur lors de l\'import du fichier');
-        } finally {
-            setImportLoading(false);
+            return { reussies: reponse.successCount ?? reponse.success?.length ?? 0, erreurs };
         }
+        return { reussies: 0, erreurs };
     };
 
     const handleExport = async () => {
@@ -242,10 +222,7 @@ export default function Etudiants() {
                         <Button
                             variant="outlined"
                             startIcon={<UploadFile />}
-                            onClick={() => {
-                                setImportOpen(true);
-                                setImportErrors([]);
-                            }}
+                            onClick={() => setImportOuvert(true)}
                         >
                             Importer (Excel/CSV)
                         </Button>
@@ -412,6 +389,15 @@ export default function Etudiants() {
                     </form>
                 </Dialog>
             </Box>
+            <ImportCsvDialog
+                open={importOuvert}
+                onClose={() => setImportOuvert(false)}
+                titre="Importer des étudiants"
+                intro="Une ligne par étudiant. Colonnes obligatoires : nom, prenom, email, numero_etudiant, niveau. Facultatives : telephone, groupe (nom du groupe le plus fin, tel qu'affiché dans Groupes). Chaque étudiant reçoit un lien d'invitation par email pour choisir son mot de passe."
+                modele={MODELE_CSV}
+                nomModele="modele-etudiants.csv"
+                onImport={importer}
+            />
         </DashboardLayout>
     );
 }
