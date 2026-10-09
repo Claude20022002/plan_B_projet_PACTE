@@ -10,6 +10,7 @@
         "migrate": "node migrations/cli.js",
         "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
         "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
+        "banc:preparer": "node tests/banc/preparer-base.mjs",
         "banc:requetes": "node tests/banc/mesurer-requetes.mjs",
         "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
         "test:watch": "node --experimental-vm-modules node_modules/jest/bin/jest.js --watch"

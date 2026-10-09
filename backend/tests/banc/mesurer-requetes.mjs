@@ -54,62 +54,64 @@ const jetonPour = async (user) => {
 };
 const jetons = { admin: await jetonPour(admin), enseignant: await jetonPour(enseignant), etudiant: await jetonPour(etudiant) };
 
+// [rôle, adresse, budget de requêtes SQL] : budgets mesurés sur la base de preparer-base.mjs
+// (dont 2 requêtes d'authentification par appel)
 const ROUTES = [
-    ["admin", "/api/statistiques/dashboard"],
-    ["admin", "/api/statistiques/kpis"],
-    ["admin", "/api/statistiques/salles/occupation"],
-    ["admin", "/api/statistiques/salles/frequence"],
-    ["admin", "/api/statistiques/enseignants/charge"],
-    ["admin", "/api/statistiques/groupes/occupation"],
-    ["admin", "/api/statistiques/activite/heures-creuses"],
-    ["admin", "/api/statistiques/activite/pics"],
-    ["admin", "/api/affectations?page=1&limit=50"],
-    ["admin", `/api/affectations?date_from=${debut}&date_to=${finMois}&limit=500`],
-    ["admin", `/api/emplois-du-temps/groupe/${groupe.id_groupe}?date_debut=${debut}&date_fin=${finMois}`],
-    ["admin", `/api/emplois-du-temps/groupe/${groupe.id_groupe}/mensuel?mois=${mois}`],
-    ["admin", "/api/salles"],
-    ["admin", "/api/enseignants"],
-    ["admin", "/api/etudiants?page=1&limit=50"],
-    ["admin", "/api/groupes"],
-    ["admin", "/api/groupes/arbre"],
-    ["admin", "/api/cours"],
-    ["admin", "/api/filieres"],
-    ["admin", "/api/conflits"],
-    ["admin", "/api/demandes-report"],
-    ["admin", "/api/reservations"],
-    ["admin", "/api/examens"],
-    ["admin", `/api/suivi/modules?id_periode=${periode.id_periode}`],
-    ["admin", `/api/suivi/enseignants?mois=${mois}`],
-    ["admin", `/api/preparation?id_periode=${periode.id_periode}`],
-    ["admin", `/api/enseignements?id_periode=${periode.id_periode}`],
-    ["admin", "/api/annonces/envoyees"],
-    ["admin", "/api/presences/signalements"],
-    ["enseignant", "/api/auth/me"],
-    ["enseignant", `/api/emplois-du-temps/enseignant/${enseignant.id_user}?date_debut=${debut}&date_fin=${finMois}`],
-    ["enseignant", "/api/activites"],
-    ["enseignant", "/api/devoirs"],
-    ["enseignant", "/api/annonces"],
-    ["enseignant", "/api/services/mes-services"],
-    ["enseignant", "/api/examens/mes-surveillances"],
-    ["enseignant", `/api/disponibilites/enseignant/${enseignant.id_user}`],
-    ["enseignant", "/api/suivi/retours/mes-modules"],
-    ["enseignant", "/api/quiz/parties/en-cours"],
-    ["etudiant", "/api/auth/me"],
-    ["etudiant", `/api/emplois-du-temps/moi?du=${debut}&au=${finMois}`],
-    ["etudiant", `/api/emplois-du-temps/etudiant/${etudiant.id_user}?date_debut=${debut}&date_fin=${finMois}`],
-    ["etudiant", "/api/activites"],
-    ["etudiant", "/api/devoirs"],
-    ["etudiant", "/api/annonces"],
-    ["etudiant", "/api/quiz/parties/en-cours"],
-    ["etudiant", "/api/presences/miennes"],
-    ["etudiant", "/api/examens/mes-examens"],
-    ["etudiant", "/api/suivi/retours/a-donner"],
-    ["etudiant", `/api/notifications/user/${etudiant.id_user}`],
+    ["admin", "/api/statistiques/dashboard", 12],
+    ["admin", "/api/statistiques/kpis", 14],
+    ["admin", "/api/statistiques/salles/occupation", 6],
+    ["admin", "/api/statistiques/salles/frequence", 4],
+    ["admin", "/api/statistiques/enseignants/charge", 7],
+    ["admin", "/api/statistiques/groupes/occupation", 6],
+    ["admin", "/api/statistiques/activite/heures-creuses", 5],
+    ["admin", "/api/statistiques/activite/pics", 5],
+    ["admin", "/api/affectations?page=1&limit=50", 6],
+    ["admin", `/api/affectations?date_from=${debut}&date_to=${finMois}&limit=500`, 6],
+    ["admin", `/api/emplois-du-temps/groupe/${groupe.id_groupe}?date_debut=${debut}&date_fin=${finMois}`, 5],
+    ["admin", `/api/emplois-du-temps/groupe/${groupe.id_groupe}/mensuel?mois=${mois}`, 12],
+    ["admin", "/api/salles", 4],
+    ["admin", "/api/enseignants", 4],
+    ["admin", "/api/etudiants?page=1&limit=50", 4],
+    ["admin", "/api/groupes", 4],
+    ["admin", "/api/groupes/arbre", 3],
+    ["admin", "/api/cours", 4],
+    ["admin", "/api/filieres", 4],
+    ["admin", "/api/conflits", 4],
+    ["admin", "/api/demandes-report", 3],
+    ["admin", "/api/reservations", 3],
+    ["admin", "/api/examens", 3],
+    ["admin", `/api/suivi/modules?id_periode=${periode.id_periode}`, 7],
+    ["admin", `/api/suivi/enseignants?mois=${mois}`, 5],
+    ["admin", `/api/preparation?id_periode=${periode.id_periode}`, 12],
+    ["admin", `/api/enseignements?id_periode=${periode.id_periode}`, 4],
+    ["admin", "/api/annonces/envoyees", 3],
+    ["admin", "/api/presences/signalements", 4],
+    ["enseignant", "/api/auth/me", 5],
+    ["enseignant", `/api/emplois-du-temps/enseignant/${enseignant.id_user}?date_debut=${debut}&date_fin=${finMois}`, 4],
+    ["enseignant", "/api/activites", 13],
+    ["enseignant", "/api/devoirs", 3],
+    ["enseignant", "/api/annonces", 7],
+    ["enseignant", "/api/services/mes-services", 3],
+    ["enseignant", "/api/examens/mes-surveillances", 4],
+    ["enseignant", `/api/disponibilites/enseignant/${enseignant.id_user}`, 3],
+    ["enseignant", "/api/suivi/retours/mes-modules", 4],
+    ["enseignant", "/api/quiz/parties/en-cours", 3],
+    ["etudiant", "/api/auth/me", 4],
+    ["etudiant", `/api/emplois-du-temps/moi?du=${debut}&au=${finMois}`, 10],
+    ["etudiant", `/api/emplois-du-temps/etudiant/${etudiant.id_user}?date_debut=${debut}&date_fin=${finMois}`, 6],
+    ["etudiant", "/api/activites", 17],
+    ["etudiant", "/api/devoirs", 9],
+    ["etudiant", "/api/annonces", 7],
+    ["etudiant", "/api/quiz/parties/en-cours", 3],
+    ["etudiant", "/api/presences/miennes", 3],
+    ["etudiant", "/api/examens/mes-examens", 7],
+    ["etudiant", "/api/suivi/retours/a-donner", 7],
+    ["etudiant", `/api/notifications/user/${etudiant.id_user}`, 3],
 ].filter(([, url]) => !args.filtre || url.includes(args.filtre));
 
 const lignes = [];
 const lentes = new Map();
-for (const [role, url] of ROUTES) {
+for (const [role, url, budget] of ROUTES) {
     // Une première passe à blanc (caches, compilation), puis la mesure
     await request(app).get(url).set("Authorization", `Bearer ${jetons[role]}`);
     journal = [];
@@ -126,7 +128,7 @@ for (const [role, url] of ROUTES) {
         formes.set(forme, (formes.get(forme) ?? 0) + 1);
     }
     const repetee = Math.max(0, ...formes.values());
-    lignes.push({ role, url: url.replace(/\?.*/, "").slice(0, 52), statut: res.status, ms: Math.round(total), requetes: requetes.length, sql_ms: sqlMs, pire_ms: pire?.ms ?? 0, repetee });
+    lignes.push({ role, url: url.replace(/\?.*/, "").slice(0, 52), statut: res.status, ms: Math.round(total), requetes: requetes.length, budget, sql_ms: sqlMs, pire_ms: pire?.ms ?? 0, repetee });
     for (const r of requetes) if (r.ms >= SEUIL_MS && !lentes.has(r.sql)) lentes.set(r.sql, { ...r, route: url });
 }
 
@@ -146,3 +148,12 @@ if (args.explain) {
 sequelize.options.logging = false;
 await AuthSession.destroy({ where: { session_id: sessions } });
 await sequelize.close();
+
+if (args.verifier) {
+    const echecs = lignes.filter((l) => l.statut !== 200 || l.requetes > l.budget);
+    for (const l of echecs) {
+        console.error(`✗ ${l.role} ${l.url} : ${l.statut !== 200 ? `statut ${l.statut}` : `${l.requetes} requêtes pour un budget de ${l.budget}`}`);
+    }
+    if (echecs.length) process.exit(1);
+    console.log(`✓ ${lignes.length} routes : statut 200 et budget de requêtes respecté`);
+}
