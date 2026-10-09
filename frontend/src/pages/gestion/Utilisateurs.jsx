@@ -26,7 +26,7 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, ArrowBack, SupervisedUserCircle } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, ArrowBack, SupervisedUserCircle, PhonelinkErase } from '@mui/icons-material';
 import { TableSortLabel } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { userAPI } from '../../services/api';
@@ -150,6 +150,20 @@ export default function Utilisateurs() {
     };
 
     const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
+
+    // Double authentification : téléphone perdu → retirée, sessions fermées, à reconfigurer
+    const [mfaAReinitialiser, setMfaAReinitialiser] = useState(null);
+    const reinitialiserMfa = async () => {
+        const cible = mfaAReinitialiser;
+        setMfaAReinitialiser(null);
+        try {
+            await userAPI.reinitialiserMfa(cible.id_user);
+            setSuccess(`Double authentification de ${cible.prenom} ${cible.nom} réinitialisée`);
+            loadUtilisateurs();
+        } catch (err) {
+            setError(err.response?.data?.error || err.message || 'Réinitialisation impossible');
+        }
+    };
 
     const handleDeleteConfirm = async () => {
         const { id } = confirmDialog;
@@ -280,6 +294,11 @@ export default function Utilisateurs() {
                                         <IconButton size="small" onClick={() => handleEdit(user)} aria-label={`Modifier ${user.prenom} ${user.nom}`}>
                                             <Edit />
                                         </IconButton>
+                                        {user.mfa_active && (
+                                            <IconButton size="small" onClick={() => setMfaAReinitialiser(user)} aria-label={`Réinitialiser la double authentification de ${user.prenom} ${user.nom}`} title="Réinitialiser la double authentification">
+                                                <PhonelinkErase />
+                                            </IconButton>
+                                        )}
                                         <IconButton size="small" color="error" onClick={() => handleDeleteClick(user.id_user)} aria-label={`Supprimer ${user.prenom} ${user.nom}`}>
                                             <Delete />
                                         </IconButton>
@@ -309,6 +328,15 @@ export default function Utilisateurs() {
                     message="Cette action est irréversible. L'utilisateur sera définitivement supprimé."
                     onConfirm={handleDeleteConfirm}
                     onCancel={() => setConfirmDialog({ open: false, id: null })}
+                />
+
+                <ConfirmDialog
+                    open={Boolean(mfaAReinitialiser)}
+                    title="Réinitialiser la double authentification"
+                    message={`${mfaAReinitialiser?.prenom ?? ''} ${mfaAReinitialiser?.nom ?? ''} sera déconnecté partout et devra la configurer de nouveau (administrateur) ou pourra s'en passer (enseignant). À faire seulement après avoir vérifié son identité.`}
+                    confirmLabel="Réinitialiser"
+                    onConfirm={reinitialiserMfa}
+                    onCancel={() => setMfaAReinitialiser(null)}
                 />
 
                 <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>

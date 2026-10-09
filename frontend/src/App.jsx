@@ -69,6 +69,7 @@ const EmploiDuTempsEtudiant  = lazy(() => import('./pages/emploi-du-temps/Emploi
 // ── Pages partagées ───────────────────────────────────────────────────────
 const Notifications  = lazy(() => import('./pages/Notifications'));
 const Parametres     = lazy(() => import('./pages/Parametres'));
+const Securite       = lazy(() => import('./pages/Securite'));
 const Statistiques   = lazy(() => import('./pages/Statistiques'));
 const MesAffectations= lazy(() => import('./pages/MesAffectations'));
 const DemandesReport = lazy(() => import('./pages/DemandesReport'));
@@ -291,6 +292,12 @@ export default function App() {
           <Route path="/parametres" element={
             <PrivateRoute>
               <AppPage><Parametres /></AppPage>
+            </PrivateRoute>
+          } />
+          {/* Double authentification : page autonome (obligatoire pour l'administration) */}
+          <Route path="/securite" element={
+            <PrivateRoute requiredRole={['admin', 'enseignant']}>
+              <Securite />
             </PrivateRoute>
           } />
           <Route path="/statistiques" element={

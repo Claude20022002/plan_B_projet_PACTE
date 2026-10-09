@@ -14,6 +14,8 @@ import {
 import { PhotoCamera } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import AbonnementAgenda from '../components/agenda/AbonnementAgenda';
+import { Link as RouterLink } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
 import { userAPI } from '../services/api';
 import { useFormik } from 'formik';
@@ -41,6 +43,7 @@ const validationSchema = yup.object({
 
 export default function Parametres() {
     const { user, checkAuth } = useAuth();
+    const { t } = useTranslation();
     const isAdmin = user?.role === 'admin';
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
@@ -320,6 +323,21 @@ export default function Parametres() {
                 </Paper>
 
                 <AbonnementAgenda />
+
+                {/* Double authentification (personnel ; obligatoire pour l'administration) */}
+                {['admin', 'enseignant'].includes(user?.role) && (
+                    <Paper sx={{ p: 3, mt: 2, display: 'flex', flexWrap: 'wrap', gap: 2, alignItems: 'center', justifyContent: 'space-between' }}>
+                        <Box>
+                            <Typography variant="h6">{t('securite.titre')}</Typography>
+                            <Typography variant="body2" color="text.secondary">
+                                {t(user?.mfa_active ? 'securite.resumeActive' : 'securite.resumeInactive')}
+                            </Typography>
+                        </Box>
+                        <Button variant="outlined" component={RouterLink} to="/securite">
+                            {t('securite.gerer')}
+                        </Button>
+                    </Paper>
+                )}
             </Box>
         </DashboardLayout>
     );
