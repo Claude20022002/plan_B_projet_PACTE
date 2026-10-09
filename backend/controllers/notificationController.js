@@ -74,11 +74,16 @@ export const deleteNotification = asyncHandler(async (req, res) => {
     res.json({ message: "Notification supprimée avec succès" });
 });
 
+// Historique affiché : les plus récentes seulement (chaque changement de séance en crée une,
+// la liste grandirait sans fin). Les non lues restent toutes renvoyées : le badge les compte.
+const HISTORIQUE_MAX = 200;
+
 // 🔍 Notifications d'un utilisateur (propriétaire ou admin, contrôlé par la route)
 export const getNotificationsByUser = asyncHandler(async (req, res) => {
     const notifications = await Notification.findAll({
         where: { id_user: req.params.id_user },
-        order: [["date_envoi", "DESC"]],
+        order: [["date_envoi", "DESC"], ["id_notification", "DESC"]],
+        limit: HISTORIQUE_MAX,
     });
     res.json(notifications);
 });
