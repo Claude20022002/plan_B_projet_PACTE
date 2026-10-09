@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { JournalSecurite } from "../models/index.js";
+import { JournalSecurite, Users } from "../models/index.js";
 
 /**
  * Journal de sécurité (OWASP A09, ASVS V7) : qui, quoi, d'où, quand. Jamais de mot de passe, de
@@ -82,6 +82,11 @@ export const lireJournal = async ({ id_user, evenement, du, au, page = 1, par_pa
         order: [["createdAt", "DESC"], ["id_evenement", "DESC"]],
         limit: limite,
         offset: (numero - 1) * limite,
+        raw: true,
     });
-    return { total: count, page: numero, par_page: limite, evenements: rows };
+    // Nom de l'administrateur qui a agi (une lecture pour la page ; compte supprimé : null)
+    const idsActeurs = [...new Set(rows.map((r) => r.id_acteur).filter(Boolean))];
+    const acteurs = idsActeurs.length ? await Users.findAll({ where: { id_user: idsActeurs }, attributes: ["id_user", "nom", "prenom", "email"], raw: true }) : [];
+    const parId = new Map(acteurs.map((a) => [a.id_user, a]));
+    return { total: count, page: numero, par_page: limite, evenements: rows.map((r) => ({ ...r, acteur: parId.get(r.id_acteur) ?? null })) };
 };

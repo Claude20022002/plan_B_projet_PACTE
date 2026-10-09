@@ -84,6 +84,10 @@ describe("Journal de sécurité", () => {
         expect(res.body.evenements).toHaveLength(1);
         expect(res.body.evenements[0].evenement).toBe("connexion_echec");
 
+        // Auteur d'une action d'administration : son nom, pas seulement son identifiant
+        const modif = await client.get(`/api/journal-securite?evenement=compte_modifie`);
+        expect(modif.body.evenements[0]).toMatchObject({ acteur: { id_user: admin.id_user, email: admin.email }, details: { role: { avant: "etudiant", apres: "enseignant" } } });
+
         expect((await (await loginAs(etudiant)).get("/api/journal-securite")).status).toBe(403);
     });
 });

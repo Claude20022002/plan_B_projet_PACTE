@@ -84,6 +84,7 @@ const Imprevus       = lazy(() => import('./pages/gestion/Imprevus'));
 const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
 const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
 const SignalementsPresence = lazy(() => import('./pages/gestion/SignalementsPresence'));
+const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
 const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
@@ -389,6 +390,11 @@ export default function App() {
           <Route path="/gestion/signalements-presence" element={
             <PrivateRoute requiredRole="admin">
               <AppPage><SignalementsPresence /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/journal-securite" element={
+            <PrivateRoute requiredRole="admin">
+              <AppPage><JournalSecurite /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/emploi-du-temps/mensuel" element={

@@ -712,3 +712,12 @@ export const presenceAPI = {
     telephone: (idUser) => request(`/presences/etudiants/${encodeURIComponent(idUser)}/telephone`),
     delierTelephone: (idUser) => request(`/presences/etudiants/${encodeURIComponent(idUser)}/telephone`, { method: 'DELETE' }),
 };
+
+// Journal de sécurité (administration) : { total, page, par_page, evenements: [{ id_evenement, evenement, id_user, email, acteur, ip, user_agent, details, createdAt }] }
+export const journalSecuriteAPI = {
+    lister: (filtres = {}) => {
+        const params = Object.fromEntries(Object.entries(filtres).filter(([, v]) => v !== '' && v !== null && v !== undefined));
+        return request(`/journal-securite?${new URLSearchParams(params).toString()}`);
+    },
+    evenements: () => request('/journal-securite/evenements'),
+};
