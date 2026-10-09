@@ -1,5 +1,6 @@
 import { resetDatabase, closeDatabase, createUser, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
+import sequelize from "../../config/db.js";
 import {
     Affectation,
     AnneeUniversitaire,
@@ -140,5 +141,25 @@ describe("Préparer le semestre", () => {
     test("réservé à l'administration et aux responsables", async () => {
         expect((await clients.prof.get(`/api/preparation?id_periode=${ref.periode.id_periode}`)).status).toBe(403);
         expect((await clients.etudiant.get(`/api/preparation?id_periode=${ref.periode.id_periode}`)).status).toBe(403);
+    });
+
+    test("le nombre de requêtes SQL ne dépend pas du nombre de filières (pas de boucle N+1)", async () => {
+        const url = `/api/preparation?id_periode=${ref.periode.id_periode}`;
+        const compter = async () => {
+            let requetes = 0;
+            sequelize.options.logging = () => (requetes += 1);
+            try {
+                expect((await clients.admin.get(url)).status).toBe(200);
+            } finally {
+                sequelize.options.logging = false;
+            }
+            return requetes;
+        };
+        const avant = await compter();
+        for (const n of [1, 2, 3, 4]) {
+            await Filiere.create({ code_filiere: `F${n}`, nom_filiere: `Filière ${n}`, ecole: "engineering", cycle: "ingenieur", intitule_cycle: "cycle Ingénieur d'Etat", premiere_annee_cycle: 3 });
+        }
+        expect(await compter()).toBe(avant);
+        expect(avant).toBeLessThanOrEqual(15);
     });
 });
