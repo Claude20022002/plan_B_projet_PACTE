@@ -20,7 +20,7 @@ import {
 } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, aujourdhui, minutes } from "./affectationRules.js";
-import { ancetres } from "./groupes.js";
+import { avecAncetres } from "./groupes.js";
 import { appliquerRamadan, horairesSurPlage } from "./ramadan.js";
 import { filieresDuResponsable } from "./droits.js";
 
@@ -215,14 +215,7 @@ export const exportVacataires = async ({ mois }) => {
 /** Groupes d'un étudiant et groupes qui les contiennent (une séance de promotion le concerne). */
 const groupesDeLEtudiant = async (idUser) => {
     const appartenances = await Appartenir.findAll({ where: { id_user_etudiant: idUser }, attributes: ["id_groupe"] });
-    const ids = new Set();
-    for (const { id_groupe } of appartenances) {
-        const groupe = await Groupe.findByPk(id_groupe);
-        if (!groupe) continue;
-        const famille = await Groupe.findAll({ where: { id_filiere: groupe.id_filiere } });
-        [groupe, ...ancetres(groupe, new Map(famille.map((g) => [g.id_groupe, g])))].forEach((g) => ids.add(g.id_groupe));
-    }
-    return ids;
+    return new Set(await avecAncetres(appartenances.map((a) => a.id_groupe)));
 };
 
 const ilYA = (jours) => {

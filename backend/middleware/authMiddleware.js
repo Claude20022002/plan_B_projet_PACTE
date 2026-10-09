@@ -36,12 +36,15 @@ const attachUserFromToken = async (req, decoded) => {
         return { status: 401, message: "Token invalide", error: "Session absente du token", code: "SESSION_INVALID" };
     }
 
+    // Session et utilisateur en une lecture (chaque requête authentifiée passe ici) ; la portée
+    // par défaut de Users s'applique aussi dans l'include (ni mot de passe ni secret TOTP)
     const session = await AuthSession.findOne({
         where: {
             session_id: decoded.sid,
             id_user: Number(userId),
             revoked_at: null,
         },
+        include: [{ model: Users, as: "user", required: false }],
     });
 
     if (!session || new Date(session.expires_at) <= new Date()) {
@@ -56,7 +59,7 @@ const attachUserFromToken = async (req, decoded) => {
         jti: decoded.jti,
     };
 
-    const user = await Users.findByPk(userId);
+    const { user } = session;
 
     if (!user) {
         return { status: 401, message: "Utilisateur non trouvé", error: "Token invalide - utilisateur introuvable" };

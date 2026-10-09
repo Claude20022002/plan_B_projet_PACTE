@@ -38,6 +38,36 @@ export const descendants = (groupe, groupes) => {
 };
 
 /**
+ * Les groupes donnés et les groupes de leurs filières, en deux lectures quel que soit leur nombre.
+ * @returns {Promise<{ groupe: object, famille: object[] }[]>} dans l'ordre des groupes donnés (introuvables omis)
+ */
+const avecFamilles = async (idsGroupes, transaction) => {
+    const directs = await Groupe.findAll({ where: { id_groupe: [...new Set(idsGroupes)] }, transaction });
+    if (!directs.length) return [];
+    const tous = await Groupe.findAll({ where: { id_filiere: [...new Set(directs.map((g) => g.id_filiere))] }, order: [["id_groupe", "ASC"]], transaction });
+    const parId = new Map(directs.map((g) => [g.id_groupe, g]));
+    return idsGroupes.filter((id) => parId.has(id)).map((id) => ({ groupe: parId.get(id), famille: tous.filter((g) => g.id_filiere === parId.get(id).id_filiere) }));
+};
+
+/** Identifiants des groupes donnés suivis de leurs ancêtres, sans doublon. */
+export const avecAncetres = async (idsGroupes, transaction) => {
+    const ids = new Set();
+    for (const { groupe, famille } of await avecFamilles(idsGroupes, transaction)) {
+        [groupe, ...ancetres(groupe, new Map(famille.map((g) => [g.id_groupe, g])))].forEach((g) => ids.add(g.id_groupe));
+    }
+    return [...ids];
+};
+
+/** Identifiants des groupes donnés suivis de leurs descendants, sans doublon. */
+export const avecDescendants = async (idsGroupes, transaction) => {
+    const ids = new Set();
+    for (const { groupe, famille } of await avecFamilles(idsGroupes, transaction)) {
+        [groupe, ...descendants(groupe, famille)].forEach((g) => ids.add(g.id_groupe));
+    }
+    return [...ids];
+};
+
+/**
  * Identifiants des groupes qu'une séance de `idGroupe` occupe aussi : le groupe, ses
  * ancêtres (un TP est pris quand sa promotion a cours) et ses descendants
  * (une promotion est prise quand l'un de ses TP a cours). Sert à la détection de conflits.

@@ -13,7 +13,7 @@ import {
 } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, minutes, validerAffectation } from "./affectationRules.js";
-import { descendants, groupesLies } from "./groupes.js";
+import { avecDescendants, groupesLies } from "./groupes.js";
 import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 
 /**
@@ -183,16 +183,7 @@ export const resoudreConflitsObsoletes = async (idAffectation, transaction) => {
 };
 
 /** Étudiants concernés : ceux du groupe et de ses sous-groupes (un étudiant est inscrit dans son groupe le plus fin). */
-export const groupesANotifier = async (idsGroupes) => {
-    const ids = new Set();
-    for (const id of idsGroupes) {
-        const groupe = await Groupe.findByPk(id);
-        if (!groupe) continue;
-        const famille = await Groupe.findAll({ where: { id_filiere: groupe.id_filiere } });
-        [groupe, ...descendants(groupe, famille)].forEach((g) => ids.add(g.id_groupe));
-    }
-    return [...ids];
-};
+export const groupesANotifier = (idsGroupes) => avecDescendants(idsGroupes);
 
 /**
  * Prévient l'enseignant et les étudiants d'un changement de séance (modification, report,

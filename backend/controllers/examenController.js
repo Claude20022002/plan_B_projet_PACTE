@@ -1,10 +1,10 @@
 import { Op } from "sequelize";
-import { Appartenir, Groupe, SessionExamen, SessionExamenGroupe, Surveillance } from "../models/index.js";
+import { Appartenir, SessionExamen, SessionExamenGroupe, Surveillance } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { pick } from "../utils/validationHelper.js";
 import { ErreurMetier } from "../services/planning/enseignements.js";
 import { ViolationsBloquantes } from "../services/planning/seances.js";
-import { ancetres } from "../services/planning/groupes.js";
+import { avecAncetres } from "../services/planning/groupes.js";
 import {
     INCLUDES_EXAMEN,
     affecterSurveillants,
@@ -70,14 +70,8 @@ export const getMesSurveillances = asyncHandler(async (req, res) => {
 // 🎓 Étudiant : épreuves publiées de son groupe et des groupes qui le contiennent
 export const getMesExamens = asyncHandler(async (req, res) => {
     const appartenances = await Appartenir.findAll({ where: { id_user_etudiant: req.user.id_user }, attributes: ["id_groupe"] });
-    const ids = new Set();
-    for (const { id_groupe } of appartenances) {
-        const groupe = await Groupe.findByPk(id_groupe);
-        if (!groupe) continue;
-        const famille = await Groupe.findAll({ where: { id_filiere: groupe.id_filiere } });
-        [groupe, ...ancetres(groupe, new Map(famille.map((g) => [g.id_groupe, g])))].forEach((g) => ids.add(g.id_groupe));
-    }
-    const liens = await SessionExamenGroupe.findAll({ where: { id_groupe: [...ids] }, attributes: ["id_session"] });
+    const ids = await avecAncetres(appartenances.map((a) => a.id_groupe));
+    const liens = await SessionExamenGroupe.findAll({ where: { id_groupe: ids }, attributes: ["id_session"] });
     res.json(
         await SessionExamen.findAll({
             where: { id_session: [...new Set(liens.map((l) => l.id_session))], statut: "publiee" },
