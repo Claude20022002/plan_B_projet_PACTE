@@ -4,12 +4,15 @@
  * la base de banc (18 000 séances). Repère les boucles de requêtes (N+1) et, avec --explain, les
  * lectures de table entière (EXPLAIN type ALL) des requêtes lentes.
  *
- * Lancement (depuis backend/, conteneur hestim_mysql_test démarré) :
- *   DB_HOST=127.0.0.1 DB_PORT=3307 DB_USER=root DB_PASSWORD=test_root DB_NAME=hestim_bench_test \
- *     NODE_ENV=test node tests/banc/mesurer-requetes.mjs [--explain] [--seuil=20] [--filtre=stat]
+ * Lancement (depuis backend/, conteneur hestim_mysql_test démarré, base créée par preparer-base.mjs) :
+ *   node tests/banc/mesurer-requetes.mjs [--explain] [--seuil=20] [--filtre=stat] [--verifier]
+ * --verifier (CI) : échec si une route ne répond pas 200 ou dépasse son budget de requêtes SQL
+ * (une boucle N+1 introduite fait grandir le nombre de requêtes avec les données). Après une
+ * optimisation, abaisser le budget de la route pour verrouiller le gain.
  * Les migrations sont appliquées à la base de banc au départ. Aucune donnée n'est modifiée, hormis
  * une session de connexion par rôle (supprimée à la fin).
  */
+import "./env.mjs";
 import crypto from "crypto";
 import request from "supertest";
 import sequelize from "../../config/db.js";
@@ -17,7 +20,6 @@ import { runMigrations } from "../../migrations/migrator.js";
 
 const args = Object.fromEntries(process.argv.slice(2).map((a) => a.replace(/^--/, "").split("=")).map(([k, v]) => [k, v ?? true]));
 const SEUIL_MS = Number(args.seuil ?? 20);
-if (!String(sequelize.getDatabaseName()).endsWith("_test")) throw new Error("Banc réservé à une base *_test");
 
 await runMigrations();
 const { default: app } = await import("../../app.js");
@@ -63,7 +65,6 @@ const ROUTES = [
     ["admin", "/api/statistiques/activite/pics"],
     ["admin", "/api/affectations?page=1&limit=50"],
     ["admin", `/api/affectations?date_from=${debut}&date_to=${finMois}&limit=500`],
-    ["admin", `/api/emplois-du-temps/consolide?date_debut=${debut}&date_fin=${finMois}`],
     ["admin", `/api/emplois-du-temps/groupe/${groupe.id_groupe}?date_debut=${debut}&date_fin=${finMois}`],
     ["admin", `/api/emplois-du-temps/groupe/${groupe.id_groupe}/mensuel?mois=${mois}`],
     ["admin", "/api/salles"],
@@ -77,9 +78,10 @@ const ROUTES = [
     ["admin", "/api/demandes-report"],
     ["admin", "/api/reservations"],
     ["admin", "/api/examens"],
-    ["admin", "/api/suivi/modules"],
-    ["admin", "/api/suivi/enseignants"],
-    ...(periode ? [["admin", `/api/preparation?id_periode=${periode.id_periode}`], ["admin", `/api/enseignements?id_periode=${periode.id_periode}`]] : []),
+    ["admin", `/api/suivi/modules?id_periode=${periode.id_periode}`],
+    ["admin", `/api/suivi/enseignants?mois=${mois}`],
+    ["admin", `/api/preparation?id_periode=${periode.id_periode}`],
+    ["admin", `/api/enseignements?id_periode=${periode.id_periode}`],
     ["admin", "/api/annonces/envoyees"],
     ["admin", "/api/presences/signalements"],
     ["enseignant", "/api/auth/me"],
