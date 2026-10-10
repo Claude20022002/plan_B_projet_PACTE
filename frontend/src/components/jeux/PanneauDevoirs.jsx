@@ -28,6 +28,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { ds } from '../../design-system/tokens';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
 import SelecteurClasse from '../planning/SelecteurClasse';
+import PanneauQuizIa from './QuizIa';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
 
 /** Date limite par défaut : dans une semaine, à 23 h 59 (champ datetime-local) */
@@ -43,7 +44,7 @@ const dansUneSemaine = () => {
  * temps, la séance en cours ou la prochaine proposée d'abord), avec une date limite : l'un de mes
  * quiz ClassQuiz (corrigé par Planner) ou un fichier à rendre (consignes, énoncé facultatif).
  */
-function DonnerDevoir({ ouvert, fermer, cree, preselection = null }) {
+function DonnerDevoir({ ouvert, fermer, cree, preselection = null, quizInitial = null }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [quiz, setQuiz] = useState(null);
@@ -63,6 +64,11 @@ function DonnerDevoir({ ouvert, fermer, cree, preselection = null }) {
     setErreurEnonce(probleme ? t(probleme) : '');
     setEnonce(probleme ? null : f);
   };
+
+  // Quiz tout juste créé (généré par l'IA puis relu) : proposé d'emblée
+  useEffect(() => {
+    if (ouvert && quizInitial) setChoix((c) => ({ ...c, type: 'quiz', quiz_id: quizInitial }));
+  }, [ouvert, quizInitial]);
 
   useEffect(() => {
     if (!ouvert) return undefined;
@@ -319,6 +325,7 @@ export default function PanneauDevoirs({ enseignant }) {
   // Depuis « Mes classes » : le dialogue s'ouvre sur la classe choisie ({ id_cours, id_groupe })
   const location = useLocation();
   const [preselection, setPreselection] = useState(null);
+  const [quizInitial, setQuizInitial] = useState(null);
 
   useEffect(() => {
     const classe = location.state?.donnerDevoir;
@@ -408,12 +415,27 @@ export default function PanneauDevoirs({ enseignant }) {
         })}
       </Panneau>
       {enseignant && (
+        <PanneauQuizIa
+          preselection={preselection}
+          donnerEnDevoir={(generation) => {
+            setPreselection({ id_cours: generation.id_cours, id_groupe: generation.id_groupe });
+            setQuizInitial(generation.id_quiz_classquiz);
+            setDonner(true);
+          }}
+        />
+      )}
+      {enseignant && (
         <DonnerDevoir
           ouvert={donner}
           preselection={preselection}
-          fermer={() => setDonner(false)}
+          quizInitial={quizInitial}
+          fermer={() => {
+            setDonner(false);
+            setQuizInitial(null);
+          }}
           cree={() => {
             setDonner(false);
+            setQuizInitial(null);
             charger();
           }}
         />

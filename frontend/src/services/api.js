@@ -647,6 +647,22 @@ export const devoirsAPI = {
         request(`/devoirs/${encodeURIComponent(id)}/copies/${encodeURIComponent(idUser)}/note`, { method: 'PUT', body: { note, commentaire } }),
 };
 
+// ==================== QUIZ GÉNÉRÉS PAR L'IA (enseignants) ====================
+export const quizIaAPI = {
+    // { disponible, max_par_jour, restantes }
+    disponibilite: () => request('/quiz-ia/disponibilite'),
+    // Support (PDF, DOCX, PPTX) et réglages { id_cours, id_groupe?, plage?, nombre, type, difficulte, langue, temps } → { id_generation, statut }
+    generer: (fichier, params) =>
+        request(avecQuery('/quiz-ia/generations', { ...params, nom: fichier.name }), { method: 'POST', body: fichier, headers: { 'Content-Type': typeDuFichier(fichier) } }),
+    lister: () => request('/quiz-ia/generations'),
+    // { id_generation, statut: en_cours | pret | erreur | creation | cree, erreur, questions, nom_source, id_quiz_classquiz }
+    etat: (id) => request(`/quiz-ia/generations/${encodeURIComponent(id)}`),
+    enregistrer: (id, questions) => request(`/quiz-ia/generations/${encodeURIComponent(id)}/questions`, { method: 'PUT', body: { questions } }),
+    regenerer: (id, index) => request(`/quiz-ia/generations/${encodeURIComponent(id)}/questions/${encodeURIComponent(index)}/regenerer`, { method: 'POST' }),
+    // Crée le quiz relu dans ClassQuiz (compte créé au besoin) → statut « cree », id_quiz_classquiz, titre_quiz
+    creer: (id, titre) => request(`/quiz-ia/generations/${encodeURIComponent(id)}/creer`, { method: 'POST', body: { titre } }),
+};
+
 // ==================== JEUX INTÉGRÉS (terminal Linux…) ====================
 export const jeuxAPI = {
     // { jeux: [{ code, titre, resume, source, progression }], modules: [{ id_cours, code, nom, jeux }] }
