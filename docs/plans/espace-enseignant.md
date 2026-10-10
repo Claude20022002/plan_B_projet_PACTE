@@ -34,7 +34,9 @@ L'enseignant fait tout ce qui concerne sa classe depuis un seul endroit, sur son
 
 **Décision (10 octobre 2026) :** A, avec B qui vient gratuitement. **C est écartée** : les grands écrans des salles ne servent qu'à recopier l'écran de l'ordinateur de l'enseignant, ils n'ont pas de navigateur à utiliser.
 
-**Règles à garder :** le code change toujours toutes les 30 secondes ; aucun nom d'étudiant sur la page projetée ; le scan reste réservé à l'application mobile (anti-fraude inchangée).
+**Déroulement retenu (précisé le 10 octobre 2026) :** l'enseignant projette le QR ; les étudiants scannent ; **chaque étudiant qui a scanné apparaît à droite de l'écran**, ce qui lui confirme que sa présence est enregistrée ; à la fin, l'enseignant **valide l'appel** depuis cet écran. Il n'a rien à cocher. La vérification surprise reste facultative. Le temps avant le prochain code n'est pas affiché.
+
+**Règles à garder :** le code change toujours toutes les 30 secondes ; l'écran projeté ne montre que les **présents** (ni les absents, ni les signalements de fraude) ; le scan reste réservé à l'application mobile (anti-fraude inchangée). Cocher à la main reste possible sur l'écran d'appel de l'enseignant, pour un étudiant sans téléphone.
 
 ## 4. Quiz en direct : faire mieux que Wooclap
 
@@ -121,7 +123,7 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 
 | Lot | Contenu | Résultat | Dépend de | État |
 |---|---|---|---|---|
-| **P-1** | Fenêtre de projection de l'appel : page sans menu, plein écran, QR, classe, compte des présents (FR et EN) | Le QR se projette sans montrer le portail | — | **fait** le 10 octobre 2026 (`/appel/:id/projection`), pas encore déployé |
+| **P-1** | Fenêtre de projection de l'appel : page sans menu, plein écran, QR, classe, présents qui apparaissent au fil des scans, validation de l'appel, vérification surprise facultative (FR et EN) | Le QR se projette sans montrer le portail | — | **fait** le 10 octobre 2026 (`/appel/:id/projection`), pas encore déployé |
 | **P-2** | Lien de projection à usage unique pour le navigateur du grand écran | — | — | écarté (les écrans recopient seulement l'ordinateur) |
 | **CQ-1 à CQ-3** | voir `quiz-ia.md` ; CQ-2 inclut le nombre de réponses par choix après chaque question | Quiz lancé et projeté depuis Planner, question par question | IA-4 | à faire |
 | **W-1** | Question d'association : fork, joueurs web et mobile, devoirs, éditeur, IA | Le type le plus utilisé de Wooclap est couvert | CQ-2 | à faire |

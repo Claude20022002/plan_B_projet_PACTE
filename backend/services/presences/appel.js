@@ -118,8 +118,8 @@ export const ouvrirAppel = async (user, id, maintenant = new Date()) => {
 
 /**
  * Code à afficher maintenant (l'écran de l'enseignant le redemande avant expiration), avec la
- * séance et les nombres de présents et d'attendus : de quoi tenir l'écran projeté en classe,
- * qui ne reçoit ainsi aucun nom d'étudiant.
+ * séance et les nombres de présents et d'attendus. Aucun nom d'étudiant ici : les présents affichés
+ * sur l'écran projeté viennent de la liste d'appel.
  */
 export const codeDeLAppel = async (user, id, maintenant = new Date()) => {
     const seance = await seanceDeLEnseignant(user, id);

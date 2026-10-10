@@ -8,26 +8,21 @@ import {
   Button,
   Checkbox,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   LinearProgress,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  MenuItem,
   Paper,
   Skeleton,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material';
 import { ArrowBack, CastForEducation, ReportProblemOutlined } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import VerificationSurprise from '../components/appel/VerificationSurprise';
 import { presenceAPI } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import { ds } from '../design-system/tokens';
@@ -54,7 +49,7 @@ export default function Appel() {
   const [reste, setReste] = useState(30);
   const [terminer, setTerminer] = useState(false);
   const [ferme, setFerme] = useState(false);
-  const [verification, setVerification] = useState(null); // { nombre, tirage: { etudiants, restants } | null, resultats: { [id_user]: bool } }
+  const [verification, setVerification] = useState(false);
   const minuterie = useRef(null);
 
   const dessiner = useCallback(async ({ url, expire_dans_ms }) => {
@@ -131,25 +126,6 @@ export default function Appel() {
     }
   };
 
-  const tirer = async () => {
-    try {
-      const tirage = await presenceAPI.tirerVerification(id, verification.nombre);
-      setVerification((v) => ({ ...v, tirage, resultats: {} }));
-    } catch (e) {
-      toast.error(e?.message || t('appel.erreur'));
-    }
-  };
-
-  const constater = async (etudiant, present) => {
-    try {
-      await presenceAPI.verifier(id, etudiant.id_user, present);
-      setVerification((v) => ({ ...v, resultats: { ...v.resultats, [etudiant.id_user]: present } }));
-      chargerListe();
-    } catch (e) {
-      toast.error(e?.message || t('appel.erreur'));
-    }
-  };
-
   // Fenêtre sans onglets ni barre de favoris, à glisser sur l'écran de la salle ; si le navigateur
   // la bloque, le lien s'ouvre dans un nouvel onglet
   const projeter = (e) => {
@@ -216,7 +192,7 @@ export default function Appel() {
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
             <Typography variant="h6">{t('appel.liste')}</Typography>
             <Stack direction="row" spacing={1}>
-              <Button variant="outlined" onClick={() => setVerification({ nombre: 3, tirage: null, resultats: {} })} disabled={!seance || presents === 0} title={t('appel.verifierAide')}>
+              <Button variant="outlined" onClick={() => setVerification(true)} disabled={!seance || presents === 0} title={t('appel.verifierAide')}>
                 {t('appel.verifier')}
               </Button>
               {!ferme && (
@@ -254,53 +230,7 @@ export default function Appel() {
         </Paper>
       </Box>
 
-      <Dialog open={Boolean(verification)} onClose={() => setVerification(null)} fullWidth maxWidth="xs">
-        <DialogTitle>{t('appel.verifierTitre')}</DialogTitle>
-        <DialogContent>
-          {verification && !verification.tirage && (
-            <>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('appel.verifierAide')}</Typography>
-              <TextField select fullWidth size="small" label={t('appel.verifierNombre')} value={verification.nombre} onChange={(ev) => setVerification((v) => ({ ...v, nombre: Number(ev.target.value) }))}>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <MenuItem key={n} value={n}>{n}</MenuItem>
-                ))}
-              </TextField>
-            </>
-          )}
-          {verification?.tirage && (
-            <>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('appel.verifierConsigne')}</Typography>
-              {verification.tirage.etudiants.length === 0 && <Alert severity="info">{t('appel.aucunATirer')}</Alert>}
-              <List dense>
-                {verification.tirage.etudiants.map((e) => {
-                  const resultat = verification.resultats[e.id_user];
-                  return (
-                    <ListItem key={e.id_user} disableGutters secondaryAction={
-                      resultat === undefined ? (
-                        <Stack direction="row" spacing={1}>
-                          <Button size="small" variant="contained" color="success" onClick={() => constater(e, true)}>{t('appel.vu')}</Button>
-                          <Button size="small" variant="outlined" color="error" onClick={() => constater(e, false)}>{t('appel.absent')}</Button>
-                        </Stack>
-                      ) : (
-                        <Chip size="small" color={resultat ? 'success' : 'error'} label={t(resultat ? 'appel.vu' : 'appel.absent')} />
-                      )
-                    }>
-                      <ListItemText primary={`${e.nom} ${e.prenom}`} primaryTypographyProps={{ fontWeight: 600 }} />
-                    </ListItem>
-                  );
-                })}
-              </List>
-              {verification.tirage.restants > 0 && (
-                <Typography variant="caption" color="text.secondary">{t('appel.restants', { count: verification.tirage.restants })}</Typography>
-              )}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setVerification(null)}>{t('appel.fermerVerification')}</Button>
-          <Button variant="contained" onClick={tirer}>{t('appel.tirer')}</Button>
-        </DialogActions>
-      </Dialog>
+      <VerificationSurprise id={id} ouvert={verification} fermer={() => setVerification(false)} modifie={chargerListe} />
 
       <ConfirmDialog
         open={terminer}

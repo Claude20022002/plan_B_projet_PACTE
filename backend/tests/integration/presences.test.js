@@ -85,7 +85,7 @@ describe("Ouvrir l'appel", () => {
         code = (await (await loginAs(enseignant)).get(`/api/presences/seances/${seance.id_affectation}/code`)).body.code;
     });
 
-    test("le code suffit à l'écran projeté : séance et effectifs, aucun nom d'étudiant", async () => {
+    test("le code porte la séance et les effectifs, sans aucun nom d'étudiant", async () => {
         const res = await (await loginAs(enseignant)).get(`/api/presences/seances/${seance.id_affectation}/code`);
         expect(res.status).toBe(200);
         expect(res.body).toMatchObject({ presents: 0, attendus: 2, seance: { id: seance.id_affectation, cours: "Algorithmique" } });
