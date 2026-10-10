@@ -188,10 +188,10 @@ const en = {
       examen: 'Invigilated by administration staff.',
       controle: 'Invigilated by the module’s teachers; it can take place during their class.',
     },
-    mineTeacher: 'Published papers you invigilate, with your room.',
+    mineStaff: 'Published papers you invigilate, with your room.',
     mineStudent: 'Published papers for your group, with rooms.',
     noneTitle: 'Nothing scheduled',
-    noneTeacher: 'No upcoming invigilation.',
+    noneStaff: 'No upcoming invigilation.',
     noneStudent: 'No exam published yet.',
   },
   incidents: {
@@ -426,7 +426,7 @@ const en = {
     effectif_other: '{{count}} students',
     page: {
       titre: 'My classes',
-      sousTitre: 'The class in progress comes first: attendance, assignment or quiz, message to the class, internship offer and course materials.',
+      sousTitre: 'The class in progress comes first: attendance, quizzes, message to the class and course materials.',
       enCours: 'In progress',
       autres: 'My other classes',
       toutes: 'My classes',
@@ -436,18 +436,13 @@ const en = {
         ferme: 'View attendance',
       },
       ouvrirAppel: 'Open attendance',
-      devoir: 'Set an assignment or a quiz',
+      devoir: 'Set a quiz as homework',
       quizIa: 'Generate a quiz with AI',
       quizDirect: 'Live quiz',
       ecrire: 'Write to the class',
-      stage: 'Share an internship offer',
-      titreStage: 'Internship offer: ',
       supports: 'Course materials',
       rappelFaire: '{{classe}} ends at {{fin}} and attendance has not been taken.',
       rappelTerminer: '{{classe}} ends at {{fin}}: attendance is still open. Close it to record who was present.',
-      bientot: 'Coming soon:',
-      notes: 'Class grades',
-      genererSupports: 'Course material generation',
     },
   },
   journalSecurite: {
@@ -543,28 +538,286 @@ const en = {
     room: 'Room',
     remote: 'Remote',
   },
-  feedback: {
-    title: 'Your view on the session',
-    question: 'Session rating',
-    score: 'Rating {{n}} out of 5',
-    low: 'Not at all',
-    high: 'Very good',
-    word: 'One word (optional)',
-    anonymous: 'Anonymous: the teacher only sees a trend, from 5 answers.',
-    later: 'Later',
-    send: 'Send',
-    thanks: 'Thank you for your feedback',
-    mineTitle: 'Student feedback',
-    mineIntro: 'Anonymous trend per module: shown from 5 answers; only recurring words appear.',
-    answers_one: '{{count}} answer',
-    answers_other: '{{count}} answers',
-    distribution: 'Rating distribution from 1 to 5',
-    notEnough: 'Fewer than 5 answers: trend hidden',
-  },
   roles: {
     admin: 'Administration',
     enseignant: 'Teacher',
     etudiant: 'Student',
+  },
+  aide: {
+    "titre": "Help",
+    "rechercher": "What do you want to do?",
+    "surCettePage": "On this page",
+    "yAller": "Take me there",
+    "aucune": "No help card matches. Try another word, such as “roll call”, “reschedule” or “quiz”.",
+    "themes": {
+      "seance": "During class",
+      "classe": "With my classes",
+      "planning": "My schedule",
+      "annee": "Prepare and publish the schedule",
+      "quotidien": "Day to day",
+      "comptes": "Accounts and security",
+      "compte": "My account",
+      "etudiant": "My studies"
+    },
+    "contact": {
+      "admin": "A technical problem (cannot sign in, page in error)? Note the time and the page, then tell the platform’s technical lead: the security log will help find the event.",
+      "enseignant": "A mistake in your timetable, your classes or your teaching assignments? It is fixed by the administration: contact the registrar’s office.",
+      "etudiant": "A problem with your account, your group or your phone? Contact the registrar’s office."
+    },
+    "fiches": {
+      "adminDemarrer": {
+        "titre": "Where do I start when preparing the year?",
+        "etapes": [
+          "Open “Preparation”: the page lists the steps in order (calendar, curriculum, groups, assignments, availability, generation, review, publication) with their progress.",
+          "Handle the first incomplete step: each line leads to the page where you act.",
+          "Come back to “Preparation” after each step: progress is recalculated automatically."
+        ],
+        "note": "A step stays blocked while the previous one is missing: no generation without accepted assignments and availability."
+      },
+      "adminGenerer": {
+        "titre": "Generate the timetable",
+        "etapes": [
+          "Check in “Teaching units” that every course has a lead teacher who has accepted the assignment.",
+          "Open “Automatic scheduling”, choose the period and the programmes, then start.",
+          "Then open “Conflicts”: generation reports what it could not place cleanly."
+        ]
+      },
+      "adminConflits": {
+        "titre": "Resolve a room, teacher or group conflict",
+        "etapes": [
+          "Open “Conflicts”: each line says which rule is broken and by which sessions.",
+          "Open the session and move it, or change the room: the check runs again when you save.",
+          "The conflict leaves the list as soon as the rule is respected again."
+        ],
+        "note": "Forcing a session despite a rule is reserved for the administration: it is logged, and the overlap becomes a conflict to resolve."
+      },
+      "adminPublierMois": {
+        "titre": "Send the monthly timetable to the classes",
+        "etapes": [
+          "Open “Monthly timetable” and choose the programme and the month.",
+          "Click “Publish and send”: students receive a notification and an email with the link.",
+          "After that, every evening at 6 pm, published months that changed are sent again automatically."
+        ]
+      },
+      "adminImprevu": {
+        "titre": "A teacher is absent, a room is out of service, a day is cancelled",
+        "etapes": [
+          "Open “Incidents” and choose the tab for the absent teacher, the room out of service or the cancelled day.",
+          "For an absence: give the teacher and the period. All their slots are blocked and their sessions are listed.",
+          "For each session: choose a qualified, free replacement, or move it to a slot suggested by the assistant."
+        ],
+        "note": "The students and the teacher concerned are notified of every session change."
+      },
+      "adminReport": {
+        "titre": "Handle a teacher’s rescheduling request",
+        "etapes": [
+          "Open “Reschedule requests”: pending requests come first.",
+          "Approve to move the session to the requested date, or refuse.",
+          "If the move breaks a rule (room taken, group busy), the list of rules is shown: pick another slot, or force it knowingly."
+        ],
+        "note": "A planned session counts as confirmed: a teacher has nothing to confirm, and asks for rescheduling when unable to teach it."
+      },
+      "adminAnnonce": {
+        "titre": "Send an announcement to the school, a programme, a level or a group",
+        "etapes": [
+          "Open “Announcements”, then “New announcement”.",
+          "Choose the scope and the audience (students, teachers or everyone), add an attachment (PDF or image) and email delivery if needed.",
+          "In sent announcements you can see who has read it, and remind those who have not (at most once every 12 hours)."
+        ]
+      },
+      "adminExamens": {
+        "titre": "Schedule an exam or book a room",
+        "etapes": [
+          "Exam: open “Exams”, create the paper with its groups and rooms. Seats are checked, and invigilators can be assigned automatically.",
+          "Publish the paper: students and invigilators are notified.",
+          "Defence, meeting, make-up session, event: open “Bookings”. The room and the participants are checked as for a session."
+        ],
+        "note": "Bookings are made by the administration: teachers do not create any, they see the ones they take part in."
+      },
+      "adminHeures": {
+        "titre": "Track hours taught and prepare visiting teachers’ pay",
+        "etapes": [
+          "Open “Delivery tracking”. The module progress tab compares hours taught with the planned volume and flags delays.",
+          "The monthly hours tab gives hours taught per teacher.",
+          "The CSV export lists the visiting teachers’ sessions for the month, for payroll."
+        ],
+        "note": "A planned session that has passed is counted as taught automatically. A session that did not take place must therefore be rescheduled or cancelled, otherwise it is counted."
+      },
+      "adminComptes": {
+        "titre": "Create accounts, or import a list",
+        "etapes": [
+          "One account: open “Accounts”, “Teachers” or “Students” and add the person.",
+          "A list of students: in “Students”, use the Excel/CSV import.",
+          "The temporary password must be changed at first sign-in."
+        ]
+      },
+      "adminMfa": {
+        "titre": "Someone lost the phone used for two-factor authentication",
+        "etapes": [
+          "First ask them to use one of their backup codes: each works once.",
+          "Without a backup code: open “Accounts”, find the person and reset their two-factor authentication.",
+          "At their next sign-in, they set it up again with the new phone."
+        ],
+        "note": "Check the person’s identity before resetting: the action is recorded in the security log."
+      },
+      "adminTelephone": {
+        "titre": "A student changed phone and can no longer check in",
+        "etapes": [
+          "An account is linked to one phone, to stop someone checking in for somebody else. From a new phone, the scan is refused and reported.",
+          "Open “Attendance reports”, find the student and unlink the phone.",
+          "At their next scan, the account links to the new phone."
+        ],
+        "note": "The same screen shows suspected fraud: a phone checking in two students, or a student absent at the spot check."
+      },
+      "adminSecurite": {
+        "titre": "Understand a suspicious sign-in or a locked account",
+        "etapes": [
+          "Open “Security log”: sign-ins, two-factor authentication, passwords and sessions, newest first.",
+          "Click an account to see only its events, with the IP address and the browser.",
+          "An account locked after too many wrong codes unlocks by itself after 15 minutes."
+        ]
+      },
+      "profAppel": {
+        "titre": "Take attendance",
+        "etapes": [
+          "Open “My classes”: the class in progress comes first. Click “Take attendance”.",
+          "Click “Project the QR code” and show the window on the classroom screen: it shows neither the menu nor your other pages.",
+          "Students scan with the HESTIM app: their name appears on screen as soon as attendance is recorded.",
+          "Click “Confirm roll call”, then view the full list for those present and absent."
+        ],
+        "note": "A student without a phone: tick their name by hand on your roll call screen. The optional spot check draws a few students at random to call out loud."
+      },
+      "profRappel": {
+        "titre": "I am afraid of forgetting attendance",
+        "etapes": [
+          "Five minutes before the end of the session, if attendance is not taken or not confirmed, a reminder appears at the top of the Planner page you have open.",
+          "Click “Open attendance” in the reminder."
+        ],
+        "note": "The reminder only appears if Planner is open in your browser."
+      },
+      "profQuizDirect": {
+        "titre": "Run a live quiz during class",
+        "etapes": [
+          "In “My classes”, on the class in progress, click “Live quiz”: you land on your quizzes without signing in again.",
+          "Choose the quiz and start the game: the students of the class receive it in the app, with no code to type.",
+          "The “← Planner” link takes you back to your dashboard."
+        ],
+        "note": "Scores are attached to the session: you find them afterwards in “Activities”."
+      },
+      "profQuizIa": {
+        "titre": "Have AI write a quiz from my course material",
+        "etapes": [
+          "In “Activities”, in the AI quizzes panel, click “Generate a quiz”.",
+          "Choose the class, upload the material (PDF, Word or PowerPoint) and set the number of questions and the level.",
+          "Review: correct a question or an answer, delete a question, or ask for another one.",
+          "Click “Create the quiz”: it joins your quizzes, ready to be set as an assignment or run live."
+        ],
+        "note": "Nothing is created without your confirmation. The panel only appears if the school has enabled the service."
+      },
+      "profDevoir": {
+        "titre": "Set an assignment and see the grades",
+        "etapes": [
+          "In “My classes”, click “Set an assignment or a quiz” on the class you want.",
+          "Choose a file to hand in (title, instructions, optional brief) or one of your quizzes, marked automatically, then the deadline.",
+          "In “Activities”, the assignments panel shows submitted work; you grade file assignments out of 20 with a comment."
+        ],
+        "note": "You can only set an assignment for your own classes."
+      },
+      "profEcrire": {
+        "titre": "Write to my class or pass on an internship offer",
+        "etapes": [
+          "In “My classes”, click “Write to the class” or “Share an internship offer”: the announcement opens already addressed to the group.",
+          "Write it, attach a PDF or an image if needed, and tick email delivery if it is urgent.",
+          "In “Announcements”, you can see who has read it and remind the others."
+        ]
+      },
+      "profSupports": {
+        "titre": "Share course material, an exercise or an article",
+        "etapes": [
+          "Open the “Library”, then upload a document.",
+          "Choose the module (any module, not only yours) and the type: course, tutorial, lab, exam, exercise or article.",
+          "Your document is published immediately. Students find it from their session of that module."
+        ]
+      },
+      "profReport": {
+        "titre": "I cannot teach a session",
+        "etapes": [
+          "Open “My sessions” and ask for rescheduling on the session.",
+          "Give the reason and the date you would like: the administration receives the request and answers.",
+          "Follow the answer in “My reschedule requests”."
+        ],
+        "note": "You have nothing to confirm: a planned session counts as confirmed as long as you do not ask for rescheduling."
+      },
+      "profAbsence": {
+        "titre": "I will be away for several days",
+        "etapes": [
+          "Open “My availability” and declare an absence.",
+          "Give the period: all your slots become unavailable.",
+          "The administration is notified and handles your sessions, with a replacement or a make-up session."
+        ]
+      },
+      "profDispos": {
+        "titre": "Say when I can teach",
+        "etapes": [
+          "Open “My availability” and mark the slots where you are available or unavailable.",
+          "Do it before the timetable is generated: it will only place you on your free slots."
+        ]
+      },
+      "profServices": {
+        "titre": "Accept or refuse a course offered to me",
+        "etapes": [
+          "Open “My teaching”: the courses offered by the programme lead are waiting for your answer.",
+          "Accept, or refuse with a reason.",
+          "The same page shows your load for the year against the hours you owe."
+        ]
+      },
+      "profResponsable": {
+        "titre": "Prepare my programme (programme lead)",
+        "etapes": [
+          "Open “Preparation”: the steps for your programmes are listed in order, with their progress.",
+          "Complete the curriculum, the groups and the courses, then offer the assignments to teachers.",
+          "“Delivery tracking” then shows the modules that are behind schedule."
+        ]
+      },
+      "profSecurite": {
+        "titre": "Change my password or set up two-factor authentication",
+        "etapes": [
+          "Password: open “Settings” (the “Account” tab on a phone). It must be at least 12 characters long.",
+          "Two-factor authentication and backup codes: use “Take me there” below to open the Security page.",
+          "Keep your backup codes somewhere safe: each works once if your phone is unavailable."
+        ]
+      },
+      "etuEdt": {
+        "titre": "See my timetable and its changes",
+        "etapes": [
+          "“Board” shows your next session and today’s sessions; “Timetable” shows the week.",
+          "A rescheduled or cancelled session arrives in your alerts, and in the app on your phone."
+        ]
+      },
+      "etuPresence": {
+        "titre": "Check in to class",
+        "etapes": [
+          "Open the HESTIM app on your phone and tap the QR code icon.",
+          "Scan the code shown on the classroom screen: your name appears on screen when attendance is recorded."
+        ],
+        "note": "Check-in only works from the app, and your account is linked to a single phone. New phone: ask the registrar’s office to unlink it."
+      },
+      "etuDevoirs": {
+        "titre": "Do an assignment or join a quiz",
+        "etapes": [
+          "Open “Activities”: your assignments are listed with their deadline.",
+          "A quiz started by your teacher during class also appears there, and in the app.",
+          "The answers to an assignment are visible after the deadline."
+        ]
+      },
+      "etuAnnonces": {
+        "titre": "Read announcements from the school and my teachers",
+        "etapes": [
+          "Open “Announcements”: unread ones are marked.",
+          "An attachment can be downloaded from the announcement."
+        ]
+      }
+    }
   },
   nav: {
     board: 'Board',
@@ -810,36 +1063,6 @@ const en = {
       confirmerSuppression: 'Delete the assignment “{{titre}}” and its submissions?',
       resumeEnseignant_one: '{{count}} submission · average {{moyenne}}/20',
       resumeEnseignant_other: '{{count}} submissions · average {{moyenne}}/20',
-      typeDevoir: 'Assignment type',
-      types: { fichier: 'File to hand in (report, code, photo…)', quiz: 'Automatically marked quiz' },
-      titreDevoir: 'Title',
-      consignes: 'Instructions',
-      sansConsignes: 'No written instructions: see the brief or ask your teacher.',
-      enonce: 'Attach a brief (optional)',
-      enonceNonAjoute: 'The assignment was set, but the brief could not be added.',
-      telechargerEnonce: 'Brief: {{nom}}',
-      aideFichier: 'Each student uploads a PDF, an image, a ZIP archive or an Office document (10 MB at most). You mark out of 20 and comment; work handed in after the deadline is accepted and flagged as late.',
-      maCopieTitre: 'My work',
-      pasEncoreRendu: 'Not handed in yet.',
-      pasRenduRetard: 'Not handed in: the deadline has passed, work uploaded now will be flagged as late.',
-      copieRendue: 'Handed in on {{date}}',
-      copieDeposee: 'Work uploaded',
-      enRetard: 'Late',
-      enCorrection: 'Handed in · awaiting marking',
-      deposer: 'Upload my work',
-      remplacer: 'Replace my work',
-      envoiCopie: 'Uploading…',
-      formatsCopie: 'PDF, image, ZIP archive or Office document, 10 MB at most. You can replace it until it is marked.',
-      typeFichierRefuse: 'File: PDF, image, ZIP archive or Office document only.',
-      tailleFichier: 'File: 10 MB at most.',
-      copie: 'Submission',
-      corriger: 'Mark',
-      corrigerTitre: 'Mark {{nom}}’s work',
-      commentaire: 'Comment',
-      noteInvalide: 'A mark between 0 and 20 (for example 14.5)',
-      noteEnregistree: 'Mark saved: the student has been notified.',
-      aCorriger_one: '{{count}} to mark',
-      aCorriger_other: '{{count}} to mark',
     },
     quizIa: {
       titre: 'AI quizzes',

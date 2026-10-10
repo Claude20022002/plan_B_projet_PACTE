@@ -27,7 +27,6 @@ export const SIGNATURES = {
 };
 
 export const TYPES_IMAGES_PDF = ["application/pdf", "image/png", "image/jpeg", "image/webp"];
-export const TYPES_DEVOIRS = Object.keys(SIGNATURES);
 
 /** Nom de fichier sûr : sans chemin ni caractère de contrôle, 200 caractères au plus. */
 export const nomSur = (nom) =>

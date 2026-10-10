@@ -86,11 +86,4 @@ export const affectationsAPI = {
    * @returns {Promise<{ message: string }>}
    */
   delete: (id) => apiClient.delete(`/affectations/${id}`),
-
-  /**
-   * Confirme une affectation (enseignant ou admin).
-   * @param {number} id
-   * @returns {Promise<{ data: Affectation, message: string }>}
-   */
-  confirmer: (id) => apiClient.patch(`/affectations/${id}/confirmer`),
 };

@@ -80,6 +80,7 @@ const ROUTES = [
     ["admin", "/api/demandes-report", 2],
     ["admin", "/api/reservations", 2],
     ["admin", "/api/examens", 2],
+    ["admin", "/api/examens/mes-surveillances", 3],
     ["admin", `/api/suivi/modules?id_periode=${periode.id_periode}`, 7],
     ["admin", `/api/suivi/enseignants?mois=${mois}`, 4],
     ["admin", `/api/preparation?id_periode=${periode.id_periode}`, 11],
@@ -92,9 +93,7 @@ const ROUTES = [
     ["enseignant", "/api/devoirs", 2],
     ["enseignant", "/api/annonces", 6],
     ["enseignant", "/api/services/mes-services", 2],
-    ["enseignant", "/api/examens/mes-surveillances", 3],
     ["enseignant", `/api/disponibilites/enseignant/${enseignant.id_user}`, 2],
-    ["enseignant", "/api/suivi/retours/mes-modules", 3],
     ["enseignant", "/api/quiz/parties/en-cours", 2],
     ["etudiant", "/api/auth/me", 3],
     ["etudiant", `/api/emplois-du-temps/moi?du=${debut}&au=${finMois}`, 11],
@@ -105,7 +104,6 @@ const ROUTES = [
     ["etudiant", "/api/quiz/parties/en-cours", 2],
     ["etudiant", "/api/presences/miennes", 2],
     ["etudiant", "/api/examens/mes-examens", 6],
-    ["etudiant", "/api/suivi/retours/a-donner", 6],
     ["etudiant", `/api/notifications/user/${etudiant.id_user}`, 2],
 ].filter(([, url]) => !args.filtre || url.includes(args.filtre));
 

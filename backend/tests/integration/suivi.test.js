@@ -14,13 +14,12 @@ import {
     Groupe,
     Periode,
     ResponsableFiliere,
-    RetourSeance,
     Salle,
 } from "../../models/index.js";
 import { aujourdhui } from "../../services/planning/affectationRules.js";
 
 /**
- * Phase P7 — suivi du réalisé, export des vacataires, retours de séance anonymes (I7).
+ * Phase P7 — suivi du réalisé et export des vacataires.
  */
 
 let admin;
@@ -88,15 +87,9 @@ describe("Séances réalisées", () => {
         expect(statuts).toEqual(["realise", "realise", "reporte", "confirme"]);
     });
 
-    test("par l'enseignant, une fois la séance passée ; jamais celle d'un autre", async () => {
-        // Une séance reportée n'est pas réalisée d'office : l'enseignant la marque lui-même
-        const reportee = await ref.creerSeance({ statut: "reporte", date_seance: decaler(-4) });
-        expect((await clients.permanent.send("patch", `/api/suivi/seances/${reportee.id_affectation}/realiser`)).status).toBe(403);
-        expect((await clients.vacataire.send("patch", `/api/suivi/seances/${ref.seances.future.id_affectation}/realiser`)).status).toBe(400);
-        const ok = await clients.vacataire.send("patch", `/api/suivi/seances/${reportee.id_affectation}/realiser`);
-        expect(ok.status).toBe(200);
-        expect(ok.body.affectation.statut).toBe("realise");
-        await reportee.destroy();
+    test("l'enseignant n'a rien à marquer : la route manuelle n'existe plus", async () => {
+        const response = await clients.vacataire.send("patch", `/api/suivi/seances/${ref.seances.future.id_affectation}/realiser`);
+        expect(response.status).toBe(404);
     });
 });
 
@@ -129,42 +122,5 @@ describe("Avancement et heures", () => {
         expect(csv.text).toMatch(/;1,8;SUI-NOSQL NoSQL;SUI-4A;G-SUI/);
         expect((await clients.admin.get("/api/suivi/vacataires.csv?mois=octobre")).status).toBe(400);
         expect(MOIS).toMatch(/^\d{4}-\d{2}$/);
-    });
-});
-
-describe("Retours de séance (I7)", () => {
-    test("l'étudiant voit la séance à évaluer, répond une fois, anonymement", async () => {
-        const client = await loginAs(etudiants[0]);
-        const aDonner = await client.get("/api/suivi/retours/a-donner");
-        expect(aDonner.body.map((s) => s.id_affectation)).toContain(ref.seances.confirmeePassee.id_affectation);
-
-        const url = `/api/suivi/retours/seances/${ref.seances.confirmeePassee.id_affectation}`;
-        expect((await client.send("post", url, { note: 9 })).status).toBe(400);
-        expect((await client.send("post", url, { note: 4, mot: "Clair" })).status).toBe(201);
-        expect((await client.send("post", url, { note: 5 })).status).toBe(409);
-        // Aucune trace de l'étudiant dans le retour lui-même
-        expect(Object.keys((await RetourSeance.findOne()).get({ plain: true }))).not.toContain("id_user");
-        expect((await client.get("/api/suivi/retours/a-donner")).body.map((s) => s.id_affectation)).not.toContain(ref.seances.confirmeePassee.id_affectation);
-
-        const autre = await loginAs(intrus);
-        expect((await autre.send("post", url, { note: 1 })).status).toBe(403);
-        // Une séance non réalisée ne s'évalue pas
-        expect((await client.send("post", `/api/suivi/retours/seances/${ref.seances.reporteePassee.id_affectation}`, { note: 3 })).status).toBe(400);
-    });
-
-    test("l'enseignant ne voit la tendance qu'à partir de 5 réponses, et seulement les mots répétés", async () => {
-        expect((await clients.vacataire.get("/api/suivi/retours/mes-modules")).body[0]).toMatchObject({ nombre: 1, visible: false });
-        const notes = [5, 4, 3, 5];
-        const mots = ["clair", "Rapide", "rapide", "exemples concrets"];
-        for (const [i, etudiant] of etudiants.slice(1, 5).entries()) {
-            const client = await loginAs(etudiant);
-            await client.send("post", `/api/suivi/retours/seances/${ref.seances.confirmeePassee.id_affectation}`, { note: notes[i], mot: mots[i] });
-        }
-        const tendance = (await clients.vacataire.get("/api/suivi/retours/mes-modules")).body[0];
-        expect(tendance).toMatchObject({ nombre: 5, visible: true, moyenne: 4.2, repartition: [0, 0, 1, 2, 2] });
-        expect(tendance.mots).toEqual([
-            { mot: "clair", nombre: 2 },
-            { mot: "rapide", nombre: 2 },
-        ]);
     });
 });

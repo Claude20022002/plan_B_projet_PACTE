@@ -382,7 +382,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/mes-examens" element={
-            <PrivateRoute requiredRole={['enseignant', 'etudiant', 'admin']}>
+            <PrivateRoute requiredRole={['etudiant', 'admin']}>
               <AppPage><MesExamens /></AppPage>
             </PrivateRoute>
           } />

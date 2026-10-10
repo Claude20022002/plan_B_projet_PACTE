@@ -188,10 +188,10 @@ const fr = {
       examen: 'Surveillé par le personnel de l’administration.',
       controle: 'Surveillé par les enseignants du module ; peut se tenir pendant leur séance.',
     },
-    mineTeacher: 'Les contrôles et épreuves publiés que vous surveillez, avec votre salle.',
+    mineStaff: 'Les contrôles et épreuves publiés que vous surveillez, avec votre salle.',
     mineStudent: 'Les épreuves publiées de votre groupe, avec les salles.',
     noneTitle: 'Rien de prévu',
-    noneTeacher: 'Aucune surveillance à venir.',
+    noneStaff: 'Aucune surveillance à venir.',
     noneStudent: 'Aucun examen publié pour le moment.',
   },
   incidents: {
@@ -426,7 +426,7 @@ const fr = {
     effectif_other: '{{count}} étudiants',
     page: {
       titre: 'Mes classes',
-      sousTitre: 'La classe en cours d’abord : appel, devoir ou quiz, message à la classe, offre de stage et supports de cours.',
+      sousTitre: 'La classe en cours d’abord : appel, quiz, message à la classe et supports de cours.',
       enCours: 'En cours',
       autres: 'Mes autres classes',
       toutes: 'Mes classes',
@@ -436,18 +436,13 @@ const fr = {
         ferme: 'Voir l’appel',
       },
       ouvrirAppel: 'Ouvrir l’appel',
-      devoir: 'Donner un devoir ou un quiz',
+      devoir: 'Donner un quiz en devoir',
       quizIa: 'Générer un quiz avec l’IA',
       quizDirect: 'Quiz en direct',
       ecrire: 'Écrire à la classe',
-      stage: 'Partager une offre de stage',
-      titreStage: 'Offre de stage : ',
       supports: 'Supports de cours',
       rappelFaire: '{{classe}} se termine à {{fin}} et l’appel n’a pas été fait.',
       rappelTerminer: '{{classe}} se termine à {{fin}} : l’appel est encore ouvert. Terminez-le pour enregistrer les présences.',
-      bientot: 'Bientôt :',
-      notes: 'Notes de la classe',
-      genererSupports: 'Génération de supports de cours',
     },
   },
   journalSecurite: {
@@ -543,28 +538,286 @@ const fr = {
     room: 'Salle',
     remote: 'En distanciel',
   },
-  feedback: {
-    title: 'Votre avis sur la séance',
-    question: 'Note de la séance',
-    score: 'Note {{n}} sur 5',
-    low: 'Pas du tout',
-    high: 'Très bien',
-    word: 'Un mot (facultatif)',
-    anonymous: 'Anonyme : l’enseignant ne voit qu’une tendance, à partir de 5 réponses.',
-    later: 'Plus tard',
-    send: 'Envoyer',
-    thanks: 'Merci pour votre retour',
-    mineTitle: 'Retours des étudiants',
-    mineIntro: 'Tendance anonyme par module : visible à partir de 5 réponses ; seuls les mots qui reviennent sont affichés.',
-    answers_one: '{{count}} réponse',
-    answers_other: '{{count}} réponses',
-    distribution: 'Répartition des notes de 1 à 5',
-    notEnough: 'Moins de 5 réponses : tendance masquée',
-  },
   roles: {
     admin: 'Administration',
     enseignant: 'Enseignant',
     etudiant: 'Étudiant',
+  },
+  aide: {
+    "titre": "Aide",
+    "rechercher": "Que voulez-vous faire ?",
+    "surCettePage": "Sur cette page",
+    "yAller": "Y aller",
+    "aucune": "Aucune fiche ne correspond. Essayez un autre mot, par exemple « appel », « report » ou « quiz ».",
+    "themes": {
+      "seance": "Pendant la séance",
+      "classe": "Avec mes classes",
+      "planning": "Mon planning",
+      "annee": "Préparer et publier le planning",
+      "quotidien": "Au quotidien",
+      "comptes": "Comptes et sécurité",
+      "compte": "Mon compte",
+      "etudiant": "Mes études"
+    },
+    "contact": {
+      "admin": "Un blocage technique (connexion impossible, page en erreur) ? Notez l’heure et la page, puis prévenez le responsable technique de la plateforme : le journal de sécurité l’aidera à retrouver l’événement.",
+      "enseignant": "Une erreur dans votre emploi du temps, vos classes ou vos services ? Elle se corrige côté administration : contactez la scolarité.",
+      "etudiant": "Un problème avec votre compte, votre groupe ou votre téléphone ? Contactez la scolarité."
+    },
+    "fiches": {
+      "adminDemarrer": {
+        "titre": "Par où commencer la préparation de l’année ?",
+        "etapes": [
+          "Ouvrez « Préparation » : la page liste les étapes dans l’ordre (calendrier, maquette, groupes, services, disponibilités, génération, revue, publication) avec leur avancement.",
+          "Traitez la première étape incomplète : chaque ligne mène à la page où agir.",
+          "Revenez à « Préparation » après chaque étape : l’avancement se recalcule tout seul."
+        ],
+        "note": "Une étape reste bloquée tant que la précédente manque : pas de génération sans services acceptés ni disponibilités."
+      },
+      "adminGenerer": {
+        "titre": "Générer l’emploi du temps",
+        "etapes": [
+          "Vérifiez dans « Enseignements » que chaque enseignement a un enseignant principal qui a accepté son service.",
+          "Ouvrez « Génération automatique », choisissez la période et les filières, puis lancez.",
+          "Ouvrez ensuite « Conflits » : la génération signale ce qu’elle n’a pas pu placer proprement."
+        ]
+      },
+      "adminConflits": {
+        "titre": "Résoudre un conflit de salle, d’enseignant ou de groupe",
+        "etapes": [
+          "Ouvrez « Conflits » : chaque ligne dit quelle règle est enfreinte et par quelles séances.",
+          "Ouvrez la séance en cause et déplacez-la, ou changez de salle : la vérification se refait à l’enregistrement.",
+          "Le conflit disparaît de la liste dès que la règle est de nouveau respectée."
+        ],
+        "note": "Forcer une séance malgré une règle est réservé à l’administration : c’est tracé, et le chevauchement devient un conflit à résoudre."
+      },
+      "adminPublierMois": {
+        "titre": "Envoyer l’emploi du temps du mois aux classes",
+        "etapes": [
+          "Ouvrez « EDT du mois » et choisissez la filière et le mois.",
+          "Cliquez sur « Publier et envoyer » : les étudiants reçoivent une notification et un e-mail avec le lien.",
+          "Ensuite, chaque soir à 18 h, les mois publiés qui ont changé sont renvoyés automatiquement."
+        ]
+      },
+      "adminImprevu": {
+        "titre": "Un enseignant est absent, une salle est hors service, une journée saute",
+        "etapes": [
+          "Ouvrez « Imprévus » et choisissez l’onglet : « Absence d’un enseignant », « Salle hors service » ou « Journée annulée ».",
+          "Pour une absence : indiquez l’enseignant et la période. Tous ses créneaux sont bloqués et ses séances s’affichent.",
+          "Pour chaque séance : choisissez un remplaçant compétent et libre, ou déplacez-la sur un créneau proposé par l’assistant."
+        ],
+        "note": "Les étudiants et l’enseignant concernés sont prévenus à chaque changement de séance."
+      },
+      "adminReport": {
+        "titre": "Traiter une demande de report d’un enseignant",
+        "etapes": [
+          "Ouvrez « Demandes de report » : les demandes en attente sont en tête.",
+          "Approuvez pour déplacer la séance à la date demandée, ou refusez.",
+          "Si le déplacement enfreint une règle (salle prise, groupe occupé), la liste des règles s’affiche : choisissez un autre créneau ou forcez en connaissance de cause."
+        ],
+        "note": "Une séance planifiée est tenue pour confirmée : un enseignant n’a rien à confirmer, il demande un report s’il ne peut pas l’assurer."
+      },
+      "adminAnnonce": {
+        "titre": "Envoyer une annonce à l’école, une filière, un niveau ou un groupe",
+        "etapes": [
+          "Ouvrez « Annonces » puis « Nouvelle annonce ».",
+          "Choisissez la portée et le public (étudiants, enseignants ou tous), ajoutez au besoin une pièce jointe (PDF ou image) et l’envoi par e-mail.",
+          "Dans les annonces envoyées, « Lecteurs » montre qui a lu, et « Relancer » rappelle ceux qui n’ont pas lu (une fois toutes les 12 heures au plus)."
+        ]
+      },
+      "adminExamens": {
+        "titre": "Planifier un examen ou réserver une salle",
+        "etapes": [
+          "Examen : ouvrez « Examens », créez l’épreuve avec ses groupes et ses salles. Les places sont vérifiées, et les surveillants peuvent être désignés d’office.",
+          "Publiez l’épreuve : les étudiants et les surveillants sont prévenus.",
+          "Soutenance, réunion, rattrapage, événement : ouvrez « Réservations ». La salle et les participants sont vérifiés comme pour une séance."
+        ],
+        "note": "Les réservations se font par l’administration : les enseignants n’en créent pas, ils voient celles où ils participent."
+      },
+      "adminHeures": {
+        "titre": "Suivre les heures réalisées et préparer la paie des vacataires",
+        "etapes": [
+          "Ouvrez « Suivi du réalisé ». L’onglet « Avancement des modules » compare les heures faites au volume prévu et signale les retards.",
+          "L’onglet « Heures du mois » donne les heures réalisées par enseignant.",
+          "« Export vacataires (CSV) » liste les séances des vacataires du mois, pour la paie."
+        ],
+        "note": "Une séance planifiée et passée est comptée réalisée d’office. Une séance qui n’a pas eu lieu doit donc être reportée ou annulée, sinon elle est comptée."
+      },
+      "adminComptes": {
+        "titre": "Créer des comptes, ou importer une liste",
+        "etapes": [
+          "Un compte : ouvrez « Comptes », « Enseignants » ou « Étudiants » et ajoutez la personne.",
+          "Une liste d’étudiants : dans « Étudiants », « Importer (Excel/CSV) ».",
+          "Le mot de passe provisoire doit être changé à la première connexion."
+        ]
+      },
+      "adminMfa": {
+        "titre": "Quelqu’un a perdu le téléphone de sa double authentification",
+        "etapes": [
+          "Demandez-lui d’abord d’utiliser un de ses codes de secours : chacun sert une fois.",
+          "Sans code de secours : ouvrez « Comptes », retrouvez la personne et réinitialisez sa double authentification.",
+          "À sa prochaine connexion, elle la configure de nouveau avec son nouveau téléphone."
+        ],
+        "note": "Vérifiez l’identité de la personne avant de réinitialiser : l’action figure au journal de sécurité."
+      },
+      "adminTelephone": {
+        "titre": "Un étudiant a changé de téléphone et ne peut plus pointer",
+        "etapes": [
+          "Un compte est lié à un téléphone, pour empêcher de pointer à la place d’un autre. Depuis un nouveau téléphone, le scan est refusé et signalé.",
+          "Ouvrez « Signalements de présence », retrouvez l’étudiant et cliquez sur « Délier le téléphone ».",
+          "À son prochain scan, son compte se lie au nouveau téléphone."
+        ],
+        "note": "Le même écran montre les soupçons de fraude : un téléphone qui pointe pour deux étudiants, ou un absent à la vérification surprise."
+      },
+      "adminSecurite": {
+        "titre": "Comprendre une connexion suspecte ou un compte bloqué",
+        "etapes": [
+          "Ouvrez « Journal de sécurité » : connexions, double authentification, mots de passe et sessions, du plus récent au plus ancien.",
+          "Cliquez sur un compte pour ne voir que ses événements, avec l’adresse IP et le navigateur.",
+          "Un compte bloqué après trop de codes faux se débloque seul au bout de 15 minutes."
+        ]
+      },
+      "profAppel": {
+        "titre": "Faire l’appel",
+        "etapes": [
+          "Ouvrez « Mes classes » : la classe en cours est en tête. Cliquez sur « Faire l’appel ».",
+          "Cliquez sur « Projeter le QR code » et affichez la fenêtre sur l’écran de la salle : elle ne montre ni le menu ni vos autres pages.",
+          "Les étudiants scannent avec l’application HESTIM : leur nom apparaît à l’écran dès que la présence est enregistrée.",
+          "Cliquez sur « Valider l’appel », puis « Voir la liste complète » pour les présents et les absents."
+        ],
+        "note": "Un étudiant sans téléphone : cochez son nom à la main sur votre écran d’appel. La « Vérification surprise », facultative, tire quelques présents au hasard à appeler à voix haute."
+      },
+      "profRappel": {
+        "titre": "Je crains d’oublier l’appel",
+        "etapes": [
+          "Cinq minutes avant la fin de la séance, si l’appel n’est pas fait ou pas validé, un rappel s’affiche en haut de la page de Planner ouverte.",
+          "Cliquez sur « Ouvrir l’appel » dans le rappel."
+        ],
+        "note": "Le rappel n’apparaît que si Planner est ouvert dans votre navigateur."
+      },
+      "profQuizDirect": {
+        "titre": "Lancer un quiz en direct pendant la séance",
+        "etapes": [
+          "Dans « Mes classes », sur la classe en cours, cliquez sur « Quiz en direct » : vous arrivez sur vos quiz sans vous reconnecter.",
+          "Choisissez le quiz et lancez la partie : les étudiants de la classe la reçoivent dans l’application, sans code à saisir.",
+          "Le lien « ← Planner » vous ramène à votre tableau de bord."
+        ],
+        "note": "Les scores sont rattachés à la séance : vous les retrouvez ensuite dans « Activités »."
+      },
+      "profQuizIa": {
+        "titre": "Faire écrire un quiz par l’IA à partir de mon cours",
+        "etapes": [
+          "Dans « Activités », panneau « Quiz par l’IA », cliquez sur « Générer un quiz ».",
+          "Choisissez la classe, déposez le support (PDF, Word ou PowerPoint) et réglez le nombre de questions et le niveau.",
+          "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
+          "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être donné en devoir ou lancé en direct."
+        ],
+        "note": "Rien n’est créé sans votre validation. Le panneau n’apparaît que si le service est activé par l’école."
+      },
+      "profDevoir": {
+        "titre": "Donner un devoir et voir les notes",
+        "etapes": [
+          "Dans « Mes classes », cliquez sur « Donner un devoir ou un quiz » sur la classe voulue.",
+          "Choisissez un fichier à rendre (titre, consignes, énoncé facultatif) ou l’un de vos quiz, corrigé automatiquement, puis la date limite.",
+          "Dans « Activités », panneau « Devoirs », « Notes » montre les copies rendues ; vous notez les devoirs « fichier » sur 20 avec un commentaire."
+        ],
+        "note": "Vous ne pouvez donner un devoir qu’à vos classes."
+      },
+      "profEcrire": {
+        "titre": "Écrire à ma classe ou lui transmettre une offre de stage",
+        "etapes": [
+          "Dans « Mes classes », cliquez sur « Écrire à la classe » ou « Partager une offre de stage » : l’annonce s’ouvre déjà adressée au groupe.",
+          "Rédigez, joignez au besoin un PDF ou une image, et cochez l’envoi par e-mail si c’est urgent.",
+          "Dans « Annonces », vous voyez qui a lu et pouvez relancer les autres."
+        ]
+      },
+      "profSupports": {
+        "titre": "Partager un support, un exercice ou un article",
+        "etapes": [
+          "Ouvrez la « Bibliothèque » puis « Déposer un document ».",
+          "Choisissez le module (n’importe lequel, pas seulement les vôtres) et le type : cours, TD, TP, examen, exercice ou article.",
+          "Votre document est publié tout de suite. Les étudiants le retrouvent depuis leur séance du module."
+        ]
+      },
+      "profReport": {
+        "titre": "Je ne peux pas assurer une séance",
+        "etapes": [
+          "Ouvrez « Mes séances » et cliquez sur « Demander un report » sur la séance.",
+          "Indiquez le motif et la date souhaitée : l’administration reçoit la demande et vous répond.",
+          "Suivez la réponse dans « Mes demandes de report »."
+        ],
+        "note": "Vous n’avez rien à confirmer : une séance planifiée est tenue pour confirmée tant que vous ne demandez pas de report."
+      },
+      "profAbsence": {
+        "titre": "Je serai absent plusieurs jours",
+        "etapes": [
+          "Ouvrez « Mes disponibilités » et cliquez sur « Déclarer une absence ».",
+          "Indiquez la période : tous vos créneaux deviennent indisponibles.",
+          "L’administration est prévenue et traite vos séances, par un remplaçant ou un rattrapage."
+        ]
+      },
+      "profDispos": {
+        "titre": "Indiquer quand je peux enseigner",
+        "etapes": [
+          "Ouvrez « Mes disponibilités » et marquez les créneaux où vous êtes disponible ou indisponible.",
+          "Faites-le avant la génération de l’emploi du temps : elle ne vous placera que sur vos créneaux libres."
+        ]
+      },
+      "profServices": {
+        "titre": "Accepter ou refuser un enseignement qu’on me propose",
+        "etapes": [
+          "Ouvrez « Mes services » : les enseignements proposés par le responsable de filière attendent votre réponse.",
+          "Acceptez, ou refusez en donnant le motif.",
+          "La même page montre votre charge de l’année face à votre service dû."
+        ]
+      },
+      "profResponsable": {
+        "titre": "Préparer ma filière (responsable de filière)",
+        "etapes": [
+          "Ouvrez « Préparation » : les étapes de vos filières s’affichent dans l’ordre, avec leur avancement.",
+          "Complétez la maquette, les groupes et les enseignements, puis proposez les services aux enseignants.",
+          "« Suivi du réalisé » vous montre ensuite les modules en retard sur leur rythme."
+        ]
+      },
+      "profSecurite": {
+        "titre": "Changer mon mot de passe ou régler la double authentification",
+        "etapes": [
+          "Mot de passe : ouvrez « Paramètres » (onglet « Compte » sur téléphone). Il doit compter 12 caractères au moins.",
+          "Double authentification et codes de secours : utilisez « Y aller » ci-dessous pour ouvrir la page Sécurité.",
+          "Rangez vos codes de secours en lieu sûr : chacun sert une fois si votre téléphone est indisponible."
+        ]
+      },
+      "etuEdt": {
+        "titre": "Voir mon emploi du temps et ses changements",
+        "etapes": [
+          "« Tableau » montre votre prochaine séance et celles du jour ; « Emploi du temps » montre la semaine.",
+          "Un report ou une annulation arrive dans vos alertes, et dans l’application sur votre téléphone."
+        ]
+      },
+      "etuPresence": {
+        "titre": "Pointer ma présence",
+        "etapes": [
+          "Ouvrez l’application HESTIM sur votre téléphone et touchez l’icône du QR code.",
+          "Scannez le code affiché à l’écran de la salle : votre nom apparaît à l’écran quand la présence est enregistrée."
+        ],
+        "note": "Le pointage ne se fait que depuis l’application, et votre compte est lié à un seul téléphone. Nouveau téléphone : demandez à la scolarité de le délier."
+      },
+      "etuDevoirs": {
+        "titre": "Faire un devoir ou rejoindre un quiz",
+        "etapes": [
+          "Ouvrez « Activités » : vos devoirs à rendre y figurent avec leur date limite.",
+          "Un quiz lancé par votre enseignant pendant la séance y apparaît aussi, et dans l’application.",
+          "La correction d’un devoir est visible après la date limite."
+        ]
+      },
+      "etuAnnonces": {
+        "titre": "Lire les annonces de l’école et de mes enseignants",
+        "etapes": [
+          "Ouvrez « Annonces » : les non lues sont marquées.",
+          "Une pièce jointe se télécharge depuis l’annonce."
+        ]
+      }
+    }
   },
   nav: {
     board: 'Tableau',
@@ -806,36 +1059,6 @@ const fr = {
       confirmerSuppression: 'Supprimer le devoir « {{titre}} » et ses copies ?',
       resumeEnseignant_one: '{{count}} copie · moyenne {{moyenne}}/20',
       resumeEnseignant_other: '{{count}} copies · moyenne {{moyenne}}/20',
-      typeDevoir: 'Type de devoir',
-      types: { fichier: 'Fichier à rendre (rapport, code, photo…)', quiz: 'Quiz corrigé automatiquement' },
-      titreDevoir: 'Intitulé',
-      consignes: 'Consignes',
-      sansConsignes: 'Pas de consignes écrites : voyez l’énoncé ou demandez à votre enseignant.',
-      enonce: 'Joindre un énoncé (facultatif)',
-      enonceNonAjoute: 'Le devoir est donné, mais l’énoncé n’a pas pu être ajouté.',
-      telechargerEnonce: 'Énoncé : {{nom}}',
-      aideFichier: 'Chaque étudiant dépose un PDF, une image, une archive ZIP ou un document Office (10 Mo au plus). Vous notez sur 20 et commentez ; une copie rendue après la date limite est acceptée et marquée en retard.',
-      maCopieTitre: 'Ma copie',
-      pasEncoreRendu: 'Pas encore rendue.',
-      pasRenduRetard: 'Pas rendue : la date limite est passée, une copie déposée maintenant sera marquée en retard.',
-      copieRendue: 'Rendue le {{date}}',
-      copieDeposee: 'Copie déposée',
-      enRetard: 'En retard',
-      enCorrection: 'Rendu · en attente de correction',
-      deposer: 'Déposer ma copie',
-      remplacer: 'Remplacer ma copie',
-      envoiCopie: 'Envoi…',
-      formatsCopie: 'PDF, image, archive ZIP ou document Office, 10 Mo au plus. Remplaçable tant qu’elle n’est pas corrigée.',
-      typeFichierRefuse: 'Fichier : PDF, image, archive ZIP ou document Office seulement.',
-      tailleFichier: 'Fichier : 10 Mo au plus.',
-      copie: 'Copie',
-      corriger: 'Corriger',
-      corrigerTitre: 'Corriger la copie de {{nom}}',
-      commentaire: 'Commentaire',
-      noteInvalide: 'Une note entre 0 et 20 (par exemple 14,5)',
-      noteEnregistree: 'Note enregistrée : l’étudiant est prévenu.',
-      aCorriger_one: '{{count}} à corriger',
-      aCorriger_other: '{{count}} à corriger',
     },
     quizIa: {
       titre: 'Quiz par l’IA',

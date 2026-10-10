@@ -1,13 +1,11 @@
 import crypto from "crypto";
-import sequelize from "../../config/db.js";
-import { Appartenir, Cours, Devoir, DevoirRendu, FichierDevoir, Groupe, Users } from "../../models/index.js";
+import { Appartenir, Cours, Devoir, DevoirRendu, Groupe, Users } from "../../models/index.js";
 import { butEtNotion } from "../activites/but.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
 import { groupesDeLEtudiant, inscritsDuModule, modulesDuJoueur, peutProposerDansModule } from "../jeux/jeux.js";
 import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 import { mesClasses, peutViserClasse } from "../planning/mesClasses.js";
-import { TYPES_DEVOIRS, verifierFichier } from "../../utils/fichiers.js";
 import { idCompte } from "../oidc/provider.js";
 
 /**
@@ -15,17 +13,13 @@ import { idCompte } from "../oidc/provider.js";
  * (tous ses étudiants, ou un groupe), avec une date limite. Planner copie les questions par une
  * requête signée au fork de ClassQuiz, les sert sans les réponses, corrige lui-même et note sur
  * 20. Une seule copie par étudiant ; la correction n'est montrée qu'après la date limite.
+ * Les devoirs « fichier » (dépôt de copie, note à la main) ont été retirés le 10 octobre 2026 :
+ * à HESTIM, l'enseignant ne donne sur Planner que des quiz. Les anciens restent en base, masqués.
  */
 
 const TYPES_NOTES = new Set(["ABCD", "CHECK", "TEXT", "RANGE", "ORDER"]);
 const TYPES_ACCEPTES = new Set([...TYPES_NOTES, "VOTING", "SLIDE"]);
 const DUREE_MAX_MS = 366 * 24 * 3600 * 1000;
-// Devoirs « fichier » (R3)
-export const TAILLE_MAX_FICHIER = 10 * 1024 * 1024;
-export { TYPES_DEVOIRS };
-const REGLES_FICHIER = { types: TYPES_DEVOIRS, tailleMax: TAILLE_MAX_FICHIER, libelleTypes: "PDF, image, archive ZIP ou document Office" };
-const CONSIGNES_MAX = 10000;
-const COMMENTAIRE_MAX = 2000;
 
 // ── Client du fork ClassQuiz (requêtes signées) ───────────────────────────
 
@@ -235,7 +229,8 @@ const peutGerer = async (user, devoir) =>
 const devoirOuErreur = async (id) => {
     const n = Number(id);
     const devoir = Number.isInteger(n) && n > 0 ? await Devoir.findByPk(n, { include: [{ model: Cours, as: "cours", attributes: ["id_cours", "code_cours", "nom_cours"] }, { model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe"] }] }) : null;
-    if (!devoir) throw new ErreurMetier("Devoir introuvable", 404);
+    // Ancien devoir « fichier » : masqué
+    if (!devoir || devoir.type === "fichier") throw new ErreurMetier("Devoir introuvable", 404);
     return devoir;
 };
 
@@ -254,9 +249,8 @@ const enTete = (d) => ({
 });
 
 /**
- * Donner un devoir dans un module ; les étudiants visés sont prévenus.
- *  - quiz : { quiz_id, id_cours, id_groupe?, date_limite } ; questions copiées depuis ClassQuiz ;
- *  - fichier (R3) : { type: "fichier", titre, consignes?, id_cours, id_groupe?, date_limite }.
+ * Donner un quiz en devoir dans un module : { quiz_id, id_cours, id_groupe?, date_limite } ; les
+ * questions sont copiées depuis ClassQuiz et les étudiants visés sont prévenus.
  */
 export const creerDevoir = async (user, donnees = {}) => {
     const { quiz_id: quizId, id_cours: idCours, id_groupe: idGroupe = null, date_limite: dateLimite, type = "quiz" } = donnees;
@@ -282,23 +276,13 @@ export const creerDevoir = async (user, donnees = {}) => {
     } else if (!(await peutViserClasse(user, cours, null, { classes, groupesDuModule }))) {
         throw new ErreurMetier("D'autres enseignants ont des classes dans ce module : choisissez l'une de vos classes", 400);
     }
-    let champs;
-    if (type === "fichier") {
-        const titre = typeof donnees.titre === "string" ? donnees.titre.trim() : "";
-        if (!titre || titre.length > 255) throw new ErreurMetier("Titre requis (255 caractères au plus)", 400);
-        const consignes = typeof donnees.consignes === "string" ? donnees.consignes.trim() : "";
-        if (consignes.length > CONSIGNES_MAX) throw new ErreurMetier(`Consignes : ${CONSIGNES_MAX} caractères au plus`, 400);
-        champs = { type: "fichier", titre, consignes: consignes || null };
-    } else if (type === "quiz") {
-        if (typeof quizId !== "string" || !/^[0-9a-f-]{36}$/i.test(quizId)) throw new ErreurMetier("quiz_id invalide", 400);
-        const quiz = await clientClassQuiz(cheminSigne(`/api/v1/hestim/quiz/${quizId}`, { email: user.email }));
-        if (!quiz) throw new ErreurMetier("Quiz introuvable dans vos quiz PlannerQuiz", 404);
-        const questions = (Array.isArray(quiz.questions) ? quiz.questions : []).filter((q) => TYPES_ACCEPTES.has(q?.type));
-        if (!questions.some((q) => TYPES_NOTES.has(q.type))) throw new ErreurMetier("Ce quiz n'a aucune question notable", 400);
-        champs = { type: "quiz", titre: String(quiz.titre ?? "Devoir").slice(0, 255), quiz_id: quizId, questions };
-    } else {
-        throw new ErreurMetier("Type de devoir invalide (quiz ou fichier)", 400);
-    }
+    if (type !== "quiz") throw new ErreurMetier("Seuls les quiz se donnent en devoir", 400);
+    if (typeof quizId !== "string" || !/^[0-9a-f-]{36}$/i.test(quizId)) throw new ErreurMetier("quiz_id invalide", 400);
+    const quiz = await clientClassQuiz(cheminSigne(`/api/v1/hestim/quiz/${quizId}`, { email: user.email }));
+    if (!quiz) throw new ErreurMetier("Quiz introuvable dans vos quiz PlannerQuiz", 404);
+    const questions = (Array.isArray(quiz.questions) ? quiz.questions : []).filter((q) => TYPES_ACCEPTES.has(q?.type));
+    if (!questions.some((q) => TYPES_NOTES.has(q.type))) throw new ErreurMetier("Ce quiz n'a aucune question notable", 400);
+    const champs = { type: "quiz", titre: String(quiz.titre ?? "Devoir").slice(0, 255), quiz_id: quizId, questions };
 
     const devoir = await Devoir.create({
         ...champs,
@@ -326,7 +310,7 @@ export const devoirsDe = async (user) => {
     const include = [{ model: Cours, as: "cours", attributes: ["id_cours", "code_cours", "nom_cours"] }, { model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe"] }];
     if (user.role === "admin") return [];
     if (user.role === "enseignant") {
-        const devoirs = await Devoir.findAll({ where: { id_user_enseignant: user.id_user }, include, order: [["date_limite", "DESC"]], limit: 50 });
+        const devoirs = await Devoir.findAll({ where: { id_user_enseignant: user.id_user, type: "quiz" }, include, order: [["date_limite", "DESC"]], limit: 50 });
         const rendus = devoirs.length ? await DevoirRendu.findAll({ where: { id_devoir: devoirs.map((d) => d.id_devoir) }, attributes: ["id_devoir", "note"] }) : [];
         return devoirs.map((d) => {
             const copies = rendus.filter((r) => r.id_devoir === d.id_devoir);
@@ -335,14 +319,13 @@ export const devoirsDe = async (user) => {
                 ...enTete(d),
                 donne_le: d.createdAt,
                 rendus: copies.length,
-                a_corriger: copies.length - notes.length,
                 moyenne: notes.length ? Math.round((100 * notes.reduce((a, b) => a + b, 0)) / notes.length) / 100 : null,
             };
         });
     }
     const modules = await modulesDuJoueur(user);
     if (!modules.length) return [];
-    const candidats = await Devoir.findAll({ where: { id_cours: modules }, include, order: [["date_limite", "ASC"]] });
+    const candidats = await Devoir.findAll({ where: { id_cours: modules, type: "quiz" }, include, order: [["date_limite", "ASC"]] });
     // Devoir d'un groupe : visible si l'un de mes groupes est ce groupe ou l'un de ses descendants.
     // Mes groupes comprennent tous leurs ancêtres : cela revient à « son groupe est parmi les miens »
     // (sans lire la descendance de chaque devoir)
@@ -364,14 +347,6 @@ export const sujetDuDevoir = async (user, id) => {
     if (!(await estVise(devoir, user))) throw new ErreurMetier("Devoir introuvable", 404);
     const rendu = await DevoirRendu.findOne({ where: { id_devoir: devoir.id_devoir, id_user: user.id_user } });
     const enTeteDevoir = enTete(devoir);
-    if (devoir.type === "fichier") {
-        const [enonce, copie] = await Promise.all([fichierDe(devoir.id_devoir, null), fichierDe(devoir.id_devoir, user.id_user)]);
-        return {
-            devoir: { ...enTeteDevoir, consignes: devoir.consignes, enonce: fichierVu(enonce) },
-            questions: [],
-            rendu: rendu ? { ...renduVu(rendu), fichier: fichierVu(copie) } : null,
-        };
-    }
     const correction = rendu && !enTeteDevoir.ouvert;
     return {
         devoir: enTeteDevoir,
@@ -388,7 +363,6 @@ export const sujetDuDevoir = async (user, id) => {
 export const rendreDevoir = async (user, id, reponses) => {
     const devoir = await devoirOuErreur(id);
     if (!(await estVise(devoir, user))) throw new ErreurMetier("Devoir introuvable", 404);
-    if (devoir.type === "fichier") throw new ErreurMetier("Ce devoir se rend en déposant un fichier", 400);
     if (new Date(devoir.date_limite) <= new Date()) throw new ErreurMetier("La date limite est passée", 409);
     if (!Array.isArray(reponses) || reponses.length !== devoir.questions.length) {
         throw new ErreurMetier(`reponses doit contenir une réponse par question (${devoir.questions.length})`, 400);
@@ -425,10 +399,8 @@ export const resultatsDuDevoir = async (user, id) => {
         DevoirRendu.findAll({ where: { id_devoir: devoir.id_devoir } }),
     ]);
     const parEtudiant = new Map(rendus.map((r) => [r.id_user, r]));
-    const fichiers = devoir.type === "fichier" ? await FichierDevoir.findAll({ where: { id_devoir: devoir.id_devoir }, attributes: ["id_user", "nom", "type_mime", "taille"] }) : [];
-    const fichierPar = new Map(fichiers.filter((f) => f.id_user).map((f) => [f.id_user, f]));
-    // Copies à corriger d'abord, puis par note décroissante, puis les non-rendus
-    const rang = (l) => (!l.rendu_le ? 2 : l.note === null ? 0 : 1);
+    // Par note décroissante, puis les non-rendus
+    const rang = (l) => (l.rendu_le ? 0 : 1);
     const lignes = etudiants
         .map((e) => {
             const r = parEtudiant.get(e.id_user);
@@ -439,119 +411,26 @@ export const resultatsDuDevoir = async (user, id) => {
                 note: r && r.note !== null ? Number(r.note) : null,
                 bonnes: r?.bonnes ?? null,
                 rendu_le: r?.rendu_le ?? null,
-                en_retard: r?.en_retard ?? false,
-                commentaire: r?.commentaire ?? null,
-                fichier: fichierVu(fichierPar.get(e.id_user)),
             };
         })
         .sort((a, b) => rang(a) - rang(b) || (b.note ?? -1) - (a.note ?? -1) || a.nom.localeCompare(b.nom));
     const notes = lignes.filter((l) => l.note !== null).map((l) => l.note);
     const rendusCompte = lignes.filter((l) => l.rendu_le).length;
     return {
-        devoir: { ...enTete(devoir), consignes: devoir.consignes ?? null, nb_vises: lignes.length },
+        devoir: { ...enTete(devoir), nb_vises: lignes.length },
         moyenne: notes.length ? Math.round((100 * notes.reduce((a, b) => a + b, 0)) / notes.length) / 100 : null,
         rendus: rendusCompte,
-        a_corriger: rendusCompte - notes.length,
         etudiants: lignes,
     };
 };
 
-// ── Devoirs « fichier » (R3) ──────────────────────────────────────────────
-
-const fichierDe = (idDevoir, idUser, avecContenu = false) =>
-    FichierDevoir.findOne({ where: { id_devoir: idDevoir, id_user: idUser ?? null }, attributes: avecContenu ? undefined : ["id_fichier", "nom", "type_mime", "taille"] });
-const fichierVu = (f) => (f ? { nom: f.nom, type: f.type_mime, taille: f.taille } : null);
-
-/** Copie vue par l'étudiant : note (nulle tant que non corrigée), retard, commentaire. */
+/** Copie vue par l'étudiant : note sur 20 et nombre de bonnes réponses. */
 const renduVu = (r) => ({
     note: r.note === null ? null : Number(r.note),
     bonnes: r.bonnes,
     notees: r.notees,
     rendu_le: r.rendu_le,
-    en_retard: r.en_retard,
-    commentaire: r.commentaire,
-    note_le: r.note_le,
 });
-
-const devoirFichierOuErreur = async (id) => {
-    const devoir = await devoirOuErreur(id);
-    if (devoir.type !== "fichier") throw new ErreurMetier("Ce devoir n'attend pas de fichier", 400);
-    return devoir;
-};
-
-/** Enregistre (ou remplace) l'énoncé ou la copie d'un étudiant. */
-const enregistrerFichier = async (idDevoir, idUser, fichier, transaction) => {
-    const existant = await FichierDevoir.findOne({ where: { id_devoir: idDevoir, id_user: idUser ?? null }, attributes: ["id_fichier"], transaction });
-    if (existant) await FichierDevoir.update(fichier, { where: { id_fichier: existant.id_fichier }, transaction });
-    else await FichierDevoir.create({ id_devoir: idDevoir, id_user: idUser ?? null, ...fichier }, { transaction });
-};
-
-/** Énoncé du devoir (enseignant du module) : PDF, image, archive ou document, 10 Mo au plus. */
-export const deposerEnonce = async (user, id, fichierRecu) => {
-    const devoir = await devoirFichierOuErreur(id);
-    if (!(await peutGerer(user, devoir))) throw new ErreurMetier("Réservé aux enseignants du module", 403);
-    const fichier = verifierFichier(fichierRecu, REGLES_FICHIER);
-    await enregistrerFichier(devoir.id_devoir, null, fichier);
-    return fichierVu(fichier);
-};
-
-/**
- * Rendre sa copie (étudiant visé) : remplaçable tant qu'elle n'est pas corrigée. Après la date
- * limite, la copie est acceptée et marquée en retard.
- */
-export const deposerCopie = async (user, id, fichierRecu) => {
-    const devoir = await devoirFichierOuErreur(id);
-    if (!(await estVise(devoir, user))) throw new ErreurMetier("Devoir introuvable", 404);
-    const rendu = await DevoirRendu.findOne({ where: { id_devoir: devoir.id_devoir, id_user: user.id_user } });
-    if (rendu && rendu.note !== null) throw new ErreurMetier("Copie déjà corrigée : elle ne peut plus être remplacée", 409);
-    const fichier = verifierFichier(fichierRecu, REGLES_FICHIER);
-    const maintenant = new Date();
-    const enRetard = maintenant > new Date(devoir.date_limite);
-    await sequelize.transaction(async (transaction) => {
-        await enregistrerFichier(devoir.id_devoir, user.id_user, fichier, transaction);
-        if (rendu) await rendu.update({ rendu_le: maintenant, en_retard: enRetard }, { transaction });
-        else await DevoirRendu.create({ id_devoir: devoir.id_devoir, id_user: user.id_user, rendu_le: maintenant, en_retard: enRetard, note: null }, { transaction });
-    });
-    return { rendu_le: maintenant, en_retard: enRetard, fichier: fichierVu(fichier) };
-};
-
-/**
- * Fichier à télécharger : l'énoncé (idEtudiant nul) pour les étudiants visés et les enseignants
- * du module ; une copie pour son auteur et les enseignants du module.
- */
-export const lireFichierDevoir = async (user, id, idEtudiant = null) => {
-    const devoir = await devoirFichierOuErreur(id);
-    const gere = await peutGerer(user, devoir);
-    if (!gere) {
-        const autorise = idEtudiant === null ? await estVise(devoir, user) : idEtudiant === user.id_user && (await estVise(devoir, user));
-        if (!autorise) throw new ErreurMetier("Fichier introuvable", 404);
-    }
-    const fichier = await fichierDe(devoir.id_devoir, idEtudiant, true);
-    if (!fichier) throw new ErreurMetier("Fichier introuvable", 404);
-    return fichier;
-};
-
-/** Noter une copie sur 20 avec un commentaire (enseignant du module) ; l'étudiant est prévenu. */
-export const noterCopie = async (user, id, idEtudiant, { note, commentaire } = {}) => {
-    const devoir = await devoirFichierOuErreur(id);
-    if (!(await peutGerer(user, devoir))) throw new ErreurMetier("Réservé aux enseignants du module", 403);
-    const rendu = await DevoirRendu.findOne({ where: { id_devoir: devoir.id_devoir, id_user: idEtudiant } });
-    if (!rendu) throw new ErreurMetier("Aucune copie rendue par cet étudiant", 404);
-    const valeur = typeof note === "string" ? Number(note.replace(",", ".")) : note;
-    if (typeof valeur !== "number" || !Number.isFinite(valeur) || valeur < 0 || valeur > 20) throw new ErreurMetier("Note sur 20 attendue (entre 0 et 20)", 400);
-    const texte = typeof commentaire === "string" ? commentaire.trim() : "";
-    if (texte.length > COMMENTAIRE_MAX) throw new ErreurMetier(`Commentaire : ${COMMENTAIRE_MAX} caractères au plus`, 400);
-    const dejaNotee = rendu.note !== null;
-    await rendu.update({ note: Math.round(valeur * 100) / 100, commentaire: texte || null, note_le: new Date() });
-    await creerNotificationsMultiples({
-        id_users: [idEtudiant],
-        titre: dejaNotee ? "Note de devoir modifiée" : "Devoir corrigé",
-        message: `${devoir.titre}${devoir.cours?.nom_cours ? ` (${devoir.cours.nom_cours})` : ""} : ${String(Number(rendu.note)).replace(".", ",")}/20.`,
-        type_notification: "success",
-        lien: "/jeux",
-    }).catch(() => {});
-    return renduVu(rendu);
-};
 
 /** Supprimer un devoir (et ses copies) */
 export const supprimerDevoir = async (user, id) => {

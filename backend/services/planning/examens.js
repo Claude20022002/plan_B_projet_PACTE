@@ -2,12 +2,8 @@ import { Op } from "sequelize";
 import sequelize from "../../config/db.js";
 import {
     Cours,
-    CoursComposante,
     Creneau,
     Disponibilite,
-    Enseignement,
-    EnseignementEnseignant,
-    EnseignementGroupe,
     Groupe,
     Salle,
     SessionExamen,
@@ -26,11 +22,12 @@ import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 
 /**
  * Examens (phase P5) : une épreuve d'un module pour des groupes, répartie sur des salles en
- * capacité d'examen, avec des surveillants par salle. Deux natures (7 octobre 2026) :
- *  - examen : surveillé par le personnel de l'administration (comptes administrateurs), jamais
- *    proposé d'office aux enseignants ; équilibré entre eux (le moins sollicité d'abord) ;
- *  - controle : contrôle d'un module, surveillé par ses propres enseignants. Il peut se tenir
- *    pendant une séance du même module : cette séance n'est pas un conflit.
+ * capacité d'examen, avec des surveillants par salle. Les surveillants sont toujours du personnel
+ * de l'administration (comptes administrateurs) : à HESTIM, les enseignants ne surveillent pas
+ * (10 octobre 2026). La charge est équilibrée (le moins sollicité d'abord). Deux natures :
+ *  - examen : épreuve de la session d'examens ;
+ *  - controle : contrôle d'un module. Il peut se tenir pendant une séance du même module : cette
+ *    séance n'est pas un conflit.
  */
 
 export const INCLUDES_EXAMEN = [
@@ -167,34 +164,9 @@ export const enregistrerExamen = async ({ id = null, donnees, groupes, salles, u
         return { examen: await charger(session.id_session, transaction), violations };
     });
 
-/** Enseignants du module d'un contrôle, pour ses groupes (ou leurs groupes parents et sous-groupes), le principal d'abord. */
-const enseignantsDuControle = async (examen, transaction) => {
-    const lies = new Set((await Promise.all(examen.groupes.map((g) => groupesLies(g.id_groupe, transaction)))).flat());
-    if (!lies.size) return [];
-    const liens = await EnseignementGroupe.findAll({ where: { id_groupe: [...lies] }, attributes: ["id_enseignement"], transaction });
-    if (!liens.length) return [];
-    const enseignements = await Enseignement.findAll({
-        where: { id_enseignement: [...new Set(liens.map((l) => l.id_enseignement))] },
-        attributes: ["id_enseignement"],
-        include: [{ model: CoursComposante, as: "composante", attributes: [], where: { id_cours: examen.id_cours }, required: true }],
-        transaction,
-    });
-    if (!enseignements.length) return [];
-    const services = await EnseignementEnseignant.findAll({
-        where: { id_enseignement: enseignements.map((e) => e.id_enseignement), statut_service: { [Op.ne]: "refuse" } },
-        attributes: ["id_user", "role"],
-        transaction,
-    });
-    const ids = [...new Set(services.sort((a, b) => Number(a.role !== "principal") - Number(b.role !== "principal")).map((x) => x.id_user))];
-    const users = await Users.findAll({ where: { id_user: ids, actif: true }, attributes: ["id_user", "nom", "prenom"], transaction });
-    return ids.map((id) => users.find((u) => u.id_user === id)).filter(Boolean);
-};
-
 /**
- * Affecte les surveillants d'office, salle par salle, parmi les personnes libres à cette heure :
- *  - contrôle : les enseignants du module (le principal d'abord), sans dépasser leur nombre ;
- *  - examen : le personnel de l'administration, le moins sollicité de la période d'abord, jusqu'au
- *    nombre fixé par les paramètres. Les enseignants ne sont jamais proposés d'office.
+ * Affecte les surveillants d'office, salle par salle, parmi le personnel de l'administration libre
+ * à cette heure, le moins sollicité de la période d'abord, jusqu'au nombre fixé par les paramètres.
  */
 export const affecterSurveillants = async (id) =>
     sequelize.transaction(async (transaction) => {
@@ -211,20 +183,15 @@ export const affecterSurveillants = async (id) =>
             transaction,
         });
 
-        let candidats;
-        if (examen.nature === "controle") {
-            candidats = (await enseignantsDuControle(examen, transaction)).filter((u) => !prises.has(u.id_user));
-        } else {
-            const personnel = await Users.findAll({ where: { role: "admin", actif: true }, attributes: ["id_user", "nom", "prenom"], transaction });
-            // Charge de surveillance : nombre d'épreuves surveillées sur la même période (ou toutes, sans période)
-            const autres = await Surveillance.findAll({
-                include: [{ model: SessionExamen, as: "session", attributes: [], where: { statut: { [Op.ne]: "annulee" }, id_session: { [Op.ne]: examen.id_session }, ...(examen.id_periode ? { id_periode: examen.id_periode } : {}) } }],
-                transaction,
-            });
-            const charge = new Map();
-            autres.forEach((x) => charge.set(x.id_user, (charge.get(x.id_user) || 0) + 1));
-            candidats = personnel.filter((u) => !prises.has(u.id_user)).sort((a, b) => (charge.get(a.id_user) || 0) - (charge.get(b.id_user) || 0) || a.id_user - b.id_user);
-        }
+        const personnel = await Users.findAll({ where: { role: "admin", actif: true }, attributes: ["id_user", "nom", "prenom"], transaction });
+        // Charge de surveillance : nombre d'épreuves surveillées sur la même période (ou toutes, sans période)
+        const autres = await Surveillance.findAll({
+            include: [{ model: SessionExamen, as: "session", attributes: [], where: { statut: { [Op.ne]: "annulee" }, id_session: { [Op.ne]: examen.id_session }, ...(examen.id_periode ? { id_periode: examen.id_periode } : {}) } }],
+            transaction,
+        });
+        const charge = new Map();
+        autres.forEach((x) => charge.set(x.id_user, (charge.get(x.id_user) || 0) + 1));
+        const candidats = personnel.filter((u) => !prises.has(u.id_user)).sort((a, b) => (charge.get(a.id_user) || 0) - (charge.get(b.id_user) || 0) || a.id_user - b.id_user);
 
         const besoin = examen.salles.length * minimum;
         await Surveillance.destroy({ where: { id_session: examen.id_session }, transaction });
@@ -237,12 +204,15 @@ export const affecterSurveillants = async (id) =>
         return { examen: await charger(examen.id_session, transaction), manquants: Math.max(0, besoin - retenus.length) };
     });
 
-/** Affectation manuelle des surveillants ; ils doivent être libres (sauf forçage). */
+/** Affectation manuelle des surveillants : du personnel de l'administration, libre (sauf forçage). */
 export const definirSurveillants = async ({ id, surveillances, user, forcer = false, justification = null }) =>
     sequelize.transaction(async (transaction) => {
         const examen = await charger(id, transaction);
         if (!examen) throw new ErreurMetier("Épreuve non trouvée", 404);
         if (surveillances.some((s) => !examen.salles.some((x) => x.id_salle === s.id_salle))) throw new ErreurMetier("Un surveillant est placé dans une salle qui n'est pas celle de l'épreuve", 400);
+        const ids = [...new Set(surveillances.map((s) => s.id_user))];
+        const personnel = await Users.count({ where: { id_user: ids, role: "admin" }, transaction });
+        if (personnel !== ids.length) throw new ErreurMetier("Seul le personnel de l'administration surveille les épreuves", 400);
         const { violations } = await validerExamen(
             { ...examen.get({ plain: true }), groupes: examen.groupes.map((g) => g.id_groupe), salles: examen.salles, surveillances },
             { transaction }
@@ -263,7 +233,7 @@ export const publierExamen = async (id) => {
     const quand = `le ${examen.date} de ${String(examen.heure_debut).slice(0, 5)} à ${String(examen.heure_fin).slice(0, 5)}`;
     const surveillants = [...new Set(examen.surveillances.map((s) => s.id_user))];
     if (surveillants.length) {
-        await creerNotificationsMultiples({ id_users: surveillants, titre: examen.nature === "controle" ? "Contrôle à surveiller" : "Surveillance d'examen", message: `Vous surveillez « ${examen.titre} » ${quand}.`, type_notification: "info", lien: "/mes-surveillances" }).catch(() => {});
+        await creerNotificationsMultiples({ id_users: surveillants, titre: examen.nature === "controle" ? "Contrôle à surveiller" : "Surveillance d'examen", message: `Vous surveillez « ${examen.titre} » ${quand}.`, type_notification: "info", lien: "/mes-examens" }).catch(() => {});
     }
     if (examen.groupes.length) {
         await notifierChangementSeance({
@@ -277,7 +247,7 @@ export const publierExamen = async (id) => {
     return charger(id);
 };
 
-/** Nombre de surveillances par enseignant (sur une période, ou toutes) : contrôle de l'équilibre. */
+/** Nombre de surveillances par personne (sur une période, ou toutes) : contrôle de l'équilibre. */
 export const chargeSurveillances = async ({ idPeriode = null } = {}) => {
     const lignes = await Surveillance.findAll({
         include: [

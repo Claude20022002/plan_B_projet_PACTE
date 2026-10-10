@@ -395,7 +395,6 @@ export const affectationAPI = {
     create: (data) => request('/affectations', { method: 'POST', body: data }),
     update: (id, data) => request(`/affectations/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/affectations/${id}`, { method: 'DELETE' }),
-    confirmer: (id) => request(`/affectations/${id}/confirmer`, { method: 'PATCH' }),
 };
 
 // ==================== CONFLITS ====================
@@ -590,16 +589,12 @@ export const imprevuAPI = {
     annulerJour: (date, data) => request(`/imprevus/jour/${date}/annuler`, { method: 'POST', body: data }),
 };
 
-// ==================== SUIVI DU RÉALISÉ ET RETOURS (phase P7, I7) ====================
+// ==================== SUIVI DU RÉALISÉ (phase P7) ====================
 export const suiviAPI = {
-    realiser: (idAffectation) => request(`/suivi/seances/${idAffectation}/realiser`, { method: 'PATCH' }),
     actualiser: () => request('/suivi/actualiser', { method: 'POST' }),
     modules: (params) => request(avecQuery('/suivi/modules', params)),
     enseignants: (mois) => request(avecQuery('/suivi/enseignants', { mois })),
     exportVacataires: (mois) => telecharger(`/suivi/vacataires.csv?mois=${mois}`, `heures-vacataires-${mois}.csv`),
-    retoursADonner: () => request('/suivi/retours/a-donner'),
-    deposerRetour: (idAffectation, data) => request(`/suivi/retours/seances/${idAffectation}`, { method: 'POST', body: data }),
-    mesRetours: () => request('/suivi/retours/mes-modules'),
 };
 
 // ==================== PRÉPARATION DU SEMESTRE ET EDT MENSUEL (phase P4) ====================
@@ -630,21 +625,12 @@ export const devoirsAPI = {
     // Étudiant : à rendre et rendus ; enseignant : devoirs donnés (rendus, moyenne)
     lister: () => request('/devoirs'),
     quizDisponibles: () => request('/devoirs/quiz-disponibles'),
-    // { quiz_id, id_cours, id_groupe?, date_limite } ou { type: 'fichier', titre, consignes?, id_cours, id_groupe?, date_limite }
+    // { quiz_id, id_cours, id_groupe?, date_limite }
     creer: (donnees) => request('/devoirs', { method: 'POST', body: donnees }),
     sujet: (id) => request(`/devoirs/${encodeURIComponent(id)}`),
     rendre: (id, reponses) => request(`/devoirs/${encodeURIComponent(id)}/rendu`, { method: 'POST', body: { reponses } }),
     resultats: (id) => request(`/devoirs/${encodeURIComponent(id)}/resultats`),
     supprimer: (id) => request(`/devoirs/${encodeURIComponent(id)}`, { method: 'DELETE' }),
-    // Devoirs « fichier » (R3) : énoncé de l'enseignant, copie de l'étudiant, note sur 20
-    deposerEnonce: (id, fichier) =>
-        request(avecQuery(`/devoirs/${encodeURIComponent(id)}/enonce`, { nom: fichier.name }), { method: 'PUT', body: fichier, headers: { 'Content-Type': typeDuFichier(fichier) } }),
-    telechargerEnonce: (id, nom) => telecharger(`/devoirs/${encodeURIComponent(id)}/enonce`, nom),
-    deposerCopie: (id, fichier) =>
-        request(avecQuery(`/devoirs/${encodeURIComponent(id)}/copie`, { nom: fichier.name }), { method: 'PUT', body: fichier, headers: { 'Content-Type': typeDuFichier(fichier) } }),
-    telechargerCopie: (id, idUser, nom) => telecharger(`/devoirs/${encodeURIComponent(id)}/copies/${encodeURIComponent(idUser)}`, nom),
-    noter: (id, idUser, note, commentaire) =>
-        request(`/devoirs/${encodeURIComponent(id)}/copies/${encodeURIComponent(idUser)}/note`, { method: 'PUT', body: { note, commentaire } }),
 };
 
 // ==================== QUIZ GÉNÉRÉS PAR L'IA (enseignants) ====================

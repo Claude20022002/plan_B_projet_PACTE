@@ -148,17 +148,3 @@ export function useDeleteAffectation() {
   });
 }
 
-/**
- * Confirmer une affectation (enseignant ou admin).
- * @param {number} id
- */
-export function useConfirmerAffectation(id) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: () => affectationsAPI.confirmer(id),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: AFFECTATIONS_KEYS.detail(id) });
-      qc.invalidateQueries({ queryKey: AFFECTATIONS_KEYS.lists() });
-    },
-  });
-}

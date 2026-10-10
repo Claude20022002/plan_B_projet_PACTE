@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Box, Button, Chip, Skeleton, Typography } from '@mui/material';
-import { AutoAwesome, Campaign, FactCheck, Grading, LocalLibrary, Quiz, SportsEsports, WorkOutline } from '@mui/icons-material';
+import { Alert, Box, Button, Skeleton } from '@mui/material';
+import { AutoAwesome, Campaign, FactCheck, LocalLibrary, Quiz, SportsEsports } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
@@ -22,8 +22,8 @@ const nomClasse = (c) => `${c.nom_cours} · ${c.nom_groupe}`;
 const minutesAvantFin = (seance, maintenant) => Math.ceil((new Date(`${seance.date}T${seance.heure_fin}:00`) - maintenant) / 60000);
 
 /**
- * Mes classes (enseignant) : la classe en cours d'abord, avec tout ce que j'y fais (appel, devoir
- * ou quiz, message à la classe, offre de stage, supports de cours), puis mes autres classes.
+ * Mes classes (enseignant) : la classe en cours d'abord, avec tout ce que j'y fais (appel, quiz,
+ * message à la classe, supports de cours), puis mes autres classes.
  * Dans les 5 dernières minutes d'une séance sans appel terminé, un rappel s'affiche.
  */
 export default function MesClasses() {
@@ -120,15 +120,6 @@ export default function MesClasses() {
         <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Campaign />} onClick={() => navigate('/annonces', { state: { nouvelle: { id_groupe: c.id_groupe } } })}>
           {t('classes.page.ecrire')}
         </Button>
-        <Button
-          size="small"
-          variant="outlined"
-          sx={boutonPanneau}
-          startIcon={<WorkOutline />}
-          onClick={() => navigate('/annonces', { state: { nouvelle: { id_groupe: c.id_groupe, titre: t('classes.page.titreStage') } } })}
-        >
-          {t('classes.page.stage')}
-        </Button>
         <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<LocalLibrary />} onClick={() => ouvrirSupports(c)}>
           {t('classes.page.supports')}
         </Button>
@@ -185,16 +176,6 @@ export default function MesClasses() {
           <Panneau titre={t(enCours.length ? 'classes.page.autres' : 'classes.page.toutes')} titreId="classes-autres">
             {autres.map(ligne)}
           </Panneau>
-        )}
-
-        {classes?.length > 0 && (
-          <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1 }}>
-            <Typography variant="body2" color="text.secondary">
-              {t('classes.page.bientot')}
-            </Typography>
-            <Chip size="small" variant="outlined" icon={<Grading />} label={t('classes.page.notes')} />
-            <Chip size="small" variant="outlined" icon={<LocalLibrary />} label={t('classes.page.genererSupports')} />
-          </Box>
         )}
       </Box>
     </DashboardLayout>

@@ -2,6 +2,7 @@ import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginA
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import { Affectation, Appartenir, CoursComposante, Enseignement, EnseignementEnseignant, Groupe } from "../../models/index.js";
 import { mesClasses } from "../../services/planning/mesClasses.js";
+import { definirClientClassQuiz } from "../../services/quiz/devoirs.js";
 
 /**
  * « Mes classes » d'un enseignant (services et emploi du temps) et refus d'écrire aux classes d'un
@@ -88,7 +89,17 @@ describe("Mes classes", () => {
 });
 
 describe("Devoirs : seulement pour ses classes", () => {
-    const devoir = (idGroupe) => ({ type: "fichier", titre: "TP noté", id_cours: fixture.cours.id_cours, ...(idGroupe ? { id_groupe: idGroupe } : {}), date_limite: dansUneSemaine() });
+    const QUIZ_ID = "0f0e0d0c-0b0a-4908-8706-050403020100";
+    const devoir = (idGroupe) => ({ quiz_id: QUIZ_ID, id_cours: fixture.cours.id_cours, ...(idGroupe ? { id_groupe: idGroupe } : {}), date_limite: dansUneSemaine() });
+
+    // Faux ClassQuiz : le quiz existe pour tout enseignant
+    beforeAll(() => {
+        definirClientClassQuiz(async (chemin) =>
+            chemin.startsWith(`/api/v1/hestim/quiz/${QUIZ_ID}`)
+                ? { id: QUIZ_ID, titre: "TP noté", questions: [{ question: "2 + 2 ?", time: "20", type: "ABCD", answers: [{ answer: "4", right: true }, { answer: "5", right: false }] }] }
+                : null
+        );
+    });
 
     test("sa classe et ses sous-groupes : accepté", async () => {
         const client = await loginAs(profTd1);

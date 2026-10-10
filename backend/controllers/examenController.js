@@ -16,8 +16,8 @@ import {
 } from "../services/planning/examens.js";
 
 /**
- * Examens et surveillances (phase P5) : planifiés par l'administration ; les enseignants voient
- * leurs surveillances, les étudiants les épreuves publiées de leurs groupes.
+ * Examens et surveillances (phase P5) : planifiés par l'administration, dont le personnel voit
+ * ses surveillances ; les étudiants voient les épreuves publiées de leurs groupes.
  */
 
 const CHAMPS = ["titre", "id_cours", "id_periode", "nature", "date", "heure_debut", "heure_fin"];
@@ -55,7 +55,7 @@ export const getExamen = asyncHandler(async (req, res) => {
     res.json(examen);
 });
 
-// 👁️ Enseignant : ses surveillances (épreuves publiées)
+// 👁️ Personnel de l'administration : ses surveillances (épreuves publiées)
 export const getMesSurveillances = asyncHandler(async (req, res) => {
     const surveillances = await Surveillance.findAll({ where: { id_user: req.user.id_user }, attributes: ["id_session"] });
     res.json(

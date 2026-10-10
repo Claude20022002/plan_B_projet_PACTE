@@ -69,6 +69,7 @@ import { LocalLibrary,
 } from '@mui/icons-material';
 import GlobalSearch from '../common/GlobalSearch';
 import SelecteurEspaces from '../espaces/SelecteurEspaces';
+import Aide from '../aide/Aide';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { notificationAPI } from '../../services/api';
@@ -168,7 +169,6 @@ const navigationFor = (user) => {
           { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
           { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },
           { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
-          { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
           { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
           { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
         ],
@@ -543,6 +543,7 @@ export default function DashboardLayout({ children }) {
             >
               {title}
             </Typography>
+            <Aide aller={go} />
             <SelecteurEspaces role={role} />
             {role === 'admin' && (
               <Tooltip title={t('nav.search')}>
