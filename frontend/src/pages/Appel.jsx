@@ -14,6 +14,7 @@ import {
   ListItemButton,
   ListItemIcon,
   ListItemText,
+  ListSubheader,
   Paper,
   Skeleton,
   Stack,
@@ -76,25 +77,49 @@ export default function Appel() {
 
   const chargerListe = useCallback(() => presenceAPI.liste(id).then(setListe).catch(() => {}), [id]);
 
+  const ouvrir = useCallback(async () => {
+    setErreur('');
+    try {
+      const r = await presenceAPI.ouvrir(id);
+      setSeance(r.seance);
+      setFerme(false);
+      setListe((l) => l && { ...l, appel: { ...l.appel, ouvert: true } });
+      await dessiner(r);
+      programmer(r.expire_dans_ms + 200);
+    } catch (e) {
+      setErreur(e?.message || t('appel.erreur'));
+    }
+  }, [id, dessiner, programmer, t]);
+
+  // À l'arrivée : un appel déjà terminé s'affiche tel quel (liste complète), sans être rouvert
   useEffect(() => {
     let actif = true;
     presenceAPI
-      .ouvrir(id)
-      .then(async (r) => {
+      .liste(id)
+      .then((l) => {
         if (!actif) return;
-        setSeance(r.seance);
-        await dessiner(r);
-        programmer(r.expire_dans_ms + 200);
+        setListe(l);
+        setSeance(l.seance);
+        if (l.appel && !l.appel.ouvert) setFerme(true);
+        else ouvrir();
       })
       .catch((e) => actif && setErreur(e?.message || t('appel.erreur')));
-    chargerListe();
     const rafraichir = setInterval(chargerListe, RAFRAICHIR_LISTE_MS);
     return () => {
       actif = false;
       clearTimeout(minuterie.current);
       clearInterval(rafraichir);
     };
-  }, [id, dessiner, programmer, chargerListe, t]);
+  }, [id, ouvrir, chargerListe, t]);
+
+  // Appel terminé depuis l'écran projeté : cet écran suit
+  const fermeAilleurs = Boolean(liste?.appel && !liste.appel.ouvert);
+  useEffect(() => {
+    if (!fermeAilleurs) return;
+    clearTimeout(minuterie.current);
+    setFerme(true);
+    setQr(null);
+  }, [fermeAilleurs]);
 
   // Secondes restantes avant le prochain code
   useEffect(() => {
@@ -133,10 +158,18 @@ export default function Appel() {
     if (fenetre) e.preventDefault();
   };
 
-  const libelleSignalement =(s) => t(`appel.signalement.${s.motif}`, { lie: s.lie ?? '?' });
+  const libelleSignalement = (s) => t(`appel.signalement.${s.motif}`, { lie: s.lie ?? '?' });
 
   const attendus = liste?.etudiants.length ?? 0;
   const presents = liste?.presents ?? 0;
+  // Appel terminé : la liste de la classe comparée aux présences, les absents d'abord
+  const etudiants = liste?.etudiants ?? [];
+  const groupes = ferme
+    ? [
+        { cle: 'absents', titre: t('appel.groupeAbsents', { count: etudiants.filter((e) => !e.present).length }), lignes: etudiants.filter((e) => !e.present) },
+        { cle: 'presents', titre: t('appel.groupePresents', { count: etudiants.filter((e) => e.present).length }), lignes: etudiants.filter((e) => e.present) },
+      ]
+    : [{ cle: 'tous', titre: null, lignes: etudiants }];
 
   return (
     <DashboardLayout>
@@ -156,7 +189,13 @@ export default function Appel() {
       <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', md: 'minmax(320px, 560px) 1fr' }, alignItems: 'start' }}>
         <Paper sx={{ p: 2, textAlign: 'center', bgcolor: ds.board.ground, color: ds.board.letter }}>
           {ferme ? (
-            <Typography sx={{ py: 8, fontFamily: ds.font.board, fontSize: '1.5rem', letterSpacing: '0.08em' }}>{t('appel.ferme')}</Typography>
+            <Box sx={{ py: 6 }}>
+              <Typography sx={{ fontFamily: ds.font.board, fontSize: '1.5rem', letterSpacing: '0.08em' }}>{t('appel.ferme')}</Typography>
+              <Typography sx={{ mt: 1, color: ds.board.letterDim }}>{t('appel.bilan', { presents, absents: Math.max(0, attendus - presents) })}</Typography>
+              <Button variant="outlined" onClick={ouvrir} sx={{ mt: 2, color: ds.board.letter, borderColor: ds.board.seam }}>
+                {t('appel.rouvrir')}
+              </Button>
+            </Box>
           ) : qr ? (
             <>
               <Box component="img" src={qr.image} alt={t('appel.qrAlt')} sx={{ width: '100%', maxWidth: 520, aspectRatio: '1', borderRadius: 1, bgcolor: '#FFFFFF' }} />
@@ -166,9 +205,11 @@ export default function Appel() {
           ) : (
             !erreur && <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '1', bgcolor: ds.board.cell }} />
           )}
-          <Typography sx={{ mt: 2, fontFamily: ds.font.board, fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} aria-live="polite">
-            {t('appel.presents', { presents, attendus })}
-          </Typography>
+          {!ferme && (
+            <Typography sx={{ mt: 2, fontFamily: ds.font.board, fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} aria-live="polite">
+              {t('appel.presents', { presents, attendus })}
+            </Typography>
+          )}
           {/* Fenêtre à part pour l'écran de la salle : le QR seul, sans le menu ni la liste des noms */}
           {!ferme && qr && (
             <>
@@ -202,11 +243,12 @@ export default function Appel() {
               )}
             </Stack>
           </Stack>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('appel.aideListe')}</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t(ferme ? 'appel.aideListeFerme' : 'appel.aideListe')}</Typography>
           {!liste && <Skeleton variant="rectangular" height={160} />}
           {liste?.etudiants.length === 0 && <Alert severity="info">{t('appel.aucunAttendu')}</Alert>}
-          <List dense>
-            {(liste?.etudiants ?? []).map((e) => (
+          {groupes.map((groupe) => (
+          <List key={groupe.cle} dense subheader={groupe.titre ? <ListSubheader disableSticky sx={{ px: 0, fontWeight: 700, color: 'text.primary' }}>{groupe.titre}</ListSubheader> : undefined}>
+            {groupe.lignes.map((e) => (
               <ListItem key={e.id_user} disablePadding>
                 <ListItemButton onClick={() => basculer(e)} dense>
                   <ListItemIcon sx={{ minWidth: 40 }}>
@@ -227,6 +269,7 @@ export default function Appel() {
               </ListItem>
             ))}
           </List>
+          ))}
         </Paper>
       </Box>
 

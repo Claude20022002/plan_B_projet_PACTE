@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import QRCode from 'qrcode';
-import { Avatar, Box, Button, Skeleton, Typography } from '@mui/material';
+import { Box, Button, Skeleton, Typography } from '@mui/material';
 import { CheckCircle, Fullscreen, FullscreenExit } from '@mui/icons-material';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import VerificationSurprise from '../components/appel/VerificationSurprise';
@@ -14,18 +14,18 @@ const RAFRAICHIR_LISTE_MS = 3000;
 // Un étudiant qui vient de scanner reste mis en avant quelques secondes
 const NOUVEAU_MS = 8000;
 
-const initiales = (e) => `${e.prenom?.[0] ?? ''}${e.nom?.[0] ?? ''}`.toUpperCase();
-
 /**
  * Appel par QR code, écran à projeter en classe (plan espace-enseignant, lot P-1), sans le menu de
  * Planner. L'enseignant projette le QR ; chaque étudiant qui scanne voit son nom apparaître à
  * droite, ce qui lui confirme que sa présence est enregistrée ; à la fin, l'enseignant valide
  * l'appel. Rien à cocher. La vérification surprise reste facultative. Seuls les présents sont
- * affichés : ni les absents, ni les signalements.
+ * affichés : ni les absents, ni les signalements. Une fois l'appel validé, le bilan s'affiche et
+ * l'enseignant ouvre la liste complète (présents et absents) sur son écran d'appel.
  */
 export default function AppelProjection() {
   const { t } = useTranslation();
   const { id } = useParams();
+  const navigate = useNavigate();
   const toast = useToast();
   const [liste, setListe] = useState(null); // { seance, appel, presents, etudiants }
   const [qr, setQr] = useState(null); // { image, expire_le }
@@ -197,7 +197,7 @@ export default function AppelProjection() {
         )}
         {termine && (
           <Button variant="outlined" onClick={ouvrir} sx={boutonSombre}>
-            {t('appel.projection.rouvrir')}
+            {t('appel.rouvrir')}
           </Button>
         )}
         <Button onClick={basculerPleinEcran} startIcon={pleinEcran ? <FullscreenExit /> : <Fullscreen />} sx={{ color: ds.board.letterDim }}>
@@ -211,9 +211,15 @@ export default function AppelProjection() {
           {erreur ? (
             <Typography role="alert" sx={{ py: 6, maxWidth: 640, fontSize: 'clamp(1.125rem, 3vh, 1.75rem)' }}>{erreur}</Typography>
           ) : termine ? (
-            <Typography role="status" sx={{ py: 6, fontFamily: ds.font.board, fontSize: 'clamp(1.75rem, 5vh, 3rem)', letterSpacing: '0.08em' }}>
-              {t('appel.ferme')}
-            </Typography>
+            <Box role="status" sx={{ py: 6 }}>
+              <Typography sx={{ fontFamily: ds.font.board, fontSize: 'clamp(1.75rem, 5vh, 3rem)', letterSpacing: '0.08em' }}>{t('appel.ferme')}</Typography>
+              <Typography sx={{ mt: 1, fontSize: 'clamp(1rem, 2.6vh, 1.5rem)', color: ds.board.letterDim }}>
+                {t('appel.bilan', { presents: presents.length, absents: Math.max(0, attendus - presents.length) })}
+              </Typography>
+              <Button variant="outlined" onClick={() => navigate(`/appel/${id}`)} sx={{ mt: 2.5, ...boutonSombre }}>
+                {t('appel.projection.listeComplete')}
+              </Button>
+            </Box>
           ) : qr ? (
             <>
               <Box component="img" src={qr.image} alt={t('appel.qrAlt')} sx={{ width: 'min(68dvh, 100%)', aspectRatio: '1', borderRadius: 1, bgcolor: '#FFFFFF' }} />
@@ -253,9 +259,7 @@ export default function AppelProjection() {
                     '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
                   }}
                 >
-                  <Avatar sx={{ width: 36, height: 36, fontSize: '0.875rem', fontWeight: 700, bgcolor: nouveau ? ds.board.live : ds.board.seam, color: nouveau ? ds.board.ground : ds.board.letter }}>
-                    {initiales(e)}
-                  </Avatar>
+                  <CheckCircle sx={{ flexShrink: 0, color: nouveau ? ds.board.live : ds.board.letterDim }} aria-hidden />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography noWrap sx={{ fontWeight: 600, lineHeight: 1.2 }}>{e.prenom} {e.nom}</Typography>
                     <Typography noWrap sx={{ fontSize: '0.75rem', color: ds.board.letterDim }}>{t('appel.projection.present')}</Typography>
