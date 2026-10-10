@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, Groupe, Salle } from "../../models/index.js";
+import { Affectation, AppelSeance, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, Groupe, Salle } from "../../models/index.js";
 import { STATUTS_ACTIFS, aujourdhui, minutes } from "./affectationRules.js";
 import { descendants } from "./groupes.js";
 import { peutGererFiliere } from "./droits.js";
@@ -9,7 +9,8 @@ import { horairesSurPlage } from "./ramadan.js";
  * Classes d'un enseignant : les couples (module, groupe) qu'il enseigne réellement, d'après
  *  - ses services (enseignements qui lui sont confiés, sauf refusés) ;
  *  - son emploi du temps (séances dont il est l'enseignant, remplacements compris).
- * Sert à choisir la bonne classe (devoirs, quiz) et à refuser une classe qui n'est pas la sienne.
+ * Sert à choisir la bonne classe (devoirs, quiz), à refuser une classe qui n'est pas la sienne et
+ * à la page « Mes classes » (séance en cours, état de l'appel).
  * Un enseignant d'un groupe (par exemple la promotion en cours magistral) a aussi pour classe
  * chacun de ses sous-groupes (TD, TP).
  */
@@ -93,7 +94,15 @@ export const mesClasses = async (user, { jour = aujourdhui(), heure = heureCoura
             heure_fin: fin,
             salle: s.salle?.nom_salle ?? null,
             en_cours: date === jour && minutes(debut) <= minutes(heure),
+            // Appel de la séance du jour : "a_faire", "ouvert" ou "ferme" (null un autre jour)
+            appel: date === jour ? "a_faire" : null,
         });
+    }
+    const duJour = [...prochaine.values()].filter((s) => s.appel);
+    if (duJour.length) {
+        const appels = await AppelSeance.findAll({ where: { id_affectation: duJour.map((s) => s.id_affectation) }, attributes: ["id_affectation", "ferme_le"], raw: true });
+        const etat = new Map(appels.map((a) => [a.id_affectation, a.ferme_le ? "ferme" : "ouvert"]));
+        for (const s of duJour) s.appel = etat.get(s.id_affectation) ?? "a_faire";
     }
 
     const [cours, groupes] = await Promise.all([

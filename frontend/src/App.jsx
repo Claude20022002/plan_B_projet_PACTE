@@ -75,6 +75,7 @@ const MesAffectations= lazy(() => import('./pages/MesAffectations'));
 const DemandesReport = lazy(() => import('./pages/DemandesReport'));
 const Disponibilites = lazy(() => import('./pages/Disponibilites'));
 const MesServices    = lazy(() => import('./pages/MesServices'));
+const MesClasses     = lazy(() => import('./pages/MesClasses'));
 // Phases P4 à P7 : préparation, réservations, examens, imprévus, suivi, EDT mensuel
 const Reservations   = lazy(() => import('./pages/Reservations'));
 const MesExamens     = lazy(() => import('./pages/MesExamens'));
@@ -311,6 +312,11 @@ export default function App() {
           <Route path="/mes-affectations" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><MesAffectations /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/mes-classes" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><MesClasses /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/demandes-report" element={

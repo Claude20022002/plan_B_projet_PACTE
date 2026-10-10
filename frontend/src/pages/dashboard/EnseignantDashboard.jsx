@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Typography, useMediaQuery } from '@mui/material';
-import { CheckCircleOutline, EventRepeat, SportsEsports, ViewWeek } from '@mui/icons-material';
+import { CheckCircleOutline, EventRepeat, FactCheck, Groups, SportsEsports, ViewWeek } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -169,6 +169,17 @@ export default function EnseignantDashboard() {
           sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: '#FFFFFF' } }}
         >
           {t('board.confirm')}
+        </Button>
+      )}
+      {/* Appel et gestion de la classe : le jour de la séance */}
+      {s.status !== 'annule' && s.date === toLocalISODate() && (
+        <Button variant="outlined" startIcon={<FactCheck />} onClick={() => navigate(`/appel/${s.id}`)} sx={{ color: ds.board.letter, borderColor: ds.board.seam }}>
+          {t('classes.page.appel.a_faire')}
+        </Button>
+      )}
+      {s.status !== 'annule' && (
+        <Button variant="outlined" startIcon={<Groups />} onClick={() => navigate('/mes-classes')} sx={{ color: ds.board.letter, borderColor: ds.board.seam }}>
+          {t('nav.myClasses')}
         </Button>
       )}
       {/* ClassQuiz : l'enseignant y choisit et lance son quiz ; la partie est rattachée à cette

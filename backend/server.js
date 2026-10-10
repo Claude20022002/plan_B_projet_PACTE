@@ -8,6 +8,7 @@ import { purgerJournal } from "./services/journalSecurite.js";
 import { purgerCompteursDebit } from "./middleware/rateLimiterMiddleware.js";
 import { purgerGenerations } from "./services/ia/quiz.js";
 import { demarrerRenvoiQuotidien } from "./services/calendrier/envoiEdt.js";
+import { demarrerRappelsAppel } from "./services/presences/rappelAppel.js";
 
 dotenv.config();
 
@@ -74,6 +75,9 @@ const seedIfRequested = async () => {
 
         // Emploi du temps du mois (R4) : chaque soir, les mois publiés qui ont changé sont renvoyés aux classes
         demarrerRenvoiQuotidien();
+
+        // Appel : rappel à l'enseignant quelques minutes avant la fin d'une séance sans appel terminé
+        demarrerRappelsAppel();
     } catch (error) {
         console.error("--> Erreur serveur :", error);
         process.exit(1);

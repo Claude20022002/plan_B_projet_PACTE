@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -55,6 +55,23 @@ export default function Annonces() {
   const [lecteurs, setLecteurs] = useState(null); // { annonce, liste }
   const [aSupprimer, setASupprimer] = useState(null);
   const [redaction, setRedaction] = useState(false);
+  // Depuis « Mes classes » : rédaction ouverte sur le groupe de la classe ({ id_groupe, titre })
+  const location = useLocation();
+  const [modele, setModele] = useState(null);
+
+  useEffect(() => {
+    const nouvelle = location.state?.nouvelle;
+    if (!nouvelle || !peutEcrire) return;
+    setModele(nouvelle);
+    setRedaction(true);
+    // L'état est consommé : un rechargement de la page ne rouvre pas le formulaire
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, peutEcrire, navigate]);
+
+  const fermerRedaction = () => {
+    setRedaction(false);
+    setModele(null);
+  };
 
   const dateLongue = (d) => new Date(d).toLocaleString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -288,17 +305,17 @@ export default function Annonces() {
         onCancel={() => setASupprimer(null)}
       />
 
-      {redaction && <Redaction onFermer={() => setRedaction(false)} onEnvoyee={charger} />}
+      {redaction && <Redaction onFermer={fermerRedaction} onEnvoyee={charger} modele={modele} />}
     </DashboardLayout>
   );
 }
 
 /** Formulaire d'une nouvelle annonce : cibles proposées selon les droits (GET /annonces/cibles). */
-function Redaction({ onFermer, onEnvoyee }) {
+function Redaction({ onFermer, onEnvoyee, modele = null }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [cibles, setCibles] = useState(null);
-  const [f, setF] = useState(FORMULAIRE_VIDE);
+  const [f, setF] = useState(() => ({ ...FORMULAIRE_VIDE, titre: modele?.titre ?? '' }));
   const [envoi, setEnvoi] = useState(false);
   const [erreur, setErreur] = useState('');
 
@@ -307,10 +324,17 @@ function Redaction({ onFermer, onEnvoyee }) {
       .getCibles()
       .then((c) => {
         setCibles(c);
-        setF((x) => ({ ...x, portee: c.portees[0] ?? '', public: c.publics[0] ?? '' }));
+        // Groupe demandé (depuis « Mes classes »), s'il fait partie des cibles permises
+        const groupe = c.portees.includes('groupe') && c.groupes.some((g) => g.id === modele?.id_groupe) ? modele.id_groupe : null;
+        setF((x) => ({
+          ...x,
+          portee: groupe ? 'groupe' : c.portees[0] ?? '',
+          id_cible: groupe ?? '',
+          public: groupe && c.publics.includes('etudiants') ? 'etudiants' : c.publics[0] ?? '',
+        }));
       })
       .catch((e) => setErreur(e?.message || t('annonces.erreur')));
-  }, [t]);
+  }, [t, modele]);
 
   const maj = (champ) => (e) => setF((x) => ({ ...x, [champ]: e.target.value }));
   const filiere = useMemo(() => cibles?.filieres.find((x) => String(x.id) === String(f.id_cible)), [cibles, f.id_cible]);

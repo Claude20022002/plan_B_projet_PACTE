@@ -9,9 +9,9 @@ const cleClasse = (c) => (c ? `${c.id_cours}:${c.id_groupe}` : '');
  * Choix d'une de mes classes (module × groupe), d'après mes services et mon emploi du temps :
  * la séance en cours ou la prochaine est proposée d'abord, et choisie par défaut. Le serveur
  * refuse de toute façon une classe qui n'est pas la mienne.
- * @param {{ valeur: object|null, onChange: (classe) => void, filtreCours?: number }} props
+ * @param {{ valeur: object|null, onChange: (classe) => void, filtreCours?: number, preselection?: { id_cours, id_groupe } }} props
  */
-export default function SelecteurClasse({ valeur, onChange, filtreCours = null, label }) {
+export default function SelecteurClasse({ valeur, onChange, filtreCours = null, label, preselection = null }) {
   const { t, i18n } = useTranslation();
   const [classes, setClasses] = useState(null);
   const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
@@ -29,10 +29,11 @@ export default function SelecteurClasse({ valeur, onChange, filtreCours = null, 
 
   const visibles = useMemo(() => (classes ?? []).filter((c) => !filtreCours || c.id_cours === Number(filtreCours)), [classes, filtreCours]);
 
-  // Par défaut : la première (séance en cours, sinon la prochaine)
+  // Par défaut : la classe demandée (depuis « Mes classes »), sinon la première (séance en cours,
+  // sinon la prochaine)
   useEffect(() => {
-    if (!valeur && visibles.length) onChange(visibles[0]);
-  }, [valeur, visibles, onChange]);
+    if (!valeur && visibles.length) onChange(visibles.find((c) => cleClasse(c) === cleClasse(preselection)) ?? visibles[0]);
+  }, [valeur, visibles, onChange, preselection]);
 
   if (classes === null) return <Skeleton height={56} />;
   if (!visibles.length) return <Alert severity="info">{t('classes.aucune')}</Alert>;

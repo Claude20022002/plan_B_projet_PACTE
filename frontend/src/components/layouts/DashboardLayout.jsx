@@ -139,6 +139,7 @@ const navigationFor = (user) => {
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
           { key: 'nav.announcements', icon: <Campaign />, path: '/annonces' },
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
+          { key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' },
           { key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' },
           { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
           { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },

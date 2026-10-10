@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -43,7 +43,7 @@ const dansUneSemaine = () => {
  * temps, la séance en cours ou la prochaine proposée d'abord), avec une date limite : l'un de mes
  * quiz ClassQuiz (corrigé par Planner) ou un fichier à rendre (consignes, énoncé facultatif).
  */
-function DonnerDevoir({ ouvert, fermer, cree }) {
+function DonnerDevoir({ ouvert, fermer, cree, preselection = null }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [quiz, setQuiz] = useState(null);
@@ -130,7 +130,7 @@ function DonnerDevoir({ ouvert, fermer, cree }) {
               ))}
             </TextField>
           )}
-          {ouvert && <SelecteurClasse valeur={choix.classe} onChange={choisirClasse} />}
+          {ouvert && <SelecteurClasse valeur={choix.classe} onChange={choisirClasse} preselection={preselection} />}
           <TextField select label={t('jeux.modules.but')} value={choix.but} onChange={(e) => setChoix((c) => ({ ...c, but: e.target.value }))}>
             <MenuItem value="verifier">{t('jeux.buts.verifier')}</MenuItem>
             <MenuItem value="entrainer">{t('jeux.buts.entrainer')}</MenuItem>
@@ -316,6 +316,18 @@ export default function PanneauDevoirs({ enseignant }) {
   const [devoirs, setDevoirs] = useState(null);
   const [donner, setDonner] = useState(false);
   const [notes, setNotes] = useState(null);
+  // Depuis « Mes classes » : le dialogue s'ouvre sur la classe choisie ({ id_cours, id_groupe })
+  const location = useLocation();
+  const [preselection, setPreselection] = useState(null);
+
+  useEffect(() => {
+    const classe = location.state?.donnerDevoir;
+    if (!classe || !enseignant) return;
+    setPreselection(classe);
+    setDonner(true);
+    // L'état est consommé : un rechargement de la page ne rouvre pas le dialogue
+    navigate(location.pathname, { replace: true, state: null });
+  }, [location.state, location.pathname, enseignant, navigate]);
 
   const charger = useCallback(() => devoirsAPI.lister().then((r) => setDevoirs(r?.data ?? [])).catch(() => setDevoirs([])), []);
   useEffect(() => {
@@ -398,6 +410,7 @@ export default function PanneauDevoirs({ enseignant }) {
       {enseignant && (
         <DonnerDevoir
           ouvert={donner}
+          preselection={preselection}
           fermer={() => setDonner(false)}
           cree={() => {
             setDonner(false);
