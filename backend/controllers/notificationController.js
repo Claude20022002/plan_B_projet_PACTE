@@ -1,16 +1,14 @@
-import { Notification, Users } from "../models/index.js";
+import { Notification } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
-import { pick } from "../utils/validationHelper.js";
 
 /**
  * Contrôleur des notifications.
- * Un utilisateur ne voit et ne modifie que ses propres notifications ;
- * l'administrateur peut en créer pour n'importe qui.
+ * Un utilisateur ne voit et ne modifie que ses propres notifications. Elles sont créées par le
+ * serveur (changements de séance, devoirs, appel…) ; pour écrire aux étudiants ou aux
+ * enseignants, l'administration passe par les annonces.
  * Les listes renvoient des tableaux simples (contrat existant du frontend).
  */
 
-const NOTIFICATION_FIELDS = ["titre", "message", "type_notification", "lien", "id_user"];
-const USER_SUMMARY = { model: Users, as: "user", attributes: ["id_user", "nom", "prenom", "email", "role"] };
 
 const notFound = (res) => res.status(404).json({ message: "Notification non trouvée" });
 
@@ -29,40 +27,10 @@ const findOwnedNotification = async (req, res) => {
     return notification;
 };
 
-// 🔍 Toutes les notifications (admin)
-export const getAllNotifications = asyncHandler(async (req, res) => {
-    const notifications = await Notification.findAll({
-        include: [USER_SUMMARY],
-        order: [["date_envoi", "DESC"]],
-    });
-    res.json(notifications);
-});
-
 // 🔍 Une notification (propriétaire ou admin)
 export const getNotificationById = asyncHandler(async (req, res) => {
     const notification = await findOwnedNotification(req, res);
     if (notification) res.json(notification);
-});
-
-// ➕ Créer une notification (admin)
-export const createNotification = asyncHandler(async (req, res) => {
-    const notification = await Notification.create(pick(req.body, NOTIFICATION_FIELDS));
-    const notificationComplete = await Notification.findByPk(notification.id_notification, {
-        include: [USER_SUMMARY],
-    });
-    res.status(201).json(notificationComplete);
-});
-
-// ✏️ Mettre à jour une notification (admin)
-export const updateNotification = asyncHandler(async (req, res) => {
-    const notification = await Notification.findByPk(req.params.id);
-    if (!notification) return notFound(res);
-
-    await notification.update(pick(req.body, [...NOTIFICATION_FIELDS, "lue"]));
-    const notificationComplete = await Notification.findByPk(notification.id_notification, {
-        include: [USER_SUMMARY],
-    });
-    res.json(notificationComplete);
 });
 
 // 🗑️ Supprimer une notification (propriétaire ou admin)

@@ -715,20 +715,20 @@ const fr = {
         "note": "Rien n’est créé sans votre validation. Le panneau n’apparaît que si le service est activé par l’école."
       },
       "profDevoir": {
-        "titre": "Donner un devoir et voir les notes",
+        "titre": "Donner un quiz en devoir et voir les notes",
         "etapes": [
-          "Dans « Mes classes », cliquez sur « Donner un devoir ou un quiz » sur la classe voulue.",
-          "Choisissez un fichier à rendre (titre, consignes, énoncé facultatif) ou l’un de vos quiz, corrigé automatiquement, puis la date limite.",
-          "Dans « Activités », panneau « Devoirs », « Notes » montre les copies rendues ; vous notez les devoirs « fichier » sur 20 avec un commentaire."
+          "Dans « Mes classes », cliquez sur « Donner un quiz en devoir » sur la classe voulue.",
+          "Choisissez l’un de vos quiz et la date limite : il est corrigé automatiquement et noté sur 20.",
+          "Dans « Activités », panneau « Devoirs », « Notes » montre les copies rendues et la moyenne."
         ],
-        "note": "Vous ne pouvez donner un devoir qu’à vos classes."
+        "note": "Vous ne pouvez donner un devoir qu’à vos classes. La correction n’est montrée aux étudiants qu’après la date limite."
       },
       "profEcrire": {
-        "titre": "Écrire à ma classe ou lui transmettre une offre de stage",
+        "titre": "Écrire à ma classe",
         "etapes": [
-          "Dans « Mes classes », cliquez sur « Écrire à la classe » ou « Partager une offre de stage » : l’annonce s’ouvre déjà adressée au groupe.",
+          "Dans « Mes classes », cliquez sur « Écrire à la classe » : l’annonce s’ouvre déjà adressée au groupe.",
           "Rédigez, joignez au besoin un PDF ou une image, et cochez l’envoi par e-mail si c’est urgent.",
-          "Dans « Annonces », vous voyez qui a lu et pouvez relancer les autres."
+          "Dans « Annonces », « Lecteurs » montre qui a lu, et « Relancer » rappelle les autres."
         ]
       },
       "profSupports": {
@@ -805,7 +805,7 @@ const fr = {
       "etuDevoirs": {
         "titre": "Faire un devoir ou rejoindre un quiz",
         "etapes": [
-          "Ouvrez « Activités » : vos devoirs à rendre y figurent avec leur date limite.",
+          "Ouvrez « Activités » : vos quiz à faire en devoir y figurent avec leur date limite.",
           "Un quiz lancé par votre enseignant pendant la séance y apparaît aussi, et dans l’application.",
           "La correction d’un devoir est visible après la date limite."
         ]

@@ -154,20 +154,34 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 
 ## 6 ter. Règles de fonctionnement précisées le 10 octobre 2026
 
-- **Séance confirmée par défaut.** Une fois que l'enseignant a envoyé ses disponibilités et que les cours sont planifiés, une séance est tenue pour confirmée tant qu'il n'a pas demandé de report. **Fait** : le bouton « Confirmer » et le compteur « séances à confirmer » ont disparu de son tableau de bord et de « Mes séances », une séance planifiée s'y affiche « Confirmé », et une séance planifiée déjà passée devient réalisée d'office, comme une séance confirmée. La route de confirmation existe encore, sans bouton.
+- **Séance confirmée par défaut.** Une fois que l'enseignant a envoyé ses disponibilités et que les cours sont planifiés, une séance est tenue pour confirmée tant qu'il n'a pas demandé de report. **Fait** : le bouton « Confirmer » et le compteur « séances à confirmer » ont disparu de son tableau de bord et de « Mes séances », une séance planifiée s'y affiche « Confirmé », et une séance planifiée déjà passée devient réalisée d'office, comme une séance confirmée. Les routes « confirmer » et « marquer réalisée » ont été supprimées.
 - **Quiz en direct sans nouvelle connexion ni nouvel onglet** (en attendant CQ-1 à CQ-3). **Fait** : « Lancer un quiz » ouvre ClassQuiz dans le même onglet et y connecte l'enseignant par son compte Planner, sans afficher la page de connexion ; la barre de ClassQuiz porte un lien « ← Planner » qui ramène au tableau de bord. Demande le redéploiement du site ClassQuiz.
+
+## 6 quater. Allègement des rôles (10 octobre 2026)
+
+Revue de chaque action, rôle par rôle : ce qui ne sert pas au métier de HESTIM est retiré (code, routes, écrans, traductions, tests). Les tables restent en base, sans risque pour les données de production.
+
+| Retiré | Pourquoi |
+|---|---|
+| Surveillances côté enseignant (menu, page, agenda, affectation d'office pour un contrôle) | À HESTIM, les enseignants ne surveillent pas : seul le personnel de l'administration surveille, examens comme contrôles. Une affectation manuelle d'un enseignant est refusée. |
+| Devoirs « fichier » (énoncé, dépôt de copie, note à la main) | L'enseignant ne donne sur Planner que des quiz, corrigés automatiquement. Les anciens devoirs « fichier » sont masqués. |
+| Retours anonymes après une séance (étudiant, enseignant, administration) | Jugés inutiles. |
+| Confirmer une séance ; marquer une séance réalisée | L'enseignant donne ses disponibilités, l'administration organise : une séance planifiée est confirmée, et réalisée d'office une fois passée. |
+| Réserver une salle (et l'assistant de créneaux pour une réservation) | Les enseignants ne réservent pas de salle : l'administration seulement. |
+| « Partager une offre de stage » et les boutons « bientôt » (notes, génération de supports) dans « Mes classes » | Hors du rôle de l'enseignant sur Planner (les offres passent par StudyLib, lot S-1) ; des boutons sans rien derrière. |
+| Création et modification de notifications à la main (administration) | Les annonces servent à écrire ; les notifications sont créées par le serveur. |
+
+Gardé : la vérification surprise de l'appel (protection contre la fraude, facultative). Les écrans du responsable de filière (préparation, maquette, groupes, services, suivi, publication du mois) restent réservés aux enseignants qui ont une filière, à l'écran comme dans l'API.
 
 ## 7. Autres écarts relevés (audit du 10 octobre 2026)
 
 | Écart | Où |
 |---|---|
 | La demande de report depuis le tableau de bord mène à la liste des séances, pas à la séance | site, enseignant |
-| Devoir « fichier » : pas de dépôt de copie depuis l'application | mobile, étudiant |
 | Les alertes « nouveau devoir » et « quiz lancé » ne s'ouvrent pas au toucher | mobile, étudiant |
 | Pas de vue « mes modules » : le dépôt propose tous les modules | StudyLib, enseignant |
 | Un document déposé ne peut pas être modifié (seulement supprimé) | StudyLib |
 | Pas d'offres de stage dans StudyLib (seulement des retours d'expérience) : elles passent par les annonces de Planner | StudyLib |
-| Notes de la classe et génération de supports : annoncées « bientôt » sur « Mes classes » | site, enseignant |
 
 ## 8. Découpage en lots
 
@@ -182,11 +196,12 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 | **W-4** | Réactions et questions à l'enseignant pendant la séance | L'enseignant voit qui décroche | CQ-2 | à faire |
 | **W-5** | Import de quiz (export Wooclap, Excel) | Les quiz existants sont repris | IA-4 | à faire |
 | **W-6** | Autres types de questions, selon l'usage réel | — | W-1 ; décision § 9 | à décider |
+| **J-1** | Défis du terminal Linux dans un quiz : nouveau type de question (commande à taper dans le terminal simulé, vérifiée par le défi), dans le fork ClassQuiz, l'éditeur, les joueurs web et mobile, les devoirs. Remplacera ensuite « proposer le jeu dans mes modules » | Un enseignant met quelques défis Linux dans son quiz | CQ-2 | à faire (demande du 10 octobre 2026) |
 | **M-1** | Application mobile : connexion des enseignants avec double authentification, onglets selon le rôle, Tableau | L'enseignant entre dans l'application | — | à faire |
 | **M-2** | Ma classe, appel (liste, fin, QR de secours), rappel en push | L'appel se fait et se rappelle sur le téléphone | M-1 | à faire |
-| **M-3** | Message à la classe, offre de stage, devoirs et rendus | Les actions courantes sans ordinateur | M-2 | à faire |
+| **M-3** | Message à la classe, quiz en devoir et notes | Les actions courantes sans ordinateur | M-2 | à faire |
 | **M-4** | Télécommande du quiz en direct | Le quiz se pilote depuis le téléphone | M-2, CQ-2 | à faire |
-| **G-1** | Bouton d'aide et panneau par rôle et par page (site et mobile) | De l'aide à tout moment | — | à faire |
+| **G-1** | Bouton d'aide et panneau par rôle et par page (site et mobile) | De l'aide à tout moment | — | **fait pour le site** le 10 octobre 2026 (`frontend/src/components/aide/` : 14 fiches pour l'administration, 12 pour l'enseignant et une de plus pour un responsable de filière, 4 pour l'étudiant ; fiches de la page ouverte en tête, recherche, bouton « Y aller » ; FR et EN), essayé dans un navigateur. **Reste : l'application mobile.** Une fiche se met à jour avec l'écran qu'elle décrit |
 | **G-2** | Lecteur de la vidéo de bienvenue avec « Passer », enregistrement « déjà vue » | Le guide se joue une fois, et se revoit depuis l'aide | G-1 | à faire |
 | **G-3** | Écriture et production des trois vidéos | Les vidéos elles-mêmes | P-1, CQ-3 | à faire |
 | **S-1** | StudyLib : offres de stage partagées par un enseignant ou l'administration à tous les étudiants (modèle, onglet « Offres », notification, date limite) | Les offres connues des enseignants arrivent aux étudiants | — | à faire |

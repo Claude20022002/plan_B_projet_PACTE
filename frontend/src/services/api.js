@@ -443,15 +443,9 @@ export const emploiDuTempsAPI = {
 
 // ==================== NOTIFICATIONS ====================
 export const notificationAPI = {
-    getAll: (params) => {
-        const query = new URLSearchParams(params).toString();
-        return request(`/notifications${query ? `?${query}` : ''}`);
-    },
     getById: (id) => request(`/notifications/${id}`),
     getByUser: (userId) => request(`/notifications/user/${userId}`),
     getNonLues: (userId) => request(`/notifications/user/${userId}/non-lues`),
-    create: (data) => request('/notifications', { method: 'POST', body: data }),
-    update: (id, data) => request(`/notifications/${id}`, { method: 'PUT', body: data }),
     marquerCommeLue: (id) => request(`/notifications/${id}/lire`, { method: 'PATCH' }),
     marquerToutesLues: (userId) => request(`/notifications/user/${userId}/tout-lire`, { method: 'PATCH' }),
     delete: (id) => request(`/notifications/${id}`, { method: 'DELETE' }),

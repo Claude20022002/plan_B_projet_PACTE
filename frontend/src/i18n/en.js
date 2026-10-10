@@ -715,18 +715,18 @@ const en = {
         "note": "Nothing is created without your confirmation. The panel only appears if the school has enabled the service."
       },
       "profDevoir": {
-        "titre": "Set an assignment and see the grades",
+        "titre": "Set a quiz as an assignment and see the grades",
         "etapes": [
-          "In “My classes”, click “Set an assignment or a quiz” on the class you want.",
-          "Choose a file to hand in (title, instructions, optional brief) or one of your quizzes, marked automatically, then the deadline.",
-          "In “Activities”, the assignments panel shows submitted work; you grade file assignments out of 20 with a comment."
+          "In “My classes”, use the assignment button on the class you want.",
+          "Choose one of your quizzes and the deadline: it is marked automatically, out of 20.",
+          "In “Activities”, the assignments panel shows submitted work and the average."
         ],
-        "note": "You can only set an assignment for your own classes."
+        "note": "You can only set an assignment for your own classes. Students see the answers only after the deadline."
       },
       "profEcrire": {
-        "titre": "Write to my class or pass on an internship offer",
+        "titre": "Write to my class",
         "etapes": [
-          "In “My classes”, click “Write to the class” or “Share an internship offer”: the announcement opens already addressed to the group.",
+          "In “My classes”, click “Write to the class”: the announcement opens already addressed to the group.",
           "Write it, attach a PDF or an image if needed, and tick email delivery if it is urgent.",
           "In “Announcements”, you can see who has read it and remind the others."
         ]
@@ -805,7 +805,7 @@ const en = {
       "etuDevoirs": {
         "titre": "Do an assignment or join a quiz",
         "etapes": [
-          "Open “Activities”: your assignments are listed with their deadline.",
+          "Open “Activities”: your quiz homework is listed with its deadline.",
           "A quiz started by your teacher during class also appears there, and in the app.",
           "The answers to an assignment are visible after the deadline."
         ]

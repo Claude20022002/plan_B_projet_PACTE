@@ -15,9 +15,10 @@ const router = express.Router();
 
 router.use(authenticateToken);
 
-// 🧭 Assistant de créneaux (I8) : séance (administration, ou enseignant pour sa séance), réservation
+// 🧭 Assistant de créneaux (I8) : séance (administration, ou enseignant pour sa séance) ;
+// réservation (administration seulement : les enseignants ne réservent pas de salle)
 router.post("/assistant/seances", requireEnseignant, creneauxPourSeance);
-router.post("/assistant/reservations", requireEnseignant, creneauxPourReservation);
+router.post("/assistant/reservations", requireAdmin, creneauxPourReservation);
 
 // 🤒 Absence : l'enseignant pour lui-même, l'administration pour tous
 router.post("/absences", requireEnseignant, postAbsence);

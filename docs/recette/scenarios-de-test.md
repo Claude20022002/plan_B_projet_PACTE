@@ -137,8 +137,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Un étudiant inscrit dans ce module voit le jeu (site et application) et peut y jouer ; sa progression est enregistrée.
 - [ ] Un étudiant d'un autre module ne voit pas ce jeu et ne peut pas y accéder par son adresse (refus).
 - [ ] L'enseignant donne un devoir quiz : l'étudiant le rend une fois, voit sa note, et la correction après la date limite.
-- [ ] Devoir « fichier » : l'enseignant dépose l'énoncé, l'étudiant dépose sa copie (PDF), l'enseignant la note ; l'étudiant est prévenu.
-- [ ] Un fichier renommé (par ex. une image en `.pdf`) est refusé.
+- [ ] « Donner un quiz en devoir » ne propose que des quiz (plus de devoir « fichier ») ; un ancien devoir « fichier » n'apparaît plus.
 - [ ] L'administration ne gère pas les activités (pas d'accès).
 
 ### Quiz en direct : anti-triche (lot 3)
@@ -204,7 +203,8 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 
 - [ ] Annonce ciblée sur un groupe avec pièce jointe : reçue par les étudiants du groupe seulement, accusés de lecture visibles par l'auteur.
 - [ ] Réservation de salle par un enseignant, validée ou refusée par l'admin.
-- [ ] Examen créé par l'admin, surveillants affectés, publication visible par les étudiants concernés.
+- [ ] Examen créé par l'admin, surveillants affectés (personnel de l'administration seulement, jamais un enseignant, contrôles compris), publication visible par les étudiants concernés.
+- [ ] Un enseignant n'a plus « Mes surveillances » ni de surveillance dans son agenda.
 - [ ] Notifications : la page affiche les plus récentes (200 au plus) ; le badge compte toutes les non lues.
 - [ ] Emploi du temps de l'étudiant (application) : les séances mutualisées avec un autre groupe apparaissent.
 
