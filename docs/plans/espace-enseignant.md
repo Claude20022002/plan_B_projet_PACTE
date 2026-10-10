@@ -38,6 +38,10 @@ L'enseignant fait tout ce qui concerne sa classe depuis un seul endroit, sur son
 
 **Règles à garder :** le code change toujours toutes les 30 secondes ; l'écran projeté ne montre que les **présents** (ni les absents, ni les signalements de fraude) ; le scan reste réservé à l'application mobile (anti-fraude inchangée). Cocher à la main reste possible sur l'écran d'appel de l'enseignant, pour un étudiant sans téléphone.
 
+**Liste complète pour l'enseignant :** une fois l'appel validé, le système compare les inscrits de la classe aux présences enregistrées et rend à l'enseignant la liste entière, **absents d'abord, puis présents** (écran d'appel `/appel/:id`, ouvert par « Voir la liste complète »). Un appel validé n'est plus rouvert par un simple retour sur cet écran : il faut le bouton « Rouvrir l'appel ».
+
+**Essai du 10 octobre 2026 :** parcours déroulé dans un navigateur sur une base d'essai (8 étudiants, 5 scans simulés comme l'application mobile) : les 5 présents apparaissent, les 3 absents ne sont pas projetés, la validation donne « 5 présents · 3 absents » et la liste complète.
+
 ## 4. Quiz en direct : faire mieux que Wooclap
 
 **Usage à l'école (confirmé le 10 octobre 2026) :** le quiz se déroule **question par question sur l'écran de la salle** ; les étudiants choisissent leur réponse **sur leur téléphone** ; l'écran montre **le nombre de choix pour chaque réponse**. Deux captures montrent un QCM et une question d'association. C'est ce déroulement que Planner doit reproduire en premier ; les autres capacités de Wooclap citées plus bas viennent de la connaissance générale du produit et restent à confirmer avec un enseignant.
