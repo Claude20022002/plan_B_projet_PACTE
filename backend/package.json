@@ -28,10 +28,13 @@
         "express-validator": "^7.3.0",
         "helmet": "^8.1.0",
         "jsonwebtoken": "^9.0.2",
+        "jszip": "^3.10.2",
+        "mammoth": "^1.13.0",
         "morgan": "^1.10.1",
         "mysql2": "^3.15.3",
         "nodemailer": "^10.0.14",
         "oidc-provider": "^9.12.2",
+        "pdfjs-dist": "^6.4.299",
         "sequelize": "^6.37.8",
         "umzug": "^3.8.3"
     },

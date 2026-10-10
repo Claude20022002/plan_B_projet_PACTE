@@ -38,6 +38,8 @@ const defaults = {
     MOTS_DE_PASSE_FUITES: "false",
     // Limiteurs en mémoire (vidés entre les tests) ; le magasin en base a son propre test
     RATE_LIMIT_PERSISTANT: "false",
+    // Vide : aucune génération par IA réelle (les tests remplacent le client)
+    IA_CLE: "",
 };
 
 for (const [key, value] of Object.entries(defaults)) {
