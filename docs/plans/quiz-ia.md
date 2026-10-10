@@ -92,6 +92,26 @@ L'enseignant **ne quitte jamais `planner.finadmintech.fr`** : il ne doit avoir n
    L'enseignant modifie, supprime, ajoute une question ou **en régénère une seule**.
 7. **« Créer dans ClassQuiz »** : le quiz apparaît dans sa liste. Un lien ouvre l'éditeur ClassQuiz. Il est aussitôt disponible pour une partie en direct ou un devoir.
 
+## 4 bis. Objectifs de l'IA au-delà du texte (demande du 10 octobre 2026)
+
+L'IA doit, à terme, produire quatre choses pour un quiz. Seule la première existe aujourd'hui.
+
+| Objectif | Exemple | État | Ce que ça demande |
+|---|---|---|---|
+| **1. Questions et réponses en texte** | QCM tirés du support du cours | fait (lots IA-1 à IA-5) | — |
+| **2. Images pour illustrer une question** | schéma d'une architecture, photo d'un composant | à faire | un fournisseur de génération d'images ; l'image se range dans le champ `image` que les questions de ClassQuiz ont déjà ; relecture par l'enseignant (une image fausse est pire qu'aucune image) |
+| **3. Audio pour une question** | en anglais : un court dialogue lu, puis « de quoi parle Jane ? » | à faire | une synthèse vocale (texte écrit par l'IA, puis lu) ; **le format de ClassQuiz n'a pas de champ audio** : il faut l'ajouter au fork, au joueur du site et à celui de l'application |
+| **4. Extrait de vidéo avec des questions** | un extrait de 30 secondes, puis des questions de compréhension | à faire | **partir d'une vidéo fournie par l'enseignant** (fichier ou lien) plutôt que d'en générer une : l'IA transcrit l'extrait, puis écrit les questions à partir de la transcription ; champ vidéo à ajouter comme pour l'audio |
+
+**Principes communs :**
+- **Relecture obligatoire**, comme pour le texte : l'enseignant voit, écoute ou regarde chaque média avant la création du quiz, et peut le retirer ou le faire régénérer.
+- **Fournisseur configurable** par type de média (texte, image, voix, transcription), comme le client d'IA actuel. DeepSeek ne produit que du texte : les médias demandent d'autres fournisseurs.
+- **Quotas et coût séparés** : une image ou une minute d'audio coûte bien plus cher qu'une question en texte (§ 7). Un quota par enseignant et par type de média.
+- **Stockage** : les médias sont des fichiers à conserver (ClassQuiz a déjà un stockage pour les images des quiz) ; taille et durée plafonnées.
+- **Modules concernés** : l'audio et la vidéo servent surtout les langues. Le dialogue de génération ne les propose que si l'enseignant les demande.
+- **Accessibilité** : une question audio ou vidéo garde une transcription consultable après la réponse.
+- **Devoirs notés** : Planner copie les questions pour les corriger ; il doit aussi servir les médias à l'étudiant, sur le site et dans l'application.
+
 ## 5. Architecture
 
 ```
@@ -202,6 +222,9 @@ Ordre de grandeur pour un quiz de 10 questions tiré d'un support de 20 pages : 
 | **CQ-3** | Sélecteur d'espaces : « Quiz » mène à « Mes quiz » dans Planner ; scénarios de recette « une seule adresse » | Plus aucun lien vers quiz.finadmintech.fr pour l'enseignant | IA-5, CQ-2 | à faire |
 | **IA-6** | Routes de service StudyLib, choix d'un document du module | Source « document StudyLib » | IA-5 | à faire |
 | **IA-7** | Recette, documentation d'exploitation, déploiement | Mise en production | IA-1 à IA-6 | à faire |
+| **IA-8** | Images générées pour illustrer une question (§ 4 bis) : fournisseur d'images, relecture, rangement dans le champ `image` de ClassQuiz, quota | Questions illustrées | IA-7 | à faire |
+| **IA-9** | Questions audio (§ 4 bis) : texte écrit par l'IA puis lu par une synthèse vocale ; champ audio dans le fork, joueurs du site et de l'application, devoirs | Compréhension orale (anglais…) | IA-8 | à faire |
+| **IA-10** | Extrait de vidéo ou d'audio fourni par l'enseignant : transcription, questions de compréhension ; champ vidéo dans le fork et les joueurs | « De quoi parle Jane dans la vidéo ? » | IA-9 | à faire |
 
 **Premier livrable utilisable : IA-1 à IA-5**, avec la source « fichier déposé ». La source StudyLib (IA-6) suit sans rien changer au reste.
 
@@ -233,3 +256,6 @@ Ordre de grandeur pour un quiz de 10 questions tiré d'un support de 20 pages : 
 1. **Validation par l'école** de l'envoi des supports à un fournisseur hors du Maroc (§ 6), et choix final du fournisseur.
 2. **Clé d'API** : qui la détient et la paie (compte de l'école), et quel plafond de dépense mensuel fixer chez le fournisseur.
 3. **Autres types de questions** (réponse courte, vrai ou faux) : à envisager après le premier livrable.
+4. **Médias générés (§ 4 bis)** : quels fournisseurs pour l'image, la voix et la transcription, avec quel budget mensuel ; où sont hébergés leurs serveurs (même question que pour DeepSeek, loi 09-08 et avis de la CNDP).
+5. **Droits sur les vidéos et les audios** fournis par un enseignant : un extrait d'une œuvre protégée peut-il être montré en classe et gardé sur le serveur de l'école ?
+6. **Voix de synthèse** : quels accents et quelles langues faut-il couvrir (anglais britannique ou américain, autres langues enseignées) ?

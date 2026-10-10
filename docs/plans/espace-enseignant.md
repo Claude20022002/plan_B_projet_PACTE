@@ -111,6 +111,23 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
   - les vidéos sont des fichiers à part, hébergés par l'école (pas de service vidéo externe, la CSP ne le permet pas) ;
   - le scénario de chaque vidéo suit le parcours réel du rôle, donc il s'écrit **après** les lots qui changent ce parcours (projection, quiz dans Planner).
 
+## 6 bis. Un deuxième thème pour le site : celui de StudyLib
+
+**Demande (10 octobre 2026) :** le site propose un second thème, celui de StudyLib. À sa première connexion, l'enseignant choisit son thème ; s'il ne choisit pas, le thème actuel reste le thème par défaut.
+
+- **Deux thèmes** : « Planner » (l'actuel, panneau des départs, bleu marine et noir mat) et « StudyLib » (clair, bleu StudyLib). Le mode clair ou sombre reste un réglage à part.
+- **Choix à la première connexion** : un écran simple avec un aperçu de chaque thème et un bouton « Garder le thème actuel ». Il s'enchaîne avec la vidéo de bienvenue du § 6 (vidéo, puis thème).
+- **Changement à tout moment** dans « Paramètres ».
+- **Mémorisé sur le compte** (colonne du profil), pour retrouver son thème sur un autre appareil ; le navigateur le garde aussi pour l'appliquer avant le chargement du profil.
+- **Appui existant** : l'application mobile a déjà deux familles de thème (`mobile/src/theme.js`, `theme.famille`), et les couleurs sont partagées dans `shared/tokens.js` et `shared/design-tokens.json`. Le site doit lire les mêmes jetons plutôt que de redéfinir les couleurs.
+- **Travail réel** : les composants « panneau » (`design-system/board`, `components/jeux/Panneau.jsx`) écrivent leurs couleurs en dur à partir de `ds.board`. Il faut les faire dépendre du thème choisi, puis vérifier le contraste de chaque page dans les deux thèmes et les deux modes.
+- **Public** : la demande cite les enseignants. Le même choix peut être ouvert aux étudiants et à l'administration sans travail de plus : à décider (§ 9).
+
+## 6 ter. Règles de fonctionnement précisées le 10 octobre 2026
+
+- **Séance confirmée par défaut.** Une fois que l'enseignant a envoyé ses disponibilités et que les cours sont planifiés, une séance est tenue pour confirmée tant qu'il n'a pas demandé de report. **Fait** : le bouton « Confirmer » et le compteur « séances à confirmer » ont disparu de son tableau de bord et de « Mes séances », une séance planifiée s'y affiche « Confirmé », et une séance planifiée déjà passée devient réalisée d'office, comme une séance confirmée. La route de confirmation existe encore, sans bouton.
+- **Quiz en direct sans nouvelle connexion ni nouvel onglet** (en attendant CQ-1 à CQ-3). **Fait** : « Lancer un quiz » ouvre ClassQuiz dans le même onglet et y connecte l'enseignant par son compte Planner, sans afficher la page de connexion ; la barre de ClassQuiz porte un lien « ← Planner » qui ramène au tableau de bord. Demande le redéploiement du site ClassQuiz.
+
 ## 7. Autres écarts relevés (audit du 10 octobre 2026)
 
 | Écart | Où |
@@ -143,10 +160,14 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 | **G-1** | Bouton d'aide et panneau par rôle et par page (site et mobile) | De l'aide à tout moment | — | à faire |
 | **G-2** | Lecteur de la vidéo de bienvenue avec « Passer », enregistrement « déjà vue » | Le guide se joue une fois, et se revoit depuis l'aide | G-1 | à faire |
 | **G-3** | Écriture et production des trois vidéos | Les vidéos elles-mêmes | P-1, CQ-3 | à faire |
+| **T-1** | Thème « StudyLib » pour le site : jetons partagés, composants « panneau » dépendants du thème, contrôle du contraste (clair et sombre) | Le site existe dans les deux thèmes | — | à faire |
+| **T-2** | Choix du thème à la première connexion, réglage dans « Paramètres », mémorisation sur le compte (migration) | L'enseignant choisit son thème ; sinon le thème actuel | T-1 | à faire |
 
 **Ordre conseillé :** P-1, puis CQ-1 à CQ-3 (déjà prévus), M-1 et M-2, W-1 et W-2, G-1 et G-2, puis le reste. G-3 vient en dernier, quand les parcours ne bougent plus.
 
 ## 9. Points ouverts
+
+- **Thème :** le choix est-il réservé aux enseignants, ou ouvert aussi aux étudiants et à l'administration ?
 
 - **Wooclap :** au-delà du QCM question par question et de l'association, quels autres types les enseignants utilisent-ils, et jusqu'à quand court la licence ? La réponse fixe l'ordre des lots W-3 à W-6.
 - **Application mobile des enseignants :** publication dans les magasins sous le même nom que celle des étudiants, ou distribution interne d'abord ?
