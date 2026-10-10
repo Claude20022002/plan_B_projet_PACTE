@@ -95,6 +95,35 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 
 **Points de sécurité :** double authentification obligatoire comme sur le site ; le scan de présence reste refusé aux enseignants ; la liaison compte-téléphone de l'anti-fraude ne concerne que les étudiants.
 
+## 5 bis. StudyLib : l'enseignant accompagne les étudiants, toutes classes confondues
+
+**Principe (10 octobre 2026) :** dans StudyLib, l'enseignant ne voit que ce qui lui sert à accompagner les étudiants de l'école, sans lien avec ses propres classes. Ce qui relève de la vie étudiante ou du CV d'un étudiant ne le concerne pas. Dans Planner, il ne fait pas de réservation de salle et n'a pas d'avatar de jeu.
+
+**Fait le 10 octobre 2026 (non déployé) :**
+
+| Élément | Changement |
+|---|---|
+| Planner, réservations | l'entrée « Réservations » a disparu du menu de l'enseignant et la page est réservée à l'administration. L'API accepte encore une demande d'un enseignant : à fermer si la règle est définitive |
+| Planner, avatar de jeu | la scène du personnage n'apparaît plus sur la page Activités de l'enseignant |
+| StudyLib, événements | plus d'entrée « Événements » dans son menu, plus de panneau « Événements proches » sur son accueil ; la page le renvoie à l'accueil |
+| StudyLib, projets | il **propose** un projet aux étudiants ; le générateur d'idées pour le CV ne lui est plus montré (et lui est refusé côté serveur) |
+| StudyLib, suggestions pour le CV | le panneau « Suggestion IA » (profil, stages qui correspondent) a disparu de son accueil |
+| StudyLib, ressources | deux types de document en plus : **Exercice** et **Article**. Le dépôt propose déjà tous les modules de l'école, pas seulement les siens, et un document d'enseignant est publié sans modération |
+
+**Actions de l'enseignant dans StudyLib, existantes et à construire :**
+
+| Action | État | Détail |
+|---|---|---|
+| Déposer une ressource (cours, TD, TP, examen, exercice, article) pour n'importe quel module | existe | publiée tout de suite |
+| Proposer une idée de projet | existe | visible de tous les étudiants |
+| Voir ce que deviennent ses dépôts (téléchargements, notes) | existe | dans son profil |
+| **Partager une offre de stage** dont il a connaissance, à tous les étudiants de l'école | à faire (S-1) | StudyLib n'a que des retours d'expérience d'étudiants. Une offre : entreprise, poste, lieu, durée, date limite, contact ou lien, PDF facultatif ; onglet « Offres » de la page Stages ; notification aux étudiants ; l'offre s'efface après sa date limite |
+| **Vérifier un document déposé par un étudiant** | à faire (S-2) | aujourd'hui seule l'administration modère. Un enseignant valide ou refuse un dépôt, et le document porte la mention « vérifié par un enseignant » |
+| **Recommander une ressource** | à faire (S-3) | mettre en avant un document existant ou un lien (article, vidéo) pour un module : « recommandé par M. … » |
+| **Corriger un de ses dépôts** | à faire (S-4) | changer le titre, le module ou remplacer le fichier, au lieu de supprimer puis redéposer |
+| **Se proposer pour encadrer un projet** | à faire (S-5) | sur une idée de projet, l'enseignant indique qu'il peut l'encadrer ; l'étudiant intéressé le voit |
+| **Partager un article par un simple lien** | à faire (S-6) | un dépôt demande aujourd'hui un fichier ; un article est souvent une adresse |
+
 ## 6. Guide en vidéo et bouton d'aide
 
 **Demande :** une vidéo en motion design qui sert de guide d'utilisation, avec la possibilité de la passer, et un bouton d'aide pour les étudiants, les enseignants et l'administration.
@@ -160,6 +189,12 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 | **G-1** | Bouton d'aide et panneau par rôle et par page (site et mobile) | De l'aide à tout moment | — | à faire |
 | **G-2** | Lecteur de la vidéo de bienvenue avec « Passer », enregistrement « déjà vue » | Le guide se joue une fois, et se revoit depuis l'aide | G-1 | à faire |
 | **G-3** | Écriture et production des trois vidéos | Les vidéos elles-mêmes | P-1, CQ-3 | à faire |
+| **S-1** | StudyLib : offres de stage partagées par un enseignant ou l'administration à tous les étudiants (modèle, onglet « Offres », notification, date limite) | Les offres connues des enseignants arrivent aux étudiants | — | à faire |
+| **S-2** | StudyLib : vérification des dépôts d'étudiants par un enseignant, mention « vérifié par un enseignant » | Des ressources d'étudiants fiables | — | à faire |
+| **S-3** | StudyLib : ressource recommandée par un enseignant (document ou lien) | Les étudiants savent quoi lire en premier | — | à faire |
+| **S-4** | StudyLib : corriger un de ses dépôts (titre, module, fichier) | Plus besoin de supprimer puis redéposer | — | à faire |
+| **S-5** | StudyLib : se proposer pour encadrer une idée de projet | L'étudiant trouve un encadrant | — | à faire |
+| **S-6** | StudyLib : article partagé par un lien, sans fichier | Partage d'un article en une ligne | — | à faire |
 | **T-1** | Thème « StudyLib » pour le site : jetons partagés, composants « panneau » dépendants du thème, contrôle du contraste (clair et sombre) | Le site existe dans les deux thèmes | — | à faire |
 | **T-2** | Choix du thème à la première connexion, réglage dans « Paramètres », mémorisation sur le compte (migration) | L'enseignant choisit son thème ; sinon le thème actuel | T-1 | à faire |
 
