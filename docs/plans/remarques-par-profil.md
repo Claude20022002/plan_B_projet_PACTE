@@ -13,6 +13,14 @@ Il complète `assainissement.md` sans le remplacer : quand une réponse existe d
 | Trajectoire du produit | Aujourd'hui : **HESTIM Planner**, conçu pour être adopté par HESTIM. Demain : **Planner**, adoptable par n'importe quel établissement (§ 4). |
 | Revenu futur | Un **montant facturé à l'école par utilisateur** (§ 5). |
 | Récit du produit | Une **vidéo en motion design, courte**, réalisée une fois les problèmes actuels réglés (§ 6). |
+| Utilisateur facturé | **Tout compte actif dans le mois, quel que soit son rôle.** La facture va à l'école : rien n'est jamais facturé directement à un étudiant (§ 5). |
+| Coût de l'IA | **Inclus dans le prix par utilisateur, avec un plafond** (§ 5). |
+| Nom de la bibliothèque | **« Bibliothèque »** dans tous les écrans. StudyLib devient uniquement la bibliothèque : les stages, les offres et les projets en sortent pour l'espace Carrière (§ 9). |
+| Vidéo | Elle est **présentée pendant la soutenance**, et une version est publiée sur les réseaux (§ 6). |
+| Soutenance | Peut-être la semaine du 12 octobre 2026 (« la semaine prochaine », dit le 11 octobre). **Date inconnue.** |
+| Paie des vacataires | **L'appel validé ne suffit pas** comme preuve qu'un cours a eu lieu. La façon de faire de l'école n'est pas connue : à lui demander (§ 8). |
+| Espace Carrière dans l'application | Stages, offres et projets pour les étudiants de HESTIM, **après la soutenance** (§ 9). |
+| Outils Google (Gmail, Agenda, Drive) | Non connectés pour l'instant : le besoin n'est plus connu. |
 
 ## 2. Quand traiter quoi
 
@@ -117,10 +125,12 @@ Ce qui aide déjà : le code de l'application ne contient aucune adresse (seuls 
 
 ## 5. Revenu : un montant par utilisateur, facturé à l'école
 
-Le principe est retenu. Il reste à le préciser avant d'en parler à un établissement :
+Le principe est retenu. Décisions du 11 octobre 2026 :
 
-- **Qui compte comme utilisateur ?** Tout compte créé, ou seulement les comptes actifs dans le mois ? Les étudiants seulement, ou aussi les enseignants et l'administration ? Un compteur de comptes actifs (R-12) permet les deux lectures.
-- **Qui porte le coût de l'IA ?** Chaque génération de quiz se paie au fournisseur. Soit le prix par utilisateur l'inclut avec un plafond (le quota par enseignant existe déjà), soit l'IA est une option.
+- **Utilisateur facturé** : tout compte actif dans le mois (étudiant, enseignant, administration). Un compte créé mais inactif n'est pas facturé. Le compteur de comptes actifs (R-12) sert de base au relevé. La définition proposée d'« actif », à valider : au moins une connexion dans le mois.
+- **Payeur** : l'école, toujours. Rien n'est facturé directement à un étudiant.
+- **Coût de l'IA** : inclus dans le prix par utilisateur, avec un plafond (le quota par enseignant existe déjà). Au-delà du plafond, la génération s'arrête jusqu'au mois suivant ; pas de supplément.
+- **Prix** : pas encore fixé. Proposition du 11 octobre, faite quand seuls les étudiants devaient être facturés, donc à recalculer pour tous les comptes actifs : 5 MAD par compte et par mois, minimum de 500 MAD par mois et par établissement, dégressif au-delà de 1 000 comptes, 20 quiz générés par enseignant et par mois. Les tarifs du fournisseur d'IA et les prix des concurrents restent à vérifier.
 - **La facturation reste hors du produit** au début : un relevé mensuel exporté suffit. Pas de paiement en ligne.
 - **HESTIM** : premier établissement, donc conditions de lancement à décider (gratuité pendant le pilote, prix réduit ensuite).
 - **Licence du moteur de quiz** : elle permet un usage commercial, à condition de laisser publiés les fichiers modifiés (R-2).
@@ -128,6 +138,8 @@ Le principe est retenu. Il reste à le préciser avant d'en parler à un établi
 ## 6. La vidéo en motion design
 
 Elle se fait **une fois les problèmes actuels réglés** : une vidéo montre les écrans, et les écrans bougent encore.
+
+Décision du 11 octobre 2026 : elle est **présentée pendant la soutenance**, et une version va sur les réseaux. Il faut donc deux montages de la même histoire : un pour la salle (16:9, 60 à 75 secondes) et un pour les réseaux (vertical, plus court, sous-titres incrustés, données fictives, accord de l'école pour son nom et son logo). La soutenance pouvant tomber la semaine du 12 octobre, le lot V-1 passe avant elle si les écrans sont gelés à temps.
 
 - **Courte** : 60 à 75 secondes. Une personne qui la lance ne doit jamais se demander quand elle finit : une barre de progression discrète reste visible, et la durée est annoncée avant la lecture.
 - **Une seule histoire**, pas une liste de fonctions : une matinée à l'école. L'emploi du temps arrive sur le téléphone de l'étudiante ; le professeur projette le QR code et la classe est pointée en une minute ; il lance un quiz, les réponses s'affichent ; l'administration voit la séance faite. La promesse (R-8) ouvre et ferme la vidéo.
@@ -162,8 +174,20 @@ Effort : **S** = une demi-journée au plus ; **M** = 1 à 3 jours ; **L** = plus
 
 ## 8. Points ouverts
 
-- **R-11, la paie** : est-ce bien l'appel validé qui prouve qu'une séance a eu lieu ? Un enseignant qui oublie l'appel verrait sa séance « à vérifier » : c'est le but, mais il faut que l'école l'accepte.
-- **Utilisateur facturé** (§ 5) : compte créé ou compte actif, et quels rôles ?
-- **Nom de l'espace de la bibliothèque** : « Bibliothèque » partout, ou « StudyLib » reste-t-il visible ?
+- **R-11, la paie** : l'appel validé ne suffit pas (décision du 11 octobre), et la réponse « l'appel sert de preuve » du § 3 ne tient plus. À demander à la scolarité de HESTIM : quel document déclenche le paiement d'un vacataire, et qui le signe ? Piste à confirmer avec elle : l'appel reste un indice, Planner préremplit l'état du mois, l'enseignant le confirme et un responsable le vise avant l'export. Le lot R-11 attend cette réponse.
+- **Prix par compte actif** (§ 5) : à fixer, et la définition d'« actif » à valider.
 - **La promesse** (R-8) : la phrase proposée est un point de départ, à écrire avec vos mots.
-- **La vidéo** : avant ou après la soutenance ?
+- **Date de la soutenance** : inconnue, peut-être la semaine du 12 octobre 2026.
+
+Tranchés le 11 octobre (§ 1) : l'utilisateur facturé, le coût de l'IA, le nom de la bibliothèque, la place de la vidéo.
+
+## 9. Idée pour après la soutenance : l'espace Carrière
+
+Un « mini Indeed » pour les étudiants de HESTIM, dans l'application mobile. Aucun lot avant la soutenance.
+
+- **But** : que les opportunités arrivent d'abord aux étudiants de HESTIM. Ils voient les stages faits par d'autres étudiants de HESTIM, et que d'autres pourront faire à leur tour, ainsi que les offres partagées.
+- **Qui partage une offre** : un enseignant, l'administration ou un étudiant. **Pas de validation avant publication** ; une offre peut être **signalée**.
+- **Pas de candidature ni de CV dans l'application.** Si un lien a été partagé avec l'offre, il mène à la candidature auprès de l'entreprise.
+- **« HESTIM d'abord »** : pas de champ d'exclusivité tant que HESTIM Planner n'est pas devenu Planner. Aujourd'hui tous les comptes sont de HESTIM.
+- **Projets pour le CV** : un accompagnement par classe (filière et niveau). Les idées de projets portent déjà une filière et un niveau ; l'application ne les filtre pas encore sur la classe de l'étudiant.
+- **StudyLib devient uniquement la bibliothèque.** Les retours de stage et les idées de projets y vivent aujourd'hui (onglet Bibliothèque de l'application) : où ils iront reste à décider.
