@@ -4,7 +4,7 @@ import { createRateLimiter } from "../middleware/rateLimiterMiddleware.js";
 import { planification } from "../utils/erreursPlanning.js";
 import { contexteDe } from "../services/journalSecurite.js";
 import { TAILLE_MAX, TYPES_SUPPORTS } from "../services/ia/extraction.js";
-import { disponibilite, etatGeneration, lancerGeneration, mesGenerations, modifierBrouillon, regenererQuestion } from "../services/ia/quiz.js";
+import { creerDansClassQuiz, disponibilite, etatGeneration, lancerGeneration, mesGenerations, modifierBrouillon, regenererQuestion } from "../services/ia/quiz.js";
 
 /**
  * Quiz générés par l'IA (enseignants) — docs/plans/quiz-ia.md
@@ -15,6 +15,7 @@ import { disponibilite, etatGeneration, lancerGeneration, mesGenerations, modifi
  *  - GET    /api/quiz-ia/generations/:id                     état et brouillon
  *  - PUT    /api/quiz-ia/generations/:id/questions           brouillon relu { questions }
  *  - POST   /api/quiz-ia/generations/:id/questions/:index/regenerer
+ *  - POST   /api/quiz-ia/generations/:id/creer               { titre? } : crée le quiz relu dans ClassQuiz → statut « cree »
  */
 const router = express.Router();
 router.use(authenticateToken, requireRole("enseignant"));
@@ -58,6 +59,7 @@ router.post(
 router.get("/generations", planification(async (req, res) => res.json(await mesGenerations(req.user))));
 router.get("/generations/:id", planification(async (req, res) => res.json(await etatGeneration(req.user, req.params.id))));
 router.put("/generations/:id/questions", planification(async (req, res) => res.json(await modifierBrouillon(req.user, req.params.id, req.body?.questions))));
+router.post("/generations/:id/creer", planification(async (req, res) => res.status(201).json(await creerDansClassQuiz(req.user, req.params.id, { titre: req.body?.titre }))));
 router.post("/generations/:id/questions/:index/regenerer", limiteIa, planification(async (req, res) => res.json(await regenererQuestion(req.user, req.params.id, req.params.index))));
 
 export default router;

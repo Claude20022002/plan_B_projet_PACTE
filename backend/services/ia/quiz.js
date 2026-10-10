@@ -6,6 +6,7 @@ import { inscritsDuModule, peutProposerDansModule } from "../jeux/jeux.js";
 import { journaliser } from "../journalSecurite.js";
 import { estConfigure, genererJson } from "./client.js";
 import { extraireSupport } from "./extraction.js";
+import { creerQuizClassQuiz } from "../quiz/devoirs.js";
 
 /**
  * Quiz générés par l'IA (docs/plans/quiz-ia.md, lot IA-3). L'enseignant dépose un support pour
@@ -27,6 +28,9 @@ const LONGUEURS = { question: 500, reponse: 200, explication: 600 };
 // Génération restée « en cours » au-delà (serveur redémarré, fournisseur muet) : considérée échouée
 const GENERATION_MAX_MS = 10 * 60 * 1000;
 const CONSERVATION_JOURS = 30;
+// Création dans ClassQuiz restée en suspens au-delà : le brouillon est rendu à l'enseignant
+const CREATION_MAX_MS = 2 * 60 * 1000;
+const TITRE_MAX = 200;
 
 const quotaParJour = () => Math.max(1, Number(process.env.IA_GENERATIONS_PAR_JOUR) || 20);
 
@@ -254,6 +258,10 @@ const generationDe = async (user, id) => {
     if (generation.statut === "en_cours" && Date.now() - new Date(generation.createdAt) > GENERATION_MAX_MS) {
         await generation.update({ statut: "erreur", erreur: "La génération a été interrompue : relancez-la" });
     }
+    // Création dans ClassQuiz interrompue (serveur redémarré) : le brouillon redevient disponible
+    if (generation.statut === "creation" && Date.now() - new Date(generation.updatedAt) > CREATION_MAX_MS) {
+        await generation.update({ statut: "pret" });
+    }
     return generation;
 };
 
@@ -323,6 +331,45 @@ export const regenererQuestion = async (user, id, index) => {
     brouillon[position] = resultat.question;
     await generation.update({ brouillon, jetons_entree: generation.jetons_entree + reponse.jetons.entree, jetons_sortie: generation.jetons_sortie + reponse.jetons.sortie });
     return vuePublique(generation);
+};
+
+/**
+ * Crée dans ClassQuiz le quiz du brouillon relu (lot IA-4). L'enseignant n'a pas à ouvrir
+ * ClassQuiz : son compte y est créé au besoin. Le quiz est privé ; il le retrouve ensuite parmi
+ * ses quiz (devoir noté, partie en direct). Une génération ne crée qu'un quiz.
+ * @returns {Promise<object>} la génération, au statut « cree », avec id_quiz_classquiz
+ */
+export const creerDansClassQuiz = async (user, id, { titre } = {}) => {
+    const generation = await generationDe(user, id);
+    if (generation.statut === "cree") throw new ErreurMetier("Ce quiz a déjà été créé dans ClassQuiz", 409);
+    if (generation.statut !== "pret" || !generation.brouillon?.length) throw new ErreurMetier("Ce brouillon n'est pas prêt", 409);
+    const cours = await Cours.findByPk(generation.id_cours, { attributes: ["code_cours", "nom_cours"] });
+    const module = cours ? `${cours.code_cours} ${cours.nom_cours}` : "ce module";
+    const propose = typeof titre === "string" ? titre.trim() : "";
+    if (propose.length > TITRE_MAX) throw new ErreurMetier(`Titre : ${TITRE_MAX} caractères au plus`, 400);
+    const support = generation.nom_source?.replace(/\.[A-Za-z0-9]{1,5}$/, "").trim();
+    const quiz = {
+        titre: propose || [cours?.nom_cours, support].filter(Boolean).join(" : ").slice(0, TITRE_MAX) || "Quiz",
+        description: `Quiz préparé dans HESTIM Planner pour ${module}.`,
+        questions: generation.brouillon.map((q) => ({
+            question: q.question,
+            time: q.temps,
+            type: q.type,
+            answers: q.reponses.map((r) => ({ answer: r.texte, right: r.juste })),
+        })),
+    };
+    // Réservation : deux demandes simultanées ne créent pas deux quiz
+    const [reservee] = await GenerationQuiz.update({ statut: "creation" }, { where: { id_generation: generation.id_generation, statut: "pret" } });
+    if (!reservee) throw new ErreurMetier("Ce quiz est déjà en cours de création", 409);
+    try {
+        const cree = await creerQuizClassQuiz(user, quiz);
+        await generation.update({ statut: "cree", id_quiz_classquiz: cree.id });
+    } catch (erreur) {
+        // L'instance en mémoire est restée « pret » : la remise en état passe par la table
+        await GenerationQuiz.update({ statut: "pret" }, { where: { id_generation: generation.id_generation, statut: "creation" } });
+        throw erreur;
+    }
+    return { ...vuePublique(generation), titre_quiz: quiz.titre };
 };
 
 /**

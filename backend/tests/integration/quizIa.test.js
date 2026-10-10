@@ -5,6 +5,11 @@ import { CoursComposante, Enseignement, EnseignementEnseignant, GenerationQuiz, 
 import { definirClientIa } from "../../services/ia/client.js";
 import { attendreGenerations, purgerGenerations } from "../../services/ia/quiz.js";
 import { PDF, creerPdf, phrase } from "../helpers/supports.js";
+import crypto from "crypto";
+import { definirClientClassQuiz, signatureClassQuiz } from "../../services/quiz/devoirs.js";
+import { idCompte } from "../../services/oidc/provider.js";
+
+const QUIZ_CREE = "0b0e7a4c-5f1d-4c2a-9d3e-6a7b8c9d0e1f";
 
 /**
  * Quiz générés par l'IA (lot IA-3) avec un faux fournisseur : droits (module et classe de
@@ -222,6 +227,89 @@ describe("Brouillon", () => {
         expect(demandes.at(-1).utilisateur).toMatch(/Écris exactement 1 question\./);
         // Celle d'un collègue : introuvable (son existence n'est pas révélée)
         expect((await (await loginAs(collegue)).get(`/api/quiz-ia/generations/${etat.id_generation}`)).status).toBe(404);
+    });
+});
+
+describe("Création dans ClassQuiz (IA-4)", () => {
+    let ecritures;
+    let echec;
+    beforeEach(() => {
+        ecritures = [];
+        echec = null;
+        definirClientClassQuiz(async (chemin, corps) => {
+            ecritures.push({ chemin, corps });
+            if (echec) throw echec;
+            return { id: QUIZ_CREE, titre: corps.titre, nb_questions: corps.questions.length };
+        });
+    });
+    afterAll(() => definirClientClassQuiz(null));
+
+    const preparer = async () => {
+        repondre({ questions: [qcm("Question A"), qcm("Question B", [0, 2]), qcm("Question C")] });
+        const client = await loginAs(prof);
+        return { client, etat: await generer(client, { nombre: 3, temps: 45, type: "mixte" }) };
+    };
+
+    test("le brouillon relu devient un quiz au format ClassQuiz, pour le compte OpenID de l'enseignant", async () => {
+        const { client, etat } = await preparer();
+        const res = await client.send("post", `/api/quiz-ia/generations/${etat.id_generation}/creer`, { titre: "  Routage : révision  " });
+        expect(res.status).toBe(201);
+        expect(res.body).toMatchObject({ statut: "cree", id_quiz_classquiz: QUIZ_CREE, titre_quiz: "Routage : révision" });
+
+        expect(ecritures).toHaveLength(1);
+        const { chemin, corps } = ecritures[0];
+        expect(chemin).toBe("/api/v1/hestim/quiz");
+        expect(corps).toMatchObject({ email: prof.email, sub: idCompte(prof.id_user), username: prof.email.split("@")[0], titre: "Routage : révision" });
+        expect(corps.questions).toHaveLength(3);
+        expect(corps.questions[0]).toEqual({
+            question: "Question A",
+            time: 45,
+            type: "ABCD",
+            answers: [0, 1, 2, 3].map((i) => ({ answer: `Question A réponse ${i + 1}`, right: i === 0 })),
+        });
+        expect(corps.questions[1].type).toBe("CHECK");
+        // Ni l'explication ni le repère de page ne partent dans le quiz joué
+        expect(JSON.stringify(corps)).not.toMatch(/explication|page 1/);
+
+        // Une génération ne crée qu'un quiz, et son brouillon n'est plus modifiable
+        expect((await client.send("post", `/api/quiz-ia/generations/${etat.id_generation}/creer`, {})).status).toBe(409);
+        expect((await client.send("put", `/api/quiz-ia/generations/${etat.id_generation}/questions`, { questions: etat.questions })).status).toBe(409);
+        expect(ecritures).toHaveLength(1);
+    });
+
+    test("sans titre : le nom du module et celui du support", async () => {
+        const { client, etat } = await preparer();
+        const res = await client.send("post", `/api/quiz-ia/generations/${etat.id_generation}/creer`, {});
+        expect(res.body.titre_quiz).toBe(`${fixture.cours.nom_cours} : cours-routage`);
+    });
+
+    test("ClassQuiz en échec : l'erreur remonte et le brouillon reste prêt pour un nouvel essai", async () => {
+        const { client, etat } = await preparer();
+        echec = Object.assign(new Error("ClassQuiz est injoignable"), { statut: 502, status: 502, estMetier: true });
+        const res = await client.send("post", `/api/quiz-ia/generations/${etat.id_generation}/creer`, {});
+        expect(res.status).toBeGreaterThanOrEqual(500);
+        expect((await GenerationQuiz.findByPk(etat.id_generation)).statut).toBe("pret");
+        echec = null;
+        expect((await client.send("post", `/api/quiz-ia/generations/${etat.id_generation}/creer`, {})).status).toBe(201);
+    });
+
+    test("réservé à l'auteur ; refusé tant que la génération n'est pas prête", async () => {
+        const { etat } = await preparer();
+        expect((await (await loginAs(collegue)).send("post", `/api/quiz-ia/generations/${etat.id_generation}/creer`, {})).status).toBe(404);
+        expect((await (await loginAs(etudiant)).send("post", `/api/quiz-ia/generations/${etat.id_generation}/creer`, {})).status).toBe(403);
+        const enCours = await GenerationQuiz.create({ id_user: prof.id_user, id_cours: fixture.cours.id_cours, source: "fichier", reglages: { nombre: 3 }, statut: "en_cours" });
+        expect((await (await loginAs(prof)).send("post", `/api/quiz-ia/generations/${enCours.id_generation}/creer`, {})).status).toBe(409);
+        expect(ecritures).toHaveLength(0);
+    });
+
+    test("signature d'une écriture : le corps est couvert, une lecture garde l'ancienne forme", () => {
+        const cle = "c".repeat(32);
+        const hmac = (texte) => crypto.createHmac("sha256", cle).update(texte).digest("hex");
+        const corps = JSON.stringify({ titre: "Routage" });
+        expect(signatureClassQuiz(cle, "1700000000", "GET", "/api/v1/hestim/quizzes?email=a")).toBe(hmac("1700000000.GET./api/v1/hestim/quizzes?email=a"));
+        expect(signatureClassQuiz(cle, "1700000000", "POST", "/api/v1/hestim/quiz", corps)).toBe(
+            hmac(`1700000000.POST./api/v1/hestim/quiz.${crypto.createHash("sha256").update(corps).digest("hex")}`)
+        );
     });
 });
 
