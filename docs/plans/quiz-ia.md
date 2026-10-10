@@ -157,7 +157,10 @@ Planner (frontend)  ── brouillon, relecture ──►  Planner (backend)
 
 - **Nouvelle route `POST /api/v1/hestim/quiz`**, signée comme les routes existantes. La signature couvre aussi l'**empreinte SHA-256 du corps** : un corps modifié en chemin est refusé.
 - **Le quiz est créé pour l'utilisateur ClassQuiz qui porte l'email de l'enseignant**, et il est privé.
-- **Si l'enseignant n'a jamais ouvert ClassQuiz**, il n'a pas de compte là-bas : l'erreur dit « connectez-vous une fois à ClassQuiz », comme le script de démo `quiz-test.py` le demande déjà.
+- **Si l'enseignant n'a jamais ouvert ClassQuiz**, son compte est **créé par la route**, avec l'identité que Planner donne à la connexion OpenID (`sub` de `services/oidc/provider.js`, nom d'utilisateur tiré de l'adresse). Une connexion ultérieure à ClassQuiz retrouve donc ce même compte. Un nom d'utilisateur déjà pris reçoit un suffixe.
+- **Contrôles du fork** : 1 à 50 questions, types `ABCD` et `CHECK` seulement, 2 à 6 réponses non vides, bonnes réponses cohérentes avec le type, balises interdites retirées. Un quiz incohérent est refusé (422) et la raison remonte à l'enseignant.
+- **Côté Planner** : `creerQuizClassQuiz` (`services/quiz/devoirs.js`), `creerDansClassQuiz` (`services/ia/quiz.js`) et `POST /api/quiz-ia/generations/:id/creer`. Une génération ne crée qu'un quiz ; en cas d'échec, le brouillon redevient prêt.
+- **Essai du 10 octobre 2026** : le client signé de Planner a créé un quiz dans le fork lancé en local (PostgreSQL, Redis et Meilisearch jetables), puis l'a relu par les routes existantes. Signature absente, d'un autre corps ou trop ancienne : refus (401).
 
 ### 5.5 Route de service dans StudyLib
 
@@ -192,7 +195,7 @@ Ordre de grandeur pour un quiz de 10 questions tiré d'un support de 20 pages : 
 | **IA-1** | Client d'IA configurable, variables d'environnement, quotas, client remplaçable dans les tests | Génération testable sans réseau | — | **fait** |
 | **IA-2** | Extraction PDF, DOCX et PPTX par page, contrôles du fichier | Texte et repères de pages | — | **fait** |
 | **IA-3** | Consigne, validation du JSON, tâche asynchrone, table `GenerationsQuiz` (migration) | API « générer » et « état » | IA-1, IA-2 | **fait** |
-| **IA-4** | Routes signées dans le fork ClassQuiz : **compte créé automatiquement**, création et mise à jour d'un quiz ; création depuis Planner | Quiz relu → ClassQuiz, sans passage par quiz.finadmintech.fr | IA-3 | à faire |
+| **IA-4** | Routes signées dans le fork ClassQuiz : **compte créé automatiquement**, création et mise à jour d'un quiz ; création depuis Planner | Quiz relu → ClassQuiz, sans passage par quiz.finadmintech.fr | IA-3 | **fait** le 10 octobre 2026 pour le compte et la création (non déployé ; le fork est à redéployer). **Reste : la mise à jour d'un quiz existant**, à faire avec l'éditeur de IA-5 |
 | **IA-5** | Interface : « Mes quiz » dans Planner (liste, éditeur à la main), dialogue de génération par l'IA, brouillon modifiable, régénération d'une question, enregistrement dans ClassQuiz (FR et EN) | Parcours complet avec **fichier déposé** (premier livrable utilisable) | IA-3, IA-4 | à faire |
 | **CQ-1** | Lancer une partie en direct depuis la séance dans Planner (route signée de démarrage), relais nginx de `/socket.io/` | Partie démarrée sans quitter Planner | IA-4 | à faire |
 | **CQ-2** | Écran du projecteur dans Planner : code de la partie, joueurs, questions, temps, classement (FR et EN) | Partie animée sans quitter Planner | CQ-1 | à faire |
