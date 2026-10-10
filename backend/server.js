@@ -6,6 +6,7 @@ import { runMigrations } from "./migrations/migrator.js";
 import { marquerRealisees } from "./services/planning/suivi.js";
 import { purgerJournal } from "./services/journalSecurite.js";
 import { purgerCompteursDebit } from "./middleware/rateLimiterMiddleware.js";
+import { purgerGenerations } from "./services/ia/quiz.js";
 import { demarrerRenvoiQuotidien } from "./services/calendrier/envoiEdt.js";
 
 dotenv.config();
@@ -65,6 +66,8 @@ const seedIfRequested = async () => {
                 .then((n) => n && console.log(`--> Journal de sécurité : ${n} événement(s) ancien(s) supprimé(s)`))
                 .catch((error) => console.error("--> Journal de sécurité :", error.message));
             purgerCompteursDebit().catch((error) => console.error("--> Limiteurs de débit :", error.message));
+            // Quiz par IA : générations interrompues, brouillons et supports de plus de 30 jours
+            purgerGenerations().catch((error) => console.error("--> Quiz par IA :", error.message));
         };
         purgerSecurite();
         setInterval(purgerSecurite, 24 * 60 * 60 * 1000).unref();
