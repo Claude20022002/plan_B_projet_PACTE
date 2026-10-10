@@ -6,7 +6,7 @@ import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
 import { groupesDeLEtudiant, inscritsDuModule, modulesDuJoueur, peutProposerDansModule } from "../jeux/jeux.js";
 import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
-import { peutViserClasse } from "../planning/mesClasses.js";
+import { mesClasses, peutViserClasse } from "../planning/mesClasses.js";
 import { TYPES_DEVOIRS, verifierFichier } from "../../utils/fichiers.js";
 
 /**
@@ -210,7 +210,11 @@ export const creerDevoir = async (user, donnees = {}) => {
     const { quiz_id: quizId, id_cours: idCours, id_groupe: idGroupe = null, date_limite: dateLimite, type = "quiz" } = donnees;
     if (user.role !== "enseignant") throw new ErreurMetier("Réservé aux enseignants", 403);
     const cours = await coursOuErreur(idCours);
-    if (!(await peutProposerDansModule(user, cours))) throw new ErreurMetier("Vous ne pouvez donner un devoir que dans vos modules", 403);
+    // Module de ses services, ou dont il a une classe à son emploi du temps (remplacement)
+    const classes = await mesClasses(user);
+    if (!(await peutProposerDansModule(user, cours)) && !classes.some((c) => c.id_cours === cours.id_cours)) {
+        throw new ErreurMetier("Vous ne pouvez donner un devoir que dans vos modules", 403);
+    }
     const limite = new Date(dateLimite);
     if (Number.isNaN(limite.getTime()) || limite <= new Date() || limite - new Date() > DUREE_MAX_MS) {
         throw new ErreurMetier("date_limite doit être une date à venir (un an au plus)", 400);
@@ -222,8 +226,8 @@ export const creerDevoir = async (user, donnees = {}) => {
     if (idGroupe !== null && idGroupe !== undefined && idGroupe !== "") {
         groupe = await Groupe.findByPk(Number(idGroupe));
         if (!groupe || !groupesDuModule.includes(groupe.id_groupe)) throw new ErreurMetier("Ce groupe ne suit pas ce module", 400);
-        if (!(await peutViserClasse(user, cours, groupe.id_groupe))) throw new ErreurMetier("Ce groupe n'est pas l'une de vos classes dans ce module", 403);
-    } else if (!(await peutViserClasse(user, cours, null, { groupesDuModule }))) {
+        if (!(await peutViserClasse(user, cours, groupe.id_groupe, { classes }))) throw new ErreurMetier("Ce groupe n'est pas l'une de vos classes dans ce module", 403);
+    } else if (!(await peutViserClasse(user, cours, null, { classes, groupesDuModule }))) {
         throw new ErreurMetier("D'autres enseignants ont des classes dans ce module : choisissez l'une de vos classes", 400);
     }
     let champs;
