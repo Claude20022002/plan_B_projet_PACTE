@@ -4,7 +4,7 @@
 //    sans obligation de le changer ni invitation par email ;
 //  - le groupe « IIIA-4 DÉMO NoSQL » et NOMBRE étudiants de test (demo.nosql1@hestim.ma…) ;
 //  - son service sur le module (enseignement de la période en cours, accepté) : la classe apparaît
-//    dans « Mes classes », les devoirs, les jeux et les quiz ;
+//    dans ses services, les devoirs, les jeux et les quiz ;
 //  - des séances à son emploi du temps et à celui de la classe : AUJOURD'HUI (créneau en cours ou
 //    prochain, pour l'appel par QR code), puis sur les deux semaines suivantes, chacune dans une
 //    salle libre à ce créneau (aucun conflit avec le vrai planning).
@@ -61,7 +61,7 @@ const decaler = (date, jours) => {
     return d.toISOString().slice(0, 10);
 };
 const jourDe = (date) => JOURS[new Date(`${date}T12:00:00Z`).getUTCDay()];
-// Mot de passe aléatoire conforme à la politique (16 caractères, ni courant ni personnel)
+// Mot de passe aléatoire conforme à la politique (12 caractères au moins, ni courant ni personnel)
 const motDePasse = () => `${crypto.randomBytes(12).toString("base64url")}-Hq7`;
 const identifiants = [`# Démonstration ${CODE_COURS} (${maintenant.toISOString()}) : à garder pour soi`];
 
@@ -120,12 +120,11 @@ for (let i = 1; i <= NOMBRE; i += 1) {
 const periode =
     (await Periode.findOne({ where: { date_debut: { [Op.lte]: aujourdhui }, date_fin: { [Op.gte]: aujourdhui } } })) ||
     (await Periode.findOne({ where: { date_debut: { [Op.lte]: aujourdhui } }, order: [["date_debut", "DESC"]] }));
-let enseignement = (
-    await EnseignementGroupe.findOne({
-        where: { id_groupe: groupe.id_groupe },
-        include: [{ model: Enseignement, as: "enseignement", required: true, where: { id_composante: composante.id_composante } }],
-    }).catch(() => null)
-)?.enseignement;
+const lien = await EnseignementGroupe.findOne({
+    where: { id_groupe: groupe.id_groupe },
+    include: [{ model: Enseignement, as: "enseignement", required: true, where: { id_composante: composante.id_composante } }],
+});
+let enseignement = lien?.enseignement;
 if (!enseignement) {
     enseignement = await Enseignement.create({ id_composante: composante.id_composante, id_periode: periode?.id_periode ?? null, libelle: "Démonstration", heures_prevues: 27 });
     await EnseignementGroupe.findOrCreate({ where: { id_enseignement: enseignement.id_enseignement, id_groupe: groupe.id_groupe } });
@@ -146,10 +145,11 @@ const salleLibre = async (date, creneau) => {
 };
 const seanceLe = async (date, { preferer = null } = {}) => {
     const existante = await Affectation.findOne({ where: { id_groupe: groupe.id_groupe, date_seance: date, statut: { [Op.ne]: "annule" } } });
-    if (existante) return { seance: existante, creee: false };
+    if (existante) return existante;
     const jour = jourDe(date);
-    if (jour === "dimanche") return { seance: null, creee: false };
+    if (jour === "dimanche") return null;
     const grille = { jour_semaine: jour, variante: "normale" };
+    // Aujourd'hui : le créneau en cours ou le prochain, sinon le dernier de la journée
     const creneau =
         (preferer && (await Creneau.findOne({ where: { ...grille, heure_fin: { [Op.gt]: preferer } }, order: [["heure_debut", "ASC"]] }))) ||
         (await Creneau.findOne({ where: grille, order: [["heure_debut", preferer ? "DESC" : "ASC"]] })) ||
@@ -169,10 +169,10 @@ const seanceLe = async (date, { preferer = null } = {}) => {
         id_user_admin: admin.id_user,
     });
     log(`Séance créée : ${date} ${String(creneau.heure_debut).slice(0, 5)}-${String(creneau.heure_fin).slice(0, 5)}, salle ${salle.nom_salle}`);
-    return { seance, creee: true };
+    return seance;
 };
 
-const { seance: duJour } = await seanceLe(aujourdhui, { preferer: heure });
+const duJour = await seanceLe(aujourdhui, { preferer: heure });
 if (!duJour) log("Aujourd'hui est un dimanche : pas de séance du jour, l'appel ne pourra pas s'ouvrir");
 for (const ecart of [2, 7, 9, 14]) await seanceLe(decaler(aujourdhui, ecart));
 
