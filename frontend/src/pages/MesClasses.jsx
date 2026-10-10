@@ -2,12 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Chip, Skeleton, Typography } from '@mui/material';
-import { Campaign, FactCheck, Grading, LocalLibrary, Quiz, SportsEsports, WorkOutline } from '@mui/icons-material';
+import { AutoAwesome, Campaign, FactCheck, Grading, LocalLibrary, Quiz, SportsEsports, WorkOutline } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
 import { boutonPanneau, boutonPanneauPlein } from '../components/jeux/styles';
-import { enseignantAPI, quizAPI } from '../services/api';
+import { enseignantAPI, quizAPI, quizIaAPI } from '../services/api';
 import { supportsDuCours } from '../utils/supports';
 import useLiveRefresh from '../hooks/useLiveRefresh';
 import { ds } from '../design-system/tokens';
@@ -33,6 +33,8 @@ export default function MesClasses() {
   const [maintenant, setMaintenant] = useState(() => new Date());
   // Quiz en direct (ClassQuiz) : proposé seulement si la plateforme en a un
   const [quiz, setQuiz] = useState(null);
+  // Génération de quiz par l'IA : proposée seulement si le serveur est configuré
+  const [quizIa, setQuizIa] = useState(false);
   const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
 
   const charger = useCallback(
@@ -59,6 +61,10 @@ export default function MesClasses() {
       .getConfig()
       .then((c) => actif && setQuiz(c?.peutLancer && /^https?:\/\//.test(c.url ?? '') ? c : null))
       .catch(() => actif && setQuiz(null));
+    quizIaAPI
+      .disponibilite()
+      .then((d) => actif && setQuizIa(Boolean(d?.disponible)))
+      .catch(() => actif && setQuizIa(false));
     return () => {
       actif = false;
     };
@@ -100,6 +106,11 @@ export default function MesClasses() {
         <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Quiz />} onClick={() => navigate('/jeux', { state: { donnerDevoir: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
           {t('classes.page.devoir')}
         </Button>
+        {quizIa && (
+          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<AutoAwesome />} onClick={() => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
+            {t('classes.page.quizIa')}
+          </Button>
+        )}
         {quiz && c.en_cours && (
           <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<SportsEsports />} href={`${quiz.url}/dashboard`} target="_blank" rel="noopener noreferrer">
             {t('classes.page.quizDirect')}

@@ -412,9 +412,10 @@ function RelireQuiz({ id, fermer, modifie, donnerEnDevoir }) {
  * Quiz générés par l'IA (plan quiz-ia, lot IA-5) : l'enseignant dépose le support de son cours,
  * relit les questions proposées, puis crée le quiz dans ClassQuiz sans quitter Planner. Le panneau
  * n'apparaît que si le service est configuré sur le serveur.
- * @param {{ preselection?: { id_cours, id_groupe }, donnerEnDevoir?: (generation) => void }} props
+ * @param {{ preselection?: { id_cours, id_groupe }, donnerEnDevoir?: (generation) => void, ouvrirGeneration?: boolean }} props
+ *   ouvrirGeneration : le dialogue de génération s'ouvre d'emblée (arrivée depuis « Mes classes »)
  */
-export default function PanneauQuizIa({ preselection = null, donnerEnDevoir }) {
+export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouvrirGeneration = false }) {
   const { t, i18n } = useTranslation();
   const [dispo, setDispo] = useState(null);
   const [generations, setGenerations] = useState(null);
@@ -434,6 +435,10 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir }) {
       monte.current = false;
     };
   }, [charger]);
+
+  useEffect(() => {
+    if (ouvrirGeneration) setGenerer(true);
+  }, [ouvrirGeneration]);
 
   if (!dispo?.disponible) return null;
   const date = (iso) => new Date(iso).toLocaleString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });

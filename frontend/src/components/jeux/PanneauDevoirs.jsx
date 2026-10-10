@@ -326,12 +326,14 @@ export default function PanneauDevoirs({ enseignant }) {
   const location = useLocation();
   const [preselection, setPreselection] = useState(null);
   const [quizInitial, setQuizInitial] = useState(null);
+  const [genererQuiz, setGenererQuiz] = useState(false);
 
   useEffect(() => {
-    const classe = location.state?.donnerDevoir;
+    const classe = location.state?.donnerDevoir ?? location.state?.genererQuiz;
     if (!classe || !enseignant) return;
     setPreselection(classe);
-    setDonner(true);
+    if (location.state.genererQuiz) setGenererQuiz(true);
+    else setDonner(true);
     // L'état est consommé : un rechargement de la page ne rouvre pas le dialogue
     navigate(location.pathname, { replace: true, state: null });
   }, [location.state, location.pathname, enseignant, navigate]);
@@ -417,6 +419,7 @@ export default function PanneauDevoirs({ enseignant }) {
       {enseignant && (
         <PanneauQuizIa
           preselection={preselection}
+          ouvrirGeneration={genererQuiz}
           donnerEnDevoir={(generation) => {
             setPreselection({ id_cours: generation.id_cours, id_groupe: generation.id_groupe });
             setQuizInitial(generation.id_quiz_classquiz);
