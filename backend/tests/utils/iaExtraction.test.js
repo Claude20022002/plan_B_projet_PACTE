@@ -96,8 +96,9 @@ describe("PDF", () => {
     });
 
     test("trop long : une plage est demandée", async () => {
-        const lignes = Array.from({ length: 60 }, () => phrase("modele OSI"));
-        const long = creerPdf(Array.from({ length: Math.ceil(MOTS_MAX / (60 * 17)) + 1 }, () => lignes));
+        // 40 lignes de 17 mots par page, toutes dans la page (pdfjs ignore le texte hors de la page)
+        const lignes = Array.from({ length: 40 }, () => phrase("modele OSI"));
+        const long = creerPdf(Array.from({ length: Math.ceil(MOTS_MAX / (40 * 17)) + 1 }, () => lignes));
         await expect(extraireSupport({ contenu: long, type: PDF })).rejects.toMatchObject({ status: 413, message: expect.stringMatching(/plage de pages/) });
     });
 });
