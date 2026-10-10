@@ -1,6 +1,6 @@
 # Plan : quiz générés par l'IA pour les enseignants
 
-Statut : **à valider**. Rédigé le 10 octobre 2026, après la fusion de maj28 dans `main`.
+Statut : **en cours** (IA-1 à IA-3 faits, ainsi que « Mes classes »). Rédigé le 10 octobre 2026, après la fusion de maj28 dans `main`.
 
 ## 1. Objectif
 
@@ -25,10 +25,33 @@ Ce que la fonction ne fait pas : elle ne publie rien sans relecture, ne note pas
 - **Supports** : StudyLib range les documents par module (`Module.code`, qui correspond au code du module dans Planner) dans MinIO, servis par des liens signés temporaires.
 - **Interface** : le panneau « Devoirs » de la page Activités (`frontend/src/components/jeux/PanneauDevoirs.jsx`) liste déjà les quiz ClassQuiz de l'enseignant. C'est le point d'entrée.
 
+## 3 bis. La bonne classe et le bon cours (« Mes classes »)
+
+Un enseignant ne travaille qu'avec **ses** classes. Une classe est un couple (module, groupe) déduit de deux sources :
+- **ses services** : les enseignements qui lui sont confiés, hors refus ;
+- **son emploi du temps** : les séances dont il est l'enseignant, ce qui couvre aussi un remplacement.
+
+S'y ajoutent les sous-groupes d'une classe : qui enseigne à la promotion a aussi pour classes ses TD et ses TP.
+
+- **Service** `services/planning/mesClasses.js`. Pour chaque classe, il donne :
+  - l'effectif, sous-groupes compris ;
+  - la provenance (service, emploi du temps) ;
+  - **la séance en cours** ou **la prochaine séance** (date, heures, salle, horaires du Ramadan compris).
+
+  La séance en cours vient d'abord, puis l'ordre des prochaines séances.
+- **Route** `GET /api/enseignants/mes-classes`.
+- **Contrôle côté serveur** (`peutViserClasse`) :
+  - un devoir ne peut viser que l'une de ses classes ou un sous-groupe ;
+  - « tout le module » n'est permis que si ses classes couvrent tous les groupes du module ;
+  - le responsable de la filière garde l'accès à tout le module.
+
+  Avant, il suffisait que le groupe suive le module : un enseignant pouvait écrire aux groupes d'un collègue.
+- **Interface** : le composant `SelecteurClasse` remplace le choix du module dans « Donner un devoir ». Il présélectionne la séance en cours ou la prochaine. Il servira aussi au dialogue de génération (IA-5) : la classe y est facultative, elle prépare le devoir qui suivra.
+
 ## 4. Parcours de l'enseignant
 
 1. Activités → Devoirs → **« Générer un quiz avec l'IA »**.
-2. Choix du **module**, parmi ceux qu'il enseigne.
+2. Choix de la **classe**, parmi les siennes (§ 3 bis) : la séance en cours ou la prochaine est proposée d'abord. Le quiz porte sur le module de cette classe.
 3. Choix de la **source** :
    - un document StudyLib du module ;
    - ou un fichier déposé (PDF, DOCX ou PPTX, 20 Mo au plus).
@@ -143,15 +166,15 @@ Ordre de grandeur pour un quiz de 10 questions tiré d'un support de 20 pages : 
 
 ## 8. Découpage en lots
 
-| Lot | Contenu | Livrable | Dépend de |
-|---|---|---|---|
-| **IA-1** | Client d'IA configurable, variables d'environnement, quotas, client remplaçable dans les tests | Génération testable sans réseau | — |
-| **IA-2** | Extraction PDF, DOCX et PPTX par page, contrôles du fichier | Texte et repères de pages | — |
-| **IA-3** | Consigne, validation du JSON, tâche asynchrone, table `GenerationsQuiz` (migration) | API « générer » et « état » | IA-1, IA-2 |
-| **IA-4** | Route d'écriture signée dans le fork ClassQuiz, création depuis Planner | Quiz relu → ClassQuiz | IA-3 |
-| **IA-5** | Interface : dialogue de génération, brouillon modifiable, régénération d'une question, bouton « Créer dans ClassQuiz » (FR et EN) | Parcours complet avec **fichier déposé** (premier livrable utilisable) | IA-3, IA-4 |
-| **IA-6** | Routes de service StudyLib, choix d'un document du module | Source « document StudyLib » | IA-5 |
-| **IA-7** | Recette, documentation d'exploitation, déploiement | Mise en production | IA-1 à IA-6 |
+| Lot | Contenu | Livrable | Dépend de | État |
+|---|---|---|---|---|
+| **IA-1** | Client d'IA configurable, variables d'environnement, quotas, client remplaçable dans les tests | Génération testable sans réseau | — | **fait** |
+| **IA-2** | Extraction PDF, DOCX et PPTX par page, contrôles du fichier | Texte et repères de pages | — | **fait** |
+| **IA-3** | Consigne, validation du JSON, tâche asynchrone, table `GenerationsQuiz` (migration) | API « générer » et « état » | IA-1, IA-2 | **fait** |
+| **IA-4** | Route d'écriture signée dans le fork ClassQuiz, création depuis Planner | Quiz relu → ClassQuiz | IA-3 | à faire |
+| **IA-5** | Interface : dialogue de génération, brouillon modifiable, régénération d'une question, bouton « Créer dans ClassQuiz » (FR et EN) | Parcours complet avec **fichier déposé** (premier livrable utilisable) | IA-3, IA-4 | à faire |
+| **IA-6** | Routes de service StudyLib, choix d'un document du module | Source « document StudyLib » | IA-5 | à faire |
+| **IA-7** | Recette, documentation d'exploitation, déploiement | Mise en production | IA-1 à IA-6 | à faire |
 
 **Premier livrable utilisable : IA-1 à IA-5**, avec la source « fichier déposé ». La source StudyLib (IA-6) suit sans rien changer au reste.
 
