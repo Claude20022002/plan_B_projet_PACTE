@@ -168,7 +168,6 @@ const navigationFor = (user) => {
           { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
           { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },
           { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
-          { key: 'nav.bookings', icon: <BookOnline />, path: '/reservations' },
           { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
           { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
           { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },

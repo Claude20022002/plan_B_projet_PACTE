@@ -370,8 +370,9 @@ export default function App() {
           <Route path="/salles-disponibles" element={<Navigate to="/reservations" replace />} />
 
           {/* ── Phases P4 à P7 ────────────────────────────────────────── */}
+          {/* Les réservations de salles sont l'affaire de l'administration : les enseignants n'en font pas */}
           <Route path="/reservations" element={
-            <PrivateRoute requiredRole={['enseignant', 'admin']}>
+            <PrivateRoute requiredRole="admin">
               <AppPage><Reservations /></AppPage>
             </PrivateRoute>
           } />

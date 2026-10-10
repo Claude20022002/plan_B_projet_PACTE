@@ -183,8 +183,9 @@ export default function Jeux() {
       )}
 
       <Box sx={{ display: 'grid', gap: 2.5 }}>
-        {/* ── Le joueur dans sa scène (personnage et décor repris de CatéGO) ── */}
-        {accueil && <SceneJoueur user={user} profil={accueil.profil} jeux={accueil.jeux} onChoisir={choisirAvatar} />}
+        {/* ── Le joueur dans sa scène (personnage et décor repris de CatéGO) : les étudiants
+            seulement, un enseignant ne joue pas ── */}
+        {accueil && !enseignant && <SceneJoueur user={user} profil={accueil.profil} jeux={accueil.jeux} onChoisir={choisirAvatar} />}
 
         {/* ── Quiz en direct (ClassQuiz) ─────────────────────────────── */}
         {urlQuiz && (
