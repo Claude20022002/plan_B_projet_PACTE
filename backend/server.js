@@ -52,7 +52,7 @@ const seedIfRequested = async () => {
             console.log(`--> Serveur lancé sur http://localhost:${PORT}`);
         });
 
-        // Séances confirmées et passées → réalisées (suivi du réalisé, phase P7) : au démarrage puis chaque heure
+        // Séances planifiées ou confirmées, une fois passées → réalisées (suivi du réalisé, phase P7) : au démarrage puis chaque heure
         const actualiserRealise = () =>
             marquerRealisees()
                 .then((n) => n && console.log(`--> ${n} séance(s) marquée(s) réalisée(s)`))

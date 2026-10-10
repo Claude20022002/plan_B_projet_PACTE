@@ -2,25 +2,23 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Typography, useMediaQuery } from '@mui/material';
-import { CheckCircleOutline, EventRepeat, FactCheck, Groups, SportsEsports, ViewWeek } from '@mui/icons-material';
+import { EventRepeat, FactCheck, Groups, SportsEsports, ViewWeek } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { useToast } from '../../contexts/ToastContext';
 import { affectationAPI, demandeReportAPI, notificationAPI, quizAPI } from '../../services/api';
 import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
 import ChangesList from '../../design-system/board/ChangesList';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
+import { adresseEspace } from '../../../../shared/espaces.js';
 
 const HORIZON_DAYS = 14;
 
-function TodoPanel({ toConfirm, pendingReports, onOpenSessions, onOpenReports }) {
+function TodoPanel({ pendingReports, onOpenReports }) {
   const { t } = useTranslation();
-  const rows = [
-    { label: t('teacher.toConfirm', { count: toConfirm }), value: toConfirm, action: onOpenSessions },
-    { label: t('teacher.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports },
-  ];
+  // Une séance planifiée est tenue pour confirmée : l'enseignant n'agit que pour demander un report
+  const rows = [{ label: t('teacher.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports }];
   return (
     <Box
       component="section"
@@ -75,14 +73,12 @@ function TodoPanel({ toConfirm, pendingReports, onOpenSessions, onOpenReports })
 export default function EnseignantDashboard() {
   const { t } = useTranslation();
   const { user } = useAuth();
-  const toast = useToast();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState([]);
   const [reports, setReports] = useState([]);
   const [changes, setChanges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  const [confirmingId, setConfirmingId] = useState(null);
   // Jeux (ClassQuiz) : bouton proposé seulement si la plateforme en a un
   const [quiz, setQuiz] = useState(null);
 
@@ -118,7 +114,13 @@ export default function EnseignantDashboard() {
         demandeReportAPI.getByEnseignant(user.id_user).catch(() => []),
         notificationAPI.getNonLues(user.id_user).catch(() => []),
       ]);
-      setSessions((affectations?.data || []).map(toBoardSession).sort(byStart));
+      // Planifiée = confirmée pour l'enseignant (aucune confirmation à donner, sauf demande de report)
+      setSessions(
+        (affectations?.data || [])
+          .map(toBoardSession)
+          .map((s) => (s.status === 'planifie' ? { ...s, status: 'confirme' } : s))
+          .sort(byStart)
+      );
       setReports(demandes?.data || demandes || []);
       setChanges((notifications?.data || notifications || []).slice(0, 5));
     } catch {
@@ -140,37 +142,10 @@ export default function EnseignantDashboard() {
     return upcoming.filter((s) => days.includes(s.date));
   }, [upcoming]);
   const spotlight = useMemo(() => findSpotlight(boardSessions, now), [boardSessions, now]);
-  const toConfirm = upcoming.filter((s) => s.status === 'planifie').length;
   const pendingReports = reports.filter((r) => r.statut_demande === 'en_attente').length;
-
-  const confirm = async (session) => {
-    setConfirmingId(session.id);
-    try {
-      await affectationAPI.confirmer(session.id);
-      // Mise à jour locale : le statut bascule sur le panneau sans recharger la page
-      setSessions((current) => current.map((s) => (s.id === session.id ? { ...s, status: 'confirme' } : s)));
-      toast.success(t('board.confirmDone'));
-    } catch {
-      toast.error(t('board.confirmError'));
-    } finally {
-      setConfirmingId(null);
-    }
-  };
 
   const spotlightActions = (s) => (
     <>
-      {s.status === 'planifie' && (
-        <Button
-          variant="contained"
-          startIcon={<CheckCircleOutline />}
-          disabled={confirmingId === s.id}
-          onClick={() => confirm(s)}
-          // Bouton du panneau : lettres noires sur volet clair (l'orange reste réservé aux reports)
-          sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: '#FFFFFF' } }}
-        >
-          {t('board.confirm')}
-        </Button>
-      )}
       {/* Appel et gestion de la classe : le jour de la séance */}
       {s.status !== 'annule' && s.date === toLocalISODate() && (
         <Button variant="outlined" startIcon={<FactCheck />} onClick={() => navigate(`/appel/${s.id}`)} sx={{ color: ds.board.letter, borderColor: ds.board.seam }}>
@@ -188,9 +163,7 @@ export default function EnseignantDashboard() {
         <Button
           variant="outlined"
           startIcon={<SportsEsports />}
-          href={`${quiz.url}/dashboard`}
-          target="_blank"
-          rel="noopener noreferrer"
+          href={adresseEspace('quiz', { role: 'enseignant', urlQuiz: quiz.url })}
           sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
         >
           {t('board.launchQuiz')}
@@ -261,9 +234,7 @@ export default function EnseignantDashboard() {
 
         <Box sx={{ display: 'grid', gap: 2, alignContent: 'start' }}>
           <TodoPanel
-            toConfirm={toConfirm}
             pendingReports={pendingReports}
-            onOpenSessions={() => navigate('/mes-affectations')}
             onOpenReports={() => navigate('/demandes-report')}
           />
           {!(compact && changes.length > 0 && spotlight) && (

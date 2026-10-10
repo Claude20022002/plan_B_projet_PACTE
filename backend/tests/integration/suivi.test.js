@@ -75,25 +75,28 @@ beforeAll(async () => {
         reporteePassee: await seance({ statut: "reporte", date_seance: decaler(-3) }),
         future: await seance({ statut: "confirme", date_seance: decaler(5) }),
     };
-    ref = { filiere, td, cours, periode, enseignement, seances };
+    ref = { filiere, td, cours, periode, enseignement, seances, creerSeance: seance };
 });
 afterAll(closeDatabase);
 beforeEach(resetRateLimiters);
 
 describe("Séances réalisées", () => {
-    test("d'office : seules les séances confirmées et passées deviennent réalisées", async () => {
+    test("d'office : une séance planifiée ou confirmée devient réalisée une fois passée (sans confirmation de l'enseignant)", async () => {
         const response = await clients.admin.send("post", "/api/suivi/actualiser");
-        expect(response.body.realisees).toBe(1);
+        expect(response.body.realisees).toBe(2);
         const statuts = await Promise.all(Object.values(ref.seances).map((s) => Affectation.findByPk(s.id_affectation).then((a) => a.statut)));
-        expect(statuts).toEqual(["realise", "planifie", "reporte", "confirme"]);
+        expect(statuts).toEqual(["realise", "realise", "reporte", "confirme"]);
     });
 
     test("par l'enseignant, une fois la séance passée ; jamais celle d'un autre", async () => {
-        expect((await clients.permanent.send("patch", `/api/suivi/seances/${ref.seances.planifieePassee.id_affectation}/realiser`)).status).toBe(403);
+        // Une séance reportée n'est pas réalisée d'office : l'enseignant la marque lui-même
+        const reportee = await ref.creerSeance({ statut: "reporte", date_seance: decaler(-4) });
+        expect((await clients.permanent.send("patch", `/api/suivi/seances/${reportee.id_affectation}/realiser`)).status).toBe(403);
         expect((await clients.vacataire.send("patch", `/api/suivi/seances/${ref.seances.future.id_affectation}/realiser`)).status).toBe(400);
-        const ok = await clients.vacataire.send("patch", `/api/suivi/seances/${ref.seances.planifieePassee.id_affectation}/realiser`);
+        const ok = await clients.vacataire.send("patch", `/api/suivi/seances/${reportee.id_affectation}/realiser`);
         expect(ok.status).toBe(200);
         expect(ok.body.affectation.statut).toBe("realise");
+        await reportee.destroy();
     });
 });
 

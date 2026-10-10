@@ -22,7 +22,7 @@ import {
     Snackbar,
     CircularProgress,
 } from '@mui/material';
-import { CheckCircle, EventRepeat, QrCode2, TaskAlt } from '@mui/icons-material';
+import { EventRepeat, QrCode2, TaskAlt } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import { affectationAPI, demandeReportAPI, suiviAPI } from '../services/api';
@@ -32,7 +32,8 @@ import { useFormik } from 'formik';
 import * as yup from 'yup';
 
 const STATUT_CONFIG = {
-    planifie: { label: 'Planifié',  color: 'default'  },
+    // Une séance planifiée est tenue pour confirmée : rien à confirmer, sauf à demander un report
+    planifie: { label: 'Confirmé',  color: 'success'  },
     confirme: { label: 'Confirmé',  color: 'success'  },
     annule:   { label: 'Annulé',    color: 'error'    },
     reporte:  { label: 'Reporté',   color: 'warning'  },
@@ -53,7 +54,6 @@ export default function MesAffectations() {
     const [loading, setLoading]               = useState(true);
     const [error, setError]                   = useState('');
     const [success, setSuccess]               = useState('');
-    const [confirmingId, setConfirmingId]     = useState(null);
     const [reportDialog, setReportDialog]     = useState({ open: false, affectation: null });
 
     useEffect(() => {
@@ -68,19 +68,6 @@ export default function MesAffectations() {
             setError('Erreur lors du chargement des affectations');
         } finally {
             setLoading(false);
-        }
-    };
-
-    const handleConfirmer = async (aff) => {
-        setConfirmingId(aff.id_affectation);
-        try {
-            await affectationAPI.confirmer(aff.id_affectation);
-            setSuccess(`Séance « ${aff.cours?.nom_cours} » confirmée avec succès`);
-            loadAffectations();
-        } catch (err) {
-            setError(err.response?.data?.message || err.message || 'Erreur lors de la confirmation');
-        } finally {
-            setConfirmingId(null);
         }
     };
 
@@ -172,7 +159,6 @@ export default function MesAffectations() {
                             <TableBody>
                                 {affectations.map((aff) => {
                                     const { label, color } = STATUT_CONFIG[aff.statut] ?? { label: aff.statut, color: 'default' };
-                                    const isConfirming = confirmingId === aff.id_affectation;
                                     return (
                                         <TableRow key={aff.id_affectation} hover>
                                             <TableCell>{aff.cours?.nom_cours || '-'}</TableCell>
@@ -194,22 +180,6 @@ export default function MesAffectations() {
                                                             <IconButton size="small" color="primary" onClick={() => navigate(`/appel/${aff.id_affectation}`)}>
                                                                 <QrCode2 fontSize="small" />
                                                             </IconButton>
-                                                        </Tooltip>
-                                                    )}
-                                                    {aff.statut === 'planifie' && (
-                                                        <Tooltip title="Confirmer la séance">
-                                                            <span>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    color="success"
-                                                                    onClick={() => handleConfirmer(aff)}
-                                                                    disabled={isConfirming}
-                                                                >
-                                                                    {isConfirming
-                                                                        ? <CircularProgress size={16} color="inherit" />
-                                                                        : <CheckCircle fontSize="small" />}
-                                                                </IconButton>
-                                                            </span>
                                                         </Tooltip>
                                                     )}
                                                     {['planifie', 'confirme', 'reporte'].includes(aff.statut) && estPassee(aff) && (

@@ -46,10 +46,14 @@ const estPassee = (seance) => {
     return date === aujourdhui() && String(seance.creneau?.heure_fin ?? "23:59").slice(0, 5) <= heureCourante();
 };
 
-/** Marque réalisées les séances confirmées déjà passées (tâche périodique). Retourne leur nombre. */
+/**
+ * Marque réalisées les séances planifiées ou confirmées déjà passées (tâche périodique) et retourne
+ * leur nombre. Une séance planifiée est tenue pour confirmée : l'enseignant n'a rien à confirmer, il
+ * demande un report s'il ne peut pas la tenir.
+ */
 export const marquerRealisees = async () => {
     const candidates = await Affectation.findAll({
-        where: { statut: "confirme", date_seance: { [Op.lte]: aujourdhui() } },
+        where: { statut: ["planifie", "confirme"], date_seance: { [Op.lte]: aujourdhui() } },
         include: [{ model: Creneau, as: "creneau" }],
     });
     const passees = candidates.filter(estPassee);
