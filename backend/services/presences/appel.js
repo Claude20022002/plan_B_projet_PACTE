@@ -116,14 +116,18 @@ export const ouvrirAppel = async (user, id, maintenant = new Date()) => {
     return { seance: resume(seance), ...codeCourant(appel, maintenant), url: adresseDuCode(codeCourant(appel, maintenant).code) };
 };
 
-/** Code à afficher maintenant (l'écran de l'enseignant le redemande avant expiration), avec le nombre de présents. */
+/**
+ * Code à afficher maintenant (l'écran de l'enseignant le redemande avant expiration), avec la
+ * séance et les nombres de présents et d'attendus : de quoi tenir l'écran projeté en classe,
+ * qui ne reçoit ainsi aucun nom d'étudiant.
+ */
 export const codeDeLAppel = async (user, id, maintenant = new Date()) => {
     const seance = await seanceDeLEnseignant(user, id);
     const appel = await AppelSeance.findByPk(seance.id_affectation);
     if (!appel || appel.ferme_le) throw new ErreurMetier("L'appel n'est pas ouvert", 409);
     const courant = codeCourant(appel, maintenant);
-    const presents = await Presence.count({ where: { id_affectation: seance.id_affectation } });
-    return { ...courant, url: adresseDuCode(courant.code), presents };
+    const [presents, attendus] = await Promise.all([Presence.count({ where: { id_affectation: seance.id_affectation } }), etudiantsAttendus(seance)]);
+    return { ...courant, url: adresseDuCode(courant.code), presents, attendus: attendus.length, seance: resume(seance) };
 };
 
 /** Liste d'appel : attendus, présents (et comment), état de l'appel. */

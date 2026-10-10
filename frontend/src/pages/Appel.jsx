@@ -25,7 +25,7 @@ import {
   TextField,
   Typography,
 } from '@mui/material';
-import { ArrowBack, ReportProblemOutlined } from '@mui/icons-material';
+import { ArrowBack, CastForEducation, ReportProblemOutlined } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import { presenceAPI } from '../services/api';
@@ -150,7 +150,14 @@ export default function Appel() {
     }
   };
 
-  const libelleSignalement = (s) => t(`appel.signalement.${s.motif}`, { lie: s.lie ?? '?' });
+  // Fenêtre sans onglets ni barre de favoris, à glisser sur l'écran de la salle ; si le navigateur
+  // la bloque, le lien s'ouvre dans un nouvel onglet
+  const projeter = (e) => {
+    const fenetre = window.open(`/appel/${id}/projection`, `projection-appel-${id}`, 'popup,width=1000,height=900');
+    if (fenetre) e.preventDefault();
+  };
+
+  const libelleSignalement =(s) => t(`appel.signalement.${s.motif}`, { lie: s.lie ?? '?' });
 
   const attendus = liste?.etudiants.length ?? 0;
   const presents = liste?.presents ?? 0;
@@ -186,6 +193,23 @@ export default function Appel() {
           <Typography sx={{ mt: 2, fontFamily: ds.font.board, fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} aria-live="polite">
             {t('appel.presents', { presents, attendus })}
           </Typography>
+          {/* Fenêtre à part pour l'écran de la salle : le QR seul, sans le menu ni la liste des noms */}
+          {!ferme && qr && (
+            <>
+              <Button
+                variant="outlined"
+                startIcon={<CastForEducation />}
+                href={`/appel/${id}/projection`}
+                target="_blank"
+                rel="noopener"
+                onClick={projeter}
+                sx={{ mt: 1.5, color: ds.board.letter, borderColor: ds.board.seam }}
+              >
+                {t('appel.projeter')}
+              </Button>
+              <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: ds.board.letterDim }}>{t('appel.projeterAide')}</Typography>
+            </>
+          )}
         </Paper>
 
         <Paper sx={{ p: 2 }}>

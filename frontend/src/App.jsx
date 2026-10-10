@@ -35,6 +35,7 @@ const ChangerMotDePasse = lazy(() => import('./pages/ChangerMotDePasse'));
 const Accueil        = lazy(() => import('./pages/Accueil'));
 const Annonces       = lazy(() => import('./pages/Annonces'));
 const Appel          = lazy(() => import('./pages/Appel'));
+const AppelProjection = lazy(() => import('./pages/AppelProjection'));
 const Presence       = lazy(() => import('./pages/Presence'));
 
 // ── Dashboards (chunk par rôle) ───────────────────────────────────────────
@@ -274,6 +275,12 @@ export default function App() {
           <Route path="/appel/:id" element={
             <PrivateRoute requiredRole={['enseignant', 'admin']}>
               <AppPage><Appel /></AppPage>
+            </PrivateRoute>
+          } />
+          {/* Écran à projeter en classe : le QR seul, sans le menu de Planner */}
+          <Route path="/appel/:id/projection" element={
+            <PrivateRoute requiredRole={['enseignant', 'admin']}>
+              <AppPage><AppelProjection /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/presence" element={
