@@ -2,12 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
+  AlertTitle,
   AppBar,
   Avatar,
   Badge,
   BottomNavigation,
   BottomNavigationAction,
   Box,
+  Button,
   Drawer,
   IconButton,
   List,
@@ -15,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
   Paper,
+  Snackbar,
   ToggleButton,
   ToggleButtonGroup,
   Toolbar,
@@ -40,6 +44,7 @@ import { LocalLibrary,
   Book,
   CalendarMonth,
   Category,
+  Close,
   DarkModeOutlined,
   DepartureBoard as BoardIcon,
   EventAvailable,
@@ -72,6 +77,25 @@ import { ds } from '../../design-system/tokens';
 import { estResponsable } from '../../utils/droits';
 
 const RAIL_WIDTH = 248;
+
+// Rappels de l'appel écartés pendant cette session du navigateur (le stockage peut être indisponible)
+const LIEN_APPEL = /^\/appel\/\d+$/;
+const CLE_RAPPELS = 'rappelsAppelEcartes';
+const rappelsEcartes = () => {
+  try {
+    const ids = JSON.parse(sessionStorage.getItem(CLE_RAPPELS) ?? '[]');
+    return Array.isArray(ids) ? ids : [];
+  } catch {
+    return [];
+  }
+};
+const ecarterRappel = (id) => {
+  try {
+    sessionStorage.setItem(CLE_RAPPELS, JSON.stringify([...rappelsEcartes(), id].slice(-50)));
+  } catch {
+    // Sans stockage, le rappel reviendra au prochain rafraîchissement
+  }
+};
 
 /** Navigation par rôle : sections (libellé) et entrées (icône, chemin, clé de traduction) */
 const navigationFor = (user) => {
@@ -189,7 +213,8 @@ const bottomTabsFor = (role) => {
     { key: 'nav.board', icon: <BoardIcon />, path: `/dashboard/${base}` },
     { key: 'nav.week', icon: <ViewWeek />, path: `/emploi-du-temps/${base}` },
   ];
-  if (role === 'enseignant') tabs.push({ key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' });
+  // Enseignant : ses classes (appel, devoirs, messages) ; « Mes séances » reste dans le menu
+  if (role === 'enseignant') tabs.push({ key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' });
   tabs.push(
     { key: 'nav.alerts', icon: <Notifications />, path: '/notifications', badge: true },
     { key: 'nav.account', icon: <PersonOutline />, path: '/parametres' }
@@ -287,6 +312,7 @@ export default function DashboardLayout({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [rappelAppel, setRappelAppel] = useState(null);
 
   const role = user?.role;
   const navigation = useMemo(() => navigationFor(user), [user]);
@@ -298,7 +324,11 @@ export default function DashboardLayout({ children }) {
     const load = async () => {
       try {
         const data = await notificationAPI.getNonLues(user.id_user);
-        setUnread((data?.data || data || []).length);
+        const nonLues = data?.data || data || [];
+        setUnread(nonLues.length);
+        // Rappel de l'appel (fin de séance) : affiché sur toutes les pages, tant qu'il n'est ni lu ni écarté
+        const ecartes = rappelsEcartes();
+        setRappelAppel(user.role === 'enseignant' ? nonLues.find((n) => LIEN_APPEL.test(n.lien ?? '') && !ecartes.includes(n.id_notification)) ?? null : null);
       } catch {
         setUnread(0);
       }
@@ -306,7 +336,17 @@ export default function DashboardLayout({ children }) {
     load();
     const id = setInterval(load, 30000);
     return () => clearInterval(id);
-  }, [user?.id_user]);
+  }, [user?.id_user, user?.role]);
+
+  const fermerRappel = (ouvrir) => {
+    const rappel = rappelAppel;
+    setRappelAppel(null);
+    if (!rappel) return;
+    ecarterRappel(rappel.id_notification);
+    if (!ouvrir) return;
+    notificationAPI.marquerCommeLue(rappel.id_notification).catch(() => {});
+    navigate(rappel.lien);
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -593,6 +633,30 @@ export default function DashboardLayout({ children }) {
           </BottomNavigation>
         </Paper>
       )}
+
+      {/* Rappel de l'appel : au-dessus de la page, sauf sur l'écran d'appel de cette séance */}
+      <Snackbar open={Boolean(rappelAppel) && location.pathname !== rappelAppel?.lien} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert
+          severity="warning"
+          variant="filled"
+          role="alert"
+          onClose={() => fermerRappel(false)}
+          closeText={t('common.close')}
+          action={
+            <>
+              <Button color="inherit" size="small" onClick={() => fermerRappel(true)}>
+                {t('classes.page.appel.a_faire')}
+              </Button>
+              <IconButton size="small" color="inherit" aria-label={t('common.close')} onClick={() => fermerRappel(false)}>
+                <Close fontSize="small" />
+              </IconButton>
+            </>
+          }
+        >
+          <AlertTitle>{rappelAppel?.titre}</AlertTitle>
+          {rappelAppel?.message}
+        </Alert>
+      </Snackbar>
 
       {role === 'admin' && <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />}
     </Box>
