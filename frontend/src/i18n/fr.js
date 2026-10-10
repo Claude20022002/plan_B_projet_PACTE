@@ -417,6 +417,7 @@ const fr = {
         ouvert: 'Reprendre l’appel',
         ferme: 'Voir l’appel',
       },
+      ouvrirAppel: 'Ouvrir l’appel',
       devoir: 'Donner un devoir ou un quiz',
       quizDirect: 'Quiz en direct',
       ecrire: 'Écrire à la classe',

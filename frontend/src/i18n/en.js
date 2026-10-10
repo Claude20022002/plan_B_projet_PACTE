@@ -417,6 +417,7 @@ const en = {
         ouvert: 'Resume attendance',
         ferme: 'View attendance',
       },
+      ouvrirAppel: 'Open attendance',
       devoir: 'Set an assignment or a quiz',
       quizDirect: 'Live quiz',
       ecrire: 'Write to the class',

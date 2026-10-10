@@ -640,12 +640,10 @@ export default function DashboardLayout({ children }) {
           severity="warning"
           variant="filled"
           role="alert"
-          onClose={() => fermerRappel(false)}
-          closeText={t('common.close')}
           action={
             <>
               <Button color="inherit" size="small" onClick={() => fermerRappel(true)}>
-                {t('classes.page.appel.a_faire')}
+                {t('classes.page.ouvrirAppel')}
               </Button>
               <IconButton size="small" color="inherit" aria-label={t('common.close')} onClick={() => fermerRappel(false)}>
                 <Close fontSize="small" />
