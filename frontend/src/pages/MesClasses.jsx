@@ -9,6 +9,7 @@ import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
 import { boutonPanneau, boutonPanneauPlein } from '../components/jeux/styles';
 import { enseignantAPI, quizAPI, quizIaAPI } from '../services/api';
 import { supportsDuCours } from '../utils/supports';
+import { adresseEspace } from '../../../shared/espaces.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
 import { ds } from '../design-system/tokens';
 
@@ -112,7 +113,7 @@ export default function MesClasses() {
           </Button>
         )}
         {quiz && c.en_cours && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<SportsEsports />} href={`${quiz.url}/dashboard`} target="_blank" rel="noopener noreferrer">
+          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<SportsEsports />} href={adresseEspace('quiz', { role: 'enseignant', urlQuiz: quiz.url })}>
             {t('classes.page.quizDirect')}
           </Button>
         )}

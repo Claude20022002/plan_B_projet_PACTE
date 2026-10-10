@@ -52,7 +52,9 @@ export const adresseEspace = (code, { role, urlQuiz } = {}) => {
   if (code === 'quiz') {
     if (typeof urlQuiz !== 'string' || !/^https?:\/\//.test(urlQuiz)) return null;
     const base = urlQuiz.replace(/\/$/, '');
-    return role === 'enseignant' ? `${base}/dashboard` : `${base}/play`;
+    // ?sso=1 : ClassQuiz connecte l'enseignant par son compte Planner sans afficher sa page de
+    // connexion (déjà connecté là-bas : il arrive directement sur ses quiz)
+    return role === 'enseignant' ? `${base}/account/login?sso=1&returnTo=%2Fdashboard` : `${base}/play`;
   }
   return ESPACES.find((e) => e.code === code)?.chemin ?? null;
 };
