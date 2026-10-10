@@ -17,7 +17,7 @@ L'enseignant fait tout ce qui concerne sa classe depuis un seul endroit, sur son
 |---|---|
 | Page « Mes classes » (`/mes-classes`) : classe en cours, appel, devoir ou quiz, message à la classe, offre de stage, supports | fait le 10 octobre 2026, pas encore déployé |
 | Rappel de l'appel 5 minutes avant la fin de la séance | fait : notification et bandeau sur toutes les pages de Planner. **Pas de push** : l'application mobile refuse les comptes enseignants |
-| Appel par QR code (`/appel/:id`) | en production. L'écran affiche le QR **avec** le menu de Planner et la liste nominative des étudiants |
+| Appel par QR code (`/appel/:id`) | en production. L'écran affiche le QR **avec** le menu de Planner et la liste nominative des étudiants ; la fenêtre de projection (lot P-1) est écrite, pas encore déployée |
 | Quiz en direct | dans ClassQuiz (quiz.finadmintech.fr), hors de Planner. Lots CQ-1 à CQ-3 prévus |
 | Application mobile | étudiants seulement (`mobile/src/auth/AuthContext.jsx` refuse tout autre rôle) |
 | Guide et aide | rien, sauf l'animation du logo à l'ouverture de l'application mobile |
@@ -121,7 +121,7 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 
 | Lot | Contenu | Résultat | Dépend de | État |
 |---|---|---|---|---|
-| **P-1** | Fenêtre de projection de l'appel : page sans menu, plein écran, QR, classe, compte des présents (FR et EN) | Le QR se projette sans montrer le portail | — | à faire |
+| **P-1** | Fenêtre de projection de l'appel : page sans menu, plein écran, QR, classe, compte des présents (FR et EN) | Le QR se projette sans montrer le portail | — | **fait** le 10 octobre 2026 (`/appel/:id/projection`), pas encore déployé |
 | **P-2** | Lien de projection à usage unique pour le navigateur du grand écran | — | — | écarté (les écrans recopient seulement l'ordinateur) |
 | **CQ-1 à CQ-3** | voir `quiz-ia.md` ; CQ-2 inclut le nombre de réponses par choix après chaque question | Quiz lancé et projeté depuis Planner, question par question | IA-4 | à faire |
 | **W-1** | Question d'association : fork, joueurs web et mobile, devoirs, éditeur, IA | Le type le plus utilisé de Wooclap est couvert | CQ-2 | à faire |
