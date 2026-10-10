@@ -223,6 +223,7 @@ const TITLE_KEYS = {
   '/annonces': 'nav.announcements',
   '/parametres': 'nav.settings',
   '/mes-affectations': 'nav.mySessions',
+  '/mes-classes': 'nav.myClasses',
   '/mes-services': 'nav.myServices',
   '/reservations': 'nav.bookings',
   '/mes-examens': 'nav.myExams',
