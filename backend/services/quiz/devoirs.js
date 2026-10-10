@@ -6,6 +6,7 @@ import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
 import { groupesDeLEtudiant, inscritsDuModule, modulesDuJoueur, peutProposerDansModule } from "../jeux/jeux.js";
 import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
+import { peutViserClasse } from "../planning/mesClasses.js";
 import { TYPES_DEVOIRS, verifierFichier } from "../../utils/fichiers.js";
 
 /**
@@ -214,10 +215,16 @@ export const creerDevoir = async (user, donnees = {}) => {
     if (Number.isNaN(limite.getTime()) || limite <= new Date() || limite - new Date() > DUREE_MAX_MS) {
         throw new ErreurMetier("date_limite doit être une date à venir (un an au plus)", 400);
     }
+    // La classe visée doit être l'une des siennes (service ou emploi du temps) : un module partagé
+    // entre plusieurs enseignants ne permet pas d'écrire aux groupes des autres
     let groupe = null;
+    const groupesDuModule = (await inscritsDuModule(cours.id_cours)).groupes;
     if (idGroupe !== null && idGroupe !== undefined && idGroupe !== "") {
         groupe = await Groupe.findByPk(Number(idGroupe));
-        if (!groupe || !(await inscritsDuModule(cours.id_cours)).groupes.includes(groupe.id_groupe)) throw new ErreurMetier("Ce groupe ne suit pas ce module", 400);
+        if (!groupe || !groupesDuModule.includes(groupe.id_groupe)) throw new ErreurMetier("Ce groupe ne suit pas ce module", 400);
+        if (!(await peutViserClasse(user, cours, groupe.id_groupe))) throw new ErreurMetier("Ce groupe n'est pas l'une de vos classes dans ce module", 403);
+    } else if (!(await peutViserClasse(user, cours, null, { groupesDuModule }))) {
+        throw new ErreurMetier("D'autres enseignants ont des classes dans ce module : choisissez l'une de vos classes", 400);
     }
     let champs;
     if (type === "fichier") {
