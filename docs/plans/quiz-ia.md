@@ -48,6 +48,27 @@ S'y ajoutent les sous-groupes d'une classe : qui enseigne à la promotion a auss
   Avant, il suffisait que le groupe suive le module : un enseignant pouvait écrire aux groupes d'un collègue.
 - **Interface** : le composant `SelecteurClasse` remplace le choix du module dans « Donner un devoir ». Il présélectionne la séance en cours ou la prochaine. Il servira aussi au dialogue de génération (IA-5) : la classe y est facultative, elle prépare le devoir qui suivra.
 
+## 3 ter. Une seule adresse pour l'enseignant (exigence du 10 octobre 2026)
+
+L'enseignant **ne quitte jamais `planner.finadmintech.fr`** : il ne doit avoir ni autre adresse à saisir, ni premier passage obligatoire sur `quiz.finadmintech.fr`. Les étudiants restent déjà dans l'application, puisque le quiz en direct y est natif.
+
+**Planner devient l'interface unique, et ClassQuiz un moteur invisible.** Il garde les quiz, les parties et le temps réel, et Planner l'appelle par des routes signées, comme pour la lecture des quiz aujourd'hui.
+
+**Écarté :** servir ClassQuiz sous `planner.finadmintech.fr/quiz/`, comme StudyLib l'est sous `/biblio/`. Son frontend utilise partout des adresses absolues (`/api/v1/…`, `/dashboard`, `/play`, `/edit`), et certaines entrent en conflit avec celles de Planner. Il faudrait réécrire une grande partie du fork.
+
+| Besoin de l'enseignant | Aujourd'hui | Cible |
+|---|---|---|
+| Compte ClassQuiz | Créé à sa première visite sur quiz.finadmintech.fr | **Créé automatiquement** par Planner (route signée), au premier besoin |
+| Créer ou modifier un quiz | Éditeur de ClassQuiz | **Éditeur dans Planner** (« Mes quiz »), à la main ou avec l'IA. Planner écrit dans ClassQuiz par une route signée |
+| Lancer une partie en direct | Tableau de bord de ClassQuiz | **Bouton « Lancer en direct » sur la séance**, dans Planner. Planner démarre la partie (route signée) et affiche **lui-même l'écran du projecteur** (code, questions, temps, classement) par WebSocket |
+| Résultats | Déjà dans Planner | Inchangé |
+| Sélecteur d'espaces | « Quiz » mène à quiz.finadmintech.fr | « Quiz » mène à « Mes quiz » dans Planner. ClassQuiz reste joignable en secours pour l'administration |
+
+**Points techniques :**
+- **Compte, création et mise à jour d'un quiz, démarrage d'une partie :** routes signées dans `classquiz/routers/hestim.py`. La signature HMAC couvre le corps de la requête. L'enseignant est désigné par son email.
+- **Écran du projecteur :** client socket.io dans Planner (événements `register_as_admin`, `start_game`, `set_question_number`, `get_question_results`…, déjà utilisés par le client natif du mobile, `mobile/src/quiz/partie.js`). nginx relaie `/socket.io/` vers `quiz-api`, ce qui garde **la même origine** : la CSP (`connect-src 'self'`) n'est pas assouplie et les cookies ne passent pas d'un domaine à l'autre. Planner n'utilise pas lui-même `/socket.io`.
+- **Le jeton d'administration de la partie** est obtenu par Planner, côté serveur, au démarrage, puis remis à l'enseignant de la séance seulement.
+
 ## 4. Parcours de l'enseignant
 
 1. Activités → Devoirs → **« Générer un quiz avec l'IA »**.
@@ -171,8 +192,11 @@ Ordre de grandeur pour un quiz de 10 questions tiré d'un support de 20 pages : 
 | **IA-1** | Client d'IA configurable, variables d'environnement, quotas, client remplaçable dans les tests | Génération testable sans réseau | — | **fait** |
 | **IA-2** | Extraction PDF, DOCX et PPTX par page, contrôles du fichier | Texte et repères de pages | — | **fait** |
 | **IA-3** | Consigne, validation du JSON, tâche asynchrone, table `GenerationsQuiz` (migration) | API « générer » et « état » | IA-1, IA-2 | **fait** |
-| **IA-4** | Route d'écriture signée dans le fork ClassQuiz, création depuis Planner | Quiz relu → ClassQuiz | IA-3 | à faire |
-| **IA-5** | Interface : dialogue de génération, brouillon modifiable, régénération d'une question, bouton « Créer dans ClassQuiz » (FR et EN) | Parcours complet avec **fichier déposé** (premier livrable utilisable) | IA-3, IA-4 | à faire |
+| **IA-4** | Routes signées dans le fork ClassQuiz : **compte créé automatiquement**, création et mise à jour d'un quiz ; création depuis Planner | Quiz relu → ClassQuiz, sans passage par quiz.finadmintech.fr | IA-3 | à faire |
+| **IA-5** | Interface : « Mes quiz » dans Planner (liste, éditeur à la main), dialogue de génération par l'IA, brouillon modifiable, régénération d'une question, enregistrement dans ClassQuiz (FR et EN) | Parcours complet avec **fichier déposé** (premier livrable utilisable) | IA-3, IA-4 | à faire |
+| **CQ-1** | Lancer une partie en direct depuis la séance dans Planner (route signée de démarrage), relais nginx de `/socket.io/` | Partie démarrée sans quitter Planner | IA-4 | à faire |
+| **CQ-2** | Écran du projecteur dans Planner : code de la partie, joueurs, questions, temps, classement (FR et EN) | Partie animée sans quitter Planner | CQ-1 | à faire |
+| **CQ-3** | Sélecteur d'espaces : « Quiz » mène à « Mes quiz » dans Planner ; scénarios de recette « une seule adresse » | Plus aucun lien vers quiz.finadmintech.fr pour l'enseignant | IA-5, CQ-2 | à faire |
 | **IA-6** | Routes de service StudyLib, choix d'un document du module | Source « document StudyLib » | IA-5 | à faire |
 | **IA-7** | Recette, documentation d'exploitation, déploiement | Mise en production | IA-1 à IA-6 | à faire |
 

@@ -82,10 +82,25 @@
 
 **Tests à ce jour :** 180 tests unitaires et 342 tests d'intégration au vert ; banc : 50 routes.
 
+## 2 bis. Nouvelle exigence : une seule adresse pour l'enseignant
+
+L'enseignant **ne doit jamais quitter `planner.finadmintech.fr`** : ni saisir d'autre adresse, ni passer par `quiz.finadmintech.fr`.
+
+- **Décision :** Planner devient l'interface unique, et ClassQuiz un moteur invisible, appelé par des routes signées.
+- **Contenu :**
+  - compte ClassQuiz créé automatiquement ;
+  - « Mes quiz » et l'éditeur dans Planner ;
+  - « Lancer en direct » sur la séance ;
+  - l'écran du projecteur affiché par Planner, avec un WebSocket relayé par nginx sur la même origine.
+- **Détail :** `docs/plans/quiz-ia.md`, § 3 ter et lots CQ-1 à CQ-3.
+- **Écarté :** servir ClassQuiz sous `/quiz/`, car son frontend utilise des adresses absolues qui entrent en conflit avec celles de Planner.
+
+**En attendant :** la première connexion à ClassQuiz et le lancement d'une partie en direct passent encore par quiz.finadmintech.fr. Pour la démo, le quiz NoSQL se **donne en devoir depuis Planner**, ce qui ne demande pas de changer de site. Seule la première connexion à ClassQuiz est faite à l'avance par l'utilisateur.
+
 ## 3. Prochaine session, dans l'ordre
 
 1. **Déployer maj28** (`appliquer-maj.sh /root/maj28`) **après la démo**, puis dérouler la recette en commençant par la section 0. Vérifier dans la console du navigateur qu'il n'y a pas de violation de CSP sur le vrai site.
-2. **IA-4 : écriture dans ClassQuiz.**
+2. **IA-4 : écriture dans ClassQuiz, et compte ClassQuiz créé automatiquement** (§ 2 bis).
    - Fork `../ClassQuiz`, fichier `classquiz/routers/hestim.py` : ajouter `POST /api/v1/hestim/quiz`. La signature HMAC couvre `timestamp.POST.chemin.sha256(corps)`. Le quiz est créé, privé, pour l'utilisateur dont l'email est fourni, avec le format `QuizInput` : `{question, time, type, answers:[{answer, right}]}`.
    - Côté Planner, ajouter un client POST signé (à côté de `clientClassQuiz` dans `services/quiz/devoirs.js`) et une fonction `creerDansClassQuiz(user, id_generation)`. Elle convertit le brouillon (`reponses` → `answers`, `temps` → `time`), passe la génération au statut `cree` et renseigne `id_quiz_classquiz`.
    - Erreur à prévoir : « connectez-vous une fois à ClassQuiz » si le compte n'existe pas.
@@ -99,7 +114,8 @@
 
    C'est le premier livrable utilisable.
 4. **IA-6** (StudyLib), puis **IA-7** (déploiement). **L'image du backend devra être reconstruite**, à cause des nouvelles dépendances `pdfjs-dist`, `mammoth` et `jszip` : la superposition ne suffira pas. Il faudra aussi ajouter `IA_FOURNISSEUR`, `IA_URL`, `IA_CLE`, `IA_MODELE` et `IA_GENERATIONS_PAR_JOUR` au `.env` de production.
-5. **Fusionner la branche dans `main`** (PR n°4) après IA-5, ou plus tôt pour faire vérifier « Mes classes » et IA-1 à IA-3 par la CI.
+5. **CQ-1 à CQ-3 :** lancer la partie depuis Planner et y afficher l'écran du projecteur, puis faire pointer « Quiz » vers « Mes quiz » (§ 2 bis).
+6. **Fusionner la branche dans `main`** (PR n°4) après IA-5, ou plus tôt pour faire vérifier « Mes classes » et IA-1 à IA-3 par la CI.
 
 ## 4. Décisions ouvertes
 
