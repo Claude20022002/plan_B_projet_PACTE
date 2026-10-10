@@ -50,7 +50,7 @@ export const signatureClassQuiz = (cle, horodatage, methode, chemin, corps = nul
 let clientClassQuiz = async (chemin, corps = null) => {
     const cle = secret();
     const base = baseClassQuiz();
-    if (!cle || !base) throw new ErreurMetier("ClassQuiz n'est pas configuré", 503);
+    if (!cle || !base) throw new ErreurMetier("PlannerQuiz n'est pas configuré", 503);
     const horodatage = String(Math.floor(Date.now() / 1000));
     const methode = corps === null ? "GET" : "POST";
     const texte = corps === null ? null : JSON.stringify(corps);
@@ -64,14 +64,14 @@ let clientClassQuiz = async (chemin, corps = null) => {
             signal: AbortSignal.timeout(texte === null ? 8000 : 15000),
         });
     } catch {
-        throw new ErreurMetier("ClassQuiz est injoignable", 502);
+        throw new ErreurMetier("PlannerQuiz est injoignable", 502);
     }
     if (reponse.status === 404) {
         if (texte === null) return null;
-        throw new ErreurMetier("ClassQuiz ne sait pas encore créer de quiz : mettez-le à jour", 502);
+        throw new ErreurMetier("PlannerQuiz ne sait pas encore créer de quiz : mettez-le à jour", 502);
     }
-    if (reponse.status === 422) throw new ErreurMetier(`ClassQuiz a refusé le quiz${await detailDe(reponse)}`, 422);
-    if (!reponse.ok) throw new ErreurMetier(`ClassQuiz a répondu ${reponse.status}`, 502);
+    if (reponse.status === 422) throw new ErreurMetier(`PlannerQuiz a refusé le quiz${await detailDe(reponse)}`, 422);
+    if (!reponse.ok) throw new ErreurMetier(`PlannerQuiz a répondu ${reponse.status}`, 502);
     return reponse.json();
 };
 
@@ -107,7 +107,7 @@ export const creerQuizClassQuiz = async (user, quiz) => {
         description: quiz.description ?? "",
         questions: quiz.questions,
     });
-    if (typeof cree?.id !== "string" || !/^[0-9a-f-]{36}$/i.test(cree.id)) throw new ErreurMetier("Réponse inattendue de ClassQuiz", 502);
+    if (typeof cree?.id !== "string" || !/^[0-9a-f-]{36}$/i.test(cree.id)) throw new ErreurMetier("Réponse inattendue de PlannerQuiz", 502);
     return cree;
 };
 
@@ -292,7 +292,7 @@ export const creerDevoir = async (user, donnees = {}) => {
     } else if (type === "quiz") {
         if (typeof quizId !== "string" || !/^[0-9a-f-]{36}$/i.test(quizId)) throw new ErreurMetier("quiz_id invalide", 400);
         const quiz = await clientClassQuiz(cheminSigne(`/api/v1/hestim/quiz/${quizId}`, { email: user.email }));
-        if (!quiz) throw new ErreurMetier("Quiz introuvable dans vos quiz ClassQuiz", 404);
+        if (!quiz) throw new ErreurMetier("Quiz introuvable dans vos quiz PlannerQuiz", 404);
         const questions = (Array.isArray(quiz.questions) ? quiz.questions : []).filter((q) => TYPES_ACCEPTES.has(q?.type));
         if (!questions.some((q) => TYPES_NOTES.has(q.type))) throw new ErreurMetier("Ce quiz n'a aucune question notable", 400);
         champs = { type: "quiz", titre: String(quiz.titre ?? "Devoir").slice(0, 255), quiz_id: quizId, questions };

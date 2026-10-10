@@ -341,7 +341,7 @@ export const regenererQuestion = async (user, id, index) => {
  */
 export const creerDansClassQuiz = async (user, id, { titre } = {}) => {
     const generation = await generationDe(user, id);
-    if (generation.statut === "cree") throw new ErreurMetier("Ce quiz a déjà été créé dans ClassQuiz", 409);
+    if (generation.statut === "cree") throw new ErreurMetier("Ce quiz a déjà été créé dans PlannerQuiz", 409);
     if (generation.statut !== "pret" || !generation.brouillon?.length) throw new ErreurMetier("Ce brouillon n'est pas prêt", 409);
     const cours = await Cours.findByPk(generation.id_cours, { attributes: ["code_cours", "nom_cours"] });
     const module = cours ? `${cours.code_cours} ${cours.nom_cours}` : "ce module";

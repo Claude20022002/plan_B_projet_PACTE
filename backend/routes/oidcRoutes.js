@@ -31,7 +31,7 @@ router.get("/interaction/:uid", parseCookies, optionalAuth, async (req, res, nex
         if (!ROLES_AUTORISES.includes(req.user.role)) {
             return await provider.interactionFinished(req, res, {
                 error: "access_denied",
-                error_description: "ClassQuiz est réservé aux enseignants : les étudiants rejoignent les parties par code PIN.",
+                error_description: "PlannerQuiz est réservé aux enseignants : les étudiants rejoignent les parties par code PIN.",
             }, { mergeWithLastSubmission: false });
         }
 
@@ -49,7 +49,7 @@ router.get("/interaction/:uid", parseCookies, optionalAuth, async (req, res, nex
     } catch (erreur) {
         // Cookie d'interaction absent ou expiré (lien rejoué, plus de 10 minutes)
         if (erreur?.name === "SessionNotFound") {
-            return res.status(400).json({ message: "Connexion expirée : relancez-la depuis ClassQuiz." });
+            return res.status(400).json({ message: "Connexion expirée : relancez-la depuis PlannerQuiz." });
         }
         next(erreur);
     }

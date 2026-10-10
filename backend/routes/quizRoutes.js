@@ -17,7 +17,7 @@ import { enregistrerFinPartie, enregistrerPartie, historiqueQuiz, partiesEnCours
 export const webhookQuiz = express.Router();
 
 webhookQuiz.post("/", express.raw({ type: "application/json", limit: "32kb" }), asyncHandler(async (req, res) => {
-    if (!webhookActif()) return res.status(503).json({ message: "Webhook ClassQuiz désactivé" });
+    if (!webhookActif()) return res.status(503).json({ message: "Webhook PlannerQuiz désactivé" });
     const corps = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
     if (!signatureValide(corps, req.get("X-Hestim-Timestamp"), req.get("X-Hestim-Signature"))) {
         return res.status(401).json({ message: "Signature invalide" });

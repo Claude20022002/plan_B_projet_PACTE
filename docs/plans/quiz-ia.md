@@ -2,6 +2,8 @@
 
 Statut : **en cours** (IA-1 à IA-3 faits, ainsi que « Mes classes »). Rédigé le 10 octobre 2026, après la fusion de maj28 dans `main`.
 
+**Nom (décision du 10 octobre 2026) :** pour les utilisateurs, le service de quiz s'appelle **PlannerQuiz** (titres d'onglet, marque du site, messages de Planner). Dans ce plan et dans le code, « ClassQuiz » désigne toujours le moteur : le dépôt `../ClassQuiz`, le paquet Python `classquiz`, les variables `CLASSQUIZ_*` et `QUIZ_*`, les images Docker et le client OpenID `classquiz` gardent leur nom, pour ne rien casser en production et garder l'attribution du projet d'origine (licence MPL).
+
 ## 1. Objectif
 
 Un enseignant génère un quiz (QCM) à partir du **support de son cours**, le **relit et le corrige**, puis le retrouve dans son compte ClassQuiz : il peut le jouer en direct en classe ou le donner en devoir noté, comme ses autres quiz.

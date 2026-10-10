@@ -797,7 +797,7 @@ const en = {
       donner: 'Give an assignment',
       donne_one: 'Assignment given: {{count}} student notified.',
       donne_other: 'Assignment given: {{count}} students notified.',
-      aucunQuiz: 'No quiz in your ClassQuiz account. Create one from the Quiz space.',
+      aucunQuiz: 'No quiz in your PlannerQuiz account. Create one from the Quiz space.',
       aucunEnseignant: 'No assignment given yet.',
       quiz: 'Quiz',
       module: 'Course',

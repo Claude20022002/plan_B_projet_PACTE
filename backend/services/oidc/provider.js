@@ -39,7 +39,7 @@ const clients = () => {
     return [{
         client_id: "classquiz",
         client_secret: secret,
-        client_name: "ClassQuiz HESTIM",
+        client_name: "PlannerQuiz HESTIM",
         redirect_uris: [`${urlQuiz}/api/v1/users/oauth/custom/auth`],
         post_logout_redirect_uris: [urlQuiz],
         grant_types: ["authorization_code", "refresh_token"],

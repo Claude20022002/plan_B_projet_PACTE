@@ -793,7 +793,7 @@ const fr = {
       donner: 'Donner un devoir',
       donne_one: 'Devoir donné : {{count}} étudiant prévenu.',
       donne_other: 'Devoir donné : {{count}} étudiants prévenus.',
-      aucunQuiz: 'Aucun quiz dans votre compte ClassQuiz. Créez-en un depuis l’espace Quiz.',
+      aucunQuiz: 'Aucun quiz dans votre compte PlannerQuiz. Créez-en un depuis l’espace Quiz.',
       aucunEnseignant: 'Aucun devoir donné pour le moment.',
       quiz: 'Quiz',
       module: 'Module',
