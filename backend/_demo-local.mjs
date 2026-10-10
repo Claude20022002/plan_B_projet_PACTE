@@ -16,7 +16,7 @@
 //     exec -T backend node --input-type=module - < deploy/vps/demo/demo-enseignant.mjs >> /root/hestim-identifiants.txt
 import crypto from "crypto";
 import { Op } from "sequelize";
-import sequelize from "/app/config/db.js";
+import sequelize from "./config/db.js";
 import {
     Affectation,
     AppareilEtudiant,
@@ -37,8 +37,8 @@ import {
     Salle,
     SignalementPresence,
     Users,
-} from "/app/models/index.js";
-import { hashPassword } from "/app/utils/passwordHelper.js";
+} from "./models/index.js";
+import { hashPassword } from "./utils/passwordHelper.js";
 
 const log = (m) => process.stderr.write(`${m}\n`);
 const EMAIL = (process.env.DEMO_EMAIL || "haidrar.demo@hestim.ma").trim().toLowerCase();
