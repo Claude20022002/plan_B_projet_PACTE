@@ -189,6 +189,8 @@ export const userAPI = {
 
 // ==================== ENSEIGNANTS ====================
 export const enseignantAPI = {
+    // Mes classes (module × groupe) d'après mes services et mon emploi du temps, séance en cours d'abord
+    mesClasses: () => request('/enseignants/mes-classes'),
     getAll: (params) => {
         const query = new URLSearchParams(params).toString();
         return request(`/enseignants${query ? `?${query}` : ''}`);

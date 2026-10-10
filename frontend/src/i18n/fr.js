@@ -396,6 +396,17 @@ const fr = {
     videTitre: 'Aucun signalement',
     videTexte: 'Les soupçons de fraude à l’appel apparaîtront ici.',
   },
+  classes: {
+    label: 'Classe',
+    aide: 'Vos classes, d’après vos services et votre emploi du temps. La séance en cours ou la prochaine est proposée d’abord.',
+    aucune: 'Aucune classe trouvée : ni service accepté, ni séance à votre emploi du temps. Contactez l’administration si c’est une erreur.',
+    enCours: 'En cours jusqu’à {{fin}}',
+    enCoursCourt: 'En cours',
+    prochaine: 'Prochaine séance : {{date}} à {{heure}}',
+    sansSeance: 'Aucune séance à venir',
+    effectif_one: '{{count}} étudiant',
+    effectif_other: '{{count}} étudiants',
+  },
   journalSecurite: {
     intro: 'Connexions, double authentification, mots de passe, sessions et comptes, du plus récent au plus ancien. Cliquez sur un compte pour ne voir que ses événements. Les mots de passe et les codes n’y figurent jamais.',
     evenement: 'Événement',
@@ -437,6 +448,7 @@ const fr = {
       compte_supprime: 'Compte supprimé',
       comptes_importes: 'Import de comptes',
       appareil_delie: 'Téléphone délié',
+      quiz_ia_genere: 'Quiz généré par l’IA',
     },
   },
   presence: {

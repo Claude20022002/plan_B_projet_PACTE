@@ -299,7 +299,7 @@ export default function Jeux() {
         )}
 
         {/* ── Devoirs notés (quiz ClassQuiz corrigés par Planner) ─────────── */}
-        {accueil && <PanneauDevoirs enseignant={enseignant} modules={modules} />}
+        {accueil && <PanneauDevoirs enseignant={enseignant} />}
 
         {/* ── Jeux de mes modules ─────────────────────────────────────── */}
         {(enseignant || modules.length > 0) && (

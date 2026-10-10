@@ -27,6 +27,7 @@ import { ACCEPT_DEVOIRS, erreurFichierDevoir } from '../../utils/fichiers';
 import { useToast } from '../../contexts/ToastContext';
 import { ds } from '../../design-system/tokens';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
+import SelecteurClasse from '../planning/SelecteurClasse';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
 
 /** Date limite par défaut : dans une semaine, à 23 h 59 (champ datetime-local) */
@@ -38,19 +39,21 @@ const dansUneSemaine = () => {
 };
 
 /**
- * Donner un devoir dans un de mes modules, avec une date limite : l'un de mes quiz ClassQuiz
- * (corrigé par Planner) ou un fichier à rendre (consignes, énoncé facultatif, noté par moi).
+ * Donner un devoir à l'une de mes classes (module × groupe de mon service ou de mon emploi du
+ * temps, la séance en cours ou la prochaine proposée d'abord), avec une date limite : l'un de mes
+ * quiz ClassQuiz (corrigé par Planner) ou un fichier à rendre (consignes, énoncé facultatif).
  */
-function DonnerDevoir({ ouvert, modules, fermer, cree }) {
+function DonnerDevoir({ ouvert, fermer, cree }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [quiz, setQuiz] = useState(null);
-  const [choix, setChoix] = useState({ type: 'fichier', titre: '', consignes: '', quiz_id: '', id_cours: '', date_limite: dansUneSemaine(), but: 'verifier', notion: '' });
+  const [choix, setChoix] = useState({ type: 'fichier', titre: '', consignes: '', quiz_id: '', classe: null, date_limite: dansUneSemaine(), but: 'verifier', notion: '' });
+  const choisirClasse = useCallback((classe) => setChoix((c) => ({ ...c, classe })), []);
   const [enonce, setEnonce] = useState(null);
   const [erreurEnonce, setErreurEnonce] = useState('');
   const [envoi, setEnvoi] = useState(false);
   const fichier = choix.type === 'fichier';
-  const pret = choix.id_cours && choix.date_limite && (fichier ? choix.titre.trim() : choix.quiz_id);
+  const pret = choix.classe && choix.date_limite && (fichier ? choix.titre.trim() : choix.quiz_id);
 
   const choisirEnonce = (e) => {
     const f = e.target.files?.[0];
@@ -76,7 +79,7 @@ function DonnerDevoir({ ouvert, modules, fermer, cree }) {
   const valider = async () => {
     setEnvoi(true);
     try {
-      const commun = { id_cours: Number(choix.id_cours), date_limite: new Date(choix.date_limite).toISOString(), but: choix.but, notion: choix.notion.trim() };
+      const commun = { id_cours: choix.classe.id_cours, id_groupe: choix.classe.id_groupe, date_limite: new Date(choix.date_limite).toISOString(), but: choix.but, notion: choix.notion.trim() };
       const r = await devoirsAPI.creer(fichier ? { ...commun, type: 'fichier', titre: choix.titre.trim(), consignes: choix.consignes.trim() } : { ...commun, quiz_id: choix.quiz_id });
       if (fichier && enonce) {
         try {
@@ -127,13 +130,7 @@ function DonnerDevoir({ ouvert, modules, fermer, cree }) {
               ))}
             </TextField>
           )}
-          <TextField select label={t('jeux.devoirs.module')} value={choix.id_cours} onChange={(e) => setChoix((c) => ({ ...c, id_cours: e.target.value }))}>
-            {modules.map((m) => (
-              <MenuItem key={m.id_cours} value={m.id_cours}>
-                {m.code} · {m.nom}
-              </MenuItem>
-            ))}
-          </TextField>
+          {ouvert && <SelecteurClasse valeur={choix.classe} onChange={choisirClasse} />}
           <TextField select label={t('jeux.modules.but')} value={choix.but} onChange={(e) => setChoix((c) => ({ ...c, but: e.target.value }))}>
             <MenuItem value="verifier">{t('jeux.buts.verifier')}</MenuItem>
             <MenuItem value="entrainer">{t('jeux.buts.entrainer')}</MenuItem>
@@ -312,7 +309,7 @@ function NotesDevoir({ idDevoir, fermer, modifie }) {
  * Devoirs notés de l'espace Jeux. L'étudiant voit ses devoirs à rendre et ses notes ; l'enseignant
  * donne un de ses quiz en devoir dans un module et consulte les notes.
  */
-export default function PanneauDevoirs({ enseignant, modules }) {
+export default function PanneauDevoirs({ enseignant }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const toast = useToast();
@@ -401,7 +398,6 @@ export default function PanneauDevoirs({ enseignant, modules }) {
       {enseignant && (
         <DonnerDevoir
           ouvert={donner}
-          modules={modules}
           fermer={() => setDonner(false)}
           cree={() => {
             setDonner(false);
