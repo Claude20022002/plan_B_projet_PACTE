@@ -2,7 +2,7 @@ import sequelize from "../config/db.js";
 import { Campus, CompetenceEnseignant, Cours, Creneau, Enseignant, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
-import { hashPassword } from "../utils/passwordHelper.js";
+import { hashPassword, verifierMotDePasse } from "../utils/passwordHelper.js";
 import { pick } from "../utils/validationHelper.js";
 import { chargesEnseignants, disponibiliteEnseignant } from "../services/planning/enseignants.js";
 import { STATUTS_ENSEIGNANT } from "../config/referentiel.js";
@@ -269,7 +269,15 @@ export const importEnseignants = asyncHandler(async (req, res) => {
             
             if (!user) {
                 // Créer l'utilisateur
-                // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion
+                // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion.
+                // Provisoire, il suit quand même la politique : il reste valable jusqu'à la première connexion
+                if (enseignantData.password) {
+                    const verification = await verifierMotDePasse(String(enseignantData.password), { user: enseignantData });
+                    if (!verification.valid) {
+                        results.errors.push({ email: enseignantData.email, error: verification.errors[0] });
+                        continue;
+                    }
+                }
                 const password_hash = enseignantData.password ? await hashPassword(String(enseignantData.password)) : await empreinteInutilisable();
 
                 user = await Users.create({

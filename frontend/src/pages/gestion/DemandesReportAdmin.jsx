@@ -26,12 +26,10 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { demandeReportAPI } from '../../services/api';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_DEMANDES_REPORT } from '../../utils/exportColumns';
-import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
 import ViolationsDialog from '../../components/planning/ViolationsDialog';
 
 export default function DemandesReportAdmin() {
-    const { user } = useAuth();
     const [demandes, setDemandes] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');

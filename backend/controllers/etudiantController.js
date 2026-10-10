@@ -1,7 +1,7 @@
 import { Etudiant, Users, Groupe, Appartenir, Filiere } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
-import { hashPassword } from "../utils/passwordHelper.js";
+import { hashPassword, verifierMotDePasse } from "../utils/passwordHelper.js";
 import { pick } from "../utils/validationHelper.js";
 import { creerLienInvitation, empreinteInutilisable, envoyerInvitation } from "../services/comptes.js";
 
@@ -313,7 +313,15 @@ export const importEtudiants = asyncHandler(async (req, res) => {
             
             if (!user) {
                 // Créer l'utilisateur
-                // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion
+                // Mot de passe du fichier (provisoire) ou aléatoire + invitation ; à changer à la connexion.
+                // Provisoire, il suit quand même la politique : il reste valable jusqu'à la première connexion
+                if (etudiantData.password) {
+                    const verification = await verifierMotDePasse(String(etudiantData.password), { user: etudiantData });
+                    if (!verification.valid) {
+                        results.errors.push({ email: etudiantData.email, error: verification.errors[0] });
+                        continue;
+                    }
+                }
                 const password_hash = etudiantData.password ? await hashPassword(String(etudiantData.password)) : await empreinteInutilisable();
 
                 user = await Users.create({

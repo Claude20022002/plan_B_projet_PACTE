@@ -43,9 +43,13 @@ jobs:
       - name: Installer les dépendances
         run: npm ci
 
+      # Dépendances livrées (hors outils de développement) : une vulnérabilité haute ou critique bloque
+      - name: Audit des dépendances
+        run: npm audit --omit=dev --audit-level=high
+
+      # Bloquant : une erreur échoue la CI (les avertissements react-hooks restent permis)
       - name: Lint
         run: npm run lint --if-present
-        continue-on-error: true   # erreurs anciennes à résorber (phase G) : avertissement, pas bloquant
 
       - name: Build de production
         run: npm run build
@@ -86,6 +90,10 @@ jobs:
 
       - name: Installer les dépendances
         run: npm ci
+
+      # Dépendances livrées (hors outils de développement) : une vulnérabilité haute ou critique bloque
+      - name: Audit des dépendances
+        run: npm audit --omit=dev --audit-level=high
 
       - name: Tests unitaires
         run: npm test --if-present
@@ -135,6 +143,14 @@ jobs:
 
       - name: Installer les dépendances
         run: npm ci
+
+      # Les vulnérabilités hautes connues sont dans l'outillage de build d'Expo (Metro, Jest, CLI),
+      # absent de l'application installée, et le correctif proposé par npm rétrograderait Expo :
+      # seule une vulnérabilité critique bloque ; le détail reste affiché dans le journal
+      - name: Audit des dépendances
+        run: |
+          npm audit --omit=dev || true
+          npm audit --omit=dev --audit-level=critical
 
       - name: Lint
         run: npx eslint src

@@ -176,13 +176,6 @@ export default function Utilisateurs() {
         }
     };
 
-    const filteredUsers = utilisateurs.filter(
-        (user) =>
-            user.nom?.toLowerCase().includes(search.toLowerCase()) ||
-            user.prenom?.toLowerCase().includes(search.toLowerCase()) ||
-            user.email?.toLowerCase().includes(search.toLowerCase())
-    );
-
     return (
         <DashboardLayout>
             <Box>

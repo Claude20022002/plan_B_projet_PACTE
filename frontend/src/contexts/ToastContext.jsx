@@ -17,7 +17,8 @@ import Alert from '@mui/material/Alert';
 const ToastContext = createContext(null);
 
 export function ToastProvider({ children }) {
-  const [queue, setQueue] = useState([]);
+  // File d'attente : lue seulement par les mises à jour fonctionnelles de setQueue
+  const [, setQueue] = useState([]);
   const [open, setOpen]   = useState(false);
   const [current, setCurrent] = useState(null);
 
