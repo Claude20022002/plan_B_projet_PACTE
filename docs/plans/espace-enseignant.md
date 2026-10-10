@@ -32,13 +32,15 @@ L'enseignant fait tout ce qui concerne sa classe depuis un seul endroit, sur son
 | **B. Deux fenêtres** : la projection sur le grand écran, la liste d'appel sur l'ordinateur ou le téléphone de l'enseignant | le QR seul ; l'enseignant coche à la main de son côté | aucun de plus que A : les deux pages lisent le même appel sur le serveur | demande un écran étendu, ou le téléphone (voir § 5) |
 | **C. Lien de projection** : l'enseignant ouvre sur le navigateur du grand écran une adresse courte à usage unique, valable pour cette séance | le QR seul, sans aucune session de l'enseignant sur l'écran de la salle | moyen : jeton signé limité à la lecture du code d'une séance, expirant à la fin de l'appel | il faut saisir l'adresse sur le grand écran ; à sécuriser avec soin (le jeton donne le QR, donc la présence) |
 
-**Recommandation :** A tout de suite (elle règle le cas décrit), B gratuitement avec elle, C seulement si les salles ont un navigateur utilisable sur le grand écran.
+**Décision (10 octobre 2026) :** A, avec B qui vient gratuitement. **C est écartée** : les grands écrans des salles ne servent qu'à recopier l'écran de l'ordinateur de l'enseignant, ils n'ont pas de navigateur à utiliser.
 
 **Règles à garder :** le code change toujours toutes les 30 secondes ; aucun nom d'étudiant sur la page projetée ; le scan reste réservé à l'application mobile (anti-fraude inchangée).
 
 ## 4. Quiz en direct : faire mieux que Wooclap
 
-Les capacités de Wooclap citées ici viennent de l'usage observé à l'école (captures du 10 octobre 2026 : question d'association, QCM) et de la connaissance générale du produit. **À confirmer avec un enseignant qui l'utilise** avant de figer la liste.
+**Usage à l'école (confirmé le 10 octobre 2026) :** le quiz se déroule **question par question sur l'écran de la salle** ; les étudiants choisissent leur réponse **sur leur téléphone** ; l'écran montre **le nombre de choix pour chaque réponse**. Deux captures montrent un QCM et une question d'association. C'est ce déroulement que Planner doit reproduire en premier ; les autres capacités de Wooclap citées plus bas viennent de la connaissance générale du produit et restent à confirmer avec un enseignant.
+
+**Conséquence pour CQ-2** (écran du projecteur dans Planner) : après chaque question, l'écran affiche le nombre de réponses par choix, avec la bonne réponse mise en avant. Constat dans le fork (`frontend/src/lib/play/admin/results.svelte`) : après une question, l'animateur voit le **classement des joueurs** ; le décompte par choix n'existe que pour les questions de vote (`voting_results.svelte`). Les résultats d'une question contiennent la réponse de chaque joueur : le décompte se calcule donc dans l'écran de Planner, sans changer le serveur de jeu.
 
 ### 4.1 Ce que Planner fait déjà mieux
 
@@ -120,8 +122,8 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 | Lot | Contenu | Résultat | Dépend de | État |
 |---|---|---|---|---|
 | **P-1** | Fenêtre de projection de l'appel : page sans menu, plein écran, QR, classe, compte des présents (FR et EN) | Le QR se projette sans montrer le portail | — | à faire |
-| **P-2** | Lien de projection à usage unique pour le navigateur du grand écran | Aucune session de l'enseignant sur l'écran de la salle | P-1 ; décision § 9 | à décider |
-| **CQ-1 à CQ-3** | voir `quiz-ia.md` | Quiz lancé et projeté depuis Planner | IA-4 | à faire |
+| **P-2** | Lien de projection à usage unique pour le navigateur du grand écran | — | — | écarté (les écrans recopient seulement l'ordinateur) |
+| **CQ-1 à CQ-3** | voir `quiz-ia.md` ; CQ-2 inclut le nombre de réponses par choix après chaque question | Quiz lancé et projeté depuis Planner, question par question | IA-4 | à faire |
 | **W-1** | Question d'association : fork, joueurs web et mobile, devoirs, éditeur, IA | Le type le plus utilisé de Wooclap est couvert | CQ-2 | à faire |
 | **W-2** | Retour immédiat et explication de la réponse | L'étudiant sait tout de suite s'il a juste, et pourquoi | CQ-2 | à faire |
 | **W-3** | Mode « à son rythme » pendant la séance | Chaque étudiant avance seul | W-2 | à faire |
@@ -140,9 +142,7 @@ Un nouveau type de question touche à chaque fois : le modèle et la notation da
 
 ## 9. Points ouverts
 
-- **Wooclap :** quels types de questions les enseignants utilisent-ils vraiment, et jusqu'à quand court la licence ? La réponse fixe l'ordre des lots W.
-- **Grand écran des salles :** a-t-il un navigateur utilisable, ou sert-il seulement à recopier l'écran de l'ordinateur ? La réponse décide de P-2.
+- **Wooclap :** au-delà du QCM question par question et de l'association, quels autres types les enseignants utilisent-ils, et jusqu'à quand court la licence ? La réponse fixe l'ordre des lots W-3 à W-6.
 - **Application mobile des enseignants :** publication dans les magasins sous le même nom que celle des étudiants, ou distribution interne d'abord ?
 - **Vidéos :** qui les produit, avec quel outil, et où sont-elles hébergées (taille, débit) ?
-- **Bouton d'aide :** la demande cite « étudiants, prof et enseignant » ; ce plan lit le troisième public comme **l'administration**. À confirmer.
 - **Notes de la classe :** quelle source fait foi (devoirs et quiz de Planner, ou un outil de scolarité existant) ?
