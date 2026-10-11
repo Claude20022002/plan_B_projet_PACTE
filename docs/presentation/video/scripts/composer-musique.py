@@ -302,7 +302,18 @@ def lire_storyboard():
     return durees, vertical, accroche
 
 
-GROOVE = {"agenda", "alerte", "supports", "resultats", "appel"}
+def lire_matinee():
+    """Durées des deux montages de « Une matinée à l'école » (TEMPS_SALLE, TEMPS_RESEAUX), lues dans Matinee.tsx."""
+    source = open(os.path.join(ICI, "..", "src", "Matinee.tsx"), encoding="utf-8").read()
+    montages = {}
+    for nom in ("TEMPS_SALLE", "TEMPS_RESEAUX"):
+        debut = source.index(f"export const {nom}")
+        bloc = source[debut : source.index("} as const;", debut)]
+        montages[nom] = {scene: int(n) * TEMPS for scene, n in re.findall(r"(\w+): (\d+) \* BEAT", bloc)}
+    return montages
+
+
+GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "admin"}
 
 
 def composer(ids, durees):
@@ -351,6 +362,16 @@ def composer(ids, durees):
                 sfx.ajouter(s + 2.0, toucher(), 0.45)  # premier scan
                 volets(sfx, s + 2.0, s + 2.5, 0.14)  # compteur de présents
                 volets(sfx, s + 3.0, s + 3.25, 0.22)  # le code se renouvelle
+            elif i == "quiz":
+                sfx.ajouter(s + 0.3, souffle(0.6), 0.45)  # l'écran de la salle et le téléphone entrent
+                sfx.ajouter(s + d * 0.5, toucher(), 0.5)  # l'étudiante touche sa réponse
+                sfx.ajouter(s + d * 0.78, carillon(), 0.4)  # la bonne réponse s'allume
+            elif i == "bientot":
+                volets(sfx, s, s + 0.7, 0.18)  # « BIENTÔT » en volets
+                sfx.ajouter(s + 0.6, souffle(0.5, haut=True), 0.3)  # premier téléphone
+                sfx.ajouter(s + d * 0.4, souffle(0.5, haut=True), 0.3)  # second téléphone
+            elif i == "admin":
+                sfx.ajouter(s + 0.2, souffle(0.7), 0.4)
         elif i == "chiffres":
             section_groove(sec, musique, s, s + d, legere=True, origine=s)
             volets(sfx, s, s + 0.6)
@@ -371,3 +392,9 @@ if __name__ == "__main__":
         donnees = composer(ids, durees)
         wavfile.write(os.path.join(SORTIE, nom), SR, donnees)
         print(f"{nom} : {len(donnees) / SR:.2f} s ({', '.join(ids)})")
+    # « Une matinée à l'école » : chaque montage a ses propres durées
+    matinee = lire_matinee()
+    for nom, temps in (("matinee.wav", matinee["TEMPS_SALLE"]), ("matinee-9x16.wav", matinee["TEMPS_RESEAUX"])):
+        donnees = composer(list(temps), temps)
+        wavfile.write(os.path.join(SORTIE, nom), SR, donnees)
+        print(f"{nom} : {len(donnees) / SR:.2f} s ({', '.join(temps)})")
