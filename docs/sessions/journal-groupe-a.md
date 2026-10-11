@@ -171,7 +171,7 @@ Sur demande du chef de projet, les branches `a/a1-modele-import`, `a/a2-mots-de-
 - Variable documentée dans `backend/.env.example` et `.env.docker.example`. Les tests tournent avec la variable allumée (`setupEnv.js`).
 - Aucun fichier, aucune table, aucune migration retirés.
 
-**Vérifié.** Un test nouveau dans `devoirs.test.js` : variable éteinte, les six routes répondent 503, la liste des quiz 200, une requête sans jeton 401 ; les activités de l'étudiant et de l'enseignant et l'historique ne citent plus le devoir, qui reste en base ; variable rallumée, tout revient. Les cinq suites touchées (devoirs, jeux, « Mes classes », lancement du quiz, quiz par l'IA) : 59 tests sur 59. Lint : 0 erreur, 18 avertissements, comme avant.
+**Vérifié.** Un test nouveau dans `devoirs.test.js` : variable éteinte, les six routes répondent 503, la liste des quiz 200, une requête sans jeton 401 ; les activités de l'étudiant et de l'enseignant et l'historique ne citent plus le devoir, qui reste en base ; variable rallumée, tout revient. Les cinq suites touchées (devoirs, jeux, « Mes classes », lancement du quiz, quiz par l'IA) : 59 tests sur 59. Suite d'intégration complète : 350 sur 350 (32 fichiers). Tests unitaires : 180 sur 180. Lint : 0 erreur, 18 avertissements, comme avant.
 
 **Pour rallumer les devoirs** : `DEVOIRS_ACTIFS=true` dans `.env.docker` du serveur, puis redémarrer le backend ; et `DEVOIRS_ACTIFS = true` dans `shared/fonctions.js` (groupe B), puis reconstruire le site et l'application.
 
