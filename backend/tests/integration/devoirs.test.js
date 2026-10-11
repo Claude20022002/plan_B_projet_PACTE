@@ -1,3 +1,5 @@
+import request from "supertest";
+import app from "../../app.js";
 import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import { AnneeUniversitaire, Appartenir, CoursComposante, Devoir, Enseignement, EnseignementEnseignant, Groupe, Notification, Periode } from "../../models/index.js";
@@ -151,6 +153,39 @@ describe("Faire le devoir", () => {
         const autre = await createUser("etudiant");
         await Appartenir.create({ id_user_etudiant: autre.id_user, id_groupe: tp.id_groupe });
         expect((await (await loginAs(autre)).send("post", `/api/devoirs/${idDevoir}/rendu`, { reponses: [1, [0, 2], "print", 4, [], 0] })).status).toBe(409);
+    });
+
+    test("devoirs fermés (DEVOIRS_ACTIFS éteinte) : routes indisponibles, plus rien dans les activités ni l'historique", async () => {
+        const prof = await loginAs(enseignant);
+        const eleve = await loginAs(etudiant);
+        // Ouverts : le devoir donné plus haut est bien visible, pour que la fermeture prouve quelque chose
+        expect((await eleve.get("/api/activites")).body.modules[0].devoirs).toHaveLength(1);
+        expect((await prof.get("/api/jeux/historique")).body.data.map((e) => e.type)).toContain("devoir");
+
+        process.env.DEVOIRS_ACTIFS = "false";
+        try {
+            const fermees = [
+                await eleve.get("/api/devoirs"),
+                await eleve.get(`/api/devoirs/${idDevoir}`),
+                await eleve.send("post", `/api/devoirs/${idDevoir}/rendu`, { reponses: [] }),
+                await prof.send("post", "/api/devoirs", { quiz_id: QUIZ_ID, id_cours: fixture.cours.id_cours, date_limite: demain() }),
+                await prof.get(`/api/devoirs/${idDevoir}/resultats`),
+                await prof.send("delete", `/api/devoirs/${idDevoir}`),
+            ];
+            expect(fermees.map((r) => r.status)).toEqual([503, 503, 503, 503, 503, 503]);
+            expect(fermees[0].body).toMatchObject({ code: "DEVOIRS_FERMES" });
+            expect(await Devoir.count()).toBe(1);
+            // La liste des quiz sert aussi à lancer une partie en direct : elle reste ouverte
+            expect((await prof.get("/api/devoirs/quiz-disponibles")).status).toBe(200);
+            // Sans jeton, la réponse reste 401 : la fermeture ne dit rien à un inconnu
+            expect((await request(app).get("/api/devoirs")).status).toBe(401);
+            expect((await eleve.get("/api/activites")).body.modules.flatMap((m) => m.devoirs)).toEqual([]);
+            expect((await prof.get("/api/activites")).body.modules.flatMap((m) => m.devoirs)).toEqual([]);
+            expect((await prof.get("/api/jeux/historique")).body.data.map((e) => e.type)).not.toContain("devoir");
+        } finally {
+            process.env.DEVOIRS_ACTIFS = "true";
+        }
+        expect((await eleve.get("/api/devoirs")).status).toBe(200);
     });
 
     test("suppression réservée aux enseignants du module", async () => {

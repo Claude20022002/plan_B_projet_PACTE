@@ -40,6 +40,9 @@ const defaults = {
     RATE_LIMIT_PERSISTANT: "false",
     // Vide : aucune génération par IA réelle (les tests remplacent le client)
     IA_CLE: "",
+    // Devoirs ouverts : leur code reste testé alors qu'ils sont fermés par défaut en production
+    // (lot D-2) ; devoirs.test.js les ferme le temps de vérifier la fermeture
+    DEVOIRS_ACTIFS: "true",
 };
 
 for (const [key, value] of Object.entries(defaults)) {

@@ -10,27 +10,33 @@ import {
     sujetDuDevoir,
     supprimerDevoir,
 } from "../services/quiz/devoirs.js";
+import { exigerDevoirsActifs } from "../services/quiz/devoirsActifs.js";
 
 /**
  * Devoirs notés : un quiz ClassQuiz corrigé par Planner (phase Q). Les devoirs « fichier » ont été
  * retirés le 10 octobre 2026 (l'enseignant ne donne que des quiz).
- *  - GET    /api/devoirs                   mes devoirs (étudiant) ou ceux que j'ai donnés (enseignant)
  *  - GET    /api/devoirs/quiz-disponibles  mes quiz ClassQuiz (enseignant)
+ *  - GET    /api/devoirs                   mes devoirs (étudiant) ou ceux que j'ai donnés (enseignant)
  *  - POST   /api/devoirs                   { quiz_id, id_cours, id_groupe?, date_limite }
  *  - GET    /api/devoirs/:id               sujet (sans réponses), correction après la date limite
  *  - POST   /api/devoirs/:id/rendu         { reponses } : une copie, notée sur 20
  *  - GET    /api/devoirs/:id/resultats     notes des étudiants visés (enseignant)
  *  - DELETE /api/devoirs/:id               supprimer le devoir
+ * Devoirs fermés (DEVOIRS_ACTIFS éteinte, lot D-2) : toutes répondent 503, sauf la première.
  */
 const router = express.Router();
 router.use(authenticateToken);
 
-router.get("/", planification(async (req, res) => {
-    res.json({ data: await devoirsDe(req.user) });
-}));
-
+// Déclarée avant la garde : la liste des quiz de l'enseignant sert aussi à lancer une partie en
+// direct (POST /api/quiz/parties), qui reste ouverte quand les devoirs sont fermés
 router.get("/quiz-disponibles", planification(async (req, res) => {
     res.json({ data: await quizDisponibles(req.user) });
+}));
+
+router.use(exigerDevoirsActifs);
+
+router.get("/", planification(async (req, res) => {
+    res.json({ data: await devoirsDe(req.user) });
 }));
 
 router.post("/", planification(async (req, res) => {
