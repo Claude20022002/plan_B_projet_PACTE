@@ -274,8 +274,44 @@ Sur demande du chef de projet.
 - Tableau de l'administration, un lundi à 13 h 45 : la liste commence à « Demain », sans les séances de l'après-midi.
 - Le menu de l'administration garde « Mes surveillances ».
 
+### Demandes du groupe B traitées côté serveur (branche `a/d2-devoirs-fermes`)
+
+- **Campus préféré par promotion** (migration 0040, `Groupes.id_campus_prefere`). Le campus d'un groupe l'emporte sur celui de sa filière ; un TD ou un TP sans campus prend celui de sa promotion (`campusPrefereDesGroupes`, `services/planning/groupes.js`). Lu par le problème envoyé au solveur et par l'assistant de créneaux. `POST` et `PUT /api/groupes` acceptent `id_campus_prefere` (campus vérifié). Test d'intégration nouveau : filière seule, promotion, puis TD.
+- **Quiz à partir d'un sujet seul**. `POST /api/quiz-ia/generations?…&sujet=<200 caractères au plus>` sans corps : `source` vaut `sujet`, `nom_source` le sujet, aucune question ne garde de repère, et la régénération d'une question repart du sujet. Avec un document et un sujet, le document reste la source et le sujet précise la demande (gardé dans `reglages.sujet`). `GET /api/quiz-ia/disponibilite` rend `sujet: true`. La consigne du modèle est sortie de `quiz.js` (389 lignes, 364 après) vers `services/ia/consigne.js`.
+- **« PlannerQuiz » dans les messages** : remplacé par « le service de quiz » ou « l'espace Quiz » dans les dix messages renvoyés aux écrans. `client_name` du fournisseur OpenID reste « PlannerQuiz HESTIM ».
+- **Liste des quiz ouverte quand les devoirs sont fermés** : déjà fait avec D-2.
+
+**À savoir sur le sujet seul.** Rien ne permet de vérifier les questions contre un texte : la consigne demande au modèle de s'en tenir aux connaissances établies, et le brouillon reste à relire par l'enseignant. Pas essayé avec le vrai fournisseur.
+
+**Vérifié.** Quiz par l'IA : 21 tests sur 21 (2 nouveaux). Génération : 8 sur 8 (1 nouveau). Lint : 0 erreur.
+
+### Solveur : meilleur usage des salles (demande du chef de projet)
+
+Deux préférences de plus, dans `ContraintesEmploiDuTemps` ; leurs calculs sont dans `UsageDesSalles.java`.
+
+- **Salle à la taille du groupe** : un point par tranche de 10 places vides au-delà d'une marge de 10. À capacité suffisante, la plus petite salle l'emporte, et les grandes restent libres pour les grands groupes.
+- **Même salle pour deux cours qui se suivent** : 2 points par changement de salle dans la journée d'un groupe, quand les deux cours se suivent à 30 minutes près. Un cours qui demande un type de salle (laboratoire) justifie le changement.
+
+Ces poids restent sous ceux des journées sans trous (5) et du campus unique dans la journée (10) : une salle mieux remplie ne fait pas déplacer un cours.
+
+**Vérifié.** Solveur : 20 tests sur 20, dont 2 nouveaux et la résolution complète.
+
+**Pas vérifié** : l'effet sur une vraie génération (durée du calcul, qualité de l'emploi du temps obtenu). À regarder à la prochaine génération de démonstration.
+
+### Anomalies des tableaux, corrigées
+
+- **Tableau de l'administration qui commençait à « Demain »** : la liste des séances est plafonnée à 100 par page et triée de la plus tardive à la plus proche. Trois jours de campus (220 séances) perdaient celles du jour. `GET /api/affectations` accepte `ordre=asc` (les plus proches d'abord) ; le tableau le demande (`AdminDashboard.jsx`, dossier `../planner-a-scan`).
+- **« EN COURS · DANS 2 HEURES »** sur la séance en cours : c'était l'heure de fin, lue comme une heure de début. Remplacé par « EN COURS · FIN À 15:15 » (`SessionSpotlight.jsx`, clé `board.endsAt` dans `shared/i18n`).
+- **« Mes surveillances » dans le menu de l'administration** : ce n'est pas une anomalie. Le personnel de l'administration surveille les examens ; seuls les enseignants n'en ont plus.
+
+**Vérifié** sur de nouvelles captures (`admin-01-tableau.png`, `prof-01-tableau.png`). Lint du site : 0 erreur.
+
+**Reste, pour le groupe B** : deux autres pages demandent plus de 100 séances d'un coup (`EmploiDuTempsAdmin.jsx` avec `limit: 1000`, `Affectations.jsx` avec `limit: 10000`) et n'en reçoivent que 100.
+
 ### Demandes au groupe B
 
+- **Groupes, champ à ajouter** : `id_campus_prefere` dans le formulaire d'un groupe (surtout d'une promotion), comme pour une filière.
+- **Quiz par l'IA** : le chemin « sujet seul » est prêt (contrat ci-dessus) ; le site peut l'activer quand `disponibilite.sujet` est vrai.
 - **Génération, nouvel avertissement à afficher** : le rapport d'une génération (`rapport.avertissements`) peut contenir `{ type: "plafond_hebdomadaire", id_user, enseignant, statut, plafond_heures, heures_semaine, seances }`, à côté de `disponibilites_insuffisantes`. `GenerationAutomatique.jsx` ne connaît que le second.
 - **Site du quiz, page du joueur** : `frontend/src/routes/play/+page.svelte` envoie `gameData.game_id` à la statistique « Joined Game ». Le moteur ne le fournit plus : retirer cette propriété.
 - **CI** : `.github/workflows/ci-cd.yml` est modifié par A-4 (une étape « Lint » dans « Test Backend »). B-8 se met à jour sur cette branche fusionnée avant d'y toucher.
