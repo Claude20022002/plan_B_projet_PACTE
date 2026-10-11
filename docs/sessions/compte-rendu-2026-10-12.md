@@ -211,6 +211,15 @@ Fait par le groupe B depuis le compte rendu de midi : **R-11 (écran)**, **B-4**
 
 L'onglet « Menu » ; l'espace Carrière ; la Bibliothèque à la place de Moodle ; l'illustration et l'extrait vidéo dans une question sur le téléphone ; une entrée pour les jeux des modules. Plus tard : l'application mobile des enseignants et les lots P-1 à P-5.
 
+**Idée ajoutée le 11 octobre au soir (chef de projet) : s'inspirer de Kahoot.** Trois volets, à étudier avant tout lot :
+
+- **Récupérer des jeux de Kahoot** : reprendre dans Planner des quiz déjà faits sur Kahoot. À vérifier d'abord : ce que Kahoot permet d'exporter, et à qui appartiennent les quiz. Seuls les quiz créés par les enseignants de l'école, ou publiés sous une licence qui l'autorise, peuvent être repris ; aspirer le contenu du site est interdit par ses conditions d'utilisation. Piste technique : l'import par tableur, déjà envisagé pour Wooclap (W-5, abandonné par `assainissement.md`, § 3.2), et la génération par l'IA, qui crée déjà des quiz rapidement.
+- **Étudier son modèle économique** : offre gratuite et formules payantes, par enseignant ou par établissement, et ce que chaque formule débloque. À comparer avec le prix retenu pour Planner (4,99 MAD par compte actif et par mois, payé par l'école : `remarques-par-profil.md`, § 5).
+- **Étudier sa pile technique** : comment le jeu en direct tient des centaines de joueurs, l'écran projeté, le téléphone comme télécommande. Le moteur de quiz de Planner (fork de ClassQuiz) suit déjà ce schéma ; l'étude dira ce qui manque.
+- **« Copier le site »** : s'en inspirer pour l'expérience (rythme, musique, couleurs des réponses, podium), **pas le reproduire**. Le nom, le logo, les visuels, les textes et le code de Kahoot sont protégés, et un site qui imite une marque peut tromper ses utilisateurs. Le moteur de quiz de Planner reprend déjà, avec sa licence, les formes et le mode « kahoot » de ClassQuiz.
+
+Premier pas proposé : une note d'une page (ce que Kahoot fait, ce qu'il coûte, ce que Planner a déjà, ce qui manque), sans code.
+
 **L'écran Bibliothèque de l'application n'a été modifié sur aucune branche.**
 
 ## 8. Décisions attendues du chef de projet
