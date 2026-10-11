@@ -14,6 +14,8 @@ test('origine https d’une adresse', () => {
 
 test('QR de quiz reconnu ; code d’appel et autre site ignorés', () => {
   expect(pinScanne(`${ORIGINE}/play?pin=482913`, ORIGINE)).toBe('482913');
+  // QR de la salle d'attente du service de quiz (classquiz/routers/utils.py)
+  expect(pinScanne(`${ORIGINE}/play?pin=482913&ref=Qr`, ORIGINE)).toBe('482913');
   expect(pinScanne('42.1739.abcDEF_ghiJKL-mnoPQR', ORIGINE)).toBeNull();
   expect(pinScanne('https://pirate.test/play?pin=482913', ORIGINE)).toBeNull();
   // Quiz non installé : tout QR part à l'appel
