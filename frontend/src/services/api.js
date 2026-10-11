@@ -620,6 +620,10 @@ export const quizAPI = {
     getHistorique: () => request('/quiz/parties/historique'),
     // { partie, classement, moi, equipes, nuages }
     getResultats: (id) => request(`/quiz/parties/${encodeURIComponent(id)}/resultats`),
+    // Mes quiz (IA-5) : { id, titre, description, questions: [{ question, time, type, answers: [{ answer, right }] }], modifiable }
+    quizAModifier: (id) => request(`/quiz/mes-quiz/${encodeURIComponent(id)}`),
+    // Nouvelle version : { titre, description?, questions } → { id, titre, nb_questions }
+    modifierQuiz: (id, donnees) => request(`/quiz/mes-quiz/${encodeURIComponent(id)}`, { method: 'PUT', body: donnees }),
 };
 
 // ==================== DEVOIRS NOTÉS (quiz ClassQuiz corrigés par Planner) ====================
