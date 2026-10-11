@@ -10,9 +10,9 @@ import { chargerConfigQuiz } from '../api/donnees';
 import { FORMES_KAHOOT } from '../quiz/formes';
 import { lireLienPartie, ordreAffichage, reponseCases, texteSimple, usePartie } from '../quiz/partie';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
+// Couleurs des réponses : les mêmes qu'au projecteur
+import { COULEURS_REPONSES } from '../../../shared/quiz/couleurs.js';
 
-// Couleurs des quatre réponses : celles de ClassQuiz (lignes de filière de Planner), comme au projecteur
-const COULEURS_REPONSES = ['#3B63E0', '#0F8A7E', '#7048C9', '#B03A8C'];
 
 /**
  * Partie ClassQuiz jouée dans l'application, sans page web : l'étudiant rejoint la partie que son

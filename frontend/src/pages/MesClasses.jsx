@@ -6,10 +6,10 @@ import { AutoAwesome, Campaign, FactCheck, LocalLibrary, Quiz, SportsEsports } f
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
+import LancerQuizDialog from '../components/quiz/LancerQuizDialog';
 import { boutonPanneau, boutonPanneauPlein } from '../components/jeux/styles';
 import { enseignantAPI, quizAPI, quizIaAPI } from '../services/api';
 import { supportsDuCours } from '../utils/supports';
-import { adresseEspace } from '../../../shared/espaces.js';
 import { DEVOIRS_ACTIFS } from '../../../shared/fonctions.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
 import { ds } from '../design-system/tokens';
@@ -37,6 +37,8 @@ export default function MesClasses() {
   const [quiz, setQuiz] = useState(null);
   // Génération de quiz par l'IA : proposée seulement si le serveur est configuré
   const [quizIa, setQuizIa] = useState(false);
+  // Classe pour laquelle l'enseignant choisit le quiz à lancer en direct
+  const [lancerPour, setLancerPour] = useState(null);
   const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
 
   const charger = useCallback(
@@ -76,6 +78,8 @@ export default function MesClasses() {
   const autres = useMemo(() => (classes ?? []).filter((c) => !c.en_cours), [classes]);
   const aRappeler = enCours.filter((c) => c.prochaine_seance.appel !== 'ferme' && minutesAvantFin(c.prochaine_seance, maintenant) <= RAPPEL_MINUTES);
 
+  const genererQuiz = (c) => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } });
+
   const ouvrirSupports = async (classe) => {
     const supports = await supportsDuCours(classe.code_cours);
     // La bibliothèque (StudyLib) est une autre application sur la même origine : navigation complète
@@ -112,12 +116,13 @@ export default function MesClasses() {
           </Button>
         )}
         {quizIa && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<AutoAwesome />} onClick={() => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
+          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<AutoAwesome />} onClick={() => genererQuiz(c)}>
             {t('classes.page.quizIa')}
           </Button>
         )}
-        {quiz && c.en_cours && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<SportsEsports />} href={adresseEspace('quiz', { role: 'enseignant', urlQuiz: quiz.url })}>
+        {/* Quiz en direct lancé et projeté depuis Planner (CQ-2) */}
+        {quiz && c.en_cours && seance && (
+          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<SportsEsports />} onClick={() => setLancerPour(c)}>
             {t('classes.page.quizDirect')}
           </Button>
         )}
@@ -182,6 +187,13 @@ export default function MesClasses() {
           </Panneau>
         )}
       </Box>
+
+      <LancerQuizDialog
+        seance={lancerPour?.prochaine_seance ?? null}
+        classe={lancerPour ? nomClasse(lancerPour) : ''}
+        onClose={() => setLancerPour(null)}
+        onCreerAvecIa={quizIa && lancerPour ? () => genererQuiz(lancerPour) : null}
+      />
     </DashboardLayout>
   );
 }

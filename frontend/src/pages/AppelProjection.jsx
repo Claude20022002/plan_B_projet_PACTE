@@ -6,6 +6,7 @@ import { Box, Button, Skeleton, Typography } from '@mui/material';
 import { CheckCircle, Fullscreen, FullscreenExit } from '@mui/icons-material';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import VerificationSurprise from '../components/appel/VerificationSurprise';
+import useEcranProjete from '../hooks/useEcranProjete';
 import { presenceAPI } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import { ds } from '../design-system/tokens';
@@ -32,7 +33,7 @@ export default function AppelProjection() {
   const [erreur, setErreur] = useState('');
   const [valider, setValider] = useState(false);
   const [verification, setVerification] = useState(false);
-  const [pleinEcran, setPleinEcran] = useState(false);
+  const { pleinEcran, basculerPleinEcran } = useEcranProjete();
   const [maintenant, setMaintenant] = useState(() => Date.now());
   const minuterie = useRef(null);
   const ouvert = Boolean(liste?.appel?.ouvert);
@@ -119,36 +120,6 @@ export default function AppelProjection() {
       setQr(null);
     } else if (ouvert && !qr) programmer(0);
   }, [termine, ouvert, qr, programmer]);
-
-  useEffect(() => {
-    const suivre = () => setPleinEcran(Boolean(document.fullscreenElement));
-    document.addEventListener('fullscreenchange', suivre);
-    return () => document.removeEventListener('fullscreenchange', suivre);
-  }, []);
-
-  // L'écran de la salle ne doit pas se mettre en veille pendant l'appel (si le navigateur le permet)
-  useEffect(() => {
-    let verrou = null;
-    const demander = async () => {
-      try {
-        verrou = (await navigator.wakeLock?.request('screen')) ?? null;
-      } catch {
-        // Refusé ou non pris en charge : l'écran suit ses réglages de veille
-      }
-    };
-    demander();
-    const reprendre = () => document.visibilityState === 'visible' && demander();
-    document.addEventListener('visibilitychange', reprendre);
-    return () => {
-      document.removeEventListener('visibilitychange', reprendre);
-      verrou?.release().catch(() => {});
-    };
-  }, []);
-
-  const basculerPleinEcran = () => {
-    if (document.fullscreenElement) document.exitFullscreen().catch(() => {});
-    else document.documentElement.requestFullscreen?.().catch(() => {});
-  };
 
   const fermer = async () => {
     setValider(false);

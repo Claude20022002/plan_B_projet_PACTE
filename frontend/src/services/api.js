@@ -607,6 +607,10 @@ export const appartenanceAPI = {
 export const quizAPI = {
     // { actif, url, peutLancer } : où envoyer l'enseignant pour lancer une partie
     getConfig: () => request('/quiz/config'),
+    // Mes quiz { data: [{ id, titre, nb_questions, modifie_le }] } ; la route vit encore sous /devoirs
+    mesQuiz: () => request('/devoirs/quiz-disponibles'),
+    // Lance une partie en direct pour une séance d'aujourd'hui (CQ-1) → { id_quiz_partie, titre, nb_questions, notifies, animation: { game_pin, game_id, socket } }
+    lancer: ({ id_quiz, id_affectation }) => request('/quiz/parties', { method: 'POST', body: { id_quiz, id_affectation } }),
     getPartiesEnCours: () => request('/quiz/parties/en-cours'),
     // Parties terminées (enseignant) ou mes scores (étudiant)
     getHistorique: () => request('/quiz/parties/historique'),
