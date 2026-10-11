@@ -92,7 +92,7 @@ function Saisie({ question: q, valeur, changer, fige }) {
 
 /** Écran d'un devoir ; devoirs masqués (lot D-1) : une ancienne alerte ramène à l'onglet Activités. */
 export default function DevoirSiActif() {
-  return DEVOIRS_ACTIFS ? <Devoir /> : <Redirect href="/jeux" />;
+  return DEVOIRS_ACTIFS ? <Devoir /> : <Redirect href="/" />;
 }
 
 /**
@@ -149,7 +149,7 @@ function Devoir() {
     ]);
 
   const retour = (
-    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/jeux'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
+    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
       <MaterialCommunityIcons name="arrow-left" size={24} color={couleurs.surCadre} />
     </Pressable>
   );

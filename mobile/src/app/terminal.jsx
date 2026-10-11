@@ -119,7 +119,7 @@ export default function Terminal() {
 
   const suivant = defis[index + 1];
   const fermer = (
-    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/jeux'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
+    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
       <MaterialCommunityIcons name="arrow-left" size={24} color={couleurs.surCadre} />
     </Pressable>
   );
