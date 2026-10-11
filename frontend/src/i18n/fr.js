@@ -712,6 +712,13 @@ const fr = {
           "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
           "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être donné en devoir ou lancé en direct."
         ],
+        // Devoirs masqués (lot D-1, CONTEXTE_DEVOIRS)
+        "etapes_sansDevoirs": [
+          "Dans « Activités », panneau « Quiz par l’IA », cliquez sur « Générer un quiz ».",
+          "Choisissez la classe, déposez le support (PDF, Word ou PowerPoint) et réglez le nombre de questions et le niveau.",
+          "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
+          "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être lancé en direct."
+        ],
         "note": "Rien n’est créé sans votre validation. Le panneau n’apparaît que si le service est activé par l’école."
       },
       "profDevoir": {
@@ -804,6 +811,11 @@ const fr = {
       },
       "etuDevoirs": {
         "titre": "Faire un devoir ou rejoindre un quiz",
+        "titre_sansDevoirs": "Rejoindre un quiz",
+        "etapes_sansDevoirs": [
+          "Un quiz lancé par votre enseignant pendant la séance apparaît dans « Activités » et dans l’application.",
+          "Rejoignez-le d’un clic, sans code à saisir."
+        ],
         "etapes": [
           "Ouvrez « Activités » : vos quiz à faire en devoir y figurent avec leur date limite.",
           "Un quiz lancé par votre enseignant pendant la séance y apparaît aussi, et dans l’application.",
@@ -941,7 +953,9 @@ const fr = {
     buts: { verifier: 'Vérifier la compréhension', entrainer: 'S’entraîner' },
     titre: 'Activités',
     sousTitre: 'Les quiz, devoirs et jeux choisis par vos enseignants, module par module : pour vérifier ce que vous avez compris ou vous entraîner.',
+    sousTitre_sansDevoirs: 'Les quiz et jeux choisis par vos enseignants, module par module : pour vérifier ce que vous avez compris ou vous entraîner.',
     sousTitreEnseignant: 'Dans chaque module, lancez un quiz, donnez un devoir ou proposez un jeu, pour vérifier la compréhension d’une notion ou faire s’entraîner vos étudiants.',
+    sousTitreEnseignant_sansDevoirs: 'Dans chaque module, lancez un quiz ou proposez un jeu, pour vérifier la compréhension d’une notion ou faire s’entraîner vos étudiants.',
     erreur: 'Impossible de charger les jeux. Vérifiez votre connexion puis réessayez.',
     erreurAction: 'L’opération n’a pas abouti. Réessayez.',
     horsLigne: 'Votre progression n’a pas pu être chargée : vous pouvez jouer, les réussites seront enregistrées au retour de la connexion.',
@@ -968,6 +982,7 @@ const fr = {
     historiqueProf: {
       titre: 'Historique',
       vide: 'Rien pour le moment : vos quiz, devoirs et les défis réussis dans vos modules apparaîtront ici.',
+      vide_sansDevoirs: 'Rien pour le moment : vos quiz et les défis réussis dans vos modules apparaîtront ici.',
       types: { quiz: 'Quiz', devoir: 'Devoir', defis: 'Défis' },
       quiz_one: '{{count}} joueur · {{moyenne}} pts de moyenne',
       quiz_other: '{{count}} joueurs · {{moyenne}} pts de moyenne',
@@ -1115,6 +1130,7 @@ const fr = {
       creation: 'Création…',
       cree: 'Quiz « {{titre}} » créé. Il est maintenant parmi vos quiz.',
       dejaCree: 'Ce quiz est créé : vous pouvez le donner en devoir ou le lancer en direct.',
+      dejaCree_sansDevoirs: 'Ce quiz est créé : vous pouvez le lancer en direct.',
       donnerEnDevoir: 'Le donner en devoir',
       aucune: 'Aucun quiz généré pour le moment. Déposez le support d’un cours : l’IA propose des questions, vous les relisez.',
       relireCourt: 'Relire',

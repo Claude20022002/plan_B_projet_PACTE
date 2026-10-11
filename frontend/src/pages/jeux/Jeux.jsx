@@ -26,7 +26,7 @@ import PageHeader from '../../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau';
 import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
-import PanneauDevoirs from '../../components/jeux/PanneauDevoirs';
+import ZoneQuizEtDevoirs from '../../components/jeux/ZoneQuizEtDevoirs';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -34,6 +34,7 @@ import { jeuxAPI, quizAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { adresseEspace } from '../../../../shared/espaces.js';
+import { CONTEXTE_DEVOIRS, DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 
 const RAFRAICHISSEMENT_QUIZ_MS = 20000;
 const urlSure = (url) => typeof url === 'string' && /^https?:\/\//.test(url);
@@ -60,8 +61,7 @@ export default function Jeux() {
   const [resultats, setResultats] = useState(null); // id de la partie affichée
 
   const charger = useCallback(() => {
-    jeuxAPI
-      .getAccueil()
+    jeuxAPI.getAccueil()
       .then((a) => {
         setAccueil(a);
         setErreur(false);
@@ -76,9 +76,9 @@ export default function Jeux() {
   useEffect(() => {
     if (!enseignant) return undefined;
     let actif = true;
-    jeuxAPI
-      .getHistorique()
-      .then((r) => actif && setHistoriqueProf(r?.data ?? []))
+    // Devoirs masqués (lot D-1) : ceux déjà donnés ne remontent plus dans l'historique
+    jeuxAPI.getHistorique()
+      .then((r) => actif && setHistoriqueProf((r?.data ?? []).filter((e) => DEVOIRS_ACTIFS || e.type !== 'devoir')))
       .catch(() => actif && setHistoriqueProf([]));
     return () => {
       actif = false;
@@ -174,7 +174,7 @@ export default function Jeux() {
 
   return (
     <DashboardLayout>
-      <PageHeader title={t('jeux.titre')} subtitle={t(enseignant ? 'jeux.sousTitreEnseignant' : 'jeux.sousTitre')} />
+      <PageHeader title={t('jeux.titre')} subtitle={t(enseignant ? 'jeux.sousTitreEnseignant' : 'jeux.sousTitre', { context: CONTEXTE_DEVOIRS })} />
 
       {erreur && (
         <Alert severity="warning" sx={{ mb: 2 }} action={<Button onClick={charger}>{t('common.retry')}</Button>}>
@@ -244,7 +244,7 @@ export default function Jeux() {
             {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
             {historiqueProf?.length === 0 && (
               <LignePanneau premier>
-                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide')}</Typography>
+                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide', { context: CONTEXTE_DEVOIRS })}</Typography>
               </LignePanneau>
             )}
             {(historiqueProf ?? []).map((e, i) => (
@@ -299,8 +299,8 @@ export default function Jeux() {
           </Panneau>
         )}
 
-        {/* ── Devoirs notés (quiz ClassQuiz corrigés par Planner) ─────────── */}
-        {accueil && <PanneauDevoirs enseignant={enseignant} />}
+        {/* ── Devoirs notés et quiz par l'IA (devoirs masqués : l'IA seule) ── */}
+        {accueil && <ZoneQuizEtDevoirs enseignant={enseignant} />}
 
         {/* ── Jeux de mes modules ─────────────────────────────────────── */}
         {(enseignant || modules.length > 0) && (

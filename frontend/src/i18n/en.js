@@ -712,6 +712,13 @@ const en = {
           "Review: correct a question or an answer, delete a question, or ask for another one.",
           "Click “Create the quiz”: it joins your quizzes, ready to be set as an assignment or run live."
         ],
+        // Assignments hidden (lot D-1, CONTEXTE_DEVOIRS)
+        "etapes_sansDevoirs": [
+          "In “Activities”, in the AI quizzes panel, click “Generate a quiz”.",
+          "Choose the class, upload the material (PDF, Word or PowerPoint) and set the number of questions and the level.",
+          "Review: correct a question or an answer, delete a question, or ask for another one.",
+          "Click “Create the quiz”: it joins your quizzes, ready to be run live."
+        ],
         "note": "Nothing is created without your confirmation. The panel only appears if the school has enabled the service."
       },
       "profDevoir": {
@@ -804,6 +811,11 @@ const en = {
       },
       "etuDevoirs": {
         "titre": "Do an assignment or join a quiz",
+        "titre_sansDevoirs": "Join a quiz",
+        "etapes_sansDevoirs": [
+          "A quiz started by your teacher during class appears in “Activities” and in the app.",
+          "Join it in one click, with no code to type."
+        ],
         "etapes": [
           "Open “Activities”: your quiz homework is listed with its deadline.",
           "A quiz started by your teacher during class also appears there, and in the app.",
@@ -941,7 +953,9 @@ const en = {
     buts: { verifier: 'Check understanding', entrainer: 'Practice' },
     titre: 'Activities',
     sousTitre: 'Quizzes, homework and games chosen by your teachers, course by course: to check what you understood or to practise.',
+    sousTitre_sansDevoirs: 'Quizzes and games chosen by your teachers, course by course: to check what you understood or to practise.',
     sousTitreEnseignant: 'In each course, start a quiz, give homework or suggest a game, to check understanding of a topic or let your students practise.',
+    sousTitreEnseignant_sansDevoirs: 'In each course, start a quiz or suggest a game, to check understanding of a topic or let your students practise.',
     erreur: 'Games could not be loaded. Check your connection and try again.',
     erreurAction: 'The operation failed. Try again.',
     horsLigne: 'Your progress could not be loaded: you can still play, successes will be saved once you are back online.',
@@ -968,6 +982,7 @@ const en = {
     historiqueProf: {
       titre: 'History',
       vide: 'Nothing yet: your quizzes, assignments and challenges completed in your modules will show up here.',
+      vide_sansDevoirs: 'Nothing yet: your quizzes and challenges completed in your modules will show up here.',
       types: { quiz: 'Quiz', devoir: 'Assignment', defis: 'Challenges' },
       quiz_one: '{{count}} player · {{moyenne}} pts on average',
       quiz_other: '{{count}} players · {{moyenne}} pts on average',
@@ -1119,6 +1134,7 @@ const en = {
       creation: 'Creating…',
       cree: 'Quiz "{{titre}}" created. It is now among your quizzes.',
       dejaCree: 'This quiz has been created: you can set it as an assignment or run it live.',
+      dejaCree_sansDevoirs: 'This quiz has been created: you can run it live.',
       donnerEnDevoir: 'Set it as an assignment',
       aucune: 'No quiz generated yet. Upload the material of a course: the AI suggests questions and you review them.',
       relireCourt: 'Review',

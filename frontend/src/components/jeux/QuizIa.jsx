@@ -357,7 +357,7 @@ function RelireQuiz({ id, fermer, modifie, donnerEnDevoir }) {
           {etat?.statut === 'erreur' && <Alert severity="error">{etat.erreur || t('jeux.quizIa.echec')}</Alert>}
           {cree && (
             <Alert severity="success" action={donnerEnDevoir ? <Button color="inherit" size="small" onClick={() => donnerEnDevoir(etat)}>{t('jeux.quizIa.donnerEnDevoir')}</Button> : null}>
-              {t('jeux.quizIa.dejaCree')}
+              {t('jeux.quizIa.dejaCree', { context: donnerEnDevoir ? undefined : 'sansDevoirs' })}
             </Alert>
           )}
           {pret && (

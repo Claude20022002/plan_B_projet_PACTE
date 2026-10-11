@@ -10,6 +10,7 @@ import { boutonPanneau, boutonPanneauPlein } from '../components/jeux/styles';
 import { enseignantAPI, quizAPI, quizIaAPI } from '../services/api';
 import { supportsDuCours } from '../utils/supports';
 import { adresseEspace } from '../../../shared/espaces.js';
+import { DEVOIRS_ACTIFS } from '../../../shared/fonctions.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
 import { ds } from '../design-system/tokens';
 
@@ -104,9 +105,12 @@ export default function MesClasses() {
             {t(`classes.page.appel.${seance.appel}`)}
           </Button>
         )}
-        <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Quiz />} onClick={() => navigate('/jeux', { state: { donnerDevoir: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
-          {t('classes.page.devoir')}
-        </Button>
+        {/* Devoirs masqués (lot D-1) : le bouton revient avec l'interrupteur */}
+        {DEVOIRS_ACTIFS && (
+          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Quiz />} onClick={() => navigate('/jeux', { state: { donnerDevoir: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
+            {t('classes.page.devoir')}
+          </Button>
+        )}
         {quizIa && (
           <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<AutoAwesome />} onClick={() => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
             {t('classes.page.quizIa')}
