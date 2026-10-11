@@ -638,6 +638,8 @@ export const quizIaAPI = {
     // Support (PDF, DOCX, PPTX) et réglages { id_cours, id_groupe?, plage?, nombre, type, difficulte, langue, temps } → { id_generation, statut }
     generer: (fichier, params) =>
         request(avecQuery('/quiz-ia/generations', { ...params, nom: fichier.name }), { method: 'POST', body: fichier, headers: { 'Content-Type': typeDuFichier(fichier) } }),
+    // Sans document, à partir d'un sujet (« Créer un quiz ») : seulement si disponibilite() annonce { sujet: true }
+    genererSurSujet: (sujet, params) => request(avecQuery('/quiz-ia/generations', { ...params, sujet }), { method: 'POST' }),
     lister: () => request('/quiz-ia/generations'),
     // { id_generation, statut: en_cours | pret | erreur | creation | cree, erreur, questions, nom_source, id_quiz_classquiz }
     etat: (id) => request(`/quiz-ia/generations/${encodeURIComponent(id)}`),

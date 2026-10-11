@@ -8,9 +8,9 @@ import { quizAPI } from '../../services/api';
  * Lancer un quiz en direct pour la séance en cours (quiz-ia.md, lots CQ-1 et CQ-2) : la liste de
  * mes quiz, un clic sur l'un d'eux. Planner démarre la partie, la rattache à la séance, prévient
  * les étudiants, puis ouvre l'écran à projeter. Trois gestes en tout jusqu'à la première question :
- * « Lancer un quiz », le quiz, « Démarrer ».
+ * « Lancer un quiz », le quiz, « Démarrer ». Sans quiz adapté, « Créer un quiz » est à un geste.
  */
-export default function LancerQuizDialog({ seance, classe, onClose, onCreerAvecIa }) {
+export default function LancerQuizDialog({ seance, classe, onClose, onCreer }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState(null);
@@ -64,8 +64,8 @@ export default function LancerQuizDialog({ seance, classe, onClose, onCreerAvecI
         )}
       </DialogContent>
       <DialogActions>
-        {onCreerAvecIa && (
-          <Button onClick={onCreerAvecIa} disabled={Boolean(enCours)} sx={{ mr: 'auto' }}>
+        {onCreer && (
+          <Button onClick={onCreer} disabled={Boolean(enCours)} sx={{ mr: 'auto' }}>
             {t('quizDirect.lancer.creerIa')}
           </Button>
         )}

@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Skeleton } from '@mui/material';
-import { AutoAwesome, Campaign, FactCheck, LocalLibrary, Quiz, SportsEsports } from '@mui/icons-material';
+import { Add, Campaign, FactCheck, LocalLibrary, Quiz, SportsEsports } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
@@ -35,7 +35,7 @@ export default function MesClasses() {
   const [maintenant, setMaintenant] = useState(() => new Date());
   // Quiz en direct (ClassQuiz) : proposé seulement si la plateforme en a un
   const [quiz, setQuiz] = useState(null);
-  // Génération de quiz par l'IA : proposée seulement si le serveur est configuré
+  // Génération de quiz : proposée seulement si le serveur est configuré (sinon, l'éditeur du service de quiz)
   const [quizIa, setQuizIa] = useState(false);
   // Classe pour laquelle l'enseignant choisit le quiz à lancer en direct
   const [lancerPour, setLancerPour] = useState(null);
@@ -115,8 +115,9 @@ export default function MesClasses() {
             {t('classes.page.devoir')}
           </Button>
         )}
-        {quizIa && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<AutoAwesome />} onClick={() => genererQuiz(c)}>
+        {/* Créer un quiz : générer, ou le faire soi-même dans l'éditeur du service de quiz */}
+        {(quizIa || quiz) && (
+          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Add />} onClick={() => genererQuiz(c)}>
             {t('classes.page.quizIa')}
           </Button>
         )}
@@ -192,7 +193,7 @@ export default function MesClasses() {
         seance={lancerPour?.prochaine_seance ?? null}
         classe={lancerPour ? nomClasse(lancerPour) : ''}
         onClose={() => setLancerPour(null)}
-        onCreerAvecIa={quizIa && lancerPour ? () => genererQuiz(lancerPour) : null}
+        onCreer={lancerPour ? () => genererQuiz(lancerPour) : null}
       />
     </DashboardLayout>
   );
