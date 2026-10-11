@@ -77,8 +77,8 @@ export default function Etudiants() {
 
     const loadUsers = async () => {
         try {
-            const data = await userAPI.getAll({ limit: 1000 });
-            const etudiantsUsers = (data.data || []).filter((u) => u.role === 'etudiant');
+            const data = await userAPI.getTous();
+            const etudiantsUsers = data.filter((u) => u.role === 'etudiant');
             setUsers(etudiantsUsers);
         } catch (error) {
             console.error('Erreur:', error);
@@ -87,8 +87,8 @@ export default function Etudiants() {
 
     const loadGroupes = async () => {
         try {
-            const data = await groupeAPI.getAll({ limit: 1000 });
-            setGroupes(data.data || []);
+            const data = await groupeAPI.getTous();
+            setGroupes(data);
         } catch (error) {
             console.error('Erreur:', error);
         }
@@ -193,8 +193,8 @@ export default function Etudiants() {
 
     const handleExport = async () => {
         try {
-            const data = await etudiantAPI.getAll({ page: 1, limit: 10000 });
-            await exportToExcelLazy(data.data || [], COLS_ETUDIANTS, 'Etudiants', t('etudiants.fichierExport'));
+            const data = await etudiantAPI.getTous();
+            await exportToExcelLazy(data, COLS_ETUDIANTS, 'Etudiants', t('etudiants.fichierExport'));
         } catch { setError(t('etudiants.erreurExport')); }
     };
 
