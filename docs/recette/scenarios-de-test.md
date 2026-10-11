@@ -17,6 +17,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 ## 0. Mise en production
 
 - [ ] Le script `appliquer-maj.sh` se termine sans erreur et affiche les contrôles 404, 400, 200, 200, puis 200 (quiz), 401 (API ClassQuiz) et 401 (bibliothèque).
+- [ ] Le script affiche « aiguillage rechargé » la première fois que le paquet contient le relais du quiz, et le contrôle « relais du quiz » répond 200. Ce paquet doit être préparé avec `--classquiz` : la route de lancement vit dans le moteur de quiz.
 - [ ] `docker exec hestim_backend node -p process.versions.tz` répond `2026c`.
 - [ ] `https://planner.finadmintech.fr/api/activites` répond 401 (et non 404).
 - [ ] Le script de démo des stages s'exécute (retour de stage Cybel avec photo, 128 idées de projets).
