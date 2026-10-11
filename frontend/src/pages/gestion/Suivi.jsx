@@ -12,6 +12,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { fetchAll } from '../../utils/fetchAll';
 import { filieresGerables } from '../../utils/droits';
 import { ds } from '../../design-system/tokens';
+import { aujourdhui } from '../../../../shared/dates.js';
 
 const moisCourant = () => new Date().toISOString().slice(0, 7);
 
@@ -57,7 +58,7 @@ function Avancement({ nombre, user }) {
                 const liste = annees.flatMap((a) => a.periodes.map((p) => ({ ...p, libelle_annee: a.libelle, active: a.active })));
                 setPeriodes(liste);
                 setFilieres(filieresGerables(toutes, user));
-                const today = new Date().toISOString().slice(0, 10);
+                const today = aujourdhui();
                 const courante = liste.find((p) => p.active && p.date_debut <= today && p.date_fin >= today) || liste.find((p) => p.active) || liste[0];
                 setIdPeriode(courante?.id_periode ?? '');
                 if (!courante) setLoading(false);

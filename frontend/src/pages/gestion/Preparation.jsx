@@ -10,6 +10,7 @@ import { calendrierAPI, preparationAPI } from '../../services/api';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { ds, lineColor } from '../../design-system/tokens';
+import { aujourdhui } from '../../../../shared/dates.js';
 
 const ICONES = {
     fait: <CheckCircle fontSize="small" sx={{ color: 'success.main' }} />,
@@ -42,7 +43,7 @@ export default function Preparation() {
             .then((annees) => {
                 const liste = annees.flatMap((a) => a.periodes.map((p) => ({ ...p, libelle_annee: a.libelle, active: a.active })));
                 setPeriodes(liste);
-                const prochaine = liste.find((p) => p.active && p.date_fin >= new Date().toISOString().slice(0, 10)) || liste[0];
+                const prochaine = liste.find((p) => p.active && p.date_fin >= aujourdhui()) || liste[0];
                 setIdPeriode(prochaine?.id_periode ?? '');
                 if (!prochaine) setLoading(false);
             })

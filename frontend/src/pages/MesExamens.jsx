@@ -8,6 +8,7 @@ import { examenAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { ds } from '../design-system/tokens';
+import { aujourdhui } from '../../../shared/dates.js';
 
 const hhmm = (h) => String(h || '').slice(0, 5);
 
@@ -34,7 +35,7 @@ export default function MesExamens() {
             .finally(() => setLoading(false));
     }, [surveillant, t, toast]);
 
-    const aVenir = examens.filter((e) => e.date >= new Date().toISOString().slice(0, 10));
+    const aVenir = examens.filter((e) => e.date >= aujourdhui());
 
     return (
         <DashboardLayout>
