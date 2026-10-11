@@ -3,6 +3,7 @@ import { authenticateToken } from "../middleware/authMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { planification } from "../utils/erreursPlanning.js";
 import { lancerPartie } from "../services/quiz/lancement.js";
+import { modifierQuiz, quizAModifier } from "../services/quiz/mesQuiz.js";
 import { enregistrerFinPartie, enregistrerPartie, historiqueQuiz, partiesEnCours, resultatsPartie, signatureValide, urlQuiz, webhookActif } from "../services/quiz/parties.js";
 
 /**
@@ -16,6 +17,8 @@ import { enregistrerFinPartie, enregistrerPartie, historiqueQuiz, partiesEnCours
  *  - GET /api/quiz/parties/en-cours : parties à rejoindre (étudiant) ou lancées (enseignant).
  *  - GET /api/quiz/parties/historique : dernières parties terminées (enseignant) ou mes scores.
  *  - GET /api/quiz/parties/:id/resultats : classement, équipes (groupes de TP), nuages de mots.
+ *  - GET /api/quiz/mes-quiz/:id : un quiz de l'enseignant, prêt à modifier (IA-4).
+ *  - PUT /api/quiz/mes-quiz/:id { titre, description?, questions } : nouvelle version du quiz.
  */
 
 export const webhookQuiz = express.Router();
@@ -70,6 +73,14 @@ router.get("/parties/:id/resultats", authenticateToken, asyncHandler(async (req,
     const resultats = await resultatsPartie(req.user, req.params.id);
     if (!resultats) return res.status(404).json({ message: "Partie introuvable" });
     res.json(resultats);
+}));
+
+router.get("/mes-quiz/:id", authenticateToken, planification(async (req, res) => {
+    res.json(await quizAModifier(req.user, req.params.id));
+}));
+
+router.put("/mes-quiz/:id", authenticateToken, planification(async (req, res) => {
+    res.json(await modifierQuiz(req.user, req.params.id, req.body ?? {}));
 }));
 
 export default router;
