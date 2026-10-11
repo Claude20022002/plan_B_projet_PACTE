@@ -20,8 +20,9 @@ export default defineConfig([
             globals: globals.node,
         },
         rules: {
-            // « _ » en tête : variable ou paramètre ignoré exprès (signature imposée par Express)
-            "no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_" }],
+            // « _ » en tête : variable ou paramètre ignoré exprès (signature imposée par Express).
+            // « const { a, ...reste } = objet » : écarter un champ est un usage, pas un oubli.
+            "no-unused-vars": ["error", { varsIgnorePattern: "^_", argsIgnorePattern: "^_", caughtErrorsIgnorePattern: "^_", ignoreRestSiblings: true }],
             // Repère : 300 lignes par fichier, hors lignes vides et commentaires
             "max-lines": longueur(300),
         },

@@ -30,7 +30,7 @@ const nettoyer = (texte) =>
     String(texte ?? "")
         // eslint-disable-next-line no-control-regex -- les caractères de contrôle sont justement ce qu'on retire
         .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, " ")
-        .replace(/[ \t ]+/g, " ")
+        .replace(/[ \t\u00a0]+/g, " ")
         .replace(/\s*\n\s*/g, "\n")
         .replace(/\n{3,}/g, "\n\n")
         .trim();
