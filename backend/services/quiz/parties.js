@@ -115,7 +115,7 @@ export const enregistrerPartie = async (evenement, seanceChoisie = null) => {
                 titre: "Quiz en cours",
                 message: `${partie.titre} (${seance.cours?.nom_cours ?? "votre séance"}). Rejoignez la partie depuis l'application.`,
                 type_notification: "info",
-                lien: "/jeux",
+                lien: `/jeux?partie=${partie.id_quiz_partie}`,
             });
             notifies = etudiants.length;
         }
@@ -289,7 +289,7 @@ export const enregistrerFinPartie = async (evenement) => {
             titre: "Résultats du quiz",
             message: `${partie.titre} : ${j.score} pts, ${j.rang}${j.rang === 1 ? "er" : "e"} sur ${classes.length}.`,
             type_notification: "info",
-            lien: "/jeux",
+            lien: `/jeux?resultats=${partie.id_quiz_partie}`,
         }).catch(() => {});
     }
     return { partie, resultats: classes.length };
