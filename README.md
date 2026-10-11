@@ -189,14 +189,16 @@ Les tests d'intégration attendent un MySQL de test, par exemple :
 
 ## Documentation
 
+**Index complet : [docs/README.md](docs/README.md)** (dernier compte rendu, plans, recette, déploiement).
+
 | Document | Contenu |
 | --- | --- |
 | [DESIGN.md](DESIGN.md) | Système visuel « panneau à volets » (couleurs, typographie, composants) |
 | [PRODUCT.md](PRODUCT.md) | Utilisateurs, usages et principes du produit |
-| [DEPLOIEMENT.md](DEPLOIEMENT.md) | Comparatif d'hébergements gratuits |
-| [docs/api/](docs/api) | Exemples d'appels, collection Postman, guide de test des routes |
+| [DEPLOIEMENT.md](DEPLOIEMENT.md) | Serveur de production : mise à jour, dépendances, retour arrière ; comparatif d'hébergements gratuits |
+| [docs/api/](docs/api) | Exemples d'appels et collection Postman (état de décembre 2025) |
 | [docs/Planning/](docs/Planning) | Emploi du temps officiel HESTIM de référence (rendu à reproduire) |
-| [docs/](docs) | Architecture, base de données, UML, maquettes, rapports |
+| [docs/](docs/README.md) | Plans, comptes rendus, recette, architecture, maquettes ; anciens rapports dans [docs/archives/](docs/archives/README.md) |
 | [mobile/README.md](mobile/README.md) | Application mobile : développement, builds, sécurité |
 
 ---
