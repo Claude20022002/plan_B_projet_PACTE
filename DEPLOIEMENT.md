@@ -1,4 +1,91 @@
-# Guide de déploiement gratuit — HESTIM Planner
+# Guide de déploiement — HESTIM Planner
+
+Deux parties. La première décrit le **serveur de production** (le VPS de `planner.finadmintech.fr`) : mise à jour, changement de dépendances, retour arrière. La seconde, à partir de « Comparatif des plateformes », décrit l'hébergement gratuit d'origine (Railway et Vercel).
+
+## Serveur de production : mise à jour et retour arrière
+
+Toutes les commandes du serveur se lancent en `root`. Le chef de projet les lance lui-même. Les scripts sont dans `deploy/vps/` ; chacun explique son rôle dans son en-tête.
+
+### Mettre à jour par paquet
+
+Un paquet `majNN` ne contient que le code. Il se superpose aux images déjà en ligne.
+
+1. **Sur le PC, construire le site depuis PowerShell** (Git Bash réécrirait `/api` en chemin Windows) :
+   `cd frontend; $env:VITE_API_URL="/api"; npm run build`
+2. **Préparer le paquet**, dans Git Bash, depuis la racine du dépôt : `bash deploy/vps/preparer-maj.sh majNN`. Ajouter `--classquiz` ou `--studylib` si le quiz ou la bibliothèque ont changé (leurs constructions préalables sont dans l'en-tête du script).
+3. **Vérifier le fichier `VERSION` du paquet** : le commit attendu, et aucune ligne de fichier non commité, pour aucun des dépôts.
+4. **Copier `deploy/vps/paquets/majNN.tar.gz` dans `/root`** du serveur, puis :
+   `cd /root && tar -xzf majNN.tar.gz && bash majNN/deploy-vps/appliquer-maj.sh /root/majNN`
+5. **Lire les contrôles** affichés à la fin, puis dérouler la recette (`docs/recette/scenarios-de-test.md`), en commençant par la section 0.
+
+`appliquer-maj.sh` fait dans l'ordre : contrôle des dépendances, sauvegarde de la base dans `/root/sauvegardes`, étiquette `avant-<date>` sur les images en service, superposition, redémarrage du backend (qui applique ses migrations), puis du site, rechargement de l'aiguillage Caddy s'il a changé. Il affiche à la fin les commandes de retour arrière **avec la date du jour déjà remplie** : les copier avant de fermer le terminal.
+
+### Quand les dépendances changent
+
+La superposition ne met pas à jour les modules npm du backend. Si `backend/package-lock.json` demande un module absent de l'image, `preparer-maj.sh` puis `appliquer-maj.sh` **s'arrêtent avec la liste des modules en cause**, avant d'avoir rien modifié. Il faut alors une nouvelle image.
+
+1. **Sur le PC, reconstruire l'image**, depuis la racine du dépôt :
+   `docker build -t claude20022002/hestim-backend:latest --build-context shared=./shared ./backend`
+2. **L'enregistrer** : `docker save claude20022002/hestim-backend:latest | gzip > deploy/vps/paquets/hestim-backend-majNN.tar.gz`, puis la copier dans `/root` du serveur.
+3. **Sur le serveur, garder l'ancienne image sous une étiquette à part, avant de charger la nouvelle** :
+   `docker tag claude20022002/hestim-backend:latest claude20022002/hestim-backend:avant-image-majNN`
+   Sans cela, l'étiquette `avant-<date>` posée ensuite par `appliquer-maj.sh` désignerait déjà la nouvelle image, et le retour arrière ne serait plus possible.
+4. **Charger la nouvelle** : `gunzip -c /root/hestim-backend-majNN.tar.gz | docker load`
+5. **Appliquer le paquet** comme d'habitude. Le contrôle des dépendances doit maintenant répondre « identiques à celles de l'image ».
+
+### Revenir en arrière
+
+Dans `/opt/hestim`, avec `COMPOSE` pour `docker compose --env-file .env.docker -f docker-compose.yml -f deploy/vps/docker-compose.vps.yml`, et `<date>` pour la date affichée par `appliquer-maj.sh`.
+
+**Cas 1, le code seul** (aucune migration appliquée par la mise à jour) :
+
+```bash
+docker tag claude20022002/hestim-backend:avant-<date> claude20022002/hestim-backend:latest
+docker tag claude20022002/hestim-frontend:avant-<date> claude20022002/hestim-frontend:latest
+$COMPOSE up -d --no-deps backend frontend
+```
+
+Si une nouvelle image avait été chargée (« Quand les dépendances changent »), l'étiquette du backend à reprendre est `avant-image-majNN`, pas `avant-<date>`.
+
+**Cas 2, la mise à jour a appliqué une migration.** L'ancien code ne connaît pas le nouveau schéma, et tout ce qui a été saisi depuis la mise à jour sera perdu : décider vite. Savoir si une migration a été appliquée : le journal du backend le dit à son démarrage (`docker logs hestim_backend | grep -i migration`).
+
+```bash
+# 1. Arrêter le backend : plus aucune écriture pendant la restauration
+$COMPOSE stop backend
+# 2. Mettre de côté l'état actuel, au cas où
+docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysqldump -uroot --single-transaction --routines "$MYSQL_DATABASE"' | gzip > /root/sauvegardes/hestim-avant-retour.sql.gz
+# 3. Repartir d'une base vide : les tables créées par la migration disparaissent avec elle
+docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "DROP DATABASE \`$MYSQL_DATABASE\`; CREATE DATABASE \`$MYSQL_DATABASE\`"'
+# 4. Restaurer la sauvegarde faite par appliquer-maj.sh
+gunzip -c /root/sauvegardes/hestim-<date>.sql.gz | docker exec -i hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot "$MYSQL_DATABASE"'
+# 5. Remettre les anciennes images (cas 1), ce qui redémarre le backend
+```
+
+Restaurer sans vider la base (sans l'étape 3) laisserait en place les tables de la migration : le paquet suivant échouerait en voulant les recréer.
+
+**Le reste, seulement si le paquet le contenait :**
+
+| Élément | Retour |
+|---|---|
+| Site du quiz | étiquette `avant-<date>` de `hestim-classquiz-frontend`, puis `$COMPOSE up -d --no-deps quiz-frontend` |
+| Moteur du quiz | étiquette `avant-<date>` de `hestim-classquiz-api`, puis `$COMPOSE up -d --no-deps quiz-api quiz-worker` |
+| Bibliothèque | étiquette `avant-<date>` de `hestim-studylib`, puis `$COMPOSE up -d --no-deps studylib studylib-queue studylib-scheduler` ; sa base : `/root/sauvegardes/studylib-<date>.sql.gz`, à restaurer comme au cas 2 |
+| Aiguillage Caddy | `cp deploy/vps/Caddyfile.vps.avant-<date> deploy/vps/Caddyfile.vps` (toujours `cp`, jamais `mv`), puis `docker exec hestim_caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile` |
+
+**Après un retour arrière** : relancer les contrôles de la recette (section 0), et noter dans le journal du groupe A la date, le paquet et la raison.
+
+### Faire de la place
+
+Chaque mise à jour laisse une archive, un dossier extrait et des images `avant-<date>`. `nettoyer-paquets.sh` garde les 3 derniers. Sans option, il montre ce qu'il supprimerait ; il ne supprime qu'avec `--supprimer` :
+
+```bash
+bash /opt/hestim/deploy/vps/nettoyer-paquets.sh /root
+bash /opt/hestim/deploy/vps/nettoyer-paquets.sh /root --supprimer
+```
+
+Il ne touche ni aux sauvegardes de la base (`/root/sauvegardes`), ni aux images `avant-image-majNN`, ni aux archives d'images. À ne lancer qu'une fois la mise à jour en cours validée par la recette : les paquets et images supprimés sont ceux qui permettraient un retour plus ancien.
+
+---
 
 ## Comparatif des plateformes
 
