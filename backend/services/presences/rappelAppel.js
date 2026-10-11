@@ -1,6 +1,7 @@
 import { Affectation, AppelSeance, Cours, Creneau, Enseignement, EnseignementEnseignant, Groupe, Notification } from "../../models/index.js";
 import { minutes } from "../planning/affectationRules.js";
 import { horairesSurPlage } from "../planning/ramadan.js";
+import { passage } from "../taches/periodiques.js";
 
 /**
  * Rappel de l'appel : quelques minutes avant la fin d'une séance (5 par défaut), l'enseignant qui
@@ -103,21 +104,15 @@ export const rappelerAppels = async (maintenant = new Date(), delai = delaiRappe
 
 // ── Planificateur (lancé par server.js, jamais pendant les tests) ─────────
 
-/** Chaque minute : rappels des séances qui se terminent. */
+/** Chaque minute : rappels des séances qui se terminent (une seule instance à la fois, lot A-7). */
 export const demarrerRappelsAppel = () => {
     if (!delaiRappelAppel()) return null;
     let enCours = false;
     const verifier = async () => {
         if (enCours) return;
         enCours = true;
-        try {
-            const n = await rappelerAppels();
-            if (n) console.log(`--> Appel : ${n} rappel(s) envoyé(s)`);
-        } catch (error) {
-            console.error("--> Rappels de l'appel :", error.message);
-        } finally {
-            enCours = false;
-        }
+        await passage("rappel-appel", () => rappelerAppels(), (n) => n && `${n} rappel(s) envoyé(s)`);
+        enCours = false;
     };
     const minuterie = setInterval(verifier, 60 * 1000);
     minuterie.unref();
