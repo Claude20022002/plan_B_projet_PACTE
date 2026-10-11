@@ -178,3 +178,72 @@ jobs:
 
       - name: Compilation et tests
         run: mvn -B -ntp verify
+
+  # ── 5. Parcours de démonstration (lot B-8) : site, serveur, MySQL et vrai solveur ──
+  # Connexion, appel par QR, demande de report, génération puis publication, scénario IIIA.
+  # Chaque passage repart d'une base jetable ; les comptes sont créés par la préparation
+  # (frontend/tests/parcours/serveur.mjs), aucun identifiant n'est écrit dans les tests.
+  # Ajouté après A-4, sans toucher à ses lignes : à fusionner après lui.
+  test-parcours:
+    name: Parcours de démonstration
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=10
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v7
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: |
+            frontend/package-lock.json
+            backend/package-lock.json
+
+      - name: Installer les dépendances (site et serveur)
+        run: |
+          npm ci
+          npm ci --prefix ../backend
+
+      - name: Installer Chromium pour Playwright
+        run: npx playwright install --with-deps chromium
+
+      # Le vrai solveur (décision du chef de projet) : son image est construite depuis solver/,
+      # puis lancée par la configuration des parcours
+      - name: Construire l'image du solveur
+        run: docker build -t hestim-solver:parcours ../solver
+
+      - name: Parcours
+        run: npm run test:parcours
+        env:
+          CI: "true"
+          DB_HOST: 127.0.0.1
+          DB_PORT: 3306
+          DB_USER: root
+          DB_PASSWORD: root
+
+      - name: Rapport en cas d'échec
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: rapport-parcours
+          path: |
+            frontend/playwright-report-parcours/
+            frontend/test-results/
+          retention-days: 7
