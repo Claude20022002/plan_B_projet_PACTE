@@ -1,4 +1,4 @@
-import { Redirect, Tabs } from 'expo-router';
+import { Redirect, Tabs, useRouter } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
@@ -8,13 +8,16 @@ import { espace, useTheme } from '../../theme';
 import { HAUTEUR_ONGLETS, Verre } from '../../verre/Verre';
 
 /**
- * Cinq onglets : Tableau · Semaine · Jeux · Bibliothèque · Compte (Planner, les jeux et la
- * bibliothèque à un geste : les espaces HESTIM de shared/espaces.js ; le bouton des espaces de la
- * barre de titre mène aussi au Quiz et aux sites web). Une icône par onglet ; onglet actif avec
- * une barre de 2 px (Planner) ou en bleu StudyLib, les autres atténués. La barre est en verre
- * dépoli : le contenu défile dessous (chaque onglet garde une marge, useMargeOnglets).
+ * Cinq onglets : Tableau · Semaine · Scanner · Bibliothèque · Compte. Le scan est au milieu, sous
+ * le pouce : c'est par lui que l'étudiant pointe et qu'il rejoint un quiz, comme sur Wooclap
+ * (décision du 11 octobre 2026). L'onglet pose l'écran /scanner par-dessus les onglets.
+ * La page Activités (jeux.jsx) reste dans le code mais n'a plus d'onglet : les jeux des modules
+ * sont masqués pour l'instant, en attendant l'onglet « Menu ».
+ * Une icône par onglet ; onglet actif avec une barre de 2 px (Planner) ou en bleu StudyLib, les
+ * autres atténués. La barre est en verre dépoli : le contenu défile dessous (chaque onglet garde
+ * une marge, useMargeOnglets).
  */
-const ICONES = { index: 'view-dashboard-outline', semaine: 'calendar-week', jeux: 'gamepad-variant-outline', bibliotheque: 'bookshelf', compte: 'account-circle-outline' };
+const ICONES = { index: 'view-dashboard-outline', semaine: 'calendar-week', scan: 'qrcode-scan', bibliotheque: 'bookshelf', compte: 'account-circle-outline' };
 
 export default function Onglets() {
   const { t } = useTranslation();
@@ -23,6 +26,7 @@ export default function Onglets() {
   const { couleurs, polices } = theme;
   const actif = theme.famille === 'planner' ? couleurs.lettre : couleurs.accent;
   const marges = useSafeAreaInsets();
+  const router = useRouter();
   if (etat === 'chargement') return <View style={{ flex: 1, backgroundColor: couleurs.fond }} />;
   if (etat !== 'connecte') return <Redirect href="/connexion" />;
 
@@ -60,7 +64,20 @@ export default function Onglets() {
     >
       <Tabs.Screen name="index" options={options('index', t('app.onglets.tableau'))} />
       <Tabs.Screen name="semaine" options={options('semaine', t('app.onglets.semaine'))} />
-      <Tabs.Screen name="jeux" options={options('jeux', t('app.onglets.jeux'))} />
+      {/* L'onglet n'affiche pas d'écran à lui : le toucher pose le scanner par-dessus les onglets, sans
+          changer d'onglet. Le bouton Fermer et le retour d'Android ramènent ainsi à l'onglet d'où l'on vient. */}
+      <Tabs.Screen
+        name="scan"
+        options={options('scan', t('app.onglets.scanner'))}
+        listeners={{
+          tabPress: (evenement) => {
+            evenement.preventDefault();
+            router.push('/scanner');
+          },
+        }}
+      />
+      {/* Sans onglet (href nul) : la page reste joignable par une notification de quiz */}
+      <Tabs.Screen name="jeux" options={{ href: null }} />
       <Tabs.Screen name="bibliotheque" options={options('bibliotheque', t('app.onglets.bibliotheque'))} />
       <Tabs.Screen name="compte" options={options('compte', t('app.onglets.compte'))} />
     </Tabs>

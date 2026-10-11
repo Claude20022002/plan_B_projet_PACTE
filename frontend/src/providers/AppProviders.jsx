@@ -1,27 +1,18 @@
 /**
  * AppProviders.jsx
  * Arbre de providers unique — ordre intentionnel :
- *   Theme → Auth → QueryClient → Toast → children
+ *   Theme → Auth → Toast → children
  *
  * Chaque provider a une responsabilité unique.
  * Ajouter un provider ici sans toucher main.jsx ni App.jsx.
  */
 
-import { QueryClientProvider } from '@tanstack/react-query';
 import CssBaseline from '@mui/material/CssBaseline';
 
 import { ThemeProvider }  from '../contexts/ThemeContext';
 import { AuthProvider }   from '../contexts/AuthContext';
 import { ToastProvider }  from '../contexts/ToastContext';
-import { queryClient }    from '../services/queryClient';
-import { useGlobalQueryError } from '../hooks/api/_shared/useGlobalQueryError';
-
-// ── Pont d'erreur React Query → Toast ─────────────────────────────────────
-// Composant interne : doit être à l'intérieur de QueryClientProvider ET ToastProvider
-function QueryErrorBridge() {
-  useGlobalQueryError();
-  return null;
-}
+import { ConfirmationProvider } from '../contexts/ConfirmationContext';
 
 /**
  * @param {{ children: React.ReactNode }} props
@@ -31,12 +22,10 @@ export default function AppProviders({ children }) {
     <ThemeProvider>
       <CssBaseline />
       <AuthProvider>
-        <QueryClientProvider client={queryClient}>
-          <ToastProvider>
-            <QueryErrorBridge />
-            {children}
-          </ToastProvider>
-        </QueryClientProvider>
+        <ToastProvider>
+          {/* Fenêtre de confirmation commune (useConfirmation, à la place de window.confirm) */}
+          <ConfirmationProvider>{children}</ConfirmationProvider>
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   );

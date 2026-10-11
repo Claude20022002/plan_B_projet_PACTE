@@ -8,47 +8,49 @@ import { examenAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { ds } from '../design-system/tokens';
+import { aujourdhui } from '../../../shared/dates.js';
 
 const hhmm = (h) => String(h || '').slice(0, 5);
 
 /**
- * Épreuves publiées qui me concernent : mes surveillances (enseignant, avec la salle où je
- * surveille) ou mes examens (étudiant, épreuves de mon groupe et des groupes qui le contiennent).
+ * Épreuves publiées qui me concernent : mes surveillances (personnel de l'administration, avec la
+ * salle où je surveille) ou mes examens (étudiant, épreuves de mon groupe et des groupes qui le
+ * contiennent). Les enseignants ne surveillent pas.
  */
 export default function MesExamens() {
     const { t, i18n } = useTranslation();
     const toast = useToast();
     const { user } = useAuth();
-    // Enseignant ou personnel de l'administration : ses surveillances ; étudiant : ses examens
-    const enseignant = user?.role !== 'etudiant';
+    // Personnel de l'administration : ses surveillances ; étudiant : ses examens
+    const surveillant = user?.role === 'admin';
     const [examens, setExamens] = useState([]);
     const [loading, setLoading] = useState(true);
 
     const formatDate = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), [i18n.language]);
 
     useEffect(() => {
-        (enseignant ? examenAPI.getMesSurveillances() : examenAPI.getMesExamens())
+        (surveillant ? examenAPI.getMesSurveillances() : examenAPI.getMesExamens())
             .then(setExamens)
             .catch(() => toast.error(t('common.errorLoad')))
             .finally(() => setLoading(false));
-    }, [enseignant, t, toast]);
+    }, [surveillant, t, toast]);
 
-    const aVenir = examens.filter((e) => e.date >= new Date().toISOString().slice(0, 10));
+    const aVenir = examens.filter((e) => e.date >= aujourdhui());
 
     return (
         <DashboardLayout>
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 720 }}>
-                    {enseignant ? t('exams.mineTeacher') : t('exams.mineStudent')}
+                    {surveillant ? t('exams.mineStaff') : t('exams.mineStudent')}
                 </Typography>
                 {loading ? (
                     <TableSkeleton rows={4} />
                 ) : aVenir.length === 0 ? (
-                    <EmptyState title={t('exams.noneTitle')} description={enseignant ? t('exams.noneTeacher') : t('exams.noneStudent')} />
+                    <EmptyState title={t('exams.noneTitle')} description={surveillant ? t('exams.noneStaff') : t('exams.noneStudent')} />
                 ) : (
                     <Box sx={{ borderTop: '1px solid', borderColor: 'divider' }}>
                         {aVenir.map((e) => {
-                            const mesSalles = enseignant ? e.surveillances.filter((s) => s.id_user === user.id_user).map((s) => s.salle?.nom_salle ?? e.salles.find((x) => x.id_salle === s.id_salle)?.salle?.nom_salle) : e.salles.map((s) => s.salle?.nom_salle);
+                            const mesSalles = surveillant ? e.surveillances.filter((s) => s.id_user === user.id_user).map((s) => s.salle?.nom_salle ?? e.salles.find((x) => x.id_salle === s.id_salle)?.salle?.nom_salle) : e.salles.map((s) => s.salle?.nom_salle);
                             return (
                                 <Stack key={e.id_session} direction={{ xs: 'column', sm: 'row' }} spacing={{ xs: 0.5, sm: 2 }} sx={{ py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}>
                                     <Box sx={{ minWidth: 220 }}>

@@ -10,14 +10,14 @@ import Feuille from '../verre/Feuille';
 import { apresFermeture, ouvrirSurLeWeb } from './ouvrir';
 
 /** Écran de l'application pour chaque espace */
-const ECRAN = { planner: '/', bibliotheque: '/bibliotheque', jeux: '/jeux' };
-const ICONE = { planner: 'calendar-month-outline', bibliotheque: 'bookshelf', jeux: 'gamepad-variant-outline' };
-// Pas d'espace Quiz : un quiz n'apparaît que lorsqu'un enseignant lance une partie (onglet Activités)
+const ECRAN = { planner: '/', bibliotheque: '/bibliotheque' };
+const ICONE = { planner: 'calendar-month-outline', bibliotheque: 'bookshelf' };
+// Pas d'espace Quiz : un quiz n'apparaît que lorsqu'un enseignant lance une partie (scan du QR projeté)
 const ESPACES_APPLICATION = ESPACES.filter((e) => ECRAN[e.code]);
 
 /**
- * Bouton des espaces HESTIM (barre de titre de chaque onglet) : la feuille liste Planner, la
- * Bibliothèque et les Jeux. Toucher un espace l'ouvre dans l'application ; « Site web » ouvre son
+ * Bouton des espaces HESTIM (barre de titre de chaque onglet) : la feuille liste Planner et la
+ * Bibliothèque. Toucher un espace l'ouvre dans l'application ; « Site web » ouvre son
  * interface complète, déjà connecté. Tout espace est donc à deux gestes.
  */
 export default function BoutonEspaces() {

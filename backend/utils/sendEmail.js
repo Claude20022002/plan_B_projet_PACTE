@@ -33,7 +33,7 @@ const createTransporter = async () => {
                 pass: process.env.SMTP_PASSWORD,
             },
         });
-    } catch (error) {
+    } catch {
         // nodemailer n'est pas installé
         return null;
     }

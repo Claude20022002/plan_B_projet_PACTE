@@ -1,6 +1,8 @@
 import express from "express";
 import { authenticateToken } from "../middleware/authMiddleware.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { planification } from "../utils/erreursPlanning.js";
+import { lancerPartie } from "../services/quiz/lancement.js";
 import { enregistrerFinPartie, enregistrerPartie, historiqueQuiz, partiesEnCours, resultatsPartie, signatureValide, urlQuiz, webhookActif } from "../services/quiz/parties.js";
 
 /**
@@ -9,6 +11,8 @@ import { enregistrerFinPartie, enregistrerPartie, historiqueQuiz, partiesEnCours
  *    (game.started) et quand elle se termine (game.finished, scores) ; corps brut signé (HMAC),
  *    monté avant les lecteurs JSON et hors CSRF (pas de cookie).
  *  - GET /api/quiz/config : le web sait s'il doit proposer « Lancer un quiz » et où.
+ *  - POST /api/quiz/parties { id_quiz, id_affectation? } : l'enseignant lance une partie en direct
+ *    sans quitter Planner (CQ-1) ; la réponse porte de quoi l'animer, pour lui seul.
  *  - GET /api/quiz/parties/en-cours : parties à rejoindre (étudiant) ou lancées (enseignant).
  *  - GET /api/quiz/parties/historique : dernières parties terminées (enseignant) ou mes scores.
  *  - GET /api/quiz/parties/:id/resultats : classement, équipes (groupes de TP), nuages de mots.
@@ -17,7 +21,7 @@ import { enregistrerFinPartie, enregistrerPartie, historiqueQuiz, partiesEnCours
 export const webhookQuiz = express.Router();
 
 webhookQuiz.post("/", express.raw({ type: "application/json", limit: "32kb" }), asyncHandler(async (req, res) => {
-    if (!webhookActif()) return res.status(503).json({ message: "Webhook ClassQuiz désactivé" });
+    if (!webhookActif()) return res.status(503).json({ message: "Webhook du service de quiz désactivé" });
     const corps = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
     if (!signatureValide(corps, req.get("X-Hestim-Timestamp"), req.get("X-Hestim-Signature"))) {
         return res.status(401).json({ message: "Signature invalide" });
@@ -49,6 +53,10 @@ router.get("/config", authenticateToken, (req, res) => {
     const url = urlQuiz();
     res.json({ actif: Boolean(url), url, peutLancer: Boolean(url) && req.user.role === "enseignant" });
 });
+
+router.post("/parties", authenticateToken, planification(async (req, res) => {
+    res.status(201).json(await lancerPartie(req.user, { id_quiz: req.body?.id_quiz, id_affectation: req.body?.id_affectation }));
+}));
 
 router.get("/parties/en-cours", authenticateToken, asyncHandler(async (req, res) => {
     res.json({ data: await partiesEnCours(req.user) });

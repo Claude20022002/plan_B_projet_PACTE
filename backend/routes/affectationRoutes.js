@@ -6,7 +6,6 @@ import {
     updateAffectation,
     deleteAffectation,
     verifierAffectation,
-    confirmerAffectation,
     getAffectationsByEnseignant,
     getAffectationsByGroupe,
 } from "../controllers/index.js";
@@ -56,8 +55,5 @@ router.put("/:id", requireAdmin, validateAffectationUpdate, asyncHandler(updateA
 
 // 🗑️ Supprimer une affectation (Admin seulement)
 router.delete("/:id", requireAdmin, asyncHandler(deleteAffectation));
-
-// ✅ Confirmer une affectation (Enseignant propriétaire ou Admin, vérifié dans le contrôleur)
-router.patch("/:id/confirmer", asyncHandler(confirmerAffectation));
 
 export default router;

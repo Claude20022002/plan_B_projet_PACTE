@@ -3,6 +3,7 @@ import { JeuModule, JeuProgression, Cours } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { historiqueQuiz } from "../quiz/parties.js";
 import { devoirsDe } from "../quiz/devoirs.js";
+import { devoirsActifs } from "../quiz/devoirsActifs.js";
 import { inscritsDuModule, modulesDuJoueur } from "./jeux.js";
 import { jeuParCode } from "../../../shared/jeux/catalogue.js";
 
@@ -60,7 +61,8 @@ const defisDesModules = async (user) => {
 /** @returns {Promise<object[]>} événements { type: quiz|devoir|defis, id, date, titre, module, … } */
 export const historiqueEnseignant = async (user) => {
     if (user.role !== "enseignant") throw new ErreurMetier("Réservé aux enseignants", 403);
-    const [quiz, devoirs, defis] = await Promise.all([historiqueQuiz(user, EVENEMENTS_MAX), devoirsDe(user), defisDesModules(user)]);
+    // Devoirs fermés (lot D-2) : ceux déjà donnés ne remontent plus dans l'historique
+    const [quiz, devoirs, defis] = await Promise.all([historiqueQuiz(user, EVENEMENTS_MAX), devoirsActifs() ? devoirsDe(user) : [], defisDesModules(user)]);
     return [
         ...quiz.map((q) => ({ type: "quiz", id: `quiz-${q.id}`, id_partie: q.id, date: q.terminee_le, titre: q.titre, module: q.module, nb_joueurs: q.nb_joueurs, moyenne: q.moyenne })),
         ...devoirs.map((d) => ({ type: "devoir", id: `devoir-${d.id}`, id_devoir: d.id, date: d.donne_le, titre: d.titre, module: d.module, date_limite: d.date_limite, rendus: d.rendus, moyenne: d.moyenne })),

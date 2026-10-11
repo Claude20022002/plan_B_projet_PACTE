@@ -11,7 +11,7 @@ import { C } from "../theme";
  * basculent en volets ;
  * dernière seconde immobile pour enchaîner sur la première slide.
  */
-export const S9Fin: React.FC = () => {
+export const S9Fin: React.FC<{ phrase?: string }> = ({ phrase: texte = "L'école, à l'heure." }) => {
   const portrait = usePortrait();
   const cadre = useEnter(0, 12);
   const phrase = useEnter(46);
@@ -29,8 +29,8 @@ export const S9Fin: React.FC = () => {
         ) : (
           <FlapText text="HESTIM PLANNER" start={22} fontSize={96} stagger={2} flip={4} hiddenBefore />
         )}
-        <Line size={portrait ? 60 : 54} style={fadeUp(phrase)}>
-          L'école, à l'heure.
+        <Line size={portrait ? 60 : 54} style={{ ...fadeUp(phrase), maxWidth: portrait ? 940 : 1700, textAlign: "center" }}>
+          {texte}
         </Line>
         {portrait ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>

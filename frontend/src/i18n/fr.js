@@ -18,11 +18,12 @@ const fr = {
     today: "Aujourd'hui",
     tomorrow: 'Demain',
     language: 'Langue',
-    theme: 'Thème',
     themeLight: 'Mode clair',
     themeDark: 'Mode sombre',
     logout: 'Se déconnecter',
     errorLoad: 'Impossible de charger les données. Vérifiez votre connexion puis réessayez.',
+    confirmTitle: 'Confirmation',
+    delete: 'Supprimer',
   },
   securite: {
     titre: 'Double authentification',
@@ -188,10 +189,10 @@ const fr = {
       examen: 'Surveillé par le personnel de l’administration.',
       controle: 'Surveillé par les enseignants du module ; peut se tenir pendant leur séance.',
     },
-    mineTeacher: 'Les contrôles et épreuves publiés que vous surveillez, avec votre salle.',
+    mineStaff: 'Les contrôles et épreuves publiés que vous surveillez, avec votre salle.',
     mineStudent: 'Les épreuves publiées de votre groupe, avec les salles.',
     noneTitle: 'Rien de prévu',
-    noneTeacher: 'Aucune surveillance à venir.',
+    noneStaff: 'Aucune surveillance à venir.',
     noneStudent: 'Aucun examen publié pour le moment.',
   },
   incidents: {
@@ -248,10 +249,30 @@ const fr = {
     refreshed_one: '{{count}} séance marquée réalisée',
     refreshed_other: '{{count}} séances marquées réalisées',
     exportVisiting: 'Export vacataires (CSV)',
-    hoursIntro: 'Heures réalisées par enseignant sur le mois (séances marquées réalisées, co-enseignement compris). L’export liste les séances des vacataires, pour la paie.',
+    hoursIntro: 'Heures réalisées par enseignant sur le mois (séances marquées réalisées). Les séances sans appel validé sont à confirmer ou à écarter ci-dessous avant l’export, qui liste les séances des vacataires pour la paie.',
     noHoursTitle: 'Aucune heure réalisée',
     noHoursBody: 'Aucune séance réalisée ce mois-ci.',
     cols: { progress: 'Avancement', done: 'Réalisé', planned: 'Planifié', left: 'Reste' },
+    visa: {
+      titre_one: 'Séances à vérifier ({{count}})',
+      titre_other: 'Séances à vérifier ({{count}})',
+      note: 'Un appel validé est un indice que le cours a eu lieu, pas une preuve. Les séances sans appel validé sont à confirmer ou à écarter avant l’export.',
+      aucune: 'Toutes les séances réalisées du mois ont un appel validé ou une décision.',
+      cols: { seance: 'Séance', enseignants: 'Enseignant', etat: 'État', decision: 'Décision', aVerifier: 'À vérifier' },
+      etats: { a_verifier: 'À vérifier', confirmee: 'Confirmée', ecartee: 'Écartée', appel_valide: 'Appel validé' },
+      appelOuvert: 'Appel lancé, jamais validé.',
+      confirmer: 'Confirmer',
+      ecarter: 'Écarter',
+      annuler: 'Annuler la décision',
+      ecarterTitre: 'Écarter la séance · {{module}}',
+      ecarterAide: 'Une séance écartée sort des heures du mois et de l’export des vacataires. La décision peut être annulée.',
+      motif: 'Motif (facultatif)',
+      erreur: 'La décision n’a pas pu être enregistrée.',
+      aVerifierHeures: '{{heures}} à vérifier',
+      aVerifierTitre_one: '{{count}} séance sans appel validé',
+      aVerifierTitre_other: '{{count}} séances sans appel validé',
+      ecartees: '{{heures}} écartées',
+    },
   },
   gen: {
     tabs: { run: 'Générer', versions: 'Versions' },
@@ -344,6 +365,24 @@ const fr = {
     qrAlt: 'QR code de l’appel à scanner avec l’application HESTIM',
     change: 'Nouveau code dans {{secondes}} s',
     presents: '{{presents}} / {{attendus}} présents',
+    projeter: 'Projeter le QR code',
+    projeterAide: 'Ouvre une fenêtre à afficher sur l’écran de la salle : le QR, et les étudiants qui apparaissent dès qu’ils ont scanné. Vous y validez l’appel à la fin.',
+    projection: {
+      consigne: 'Scannez ce code avec l’application HESTIM, puis vérifiez que votre nom apparaît',
+      pleinEcran: 'Plein écran',
+      quitterPleinEcran: 'Quitter le plein écran',
+      erreur: 'Écran d’appel indisponible',
+      valider: 'Valider l’appel',
+      validerTitre: 'Valider l’appel ?',
+      aucunPresent: 'Les étudiants apparaissent ici dès qu’ils ont scanné.',
+      present: 'Présence enregistrée',
+      listeComplete: 'Voir la liste complète (présents et absents)',
+    },
+    rouvrir: 'Rouvrir l’appel',
+    bilan: '{{presents}} présents · {{absents}} absents',
+    groupeAbsents: 'Absents ({{count}})',
+    groupePresents: 'Présents ({{count}})',
+    aideListeFerme: 'Liste complète : les inscrits de la classe comparés aux présences enregistrées. Touchez un nom pour corriger une erreur.',
     liste: 'Liste d’appel',
     aideListe: 'Touchez un nom pour le cocher ou le décocher (étudiant sans téléphone, retard…).',
     aucunAttendu: 'Aucun étudiant inscrit dans les groupes de cette séance.',
@@ -396,6 +435,37 @@ const fr = {
     videTitre: 'Aucun signalement',
     videTexte: 'Les soupçons de fraude à l’appel apparaîtront ici.',
   },
+  classes: {
+    label: 'Classe',
+    aide: 'Vos classes, d’après vos services et votre emploi du temps. La séance en cours ou la prochaine est proposée d’abord.',
+    aucune: 'Aucune classe trouvée : ni service accepté, ni séance à votre emploi du temps. Contactez l’administration si c’est une erreur.',
+    enCours: 'En cours jusqu’à {{fin}}',
+    enCoursCourt: 'En cours',
+    prochaine: 'Prochaine séance : {{date}} à {{heure}}',
+    sansSeance: 'Aucune séance à venir',
+    effectif_one: '{{count}} étudiant',
+    effectif_other: '{{count}} étudiants',
+    page: {
+      titre: 'Mes classes',
+      sousTitre: 'La classe en cours d’abord : appel, quiz, message à la classe et supports de cours.',
+      enCours: 'En cours',
+      autres: 'Mes autres classes',
+      toutes: 'Mes classes',
+      appel: {
+        a_faire: 'Faire l’appel',
+        ouvert: 'Reprendre l’appel',
+        ferme: 'Voir l’appel',
+      },
+      ouvrirAppel: 'Ouvrir l’appel',
+      devoir: 'Donner un quiz en devoir',
+      quizIa: 'Créer un quiz',
+      quizDirect: 'Lancer un quiz',
+      ecrire: 'Écrire à la classe',
+      supports: 'Supports de cours',
+      rappelFaire: '{{classe}} se termine à {{fin}} et l’appel n’a pas été fait.',
+      rappelTerminer: '{{classe}} se termine à {{fin}} : l’appel est encore ouvert. Terminez-le pour enregistrer les présences.',
+    },
+  },
   journalSecurite: {
     intro: 'Connexions, double authentification, mots de passe, sessions et comptes, du plus récent au plus ancien. Cliquez sur un compte pour ne voir que ses événements. Les mots de passe et les codes n’y figurent jamais.',
     evenement: 'Événement',
@@ -437,6 +507,7 @@ const fr = {
       compte_supprime: 'Compte supprimé',
       comptes_importes: 'Import de comptes',
       appareil_delie: 'Téléphone délié',
+      quiz_ia_genere: 'Quiz généré par l’IA',
     },
   },
   presence: {
@@ -488,28 +559,298 @@ const fr = {
     room: 'Salle',
     remote: 'En distanciel',
   },
-  feedback: {
-    title: 'Votre avis sur la séance',
-    question: 'Note de la séance',
-    score: 'Note {{n}} sur 5',
-    low: 'Pas du tout',
-    high: 'Très bien',
-    word: 'Un mot (facultatif)',
-    anonymous: 'Anonyme : l’enseignant ne voit qu’une tendance, à partir de 5 réponses.',
-    later: 'Plus tard',
-    send: 'Envoyer',
-    thanks: 'Merci pour votre retour',
-    mineTitle: 'Retours des étudiants',
-    mineIntro: 'Tendance anonyme par module : visible à partir de 5 réponses ; seuls les mots qui reviennent sont affichés.',
-    answers_one: '{{count}} réponse',
-    answers_other: '{{count}} réponses',
-    distribution: 'Répartition des notes de 1 à 5',
-    notEnough: 'Moins de 5 réponses : tendance masquée',
-  },
   roles: {
     admin: 'Administration',
     enseignant: 'Enseignant',
     etudiant: 'Étudiant',
+  },
+  aide: {
+    "titre": "Aide",
+    "rechercher": "Que voulez-vous faire ?",
+    "surCettePage": "Sur cette page",
+    "yAller": "Y aller",
+    "aucune": "Aucune fiche ne correspond. Essayez un autre mot, par exemple « appel », « report » ou « quiz ».",
+    "themes": {
+      "seance": "Pendant la séance",
+      "classe": "Avec mes classes",
+      "planning": "Mon planning",
+      "annee": "Préparer et publier le planning",
+      "quotidien": "Au quotidien",
+      "comptes": "Comptes et sécurité",
+      "compte": "Mon compte",
+      "etudiant": "Mes études"
+    },
+    "contact": {
+      "admin": "Un blocage technique (connexion impossible, page en erreur) ? Notez l’heure et la page, puis prévenez le responsable technique de la plateforme : le journal de sécurité l’aidera à retrouver l’événement.",
+      "enseignant": "Une erreur dans votre emploi du temps, vos classes ou vos services ? Elle se corrige côté administration : contactez la scolarité.",
+      "etudiant": "Un problème avec votre compte, votre groupe ou votre téléphone ? Contactez la scolarité."
+    },
+    "fiches": {
+      "adminDemarrer": {
+        "titre": "Par où commencer la préparation de l’année ?",
+        "etapes": [
+          "Ouvrez « Préparation » : la page liste les étapes dans l’ordre (calendrier, maquette, groupes, services, disponibilités, génération, revue, publication) avec leur avancement.",
+          "Traitez la première étape incomplète : chaque ligne mène à la page où agir.",
+          "Revenez à « Préparation » après chaque étape : l’avancement se recalcule tout seul."
+        ],
+        "note": "Une étape reste bloquée tant que la précédente manque : pas de génération sans services acceptés ni disponibilités."
+      },
+      "adminGenerer": {
+        "titre": "Générer l’emploi du temps",
+        "etapes": [
+          "Vérifiez dans « Enseignements » que chaque enseignement a un enseignant principal qui a accepté son service.",
+          "Ouvrez « Génération automatique », choisissez la période et les filières, puis lancez.",
+          "Ouvrez ensuite « Conflits » : la génération signale ce qu’elle n’a pas pu placer proprement."
+        ]
+      },
+      "adminConflits": {
+        "titre": "Résoudre un conflit de salle, d’enseignant ou de groupe",
+        "etapes": [
+          "Ouvrez « Conflits » : chaque ligne dit quelle règle est enfreinte et par quelles séances.",
+          "Ouvrez la séance en cause et déplacez-la, ou changez de salle : la vérification se refait à l’enregistrement.",
+          "Le conflit disparaît de la liste dès que la règle est de nouveau respectée."
+        ],
+        "note": "Forcer une séance malgré une règle est réservé à l’administration : c’est tracé, et le chevauchement devient un conflit à résoudre."
+      },
+      "adminPublierMois": {
+        "titre": "Envoyer l’emploi du temps du mois aux classes",
+        "etapes": [
+          "Ouvrez « EDT du mois » et choisissez la filière et le mois.",
+          "Cliquez sur « Publier et envoyer » : les étudiants reçoivent une notification et un e-mail avec le lien.",
+          "Ensuite, chaque soir à 18 h, les mois publiés qui ont changé sont renvoyés automatiquement."
+        ]
+      },
+      "adminImprevu": {
+        "titre": "Un enseignant est absent, une salle est hors service, une journée saute",
+        "etapes": [
+          "Ouvrez « Imprévus » et choisissez l’onglet : « Absence d’un enseignant », « Salle hors service » ou « Journée annulée ».",
+          "Pour une absence : indiquez l’enseignant et la période. Tous ses créneaux sont bloqués et ses séances s’affichent.",
+          "Pour chaque séance : choisissez un remplaçant compétent et libre, ou déplacez-la sur un créneau proposé par l’assistant."
+        ],
+        "note": "Les étudiants et l’enseignant concernés sont prévenus à chaque changement de séance."
+      },
+      "adminReport": {
+        "titre": "Traiter une demande de report d’un enseignant",
+        "etapes": [
+          "Ouvrez « Demandes de report » : les demandes en attente sont en tête.",
+          "Approuvez pour déplacer la séance à la date demandée, ou refusez.",
+          "Si le déplacement enfreint une règle (salle prise, groupe occupé), la liste des règles s’affiche : choisissez un autre créneau ou forcez en connaissance de cause."
+        ],
+        "note": "Une séance planifiée est tenue pour confirmée : un enseignant n’a rien à confirmer, il demande un report s’il ne peut pas l’assurer."
+      },
+      "adminAnnonce": {
+        "titre": "Envoyer une annonce à l’école, une filière, un niveau ou un groupe",
+        "etapes": [
+          "Ouvrez « Annonces » puis « Nouvelle annonce ».",
+          "Choisissez la portée et le public (étudiants, enseignants ou tous), ajoutez au besoin une pièce jointe (PDF ou image) et l’envoi par e-mail.",
+          "Dans les annonces envoyées, « Lecteurs » montre qui a lu, et « Relancer » rappelle ceux qui n’ont pas lu (une fois toutes les 12 heures au plus)."
+        ]
+      },
+      "adminExamens": {
+        "titre": "Planifier un examen ou réserver une salle",
+        "etapes": [
+          "Examen : ouvrez « Examens », créez l’épreuve avec ses groupes et ses salles. Les places sont vérifiées, et les surveillants peuvent être désignés d’office.",
+          "Publiez l’épreuve : les étudiants et les surveillants sont prévenus.",
+          "Soutenance, réunion, rattrapage, événement : ouvrez « Réservations ». La salle et les participants sont vérifiés comme pour une séance."
+        ],
+        "note": "Les réservations se font par l’administration : les enseignants n’en créent pas, ils voient celles où ils participent."
+      },
+      "adminHeures": {
+        "titre": "Suivre les heures réalisées et préparer la paie des vacataires",
+        "etapes": [
+          "Ouvrez « Suivi du réalisé ». L’onglet « Avancement des modules » compare les heures faites au volume prévu et signale les retards.",
+          "L’onglet « Heures du mois » donne les heures réalisées par enseignant.",
+          "« Export vacataires (CSV) » liste les séances des vacataires du mois, pour la paie."
+        ],
+        "note": "Une séance planifiée et passée est comptée réalisée d’office. Une séance qui n’a pas eu lieu doit donc être reportée ou annulée, sinon elle est comptée."
+      },
+      "adminComptes": {
+        "titre": "Créer des comptes, ou importer une liste",
+        "etapes": [
+          "Un compte : ouvrez « Comptes », « Enseignants » ou « Étudiants » et ajoutez la personne.",
+          "Une liste d’étudiants : dans « Étudiants », « Importer (Excel/CSV) ».",
+          "Le mot de passe provisoire doit être changé à la première connexion."
+        ]
+      },
+      "adminMfa": {
+        "titre": "Quelqu’un a perdu le téléphone de sa double authentification",
+        "etapes": [
+          "Demandez-lui d’abord d’utiliser un de ses codes de secours : chacun sert une fois.",
+          "Sans code de secours : ouvrez « Comptes », retrouvez la personne et réinitialisez sa double authentification.",
+          "À sa prochaine connexion, elle la configure de nouveau avec son nouveau téléphone."
+        ],
+        "note": "Vérifiez l’identité de la personne avant de réinitialiser : l’action figure au journal de sécurité."
+      },
+      "adminTelephone": {
+        "titre": "Un étudiant a changé de téléphone et ne peut plus pointer",
+        "etapes": [
+          "Un compte est lié à un téléphone, pour empêcher de pointer à la place d’un autre. Depuis un nouveau téléphone, le scan est refusé et signalé.",
+          "Ouvrez « Signalements de présence », retrouvez l’étudiant et cliquez sur « Délier le téléphone ».",
+          "À son prochain scan, son compte se lie au nouveau téléphone."
+        ],
+        "note": "Le même écran montre les soupçons de fraude : un téléphone qui pointe pour deux étudiants, ou un absent à la vérification surprise."
+      },
+      "adminSecurite": {
+        "titre": "Comprendre une connexion suspecte ou un compte bloqué",
+        "etapes": [
+          "Ouvrez « Journal de sécurité » : connexions, double authentification, mots de passe et sessions, du plus récent au plus ancien.",
+          "Cliquez sur un compte pour ne voir que ses événements, avec l’adresse IP et le navigateur.",
+          "Un compte bloqué après trop de codes faux se débloque seul au bout de 15 minutes."
+        ]
+      },
+      "profAppel": {
+        "titre": "Faire l’appel",
+        "etapes": [
+          "Ouvrez « Mes classes » : la classe en cours est en tête. Cliquez sur « Faire l’appel ».",
+          "Cliquez sur « Projeter le QR code » et affichez la fenêtre sur l’écran de la salle : elle ne montre ni le menu ni vos autres pages.",
+          "Les étudiants scannent avec l’application HESTIM : leur nom apparaît à l’écran dès que la présence est enregistrée.",
+          "Cliquez sur « Valider l’appel », puis « Voir la liste complète » pour les présents et les absents."
+        ],
+        "note": "Un étudiant sans téléphone : cochez son nom à la main sur votre écran d’appel. La « Vérification surprise », facultative, tire quelques présents au hasard à appeler à voix haute."
+      },
+      "profRappel": {
+        "titre": "Je crains d’oublier l’appel",
+        "etapes": [
+          "Cinq minutes avant la fin de la séance, si l’appel n’est pas fait ou pas validé, un rappel s’affiche en haut de la page de Planner ouverte.",
+          "Cliquez sur « Ouvrir l’appel » dans le rappel."
+        ],
+        "note": "Le rappel n’apparaît que si Planner est ouvert dans votre navigateur."
+      },
+      "profQuizDirect": {
+        "titre": "Lancer un quiz en direct pendant la séance",
+        "etapes": [
+          "Dans « Mes classes », sur la classe en cours, cliquez sur « Quiz en direct » : vous arrivez sur vos quiz sans vous reconnecter.",
+          "Choisissez le quiz et lancez la partie : les étudiants de la classe la reçoivent dans l’application, sans code à saisir.",
+          "Le lien « ← Planner » vous ramène à votre tableau de bord."
+        ],
+        "note": "Les scores sont rattachés à la séance : vous les retrouvez ensuite dans « Activités »."
+      },
+      "profQuizIa": {
+        "titre": "Créer un quiz en un geste",
+        "etapes": [
+          "Dans « Mes classes » ou « Activités », cliquez sur « Créer un quiz ».",
+          "Écrivez le sujet ou joignez un document de votre cours, puis « Générer ». Pour écrire les questions vous-même : « Le faire moi-même ».",
+          "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
+          "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être donné en devoir ou lancé en direct."
+        ],
+        // Devoirs masqués (lot D-1, CONTEXTE_DEVOIRS)
+        "etapes_sansDevoirs": [
+          "Dans « Mes classes » ou « Activités », cliquez sur « Créer un quiz ».",
+          "Écrivez le sujet ou joignez un document de votre cours, puis « Générer ». Pour écrire les questions vous-même : « Le faire moi-même ».",
+          "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
+          "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être lancé en direct."
+        ],
+        "note": "Rien n’est créé sans votre validation. Le panneau n’apparaît que si le service est activé par l’école."
+      },
+      "profDevoir": {
+        "titre": "Donner un quiz en devoir et voir les notes",
+        "etapes": [
+          "Dans « Mes classes », cliquez sur « Donner un quiz en devoir » sur la classe voulue.",
+          "Choisissez l’un de vos quiz et la date limite : il est corrigé automatiquement et noté sur 20.",
+          "Dans « Activités », panneau « Devoirs », « Notes » montre les copies rendues et la moyenne."
+        ],
+        "note": "Vous ne pouvez donner un devoir qu’à vos classes. La correction n’est montrée aux étudiants qu’après la date limite."
+      },
+      "profEcrire": {
+        "titre": "Écrire à ma classe",
+        "etapes": [
+          "Dans « Mes classes », cliquez sur « Écrire à la classe » : l’annonce s’ouvre déjà adressée au groupe.",
+          "Rédigez, joignez au besoin un PDF ou une image, et cochez l’envoi par e-mail si c’est urgent.",
+          "Dans « Annonces », « Lecteurs » montre qui a lu, et « Relancer » rappelle les autres."
+        ]
+      },
+      "profSupports": {
+        "titre": "Partager un support, un exercice ou un article",
+        "etapes": [
+          "Ouvrez la « Bibliothèque » puis « Déposer un document ».",
+          "Choisissez le module (n’importe lequel, pas seulement les vôtres) et le type : cours, TD, TP, examen, exercice ou article.",
+          "Votre document est publié tout de suite. Les étudiants le retrouvent depuis leur séance du module."
+        ]
+      },
+      "profReport": {
+        "titre": "Je ne peux pas assurer une séance",
+        "etapes": [
+          "Ouvrez « Mes séances » et cliquez sur « Demander un report » sur la séance.",
+          "Indiquez le motif et la date souhaitée : l’administration reçoit la demande et vous répond.",
+          "Suivez la réponse dans « Mes demandes de report »."
+        ],
+        "note": "Vous n’avez rien à confirmer : une séance planifiée est tenue pour confirmée tant que vous ne demandez pas de report."
+      },
+      "profAbsence": {
+        "titre": "Je serai absent plusieurs jours",
+        "etapes": [
+          "Ouvrez « Mes disponibilités » et cliquez sur « Déclarer une absence ».",
+          "Indiquez la période : tous vos créneaux deviennent indisponibles.",
+          "L’administration est prévenue et traite vos séances, par un remplaçant ou un rattrapage."
+        ]
+      },
+      "profDispos": {
+        "titre": "Indiquer quand je peux enseigner",
+        "etapes": [
+          "Ouvrez « Mes disponibilités » et marquez les créneaux où vous êtes disponible ou indisponible.",
+          "Faites-le avant la génération de l’emploi du temps : elle ne vous placera que sur vos créneaux libres."
+        ]
+      },
+      "profServices": {
+        "titre": "Accepter ou refuser un enseignement qu’on me propose",
+        "etapes": [
+          "Ouvrez « Mes services » : les enseignements proposés par le responsable de filière attendent votre réponse.",
+          "Acceptez, ou refusez en donnant le motif.",
+          "La même page montre votre charge de l’année face à votre service dû."
+        ]
+      },
+      "profResponsable": {
+        "titre": "Préparer ma filière (responsable de filière)",
+        "etapes": [
+          "Ouvrez « Préparation » : les étapes de vos filières s’affichent dans l’ordre, avec leur avancement.",
+          "Complétez la maquette, les groupes et les enseignements, puis proposez les services aux enseignants.",
+          "« Suivi du réalisé » vous montre ensuite les modules en retard sur leur rythme."
+        ]
+      },
+      "profSecurite": {
+        "titre": "Changer mon mot de passe ou régler la double authentification",
+        "etapes": [
+          "Mot de passe : ouvrez « Paramètres » (onglet « Compte » sur téléphone). Il doit compter 12 caractères au moins.",
+          "Double authentification et codes de secours : utilisez « Y aller » ci-dessous pour ouvrir la page Sécurité.",
+          "Rangez vos codes de secours en lieu sûr : chacun sert une fois si votre téléphone est indisponible."
+        ]
+      },
+      "etuEdt": {
+        "titre": "Voir mon emploi du temps et ses changements",
+        "etapes": [
+          "« Tableau » montre votre prochaine séance et celles du jour ; « Emploi du temps » montre la semaine.",
+          "Un report ou une annulation arrive dans vos alertes, et dans l’application sur votre téléphone."
+        ]
+      },
+      "etuPresence": {
+        "titre": "Pointer ma présence",
+        "etapes": [
+          "Ouvrez l’application HESTIM sur votre téléphone et touchez l’icône du QR code.",
+          "Scannez le code affiché à l’écran de la salle : votre nom apparaît à l’écran quand la présence est enregistrée."
+        ],
+        "note": "Le pointage ne se fait que depuis l’application, et votre compte est lié à un seul téléphone. Nouveau téléphone : demandez à la scolarité de le délier."
+      },
+      "etuDevoirs": {
+        "titre": "Faire un devoir ou rejoindre un quiz",
+        "titre_sansDevoirs": "Rejoindre un quiz",
+        "etapes_sansDevoirs": [
+          "Un quiz lancé par votre enseignant pendant la séance apparaît dans « Activités » et dans l’application.",
+          "Rejoignez-le d’un clic, sans code à saisir."
+        ],
+        "etapes": [
+          "Ouvrez « Activités » : vos quiz à faire en devoir y figurent avec leur date limite.",
+          "Un quiz lancé par votre enseignant pendant la séance y apparaît aussi, et dans l’application.",
+          "La correction d’un devoir est visible après la date limite."
+        ]
+      },
+      "etuAnnonces": {
+        "titre": "Lire les annonces de l’école et de mes enseignants",
+        "etapes": [
+          "Ouvrez « Annonces » : les non lues sont marquées.",
+          "Une pièce jointe se télécharge depuis l’annonce."
+        ]
+      }
+    }
   },
   nav: {
     board: 'Tableau',
@@ -518,6 +859,7 @@ const fr = {
     account: 'Compte',
     dashboard: 'Tableau de bord',
     mySessions: 'Mes séances',
+    myClasses: 'Mes classes',
     myAvailability: 'Mes disponibilités',
     myReports: 'Mes demandes de report',
     timetable: 'Emploi du temps',
@@ -563,6 +905,61 @@ const fr = {
     library: 'Bibliothèque',
     announcements: 'Annonces',
     games: 'Activités',
+  },
+  quizCreation: {
+    titre: 'Créer un quiz',
+    sujet: 'Sujet du quiz',
+    exempleSujet: 'Par exemple : les commandes de base de Linux',
+    joindre: 'Joindre un document (PDF, Word, PowerPoint)',
+    typeSupport: 'Document refusé : PDF, Word (.docx) ou PowerPoint (.pptx) seulement.',
+    tailleSupport: 'Document trop lourd : 20 Mo au plus.',
+    generer: 'Générer',
+    envoi: 'Envoi…',
+    moiMeme: 'Le faire moi-même',
+    aide_one: '10 questions sont proposées à partir du document ou du sujet ; vous les relisez avant de créer le quiz. Il vous reste {{count}} génération aujourd’hui.',
+    aide_other: '10 questions sont proposées à partir du document ou du sujet ; vous les relisez avant de créer le quiz. Il vous reste {{count}} générations aujourd’hui.',
+    aideDocument: 'Joignez un document pour générer les questions, ou faites le quiz vous-même.',
+    aideQuota: 'Plus de génération possible aujourd’hui : faites le quiz vous-même, ou revenez demain.',
+    aideSansIa: 'Le quiz s’écrit dans l’éditeur de quiz, déjà connecté à votre compte.',
+  },
+  quizDirect: {
+    titre: 'Quiz en direct',
+    connexion: 'Connexion à la partie…',
+    qrAlt: 'QR code de la partie, à scanner avec l’application HESTIM Planner',
+    consigne: 'Scannez le QR code avec l’application HESTIM Planner',
+    code: 'Code {{pin}}',
+    joueurs_one: '{{count}} joueur',
+    joueurs_other: '{{count}} joueurs',
+    demarrer: 'Démarrer',
+    numero: 'Question {{numero}} sur {{total}}',
+    reponsesRecues: '{{recues}} réponses sur {{joueurs}}',
+    voirReponses: 'Voir les réponses',
+    suivant: 'Question suivante',
+    bonneReponse: 'Bonne réponse',
+    reponses_one: '{{count}} réponse',
+    reponses_other: '{{count}} réponses',
+    classementFinal: 'Classement final',
+    aucunScore: 'Aucun joueur n’a marqué de point.',
+    points_one: '{{count}} pt',
+    points_other: '{{count}} pts',
+    terminer: 'Terminer',
+    erreurs: {
+      absente: 'Aucune partie à animer : lancez un quiz depuis Mes classes.',
+      dejaAnimee: 'Cette partie est déjà animée dans une autre fenêtre.',
+      connexion: 'Impossible de joindre le service de quiz. Vérifiez la connexion, puis relancez le quiz depuis Mes classes.',
+      serveur: 'Le service de quiz a refusé la partie. Relancez le quiz depuis Mes classes.',
+    },
+    lancer: {
+      titre: 'Lancer un quiz · {{classe}}',
+      liste: 'Mes quiz',
+      aucun: 'Vous n’avez encore aucun quiz. Créez-en un avec l’IA ou dans l’espace Quiz.',
+      questions_one: '{{count}} question',
+      questions_other: '{{count}} questions',
+      enCours: 'Lancement…',
+      erreur: 'Le quiz n’a pas pu être lancé.',
+      erreurListe: 'Impossible de charger vos quiz.',
+      creerIa: 'Créer un quiz',
+    },
   },
   espaces: {
     titre: 'Espaces HESTIM',
@@ -632,8 +1029,10 @@ const fr = {
     buts: { verifier: 'Vérifier la compréhension', entrainer: 'S’entraîner' },
     titre: 'Activités',
     sousTitre: 'Les quiz, devoirs et jeux choisis par vos enseignants, module par module : pour vérifier ce que vous avez compris ou vous entraîner.',
+    sousTitre_sansDevoirs: 'Les quiz et jeux choisis par vos enseignants, module par module : pour vérifier ce que vous avez compris ou vous entraîner.',
     sousTitreEnseignant: 'Dans chaque module, lancez un quiz, donnez un devoir ou proposez un jeu, pour vérifier la compréhension d’une notion ou faire s’entraîner vos étudiants.',
-    erreur: 'Impossible de charger les jeux. Vérifiez votre connexion puis réessayez.',
+    sousTitreEnseignant_sansDevoirs: 'Dans chaque module, lancez un quiz ou proposez un jeu, pour vérifier la compréhension d’une notion ou faire s’entraîner vos étudiants.',
+    erreur: 'Impossible de charger les activités. Vérifiez votre connexion puis réessayez.',
     erreurAction: 'L’opération n’a pas abouti. Réessayez.',
     horsLigne: 'Votre progression n’a pas pu être chargée : vous pouvez jouer, les réussites seront enregistrées au retour de la connexion.',
     catalogue: 'Tous les jeux',
@@ -659,6 +1058,7 @@ const fr = {
     historiqueProf: {
       titre: 'Historique',
       vide: 'Rien pour le moment : vos quiz, devoirs et les défis réussis dans vos modules apparaîtront ici.',
+      vide_sansDevoirs: 'Rien pour le moment : vos quiz et les défis réussis dans vos modules apparaîtront ici.',
       types: { quiz: 'Quiz', devoir: 'Devoir', defis: 'Défis' },
       quiz_one: '{{count}} joueur · {{moyenne}} pts de moyenne',
       quiz_other: '{{count}} joueurs · {{moyenne}} pts de moyenne',
@@ -700,10 +1100,7 @@ const fr = {
       reponses_one: '{{count}} réponse',
       reponses_other: '{{count}} réponses',
       historique: 'Mes derniers quiz',
-      historiqueEnseignant: 'Quiz terminés',
       voir: 'Résultats',
-      resumeEnseignant_one: '{{count}} joueur · moyenne {{moyenne}} pts',
-      resumeEnseignant_other: '{{count}} joueurs · moyenne {{moyenne}} pts',
       resumeEtudiant_ordinal_one: '{{score}} pts · {{count}}er sur {{total}}',
       resumeEtudiant_ordinal_other: '{{score}} pts · {{count}}e sur {{total}}',
     },
@@ -737,10 +1134,9 @@ const fr = {
       donner: 'Donner un devoir',
       donne_one: 'Devoir donné : {{count}} étudiant prévenu.',
       donne_other: 'Devoir donné : {{count}} étudiants prévenus.',
-      aucunQuiz: 'Aucun quiz dans votre compte ClassQuiz. Créez-en un depuis l’espace Quiz.',
+      aucunQuiz: 'Vous n’avez encore aucun quiz. Créez-en un depuis l’espace Quiz.',
       aucunEnseignant: 'Aucun devoir donné pour le moment.',
       quiz: 'Quiz',
-      module: 'Module',
       dateLimite: 'Date limite',
       aide: 'Les questions sont copiées au moment du devoir ; Planner corrige et note sur 20. Une copie par étudiant, correction visible après la date limite.',
       notes: 'Notes',
@@ -750,43 +1146,64 @@ const fr = {
       confirmerSuppression: 'Supprimer le devoir « {{titre}} » et ses copies ?',
       resumeEnseignant_one: '{{count}} copie · moyenne {{moyenne}}/20',
       resumeEnseignant_other: '{{count}} copies · moyenne {{moyenne}}/20',
-      typeDevoir: 'Type de devoir',
-      types: { fichier: 'Fichier à rendre (rapport, code, photo…)', quiz: 'Quiz corrigé automatiquement' },
-      titreDevoir: 'Intitulé',
-      consignes: 'Consignes',
-      sansConsignes: 'Pas de consignes écrites : voyez l’énoncé ou demandez à votre enseignant.',
-      enonce: 'Joindre un énoncé (facultatif)',
-      enonceNonAjoute: 'Le devoir est donné, mais l’énoncé n’a pas pu être ajouté.',
-      telechargerEnonce: 'Énoncé : {{nom}}',
-      aideFichier: 'Chaque étudiant dépose un PDF, une image, une archive ZIP ou un document Office (10 Mo au plus). Vous notez sur 20 et commentez ; une copie rendue après la date limite est acceptée et marquée en retard.',
-      maCopieTitre: 'Ma copie',
-      pasEncoreRendu: 'Pas encore rendue.',
-      pasRenduRetard: 'Pas rendue : la date limite est passée, une copie déposée maintenant sera marquée en retard.',
-      copieRendue: 'Rendue le {{date}}',
-      copieDeposee: 'Copie déposée',
-      enRetard: 'En retard',
-      enCorrection: 'Rendu · en attente de correction',
-      deposer: 'Déposer ma copie',
-      remplacer: 'Remplacer ma copie',
-      envoiCopie: 'Envoi…',
-      formatsCopie: 'PDF, image, archive ZIP ou document Office, 10 Mo au plus. Remplaçable tant qu’elle n’est pas corrigée.',
-      typeFichierRefuse: 'Fichier : PDF, image, archive ZIP ou document Office seulement.',
-      tailleFichier: 'Fichier : 10 Mo au plus.',
-      copie: 'Copie',
-      corriger: 'Corriger',
-      corrigerTitre: 'Corriger la copie de {{nom}}',
-      commentaire: 'Commentaire',
-      noteInvalide: 'Une note entre 0 et 20 (par exemple 14,5)',
-      noteEnregistree: 'Note enregistrée : l’étudiant est prévenu.',
-      aCorriger_one: '{{count}} à corriger',
-      aCorriger_other: '{{count}} à corriger',
+    },
+    quizIa: {
+      titre: 'Mes quiz',
+      generationEnCours: 'L’IA lit votre support et écrit les questions. Cela prend en général moins d’une minute.',
+      creationEnCours: 'Création du quiz en cours…',
+      echec: 'La génération a échoué. Relancez-la.',
+      relire: 'Relire le quiz proposé',
+      aideRelecture: 'Relisez chaque question : corrigez, supprimez ou faites régénérer. Rien n’est créé tant que vous n’avez pas validé.',
+      titreQuiz: 'Titre du quiz',
+      aideTitre: 'Vide : le nom du module et celui du support.',
+      question: 'Question {{numero}}',
+      enonce: 'Énoncé',
+      reponse: 'Réponse {{numero}}',
+      bonneReponse: 'La réponse {{numero}} est juste',
+      retirerReponse: 'Retirer la réponse {{numero}}',
+      ajouterReponse: 'Ajouter une réponse',
+      plusieursJustes: 'Plusieurs bonnes réponses',
+      regenerer: 'Demander une autre question à l’IA',
+      regenererQuestion: 'Régénérer la question {{numero}}',
+      supprimer: 'Supprimer la question',
+      supprimerQuestion: 'Supprimer la question {{numero}}',
+      source: 'Source : {{source}}',
+      enregistrer: 'Enregistrer le brouillon',
+      enregistre: 'Brouillon enregistré.',
+      creer: 'Créer le quiz',
+      creation: 'Création…',
+      cree: 'Quiz « {{titre}} » créé. Il est maintenant parmi vos quiz.',
+      dejaCree: 'Ce quiz est créé : vous pouvez le donner en devoir ou le lancer en direct.',
+      dejaCree_sansDevoirs: 'Ce quiz est créé : vous pouvez le lancer en direct.',
+      donnerEnDevoir: 'Le donner en devoir',
+      aucune: 'Aucun quiz pour le moment. « Créer un quiz » : un sujet ou un document suffit.',
+      relireCourt: 'Relire',
+      voir: 'Voir',
+      suivre: 'Suivre',
+      sansNom: 'Support sans nom',
+      statuts: {
+        en_cours: 'Génération en cours',
+        creation: 'Création en cours',
+        pret_one: '{{count}} question à relire',
+        pret_other: '{{count}} questions à relire',
+        cree_one: 'Quiz créé · {{count}} question',
+        cree_other: 'Quiz créé · {{count}} questions',
+      },
+      erreurs: {
+        vide: 'Gardez au moins une question.',
+        enonce: 'Question {{numero}} : l’énoncé est vide.',
+        reponseVide: 'Question {{numero}} : une réponse est vide.',
+        doublon: 'Question {{numero}} : deux réponses sont identiques.',
+        aucuneJuste: 'Question {{numero}} : cochez la bonne réponse.',
+        toutesJustes: 'Question {{numero}} : il faut au moins une mauvaise réponse.',
+        uneSeule: 'Question {{numero}} : une seule bonne réponse, ou cochez « Plusieurs bonnes réponses ».',
+      },
     },
     quiz: {
       titre: 'Quiz en direct',
       enCours: 'En cours',
       code: 'Code {{pin}}',
       rejoindre: 'Rejoindre',
-      ouvrir: 'Ouvrir',
       saisirCode: 'Saisir un code',
       aucune: 'Aucun quiz en cours dans vos séances. Quand votre enseignant en lance un, il apparaît ici.',
       aucuneEnseignant: 'Aucun quiz lancé depuis deux heures. Lancez-en un pendant votre séance : vos étudiants sont prévenus.',
@@ -805,7 +1222,6 @@ const fr = {
       proposer: 'Proposer',
       retirer: 'Retirer',
       suivi: 'Suivi',
-      estPropose: 'proposé à vos étudiants',
       nonPropose: 'pas encore proposé',
       propose: 'Jeu proposé dans {{module}}',
       retire: 'Jeu retiré de {{module}}',
@@ -840,6 +1256,212 @@ const fr = {
   },
   status: partage.status,
   board: partage.board,
+  notFound: {
+    titre: 'Page introuvable',
+    texte: 'Cette page n’existe pas ou a été déplacée.',
+    accueil: 'Accueil',
+  },
+  forgot: {
+    titre: 'Mot de passe oublié ?',
+    intro: 'Entrez votre adresse email : vous recevrez un lien pour réinitialiser votre mot de passe.',
+    envoyer: 'Envoyer le lien de réinitialisation',
+    envoye: 'Si cette adresse est connue, un lien de réinitialisation vient d’être envoyé. Vérifiez votre boîte de réception.',
+    retourConnexion: 'Retour à la connexion',
+    erreur: 'Une erreur est survenue.',
+  },
+  reset: {
+    titre: 'Réinitialiser votre mot de passe',
+    intro: 'Entrez votre nouveau mot de passe.',
+    aide: '12 caractères au moins : une phrase de passe convient.',
+    confirmer: 'Confirmer le mot de passe',
+    envoyer: 'Réinitialiser le mot de passe',
+    succes: 'Votre mot de passe est enregistré. Vous allez être redirigé vers la page de connexion…',
+    allerConnexion: 'Aller à la connexion',
+    lienInvalide: 'Lien de réinitialisation invalide.',
+    tropCourt: 'Le mot de passe doit contenir au moins 12 caractères (une phrase de passe convient).',
+    erreur: 'Une erreur est survenue lors de la réinitialisation.',
+  },
+  notifs: {
+    titre: 'Mes notifications',
+    nonLues_one: '{{count}} non lue',
+    nonLues_other: '{{count}} non lues',
+    toutLu: 'Tout marquer comme lu',
+    toutesLues: 'Toutes les notifications sont marquées comme lues.',
+    aucune: 'Aucune notification',
+    ouvrir: 'Ouvrir l’élément concerné',
+    marquerLu: 'Marquer comme lu',
+    cliquable: 'Cliquable',
+    erreurChargement: 'Impossible de charger les notifications.',
+    erreurMaj: 'La mise à jour a échoué.',
+    types: { success: 'Succès', warning: 'Avertissement', error: 'Erreur', info: 'Info' },
+  },
+  reports: {
+    titre: 'Demandes de report',
+    nouvelle: 'Nouvelle demande',
+    titreFormulaire: 'Nouvelle demande de report',
+    aucune: 'Aucune demande de report',
+    creer: 'Créer',
+    creee: 'Demande de report envoyée.',
+    erreurChargement: 'Impossible de charger les demandes.',
+    erreurCreation: 'La demande n’a pas pu être créée.',
+    colonnes: { seance: 'Séance', nouvelleDate: 'Nouvelle date', motif: 'Motif', statut: 'Statut', dateDemande: 'Demandée le' },
+    champs: { seance: 'Affectation', choisir: 'Choisir une séance', nouvelleDate: 'Nouvelle date', motif: 'Motif' },
+    statuts: { approuve: 'Approuvée', refuse: 'Refusée', en_attente: 'En attente' },
+    erreurs: { affectation: 'Choisissez la séance à reporter.', date: 'Indiquez la nouvelle date.', motif: 'Indiquez le motif.' },
+  },
+  mesSeances: {
+    titre: 'Mes séances',
+    sousTitre: 'Vos séances à venir et passées : faites l’appel le jour même, ou demandez un report.',
+    aucune: 'Aucune séance pour le moment.',
+    colonnes: { cours: 'Cours', groupe: 'Groupe', salle: 'Salle', date: 'Date', creneau: 'Créneau', statut: 'Statut', actions: 'Actions' },
+    statuts: { confirme: 'Confirmée', annule: 'Annulée', reporte: 'Reportée', realise: 'Réalisée' },
+    appel: 'Faire l’appel (QR code)',
+    demanderReport: 'Demander un report',
+    titreReport: 'Demander le report d’une séance',
+    dateActuelle: 'Date actuelle',
+    nouvelleDate: 'Nouvelle date souhaitée',
+    motif: 'Motif du report',
+    motifAide: 'Expliquez pourquoi vous demandez un report (10 caractères au moins)…',
+    envoyer: 'Envoyer la demande',
+    envoi: 'Envoi…',
+    reportEnvoye: 'Demande de report envoyée : elle attend la décision de l’administration.',
+    erreurChargement: 'Impossible de charger vos séances.',
+    erreurReport: 'La demande de report a échoué.',
+    erreurs: { date: 'Indiquez la nouvelle date.', motif: 'Indiquez le motif.', motifCourt: '10 caractères au moins.' },
+  },
+  conflits: {
+    titre: 'Gestion des conflits',
+    filtres: { tous: 'Tous', nonResolus: 'Non résolus', resolus: 'Résolus' },
+    repartition: 'Répartition des conflits',
+    segments: { sans: 'Sans conflit', salle: 'Conflits de salle', enseignant: 'Conflits d’enseignant', autre: 'Autres conflits' },
+    detectes_one: 'conflit détecté',
+    detectes_other: 'conflits détectés',
+    resume_one: 'Sur {{seances}} séance(s) planifiée(s), {{count}} conflit détecté.',
+    resume_other: 'Sur {{seances}} séance(s) planifiée(s), {{count}} conflits détectés.',
+    attention_one: '{{count}} conflit non résolu demande votre attention.',
+    attention_other: '{{count}} conflits non résolus demandent votre attention.',
+    colonnes: { type: 'Type', description: 'Description', detection: 'Date de détection', statut: 'Statut', actions: 'Actions' },
+    aucun: 'Aucun conflit dans cette catégorie',
+    resolu: 'Résolu',
+    nonResolu: 'Non résolu',
+    resoluLe: 'Résolu le',
+    details: 'Voir les détails',
+    titreDetails: 'Détails du conflit',
+    marquerResolu: 'Marquer comme résolu',
+  },
+  stats: {
+    erreur: 'Impossible de charger les statistiques.',
+    perimetre: 'Périmètre',
+    anneeEnCours: 'Année universitaire en cours',
+    annee: 'Année {{annee}}',
+    toutes: 'Toutes les années',
+    libre: 'Période personnalisée',
+    debut: 'Début',
+    fin: 'Fin',
+    du: 'du {{debut}} au {{fin}}',
+    actualiser: 'Actualiser',
+    exporter: 'Exporter Excel',
+    feuilles: { charge: 'Charge enseignants', groupes: 'Volume par groupe' },
+    kpi: {
+      legende: 'Indicateurs de la période',
+      occupation: 'Occupation des salles',
+      sallesUtilisees: '{{utilisees}} / {{total}} salles utilisées',
+      heuresEnseignant: 'Heures / enseignant',
+      enseignantsActifs_one: '{{count}} enseignant actif',
+      enseignantsActifs_other: '{{count}} enseignants actifs',
+      heuresEtudiant: 'Heures / étudiant',
+      etudiantsConcernes_one: '{{count}} étudiant concerné',
+      etudiantsConcernes_other: '{{count}} étudiants concernés',
+      conflits: 'Taux de conflits',
+      nonResolus_one: '{{count}} conflit non résolu',
+      nonResolus_other: '{{count}} conflits non résolus',
+      duree: 'Durée moyenne',
+      parSeance: '≈ {{heures}} h par séance',
+    },
+    visualisations: 'Visualisations',
+    onglets: { filieres: 'Répartition par filière', creneaux: 'Créneaux demandés', salles: 'Occupation des salles' },
+    vide: { filieres: 'Aucune donnée de filière disponible', creneaux: 'Aucune donnée de créneaux disponible', salles: 'Aucune donnée d’occupation disponible', aucune: 'Aucune donnée' },
+    seances_one: '{{count}} séance',
+    seances_other: '{{count}} séances',
+    detailFilieres: 'Détail par filière',
+    demandes: 'Demandes',
+    tauxOccupation: 'Taux d’occupation',
+    niveaux: { faible: 'Faible (< 40 %)', moyen: 'Moyen (40–70 %)', eleve: 'Élevé (> 70 %)' },
+    charge: 'Charge par enseignant',
+    volumeGroupes: 'Volume horaire par groupe',
+    surcharge: 'Surchargé',
+    colonnes: { enseignant: 'Enseignant', seances: 'Séances', heures: 'Heures', cours: 'Cours', groupe: 'Groupe', niveau: 'Niveau' },
+  },
+  etudiants: {
+    titre: 'Gestion des étudiants',
+    importer: 'Importer (Excel/CSV)',
+    exporter: 'Exporter Excel',
+    ajouter: 'Ajouter un étudiant',
+    rechercher: 'Rechercher un étudiant…',
+    colonnes: { numero: 'Numéro', nom: 'Nom', prenom: 'Prénom', email: 'Email', niveau: 'Niveau', groupe: 'Groupe', actions: 'Actions' },
+    champs: { utilisateur: 'Utilisateur', numero: 'Numéro étudiant' },
+    titreNouveau: 'Nouvel étudiant',
+    titreModifier: 'Modifier l’étudiant',
+    creer: 'Créer',
+    modifier: 'Modifier',
+    cree: 'Étudiant créé.',
+    modifie: 'Étudiant modifié.',
+    supprime: 'Étudiant supprimé.',
+    confirmerSuppression: 'Êtes-vous sûr de vouloir supprimer cet étudiant ?',
+    groupeInconnu: 'Groupe inconnu : {{groupe}}',
+    fichierExport: 'Étudiants',
+    titreImport: 'Importer des étudiants',
+    introImport: 'Une ligne par étudiant. Colonnes obligatoires : nom, prenom, email, numero_etudiant, niveau. Facultatives : telephone, groupe (nom du groupe le plus fin, tel qu’affiché dans Groupes). Chaque étudiant reçoit un lien d’invitation par email pour choisir son mot de passe.',
+    erreurChargement: 'Impossible de charger les étudiants.',
+    erreurSauvegarde: 'L’enregistrement a échoué.',
+    erreurSuppression: 'La suppression a échoué.',
+    erreurExport: 'L’export a échoué.',
+    erreurs: { utilisateur: 'Choisissez l’utilisateur.', numero: 'Indiquez le numéro étudiant.', niveau: 'Indiquez le niveau.', groupe: 'Choisissez le groupe.' },
+  },
+  utilisateurs: {
+    titre: 'Gestion des utilisateurs',
+    ajouter: 'Ajouter un administrateur',
+    rechercher: 'Rechercher un utilisateur…',
+    vide: 'Aucun utilisateur enregistré',
+    videAide: 'Les étudiants et les enseignants s’ajoutent dans leurs pages ; ici, les comptes administrateurs.',
+    colonnes: { nom: 'Nom', prenom: 'Prénom', email: 'Email', role: 'Rôle', telephone: 'Téléphone', statut: 'Statut', actions: 'Actions' },
+    actif: 'Actif',
+    inactif: 'Inactif',
+    modifierNom: 'Modifier {{nom}}',
+    supprimerNom: 'Supprimer {{nom}}',
+    mfaNom: 'Réinitialiser la double authentification de {{nom}}',
+    mfaTitre: 'Réinitialiser la double authentification',
+    mfaMessage: '{{nom}} sera déconnecté partout et devra la configurer de nouveau (administrateur) ou pourra s’en passer (enseignant). À faire seulement après avoir vérifié son identité.',
+    mfaReinitialisee: 'Double authentification de {{nom}} réinitialisée.',
+    mfaErreur: 'Réinitialisation impossible.',
+    reinitialiser: 'Réinitialiser',
+    titreSuppression: 'Supprimer l’utilisateur',
+    messageSuppression: 'Cette action est irréversible : l’utilisateur sera définitivement supprimé.',
+    titreNouveau: 'Nouvel utilisateur',
+    titreModifier: 'Modifier l’utilisateur',
+    infoAdmin: 'Ce formulaire crée un compte administrateur. Les étudiants et les enseignants s’ajoutent, un par un ou par import, dans les pages',
+    pageEtudiants: 'Étudiants',
+    et: 'et',
+    pageEnseignants: 'Enseignants',
+    motDePasseNouveau: 'Mot de passe provisoire (facultatif)',
+    motDePasseModifier: 'Nouveau mot de passe provisoire (laisser vide pour ne pas changer)',
+    motDePasseAideNouveau: 'Sans mot de passe, un lien d’invitation lui est envoyé pour choisir le sien.',
+    motDePasseAideModifier: 'L’utilisateur devra le changer à sa prochaine connexion.',
+    creer: 'Créer',
+    modifier: 'Modifier',
+    modifie: 'Utilisateur modifié.',
+    creeInvitation: 'Compte créé : invitation envoyée.',
+    creeProvisoire: 'Utilisateur créé : mot de passe provisoire à changer à la première connexion.',
+    supprime: 'Utilisateur supprimé.',
+    invitationDe: 'Invitation de {{email}}',
+    invitationEnvoyee: 'Un email avec ce lien vient d’être envoyé. Vous pouvez aussi le transmettre vous-même ; il est valable 7 jours.',
+    invitationNonEnvoyee: 'L’email n’a pas pu être envoyé : transmettez ce lien à la personne. Il est valable 7 jours.',
+    copierLien: 'Copier le lien',
+    erreurChargement: 'Impossible de charger les utilisateurs.',
+    erreurSauvegarde: 'L’enregistrement a échoué.',
+    erreurSuppression: 'La suppression a échoué.',
+    erreurs: { nom: 'Indiquez le nom.', prenom: 'Indiquez le prénom.', email: 'Indiquez l’email.', emailInvalide: 'Email invalide.', role: 'Choisissez le rôle.', motDePasseCourt: 'Au moins 12 caractères (une phrase de passe convient).', motDePasseLong: 'Au plus 64 caractères.' },
+  },
   login: {
     title: 'Connexion',
     subtitle: 'Accédez à vos séances, à votre emploi du temps et aux changements de planning.',
@@ -904,11 +1526,9 @@ const fr = {
     print: 'Imprimer',
     emptyWeek: 'Aucune séance cette semaine.',
     download: 'Télécharger',
-    downloadPdf: 'PDF',
+    downloadPdf: 'PDF officiel',
     downloadExcel: 'Excel',
-    downloadCsv: 'CSV',
-    downloadIcal: 'Calendrier (.ics)',
-    downloadYaml: 'YAML (weekly_blocks)',
+    subscribeAgenda: 'Dans mon agenda (abonnement)',
     filterBy: 'Afficher',
     filterAll: 'Tout le campus',
     filterGroup: 'Par groupe',
@@ -1541,9 +2161,6 @@ const fr = {
       reasonHelp: 'Transmis au responsable de filière',
       acceptedToast: 'Service accepté',
       refusedToast: 'Service refusé',
-      groups: 'Groupes',
-      period: 'Période',
-      hours: 'Volume',
       co: 'en co-enseignement',
       students_one: '{{count}} étudiant',
       students_other: '{{count}} étudiants',

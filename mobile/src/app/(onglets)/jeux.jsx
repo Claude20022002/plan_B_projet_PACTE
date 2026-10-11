@@ -9,13 +9,17 @@ import { chargerActivites, chargerHistoriqueQuiz, choisirAvatar } from '../../ap
 import ChoixPersonnage from '../../jeux/ChoixPersonnage';
 import Personnage from '../../jeux/Personnage';
 import Scene from '../../jeux/Scene';
+import { ouvrirPartie } from '../../quiz/ouvrir';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
+import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
 import { useMargeOnglets } from '../../verre/Verre';
 
 const RAFRAICHISSEMENT_QUIZ_MS = 20000;
 // Écran de chaque jeu intégré
 const ECRAN_JEU = { 'terminal-linux': '/terminal' };
+// Devoirs masqués (lot D-1) : ceux que le serveur renvoie encore ne s'affichent pas
+const devoirsDe = (m) => (DEVOIRS_ACTIFS ? m.devoirs ?? [] : []);
 
 // Lecture seule : le composant applique le résultat dans le .then (aucun état modifié ici)
 const lireTout = () =>
@@ -30,6 +34,7 @@ const lireTout = () =>
  * dans chaque module pour vérifier la compréhension d'un cours ou d'une notion, ou pour
  * s'entraîner. Le joueur dans sa scène en tête (personnage et décor repris de CatéGO), puis ses
  * modules, ce qui est à faire d'abord (quiz en cours, devoirs à rendre). Aucun son.
+ * Les devoirs sont masqués pour le moment (shared/fonctions.js, lot D-1).
  */
 export default function Jeux() {
   const { couleurs } = useTheme();
@@ -64,10 +69,10 @@ export default function Jeux() {
   // Score : chaque jeu compte une fois, même proposé dans plusieurs modules
   const jeux = [...new Map(modules.flatMap((m) => m.jeux).map((j) => [j.code, j])).values()];
   const total = jeux.reduce((somme, j) => ({ points: somme.points + j.progression.points, reussis: somme.reussis + j.progression.reussis }), { points: 0, reussis: 0 });
-  const rien = donnees && !donnees.erreur && !modules.some((m) => m.quiz.length || m.devoirs.length || m.jeux.length);
-  // La partie se joue dans l'application (écran /quiz, joueur natif) ; un quiz n'apparaît que
-  // lorsqu'un enseignant lance une partie dans une séance de l'étudiant
-  const ouvrir = (p) => router.push({ pathname: '/quiz', params: { url: p.url, id: String(p.id), titre: p.titre } });
+  const rien = donnees && !donnees.erreur && !modules.some((m) => m.quiz.length || devoirsDe(m).length || m.jeux.length);
+  // Vue navigateur ou lecteur natif selon QUIZ_DANS_L_APPLICATION (quiz/ouvrir.js) ; un quiz
+  // n'apparaît que lorsqu'un enseignant lance une partie dans une séance de l'étudiant
+  const ouvrir = (p) => ouvrirPartie({ router, partie: p, couleurs });
   const historique = donnees?.historique ?? [];
   const dateCourte = (iso) => new Date(iso).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
@@ -108,7 +113,7 @@ export default function Jeux() {
 
         {/* Une section par module : ce que les enseignants y ont proposé */}
         {modules.map((m) => {
-          if (!m.quiz.length && !m.devoirs.length && !m.jeux.length) return null;
+          if (!m.quiz.length && !devoirsDe(m).length && !m.jeux.length) return null;
           return (
             <View key={m.code}>
               <Text style={styles.section} accessibilityRole="header">
@@ -129,9 +134,9 @@ export default function Jeux() {
                   ) : null}
                 </View>
               ))}
-              {m.devoirs.map((dv) => {
+              {devoirsDe(m).map((dv) => {
                 const aRendre = dv.ouvert && !dv.rendu;
-                const etat = dv.rendu ? (dv.rendu.note === null ? t('app.devoirs.enCorrection') : t('app.devoirs.note', { note: dv.rendu.note })) : aRendre ? t('app.devoirs.avant', { date: dateCourte(dv.date_limite) }) : t('app.devoirs.nonRendu');
+                const etat = dv.rendu ? t('app.devoirs.note', { note: dv.rendu.note }) : aRendre ? t('app.devoirs.avant', { date: dateCourte(dv.date_limite) }) : t('app.devoirs.nonRendu');
                 return (
                   <Pressable key={`devoir-${dv.id}`} onPress={() => router.push(`/devoir/${dv.id}`)} style={styles.ligne} accessibilityRole="button" accessibilityLabel={`${dv.titre}, ${etat}`}>
                     <View style={[styles.lampe, aRendre && { backgroundColor: couleurs.lettre, borderColor: couleurs.lettre }, dv.rendu && { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />

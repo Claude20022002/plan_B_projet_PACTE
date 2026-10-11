@@ -33,13 +33,13 @@ import { calendrierAPI, creneauAPI, disponibiliteAPI, imprevuAPI } from '../serv
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { fetchAll } from '../utils/fetchAll';
+import { aujourdhui } from '../../../shared/dates.js';
 
 const JOURS = ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi', 'dimanche'];
 const VOEUX = ['neutre', 'prefere', 'eviter'];
 // Pastilles : l'indisponibilité et le vœu « à éviter » sont les exceptions à signaler
 const TON_VOEU = { prefere: 'info', eviter: 'warning' };
 const hhmm = (heure) => String(heure || '').slice(0, 5);
-const aujourdhui = () => new Date().toISOString().slice(0, 10);
 
 /**
  * Mes disponibilités : un vacataire n'est placé que sur les créneaux qu'il déclare disponibles

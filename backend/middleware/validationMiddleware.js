@@ -1,4 +1,4 @@
-import { body, param, query, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 import { LONGUEUR_MIN } from "../utils/passwordHelper.js";
 import {
     TYPES_SALLE,
@@ -209,6 +209,7 @@ const champsGroupeP2 = () => [
     body("type_groupe").optional().isIn(TYPES_GROUPE).withMessage("Type de groupe : promotion, td ou tp"),
     body("id_groupe_parent").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Groupe parent invalide"),
     body("annee").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Année d'études : 1 à 6"),
+    body("id_campus_prefere").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Campus préféré invalide"),
 ];
 
 export const validateGroupeCreation = [

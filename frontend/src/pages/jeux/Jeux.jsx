@@ -26,14 +26,15 @@ import PageHeader from '../../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau';
 import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
-import PanneauDevoirs from '../../components/jeux/PanneauDevoirs';
+import ZoneQuizEtDevoirs from '../../components/jeux/ZoneQuizEtDevoirs';
+import PanneauQuizDirect from '../../components/quiz/PanneauQuizDirect';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { jeuxAPI, quizAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
-import { adresseEspace } from '../../../../shared/espaces.js';
+import { CONTEXTE_DEVOIRS, DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 
 const RAFRAICHISSEMENT_QUIZ_MS = 20000;
 const urlSure = (url) => typeof url === 'string' && /^https?:\/\//.test(url);
@@ -60,8 +61,7 @@ export default function Jeux() {
   const [resultats, setResultats] = useState(null); // id de la partie affichée
 
   const charger = useCallback(() => {
-    jeuxAPI
-      .getAccueil()
+    jeuxAPI.getAccueil()
       .then((a) => {
         setAccueil(a);
         setErreur(false);
@@ -76,9 +76,9 @@ export default function Jeux() {
   useEffect(() => {
     if (!enseignant) return undefined;
     let actif = true;
-    jeuxAPI
-      .getHistorique()
-      .then((r) => actif && setHistoriqueProf(r?.data ?? []))
+    // Devoirs masqués (lot D-1) : ceux déjà donnés ne remontent plus dans l'historique
+    jeuxAPI.getHistorique()
+      .then((r) => actif && setHistoriqueProf((r?.data ?? []).filter((e) => DEVOIRS_ACTIFS || e.type !== 'devoir')))
       .catch(() => actif && setHistoriqueProf([]));
     return () => {
       actif = false;
@@ -167,14 +167,11 @@ export default function Jeux() {
   };
 
   const titreJeu = (code) => libelle(accueil?.jeux.find((j) => j.code === code)?.titre, i18n.language) || code;
-  const urlQuiz = urlSure(quiz.config?.url) ? quiz.config.url : null;
-  const lancerQuiz = quiz.config?.peutLancer ? adresseEspace('quiz', { role: user?.role, urlQuiz }) : null;
-  const rejoindreQuiz = !quiz.config?.peutLancer ? adresseEspace('quiz', { role: user?.role, urlQuiz }) : null;
   const modules = accueil?.modules ?? [];
 
   return (
     <DashboardLayout>
-      <PageHeader title={t('jeux.titre')} subtitle={t(enseignant ? 'jeux.sousTitreEnseignant' : 'jeux.sousTitre')} />
+      <PageHeader title={t('jeux.titre')} subtitle={t(enseignant ? 'jeux.sousTitreEnseignant' : 'jeux.sousTitre', { context: CONTEXTE_DEVOIRS })} />
 
       {erreur && (
         <Alert severity="warning" sx={{ mb: 2 }} action={<Button onClick={charger}>{t('common.retry')}</Button>}>
@@ -183,92 +180,15 @@ export default function Jeux() {
       )}
 
       <Box sx={{ display: 'grid', gap: 2.5 }}>
-        {/* ── Le joueur dans sa scène (personnage et décor repris de CatéGO) ── */}
-        {accueil && <SceneJoueur user={user} profil={accueil.profil} jeux={accueil.jeux} onChoisir={choisirAvatar} />}
+        {/* ── Le joueur dans sa scène (personnage et décor repris de CatéGO) : les étudiants
+            seulement, un enseignant ne joue pas ── */}
+        {accueil && !enseignant && <SceneJoueur user={user} profil={accueil.profil} jeux={accueil.jeux} onChoisir={choisirAvatar} />}
 
-        {/* ── Quiz en direct (ClassQuiz) ─────────────────────────────── */}
-        {urlQuiz && (
-          <Panneau
-            titre={t('jeux.quiz.titre')}
-            titreId="quiz-titre"
-            droite={
-              lancerQuiz ? (
-                <Button size="small" variant="contained" href={lancerQuiz} sx={boutonPanneauPlein}>
-                  {t('board.launchQuiz')}
-                </Button>
-              ) : null
-            }
-          >
-            {quiz.parties.length === 0 ? (
-              <LignePanneau
-                premier
-                action={
-                  rejoindreQuiz ? (
-                    <Button size="small" variant="outlined" href={rejoindreQuiz} sx={boutonPanneau}>
-                      {t('jeux.quiz.saisirCode')}
-                    </Button>
-                  ) : null
-                }
-              >
-                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>
-                  {t(enseignant ? 'jeux.quiz.aucuneEnseignant' : 'jeux.quiz.aucune')}
-                </Typography>
-              </LignePanneau>
-            ) : (
-              quiz.parties.map((p, i) => (
-                <LignePanneau
-                  key={p.id}
-                  premier={i === 0}
-                  lampe={ds.board.live}
-                  action={
-                    <Button size="small" variant="contained" href={p.url} sx={boutonPanneauPlein}>
-                      {t(enseignant ? 'jeux.quiz.ouvrir' : 'jeux.quiz.rejoindre')}
-                    </Button>
-                  }
-                >
-                  <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.live, letterSpacing: '0.12em' }}>{t('jeux.quiz.enCours')}</Capitales>
-                  <Box sx={{ fontWeight: 600 }}>{p.titre}</Box>
-                  <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                    {[p.module?.nom, t('jeux.quiz.code', { pin: p.pin })].filter(Boolean).join(' · ')}
-                  </Box>
-                </LignePanneau>
-              ))
-            )}
-          </Panneau>
-        )}
+        {/* ── Quiz en direct : parties en cours, lancement dans Planner (CQ-3) ── */}
+        <PanneauQuizDirect enseignant={enseignant} role={user?.role} config={quiz.config} parties={quiz.parties} />
 
-        {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
-        {enseignant && (
-          <Panneau titre={t('jeux.historiqueProf.titre')} titreId="historique-titre">
-            {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
-            {historiqueProf?.length === 0 && (
-              <LignePanneau premier>
-                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide')}</Typography>
-              </LignePanneau>
-            )}
-            {(historiqueProf ?? []).map((e, i) => (
-              <LignePanneau
-                key={e.id}
-                premier={i === 0}
-                action={
-                  e.type === 'quiz' ? (
-                    <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(e.id_partie)}>
-                      {t('jeux.resultats.voir')}
-                    </Button>
-                  ) : null
-                }
-              >
-                <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>
-                  {t(`jeux.historiqueProf.types.${e.type}`)} · {new Date(e.date).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
-                </Capitales>
-                <Box sx={{ fontWeight: 600 }}>{e.type === 'defis' ? libelle(e.titre, i18n.language) : e.titre}</Box>
-                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                  {[e.module ? `${e.module.code} · ${e.module.nom}` : null, detailHistorique(e)].filter(Boolean).join(' · ')}
-                </Box>
-              </LignePanneau>
-            ))}
-          </Panneau>
-        )}
+        {/* ── Mes quiz (créer, relire) : la zone quiz de l'enseignant, en haut (R-6) ── */}
+        {accueil && <ZoneQuizEtDevoirs enseignant={enseignant} />}
 
         {/* ── Étudiant : quiz terminés (résultats, défi par équipes, nuages de mots) ── */}
         {!enseignant && historique.length > 0 && (
@@ -297,9 +217,6 @@ export default function Jeux() {
             ))}
           </Panneau>
         )}
-
-        {/* ── Devoirs notés (quiz ClassQuiz corrigés par Planner) ─────────── */}
-        {accueil && <PanneauDevoirs enseignant={enseignant} modules={modules} />}
 
         {/* ── Jeux de mes modules ─────────────────────────────────────── */}
         {(enseignant || modules.length > 0) && (
@@ -410,6 +327,39 @@ export default function Jeux() {
             <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.bientot')}</Typography>
           </LignePanneau>
         </Panneau>
+
+        {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
+        {enseignant && (
+          <Panneau titre={t('jeux.historiqueProf.titre')} titreId="historique-titre">
+            {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
+            {historiqueProf?.length === 0 && (
+              <LignePanneau premier>
+                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide', { context: CONTEXTE_DEVOIRS })}</Typography>
+              </LignePanneau>
+            )}
+            {(historiqueProf ?? []).map((e, i) => (
+              <LignePanneau
+                key={e.id}
+                premier={i === 0}
+                action={
+                  e.type === 'quiz' ? (
+                    <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(e.id_partie)}>
+                      {t('jeux.resultats.voir')}
+                    </Button>
+                  ) : null
+                }
+              >
+                <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>
+                  {t(`jeux.historiqueProf.types.${e.type}`)} · {new Date(e.date).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
+                </Capitales>
+                <Box sx={{ fontWeight: 600 }}>{e.type === 'defis' ? libelle(e.titre, i18n.language) : e.titre}</Box>
+                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
+                  {[e.module ? `${e.module.code} · ${e.module.nom}` : null, detailHistorique(e)].filter(Boolean).join(' · ')}
+                </Box>
+              </LignePanneau>
+            ))}
+          </Panneau>
+        )}
       </Box>
 
       <ResultatsQuiz idPartie={resultats} onClose={() => setResultats(null)} />

@@ -4,6 +4,7 @@ import {
     Affectation,
     AnneeUniversitaire,
     Appartenir,
+    AppelSeance,
     Campus,
     Cours,
     CoursComposante,
@@ -14,13 +15,13 @@ import {
     Groupe,
     Periode,
     ResponsableFiliere,
-    RetourSeance,
     Salle,
+    VisaSeance,
 } from "../../models/index.js";
 import { aujourdhui } from "../../services/planning/affectationRules.js";
 
 /**
- * Phase P7 — suivi du réalisé, export des vacataires, retours de séance anonymes (I7).
+ * Phase P7 — suivi du réalisé et export des vacataires.
  */
 
 let admin;
@@ -75,25 +76,22 @@ beforeAll(async () => {
         reporteePassee: await seance({ statut: "reporte", date_seance: decaler(-3) }),
         future: await seance({ statut: "confirme", date_seance: decaler(5) }),
     };
-    ref = { filiere, td, cours, periode, enseignement, seances };
+    ref = { filiere, td, cours, periode, enseignement, seances, creerSeance: seance };
 });
 afterAll(closeDatabase);
 beforeEach(resetRateLimiters);
 
 describe("Séances réalisées", () => {
-    test("d'office : seules les séances confirmées et passées deviennent réalisées", async () => {
+    test("d'office : une séance planifiée ou confirmée devient réalisée une fois passée (sans confirmation de l'enseignant)", async () => {
         const response = await clients.admin.send("post", "/api/suivi/actualiser");
-        expect(response.body.realisees).toBe(1);
+        expect(response.body.realisees).toBe(2);
         const statuts = await Promise.all(Object.values(ref.seances).map((s) => Affectation.findByPk(s.id_affectation).then((a) => a.statut)));
-        expect(statuts).toEqual(["realise", "planifie", "reporte", "confirme"]);
+        expect(statuts).toEqual(["realise", "realise", "reporte", "confirme"]);
     });
 
-    test("par l'enseignant, une fois la séance passée ; jamais celle d'un autre", async () => {
-        expect((await clients.permanent.send("patch", `/api/suivi/seances/${ref.seances.planifieePassee.id_affectation}/realiser`)).status).toBe(403);
-        expect((await clients.vacataire.send("patch", `/api/suivi/seances/${ref.seances.future.id_affectation}/realiser`)).status).toBe(400);
-        const ok = await clients.vacataire.send("patch", `/api/suivi/seances/${ref.seances.planifieePassee.id_affectation}/realiser`);
-        expect(ok.status).toBe(200);
-        expect(ok.body.affectation.statut).toBe("realise");
+    test("l'enseignant n'a rien à marquer : la route manuelle n'existe plus", async () => {
+        const response = await clients.vacataire.send("patch", `/api/suivi/seances/${ref.seances.future.id_affectation}/realiser`);
+        expect(response.status).toBe(404);
     });
 });
 
@@ -129,39 +127,63 @@ describe("Avancement et heures", () => {
     });
 });
 
-describe("Retours de séance (I7)", () => {
-    test("l'étudiant voit la séance à évaluer, répond une fois, anonymement", async () => {
-        const client = await loginAs(etudiants[0]);
-        const aDonner = await client.get("/api/suivi/retours/a-donner");
-        expect(aDonner.body.map((s) => s.id_affectation)).toContain(ref.seances.confirmeePassee.id_affectation);
+describe("Séances à vérifier avant la paie (R-11)", () => {
+    // Séance d'avant-hier, réalisée d'office par le premier test ; son mois peut être le précédent
+    const cible = () => ref.seances.planifieePassee;
+    const mois = () => decaler(-2).slice(0, 7);
+    const heuresDu = async () => (await clients.admin.get(`/api/suivi/enseignants?mois=${mois()}`)).body.find((h) => h.id_user === vacataire.id_user);
+    const dansLaListe = async (id) => (await clients.admin.get(`/api/suivi/seances-a-verifier?mois=${mois()}`)).body.seances.find((s) => s.id_affectation === id);
+    const ligneCsv = async () => (await clients.admin.get(`/api/suivi/vacataires.csv?mois=${mois()}`)).text.split("\r\n").find((l) => l.includes(`;${decaler(-2)};`));
+    const viser = (id, corps) => clients.admin.send("put", `/api/suivi/seances/${id}/visa`, corps);
 
-        const url = `/api/suivi/retours/seances/${ref.seances.confirmeePassee.id_affectation}`;
-        expect((await client.send("post", url, { note: 9 })).status).toBe(400);
-        expect((await client.send("post", url, { note: 4, mot: "Clair" })).status).toBe(201);
-        expect((await client.send("post", url, { note: 5 })).status).toBe(409);
-        // Aucune trace de l'étudiant dans le retour lui-même
-        expect(Object.keys((await RetourSeance.findOne()).get({ plain: true }))).not.toContain("id_user");
-        expect((await client.get("/api/suivi/retours/a-donner")).body.map((s) => s.id_affectation)).not.toContain(ref.seances.confirmeePassee.id_affectation);
-
-        const autre = await loginAs(intrus);
-        expect((await autre.send("post", url, { note: 1 })).status).toBe(403);
-        // Une séance non réalisée ne s'évalue pas
-        expect((await client.send("post", `/api/suivi/retours/seances/${ref.seances.reporteePassee.id_affectation}`, { note: 3 })).status).toBe(400);
+    test("sans appel validé, la séance est à vérifier dans les heures, la liste et l'export", async () => {
+        const heures = await heuresDu();
+        expect(heures.seances_a_verifier).toBeGreaterThan(0);
+        expect(heures.heures_a_verifier).toBe(heures.heures_realisees);
+        const liste = await clients.admin.get(`/api/suivi/seances-a-verifier?mois=${mois()}`);
+        expect(liste.body.note).toMatch(/indice.*pas une preuve/);
+        expect(liste.body.a_verifier).toBe(heures.seances_a_verifier);
+        expect(liste.body.seances.find((s) => s.id_affectation === cible().id_affectation)).toMatchObject({ etat: "a_verifier", heures: 1.8, groupe: "SUI-4A", appel_ouvert: false, enseignants: [{ id_user: vacataire.id_user, statut: "vacataire" }] });
+        expect(await ligneCsv()).toMatch(/;à vérifier \(pas d'appel validé\)$/);
     });
 
-    test("l'enseignant ne voit la tendance qu'à partir de 5 réponses, et seulement les mots répétés", async () => {
-        expect((await clients.vacataire.get("/api/suivi/retours/mes-modules")).body[0]).toMatchObject({ nombre: 1, visible: false });
-        const notes = [5, 4, 3, 5];
-        const mots = ["clair", "Rapide", "rapide", "exemples concrets"];
-        for (const [i, etudiant] of etudiants.slice(1, 5).entries()) {
-            const client = await loginAs(etudiant);
-            await client.send("post", `/api/suivi/retours/seances/${ref.seances.confirmeePassee.id_affectation}`, { note: notes[i], mot: mots[i] });
-        }
-        const tendance = (await clients.vacataire.get("/api/suivi/retours/mes-modules")).body[0];
-        expect(tendance).toMatchObject({ nombre: 5, visible: true, moyenne: 4.2, repartition: [0, 0, 1, 2, 2] });
-        expect(tendance.mots).toEqual([
-            { mot: "clair", nombre: 2 },
-            { mot: "rapide", nombre: 2 },
-        ]);
+    test("un appel lancé ne suffit pas ; validé, la séance sort de la liste", async () => {
+        const appel = await AppelSeance.create({ id_affectation: cible().id_affectation, secret: "s".repeat(64), ouvert_le: new Date() });
+        expect(await dansLaListe(cible().id_affectation)).toMatchObject({ etat: "a_verifier", appel_ouvert: true });
+        await appel.update({ ferme_le: new Date() });
+        expect(await dansLaListe(cible().id_affectation)).toBeUndefined();
+        expect(await ligneCsv()).toMatch(/;appel validé$/);
+        await appel.destroy();
+    });
+
+    test("l'administration écarte, confirme, puis revient sur sa décision", async () => {
+        const avant = await heuresDu();
+        const ecartee = await viser(cible().id_affectation, { decision: "ecartee", motif: "  Cours non tenu  " });
+        expect(ecartee.body).toMatchObject({ etat: "ecartee", compte: false, motif: "Cours non tenu" });
+        const apres = await heuresDu();
+        expect(apres.heures_ecartees).toBe(1.8);
+        expect(apres.seances_a_verifier).toBe(avant.seances_a_verifier - 1);
+        expect(apres.heures_realisees).toBeLessThan(avant.heures_realisees);
+        // Écartée : absente de l'export, mais encore dans la liste pour revenir dessus
+        expect(await ligneCsv()).toBeUndefined();
+        expect(await dansLaListe(cible().id_affectation)).toMatchObject({ etat: "ecartee", motif: "Cours non tenu" });
+
+        expect((await viser(cible().id_affectation, { decision: "confirmee" })).body).toMatchObject({ etat: "confirmee", compte: true, motif: null });
+        expect(await ligneCsv()).toMatch(/;confirmée par l'administration$/);
+        expect((await heuresDu()).heures_realisees).toBe(avant.heures_realisees);
+
+        expect((await viser(cible().id_affectation, { decision: null })).body.etat).toBe("a_verifier");
+        expect(await VisaSeance.count()).toBe(0);
+    });
+
+    test("refus : hors administration, décision inconnue, séance non réalisée ou introuvable", async () => {
+        expect((await clients.vacataire.send("put", `/api/suivi/seances/${cible().id_affectation}/visa`, { decision: "confirmee" })).status).toBe(403);
+        expect((await clients.vacataire.get(`/api/suivi/seances-a-verifier?mois=${mois()}`)).status).toBe(403);
+        expect((await viser(cible().id_affectation, { decision: "payee" })).status).toBe(400);
+        expect((await viser(ref.seances.future.id_affectation, { decision: "confirmee" })).status).toBe(409);
+        expect((await viser(ref.seances.reporteePassee.id_affectation, { decision: "ecartee" })).status).toBe(409);
+        expect((await viser(999999, { decision: "confirmee" })).status).toBe(404);
+        expect((await clients.admin.get("/api/suivi/seances-a-verifier?mois=octobre")).status).toBe(400);
+        expect(await VisaSeance.count()).toBe(0);
     });
 });

@@ -22,29 +22,33 @@ import {
     Snackbar,
     CircularProgress,
 } from '@mui/material';
-import { CheckCircle, EventRepeat, QrCode2, TaskAlt } from '@mui/icons-material';
+import { EventRepeat, QrCode2 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layouts/DashboardLayout';
-import { affectationAPI, demandeReportAPI, suiviAPI } from '../services/api';
-import MesRetours from '../components/planning/MesRetours';
+import { affectationAPI, demandeReportAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
+import { useTranslation } from 'react-i18next';
 
 const STATUT_CONFIG = {
-    planifie: { label: 'Planifié',  color: 'default'  },
-    confirme: { label: 'Confirmé',  color: 'success'  },
-    annule:   { label: 'Annulé',    color: 'error'    },
-    reporte:  { label: 'Reporté',   color: 'warning'  },
-    realise:  { label: 'Réalisé',   color: 'default'  },
+    // Une séance planifiée est tenue pour confirmée : rien à confirmer, sauf à demander un report
+    planifie: { label: 'confirme', color: 'success'  },
+    confirme: { label: 'confirme', color: 'success'  },
+    annule:   { label: 'annule',   color: 'error'    },
+    reporte:  { label: 'reporte',  color: 'warning'  },
+    realise:  { label: 'realise',  color: 'default'  },
 };
 
 const reportSchema = yup.object({
-    nouvelle_date: yup.date().required('La nouvelle date est requise'),
-    motif: yup.string().min(10, 'Minimum 10 caractères').required('Le motif est requis'),
+    // Messages : des clés de traduction, traduites à l'affichage
+    nouvelle_date: yup.date().required('mesSeances.erreurs.date'),
+    motif: yup.string().min(10, 'mesSeances.erreurs.motifCourt').required('mesSeances.erreurs.motif'),
 });
 
+/** Mes séances (enseignant) : la liste, l'appel du jour, et la demande de report d'une séance. */
 export default function MesAffectations() {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
     // Appel par QR (I1) : seulement le jour de la séance (date locale du navigateur)
     const aujourdhui = new Date().toLocaleDateString('en-CA');
@@ -53,7 +57,6 @@ export default function MesAffectations() {
     const [loading, setLoading]               = useState(true);
     const [error, setError]                   = useState('');
     const [success, setSuccess]               = useState('');
-    const [confirmingId, setConfirmingId]     = useState(null);
     const [reportDialog, setReportDialog]     = useState({ open: false, affectation: null });
 
     useEffect(() => {
@@ -65,38 +68,16 @@ export default function MesAffectations() {
             const data = await affectationAPI.getByEnseignant(user.id_user, { limit: 1000 });
             setAffectations(data.data || []);
         } catch {
-            setError('Erreur lors du chargement des affectations');
+            setError(t('mesSeances.erreurChargement'));
         } finally {
             setLoading(false);
         }
     };
 
-    const handleConfirmer = async (aff) => {
-        setConfirmingId(aff.id_affectation);
-        try {
-            await affectationAPI.confirmer(aff.id_affectation);
-            setSuccess(`Séance « ${aff.cours?.nom_cours} » confirmée avec succès`);
-            loadAffectations();
-        } catch (err) {
-            setError(err.response?.data?.message || err.message || 'Erreur lors de la confirmation');
-        } finally {
-            setConfirmingId(null);
-        }
-    };
-
-    // Séance faite (phase P7) : possible une fois l'heure de fin passée
+    // Séance passée : plus de report possible (elle devient réalisée d'office)
     const estPassee = (aff) => {
         const fin = new Date(`${String(aff.date_seance).slice(0, 10)}T${aff.creneau?.heure_fin ?? '23:59'}`);
         return fin <= new Date();
-    };
-    const handleRealiser = async (aff) => {
-        try {
-            await suiviAPI.realiser(aff.id_affectation);
-            setSuccess(`Séance « ${aff.cours?.nom_cours} » marquée réalisée`);
-            loadAffectations();
-        } catch (err) {
-            setError(err.response?.data?.error || err.message);
-        }
     };
 
     const openReportDialog = (aff) => {
@@ -118,10 +99,10 @@ export default function MesAffectations() {
                     motif:              values.motif,
                     statut_demande:     'en_attente',
                 });
-                setSuccess('Demande de report envoyée, en attente de validation par l\'administration.');
+                setSuccess(t('mesSeances.reportEnvoye'));
                 closeReportDialog();
             } catch (err) {
-                setError(err.response?.data?.message || err.message || 'Erreur lors de la demande de report');
+                setError(err.response?.data?.message || err.message || t('mesSeances.erreurReport'));
             } finally {
                 setSubmitting(false);
             }
@@ -132,10 +113,10 @@ export default function MesAffectations() {
         <DashboardLayout>
             <Box>
                 <Typography variant="h5" fontWeight="bold" gutterBottom>
-                    Mes Affectations
+                    {t('mesSeances.titre')}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                    Confirmez vos séances planifiées ou demandez un report si nécessaire.
+                    {t('mesSeances.sousTitre')}
                 </Typography>
 
                 <Snackbar open={!!error}   autoHideDuration={6000} onClose={() => setError('')}
@@ -153,78 +134,55 @@ export default function MesAffectations() {
                     </Box>
                 ) : affectations.length === 0 ? (
                     <Paper sx={{ p: 4, mt: 2, textAlign: 'center' }}>
-                        <Typography color="text.secondary">Aucune affectation trouvée</Typography>
+                        <Typography color="text.secondary">{t('mesSeances.aucune')}</Typography>
                     </Paper>
                 ) : (
                     <TableContainer component={Paper} sx={{ mt: 2 }}>
                         <Table size="small">
                             <TableHead>
                                 <TableRow sx={{ '& th': { fontWeight: 'bold' } }}>
-                                    <TableCell>Cours</TableCell>
-                                    <TableCell>Groupe</TableCell>
-                                    <TableCell>Salle</TableCell>
-                                    <TableCell>Date</TableCell>
-                                    <TableCell>Créneau</TableCell>
-                                    <TableCell>Statut</TableCell>
-                                    <TableCell align="center">Actions</TableCell>
+                                    <TableCell>{t('mesSeances.colonnes.cours')}</TableCell>
+                                    <TableCell>{t('mesSeances.colonnes.groupe')}</TableCell>
+                                    <TableCell>{t('mesSeances.colonnes.salle')}</TableCell>
+                                    <TableCell>{t('mesSeances.colonnes.date')}</TableCell>
+                                    <TableCell>{t('mesSeances.colonnes.creneau')}</TableCell>
+                                    <TableCell>{t('mesSeances.colonnes.statut')}</TableCell>
+                                    <TableCell align="center">{t('mesSeances.colonnes.actions')}</TableCell>
                                 </TableRow>
                             </TableHead>
                             <TableBody>
                                 {affectations.map((aff) => {
                                     const { label, color } = STATUT_CONFIG[aff.statut] ?? { label: aff.statut, color: 'default' };
-                                    const isConfirming = confirmingId === aff.id_affectation;
                                     return (
                                         <TableRow key={aff.id_affectation} hover>
                                             <TableCell>{aff.cours?.nom_cours || '-'}</TableCell>
                                             <TableCell>{aff.groupe?.nom_groupe || '-'}</TableCell>
                                             <TableCell>{aff.salle?.nom_salle || '-'}</TableCell>
                                             <TableCell>
-                                                {new Date(aff.date_seance).toLocaleDateString('fr-FR')}
+                                                {new Date(aff.date_seance).toLocaleDateString(i18n.language)}
                                             </TableCell>
                                             <TableCell>
                                                 {aff.creneau?.heure_debut} – {aff.creneau?.heure_fin}
                                             </TableCell>
                                             <TableCell>
-                                                <Chip label={label} size="small" color={color} />
+                                                <Chip label={t(`mesSeances.statuts.${label}`, { defaultValue: label })} size="small" color={color} />
                                             </TableCell>
                                             <TableCell align="center">
                                                 <Box sx={{ display: 'flex', gap: 0.5, justifyContent: 'center' }}>
                                                     {aff.statut !== 'annule' && String(aff.date_seance).slice(0, 10) === aujourdhui && (
-                                                        <Tooltip title="Faire l'appel (QR code)">
-                                                            <IconButton size="small" color="primary" onClick={() => navigate(`/appel/${aff.id_affectation}`)}>
+                                                        <Tooltip title={t('mesSeances.appel')}>
+                                                            <IconButton size="small" color="primary" onClick={() => navigate(`/appel/${aff.id_affectation}`)} aria-label={t('mesSeances.appel')}>
                                                                 <QrCode2 fontSize="small" />
                                                             </IconButton>
                                                         </Tooltip>
                                                     )}
-                                                    {aff.statut === 'planifie' && (
-                                                        <Tooltip title="Confirmer la séance">
-                                                            <span>
-                                                                <IconButton
-                                                                    size="small"
-                                                                    color="success"
-                                                                    onClick={() => handleConfirmer(aff)}
-                                                                    disabled={isConfirming}
-                                                                >
-                                                                    {isConfirming
-                                                                        ? <CircularProgress size={16} color="inherit" />
-                                                                        : <CheckCircle fontSize="small" />}
-                                                                </IconButton>
-                                                            </span>
-                                                        </Tooltip>
-                                                    )}
-                                                    {['planifie', 'confirme', 'reporte'].includes(aff.statut) && estPassee(aff) && (
-                                                        <Tooltip title="Marquer la séance réalisée">
-                                                            <IconButton size="small" onClick={() => handleRealiser(aff)}>
-                                                                <TaskAlt fontSize="small" />
-                                                            </IconButton>
-                                                        </Tooltip>
-                                                    )}
                                                     {['planifie', 'confirme'].includes(aff.statut) && !estPassee(aff) && (
-                                                        <Tooltip title="Demander un report">
+                                                        <Tooltip title={t('mesSeances.demanderReport')}>
                                                             <IconButton
                                                                 size="small"
                                                                 color="warning"
                                                                 onClick={() => openReportDialog(aff)}
+                                                                aria-label={t('mesSeances.demanderReport')}
                                                             >
                                                                 <EventRepeat fontSize="small" />
                                                             </IconButton>
@@ -243,20 +201,20 @@ export default function MesAffectations() {
                 {/* ── Dialog demande de report ───────────────────────────────── */}
                 <Dialog open={reportDialog.open} onClose={closeReportDialog} maxWidth="sm" fullWidth>
                     <form onSubmit={reportFormik.handleSubmit}>
-                        <DialogTitle>Demander un report de séance</DialogTitle>
+                        <DialogTitle>{t('mesSeances.titreReport')}</DialogTitle>
                         <DialogContent>
                             <Box sx={{ mt: 1 }}>
                                 <Paper variant="outlined" sx={{ p: 1.5, mb: 2, bgcolor: 'grey.50' }}>
                                     <Typography variant="body2" color="text.secondary">
-                                        <strong>Cours :</strong> {reportDialog.affectation?.cours?.nom_cours}
+                                        <strong>{t('mesSeances.colonnes.cours')} :</strong> {reportDialog.affectation?.cours?.nom_cours}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        <strong>Groupe :</strong> {reportDialog.affectation?.groupe?.nom_groupe}
+                                        <strong>{t('mesSeances.colonnes.groupe')} :</strong> {reportDialog.affectation?.groupe?.nom_groupe}
                                     </Typography>
                                     <Typography variant="body2" color="text.secondary">
-                                        <strong>Date actuelle :</strong>{' '}
+                                        <strong>{t('mesSeances.dateActuelle')} :</strong>{' '}
                                         {reportDialog.affectation &&
-                                            new Date(reportDialog.affectation.date_seance).toLocaleDateString('fr-FR', {
+                                            new Date(reportDialog.affectation.date_seance).toLocaleDateString(i18n.language, {
                                                 weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
                                             })}
                                     </Typography>
@@ -265,7 +223,7 @@ export default function MesAffectations() {
                                 <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
                                     <TextField
                                         fullWidth
-                                        label="Nouvelle date souhaitée"
+                                        label={t('mesSeances.nouvelleDate')}
                                         name="nouvelle_date"
                                         type="date"
                                         value={reportFormik.values.nouvelle_date}
@@ -273,11 +231,11 @@ export default function MesAffectations() {
                                         onBlur={reportFormik.handleBlur}
                                         InputLabelProps={{ shrink: true }}
                                         error={reportFormik.touched.nouvelle_date && Boolean(reportFormik.errors.nouvelle_date)}
-                                        helperText={reportFormik.touched.nouvelle_date && reportFormik.errors.nouvelle_date}
+                                        helperText={reportFormik.touched.nouvelle_date && reportFormik.errors.nouvelle_date && t(reportFormik.errors.nouvelle_date)}
                                     />
                                     <TextField
                                         fullWidth
-                                        label="Motif du report"
+                                        label={t('mesSeances.motif')}
                                         name="motif"
                                         multiline
                                         rows={4}
@@ -285,14 +243,14 @@ export default function MesAffectations() {
                                         onChange={reportFormik.handleChange}
                                         onBlur={reportFormik.handleBlur}
                                         error={reportFormik.touched.motif && Boolean(reportFormik.errors.motif)}
-                                        helperText={reportFormik.touched.motif && reportFormik.errors.motif}
-                                        placeholder="Expliquez pourquoi vous demandez un report (min. 10 caractères)…"
+                                        helperText={reportFormik.touched.motif && reportFormik.errors.motif && t(reportFormik.errors.motif)}
+                                        placeholder={t('mesSeances.motifAide')}
                                     />
                                 </Box>
                             </Box>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={closeReportDialog}>Annuler</Button>
+                            <Button onClick={closeReportDialog}>{t('common.cancel')}</Button>
                             <Button
                                 type="submit"
                                 variant="contained"
@@ -300,12 +258,11 @@ export default function MesAffectations() {
                                 disabled={reportFormik.isSubmitting}
                                 startIcon={reportFormik.isSubmitting ? <CircularProgress size={16} color="inherit" /> : <EventRepeat />}
                             >
-                                {reportFormik.isSubmitting ? 'Envoi…' : 'Envoyer la demande'}
+                                {reportFormik.isSubmitting ? t('mesSeances.envoi') : t('mesSeances.envoyer')}
                             </Button>
                         </DialogActions>
                     </form>
                 </Dialog>
-                <MesRetours />
             </Box>
         </DashboardLayout>
     );

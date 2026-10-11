@@ -1,14 +1,10 @@
 import express from "express";
 import {
     authenticateToken,
-    requireAdmin,
     requireOwnResourceOrAdmin,
 } from "../middleware/index.js";
 import {
-    getAllNotifications,
     getNotificationById,
-    createNotification,
-    updateNotification,
     deleteNotification,
     getNotificationsByUser,
     getNotificationsNonLuesByUser,
@@ -25,11 +21,8 @@ router.get("/user/:id_user", requireOwnResourceOrAdmin("id_user"), getNotificati
 router.get("/user/:id_user/non-lues", requireOwnResourceOrAdmin("id_user"), getNotificationsNonLuesByUser);
 router.patch("/user/:id_user/tout-lire", requireOwnResourceOrAdmin("id_user"), marquerToutesCommeLues);
 
-// Administration des notifications
-router.get("/", requireAdmin, getAllNotifications);
-router.post("/", requireAdmin, createNotification);
-router.put("/:id", requireAdmin, updateNotification);
-
+// Pas de création ni de liste globale à la main : le serveur crée les notifications, et
+// l'administration écrit par les annonces
 // Propriétaire ou admin (contrôlé dans le contrôleur)
 router.get("/:id", getNotificationById);
 router.patch("/:id/lire", marquerNotificationCommeLue);

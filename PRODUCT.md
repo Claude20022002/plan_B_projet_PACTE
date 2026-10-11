@@ -9,7 +9,7 @@ web
 ## Users
 
 - **Administration / scolarité (rôle `admin`)** : planifie les cours, gère salles, groupes, filières, enseignants et étudiants, arbitre les conflits et les demandes de report. Travaille sur **ordinateur**, en séances longues, avec beaucoup de données à parcourir.
-- **Enseignants (rôle `enseignant`)** : consultent leur emploi du temps, confirment leurs séances, déclarent leurs disponibilités, demandent des reports. Surtout sur **mobile**, entre deux cours.
+- **Enseignants (rôle `enseignant`)** : consultent leur emploi du temps, déclarent leurs disponibilités (l'administration organise ensuite leurs séances, confirmées d'office), demandent des reports, font l'appel et donnent des quiz. Surtout sur **mobile**, entre deux cours.
 - **Étudiants (rôle `etudiant`)** : consultent l'emploi du temps de leur groupe et sont prévenus des changements (report, annulation, changement de salle). Presque exclusivement sur **mobile**.
 - **Jury PACTE** : le produit est un projet étudiant évalué (séances Go/NoGo, mi-parcours, soutenance finale). La démonstration doit montrer chaque parcours de bout en bout.
 

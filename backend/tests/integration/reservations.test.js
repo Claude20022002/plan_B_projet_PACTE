@@ -84,25 +84,29 @@ const reservation = (extra = {}) => ({
 });
 const codes = (r) => (r.body.violations || []).filter((v) => v.bloquant).map((v) => v.code);
 
-describe("Réservations : demande, validation, refus", () => {
+describe("Réservations : l'administration réserve, demandes anciennes validées ou refusées", () => {
     let premiere;
     let seconde;
 
-    test("une demande d'enseignant attend la validation et ne bloque rien", async () => {
-        const r1 = await clients.profA.send("post", "/api/reservations", reservation());
-        expect(r1.status).toBe(201);
-        expect(r1.body.reservation.statut).toBe("demandee");
-        premiere = r1.body.reservation;
-        expect(await Notification.count({ where: { id_user: admin.id_user, titre: "Réservation à valider" } })).toBe(1);
+    test("un enseignant ne réserve plus ni ne vérifie ; l'administration réserve, validé d'office", async () => {
+        expect((await clients.profA.send("post", "/api/reservations", reservation())).status).toBe(403);
+        expect((await clients.profA.send("post", "/api/reservations/verifier", reservation())).status).toBe(403);
+        expect((await clients.etudiant.send("post", "/api/reservations", reservation())).status).toBe(403);
 
-        // Même salle, même heure : acceptée en demande, puisque la première n'est pas validée
-        const r2 = await clients.profB.send("post", "/api/reservations", reservation({ titre: "Réunion d'équipe", type: "evenement", participants: [] }));
+        // Demande ancienne d'un enseignant, encore en attente (même salle, même heure que la soutenance à venir)
+        const r2 = await clients.admin.send("post", "/api/reservations", reservation({ titre: "Réunion d'équipe", type: "evenement", participants: [] }));
         expect(r2.status).toBe(201);
         seconde = r2.body.reservation;
+        await Reservation.update({ statut: "demandee", id_demandeur: profB.id_user }, { where: { id_reservation: seconde.id_reservation } });
+
+        // Une demande en attente ne bloque rien : l'administration réserve la même salle
+        const r1 = await clients.admin.send("post", "/api/reservations", reservation());
+        expect(r1.status).toBe(201);
+        expect(r1.body.reservation.statut).toBe("validee");
+        premiere = r1.body.reservation;
     });
 
-    test("la validation revérifie : la seconde est refusée en 409 une fois la première validée", async () => {
-        expect((await clients.admin.send("patch", `/api/reservations/${premiere.id_reservation}/valider`)).status).toBe(200);
+    test("la validation revérifie : la demande ancienne est refusée en 409, la salle étant prise", async () => {
         const conflit = await clients.admin.send("patch", `/api/reservations/${seconde.id_reservation}/valider`);
         expect(conflit.status).toBe(409);
         expect(codes(conflit)).toEqual(["conflit_salle"]);
@@ -113,8 +117,8 @@ describe("Réservations : demande, validation, refus", () => {
         expect(await Notification.count({ where: { id_user: profB.id_user, titre: "Réservation refusée" } })).toBe(1);
     });
 
-    test("une réunion dans une salle ouverte aux enseignants est validée d'office, le demandeur y participe", async () => {
-        const r = await clients.profB.send("post", "/api/reservations", reservation({ type: "reunion", titre: "Réunion pédagogique", id_salle: ref.salles.reunion.id_salle, heure_debut: "13:30", heure_fin: "14:30", participants: [] }));
+    test("une réunion réservée par l'administration : validée, les enseignants invités y participent", async () => {
+        const r = await clients.admin.send("post", "/api/reservations", reservation({ type: "reunion", titre: "Réunion pédagogique", id_salle: ref.salles.reunion.id_salle, heure_debut: "13:30", heure_fin: "14:30", participants: [{ id_user: profB.id_user, role: "participant" }] }));
         expect(r.status).toBe(201);
         expect(r.body.reservation.statut).toBe("validee");
         expect(r.body.reservation.participants.map((p) => p.id_user)).toContain(profB.id_user);
@@ -138,25 +142,27 @@ describe("Réservations : demande, validation, refus", () => {
         expect(indispo.body.violations.find((v) => v.code === "participant_indisponible")?.message).toMatch(/Congrès/);
     });
 
-    test("droits : examen et validation réservés à l'administration, annulation au demandeur", async () => {
+    test("droits : examen, validation et annulation réservés à l'administration ; le jury voit sa soutenance", async () => {
         expect((await clients.profA.send("post", "/api/reservations", reservation({ type: "examen", date: "2027-04-12" }))).status).toBe(403);
         expect((await clients.profA.send("patch", `/api/reservations/${premiere.id_reservation}/valider`)).status).toBe(403);
         expect((await clients.profB.send("patch", `/api/reservations/${premiere.id_reservation}/annuler`)).status).toBe(403);
         // Le jury voit la soutenance où il siège ; l'étudiant (ni demandeur ni participant) ne la voit pas
         expect((await clients.profB.get("/api/reservations")).body.map((r) => r.id_reservation)).toContain(premiere.id_reservation);
         expect((await clients.etudiant.get("/api/reservations")).body).toHaveLength(0);
-        const annulation = await clients.profA.send("patch", `/api/reservations/${premiere.id_reservation}/annuler`);
+        expect((await clients.profA.send("patch", `/api/reservations/${premiere.id_reservation}/annuler`)).status).toBe(403);
+        const annulation = await clients.admin.send("patch", `/api/reservations/${premiere.id_reservation}/annuler`);
         expect(annulation.body.reservation.statut).toBe("annulee");
     });
 
-    test("rattrapage : sur une séance de l'enseignant, son groupe participe d'office", async () => {
+    test("rattrapage : réservé par l'administration sur une séance, le groupe et l'enseignant y participent d'office", async () => {
         const seance = await Affectation.findOne({ where: { id_user_enseignant: profs[0].id_user } });
-        const autre = await clients.profA.send("post", "/api/reservations", reservation({ type: "rattrapage", titre: "Rattrapage", id_affectation_origine: seance.id_affectation, date: "2027-04-13", participants: [] }));
-        expect(autre.status).toBe(403);
-        const client = await loginAs(profs[0]);
-        const ok = await client.send("post", "/api/reservations", reservation({ type: "rattrapage", titre: "Rattrapage", id_affectation_origine: seance.id_affectation, date: "2027-04-13", participants: [] }));
+        const rattrapage = reservation({ type: "rattrapage", titre: "Rattrapage", id_affectation_origine: seance.id_affectation, date: "2027-04-13", participants: [] });
+        // L'enseignant de la séance ne le réserve plus lui-même
+        expect((await (await loginAs(profs[0])).send("post", "/api/reservations", rattrapage)).status).toBe(403);
+        const ok = await clients.admin.send("post", "/api/reservations", rattrapage);
         expect(ok.status).toBe(201);
         expect(ok.body.reservation.participants.map((p) => p.id_groupe)).toContain(ref.td1.id_groupe);
+        expect(ok.body.reservation.participants.map((p) => p.id_user)).toContain(profs[0].id_user);
     });
 });
 
@@ -221,7 +227,7 @@ describe("Examens et surveillances", () => {
         expect((await client.get("/api/examens/mes-surveillances")).body.map((e) => e.id_session)).toContain(examen.id_session);
     });
 
-    test("contrôle : surveillé par l'enseignant du module, pendant sa propre séance sans conflit", async () => {
+    test("contrôle : pendant la séance du module sans conflit, surveillé par l'administration, jamais par l'enseignant", async () => {
         const annee = await AnneeUniversitaire.create({ libelle: "2026-2027", date_debut: "2026-09-01", date_fin: "2027-07-31", active: true });
         const periode = await Periode.create({ id_annee: annee.id_annee, code: "S2", date_debut: "2027-02-01", date_fin: "2027-06-30", nb_semaines: 16 });
         const composante = await CoursComposante.create({ id_cours: ref.cours.id_cours, type: "CM", volume_heures: 30, niveau_groupe: "td" });
@@ -237,7 +243,13 @@ describe("Examens et surveillances", () => {
         expect(controle.body.examen.nature).toBe("controle");
         await clients.admin.send("post", `/api/examens/${controle.body.examen.id_session}/surveillants/auto`);
         const surveillants = await Surveillance.findAll({ where: { id_session: controle.body.examen.id_session } });
-        expect(surveillants.map((s) => s.id_user)).toEqual([profB.id_user]);
+        const administration = new Set([admin, ...personnel].map((u) => u.id_user));
+        expect(surveillants).toHaveLength(2);
+        expect(surveillants.every((s) => administration.has(s.id_user))).toBe(true);
+
+        // Un enseignant ne peut pas être placé à la main comme surveillant
+        const manuel = await clients.admin.send("put", `/api/examens/${controle.body.examen.id_session}/surveillants`, { surveillances: [{ id_salle: ref.salles.s2.id_salle, id_user: profB.id_user }] });
+        expect(manuel.status).toBe(400);
 
         // Le même créneau en examen reste un conflit avec la séance
         const examenPendantSeance = await clients.admin.send("post", "/api/examens", epreuve({ titre: "Examen pendant cours", date: "2027-04-26", heure_debut: "09:30", heure_fin: "10:30", groupes: [ref.td1.id_groupe], salles: [{ id_salle: ref.salles.s2.id_salle }] }));
@@ -248,6 +260,10 @@ describe("Examens et surveillances", () => {
         const surveillant = (await Surveillance.findOne({ where: { id_session: examen.id_session } })).id_user;
         const client = await loginAs({ email: (await Reservation.sequelize.models.Users.findByPk(surveillant)).email });
         expect((await client.get("/api/examens/mes-surveillances")).status).toBe(200);
+    });
+
+    test("un enseignant n'a pas de surveillances", async () => {
+        expect((await clients.profA.get("/api/examens/mes-surveillances")).status).toBe(403);
     });
 
     test("une séance ne peut pas prendre une salle d'examen pendant l'épreuve", async () => {

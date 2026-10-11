@@ -41,7 +41,11 @@ export const getAllAffectations = asyncHandler(async (req, res) => {
     // En deux temps : total et identifiants de la page sans jointure (lus dans l'index de date),
     // puis ces seules séances avec leurs détails. Trier le résultat joint complet avant LIMIT
     // coûtait ~230 ms sur une année de séances.
-    const ordre = [["date_seance", "DESC"], ["id_affectation", "DESC"]];
+    // Par défaut les plus récentes d'abord (listes de gestion). « ordre=asc » rend les plus proches
+    // d'abord : une page est plafonnée à 100 séances, et un tableau des prochaines séances qui
+    // demande trois jours de campus (plus de 200) perdait celles du jour, coupées en fin de tri.
+    const sens = req.query.ordre === "asc" ? "ASC" : "DESC";
+    const ordre = [["date_seance", sens], ["id_affectation", sens]];
     const [count, pageIds] = await Promise.all([
         Affectation.count({ where }),
         Affectation.findAll({ where, attributes: ["id_affectation"], order: ordre, limit, offset, raw: true }),
@@ -281,31 +285,6 @@ export const getAffectationsByEnseignant = asyncHandler(async (req, res) => {
     await appliquerRamadan(affectations);
 
     res.json(createPaginationResponse(affectations, count, page, limit));
-});
-
-// ✅ Confirmer une affectation (Enseignant propriétaire seulement)
-export const confirmerAffectation = asyncHandler(async (req, res) => {
-    const affectation = await Affectation.findOne({ where: { id_affectation: req.params.id } });
-
-    if (!affectation) {
-        return res.status(404).json({ message: "Affectation non trouvée" });
-    }
-
-    const isOwner = affectation.id_user_enseignant === req.user.id_user;
-    const isAdmin = req.user.role === "admin";
-    if (!isOwner && !isAdmin) {
-        return res.status(403).json({ message: "Accès refusé : cette affectation ne vous appartient pas" });
-    }
-
-    if (affectation.statut !== "planifie") {
-        return res.status(400).json({
-            message: `Impossible de confirmer : statut actuel "${affectation.statut}"`,
-        });
-    }
-
-    await affectation.update({ statut: "confirme" });
-
-    res.json({ message: "Affectation confirmée avec succès", affectation });
 });
 
 // 🔍 Récupérer les affectations par groupe (avec pagination)

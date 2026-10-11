@@ -28,6 +28,7 @@ export const EVENEMENTS = [
     "compte_supprime",
     "comptes_importes",
     "appareil_delie",
+    "quiz_ia_genere",
 ];
 
 const borne = (texte, max) => (texte == null ? null : String(texte).slice(0, max));

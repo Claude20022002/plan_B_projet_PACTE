@@ -12,18 +12,9 @@ import { restaurerLangue } from '../i18n';
 import { AuthProvider } from '../auth/AuthContext';
 import { restaurerTheme, ThemeProvider, useTheme } from '../theme';
 import IntroLogo from '../intro/IntroLogo';
+import { ecranDeLien } from '../alertes/liens';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
-
-/** Liens d'une alerte : seulement des écrans internes de l'application. */
-const ECRANS_AUTORISES = new Set(['/', '/semaine', '/alertes', '/jeux']);
-const ecranDeLien = (lien) => {
-  if (typeof lien !== 'string') return '/alertes';
-  if (lien.startsWith('/emploi-du-temps')) return '/semaine';
-  const annonce = /^\/annonces\/(\d+)$/.exec(lien);
-  if (annonce) return `/annonce/${annonce[1]}`;
-  return ECRANS_AUTORISES.has(lien) ? lien : '/alertes';
-};
 
 export default function Racine() {
   const router = useRouter();

@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Linking, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
@@ -6,12 +6,16 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../board/Ecran';
 import { planner } from '../api/client';
+import { chargerConfigQuiz, chargerPartiesQuiz } from '../api/donnees';
+import { origineDe, partieDuPin, pinScanne } from '../quiz/scan';
+import { ouvrirPartie as ouvrirLaPartie } from '../quiz/ouvrir';
+import { QUIZ_DANS_L_APPLICATION } from '../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
 
 /**
- * Appel par QR code (I1) : l'étudiant scanne le QR affiché par l'enseignant ; sa présence est
- * enregistrée aussitôt. Un seul envoi par code lu ; en cas d'erreur (code expiré, autre groupe),
- * il peut scanner de nouveau.
+ * Scan du QR affiché par l'enseignant. Appel (I1) : la présence est enregistrée aussitôt. Quiz :
+ * la partie s'ouvre si elle est lancée dans l'une de mes séances (quiz/scan.js, quiz/ouvrir.js). Un seul envoi par
+ * code lu ; en cas d'erreur (code expiré, autre groupe), l'étudiant peut scanner de nouveau.
  */
 export default function Scanner() {
   const { couleurs } = useTheme();
@@ -21,11 +25,41 @@ export default function Scanner() {
   const [permission, demanderPermission] = useCameraPermissions();
   const [resultat, setResultat] = useState(null); // { ok, texte, detail }
   const enCours = useRef(false);
+  // Partie trouvée : la caméra ne doit plus rien lire pendant l'ouverture de l'écran du quiz
+  const partieOuverte = useRef(false);
+  // Origine du service de quiz (promesse), pour reconnaître un QR de partie ; null sans quiz installé
+  const origineQuiz = useRef(null);
+
+  useEffect(() => {
+    origineQuiz.current = chargerConfigQuiz()
+      .then((c) => (c?.actif ? origineDe(c.url) : null))
+      .catch(() => null);
+  }, []);
+
+  const ouvrirPartie = async (pin, origine) => {
+    const partie = partieDuPin(await chargerPartiesQuiz(), pin, origine);
+    if (!partie) {
+      setResultat({ ok: false, texte: t('app.appel.partieAbsente') });
+      return;
+    }
+    partieOuverte.current = true;
+    await ouvrirLaPartie({ router, partie, couleurs, remplacer: true });
+    // Vue navigateur : le scanner se ferme derrière elle (au retour, l'étudiant retrouve l'application)
+    if (QUIZ_DANS_L_APPLICATION) return;
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
+  };
 
   const lu = async ({ data }) => {
-    if (enCours.current || resultat) return;
+    if (enCours.current || resultat || partieOuverte.current) return;
     enCours.current = true;
     try {
+      const origine = await origineQuiz.current;
+      const pin = pinScanne(data, origine);
+      if (pin) {
+        await ouvrirPartie(pin, origine);
+        return;
+      }
       const r = await planner('/presences/scanner', { method: 'POST', body: { code: data } });
       const s = r.seance;
       setResultat({ ok: true, texte: t(r.deja ? 'app.appel.deja' : 'app.appel.ok'), detail: [s.cours, `${s.heure_debut}–${s.heure_fin}`, s.salle].filter(Boolean).join(' · ') });

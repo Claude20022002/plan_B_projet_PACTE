@@ -46,7 +46,7 @@ export default function ChangerMotDePasse() {
     };
 
     return (
-        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#0B0B0D', p: 2 }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: ds.board.ground, p: 2 }}>
             <Container maxWidth="xs">
                 <Paper component="form" onSubmit={enregistrer} sx={{ p: { xs: 3, sm: 4 }, borderRadius: `${ds.radius.sm}px` }}>
                     <Typography component="h1" variant="h5" sx={{ fontFamily: ds.font.board, fontWeight: 700, mb: 1 }}>

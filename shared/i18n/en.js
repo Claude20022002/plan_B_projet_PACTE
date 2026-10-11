@@ -34,6 +34,7 @@ const partage = {
     noSessionsBody: 'Your timetable has no sessions in the next few days. Changes will appear here as soon as they are published.',
     changed: 'Changed',
     previously: 'Was: {{value}}',
+    endsAt: 'Ends at {{heure}}',
     weekTitle: 'Week of {{date}}',
     nextDay: '{{day}}',
     sessionsCount_one: '{{count}} session',

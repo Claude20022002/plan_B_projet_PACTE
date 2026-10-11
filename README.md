@@ -16,10 +16,10 @@ au premier coup d'œil. Voir [DESIGN.md](DESIGN.md).
 
 | Rôle | Ce qu'il peut faire |
 | --- | --- |
-| **Étudiant** | Voir sa prochaine séance, sa semaine et l'emploi du temps du mois (format officiel HESTIM, imprimable) ; être prévenu des reports et annulations (web et notifications push) ; laisser un retour anonyme après une séance ; accéder aux supports de ses cours dans la bibliothèque. |
-| **Enseignant** | Confirmer ses séances, demander un report, déclarer ses disponibilités et ses vœux, accepter les services proposés, réserver une salle, suivre ses surveillances d'examen et les retours de ses séances. |
+| **Étudiant** | Voir sa prochaine séance, sa semaine et l'emploi du temps du mois (format officiel HESTIM, imprimable) ; être prévenu des reports et annulations (web et notifications push) ; faire les quiz donnés en devoir ; accéder aux supports de ses cours dans la bibliothèque. |
+| **Enseignant** | Déclarer ses disponibilités et ses vœux (l'administration organise ensuite son emploi du temps), accepter les services proposés, demander un report, faire l'appel, donner des quiz (en direct ou en devoir, écrits à la main ou générés par l'IA) et écrire à ses classes. |
 | **Responsable de filière** | Préparer le semestre de sa filière : maquette (modules CM / TD / TP), groupes, services des enseignants, revue des conflits. |
-| **Administration** | Calendrier (fériés marocains, Ramadan, examens), campus et salles, grilles horaires, génération automatique de l'emploi du temps, imprévus (absences, salles en panne, journées annulées), examens et surveillances, suivi du réalisé et export des heures des vacataires. |
+| **Administration** | Calendrier (fériés marocains, Ramadan, examens), campus et salles, grilles horaires, génération automatique de l'emploi du temps, imprévus (absences, salles en panne, journées annulées), examens et surveillances (assurées par le personnel de l'administration), réservations de salles, suivi du réalisé et export des heures des vacataires. |
 
 Points clés du métier :
 
@@ -208,7 +208,7 @@ Les tests d'intégration attendent un MySQL de test, par exemple :
 | A | Fondations : migrations versionnées, retrait du multi-tenant et d'Electron | ✅ |
 | P | Modèle HESTIM : campus, calendrier marocain, grilles, maquette CM/TD/TP, groupes emboîtés, enseignants et services | ✅ |
 | B | Règles de planification, refus motivé et forçage tracé, reports, invitations | ✅ |
-| P4–P7 | Préparation du semestre, réservations, examens, imprévus, suivi du réalisé, retours de séance | ✅ |
+| P4–P7 | Préparation du semestre, réservations, examens, imprévus, suivi du réalisé | ✅ |
 | E | Génération automatique (Timefold) | ✅ |
 | C | Connexion unique et intégration de StudyLib, passerelle HTTPS | ✅ |
 | D | Application mobile étudiant, notifications push | ✅ (essais sur téléphone à faire) |

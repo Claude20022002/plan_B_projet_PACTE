@@ -129,6 +129,108 @@ class ContraintesTest {
     }
 
     @Test
+    void equipementsDeLaSalle() {
+        Lecon tp = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        tp.setEquipementsRequis(Set.of("Vidéoprojecteur", "Postes informatiques"));
+        // La salle n'a aucun des équipements demandés, puis un seul des deux : refusée dans les deux cas
+        verifier.verifyThat(ContraintesEmploiDuTemps::equipementsSalle).given(tp).penalizesBy(1);
+        g1.setEquipements(Set.of("Vidéoprojecteur"));
+        verifier.verifyThat(ContraintesEmploiDuTemps::equipementsSalle).given(tp).penalizesBy(1);
+        // Tout ce qui est demandé s'y trouve ; un équipement en plus ne gêne pas
+        labo.setEquipements(Set.of("Vidéoprojecteur", "Postes informatiques", "Tableau interactif"));
+        tp.setSalle(labo);
+        verifier.verifyThat(ContraintesEmploiDuTemps::equipementsSalle).given(tp).penalizesBy(0);
+
+        // Rien de demandé, ou pas de salle : la règle ne s'applique pas
+        Lecon sansBesoin = lecon(lun1, g2, Set.of(11L), Set.of(101L));
+        Lecon sansSalle = lecon(lun1, null, Set.of(12L), Set.of(102L));
+        sansSalle.setEquipementsRequis(Set.of("Vidéoprojecteur"));
+        verifier.verifyThat(ContraintesEmploiDuTemps::equipementsSalle).given(sansBesoin, sansSalle).penalizesBy(0);
+    }
+
+    @Test
+    void campusDeLaFiliere() {
+        // La filière préfère Gandhi (campus 1) : une salle de Stendhal (campus 2) est pénalisée, une
+        // fois par leçon (le vérificateur compte les pénalités, pas leur poids de 2 points souples)
+        Lecon ailleurs = lecon(lun1, st, Set.of(10L), Set.of(100L));
+        ailleurs.setCampusPrefere(1L);
+        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(1);
+        ailleurs.setSalle(g1);
+        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(0);
+
+        // Une filière sans campus préféré, ou une leçon sans salle, ne coûte rien
+        Lecon sansPreference = lecon(lun1, st, Set.of(11L), Set.of(101L));
+        Lecon sansSalle = lecon(lun1, null, Set.of(12L), Set.of(102L));
+        sansSalle.setCampusPrefere(1L);
+        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(sansPreference, sansSalle).penalizesBy(0);
+    }
+
+    @Test
+    void voeuPrefere() {
+        Lecon a = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        Voeu prefere = new Voeu(10L, 1L, Voeu.Type.PREFERE);
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, prefere).rewardsWith(1);
+        // Le vœu d'un collègue, ou un vœu sur un autre créneau, ne rapporte rien
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, new Voeu(11L, 1L, Voeu.Type.PREFERE)).rewardsWith(0);
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, new Voeu(10L, 3L, Voeu.Type.PREFERE)).rewardsWith(0);
+
+        // Une demi-journée sur deux créneaux préférés rapporte un point par créneau
+        a.setLongueur(2);
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, prefere, new Voeu(10L, 2L, Voeu.Type.PREFERE)).rewardsWith(2);
+        // Un vœu « à éviter » n'est pas une préférence
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, new Voeu(10L, 1L, Voeu.Type.EVITER)).rewardsWith(0);
+    }
+
+    @Test
+    void pasDeSalleEnDistanciel() {
+        // Une séance à distance qui garde une salle la prend à un cours en présentiel
+        Lecon aDistance = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        aDistance.setDistanciel(true);
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(aDistance).penalizesBy(1);
+        aDistance.setSalle(null);
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(aDistance).penalizesBy(0);
+
+        Lecon enSalle = lecon(lun1, g2, Set.of(11L), Set.of(101L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(enSalle).penalizesBy(0);
+    }
+
+    @Test
+    void salleALaTailleDuGroupe() {
+        // 20 étudiants dans une salle de 40 : 20 places vides, 10 de marge, donc une tranche de 10
+        Lecon td = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleSurdimensionnee).given(td).penalizesBy(1);
+        // Dans un amphithéâtre de 120 : 100 places vides, 9 tranches au-delà de la marge
+        td.setSalle(new Salle(9L, "G-AMPHI", 120, "Amphithéâtre", 1L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleSurdimensionnee).given(td).penalizesBy(9);
+        // Une salle à peine plus grande, ou pas de salle : rien
+        td.setSalle(labo);
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleSurdimensionnee).given(td).penalizesBy(0);
+        td.setSalle(null);
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleSurdimensionnee).given(td).penalizesBy(0);
+    }
+
+    @Test
+    void memeSallePourDeuxCoursQuiSeSuivent() {
+        // 9 h - 10 h 45 puis 11 h : un quart d'heure de pause, deux salles différentes
+        Lecon premier = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        Lecon second = lecon(lun2, g2, Set.of(11L), Set.of(100L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::changementDeSalle).given(premier, second).penalizesBy(1);
+        second.setSalle(g1);
+        verifier.verifyThat(ContraintesEmploiDuTemps::changementDeSalle).given(premier, second).penalizesBy(0);
+
+        // Après la pause de midi, changer de salle ne coûte rien
+        Lecon apresMidi = lecon(lun3, g2, Set.of(11L), Set.of(100L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::changementDeSalle).given(premier, apresMidi).penalizesBy(0);
+        // Un TP qui demande un laboratoire justifie le changement
+        Lecon tp = lecon(lun2, labo, Set.of(11L), Set.of(100L));
+        tp.setTypeSalleRequis("Labo informatique");
+        verifier.verifyThat(ContraintesEmploiDuTemps::changementDeSalle).given(premier, tp).penalizesBy(0);
+        // Deux groupes différents ne sont pas comparés
+        Lecon autreGroupe = lecon(lun2, g2, Set.of(11L), Set.of(101L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::changementDeSalle).given(premier, autreGroupe).penalizesBy(0);
+    }
+
+    @Test
     void grilleDuRegimeEtDisponibilites() {
         Lecon initiale = lecon(soir, g1, Set.of(10L), Set.of(100L));
         verifier.verifyThat(ContraintesEmploiDuTemps::grilleDuRegime).given(initiale).penalizesBy(1);

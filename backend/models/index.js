@@ -24,6 +24,7 @@ import SessionExamenSalle from "./SessionExamenSalle.js";
 import Surveillance from "./Surveillance.js";
 import RetourSeance from "./RetourSeance.js";
 import RetourSeanceParticipation from "./RetourSeanceParticipation.js";
+import VisaSeance from "./VisaSeance.js";
 import PushToken from "./PushToken.js";
 import OidcPayload from "./OidcPayload.js";
 import QuizPartie from "./QuizPartie.js";
@@ -39,6 +40,7 @@ import SignalementPresence from "./SignalementPresence.js";
 import AppareilEtudiant from "./AppareilEtudiant.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
 import JournalSecurite from "./JournalSecurite.js";
+import GenerationQuiz from "./GenerationQuiz.js";
 import MfaDefi from "./MfaDefi.js";
 import JeuModule from "./JeuModule.js";
 import JeuProgression from "./JeuProgression.js";
@@ -613,6 +615,7 @@ export {
     Surveillance,
     RetourSeance,
     RetourSeanceParticipation,
+    VisaSeance,
     PushToken,
     OidcPayload,
     QuizPartie,
@@ -628,6 +631,7 @@ export {
     AppareilEtudiant,
     MfaCodeSecours,
     JournalSecurite,
+    GenerationQuiz,
     MfaDefi,
     JeuModule,
     JeuProgression,

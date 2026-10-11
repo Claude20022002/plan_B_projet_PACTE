@@ -1,12 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { ouvrirSurLeWeb } from '../../espaces/ouvrir';
 import Ecran, { Message } from '../../board/Ecran';
 import { chargerDevoir, rendreDevoir } from '../../api/donnees';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
+import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 
 const reponseInitiale = (q) => {
   if (q.type === 'CHECK') return [];
@@ -90,54 +90,16 @@ function Saisie({ question: q, valeur, changer, fige }) {
   return null;
 }
 
-/** Devoir « fichier » : consignes, copie rendue (retard, correction), note et commentaire, lien vers le site. */
-function DevoirFichier({ donnees, date, ouvrir }) {
-  const { t, i18n } = useTranslation();
-  const styles = useStyles();
-  const { devoir: d, rendu } = donnees;
-  const corrige = rendu && rendu.note !== null;
-  const etat = rendu
-    ? [t('app.devoirs.renduLe', { date: date(rendu.rendu_le) }), rendu.en_retard ? t('app.devoirs.enRetard') : null, corrige ? null : t('app.devoirs.enCorrection')].filter(Boolean).join(' · ')
-    : t(d.ouvert ? 'app.devoirs.pasRendu' : 'app.devoirs.pasRenduRetard');
-  return (
-    <View>
-      {corrige ? (
-        <View style={styles.note} accessible accessibilityLabel={t('app.devoirs.noteSeule', { note: rendu.note })}>
-          <Text style={styles.noteValeur}>{rendu.note.toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR')}</Text>
-          <Text style={styles.noteSur}>/20</Text>
-        </View>
-      ) : null}
-      {corrige && rendu.commentaire ? (
-        <View style={styles.question}>
-          <Text style={styles.questionNumero}>{t('app.devoirs.commentaire')}</Text>
-          <Text style={styles.questionTexte} selectable>{rendu.commentaire}</Text>
-        </View>
-      ) : null}
-      <View style={styles.question}>
-        <Text style={styles.questionNumero}>{t('app.devoirs.consignes')}</Text>
-        <Text style={styles.questionTexte} selectable>{d.consignes || t('app.devoirs.sansConsignes')}</Text>
-        {d.enonce ? <Text style={styles.attendue}>{t('app.devoirs.enonce', { nom: d.enonce.nom })}</Text> : null}
-      </View>
-      <View style={styles.question}>
-        <Text style={styles.questionNumero}>{t('app.devoirs.maCopie')}</Text>
-        <Text style={styles.questionTexte}>{etat}</Text>
-        {rendu?.fichier ? <Text style={styles.attendue}>{rendu.fichier.nom}</Text> : null}
-      </View>
-      <Pressable onPress={ouvrir} style={styles.bouton} accessibilityRole="button" accessibilityHint={t('app.devoirs.aideSite')}>
-        <Text style={styles.boutonTexte}>{t(corrige ? 'app.devoirs.voirSurSite' : rendu ? 'app.devoirs.remplacerSurSite' : 'app.devoirs.rendreSurSite')}</Text>
-      </Pressable>
-      <Message discret>{t('app.devoirs.aideSite')}</Message>
-    </View>
-  );
+/** Écran d'un devoir ; devoirs masqués (lot D-1) : une ancienne alerte ramène à l'onglet Activités. */
+export default function DevoirSiActif() {
+  return DEVOIRS_ACTIFS ? <Devoir /> : <Redirect href="/" />;
 }
 
 /**
  * Devoir noté sur téléphone : les questions du quiz (sans les réponses), une copie rendue avant
  * la date limite et notée sur 20 par Planner ; la correction s'affiche après la date limite.
- * Devoir « fichier » (R3) : consignes, état de la copie, note et commentaire ; l'énoncé et le dépôt
- * s'ouvrent sur le site, déjà connecté (sélecteur de fichiers et appareil photo du téléphone).
  */
-export default function Devoir() {
+function Devoir() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { couleurs } = useTheme();
@@ -164,7 +126,6 @@ export default function Devoir() {
   }, [id, charger]);
 
   const d = donnees?.devoir;
-  const fichier = d?.type === 'fichier';
   const fige = Boolean(donnees?.rendu) || (d && !d.ouvert);
   const date = (iso) => new Date(iso).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' });
 
@@ -188,7 +149,7 @@ export default function Devoir() {
     ]);
 
   const retour = (
-    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/jeux'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
+    <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.retour')}>
       <MaterialCommunityIcons name="arrow-left" size={24} color={couleurs.surCadre} />
     </Pressable>
   );
@@ -205,8 +166,7 @@ export default function Devoir() {
               <Text style={styles.detail}>{[d.module?.nom, t(d.ouvert ? 'app.devoirs.avant' : 'app.devoirs.clos', { date: date(d.date_limite) })].filter(Boolean).join(' · ')}</Text>
             </View>
           ) : null}
-          {fichier ? <DevoirFichier donnees={donnees} date={date} ouvrir={() => ouvrirSurLeWeb(`/jeux/devoirs/${d.id}`, couleurs)} /> : null}
-          {donnees?.rendu && !fichier ? (
+          {donnees?.rendu ? (
             <View style={styles.note} accessible accessibilityLabel={t('app.devoirs.noteLue', { note: donnees.rendu.note, bonnes: donnees.rendu.bonnes, total: donnees.rendu.notees })}>
               <Text style={styles.noteValeur}>{donnees.rendu.note.toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR')}</Text>
               <Text style={styles.noteSur}>/20</Text>
@@ -214,7 +174,7 @@ export default function Devoir() {
               <Text style={styles.noteDetail}>{t('app.devoirs.bonnes', { bonnes: donnees.rendu.bonnes, total: donnees.rendu.notees })}</Text>
             </View>
           ) : null}
-          {donnees?.rendu && !fichier && d.ouvert ? <Message discret>{t('app.devoirs.correctionApres', { date: date(d.date_limite) })}</Message> : null}
+          {donnees?.rendu && d.ouvert ? <Message discret>{t('app.devoirs.correctionApres', { date: date(d.date_limite) })}</Message> : null}
 
           {(donnees?.questions ?? []).map((q, i) => (
             <View key={q.index} style={styles.question}>
@@ -229,7 +189,7 @@ export default function Devoir() {
             </View>
           ))}
 
-          {donnees && !fige && !fichier ? (
+          {donnees && !fige ? (
             <Pressable onPress={rendre} disabled={envoi} style={[styles.bouton, envoi && { opacity: 0.6 }]} accessibilityRole="button">
               <Text style={styles.boutonTexte}>{t('app.devoirs.rendre')}</Text>
             </Pressable>

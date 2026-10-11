@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { Navigate, useNavigate, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
   Alert,
@@ -29,9 +29,9 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CancelIcon from '@mui/icons-material/Cancel';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
-import DevoirFichier from '../../components/jeux/DevoirFichier';
 import { devoirsAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
+import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 
 /** Réponse de départ selon le type de question */
 const reponseInitiale = (q) => {
@@ -121,11 +121,16 @@ function Saisie({ question: q, valeur, changer, fige }) {
   return null;
 }
 
+/** Écran d'un devoir ; devoirs masqués (lot D-1) : un ancien lien de notification ramène aux activités. */
+export default function DevoirJouerSiActif() {
+  return DEVOIRS_ACTIFS ? <DevoirJouer /> : <Navigate to="/jeux" replace />;
+}
+
 /**
  * Devoir noté, côté étudiant : les questions du quiz (sans les réponses), une copie à rendre
  * avant la date limite, la note sur 20 aussitôt ; la correction après la date limite.
  */
-export default function DevoirJouer() {
+function DevoirJouer() {
   const { t, i18n } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
@@ -179,9 +184,7 @@ export default function DevoirJouer() {
       {erreur && <Alert severity="warning" sx={{ mb: 2 }}>{erreur}</Alert>}
       {!donnees && !erreur && <Skeleton variant="rectangular" height={240} />}
 
-      {d?.type === 'fichier' && <DevoirFichier donnees={donnees} recharger={charger} />}
-
-      {d?.type !== 'fichier' && donnees?.rendu && (
+      {donnees?.rendu && (
         <Alert severity="success" icon={false} sx={{ mb: 3, alignItems: 'center' }}>
           <Stack direction="row" spacing={3} alignItems="baseline" flexWrap="wrap">
             <Typography sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: '2rem' }}>{t('jeux.devoirs.note', { note: donnees.rendu.note.toLocaleString(i18n.language) })}</Typography>
@@ -191,7 +194,7 @@ export default function DevoirJouer() {
         </Alert>
       )}
 
-      {donnees && d?.type !== 'fichier' && (
+      {donnees && (
         <Stack spacing={2}>
           {donnees.questions.map((q, i) => (
             <Card key={q.index} variant="outlined" component="section" aria-labelledby={`question-${i}`}>
@@ -218,7 +221,7 @@ export default function DevoirJouer() {
         </Stack>
       )}
 
-      {donnees && d?.type !== 'fichier' && !fige && (
+      {donnees && !fige && (
         <Stack direction="row" spacing={2} alignItems="center" justifyContent="flex-end" sx={{ mt: 3 }}>
           {nonRepondues > 0 && <Typography color="text.secondary">{t('jeux.devoirs.sansReponse', { count: nonRepondues })}</Typography>}
           <Button variant="contained" size="large" onClick={() => setConfirmer(true)}>

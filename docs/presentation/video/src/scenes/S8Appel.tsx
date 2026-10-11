@@ -2,7 +2,7 @@ import React from "react";
 import { AbsoluteFill, Img, staticFile, useCurrentFrame } from "remotion";
 import { FlapCounter, FlapText } from "../components/Flap";
 import { Line } from "../components/Frames";
-import { fadeUp, ramp, useEnter } from "../components/motion";
+import { fadeUp, ramp, useEnter, usePortrait } from "../components/motion";
 import { BEAT, C, SHADOW } from "../theme";
 
 const FS_TITRE = 72;
@@ -23,6 +23,35 @@ export const S8Appel: React.FC = () => {
   // Le code suivant remplace le premier en un battement de volet
   const bascule = ramp(frame, RENOUVELLEMENT, RENOUVELLEMENT + 6);
   const compression = 1 - Math.sin(bascule * Math.PI) * 0.06;
+  const portrait = usePortrait();
+
+  // 9:16 : le titre, le QR, puis le compteur, en colonne
+  if (portrait) {
+    return (
+      <AbsoluteFill style={{ background: C.bg, flexDirection: "column", alignItems: "center", paddingTop: 210, gap: 60 }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 14 }}>
+          <FlapText text="L'APPEL" start={0} fontSize={FS_TITRE + 20} stagger={2} flip={5} hiddenBefore />
+          <FlapText text="EN 5 SECONDES" start={8} fontSize={FS_TITRE + 20} stagger={2} flip={5} hiddenBefore />
+        </div>
+        <div style={{ ...fadeUp(qr, 40), width: 640, height: 640, padding: 30, borderRadius: 30, background: "#FFFFFF", boxShadow: SHADOW, transform: `${fadeUp(qr, 40).transform} scaleY(${compression})`, position: "relative" }}>
+          <Img src={staticFile("carrousel/qr.png")} style={{ position: "absolute", inset: 30, width: 580, height: 580, opacity: 1 - bascule }} />
+          <Img src={staticFile("carrousel/qr-2.png")} style={{ position: "absolute", inset: 30, width: 580, height: 580, opacity: bascule }} />
+        </div>
+        <Line size={52} style={{ ...fadeUp(benefice), width: 900, textAlign: "center" }}>
+          Les étudiants scannent, la liste se remplit.
+        </Line>
+        <div style={{ ...fadeUp(presents), display: "flex", alignItems: "center", gap: 28 }}>
+          <FlapCounter value="28" start={COMPTEUR} fontSize={110} />
+          <Line size={50} weight={400} color={C.inkSoft}>
+            présents sur 30
+          </Line>
+        </div>
+        <Line size={42} weight={400} color={C.inkSoft} style={{ ...fadeUp(fraude), width: 900, textAlign: "center" }}>
+          Le code change toutes les 30 secondes.
+        </Line>
+      </AbsoluteFill>
+    );
+  }
 
   return (
     <AbsoluteFill style={{ background: C.bg, flexDirection: "row", alignItems: "center", paddingLeft: 170, paddingRight: 170, gap: 120 }}>

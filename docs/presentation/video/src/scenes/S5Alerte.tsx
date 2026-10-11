@@ -44,7 +44,7 @@ const Notification: React.FC<{ w: number }> = ({ w }) => {
 };
 
 /** 5 · l'accueil de l'application ; une alerte de report descend (1,5 s), reste 3 s, puis remonte. */
-export const S5Alerte: React.FC = () => {
+export const S5Alerte: React.FC<{ capture?: string }> = ({ capture = "captures/mobile-38-tableau.png" }) => {
   const frame = useCurrentFrame();
   const portrait = usePortrait();
   const l1 = useEnter(6);
@@ -79,7 +79,7 @@ export const S5Alerte: React.FC = () => {
         </div>
       )}
       <PhoneFrame screenHeight={screenH} style={{ left, top }}>
-        <Screen src="captures/mobile-38-tableau.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 30%" />
+        <Screen src={capture} srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 30%" />
       </PhoneFrame>
       {/* Bannière agrandie (1,5 × l'écran) et centrée sur le téléphone : lisible au fond d'une salle */}
       <div

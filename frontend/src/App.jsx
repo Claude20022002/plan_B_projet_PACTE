@@ -16,6 +16,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './components/common/PrivateRoute';
 import VersTableau from './components/espaces/VersTableau';
+import { routesProjection } from './routes/projection';
 
 // ── Composants de layout critique (jamais lazy — trop fréquents) ──────────
 import PageSkeleton    from './components/common/PageSkeleton';
@@ -75,6 +76,7 @@ const MesAffectations= lazy(() => import('./pages/MesAffectations'));
 const DemandesReport = lazy(() => import('./pages/DemandesReport'));
 const Disponibilites = lazy(() => import('./pages/Disponibilites'));
 const MesServices    = lazy(() => import('./pages/MesServices'));
+const MesClasses     = lazy(() => import('./pages/MesClasses'));
 // Phases P4 à P7 : préparation, réservations, examens, imprévus, suivi, EDT mensuel
 const Reservations   = lazy(() => import('./pages/Reservations'));
 const MesExamens     = lazy(() => import('./pages/MesExamens'));
@@ -275,6 +277,8 @@ export default function App() {
               <AppPage><Appel /></AppPage>
             </PrivateRoute>
           } />
+          {/* Écrans à projeter en classe (appel, quiz en direct), sans le menu de Planner */}
+          {routesProjection()}
           <Route path="/presence" element={
             <PrivateRoute requiredRole="etudiant">
               <AppPage><Presence /></AppPage>
@@ -311,6 +315,11 @@ export default function App() {
           <Route path="/mes-affectations" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><MesAffectations /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/mes-classes" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><MesClasses /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/demandes-report" element={
@@ -357,8 +366,9 @@ export default function App() {
           <Route path="/salles-disponibles" element={<Navigate to="/reservations" replace />} />
 
           {/* ── Phases P4 à P7 ────────────────────────────────────────── */}
+          {/* Les réservations de salles sont l'affaire de l'administration : les enseignants n'en font pas */}
           <Route path="/reservations" element={
-            <PrivateRoute requiredRole={['enseignant', 'admin']}>
+            <PrivateRoute requiredRole="admin">
               <AppPage><Reservations /></AppPage>
             </PrivateRoute>
           } />
@@ -368,7 +378,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/mes-examens" element={
-            <PrivateRoute requiredRole={['enseignant', 'etudiant', 'admin']}>
+            <PrivateRoute requiredRole={['etudiant', 'admin']}>
               <AppPage><MesExamens /></AppPage>
             </PrivateRoute>
           } />

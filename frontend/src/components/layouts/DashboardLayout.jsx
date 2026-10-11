@@ -2,12 +2,15 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import {
+  Alert,
+  AlertTitle,
   AppBar,
   Avatar,
   Badge,
   BottomNavigation,
   BottomNavigationAction,
   Box,
+  Button,
   Drawer,
   IconButton,
   List,
@@ -15,6 +18,7 @@ import {
   ListItemIcon,
   ListItemText,
   Paper,
+  Snackbar,
   ToggleButton,
   ToggleButtonGroup,
   Toolbar,
@@ -40,6 +44,7 @@ import { LocalLibrary,
   Book,
   CalendarMonth,
   Category,
+  Close,
   DarkModeOutlined,
   DepartureBoard as BoardIcon,
   EventAvailable,
@@ -64,6 +69,7 @@ import { LocalLibrary,
 } from '@mui/icons-material';
 import GlobalSearch from '../common/GlobalSearch';
 import SelecteurEspaces from '../espaces/SelecteurEspaces';
+import Aide from '../aide/Aide';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme } from '../../contexts/ThemeContext';
 import { notificationAPI } from '../../services/api';
@@ -72,6 +78,25 @@ import { ds } from '../../design-system/tokens';
 import { estResponsable } from '../../utils/droits';
 
 const RAIL_WIDTH = 248;
+
+// Rappels de l'appel écartés pendant cette session du navigateur (le stockage peut être indisponible)
+const LIEN_APPEL = /^\/appel\/\d+$/;
+const CLE_RAPPELS = 'rappelsAppelEcartes';
+const rappelsEcartes = () => {
+  try {
+    const ids = JSON.parse(sessionStorage.getItem(CLE_RAPPELS) ?? '[]');
+    return Array.isArray(ids) ? ids : [];
+  } catch {
+    return [];
+  }
+};
+const ecarterRappel = (id) => {
+  try {
+    sessionStorage.setItem(CLE_RAPPELS, JSON.stringify([...rappelsEcartes(), id].slice(-50)));
+  } catch {
+    // Sans stockage, le rappel reviendra au prochain rafraîchissement
+  }
+};
 
 /** Navigation par rôle : sections (libellé) et entrées (icône, chemin, clé de traduction) */
 const navigationFor = (user) => {
@@ -139,12 +164,11 @@ const navigationFor = (user) => {
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
           { key: 'nav.announcements', icon: <Campaign />, path: '/annonces' },
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
+          { key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' },
           { key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' },
           { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
           { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },
           { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
-          { key: 'nav.bookings', icon: <BookOnline />, path: '/reservations' },
-          { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
           { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/' },
           { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
         ],
@@ -188,7 +212,8 @@ const bottomTabsFor = (role) => {
     { key: 'nav.board', icon: <BoardIcon />, path: `/dashboard/${base}` },
     { key: 'nav.week', icon: <ViewWeek />, path: `/emploi-du-temps/${base}` },
   ];
-  if (role === 'enseignant') tabs.push({ key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' });
+  // Enseignant : ses classes (appel, devoirs, messages) ; « Mes séances » reste dans le menu
+  if (role === 'enseignant') tabs.push({ key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' });
   tabs.push(
     { key: 'nav.alerts', icon: <Notifications />, path: '/notifications', badge: true },
     { key: 'nav.account', icon: <PersonOutline />, path: '/parametres' }
@@ -222,6 +247,7 @@ const TITLE_KEYS = {
   '/annonces': 'nav.announcements',
   '/parametres': 'nav.settings',
   '/mes-affectations': 'nav.mySessions',
+  '/mes-classes': 'nav.myClasses',
   '/mes-services': 'nav.myServices',
   '/reservations': 'nav.bookings',
   '/mes-examens': 'nav.myExams',
@@ -257,10 +283,10 @@ function LanguageSwitch({ onDark = false }) {
           px: 1.25,
           py: 0.25,
           lineHeight: 1.6,
-          color: onDark ? '#B9C3E6' : 'text.secondary',
+          color: onDark ? ds.nav.letterDim : 'text.secondary',
           borderColor: onDark ? 'rgba(255,255,255,0.22)' : 'divider',
           '&.Mui-selected': {
-            color: onDark ? '#FFFFFF' : 'primary.main',
+            color: onDark ? ds.nav.letter : 'primary.main',
             bgcolor: onDark ? 'rgba(255,255,255,0.14)' : 'action.selected',
           },
         },
@@ -285,6 +311,7 @@ export default function DashboardLayout({ children }) {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [unread, setUnread] = useState(0);
   const [searchOpen, setSearchOpen] = useState(false);
+  const [rappelAppel, setRappelAppel] = useState(null);
 
   const role = user?.role;
   const navigation = useMemo(() => navigationFor(user), [user]);
@@ -296,7 +323,11 @@ export default function DashboardLayout({ children }) {
     const load = async () => {
       try {
         const data = await notificationAPI.getNonLues(user.id_user);
-        setUnread((data?.data || data || []).length);
+        const nonLues = data?.data || data || [];
+        setUnread(nonLues.length);
+        // Rappel de l'appel (fin de séance) : affiché sur toutes les pages, tant qu'il n'est ni lu ni écarté
+        const ecartes = rappelsEcartes();
+        setRappelAppel(user.role === 'enseignant' ? nonLues.find((n) => LIEN_APPEL.test(n.lien ?? '') && !ecartes.includes(n.id_notification)) ?? null : null);
       } catch {
         setUnread(0);
       }
@@ -304,7 +335,17 @@ export default function DashboardLayout({ children }) {
     load();
     const id = setInterval(load, 30000);
     return () => clearInterval(id);
-  }, [user?.id_user]);
+  }, [user?.id_user, user?.role]);
+
+  const fermerRappel = (ouvrir) => {
+    const rappel = rappelAppel;
+    setRappelAppel(null);
+    if (!rappel) return;
+    ecarterRappel(rappel.id_notification);
+    if (!ouvrir) return;
+    notificationAPI.marquerCommeLue(rappel.id_notification).catch(() => {});
+    navigate(rappel.lien);
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -329,10 +370,10 @@ export default function DashboardLayout({ children }) {
     <Box
       component="nav"
       aria-label={t('nav.menu')}
-      sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: ds.brand.navy, color: '#FFFFFF' }}
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: ds.brand.navy, color: ds.nav.letter }}
     >
       <Box sx={{ px: 2, pt: 2.5, pb: 2 }}>
-        <Box sx={{ bgcolor: '#FFFFFF', borderRadius: `${ds.radius.md}px`, px: 1.5, py: 1, display: 'inline-flex' }}>
+        <Box sx={{ bgcolor: ds.white, borderRadius: `${ds.radius.md}px`, px: 1.5, py: 1, display: 'inline-flex' }}>
           <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: 26, display: 'block' }} />
         </Box>
         <Box
@@ -347,7 +388,7 @@ export default function DashboardLayout({ children }) {
         >
           Planner
         </Box>
-        <Box sx={{ fontSize: '0.8125rem', color: '#B9C3E6' }}>{role ? t(`roles.${role}`) : ''}</Box>
+        <Box sx={{ fontSize: '0.8125rem', color: ds.nav.letterDim }}>{role ? t(`roles.${role}`) : ''}</Box>
       </Box>
 
       <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1.25, pb: 2 }}>
@@ -363,7 +404,7 @@ export default function DashboardLayout({ children }) {
                   fontSize: '0.75rem',
                   letterSpacing: '0.16em',
                   textTransform: 'uppercase',
-                  color: '#8D9BCF',
+                  color: ds.nav.icon,
                 }}
               >
                 {t(group.section)}
@@ -383,8 +424,8 @@ export default function DashboardLayout({ children }) {
                     sx={{
                       my: 0.25,
                       px: 1.25,
-                      color: selected ? '#FFFFFF' : '#D3DAF1',
-                      '& .MuiListItemIcon-root': { color: selected ? ds.brand.orange : '#8D9BCF', minWidth: 34 },
+                      color: selected ? ds.nav.letter : ds.nav.letterSoft,
+                      '& .MuiListItemIcon-root': { color: selected ? ds.brand.orange : ds.nav.icon, minWidth: 34 },
                       '&.Mui-selected, &.Mui-selected:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
                       '&:hover': { bgcolor: 'rgba(255,255,255,0.07)' },
                       '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: -2 },
@@ -419,14 +460,14 @@ export default function DashboardLayout({ children }) {
             '&:focus-visible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 2 },
           }}
         >
-          <Avatar src={user?.avatar_url} sx={{ width: 34, height: 34, bgcolor: '#FFFFFF', color: ds.brand.navy, fontSize: '0.875rem', fontWeight: 700 }}>
+          <Avatar src={user?.avatar_url} sx={{ width: 34, height: 34, bgcolor: ds.white, color: ds.brand.navy, fontSize: '0.875rem', fontWeight: 700 }}>
             {!user?.avatar_url && initials}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={600} noWrap sx={{ color: '#FFFFFF' }}>
+            <Typography variant="body2" fontWeight={600} noWrap sx={{ color: ds.nav.letter }}>
               {user?.prenom} {user?.nom}
             </Typography>
-            <Typography variant="caption" noWrap sx={{ color: '#B9C3E6', display: 'block' }}>
+            <Typography variant="caption" noWrap sx={{ color: ds.nav.letterDim, display: 'block' }}>
               {user?.email}
             </Typography>
           </Box>
@@ -438,13 +479,13 @@ export default function DashboardLayout({ children }) {
             <IconButton
               onClick={toggleTheme}
               aria-label={mode === 'dark' ? t('common.themeLight') : t('common.themeDark')}
-              sx={{ color: '#D3DAF1' }}
+              sx={{ color: ds.nav.letterSoft }}
             >
               {mode === 'dark' ? <LightModeOutlined /> : <DarkModeOutlined />}
             </IconButton>
           </Tooltip>
           <Tooltip title={t('common.logout')}>
-            <IconButton onClick={handleLogout} aria-label={t('common.logout')} sx={{ color: '#D3DAF1' }}>
+            <IconButton onClick={handleLogout} aria-label={t('common.logout')} sx={{ color: ds.nav.letterSoft }}>
               <Logout />
             </IconButton>
           </Tooltip>
@@ -477,7 +518,7 @@ export default function DashboardLayout({ children }) {
             top: 0,
             zIndex: (theme) => theme.zIndex.appBar,
             bgcolor: isDesktop ? 'background.paper' : ds.brand.navy,
-            color: isDesktop ? 'text.primary' : '#FFFFFF',
+            color: isDesktop ? 'text.primary' : ds.nav.letter,
             borderBottomColor: isDesktop ? 'divider' : ds.brand.navy,
           }}
         >
@@ -502,6 +543,7 @@ export default function DashboardLayout({ children }) {
             >
               {title}
             </Typography>
+            <Aide aller={go} />
             <SelecteurEspaces role={role} />
             {role === 'admin' && (
               <Tooltip title={t('nav.search')}>
@@ -591,6 +633,28 @@ export default function DashboardLayout({ children }) {
           </BottomNavigation>
         </Paper>
       )}
+
+      {/* Rappel de l'appel : au-dessus de la page, sauf sur l'écran d'appel de cette séance */}
+      <Snackbar open={Boolean(rappelAppel) && location.pathname !== rappelAppel?.lien} anchorOrigin={{ vertical: 'top', horizontal: 'center' }}>
+        <Alert
+          severity="warning"
+          variant="filled"
+          role="alert"
+          action={
+            <>
+              <Button color="inherit" size="small" onClick={() => fermerRappel(true)}>
+                {t('classes.page.ouvrirAppel')}
+              </Button>
+              <IconButton size="small" color="inherit" aria-label={t('common.close')} onClick={() => fermerRappel(false)}>
+                <Close fontSize="small" />
+              </IconButton>
+            </>
+          }
+        >
+          <AlertTitle>{rappelAppel?.titre}</AlertTitle>
+          {rappelAppel?.message}
+        </Alert>
+      </Snackbar>
 
       {role === 'admin' && <GlobalSearch open={searchOpen} onClose={() => setSearchOpen(false)} />}
     </Box>

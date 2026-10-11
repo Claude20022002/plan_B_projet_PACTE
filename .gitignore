@@ -27,6 +27,11 @@ csrf_token=*
 Thumbs.db
 # Fichiers de verrouillage d'Office (document ouvert dans Word, PowerPoint ou Excel)
 ~$*
+# Tableurs : une liste d'étudiants ou d'enseignants ne se versionne pas (données personnelles).
+# Seuls les modèles d'import, remplis de personnes fictives, restent dans le dépôt.
+*.xlsx
+*.xls
+!docs/modeles/*.xlsx
 google-drive.json
 StudyLib-*.json
 # Paquets de mise à jour du serveur (deploy/vps/preparer-maj.sh)

@@ -175,6 +175,28 @@ describe("Problème envoyé au solveur", () => {
         expect(epinglees).toEqual([expect.objectContaining({ enseignants: [prof2.id_user], creneau: { id: ref.lun[2].id_creneau }, distanciel: true })]);
         expect(probleme.parametres).toMatchObject({ maxMinutesJourGroupe: 480, samediApresMidi: false });
     });
+
+    test("campus préféré : celui de la promotion l'emporte sur celui de la filière, et ses TD en héritent", async () => {
+        const campus = await Campus.findAll({ order: [["id_campus", "ASC"]] });
+        expect(campus.length).toBeGreaterThanOrEqual(2);
+        const filiereA = ref.filiere.id_campus_prefere;
+        const promoA = campus.find((c) => c.id_campus !== filiereA).id_campus;
+        const prefere = async () => {
+            const { probleme } = await construireProbleme({ id_periode: ref.periode.id_periode, id_filieres: [ref.filiere.id_filiere] });
+            const lecons = probleme.lecons.filter((l) => !l.epinglee);
+            return { cm: lecons.find((l) => l.type === "CM").campusPrefere, tp: lecons.find((l) => l.type === "TP").campusPrefere };
+        };
+        // Sans campus sur les groupes : celui de la filière, comme avant
+        expect(await prefere()).toEqual({ cm: filiereA, tp: filiereA });
+        // La promotion a le sien : son CM le suit, et le TP du TD (qui n'en a pas) aussi
+        await ref.promo.update({ id_campus_prefere: promoA });
+        expect(await prefere()).toEqual({ cm: promoA, tp: promoA });
+        // Un TD peut avoir le sien, sans changer celui de la promotion
+        await ref.td1.update({ id_campus_prefere: filiereA });
+        expect(await prefere()).toEqual({ cm: promoA, tp: filiereA });
+        await ref.td1.update({ id_campus_prefere: null });
+        await ref.promo.update({ id_campus_prefere: null });
+    });
 });
 
 describe("Validation en série avec cache (déploiement)", () => {

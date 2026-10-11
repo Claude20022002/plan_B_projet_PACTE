@@ -16,12 +16,18 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 
 ## 0. Mise en production
 
+- [ ] Le fichier `VERSION` du paquet porte le commit attendu, et aucune ligne de fichier non commité pour Planner, la bibliothèque ou le quiz.
+- [ ] `appliquer-maj.sh` commence par « Dépendances du backend : identiques à celles de l'image ». S'il s'arrête sur une liste de modules, rien n'a été modifié : suivre `DEPLOIEMENT.md`, « Quand les dépendances changent ».
+- [ ] Les commandes de retour arrière affichées en fin de script sont copiées et gardées.
+- [ ] Sauvegarde quotidienne : la dernière ligne de `/var/log/hestim-sauvegarde.log` date de cette nuit et dit « envoyé vers … » ; le fichier du jour est bien présent à la destination hors du serveur.
 - [ ] Le script `appliquer-maj.sh` se termine sans erreur et affiche les contrôles 404, 400, 200, 200, puis 200 (quiz), 401 (API ClassQuiz) et 401 (bibliothèque).
+- [ ] Le script affiche « aiguillage rechargé » la première fois que le paquet contient le relais du quiz, et le contrôle « relais du quiz » répond 200. Ce paquet doit être préparé avec `--classquiz` : la route de lancement vit dans le moteur de quiz.
 - [ ] `docker exec hestim_backend node -p process.versions.tz` répond `2026c`.
 - [ ] `https://planner.finadmintech.fr/api/activites` répond 401 (et non 404).
 - [ ] Le script de démo des stages s'exécute (retour de stage Cybel avec photo, 128 idées de projets).
 - [ ] Sur GitHub, la CI de `main` est verte (Build Frontend, Test Backend avec l'étape « Banc des requêtes SQL », Test Mobile, Test Solveur).
 - [ ] Au démarrage, le journal du backend indique les migrations 0035 (index), 0036 (journal de sécurité) et 0037 (compteurs de connexion) appliquées, sans erreur.
+- [ ] Aucun compte ne s'ouvre avec un mot de passe de démonstration : le script `deploy/vps/verifier-mots-de-passe-demo.mjs` (commande en tête du fichier, lecture seule) se termine par « OK ». S'il liste des comptes, réinitialiser leur mot de passe puis le relancer. Date et résultat du dernier passage : …
 
 ## 1. Connexion et sécurité
 
@@ -129,6 +135,8 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Suivi du réalisé, onglet des modules : s'affiche en moins d'une seconde.
 - [ ] Export CSV des heures des vacataires et export CSV de l'emploi du temps : s'ouvrent dans Excel avec les bonnes colonnes, même pour une salle ou un groupe dont le nom contient « ; » ou des guillemets.
 - [ ] Un nom qui commence par `=` (par ex. une entreprise de vacataire `=1+1`) s'affiche tel quel dans Excel, sans être calculé.
+- [ ] Export CSV des heures des vacataires : une dernière colonne `etat`. Une séance passée sans appel validé y porte « à vérifier (pas d'appel validé) » ; une séance dont l'enseignant a validé l'appel, « appel validé ».
+- [ ] Au démarrage qui suit la mise à jour, le journal du backend indique la migration 0039 (visas des séances) appliquée, sans erreur.
 - [ ] L'EDT du mois s'imprime en PDF au format HESTIM.
 
 ## 4. Activités (quiz, devoirs, jeux)
@@ -137,8 +145,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Un étudiant inscrit dans ce module voit le jeu (site et application) et peut y jouer ; sa progression est enregistrée.
 - [ ] Un étudiant d'un autre module ne voit pas ce jeu et ne peut pas y accéder par son adresse (refus).
 - [ ] L'enseignant donne un devoir quiz : l'étudiant le rend une fois, voit sa note, et la correction après la date limite.
-- [ ] Devoir « fichier » : l'enseignant dépose l'énoncé, l'étudiant dépose sa copie (PDF), l'enseignant la note ; l'étudiant est prévenu.
-- [ ] Un fichier renommé (par ex. une image en `.pdf`) est refusé.
+- [ ] « Donner un quiz en devoir » ne propose que des quiz (plus de devoir « fichier ») ; un ancien devoir « fichier » n'apparaît plus.
 - [ ] L'administration ne gère pas les activités (pas d'accès).
 
 ### Quiz en direct : anti-triche (lot 3)
@@ -166,6 +173,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Fin de partie : dans Planner, les résultats du quiz montrent à l'enseignant la colonne « Sorties » (nombre · durée), en orange pour les étudiants concernés.
 - [ ] Un étudiant qui consulte les résultats ne voit aucune colonne « Sorties », ni pour lui ni pour les autres.
 - [ ] Le projecteur n'affiche jamais de nom ni de sortie.
+- [ ] Non-régression du moteur (seul son identifiant donne désormais la main sur une partie) : une partie lancée depuis ClassQuiz s'anime comme avant sur son écran d'animation, et la télécommande (QR de l'écran d'animation) pilote toujours la partie.
 
 ## 5. Application mobile : bibliothèque et stages
 
@@ -204,7 +212,8 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 
 - [ ] Annonce ciblée sur un groupe avec pièce jointe : reçue par les étudiants du groupe seulement, accusés de lecture visibles par l'auteur.
 - [ ] Réservation de salle par un enseignant, validée ou refusée par l'admin.
-- [ ] Examen créé par l'admin, surveillants affectés, publication visible par les étudiants concernés.
+- [ ] Examen créé par l'admin, surveillants affectés (personnel de l'administration seulement, jamais un enseignant, contrôles compris), publication visible par les étudiants concernés.
+- [ ] Un enseignant n'a plus « Mes surveillances » ni de surveillance dans son agenda.
 - [ ] Notifications : la page affiche les plus récentes (200 au plus) ; le badge compte toutes les non lues.
 - [ ] Emploi du temps de l'étudiant (application) : les séances mutualisées avec un autre groupe apparaissent.
 

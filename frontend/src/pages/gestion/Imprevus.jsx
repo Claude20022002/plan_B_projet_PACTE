@@ -10,8 +10,8 @@ import { affectationAPI, enseignantAPI, filiereAPI, imprevuAPI, salleAPI } from 
 import { useToast } from '../../contexts/ToastContext';
 import { fetchAll } from '../../utils/fetchAll';
 import { ds } from '../../design-system/tokens';
+import { aujourdhui } from '../../../../shared/dates.js';
 
-const aujourdhui = () => new Date().toISOString().slice(0, 10);
 const hhmm = (h) => String(h || '').slice(0, 5);
 const nom = (u) => (u ? `${u.prenom ?? ''} ${u.nom ?? ''}`.trim() : '');
 

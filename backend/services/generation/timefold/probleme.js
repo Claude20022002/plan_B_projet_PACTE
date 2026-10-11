@@ -18,8 +18,9 @@ import {
 } from "../../../models/index.js";
 import { ErreurMetier } from "../../planning/enseignements.js";
 import { STATUTS_ACTIFS } from "../../planning/affectationRules.js";
-import { groupesLies, ligneesDe } from "../../planning/groupes.js";
+import { campusPrefereDesGroupes, groupesLies, ligneesDe } from "../../planning/groupes.js";
 import { lireParametres } from "../../planning/referentiel.js";
+import { avertissementsAvantGeneration } from "./avertissements.js";
 
 /**
  * Construit le problème de la semaine type envoyé au solveur Timefold (phase E).
@@ -114,6 +115,8 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
         // Groupes les plus fins concernés : la journée vue par les étudiants (heures, trous, campus)
         const feuilles = [...new Set((await Promise.all(directs.map((id) => ligneesDe(id)))).flat().map((l) => l.feuille))];
         const regime = cours.filiere?.regime ?? "initiale";
+        // Le campus de la promotion l'emporte sur celui de la filière (3A à Stendhal, 4A à Gandhi)
+        const campusPrefere = (await campusPrefereDesGroupes(directs)) ?? cours.filiere?.id_campus_prefere ?? null;
         regimes.add(regime);
         const nombre = Math.max(1, Math.min(6, composante.seances_par_semaine || 1));
         for (let n = 1; n <= nombre; n += 1) {
@@ -133,7 +136,7 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
                 typeSalleRequis: composante.type_salle_requis || null,
                 equipementsRequis: composante.equipements_requis || [],
                 distanciel: composante.modalite === "distanciel",
-                campusPrefere: cours.filiere?.id_campus_prefere ?? null,
+                campusPrefere,
                 epinglee: false,
             });
             index[id] = { id_enseignement: e.id_enseignement, id_cours: cours.id_cours, id_groupe: directs[0], id_user_enseignant: principal.id_user, heures_prevues: e.heures_prevues, semaine_debut: composante.semaine_debut, semaine_fin: composante.semaine_fin, seances_par_semaine: nombre, longueur: Math.max(1, Math.min(2, composante.creneaux_par_seance || 2)), module: cours.nom_cours, type: composante.type, distanciel: composante.modalite === "distanciel" };
@@ -198,7 +201,7 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
     // Disponibilités : vacataires en opt-in, indisponibilités couvrant toute la période, vœux
     const enseignantsInfos = await Enseignant.findAll({
         where: { id_user: [...enseignantsUtilises] },
-        attributes: ["id_user", "statut"],
+        attributes: ["id_user", "statut", "max_heures_semaine"],
         include: [{ model: Users, as: "user", attributes: ["nom", "prenom"] }],
     });
     const declarations = await Disponibilite.findAll({
@@ -220,27 +223,15 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
         }
     }
 
-    // Disponibilités insuffisantes : plus de séances à donner que de créneaux libres dans la semaine.
-    // Aucun calcul ne peut le résoudre ; c'est signalé avant tout, pour relancer l'enseignant.
-    const avertissements = [];
-    for (const e of enseignantsInfos) {
-        const bloques = new Set(voeux.filter((v) => v.enseignantId === e.id_user && v.type === "INDISPONIBLE").map((v) => v.creneauId));
-        if (!bloques.size) continue;
-        const siennes = lecons.filter((l) => l.enseignants.includes(e.id_user));
-        const libres = (longueur) => creneaux.filter((c) => !bloques.has(c.id) && (longueur === 1 || (c.suivantId && !bloques.has(c.suivantId)))).length;
-        const besoin = siennes.length;
-        const possibles = libres(Math.max(...siennes.map((l) => l.longueur)));
-        if (besoin > possibles) {
-            avertissements.push({
-                type: "disponibilites_insuffisantes",
-                id_user: e.id_user,
-                enseignant: `${e.user?.prenom ?? ""} ${e.user?.nom ?? ""}`.trim(),
-                statut: e.statut,
-                seances: besoin,
-                creneaux_libres: possibles,
-            });
-        }
-    }
+    // Ce qu'aucun calcul ne peut résoudre (disponibilités insuffisantes, plafond hebdomadaire dépassé)
+    // est signalé avant tout
+    const avertissements = avertissementsAvantGeneration({
+        enseignants: enseignantsInfos.map((e) => ({ id_user: e.id_user, nom: `${e.user?.prenom ?? ""} ${e.user?.nom ?? ""}`.trim(), statut: e.statut, max_heures_semaine: e.max_heures_semaine })),
+        voeux,
+        lecons,
+        occupations: [...motifs.values()],
+        creneaux,
+    });
 
     const parametres = await lireParametres();
     const trajets = Object.fromEntries((await TrajetCampus.findAll()).map((t) => [`${Math.min(t.id_campus_a, t.id_campus_b)}-${Math.max(t.id_campus_a, t.id_campus_b)}`, t.minutes]));

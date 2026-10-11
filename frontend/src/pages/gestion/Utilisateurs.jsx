@@ -37,12 +37,14 @@ import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
 
 const validationSchema = yup.object({
-    nom: yup.string().required('Le nom est requis'),
-    prenom: yup.string().required('Le prénom est requis'),
-    email: yup.string().email('Email invalide').required('L\'email est requis'),
-    role: yup.string().oneOf(['admin', 'enseignant', 'etudiant']).required('Le rôle est requis'),
+    // Messages : des clés de traduction, traduites à l'affichage
+    nom: yup.string().required('utilisateurs.erreurs.nom'),
+    prenom: yup.string().required('utilisateurs.erreurs.prenom'),
+    email: yup.string().email('utilisateurs.erreurs.emailInvalide').required('utilisateurs.erreurs.email'),
+    role: yup.string().oneOf(['admin', 'enseignant', 'etudiant']).required('utilisateurs.erreurs.role'),
     telephone: yup.string(),
     // Longueur comme le serveur (utils/passwordHelper.js) ; mots de passe courants, personnels ou
     // divulgués : refusés par le serveur. Facultatif : sans mot de passe, le compte reçoit un lien
@@ -50,11 +52,13 @@ const validationSchema = yup.object({
     password: yup
         .string()
         .transform((valeur) => valeur || undefined)
-        .min(12, 'Au moins 12 caractères (une phrase de passe convient)')
-        .max(64, 'Au plus 64 caractères'),
+        .min(12, 'utilisateurs.erreurs.motDePasseCourt')
+        .max(64, 'utilisateurs.erreurs.motDePasseLong'),
 });
 
+/** Comptes (administration) : liste de tous les comptes, création des comptes administrateurs. */
 export default function Utilisateurs() {
+    const { t } = useTranslation();
     const navigate = useNavigate();
     const [utilisateurs, setUtilisateurs] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -82,7 +86,7 @@ export default function Utilisateurs() {
             setTotal(data.pagination?.total || 0);
         } catch (err) {
             console.error('Erreur:', err);
-            setError('Erreur lors du chargement des utilisateurs');
+            setError(t('utilisateurs.erreurChargement'));
         } finally {
             setLoading(false);
         }
@@ -112,12 +116,12 @@ export default function Utilisateurs() {
 
                 if (editing) {
                     await userAPI.update(editing.id_user, dataToSend);
-                    setSuccess('Utilisateur modifié avec succès');
+                    setSuccess(t('utilisateurs.modifie'));
                 } else {
                     // La fiche étudiant ou enseignant est créée avec le compte
                     const reponse = await userAPI.create({ ...dataToSend, ...(values.role === 'etudiant' && niveau ? { profil: { niveau } } : {}) });
                     if (reponse.invitation) setInvitation({ email: values.email, ...reponse.invitation });
-                    setSuccess(reponse.invitation ? 'Compte créé : invitation envoyée' : 'Utilisateur créé : mot de passe provisoire à changer à la première connexion');
+                    setSuccess(t(reponse.invitation ? 'utilisateurs.creeInvitation' : 'utilisateurs.creeProvisoire'));
                 }
                 formik.resetForm();
                 setOpen(false);
@@ -125,7 +129,7 @@ export default function Utilisateurs() {
                 loadUtilisateurs();
             } catch (error) {
                 console.error('Erreur:', error);
-                setError(error.message || 'Erreur lors de la sauvegarde');
+                setError(error.message || t('utilisateurs.erreurSauvegarde'));
             } finally {
                 setSubmitting(false);
             }
@@ -156,10 +160,10 @@ export default function Utilisateurs() {
         setMfaAReinitialiser(null);
         try {
             await userAPI.reinitialiserMfa(cible.id_user);
-            setSuccess(`Double authentification de ${cible.prenom} ${cible.nom} réinitialisée`);
+            setSuccess(t('utilisateurs.mfaReinitialisee', { nom: `${cible.prenom} ${cible.nom}` }));
             loadUtilisateurs();
         } catch (err) {
-            setError(err.response?.data?.error || err.message || 'Réinitialisation impossible');
+            setError(err.response?.data?.error || err.message || t('utilisateurs.mfaErreur'));
         }
     };
 
@@ -168,11 +172,11 @@ export default function Utilisateurs() {
         setConfirmDialog({ open: false, id: null });
         try {
             await userAPI.delete(id);
-            setSuccess('Utilisateur supprimé avec succès');
+            setSuccess(t('utilisateurs.supprime'));
             loadUtilisateurs();
         } catch (err) {
             console.error('Erreur:', err);
-            setError('Erreur lors de la suppression');
+            setError(t('utilisateurs.erreurSuppression'));
         }
     };
 
@@ -187,10 +191,10 @@ export default function Utilisateurs() {
                             variant="outlined"
                             size="small"
                         >
-                            Retour
+                            {t('common.back')}
                         </Button>
                         <Typography variant="h5" fontWeight="bold">
-                            Gestion des Utilisateurs
+                            {t('utilisateurs.titre')}
                         </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -205,7 +209,7 @@ export default function Utilisateurs() {
                                 setOpen(true);
                             }}
                         >
-                            Ajouter un administrateur
+                            {t('utilisateurs.ajouter')}
                         </Button>
                     </Box>
                 </Box>
@@ -230,7 +234,7 @@ export default function Utilisateurs() {
                     <Box sx={{ p: 2 }}>
                         <TextField
                             fullWidth
-                            placeholder="Rechercher un utilisateur..."
+                            placeholder={t('utilisateurs.rechercher')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             InputProps={{
@@ -245,9 +249,9 @@ export default function Utilisateurs() {
                 ) : utilisateurs.length === 0 ? (
                     <EmptyState
                         icon={SupervisedUserCircle}
-                        title="Aucun utilisateur enregistré"
-                        description="Les étudiants et les enseignants s'ajoutent dans leurs pages ; ici, les comptes administrateurs."
-                        actionLabel="Ajouter un administrateur"
+                        title={t('utilisateurs.vide')}
+                        description={t('utilisateurs.videAide')}
+                        actionLabel={t('utilisateurs.ajouter')}
                         onAction={() => { setEditing(null); setError(''); formik.resetForm(); setOpen(true); }}
                     />
                 ) : (
@@ -255,13 +259,13 @@ export default function Utilisateurs() {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell><TableSortLabel active={getSortDir('nom') !== undefined} direction={getSortDir('nom') || 'asc'} onClick={() => requestSort('nom')}>Nom</TableSortLabel></TableCell>
-                                <TableCell><TableSortLabel active={getSortDir('prenom') !== undefined} direction={getSortDir('prenom') || 'asc'} onClick={() => requestSort('prenom')}>Prénom</TableSortLabel></TableCell>
-                                <TableCell><TableSortLabel active={getSortDir('email') !== undefined} direction={getSortDir('email') || 'asc'} onClick={() => requestSort('email')}>Email</TableSortLabel></TableCell>
-                                <TableCell>Rôle</TableCell>
-                                <TableCell>Téléphone</TableCell>
-                                <TableCell>Statut</TableCell>
-                                <TableCell align="right">Actions</TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('nom') !== undefined} direction={getSortDir('nom') || 'asc'} onClick={() => requestSort('nom')}>{t('utilisateurs.colonnes.nom')}</TableSortLabel></TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('prenom') !== undefined} direction={getSortDir('prenom') || 'asc'} onClick={() => requestSort('prenom')}>{t('utilisateurs.colonnes.prenom')}</TableSortLabel></TableCell>
+                                <TableCell><TableSortLabel active={getSortDir('email') !== undefined} direction={getSortDir('email') || 'asc'} onClick={() => requestSort('email')}>{t('utilisateurs.colonnes.email')}</TableSortLabel></TableCell>
+                                <TableCell>{t('utilisateurs.colonnes.role')}</TableCell>
+                                <TableCell>{t('utilisateurs.colonnes.telephone')}</TableCell>
+                                <TableCell>{t('utilisateurs.colonnes.statut')}</TableCell>
+                                <TableCell align="right">{t('utilisateurs.colonnes.actions')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -275,22 +279,22 @@ export default function Utilisateurs() {
                                     <TableCell>{user.prenom}</TableCell>
                                     <TableCell>{user.email}</TableCell>
                                     <TableCell>
-                                        <Chip label={user.role} size="small" color={user.role === 'admin' ? 'error' : user.role === 'enseignant' ? 'primary' : 'default'} />
+                                        <Chip label={t(`roles.${user.role}`, { defaultValue: user.role })} size="small" color={user.role === 'admin' ? 'error' : user.role === 'enseignant' ? 'primary' : 'default'} />
                                     </TableCell>
                                     <TableCell>{user.telephone || '-'}</TableCell>
                                     <TableCell>
-                                        <Chip label={user.actif ? 'Actif' : 'Inactif'} color={user.actif ? 'success' : 'default'} size="small" />
+                                        <Chip label={t(user.actif ? 'utilisateurs.actif' : 'utilisateurs.inactif')} color={user.actif ? 'success' : 'default'} size="small" />
                                     </TableCell>
                                     <TableCell align="right">
-                                        <IconButton size="small" onClick={() => handleEdit(user)} aria-label={`Modifier ${user.prenom} ${user.nom}`}>
+                                        <IconButton size="small" onClick={() => handleEdit(user)} aria-label={t('utilisateurs.modifierNom', { nom: `${user.prenom} ${user.nom}` })}>
                                             <Edit />
                                         </IconButton>
                                         {user.mfa_active && (
-                                            <IconButton size="small" onClick={() => setMfaAReinitialiser(user)} aria-label={`Réinitialiser la double authentification de ${user.prenom} ${user.nom}`} title="Réinitialiser la double authentification">
+                                            <IconButton size="small" onClick={() => setMfaAReinitialiser(user)} aria-label={t('utilisateurs.mfaNom', { nom: `${user.prenom} ${user.nom}` })} title={t('utilisateurs.mfaTitre')}>
                                                 <PhonelinkErase />
                                             </IconButton>
                                         )}
-                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(user.id_user)} aria-label={`Supprimer ${user.prenom} ${user.nom}`}>
+                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(user.id_user)} aria-label={t('utilisateurs.supprimerNom', { nom: `${user.prenom} ${user.nom}` })}>
                                             <Delete />
                                         </IconButton>
                                     </TableCell>
@@ -315,105 +319,104 @@ export default function Utilisateurs() {
 
                 <ConfirmDialog
                     open={confirmDialog.open}
-                    title="Supprimer l'utilisateur"
-                    message="Cette action est irréversible. L'utilisateur sera définitivement supprimé."
+                    title={t('utilisateurs.titreSuppression')}
+                    message={t('utilisateurs.messageSuppression')}
+                    confirmLabel={t('common.delete')}
                     onConfirm={handleDeleteConfirm}
                     onCancel={() => setConfirmDialog({ open: false, id: null })}
                 />
 
                 <ConfirmDialog
                     open={Boolean(mfaAReinitialiser)}
-                    title="Réinitialiser la double authentification"
-                    message={`${mfaAReinitialiser?.prenom ?? ''} ${mfaAReinitialiser?.nom ?? ''} sera déconnecté partout et devra la configurer de nouveau (administrateur) ou pourra s'en passer (enseignant). À faire seulement après avoir vérifié son identité.`}
-                    confirmLabel="Réinitialiser"
+                    title={t('utilisateurs.mfaTitre')}
+                    message={t('utilisateurs.mfaMessage', { nom: `${mfaAReinitialiser?.prenom ?? ''} ${mfaAReinitialiser?.nom ?? ''}` })}
+                    confirmLabel={t('utilisateurs.reinitialiser')}
                     onConfirm={reinitialiserMfa}
                     onCancel={() => setMfaAReinitialiser(null)}
                 />
 
                 <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
                     <form onSubmit={formik.handleSubmit}>
-                        <DialogTitle>{editing ? 'Modifier l\'utilisateur' : 'Nouvel utilisateur'}</DialogTitle>
+                        <DialogTitle>{t(editing ? 'utilisateurs.titreModifier' : 'utilisateurs.titreNouveau')}</DialogTitle>
                         <DialogContent>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                                 <TextField
                                     fullWidth
-                                    label="Nom"
+                                    label={t('utilisateurs.colonnes.nom')}
                                     name="nom"
                                     value={formik.values.nom}
                                     onChange={formik.handleChange}
                                     error={formik.touched.nom && Boolean(formik.errors.nom)}
-                                    helperText={formik.touched.nom && formik.errors.nom}
+                                    helperText={formik.touched.nom && formik.errors.nom && t(formik.errors.nom)}
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Prénom"
+                                    label={t('utilisateurs.colonnes.prenom')}
                                     name="prenom"
                                     value={formik.values.prenom}
                                     onChange={formik.handleChange}
                                     error={formik.touched.prenom && Boolean(formik.errors.prenom)}
-                                    helperText={formik.touched.prenom && formik.errors.prenom}
+                                    helperText={formik.touched.prenom && formik.errors.prenom && t(formik.errors.prenom)}
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Email"
+                                    label={t('utilisateurs.colonnes.email')}
                                     name="email"
                                     type="email"
                                     value={formik.values.email}
                                     onChange={formik.handleChange}
                                     onBlur={formik.handleBlur}
                                     error={formik.touched.email && Boolean(formik.errors.email)}
-                                    helperText={formik.touched.email && formik.errors.email}
+                                    helperText={formik.touched.email && formik.errors.email && t(formik.errors.email)}
                                 />
                                 {!editing && (
                                     <Alert severity="info">
-                                        Ce formulaire crée un compte administrateur. Les étudiants et les enseignants s'ajoutent, un par un ou par import, dans les pages{' '}
-                                        <Link component={RouterLink} to="/gestion/etudiants">Étudiants</Link> et{' '}
-                                        <Link component={RouterLink} to="/gestion/enseignants">Enseignants</Link>.
+                                        {t('utilisateurs.infoAdmin')}{' '}
+                                        <Link component={RouterLink} to="/gestion/etudiants">{t('utilisateurs.pageEtudiants')}</Link> {t('utilisateurs.et')}{' '}
+                                        <Link component={RouterLink} to="/gestion/enseignants">{t('utilisateurs.pageEnseignants')}</Link>.
                                     </Alert>
                                 )}
                                 {/* Le rôle d'un compte existant ne change pas ici : son profil (étudiant, enseignant) en dépend */}
                                 <FormControl fullWidth sx={{ display: editing ? undefined : 'none' }}>
-                                    <InputLabel>Rôle</InputLabel>
+                                    <InputLabel>{t('utilisateurs.colonnes.role')}</InputLabel>
                                     <Select
                                         name="role"
                                         value={formik.values.role}
                                         onChange={formik.handleChange}
-                                        label="Rôle"
+                                        label={t('utilisateurs.colonnes.role')}
                                         disabled
                                     >
-                                        <MenuItem value="admin">Administrateur</MenuItem>
-                                        <MenuItem value="enseignant">Enseignant</MenuItem>
-                                        <MenuItem value="etudiant">Étudiant</MenuItem>
+                                        <MenuItem value="admin">{t('roles.admin')}</MenuItem>
+                                        <MenuItem value="enseignant">{t('roles.enseignant')}</MenuItem>
+                                        <MenuItem value="etudiant">{t('roles.etudiant')}</MenuItem>
                                     </Select>
                                 </FormControl>
                                 <TextField
                                     fullWidth
-                                    label="Téléphone"
+                                    label={t('utilisateurs.colonnes.telephone')}
                                     name="telephone"
                                     value={formik.values.telephone}
                                     onChange={formik.handleChange}
                                 />
                                 <TextField
                                     fullWidth
-                                    label={editing ? 'Nouveau mot de passe provisoire (laisser vide pour ne pas changer)' : 'Mot de passe provisoire (facultatif)'}
+                                    label={t(editing ? 'utilisateurs.motDePasseModifier' : 'utilisateurs.motDePasseNouveau')}
                                     name="password"
                                     type="password"
                                     value={formik.values.password}
                                     onChange={formik.handleChange}
                                     error={formik.touched.password && Boolean(formik.errors.password)}
                                     helperText={
-                                        (formik.touched.password && formik.errors.password) ||
-                                        (editing
-                                            ? "L'utilisateur devra le changer à sa prochaine connexion"
-                                            : "Sans mot de passe, un lien d'invitation lui est envoyé pour choisir le sien")
+                                        (formik.touched.password && formik.errors.password && t(formik.errors.password)) ||
+                                        t(editing ? 'utilisateurs.motDePasseAideModifier' : 'utilisateurs.motDePasseAideNouveau')
                                     }
                                 />
                             </Box>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={() => setOpen(false)}>Annuler</Button>
+                            <Button onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
                             <Button type="submit" variant="contained">
-                                {editing ? 'Modifier' : 'Créer'}
+                                {t(editing ? 'utilisateurs.modifier' : 'utilisateurs.creer')}
                             </Button>
                         </DialogActions>
                     </form>
@@ -421,18 +424,16 @@ export default function Utilisateurs() {
 
                 {/* Lien d'invitation : à transmettre si l'email n'a pas pu partir */}
                 <Dialog open={Boolean(invitation)} onClose={() => setInvitation(null)} maxWidth="sm" fullWidth>
-                    <DialogTitle>Invitation de {invitation?.email}</DialogTitle>
+                    <DialogTitle>{t('utilisateurs.invitationDe', { email: invitation?.email })}</DialogTitle>
                     <DialogContent>
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            {invitation?.envoyee
-                                ? "Un email avec ce lien vient d'être envoyé. Vous pouvez aussi le transmettre vous-même ; il est valable 7 jours."
-                                : "L'email n'a pas pu être envoyé : transmettez ce lien à la personne. Il est valable 7 jours."}
+                            {t(invitation?.envoyee ? 'utilisateurs.invitationEnvoyee' : 'utilisateurs.invitationNonEnvoyee')}
                         </Typography>
                         <TextField fullWidth value={invitation?.lien ?? ''} InputProps={{ readOnly: true }} onFocus={(e) => e.target.select()} />
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => navigator.clipboard?.writeText(invitation?.lien ?? '')}>Copier le lien</Button>
-                        <Button variant="contained" onClick={() => setInvitation(null)}>Fermer</Button>
+                        <Button onClick={() => navigator.clipboard?.writeText(invitation?.lien ?? '')}>{t('utilisateurs.copierLien')}</Button>
+                        <Button variant="contained" onClick={() => setInvitation(null)}>{t('common.close')}</Button>
                     </DialogActions>
                 </Dialog>
 

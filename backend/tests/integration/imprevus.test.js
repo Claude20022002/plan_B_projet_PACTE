@@ -101,14 +101,16 @@ describe("Assistant de créneaux (I8)", () => {
         expect((await clients.profB.send("post", "/api/imprevus/assistant/seances", { id_affectation: seance.id_affectation, date_debut: LUNDI, date_fin: MARDI })).status).toBe(403);
     });
 
-    test("plages libres pour une soutenance : tout le jury disponible", async () => {
-        const response = await clients.profB.send("post", "/api/imprevus/assistant/reservations", {
+    test("plages libres pour une soutenance : tout le jury disponible ; l'administration seulement", async () => {
+        const corps = {
             type: "soutenance",
             duree_minutes: 90,
             date_debut: LUNDI,
             date_fin: LUNDI,
             participants: [{ id_user: profA.id_user, role: "president" }, { id_user: profB.id_user, role: "jury" }],
-        });
+        };
+        expect((await clients.profB.send("post", "/api/imprevus/assistant/reservations", corps)).status).toBe(403);
+        const response = await clients.admin.send("post", "/api/imprevus/assistant/reservations", corps);
         expect(response.status).toBe(200);
         // profA a cours à 9 h : la plage de 9 h est écartée, celle de 11 h proposée
         expect(response.body.propositions.map((p) => p.heure_debut)).toEqual(["11:00"]);

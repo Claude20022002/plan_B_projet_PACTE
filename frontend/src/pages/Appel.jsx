@@ -8,26 +8,22 @@ import {
   Button,
   Checkbox,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   LinearProgress,
   List,
   ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
-  MenuItem,
+  ListSubheader,
   Paper,
   Skeleton,
   Stack,
-  TextField,
   Typography,
 } from '@mui/material';
-import { ArrowBack, ReportProblemOutlined } from '@mui/icons-material';
+import { ArrowBack, CastForEducation, ReportProblemOutlined } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
+import VerificationSurprise from '../components/appel/VerificationSurprise';
 import { presenceAPI } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import { ds } from '../design-system/tokens';
@@ -54,7 +50,7 @@ export default function Appel() {
   const [reste, setReste] = useState(30);
   const [terminer, setTerminer] = useState(false);
   const [ferme, setFerme] = useState(false);
-  const [verification, setVerification] = useState(null); // { nombre, tirage: { etudiants, restants } | null, resultats: { [id_user]: bool } }
+  const [verification, setVerification] = useState(false);
   const minuterie = useRef(null);
 
   const dessiner = useCallback(async ({ url, expire_dans_ms }) => {
@@ -81,25 +77,49 @@ export default function Appel() {
 
   const chargerListe = useCallback(() => presenceAPI.liste(id).then(setListe).catch(() => {}), [id]);
 
+  const ouvrir = useCallback(async () => {
+    setErreur('');
+    try {
+      const r = await presenceAPI.ouvrir(id);
+      setSeance(r.seance);
+      setFerme(false);
+      setListe((l) => l && { ...l, appel: { ...l.appel, ouvert: true } });
+      await dessiner(r);
+      programmer(r.expire_dans_ms + 200);
+    } catch (e) {
+      setErreur(e?.message || t('appel.erreur'));
+    }
+  }, [id, dessiner, programmer, t]);
+
+  // À l'arrivée : un appel déjà terminé s'affiche tel quel (liste complète), sans être rouvert
   useEffect(() => {
     let actif = true;
     presenceAPI
-      .ouvrir(id)
-      .then(async (r) => {
+      .liste(id)
+      .then((l) => {
         if (!actif) return;
-        setSeance(r.seance);
-        await dessiner(r);
-        programmer(r.expire_dans_ms + 200);
+        setListe(l);
+        setSeance(l.seance);
+        if (l.appel && !l.appel.ouvert) setFerme(true);
+        else ouvrir();
       })
       .catch((e) => actif && setErreur(e?.message || t('appel.erreur')));
-    chargerListe();
     const rafraichir = setInterval(chargerListe, RAFRAICHIR_LISTE_MS);
     return () => {
       actif = false;
       clearTimeout(minuterie.current);
       clearInterval(rafraichir);
     };
-  }, [id, dessiner, programmer, chargerListe, t]);
+  }, [id, ouvrir, chargerListe, t]);
+
+  // Appel terminé depuis l'écran projeté : cet écran suit
+  const fermeAilleurs = Boolean(liste?.appel && !liste.appel.ouvert);
+  useEffect(() => {
+    if (!fermeAilleurs) return;
+    clearTimeout(minuterie.current);
+    setFerme(true);
+    setQr(null);
+  }, [fermeAilleurs]);
 
   // Secondes restantes avant le prochain code
   useEffect(() => {
@@ -131,29 +151,25 @@ export default function Appel() {
     }
   };
 
-  const tirer = async () => {
-    try {
-      const tirage = await presenceAPI.tirerVerification(id, verification.nombre);
-      setVerification((v) => ({ ...v, tirage, resultats: {} }));
-    } catch (e) {
-      toast.error(e?.message || t('appel.erreur'));
-    }
-  };
-
-  const constater = async (etudiant, present) => {
-    try {
-      await presenceAPI.verifier(id, etudiant.id_user, present);
-      setVerification((v) => ({ ...v, resultats: { ...v.resultats, [etudiant.id_user]: present } }));
-      chargerListe();
-    } catch (e) {
-      toast.error(e?.message || t('appel.erreur'));
-    }
+  // Fenêtre sans onglets ni barre de favoris, à glisser sur l'écran de la salle ; si le navigateur
+  // la bloque, le lien s'ouvre dans un nouvel onglet
+  const projeter = (e) => {
+    const fenetre = window.open(`/appel/${id}/projection`, `projection-appel-${id}`, 'popup,width=1000,height=900');
+    if (fenetre) e.preventDefault();
   };
 
   const libelleSignalement = (s) => t(`appel.signalement.${s.motif}`, { lie: s.lie ?? '?' });
 
   const attendus = liste?.etudiants.length ?? 0;
   const presents = liste?.presents ?? 0;
+  // Appel terminé : la liste de la classe comparée aux présences, les absents d'abord
+  const etudiants = liste?.etudiants ?? [];
+  const groupes = ferme
+    ? [
+        { cle: 'absents', titre: t('appel.groupeAbsents', { count: etudiants.filter((e) => !e.present).length }), lignes: etudiants.filter((e) => !e.present) },
+        { cle: 'presents', titre: t('appel.groupePresents', { count: etudiants.filter((e) => e.present).length }), lignes: etudiants.filter((e) => e.present) },
+      ]
+    : [{ cle: 'tous', titre: null, lignes: etudiants }];
 
   return (
     <DashboardLayout>
@@ -173,7 +189,13 @@ export default function Appel() {
       <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', md: 'minmax(320px, 560px) 1fr' }, alignItems: 'start' }}>
         <Paper sx={{ p: 2, textAlign: 'center', bgcolor: ds.board.ground, color: ds.board.letter }}>
           {ferme ? (
-            <Typography sx={{ py: 8, fontFamily: ds.font.board, fontSize: '1.5rem', letterSpacing: '0.08em' }}>{t('appel.ferme')}</Typography>
+            <Box sx={{ py: 6 }}>
+              <Typography sx={{ fontFamily: ds.font.board, fontSize: '1.5rem', letterSpacing: '0.08em' }}>{t('appel.ferme')}</Typography>
+              <Typography sx={{ mt: 1, color: ds.board.letterDim }}>{t('appel.bilan', { presents, absents: Math.max(0, attendus - presents) })}</Typography>
+              <Button variant="outlined" onClick={ouvrir} sx={{ mt: 2, color: ds.board.letter, borderColor: ds.board.seam }}>
+                {t('appel.rouvrir')}
+              </Button>
+            </Box>
           ) : qr ? (
             <>
               <Box component="img" src={qr.image} alt={t('appel.qrAlt')} sx={{ width: '100%', maxWidth: 520, aspectRatio: '1', borderRadius: 1, bgcolor: '#FFFFFF' }} />
@@ -183,16 +205,35 @@ export default function Appel() {
           ) : (
             !erreur && <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '1', bgcolor: ds.board.cell }} />
           )}
-          <Typography sx={{ mt: 2, fontFamily: ds.font.board, fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} aria-live="polite">
-            {t('appel.presents', { presents, attendus })}
-          </Typography>
+          {!ferme && (
+            <Typography sx={{ mt: 2, fontFamily: ds.font.board, fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} aria-live="polite">
+              {t('appel.presents', { presents, attendus })}
+            </Typography>
+          )}
+          {/* Fenêtre à part pour l'écran de la salle : le QR seul, sans le menu ni la liste des noms */}
+          {!ferme && qr && (
+            <>
+              <Button
+                variant="outlined"
+                startIcon={<CastForEducation />}
+                href={`/appel/${id}/projection`}
+                target="_blank"
+                rel="noopener"
+                onClick={projeter}
+                sx={{ mt: 1.5, color: ds.board.letter, borderColor: ds.board.seam }}
+              >
+                {t('appel.projeter')}
+              </Button>
+              <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: ds.board.letterDim }}>{t('appel.projeterAide')}</Typography>
+            </>
+          )}
         </Paper>
 
         <Paper sx={{ p: 2 }}>
           <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
             <Typography variant="h6">{t('appel.liste')}</Typography>
             <Stack direction="row" spacing={1}>
-              <Button variant="outlined" onClick={() => setVerification({ nombre: 3, tirage: null, resultats: {} })} disabled={!seance || presents === 0} title={t('appel.verifierAide')}>
+              <Button variant="outlined" onClick={() => setVerification(true)} disabled={!seance || presents === 0} title={t('appel.verifierAide')}>
                 {t('appel.verifier')}
               </Button>
               {!ferme && (
@@ -202,11 +243,12 @@ export default function Appel() {
               )}
             </Stack>
           </Stack>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('appel.aideListe')}</Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t(ferme ? 'appel.aideListeFerme' : 'appel.aideListe')}</Typography>
           {!liste && <Skeleton variant="rectangular" height={160} />}
           {liste?.etudiants.length === 0 && <Alert severity="info">{t('appel.aucunAttendu')}</Alert>}
-          <List dense>
-            {(liste?.etudiants ?? []).map((e) => (
+          {groupes.map((groupe) => (
+          <List key={groupe.cle} dense subheader={groupe.titre ? <ListSubheader disableSticky sx={{ px: 0, fontWeight: 700, color: 'text.primary' }}>{groupe.titre}</ListSubheader> : undefined}>
+            {groupe.lignes.map((e) => (
               <ListItem key={e.id_user} disablePadding>
                 <ListItemButton onClick={() => basculer(e)} dense>
                   <ListItemIcon sx={{ minWidth: 40 }}>
@@ -227,56 +269,11 @@ export default function Appel() {
               </ListItem>
             ))}
           </List>
+          ))}
         </Paper>
       </Box>
 
-      <Dialog open={Boolean(verification)} onClose={() => setVerification(null)} fullWidth maxWidth="xs">
-        <DialogTitle>{t('appel.verifierTitre')}</DialogTitle>
-        <DialogContent>
-          {verification && !verification.tirage && (
-            <>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>{t('appel.verifierAide')}</Typography>
-              <TextField select fullWidth size="small" label={t('appel.verifierNombre')} value={verification.nombre} onChange={(ev) => setVerification((v) => ({ ...v, nombre: Number(ev.target.value) }))}>
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <MenuItem key={n} value={n}>{n}</MenuItem>
-                ))}
-              </TextField>
-            </>
-          )}
-          {verification?.tirage && (
-            <>
-              <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>{t('appel.verifierConsigne')}</Typography>
-              {verification.tirage.etudiants.length === 0 && <Alert severity="info">{t('appel.aucunATirer')}</Alert>}
-              <List dense>
-                {verification.tirage.etudiants.map((e) => {
-                  const resultat = verification.resultats[e.id_user];
-                  return (
-                    <ListItem key={e.id_user} disableGutters secondaryAction={
-                      resultat === undefined ? (
-                        <Stack direction="row" spacing={1}>
-                          <Button size="small" variant="contained" color="success" onClick={() => constater(e, true)}>{t('appel.vu')}</Button>
-                          <Button size="small" variant="outlined" color="error" onClick={() => constater(e, false)}>{t('appel.absent')}</Button>
-                        </Stack>
-                      ) : (
-                        <Chip size="small" color={resultat ? 'success' : 'error'} label={t(resultat ? 'appel.vu' : 'appel.absent')} />
-                      )
-                    }>
-                      <ListItemText primary={`${e.nom} ${e.prenom}`} primaryTypographyProps={{ fontWeight: 600 }} />
-                    </ListItem>
-                  );
-                })}
-              </List>
-              {verification.tirage.restants > 0 && (
-                <Typography variant="caption" color="text.secondary">{t('appel.restants', { count: verification.tirage.restants })}</Typography>
-              )}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setVerification(null)}>{t('appel.fermerVerification')}</Button>
-          <Button variant="contained" onClick={tirer}>{t('appel.tirer')}</Button>
-        </DialogActions>
-      </Dialog>
+      <VerificationSurprise id={id} ouvert={verification} fermer={() => setVerification(false)} modifie={chargerListe} />
 
       <ConfirmDialog
         open={terminer}

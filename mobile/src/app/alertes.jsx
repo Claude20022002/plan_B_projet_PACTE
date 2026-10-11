@@ -7,8 +7,7 @@ import Ecran, { Message } from '../board/Ecran';
 import { useAuth } from '../auth/AuthContext';
 import { chargerAlertes, chargerAnnonces } from '../api/donnees';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
-
-const LIEN_ANNONCE = /^\/annonces\/(\d+)$/;
+import { alerteOuvrable, ecranDeLien } from '../alertes/liens';
 
 /**
  * Alertes (ouvertes depuis la cloche du Tableau ou en touchant une notification) : les annonces
@@ -82,7 +81,6 @@ export default function Alertes() {
         ListEmptyComponent={alertes ? <Message>{t('app.alertes.vide')}</Message> : <Message discret>{t('app.commun.chargement')}</Message>}
         ListHeaderComponent={enTete}
         renderItem={({ item: a }) => {
-          const annonce = LIEN_ANNONCE.exec(a.lien ?? '');
           const contenu = (
             <>
               {!a.lue ? <View style={styles.pastille} /> : null}
@@ -93,8 +91,8 @@ export default function Alertes() {
               </View>
             </>
           );
-          return annonce ? (
-            <Pressable onPress={() => ouvrirAnnonce(annonce[1])} style={({ pressed }) => [styles.alerte, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={`${a.titre}. ${a.message}`}>
+          return alerteOuvrable(a.lien) ? (
+            <Pressable onPress={() => router.push(ecranDeLien(a.lien))} style={({ pressed }) => [styles.alerte, pressed && { opacity: 0.7 }]} accessibilityRole="button" accessibilityLabel={`${a.titre}. ${a.message}`}>
               {contenu}
             </Pressable>
           ) : (

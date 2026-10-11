@@ -40,7 +40,6 @@ beforeEach(resetRateLimiters);
 
 describe("Routes autrefois publiques : authentification obligatoire", () => {
     test.each([
-        "/api/notifications",
         "/api/notifications/user/1",
         "/api/appartenances",
         "/api/demandes-report",
@@ -84,17 +83,10 @@ describe("Notifications", () => {
         expect(notifEtudiant.lue).toBe(false);
     });
 
-    test("seul l'admin liste toutes les notifications ou en crée", async () => {
-        expect((await clients.etudiant.get("/api/notifications")).status).toBe(403);
-        expect(
-            (await clients.etudiant.send("post", "/api/notifications", {
-                id_user: autreEtudiant.id_user, titre: "Spam", message: "x",
-            })).status
-        ).toBe(403);
-
-        const list = await clients.admin.get("/api/notifications");
-        expect(list.status).toBe(200);
-        expect(containsPasswordHash(list.body)).toBe(false);
+    test("personne ne crée de notification à la main, pas même l'admin (les annonces servent à écrire)", async () => {
+        const corps = { id_user: autreEtudiant.id_user, titre: "Spam", message: "x" };
+        expect((await clients.etudiant.send("post", "/api/notifications", corps)).status).toBe(404);
+        expect((await clients.admin.send("post", "/api/notifications", corps)).status).toBe(404);
     });
 
     test("« tout marquer comme lu » ne touche que ses propres notifications", async () => {

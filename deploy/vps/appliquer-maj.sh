@@ -13,6 +13,18 @@ COMPOSE=(docker compose --env-file .env.docker -f docker-compose.yml -f deploy/v
 
 echo "== Version du paquet"; cat "$PAQUET/VERSION"
 
+echo "== Dépendances du backend : image en ligne contre paquet"
+# Avant toute sauvegarde ou construction : si les dépendances ont changé, la superposition donnerait
+# un backend qui ne démarre pas. Le script s'arrête ici, rien n'a été touché (lot R-3).
+if [ -f "$PAQUET/deploy-vps/verifier-dependances.mjs" ]; then
+    SUPERPOSES="$(ls "$PAQUET/backend/node_modules" 2>/dev/null | tr '\n' ' ')"
+    # shellcheck disable=SC2086  # un argument par module superposé
+    docker run --rm --entrypoint node \
+        -v "$PAQUET/backend/package-lock.json:/tmp/attendu.json:ro" \
+        -v "$PAQUET/deploy-vps/verifier-dependances.mjs:/tmp/verifier-dependances.mjs:ro" \
+        claude20022002/hestim-backend:latest /tmp/verifier-dependances.mjs /tmp/attendu.json /app/node_modules/.package-lock.json $SUPERPOSES
+fi
+
 echo "== Sauvegarde de la base (le backend applique ses migrations au démarrage)"
 mkdir -p /root/sauvegardes && chmod 700 /root/sauvegardes
 # Mot de passe lu dans le conteneur : jamais affiché ni passé en argument visible de l'hôte
@@ -45,6 +57,9 @@ docker build -q -t claude20022002/hestim-frontend:latest -f "$PAQUET/Dockerfile.
 
 echo "== Scripts d'exploitation"
 cp "$PAQUET"/deploy-vps/*.mjs "$PAQUET"/deploy-vps/appliquer-maj.sh "$HESTIM/deploy/vps/"
+for script in nettoyer-paquets.sh sauvegarder.sh; do
+    [ -f "$PAQUET/deploy-vps/$script" ] && cp "$PAQUET/deploy-vps/$script" "$HESTIM/deploy/vps/"
+done
 [ -d "$PAQUET/deploy-vps/demo" ] && rm -rf "$HESTIM/deploy/vps/demo" && cp -r "$PAQUET/deploy-vps/demo" "$HESTIM/deploy/vps/demo"
 
 cd "$HESTIM"
@@ -79,6 +94,24 @@ if [ -f "$PAQUET/Dockerfile.studylib" ]; then
     sleep 20
 fi
 
+CADDY_NOUVEAU="$PAQUET/deploy-vps/Caddyfile.vps"
+CADDY_ACTUEL="$HESTIM/deploy/vps/Caddyfile.vps"
+if [ -f "$CADDY_NOUVEAU" ] && ! cmp -s "$CADDY_NOUVEAU" "$CADDY_ACTUEL"; then
+    echo "== Aiguillage (Caddy) : le fichier a changé"
+    # Validé dans le conteneur (il a les adresses des sites) avant d'être mis en place : un
+    # fichier refusé laisse l'aiguillage actuel en service
+    docker cp "$CADDY_NOUVEAU" hestim_caddy:/tmp/Caddyfile.nouveau
+    if docker exec hestim_caddy caddy validate --config /tmp/Caddyfile.nouveau --adapter caddyfile >/dev/null 2>&1; then
+        cp "$CADDY_ACTUEL" "$CADDY_ACTUEL.avant-$DATE"
+        # cp (et non mv) : le conteneur monte ce fichier, il doit garder le même inode
+        cp "$CADDY_NOUVEAU" "$CADDY_ACTUEL"
+        docker exec hestim_caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+        echo "aiguillage rechargé (ancien fichier : $CADDY_ACTUEL.avant-$DATE)"
+    else
+        echo "ATTENTION : nouveau Caddyfile refusé par Caddy, l'aiguillage actuel est gardé" >&2
+    fi
+fi
+
 echo "== Contrôles (attendu : 404, 400, 200, 200)"
 code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 echo "route inexistante : $(code https://planner.finadmintech.fr/api/route-inexistante)"
@@ -87,6 +120,7 @@ echo "site HESTIM       : $(code https://planner.finadmintech.fr/)"
 echo "FinAdminTech      : $(code https://finadmintech.fr/)"
 [ -f "$PAQUET/Dockerfile.classquiz" ] && echo "Quiz (ClassQuiz)  : $(code https://quiz.finadmintech.fr/)"
 [ -f "$PAQUET/Dockerfile.classquiz-api" ] && echo "API ClassQuiz     : $(code https://quiz.finadmintech.fr/api/v1/users/me) (attendu : 401 sans session)"
+echo "relais du quiz    : $(code 'https://planner.finadmintech.fr/socket.io/?EIO=4&transport=polling') (attendu : 200 ; 404 = aiguillage non rechargé)"
 [ -f "$PAQUET/Dockerfile.studylib" ] && echo "API bibliothèque  : $(code -H 'Accept: application/json' https://planner.finadmintech.fr/biblio/api/internship-reviews/recent) (attendu : 401 sans jeton)"
 
 cat <<EOF

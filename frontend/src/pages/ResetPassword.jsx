@@ -15,10 +15,14 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { authAPI } from '../services/api';
+import { ds } from '../design-system/tokens';
 
+/** Réinitialisation du mot de passe, ou premier choix du mot de passe (lien d'invitation). */
 export default function ResetPassword() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [searchParams] = useSearchParams();
     const token = searchParams.get('token');
     const id_user = searchParams.get('id');
@@ -37,9 +41,9 @@ export default function ResetPassword() {
 
     useEffect(() => {
         if (!token || !id_user) {
-            setError('Lien de réinitialisation invalide');
+            setError(t('reset.lienInvalide'));
         }
-    }, [token, id_user]);
+    }, [token, id_user, t]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -51,17 +55,17 @@ export default function ResetPassword() {
         setError('');
 
         if (!token || !id_user) {
-            setError('Lien de réinitialisation invalide');
+            setError(t('reset.lienInvalide'));
             return;
         }
 
         if (formData.password !== formData.confirmPassword) {
-            setError('Les mots de passe ne correspondent pas');
+            setError(t('password.mismatch'));
             return;
         }
 
         if (formData.password.length < 12) {
-            setError('Le mot de passe doit contenir au moins 12 caractères (une phrase de passe convient)');
+            setError(t('reset.tropCourt'));
             return;
         }
 
@@ -74,7 +78,7 @@ export default function ResetPassword() {
                 navigate('/connexion');
             }, 3000);
         } catch (err) {
-            setError(err.message || err.error || 'Une erreur est survenue lors de la réinitialisation');
+            setError(err.message || err.error || t('reset.erreur'));
         } finally {
             setLoading(false);
         }
@@ -88,17 +92,17 @@ export default function ResetPassword() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: '#0B0B0D', // fond du panneau (charte HESTIM)
+                    background: ds.board.ground, // fond du panneau (charte HESTIM)
                     padding: 2,
                 }}
             >
                 <Container maxWidth="sm">
                     <Paper elevation={10} sx={{ p: 4, borderRadius: 3 }}>
                         <Alert severity="error" sx={{ mb: 2 }}>
-                            Lien de réinitialisation invalide
+                            {t('reset.lienInvalide')}
                         </Alert>
                         <Button fullWidth variant="contained" component={Link} to="/connexion">
-                            Retour à la connexion
+                            {t('forgot.retourConnexion')}
                         </Button>
                     </Paper>
                 </Container>
@@ -113,7 +117,7 @@ export default function ResetPassword() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: '#0B0B0D', // fond du panneau (charte HESTIM)
+                background: ds.board.ground, // fond du panneau (charte HESTIM)
                 padding: 2,
             }}
         >
@@ -132,26 +136,26 @@ export default function ResetPassword() {
                         }}
                     >
                         <Typography variant="h4" fontWeight="bold" gutterBottom align="center" sx={{ mb: 3 }}>
-                            {invitation ? 'Choisissez votre mot de passe' : 'Réinitialiser votre mot de passe'}
+                            {invitation ? t('password.title') : t('reset.titre')}
                         </Typography>
 
                         {success ? (
                             <Box>
                                 <Alert severity="success" sx={{ mb: 3 }}>
-                                    Votre mot de passe a été réinitialisé avec succès. Vous allez être redirigé vers la page de connexion...
+                                    {t('reset.succes')}
                                 </Alert>
                                 <Button
                                     fullWidth
                                     variant="contained"
                                     onClick={() => navigate('/connexion')}
                                 >
-                                    Aller à la connexion
+                                    {t('reset.allerConnexion')}
                                 </Button>
                             </Box>
                         ) : (
                             <>
                                 <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 3 }}>
-                                    Entrez votre nouveau mot de passe
+                                    {t('reset.intro')}
                                 </Typography>
 
                                 {error && (
@@ -163,7 +167,7 @@ export default function ResetPassword() {
                                 <form onSubmit={handleSubmit}>
                                     <TextField
                                         fullWidth
-                                        label="Nouveau mot de passe"
+                                        label={t('password.new')}
                                         name="password"
                                         type={showPassword ? 'text' : 'password'}
                                         value={formData.password}
@@ -176,6 +180,7 @@ export default function ResetPassword() {
                                                 <InputAdornment position="end">
                                                     <IconButton
                                                         onClick={() => setShowPassword(!showPassword)}
+                                                        aria-label={t(showPassword ? 'login.hidePassword' : 'login.showPassword')}
                                                         edge="end"
                                                     >
                                                         {showPassword ? <VisibilityOff /> : <Visibility />}
@@ -183,12 +188,12 @@ export default function ResetPassword() {
                                                 </InputAdornment>
                                             ),
                                         }}
-                                        helperText="12 caractères au moins : une phrase de passe convient"
+                                        helperText={t('reset.aide')}
                                     />
 
                                     <TextField
                                         fullWidth
-                                        label="Confirmer le mot de passe"
+                                        label={t('reset.confirmer')}
                                         name="confirmPassword"
                                         type={showConfirmPassword ? 'text' : 'password'}
                                         value={formData.confirmPassword}
@@ -200,6 +205,7 @@ export default function ResetPassword() {
                                                 <InputAdornment position="end">
                                                     <IconButton
                                                         onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                                                        aria-label={t(showConfirmPassword ? 'login.hidePassword' : 'login.showPassword')}
                                                         edge="end"
                                                     >
                                                         {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
@@ -217,13 +223,13 @@ export default function ResetPassword() {
                                         disabled={loading}
                                         sx={{ mt: 3, mb: 2 }}
                                     >
-                                        {loading ? <CircularProgress size={24} /> : 'Réinitialiser le mot de passe'}
+                                        {loading ? <CircularProgress size={24} /> : t('reset.envoyer')}
                                     </Button>
                                 </form>
 
                                 <Box sx={{ textAlign: 'center', mt: 2 }}>
                                     <MuiLink component={Link} to="/connexion" underline="hover">
-                                        Retour à la connexion
+                                        {t('forgot.retourConnexion')}
                                     </MuiLink>
                                 </Box>
                             </>

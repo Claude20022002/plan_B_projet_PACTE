@@ -38,6 +38,11 @@ const defaults = {
     MOTS_DE_PASSE_FUITES: "false",
     // Limiteurs en mémoire (vidés entre les tests) ; le magasin en base a son propre test
     RATE_LIMIT_PERSISTANT: "false",
+    // Vide : aucune génération par IA réelle (les tests remplacent le client)
+    IA_CLE: "",
+    // Devoirs ouverts : leur code reste testé alors qu'ils sont fermés par défaut en production
+    // (lot D-2) ; devoirs.test.js les ferme le temps de vérifier la fermeture
+    DEVOIRS_ACTIFS: "true",
 };
 
 for (const [key, value] of Object.entries(defaults)) {

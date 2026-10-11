@@ -22,13 +22,8 @@ export const ESPACES = [
     resume: { fr: 'Supports de cours, stages, projets', en: 'Course materials, internships, projects' },
     chemin: '/biblio/',
   },
-  {
-    code: 'jeux',
-    icone: 'games',
-    titre: { fr: 'Jeux', en: 'Games' },
-    resume: { fr: 'Terminal Linux et défis de vos modules', en: 'Linux terminal and module challenges' },
-    chemin: '/jeux',
-  },
+  // Pas d'espace Activités : on y entre par le scan du QR que projette l'enseignant, comme sur
+  // Wooclap (remarques-par-profil.md, § 10) ; le menu du site garde sa page.
   {
     code: 'quiz',
     icone: 'quiz',
@@ -40,19 +35,30 @@ export const ESPACES = [
 ];
 
 /**
- * Adresse d'un espace pour un rôle donné. Quiz : l'enseignant arrive sur ses quiz (connexion
- * unique par Planner), l'étudiant sur la saisie du code de partie.
+ * Adresse d'un espace pour un rôle donné. Quiz : l'enseignant reste dans Planner, sur « Mes quiz »
+ * de la page Activités (lot CQ-3 : une seule adresse) ; l'étudiant arrive sur la saisie du code de
+ * partie du service de quiz.
  * @param {string} code
  * @param {{ role?: string, urlQuiz?: string|null }} contexte
  * @returns {string|null} null si l'espace n'est pas disponible
  */
 export const adresseEspace = (code, { role, urlQuiz } = {}) => {
-  // L'administration ne gère pas les jeux ni les quiz
-  if (role === 'admin' && (code === 'jeux' || code === 'quiz')) return null;
+  // L'administration ne gère pas les quiz
+  if (role === 'admin' && code === 'quiz') return null;
   if (code === 'quiz') {
     if (typeof urlQuiz !== 'string' || !/^https?:\/\//.test(urlQuiz)) return null;
-    const base = urlQuiz.replace(/\/$/, '');
-    return role === 'enseignant' ? `${base}/dashboard` : `${base}/play`;
+    if (role === 'enseignant') return '/jeux';
+    return `${urlQuiz.replace(/\/$/, '')}/play`;
   }
   return ESPACES.find((e) => e.code === code)?.chemin ?? null;
 };
+
+/**
+ * Éditeur de quiz du service de quiz, l'enseignant connecté par son compte Planner (« Le faire
+ * moi-même » dans « Créer un quiz »).
+ * @param {string|null} urlQuiz
+ * @returns {string|null} null si le service de quiz n'est pas installé
+ */
+export const adresseEditeurQuiz = (urlQuiz) =>
+  typeof urlQuiz === 'string' && /^https?:\/\//.test(urlQuiz) ? `${urlQuiz.replace(/\/$/, '')}/account/login?sso=1&returnTo=%2Fcreate` : null;
+

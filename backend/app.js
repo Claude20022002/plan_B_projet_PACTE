@@ -50,6 +50,7 @@ import agendaRoutes from "./routes/agendaRoutes.js";
 import presenceRoutes from "./routes/presenceRoutes.js";
 import devoirRoutes from "./routes/devoirRoutes.js";
 import journalSecuriteRoutes from "./routes/journalSecuriteRoutes.js";
+import quizIaRoutes from "./routes/quizIaRoutes.js";
 import { MONTAGE as OIDC_MONTAGE } from "./services/oidc/provider.js";
 
 // Import des middlewares
@@ -171,6 +172,7 @@ app.use("/api/agenda", agendaRoutes);
 app.use("/api/presences", presenceRoutes);
 app.use("/api/devoirs", devoirRoutes);
 app.use("/api/journal-securite", journalSecuriteRoutes);
+app.use("/api/quiz-ia", quizIaRoutes);
 
 app.get("/", (req, res) => {
     res.json({

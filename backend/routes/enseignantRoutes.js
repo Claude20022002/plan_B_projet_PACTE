@@ -24,6 +24,8 @@ import {
     handleValidationErrors,
 } from "../middleware/index.js";
 import { requireAdminOuResponsable } from "../services/planning/droits.js";
+import { mesClasses } from "../services/planning/mesClasses.js";
+import { requireRole } from "../middleware/roleMiddleware.js";
 
 const router = express.Router();
 
@@ -37,6 +39,10 @@ router.get(
 
 // 📊 Charges de tous les enseignants (administration et responsables de filière)
 router.get("/charges", authenticateToken, requireAdminOuResponsable, asyncHandler(getChargesEnseignants));
+
+// 🎓 Mes classes (enseignant) : modules × groupes de ses services et de son emploi du temps,
+// séance en cours ou prochaine séance d'abord (choix de la classe d'un devoir, d'un quiz)
+router.get("/mes-classes", authenticateToken, requireRole("enseignant"), asyncHandler(async (req, res) => res.json(await mesClasses(req.user))));
 
 // 🔍 Récupérer un enseignant par ID (Admin ou propriétaire)
 router.get(

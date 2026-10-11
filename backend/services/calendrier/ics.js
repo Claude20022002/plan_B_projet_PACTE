@@ -22,8 +22,8 @@ import { appliquerRamadan } from "../planning/ramadan.js";
  * Abonnement calendrier personnel (phase R4) : une adresse secrète, à ajouter une fois dans Google
  * Agenda, Outlook ou le calendrier du téléphone, qui se met à jour seule (report, annulation,
  * salle changée). Étudiant : ses séances, examens publiés et jours de l'agenda (vacances, fériés).
- * Enseignant : ses séances (co-enseignement compris) et ses surveillances. Administration : ses
- * surveillances. Fenêtre : de 4 semaines en arrière à 5 mois en avant.
+ * Enseignant : ses séances (co-enseignement compris). Administration : ses surveillances
+ * d'épreuves (les enseignants ne surveillent pas). Fenêtre : de 4 semaines en arrière à 5 mois en avant.
  */
 
 const FUSEAU = process.env.APP_TIMEZONE || "Africa/Casablanca";
@@ -121,7 +121,6 @@ export const calendrierIcs = (nom, evenements, maintenant = new Date()) => {
 
 // ── Contenu par rôle ─────────────────────────────────────────────────────
 
-const hhmm = (h) => String(h ?? "").slice(0, 5);
 const lieuDe = (s) => {
     const composante = s.enseignement?.composante;
     if (composante?.modalite === "distanciel") return ["Distanciel", composante.mention].filter(Boolean).join(" · ");
@@ -185,7 +184,7 @@ const contenuEtudiant = async (user, du, au) => {
     return [...evenements.values()];
 };
 
-/** Surveillances d'épreuves publiées (enseignant ou personnel de l'administration). */
+/** Surveillances d'épreuves publiées (personnel de l'administration). */
 const surveillancesDe = async (idUser, du, au) => {
     const lignes = await Surveillance.findAll({ where: { id_user: idUser }, attributes: ["id_session", "id_salle"] });
     if (!lignes.length) return [];
@@ -223,7 +222,7 @@ const contenuEnseignant = async (user, du, au) => {
         ],
     });
     await appliquerRamadan(seances);
-    return [...seances.filter((s) => s.creneau).map((s) => depuisSeance(s, { avecGroupe: true })), ...(await surveillancesDe(user.id_user, du, au))];
+    return seances.filter((s) => s.creneau).map((s) => depuisSeance(s, { avecGroupe: true }));
 };
 
 export const evenementsDuCompte = async (user, maintenant = new Date()) => {

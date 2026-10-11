@@ -45,7 +45,7 @@ const BarMask: React.FC<{ bar: Bar; p: number; radius: number }> = ({ bar, p, ra
  * 7 · résultats d'un quiz côté enseignant (web) et étudiant (téléphone), les barres des
  * équipes se remplissent ; à 5 s, coupe sur le devoir noté (3 s).
  */
-export const S7Resultats: React.FC = () => {
+export const S7Resultats: React.FC<{ legende?: string }> = ({ legende = "Quiz, défis, devoirs notés." }) => {
   const frame = useCurrentFrame();
   const enter = useEnter(0, 30);
   const l1 = useEnter(BEAT * 2);
@@ -98,7 +98,7 @@ export const S7Resultats: React.FC = () => {
         </Screen>
       </PhoneFrame>
       <Line size={52} style={{ ...fadeUp(l1), position: "absolute", left: 0, right: 0, top: 902, textAlign: "center" }}>
-        Quiz, défis, devoirs notés.
+        {legende}
       </Line>
     </AbsoluteFill>
   );

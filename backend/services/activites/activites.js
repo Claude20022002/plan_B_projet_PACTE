@@ -1,6 +1,7 @@
 import { Cours } from "../../models/index.js";
 import { accueilJeux, modulesDuJoueur } from "../jeux/jeux.js";
 import { devoirsDe } from "../quiz/devoirs.js";
+import { devoirsActifs } from "../quiz/devoirsActifs.js";
 import { partiesEnCours } from "../quiz/parties.js";
 
 /**
@@ -16,7 +17,8 @@ const vide = (module) => ({ id_cours: module.id_cours ?? null, code: module.code
 
 export const activitesDe = async (user) => {
     if (user.role === "admin") return { modules: [] };
-    const [jeux, devoirs, quiz] = await Promise.all([accueilJeux(user), devoirsDe(user), partiesEnCours(user)]);
+    // Devoirs fermés (lot D-2) : la liste reste dans la réponse, vide, pour ne pas changer son format
+    const [jeux, devoirs, quiz] = await Promise.all([accueilJeux(user), devoirsActifs() ? devoirsDe(user) : [], partiesEnCours(user)]);
 
     const parCode = new Map();
     const module = (m) => {

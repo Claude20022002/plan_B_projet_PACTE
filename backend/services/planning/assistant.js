@@ -11,7 +11,7 @@ import {
 } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { aujourdhui, jourDe, minutes, seChevauchent, validerAffectation } from "./affectationRules.js";
-import { groupesLies } from "./groupes.js";
+import { campusPrefereDesGroupes, groupesLies } from "./groupes.js";
 import { occupationsDuJour } from "./occupations.js";
 import { validerReservation } from "./reservations.js";
 
@@ -82,7 +82,7 @@ export const proposerCreneauxSeance = async ({ seance, date_debut, date_fin, gar
     const salleRef = seance.id_salle ? await Salle.findByPk(seance.id_salle) : null;
     const typeRequis = enseignement?.composante?.type_salle_requis ?? null;
     const distanciel = enseignement?.composante?.modalite === "distanciel";
-    const campusRef = salleRef?.id_campus ?? groupe.filiere?.id_campus_prefere ?? null;
+    const campusRef = salleRef?.id_campus ?? (await campusPrefereDesGroupes(idsGroupes)) ?? groupe.filiere?.id_campus_prefere ?? null;
     const types = typeRequis ? [typeRequis] : [...new Set([...(salleRef ? [salleRef.type_salle] : []), ...TYPES_COURANTS])];
     const salles = distanciel
         ? []

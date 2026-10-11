@@ -3,13 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { Box, Button, CircularProgress, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
 import StateChip from '../../design-system/components/StateChip';
 import { ds } from '../../design-system/tokens';
+import { aujourdhui, dansJours } from '../../../../shared/dates.js';
 
-const aujourdhui = () => new Date().toISOString().slice(0, 10);
-const dansJours = (n) => {
-    const d = new Date();
-    d.setDate(d.getDate() + n);
-    return d.toISOString().slice(0, 10);
-};
 
 /**
  * Assistant de créneaux (innovation I8) : cherche des créneaux libres sur une plage de dates

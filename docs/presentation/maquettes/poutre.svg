@@ -1,0 +1,31 @@
+<!--
+  Schéma de la question de résistance des matériaux (filière Génie Civil, Architecture et Urbanisme) :
+  poutre sur deux appuis, charge ponctuelle au milieu. F = 20 kN, L = 6 m, donc M max = F·L/4 = 30 kN·m.
+  Inséré tel quel par scripts/capturer-maquettes.mjs dans la maquette du téléphone et dans celle du projecteur.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 358 200" role="img" aria-label="Poutre sur deux appuis A et B, de portée 6 mètres, chargée en son milieu par une force de 20 kilonewtons">
+    <!-- Charge au milieu de la portée -->
+    <path class="force" d="M179 26 V84 M168 72 L179 86 L190 72" />
+    <text class="force-texte" x="194" y="42">F = 20 kN</text>
+
+    <!-- Poutre -->
+    <rect class="trait" x="44" y="90" width="270" height="14" rx="1.5" />
+
+    <!-- Appui A : articulation -->
+    <path class="trait" d="M44 104 L30 130 H58 Z" />
+    <path class="cote" d="M24 136 H64 M28 136 l-6 8 M38 136 l-6 8 M48 136 l-6 8 M58 136 l-6 8" />
+    <text class="etiquette" x="38" y="84">A</text>
+
+    <!-- Appui B : appui simple, sur rouleaux -->
+    <path class="trait" d="M314 104 L300 126 H328 Z" />
+    <circle class="trait" cx="307" cy="131" r="4" />
+    <circle class="trait" cx="321" cy="131" r="4" />
+    <path class="cote" d="M294 138 H334" />
+    <text class="etiquette" x="309" y="84">B</text>
+
+    <!-- Cotes : deux demi-portées et la portée -->
+    <path class="cote" d="M44 158 V172 M179 158 V172 M314 158 V172 M44 165 H314" />
+    <text class="etiquette discrete" x="111" y="160" text-anchor="middle">L/2</text>
+    <text class="etiquette discrete" x="246" y="160" text-anchor="middle">L/2</text>
+    <text class="etiquette" x="179" y="192" text-anchor="middle">L = 6 m</text>
+</svg>

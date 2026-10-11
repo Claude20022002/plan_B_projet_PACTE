@@ -6,7 +6,9 @@ import { runMigrations } from "./migrations/migrator.js";
 import { marquerRealisees } from "./services/planning/suivi.js";
 import { purgerJournal } from "./services/journalSecurite.js";
 import { purgerCompteursDebit } from "./middleware/rateLimiterMiddleware.js";
+import { purgerGenerations } from "./services/ia/quiz.js";
 import { demarrerRenvoiQuotidien } from "./services/calendrier/envoiEdt.js";
+import { demarrerRappelsAppel } from "./services/presences/rappelAppel.js";
 
 dotenv.config();
 
@@ -50,7 +52,7 @@ const seedIfRequested = async () => {
             console.log(`--> Serveur lancé sur http://localhost:${PORT}`);
         });
 
-        // Séances confirmées et passées → réalisées (suivi du réalisé, phase P7) : au démarrage puis chaque heure
+        // Séances planifiées ou confirmées, une fois passées → réalisées (suivi du réalisé, phase P7) : au démarrage puis chaque heure
         const actualiserRealise = () =>
             marquerRealisees()
                 .then((n) => n && console.log(`--> ${n} séance(s) marquée(s) réalisée(s)`))
@@ -65,12 +67,17 @@ const seedIfRequested = async () => {
                 .then((n) => n && console.log(`--> Journal de sécurité : ${n} événement(s) ancien(s) supprimé(s)`))
                 .catch((error) => console.error("--> Journal de sécurité :", error.message));
             purgerCompteursDebit().catch((error) => console.error("--> Limiteurs de débit :", error.message));
+            // Quiz par IA : générations interrompues, brouillons et supports de plus de 30 jours
+            purgerGenerations().catch((error) => console.error("--> Quiz par IA :", error.message));
         };
         purgerSecurite();
         setInterval(purgerSecurite, 24 * 60 * 60 * 1000).unref();
 
         // Emploi du temps du mois (R4) : chaque soir, les mois publiés qui ont changé sont renvoyés aux classes
         demarrerRenvoiQuotidien();
+
+        // Appel : rappel à l'enseignant quelques minutes avant la fin d'une séance sans appel terminé
+        demarrerRappelsAppel();
     } catch (error) {
         console.error("--> Erreur serveur :", error);
         process.exit(1);

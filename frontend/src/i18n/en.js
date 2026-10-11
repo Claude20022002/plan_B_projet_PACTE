@@ -18,11 +18,12 @@ const en = {
     today: 'Today',
     tomorrow: 'Tomorrow',
     language: 'Language',
-    theme: 'Theme',
     themeLight: 'Light mode',
     themeDark: 'Dark mode',
     logout: 'Sign out',
     errorLoad: 'The data could not be loaded. Check your connection and try again.',
+    confirmTitle: 'Confirmation',
+    delete: 'Delete',
   },
   securite: {
     titre: 'Two-factor authentication',
@@ -188,10 +189,10 @@ const en = {
       examen: 'Invigilated by administration staff.',
       controle: 'Invigilated by the module’s teachers; it can take place during their class.',
     },
-    mineTeacher: 'Published papers you invigilate, with your room.',
+    mineStaff: 'Published papers you invigilate, with your room.',
     mineStudent: 'Published papers for your group, with rooms.',
     noneTitle: 'Nothing scheduled',
-    noneTeacher: 'No upcoming invigilation.',
+    noneStaff: 'No upcoming invigilation.',
     noneStudent: 'No exam published yet.',
   },
   incidents: {
@@ -248,10 +249,30 @@ const en = {
     refreshed_one: '{{count}} session marked done',
     refreshed_other: '{{count}} sessions marked done',
     exportVisiting: 'Visiting teachers export (CSV)',
-    hoursIntro: 'Hours delivered per teacher in the month (sessions marked done, co-teaching included). The export lists visiting teachers’ sessions, for payroll.',
+    hoursIntro: 'Hours delivered per teacher in the month (sessions marked done). Sessions without a validated roll call must be confirmed or set aside below before the export, which lists visiting teachers’ sessions for payroll.',
     noHoursTitle: 'No hours delivered',
     noHoursBody: 'No session done this month.',
     cols: { progress: 'Progress', done: 'Done', planned: 'Scheduled', left: 'Left' },
+    visa: {
+      titre_one: 'Sessions to check ({{count}})',
+      titre_other: 'Sessions to check ({{count}})',
+      note: 'A validated roll call is a sign that the class took place, not a proof. Sessions without a validated roll call must be confirmed or set aside before the export.',
+      aucune: 'Every session held this month has a validated roll call or a decision.',
+      cols: { seance: 'Session', enseignants: 'Teacher', etat: 'State', decision: 'Decision', aVerifier: 'To check' },
+      etats: { a_verifier: 'To check', confirmee: 'Confirmed', ecartee: 'Set aside', appel_valide: 'Roll call validated' },
+      appelOuvert: 'Roll call started, never validated.',
+      confirmer: 'Confirm',
+      ecarter: 'Set aside',
+      annuler: 'Undo the decision',
+      ecarterTitre: 'Set the session aside · {{module}}',
+      ecarterAide: 'A session set aside is removed from the month’s hours and from the visiting teachers’ export. The decision can be undone.',
+      motif: 'Reason (optional)',
+      erreur: 'The decision could not be saved.',
+      aVerifierHeures: '{{heures}} to check',
+      aVerifierTitre_one: '{{count}} session without a validated roll call',
+      aVerifierTitre_other: '{{count}} sessions without a validated roll call',
+      ecartees: '{{heures}} set aside',
+    },
   },
   gen: {
     tabs: { run: 'Generate', versions: 'Versions' },
@@ -344,6 +365,24 @@ const en = {
     qrAlt: 'Roll call QR code, to scan with the HESTIM app',
     change: 'New code in {{secondes}} s',
     presents: '{{presents}} / {{attendus}} present',
+    projeter: 'Project the QR code',
+    projeterAide: 'Opens a window to show on the classroom screen: the QR code, and the students who appear as soon as they have scanned. You confirm the roll call there at the end.',
+    projection: {
+      consigne: 'Scan this code with the HESTIM app, then check that your name appears',
+      pleinEcran: 'Full screen',
+      quitterPleinEcran: 'Exit full screen',
+      erreur: 'Roll call screen unavailable',
+      valider: 'Confirm roll call',
+      validerTitre: 'Confirm the roll call?',
+      aucunPresent: 'Students appear here as soon as they have scanned.',
+      present: 'Attendance recorded',
+      listeComplete: 'View the full list (present and absent)',
+    },
+    rouvrir: 'Reopen roll call',
+    bilan: '{{presents}} present · {{absents}} absent',
+    groupeAbsents: 'Absent ({{count}})',
+    groupePresents: 'Present ({{count}})',
+    aideListeFerme: 'Full list: the students enrolled in the class compared with the recorded attendance. Tap a name to correct a mistake.',
     liste: 'Roll',
     aideListe: 'Tap a name to tick or untick it (student without a phone, late arrival…).',
     aucunAttendu: 'No students enrolled in this session’s groups.',
@@ -396,6 +435,37 @@ const en = {
     videTitre: 'No reports',
     videTexte: 'Suspected attendance fraud will appear here.',
   },
+  classes: {
+    label: 'Class',
+    aide: 'Your classes, from your teaching assignments and your timetable. The current or next session comes first.',
+    aucune: 'No class found: no accepted assignment and no session in your timetable. Contact the administration if this is wrong.',
+    enCours: 'In progress until {{fin}}',
+    enCoursCourt: 'In progress',
+    prochaine: 'Next session: {{date}} at {{heure}}',
+    sansSeance: 'No upcoming session',
+    effectif_one: '{{count}} student',
+    effectif_other: '{{count}} students',
+    page: {
+      titre: 'My classes',
+      sousTitre: 'The class in progress comes first: attendance, quizzes, message to the class and course materials.',
+      enCours: 'In progress',
+      autres: 'My other classes',
+      toutes: 'My classes',
+      appel: {
+        a_faire: 'Take attendance',
+        ouvert: 'Resume attendance',
+        ferme: 'View attendance',
+      },
+      ouvrirAppel: 'Open attendance',
+      devoir: 'Set a quiz as homework',
+      quizIa: 'Create a quiz',
+      quizDirect: 'Start a quiz',
+      ecrire: 'Write to the class',
+      supports: 'Course materials',
+      rappelFaire: '{{classe}} ends at {{fin}} and attendance has not been taken.',
+      rappelTerminer: '{{classe}} ends at {{fin}}: attendance is still open. Close it to record who was present.',
+    },
+  },
   journalSecurite: {
     intro: 'Sign-ins, two-factor authentication, passwords, sessions and accounts, newest first. Click an account to see only its events. Passwords and codes are never recorded.',
     evenement: 'Event',
@@ -437,6 +507,7 @@ const en = {
       compte_supprime: 'Account deleted',
       comptes_importes: 'Accounts imported',
       appareil_delie: 'Phone unlinked',
+      quiz_ia_genere: 'Quiz generated by AI',
     },
   },
   presence: {
@@ -488,28 +559,298 @@ const en = {
     room: 'Room',
     remote: 'Remote',
   },
-  feedback: {
-    title: 'Your view on the session',
-    question: 'Session rating',
-    score: 'Rating {{n}} out of 5',
-    low: 'Not at all',
-    high: 'Very good',
-    word: 'One word (optional)',
-    anonymous: 'Anonymous: the teacher only sees a trend, from 5 answers.',
-    later: 'Later',
-    send: 'Send',
-    thanks: 'Thank you for your feedback',
-    mineTitle: 'Student feedback',
-    mineIntro: 'Anonymous trend per module: shown from 5 answers; only recurring words appear.',
-    answers_one: '{{count}} answer',
-    answers_other: '{{count}} answers',
-    distribution: 'Rating distribution from 1 to 5',
-    notEnough: 'Fewer than 5 answers: trend hidden',
-  },
   roles: {
     admin: 'Administration',
     enseignant: 'Teacher',
     etudiant: 'Student',
+  },
+  aide: {
+    "titre": "Help",
+    "rechercher": "What do you want to do?",
+    "surCettePage": "On this page",
+    "yAller": "Take me there",
+    "aucune": "No help card matches. Try another word, such as “roll call”, “reschedule” or “quiz”.",
+    "themes": {
+      "seance": "During class",
+      "classe": "With my classes",
+      "planning": "My schedule",
+      "annee": "Prepare and publish the schedule",
+      "quotidien": "Day to day",
+      "comptes": "Accounts and security",
+      "compte": "My account",
+      "etudiant": "My studies"
+    },
+    "contact": {
+      "admin": "A technical problem (cannot sign in, page in error)? Note the time and the page, then tell the platform’s technical lead: the security log will help find the event.",
+      "enseignant": "A mistake in your timetable, your classes or your teaching assignments? It is fixed by the administration: contact the registrar’s office.",
+      "etudiant": "A problem with your account, your group or your phone? Contact the registrar’s office."
+    },
+    "fiches": {
+      "adminDemarrer": {
+        "titre": "Where do I start when preparing the year?",
+        "etapes": [
+          "Open “Preparation”: the page lists the steps in order (calendar, curriculum, groups, assignments, availability, generation, review, publication) with their progress.",
+          "Handle the first incomplete step: each line leads to the page where you act.",
+          "Come back to “Preparation” after each step: progress is recalculated automatically."
+        ],
+        "note": "A step stays blocked while the previous one is missing: no generation without accepted assignments and availability."
+      },
+      "adminGenerer": {
+        "titre": "Generate the timetable",
+        "etapes": [
+          "Check in “Teaching units” that every course has a lead teacher who has accepted the assignment.",
+          "Open “Automatic scheduling”, choose the period and the programmes, then start.",
+          "Then open “Conflicts”: generation reports what it could not place cleanly."
+        ]
+      },
+      "adminConflits": {
+        "titre": "Resolve a room, teacher or group conflict",
+        "etapes": [
+          "Open “Conflicts”: each line says which rule is broken and by which sessions.",
+          "Open the session and move it, or change the room: the check runs again when you save.",
+          "The conflict leaves the list as soon as the rule is respected again."
+        ],
+        "note": "Forcing a session despite a rule is reserved for the administration: it is logged, and the overlap becomes a conflict to resolve."
+      },
+      "adminPublierMois": {
+        "titre": "Send the monthly timetable to the classes",
+        "etapes": [
+          "Open “Monthly timetable” and choose the programme and the month.",
+          "Click “Publish and send”: students receive a notification and an email with the link.",
+          "After that, every evening at 6 pm, published months that changed are sent again automatically."
+        ]
+      },
+      "adminImprevu": {
+        "titre": "A teacher is absent, a room is out of service, a day is cancelled",
+        "etapes": [
+          "Open “Incidents” and choose the tab for the absent teacher, the room out of service or the cancelled day.",
+          "For an absence: give the teacher and the period. All their slots are blocked and their sessions are listed.",
+          "For each session: choose a qualified, free replacement, or move it to a slot suggested by the assistant."
+        ],
+        "note": "The students and the teacher concerned are notified of every session change."
+      },
+      "adminReport": {
+        "titre": "Handle a teacher’s rescheduling request",
+        "etapes": [
+          "Open “Reschedule requests”: pending requests come first.",
+          "Approve to move the session to the requested date, or refuse.",
+          "If the move breaks a rule (room taken, group busy), the list of rules is shown: pick another slot, or force it knowingly."
+        ],
+        "note": "A planned session counts as confirmed: a teacher has nothing to confirm, and asks for rescheduling when unable to teach it."
+      },
+      "adminAnnonce": {
+        "titre": "Send an announcement to the school, a programme, a level or a group",
+        "etapes": [
+          "Open “Announcements”, then “New announcement”.",
+          "Choose the scope and the audience (students, teachers or everyone), add an attachment (PDF or image) and email delivery if needed.",
+          "In sent announcements you can see who has read it, and remind those who have not (at most once every 12 hours)."
+        ]
+      },
+      "adminExamens": {
+        "titre": "Schedule an exam or book a room",
+        "etapes": [
+          "Exam: open “Exams”, create the paper with its groups and rooms. Seats are checked, and invigilators can be assigned automatically.",
+          "Publish the paper: students and invigilators are notified.",
+          "Defence, meeting, make-up session, event: open “Bookings”. The room and the participants are checked as for a session."
+        ],
+        "note": "Bookings are made by the administration: teachers do not create any, they see the ones they take part in."
+      },
+      "adminHeures": {
+        "titre": "Track hours taught and prepare visiting teachers’ pay",
+        "etapes": [
+          "Open “Delivery tracking”. The module progress tab compares hours taught with the planned volume and flags delays.",
+          "The monthly hours tab gives hours taught per teacher.",
+          "The CSV export lists the visiting teachers’ sessions for the month, for payroll."
+        ],
+        "note": "A planned session that has passed is counted as taught automatically. A session that did not take place must therefore be rescheduled or cancelled, otherwise it is counted."
+      },
+      "adminComptes": {
+        "titre": "Create accounts, or import a list",
+        "etapes": [
+          "One account: open “Accounts”, “Teachers” or “Students” and add the person.",
+          "A list of students: in “Students”, use the Excel/CSV import.",
+          "The temporary password must be changed at first sign-in."
+        ]
+      },
+      "adminMfa": {
+        "titre": "Someone lost the phone used for two-factor authentication",
+        "etapes": [
+          "First ask them to use one of their backup codes: each works once.",
+          "Without a backup code: open “Accounts”, find the person and reset their two-factor authentication.",
+          "At their next sign-in, they set it up again with the new phone."
+        ],
+        "note": "Check the person’s identity before resetting: the action is recorded in the security log."
+      },
+      "adminTelephone": {
+        "titre": "A student changed phone and can no longer check in",
+        "etapes": [
+          "An account is linked to one phone, to stop someone checking in for somebody else. From a new phone, the scan is refused and reported.",
+          "Open “Attendance reports”, find the student and unlink the phone.",
+          "At their next scan, the account links to the new phone."
+        ],
+        "note": "The same screen shows suspected fraud: a phone checking in two students, or a student absent at the spot check."
+      },
+      "adminSecurite": {
+        "titre": "Understand a suspicious sign-in or a locked account",
+        "etapes": [
+          "Open “Security log”: sign-ins, two-factor authentication, passwords and sessions, newest first.",
+          "Click an account to see only its events, with the IP address and the browser.",
+          "An account locked after too many wrong codes unlocks by itself after 15 minutes."
+        ]
+      },
+      "profAppel": {
+        "titre": "Take attendance",
+        "etapes": [
+          "Open “My classes”: the class in progress comes first. Click “Take attendance”.",
+          "Click “Project the QR code” and show the window on the classroom screen: it shows neither the menu nor your other pages.",
+          "Students scan with the HESTIM app: their name appears on screen as soon as attendance is recorded.",
+          "Click “Confirm roll call”, then view the full list for those present and absent."
+        ],
+        "note": "A student without a phone: tick their name by hand on your roll call screen. The optional spot check draws a few students at random to call out loud."
+      },
+      "profRappel": {
+        "titre": "I am afraid of forgetting attendance",
+        "etapes": [
+          "Five minutes before the end of the session, if attendance is not taken or not confirmed, a reminder appears at the top of the Planner page you have open.",
+          "Click “Open attendance” in the reminder."
+        ],
+        "note": "The reminder only appears if Planner is open in your browser."
+      },
+      "profQuizDirect": {
+        "titre": "Run a live quiz during class",
+        "etapes": [
+          "In “My classes”, on the class in progress, click “Live quiz”: you land on your quizzes without signing in again.",
+          "Choose the quiz and start the game: the students of the class receive it in the app, with no code to type.",
+          "The “← Planner” link takes you back to your dashboard."
+        ],
+        "note": "Scores are attached to the session: you find them afterwards in “Activities”."
+      },
+      "profQuizIa": {
+        "titre": "Create a quiz in one step",
+        "etapes": [
+          "In “My classes” or “Activities”, click “Create a quiz”.",
+          "Type the topic or attach a document from your course, then “Generate”. To write the questions yourself: “Do it myself”.",
+          "Review: correct a question or an answer, delete a question, or ask for another one.",
+          "Click “Create the quiz”: it joins your quizzes, ready to be set as an assignment or run live."
+        ],
+        // Assignments hidden (lot D-1, CONTEXTE_DEVOIRS)
+        "etapes_sansDevoirs": [
+          "In “My classes” or “Activities”, click “Create a quiz”.",
+          "Type the topic or attach a document from your course, then “Generate”. To write the questions yourself: “Do it myself”.",
+          "Review: correct a question or an answer, delete a question, or ask for another one.",
+          "Click “Create the quiz”: it joins your quizzes, ready to be run live."
+        ],
+        "note": "Nothing is created without your confirmation. The panel only appears if the school has enabled the service."
+      },
+      "profDevoir": {
+        "titre": "Set a quiz as an assignment and see the grades",
+        "etapes": [
+          "In “My classes”, use the assignment button on the class you want.",
+          "Choose one of your quizzes and the deadline: it is marked automatically, out of 20.",
+          "In “Activities”, the assignments panel shows submitted work and the average."
+        ],
+        "note": "You can only set an assignment for your own classes. Students see the answers only after the deadline."
+      },
+      "profEcrire": {
+        "titre": "Write to my class",
+        "etapes": [
+          "In “My classes”, click “Write to the class”: the announcement opens already addressed to the group.",
+          "Write it, attach a PDF or an image if needed, and tick email delivery if it is urgent.",
+          "In “Announcements”, you can see who has read it and remind the others."
+        ]
+      },
+      "profSupports": {
+        "titre": "Share course material, an exercise or an article",
+        "etapes": [
+          "Open the “Library”, then upload a document.",
+          "Choose the module (any module, not only yours) and the type: course, tutorial, lab, exam, exercise or article.",
+          "Your document is published immediately. Students find it from their session of that module."
+        ]
+      },
+      "profReport": {
+        "titre": "I cannot teach a session",
+        "etapes": [
+          "Open “My sessions” and ask for rescheduling on the session.",
+          "Give the reason and the date you would like: the administration receives the request and answers.",
+          "Follow the answer in “My reschedule requests”."
+        ],
+        "note": "You have nothing to confirm: a planned session counts as confirmed as long as you do not ask for rescheduling."
+      },
+      "profAbsence": {
+        "titre": "I will be away for several days",
+        "etapes": [
+          "Open “My availability” and declare an absence.",
+          "Give the period: all your slots become unavailable.",
+          "The administration is notified and handles your sessions, with a replacement or a make-up session."
+        ]
+      },
+      "profDispos": {
+        "titre": "Say when I can teach",
+        "etapes": [
+          "Open “My availability” and mark the slots where you are available or unavailable.",
+          "Do it before the timetable is generated: it will only place you on your free slots."
+        ]
+      },
+      "profServices": {
+        "titre": "Accept or refuse a course offered to me",
+        "etapes": [
+          "Open “My teaching”: the courses offered by the programme lead are waiting for your answer.",
+          "Accept, or refuse with a reason.",
+          "The same page shows your load for the year against the hours you owe."
+        ]
+      },
+      "profResponsable": {
+        "titre": "Prepare my programme (programme lead)",
+        "etapes": [
+          "Open “Preparation”: the steps for your programmes are listed in order, with their progress.",
+          "Complete the curriculum, the groups and the courses, then offer the assignments to teachers.",
+          "“Delivery tracking” then shows the modules that are behind schedule."
+        ]
+      },
+      "profSecurite": {
+        "titre": "Change my password or set up two-factor authentication",
+        "etapes": [
+          "Password: open “Settings” (the “Account” tab on a phone). It must be at least 12 characters long.",
+          "Two-factor authentication and backup codes: use “Take me there” below to open the Security page.",
+          "Keep your backup codes somewhere safe: each works once if your phone is unavailable."
+        ]
+      },
+      "etuEdt": {
+        "titre": "See my timetable and its changes",
+        "etapes": [
+          "“Board” shows your next session and today’s sessions; “Timetable” shows the week.",
+          "A rescheduled or cancelled session arrives in your alerts, and in the app on your phone."
+        ]
+      },
+      "etuPresence": {
+        "titre": "Check in to class",
+        "etapes": [
+          "Open the HESTIM app on your phone and tap the QR code icon.",
+          "Scan the code shown on the classroom screen: your name appears on screen when attendance is recorded."
+        ],
+        "note": "Check-in only works from the app, and your account is linked to a single phone. New phone: ask the registrar’s office to unlink it."
+      },
+      "etuDevoirs": {
+        "titre": "Do an assignment or join a quiz",
+        "titre_sansDevoirs": "Join a quiz",
+        "etapes_sansDevoirs": [
+          "A quiz started by your teacher during class appears in “Activities” and in the app.",
+          "Join it in one click, with no code to type."
+        ],
+        "etapes": [
+          "Open “Activities”: your quiz homework is listed with its deadline.",
+          "A quiz started by your teacher during class also appears there, and in the app.",
+          "The answers to an assignment are visible after the deadline."
+        ]
+      },
+      "etuAnnonces": {
+        "titre": "Read announcements from the school and my teachers",
+        "etapes": [
+          "Open “Announcements”: unread ones are marked.",
+          "An attachment can be downloaded from the announcement."
+        ]
+      }
+    }
   },
   nav: {
     board: 'Board',
@@ -518,6 +859,7 @@ const en = {
     account: 'Account',
     dashboard: 'Dashboard',
     mySessions: 'My sessions',
+    myClasses: 'My classes',
     myAvailability: 'My availability',
     myReports: 'My reschedule requests',
     timetable: 'Timetable',
@@ -563,6 +905,61 @@ const en = {
     library: 'Library',
     announcements: 'Announcements',
     games: 'Activities',
+  },
+  quizCreation: {
+    titre: 'Create a quiz',
+    sujet: 'Quiz topic',
+    exempleSujet: 'For example: basic Linux commands',
+    joindre: 'Attach a document (PDF, Word, PowerPoint)',
+    typeSupport: 'Document refused: PDF, Word (.docx) or PowerPoint (.pptx) only.',
+    tailleSupport: 'Document too large: 20 MB at most.',
+    generer: 'Generate',
+    envoi: 'Sending…',
+    moiMeme: 'Do it myself',
+    aide_one: '10 questions are suggested from the document or topic; you review them before the quiz is created. {{count}} generation left today.',
+    aide_other: '10 questions are suggested from the document or topic; you review them before the quiz is created. {{count}} generations left today.',
+    aideDocument: 'Attach a document to generate the questions, or write the quiz yourself.',
+    aideQuota: 'No generation left today: write the quiz yourself, or come back tomorrow.',
+    aideSansIa: 'The quiz is written in the quiz editor, already signed in to your account.',
+  },
+  quizDirect: {
+    titre: 'Live quiz',
+    connexion: 'Connecting to the game…',
+    qrAlt: 'Game QR code, to scan with the HESTIM Planner app',
+    consigne: 'Scan the QR code with the HESTIM Planner app',
+    code: 'Code {{pin}}',
+    joueurs_one: '{{count}} player',
+    joueurs_other: '{{count}} players',
+    demarrer: 'Start',
+    numero: 'Question {{numero}} of {{total}}',
+    reponsesRecues: '{{recues}} answers out of {{joueurs}}',
+    voirReponses: 'Show answers',
+    suivant: 'Next question',
+    bonneReponse: 'Correct answer',
+    reponses_one: '{{count}} answer',
+    reponses_other: '{{count}} answers',
+    classementFinal: 'Final ranking',
+    aucunScore: 'No player scored a point.',
+    points_one: '{{count}} pt',
+    points_other: '{{count}} pts',
+    terminer: 'Finish',
+    erreurs: {
+      absente: 'No game to host: start a quiz from My classes.',
+      dejaAnimee: 'This game is already being hosted in another window.',
+      connexion: 'The quiz service cannot be reached. Check the connection, then start the quiz again from My classes.',
+      serveur: 'The quiz service refused the game. Start the quiz again from My classes.',
+    },
+    lancer: {
+      titre: 'Start a quiz · {{classe}}',
+      liste: 'My quizzes',
+      aucun: 'You have no quiz yet. Create one with AI or in the Quiz space.',
+      questions_one: '{{count}} question',
+      questions_other: '{{count}} questions',
+      enCours: 'Starting…',
+      erreur: 'The quiz could not be started.',
+      erreurListe: 'Your quizzes could not be loaded.',
+      creerIa: 'Create a quiz',
+    },
   },
   espaces: {
     titre: 'HESTIM spaces',
@@ -632,8 +1029,10 @@ const en = {
     buts: { verifier: 'Check understanding', entrainer: 'Practice' },
     titre: 'Activities',
     sousTitre: 'Quizzes, homework and games chosen by your teachers, course by course: to check what you understood or to practise.',
+    sousTitre_sansDevoirs: 'Quizzes and games chosen by your teachers, course by course: to check what you understood or to practise.',
     sousTitreEnseignant: 'In each course, start a quiz, give homework or suggest a game, to check understanding of a topic or let your students practise.',
-    erreur: 'Games could not be loaded. Check your connection and try again.',
+    sousTitreEnseignant_sansDevoirs: 'In each course, start a quiz or suggest a game, to check understanding of a topic or let your students practise.',
+    erreur: 'Activities could not be loaded. Check your connection and try again.',
     erreurAction: 'The operation failed. Try again.',
     horsLigne: 'Your progress could not be loaded: you can still play, successes will be saved once you are back online.',
     catalogue: 'All games',
@@ -659,6 +1058,7 @@ const en = {
     historiqueProf: {
       titre: 'History',
       vide: 'Nothing yet: your quizzes, assignments and challenges completed in your modules will show up here.',
+      vide_sansDevoirs: 'Nothing yet: your quizzes and challenges completed in your modules will show up here.',
       types: { quiz: 'Quiz', devoir: 'Assignment', defis: 'Challenges' },
       quiz_one: '{{count}} player · {{moyenne}} pts on average',
       quiz_other: '{{count}} players · {{moyenne}} pts on average',
@@ -702,10 +1102,7 @@ const en = {
       reponses_one: '{{count}} answer',
       reponses_other: '{{count}} answers',
       historique: 'My latest quizzes',
-      historiqueEnseignant: 'Finished quizzes',
       voir: 'Results',
-      resumeEnseignant_one: '{{count}} player · average {{moyenne}} pts',
-      resumeEnseignant_other: '{{count}} players · average {{moyenne}} pts',
       resumeEtudiant_ordinal_one: '{{score}} pts · #{{count}} of {{total}}',
       resumeEtudiant_ordinal_two: '{{score}} pts · #{{count}} of {{total}}',
       resumeEtudiant_ordinal_few: '{{score}} pts · #{{count}} of {{total}}',
@@ -741,10 +1138,9 @@ const en = {
       donner: 'Give an assignment',
       donne_one: 'Assignment given: {{count}} student notified.',
       donne_other: 'Assignment given: {{count}} students notified.',
-      aucunQuiz: 'No quiz in your ClassQuiz account. Create one from the Quiz space.',
+      aucunQuiz: 'You have no quiz yet. Create one from the Quiz space.',
       aucunEnseignant: 'No assignment given yet.',
       quiz: 'Quiz',
-      module: 'Course',
       dateLimite: 'Deadline',
       aide: 'Questions are copied when the assignment is given; Planner grades out of 20. One submission per student, correction visible after the deadline.',
       notes: 'Grades',
@@ -754,43 +1150,64 @@ const en = {
       confirmerSuppression: 'Delete the assignment “{{titre}}” and its submissions?',
       resumeEnseignant_one: '{{count}} submission · average {{moyenne}}/20',
       resumeEnseignant_other: '{{count}} submissions · average {{moyenne}}/20',
-      typeDevoir: 'Assignment type',
-      types: { fichier: 'File to hand in (report, code, photo…)', quiz: 'Automatically marked quiz' },
-      titreDevoir: 'Title',
-      consignes: 'Instructions',
-      sansConsignes: 'No written instructions: see the brief or ask your teacher.',
-      enonce: 'Attach a brief (optional)',
-      enonceNonAjoute: 'The assignment was set, but the brief could not be added.',
-      telechargerEnonce: 'Brief: {{nom}}',
-      aideFichier: 'Each student uploads a PDF, an image, a ZIP archive or an Office document (10 MB at most). You mark out of 20 and comment; work handed in after the deadline is accepted and flagged as late.',
-      maCopieTitre: 'My work',
-      pasEncoreRendu: 'Not handed in yet.',
-      pasRenduRetard: 'Not handed in: the deadline has passed, work uploaded now will be flagged as late.',
-      copieRendue: 'Handed in on {{date}}',
-      copieDeposee: 'Work uploaded',
-      enRetard: 'Late',
-      enCorrection: 'Handed in · awaiting marking',
-      deposer: 'Upload my work',
-      remplacer: 'Replace my work',
-      envoiCopie: 'Uploading…',
-      formatsCopie: 'PDF, image, ZIP archive or Office document, 10 MB at most. You can replace it until it is marked.',
-      typeFichierRefuse: 'File: PDF, image, ZIP archive or Office document only.',
-      tailleFichier: 'File: 10 MB at most.',
-      copie: 'Submission',
-      corriger: 'Mark',
-      corrigerTitre: 'Mark {{nom}}’s work',
-      commentaire: 'Comment',
-      noteInvalide: 'A mark between 0 and 20 (for example 14.5)',
-      noteEnregistree: 'Mark saved: the student has been notified.',
-      aCorriger_one: '{{count}} to mark',
-      aCorriger_other: '{{count}} to mark',
+    },
+    quizIa: {
+      titre: 'My quizzes',
+      generationEnCours: 'The AI is reading your material and writing the questions. It usually takes less than a minute.',
+      creationEnCours: 'Creating the quiz…',
+      echec: 'The generation failed. Start it again.',
+      relire: 'Review the suggested quiz',
+      aideRelecture: 'Review each question: correct it, delete it or have it regenerated. Nothing is created until you confirm.',
+      titreQuiz: 'Quiz title',
+      aideTitre: 'Empty: the course name and the file name.',
+      question: 'Question {{numero}}',
+      enonce: 'Question text',
+      reponse: 'Answer {{numero}}',
+      bonneReponse: 'Answer {{numero}} is correct',
+      retirerReponse: 'Remove answer {{numero}}',
+      ajouterReponse: 'Add an answer',
+      plusieursJustes: 'Several correct answers',
+      regenerer: 'Ask the AI for another question',
+      regenererQuestion: 'Regenerate question {{numero}}',
+      supprimer: 'Delete the question',
+      supprimerQuestion: 'Delete question {{numero}}',
+      source: 'Source: {{source}}',
+      enregistrer: 'Save the draft',
+      enregistre: 'Draft saved.',
+      creer: 'Create the quiz',
+      creation: 'Creating…',
+      cree: 'Quiz "{{titre}}" created. It is now among your quizzes.',
+      dejaCree: 'This quiz has been created: you can set it as an assignment or run it live.',
+      dejaCree_sansDevoirs: 'This quiz has been created: you can run it live.',
+      donnerEnDevoir: 'Set it as an assignment',
+      aucune: 'No quiz yet. “Create a quiz”: a topic or a document is enough.',
+      relireCourt: 'Review',
+      voir: 'View',
+      suivre: 'Follow',
+      sansNom: 'Unnamed file',
+      statuts: {
+        en_cours: 'Generating',
+        creation: 'Creating',
+        pret_one: '{{count}} question to review',
+        pret_other: '{{count}} questions to review',
+        cree_one: 'Quiz created · {{count}} question',
+        cree_other: 'Quiz created · {{count}} questions',
+      },
+      erreurs: {
+        vide: 'Keep at least one question.',
+        enonce: 'Question {{numero}}: the text is empty.',
+        reponseVide: 'Question {{numero}}: an answer is empty.',
+        doublon: 'Question {{numero}}: two answers are identical.',
+        aucuneJuste: 'Question {{numero}}: tick the correct answer.',
+        toutesJustes: 'Question {{numero}}: at least one wrong answer is needed.',
+        uneSeule: 'Question {{numero}}: only one correct answer, or tick "Several correct answers".',
+      },
     },
     quiz: {
       titre: 'Live quizzes',
       enCours: 'Live',
       code: 'Code {{pin}}',
       rejoindre: 'Join',
-      ouvrir: 'Open',
       saisirCode: 'Enter a code',
       aucune: 'No quiz running in your classes. When your teacher starts one, it shows up here.',
       aucuneEnseignant: 'No quiz started in the last two hours. Start one during class: your students are notified.',
@@ -809,7 +1226,6 @@ const en = {
       proposer: 'Offer',
       retirer: 'Remove',
       suivi: 'Progress',
-      estPropose: 'offered to your students',
       nonPropose: 'not offered yet',
       propose: 'Game offered in {{module}}',
       retire: 'Game removed from {{module}}',
@@ -844,6 +1260,212 @@ const en = {
   },
   status: partage.status,
   board: partage.board,
+  notFound: {
+    titre: 'Page not found',
+    texte: 'This page does not exist or has been moved.',
+    accueil: 'Home',
+  },
+  forgot: {
+    titre: 'Forgot your password?',
+    intro: 'Enter your email address: you will receive a link to reset your password.',
+    envoyer: 'Send the reset link',
+    envoye: 'If this address is known, a reset link has just been sent. Check your inbox.',
+    retourConnexion: 'Back to sign in',
+    erreur: 'Something went wrong.',
+  },
+  reset: {
+    titre: 'Reset your password',
+    intro: 'Enter your new password.',
+    aide: 'At least 12 characters: a passphrase works well.',
+    confirmer: 'Confirm the password',
+    envoyer: 'Reset the password',
+    succes: 'Your password has been saved. You will be redirected to the sign-in page…',
+    allerConnexion: 'Go to sign in',
+    lienInvalide: 'Invalid reset link.',
+    tropCourt: 'The password must be at least 12 characters long (a passphrase works well).',
+    erreur: 'Something went wrong during the reset.',
+  },
+  notifs: {
+    titre: 'My notifications',
+    nonLues_one: '{{count}} unread',
+    nonLues_other: '{{count}} unread',
+    toutLu: 'Mark all as read',
+    toutesLues: 'All notifications are marked as read.',
+    aucune: 'No notifications',
+    ouvrir: 'Open the related item',
+    marquerLu: 'Mark as read',
+    cliquable: 'Clickable',
+    erreurChargement: 'Notifications could not be loaded.',
+    erreurMaj: 'The update failed.',
+    types: { success: 'Success', warning: 'Warning', error: 'Error', info: 'Info' },
+  },
+  reports: {
+    titre: 'Rescheduling requests',
+    nouvelle: 'New request',
+    titreFormulaire: 'New rescheduling request',
+    aucune: 'No rescheduling request',
+    creer: 'Create',
+    creee: 'Rescheduling request sent.',
+    erreurChargement: 'Requests could not be loaded.',
+    erreurCreation: 'The request could not be created.',
+    colonnes: { seance: 'Session', nouvelleDate: 'New date', motif: 'Reason', statut: 'Status', dateDemande: 'Requested on' },
+    champs: { seance: 'Session', choisir: 'Choose a session', nouvelleDate: 'New date', motif: 'Reason' },
+    statuts: { approuve: 'Approved', refuse: 'Refused', en_attente: 'Pending' },
+    erreurs: { affectation: 'Choose the session to reschedule.', date: 'Enter the new date.', motif: 'Enter the reason.' },
+  },
+  mesSeances: {
+    titre: 'My sessions',
+    sousTitre: 'Your upcoming and past sessions: take the roll call on the day, or request a rescheduling.',
+    aucune: 'No sessions yet.',
+    colonnes: { cours: 'Course', groupe: 'Group', salle: 'Room', date: 'Date', creneau: 'Time slot', statut: 'Status', actions: 'Actions' },
+    statuts: { confirme: 'Confirmed', annule: 'Cancelled', reporte: 'Rescheduled', realise: 'Held' },
+    appel: 'Take the roll call (QR code)',
+    demanderReport: 'Request a rescheduling',
+    titreReport: 'Request the rescheduling of a session',
+    dateActuelle: 'Current date',
+    nouvelleDate: 'Requested new date',
+    motif: 'Reason for rescheduling',
+    motifAide: 'Explain why you are requesting a rescheduling (at least 10 characters)…',
+    envoyer: 'Send the request',
+    envoi: 'Sending…',
+    reportEnvoye: 'Rescheduling request sent: it awaits the administration’s decision.',
+    erreurChargement: 'Your sessions could not be loaded.',
+    erreurReport: 'The rescheduling request failed.',
+    erreurs: { date: 'Enter the new date.', motif: 'Enter the reason.', motifCourt: 'At least 10 characters.' },
+  },
+  conflits: {
+    titre: 'Conflict management',
+    filtres: { tous: 'All', nonResolus: 'Unresolved', resolus: 'Resolved' },
+    repartition: 'Conflicts by type',
+    segments: { sans: 'No conflict', salle: 'Room conflicts', enseignant: 'Teacher conflicts', autre: 'Other conflicts' },
+    detectes_one: 'conflict detected',
+    detectes_other: 'conflicts detected',
+    resume_one: 'Out of {{seances}} scheduled session(s), {{count}} conflict detected.',
+    resume_other: 'Out of {{seances}} scheduled session(s), {{count}} conflicts detected.',
+    attention_one: '{{count}} unresolved conflict needs your attention.',
+    attention_other: '{{count}} unresolved conflicts need your attention.',
+    colonnes: { type: 'Type', description: 'Description', detection: 'Detected on', statut: 'Status', actions: 'Actions' },
+    aucun: 'No conflict in this category',
+    resolu: 'Resolved',
+    nonResolu: 'Unresolved',
+    resoluLe: 'Resolved on',
+    details: 'View details',
+    titreDetails: 'Conflict details',
+    marquerResolu: 'Mark as resolved',
+  },
+  stats: {
+    erreur: 'Statistics could not be loaded.',
+    perimetre: 'Scope',
+    anneeEnCours: 'Current academic year',
+    annee: 'Year {{annee}}',
+    toutes: 'All years',
+    libre: 'Custom period',
+    debut: 'Start',
+    fin: 'End',
+    du: 'from {{debut}} to {{fin}}',
+    actualiser: 'Refresh',
+    exporter: 'Export to Excel',
+    feuilles: { charge: 'Teacher workload', groupes: 'Hours per group' },
+    kpi: {
+      legende: 'Indicators for the period',
+      occupation: 'Room occupancy',
+      sallesUtilisees: '{{utilisees}} / {{total}} rooms used',
+      heuresEnseignant: 'Hours / teacher',
+      enseignantsActifs_one: '{{count}} active teacher',
+      enseignantsActifs_other: '{{count}} active teachers',
+      heuresEtudiant: 'Hours / student',
+      etudiantsConcernes_one: '{{count}} student concerned',
+      etudiantsConcernes_other: '{{count}} students concerned',
+      conflits: 'Conflict rate',
+      nonResolus_one: '{{count}} unresolved conflict',
+      nonResolus_other: '{{count}} unresolved conflicts',
+      duree: 'Average length',
+      parSeance: '≈ {{heures}} h per session',
+    },
+    visualisations: 'Charts',
+    onglets: { filieres: 'By programme', creneaux: 'Requested time slots', salles: 'Room occupancy' },
+    vide: { filieres: 'No programme data available', creneaux: 'No time slot data available', salles: 'No occupancy data available', aucune: 'No data' },
+    seances_one: '{{count}} session',
+    seances_other: '{{count}} sessions',
+    detailFilieres: 'By programme, in detail',
+    demandes: 'Requests',
+    tauxOccupation: 'Occupancy rate',
+    niveaux: { faible: 'Low (< 40 %)', moyen: 'Medium (40–70 %)', eleve: 'High (> 70 %)' },
+    charge: 'Workload per teacher',
+    volumeGroupes: 'Hours per group',
+    surcharge: 'Overloaded',
+    colonnes: { enseignant: 'Teacher', seances: 'Sessions', heures: 'Hours', cours: 'Courses', groupe: 'Group', niveau: 'Level' },
+  },
+  etudiants: {
+    titre: 'Student management',
+    importer: 'Import (Excel/CSV)',
+    exporter: 'Export to Excel',
+    ajouter: 'Add a student',
+    rechercher: 'Search for a student…',
+    colonnes: { numero: 'Number', nom: 'Last name', prenom: 'First name', email: 'Email', niveau: 'Level', groupe: 'Group', actions: 'Actions' },
+    champs: { utilisateur: 'User', numero: 'Student number' },
+    titreNouveau: 'New student',
+    titreModifier: 'Edit the student',
+    creer: 'Create',
+    modifier: 'Edit',
+    cree: 'Student created.',
+    modifie: 'Student updated.',
+    supprime: 'Student deleted.',
+    confirmerSuppression: 'Are you sure you want to delete this student?',
+    groupeInconnu: 'Unknown group: {{groupe}}',
+    fichierExport: 'Students',
+    titreImport: 'Import students',
+    introImport: 'One row per student. Required columns: nom, prenom, email, numero_etudiant, niveau. Optional: telephone, groupe (name of the finest group, as shown in Groups). Each student receives an invitation link by email to choose their password.',
+    erreurChargement: 'Students could not be loaded.',
+    erreurSauvegarde: 'Saving failed.',
+    erreurSuppression: 'Deletion failed.',
+    erreurExport: 'The export failed.',
+    erreurs: { utilisateur: 'Choose the user.', numero: 'Enter the student number.', niveau: 'Enter the level.', groupe: 'Choose the group.' },
+  },
+  utilisateurs: {
+    titre: 'User management',
+    ajouter: 'Add an administrator',
+    rechercher: 'Search for a user…',
+    vide: 'No users yet',
+    videAide: 'Students and teachers are added on their own pages; here, administrator accounts.',
+    colonnes: { nom: 'Last name', prenom: 'First name', email: 'Email', role: 'Role', telephone: 'Phone', statut: 'Status', actions: 'Actions' },
+    actif: 'Active',
+    inactif: 'Inactive',
+    modifierNom: 'Edit {{nom}}',
+    supprimerNom: 'Delete {{nom}}',
+    mfaNom: 'Reset two-factor authentication for {{nom}}',
+    mfaTitre: 'Reset two-factor authentication',
+    mfaMessage: '{{nom}} will be signed out everywhere and will have to set it up again (administrator) or may go without it (teacher). Only do this after checking their identity.',
+    mfaReinitialisee: 'Two-factor authentication reset for {{nom}}.',
+    mfaErreur: 'The reset failed.',
+    reinitialiser: 'Reset',
+    titreSuppression: 'Delete the user',
+    messageSuppression: 'This cannot be undone: the user will be permanently deleted.',
+    titreNouveau: 'New user',
+    titreModifier: 'Edit the user',
+    infoAdmin: 'This form creates an administrator account. Students and teachers are added, one by one or by import, on the pages',
+    pageEtudiants: 'Students',
+    et: 'and',
+    pageEnseignants: 'Teachers',
+    motDePasseNouveau: 'Temporary password (optional)',
+    motDePasseModifier: 'New temporary password (leave empty to keep it)',
+    motDePasseAideNouveau: 'Without a password, an invitation link is sent so they can choose their own.',
+    motDePasseAideModifier: 'The user will have to change it at their next sign-in.',
+    creer: 'Create',
+    modifier: 'Edit',
+    modifie: 'User updated.',
+    creeInvitation: 'Account created: invitation sent.',
+    creeProvisoire: 'User created: temporary password to change at first sign-in.',
+    supprime: 'User deleted.',
+    invitationDe: 'Invitation for {{email}}',
+    invitationEnvoyee: 'An email with this link has just been sent. You can also pass it on yourself; it is valid for 7 days.',
+    invitationNonEnvoyee: 'The email could not be sent: pass this link on to the person. It is valid for 7 days.',
+    copierLien: 'Copy the link',
+    erreurChargement: 'Users could not be loaded.',
+    erreurSauvegarde: 'Saving failed.',
+    erreurSuppression: 'Deletion failed.',
+    erreurs: { nom: 'Enter the last name.', prenom: 'Enter the first name.', email: 'Enter the email.', emailInvalide: 'Invalid email.', role: 'Choose the role.', motDePasseCourt: 'At least 12 characters (a passphrase works well).', motDePasseLong: 'At most 64 characters.' },
+  },
   login: {
     title: 'Sign in',
     subtitle: 'Access your sessions, your timetable and every schedule change.',
@@ -908,11 +1530,9 @@ const en = {
     print: 'Print',
     emptyWeek: 'No sessions this week.',
     download: 'Download',
-    downloadPdf: 'PDF',
+    downloadPdf: 'Official PDF',
     downloadExcel: 'Excel',
-    downloadCsv: 'CSV',
-    downloadIcal: 'Calendar (.ics)',
-    downloadYaml: 'YAML (weekly_blocks)',
+    subscribeAgenda: 'In my calendar (subscription)',
     filterBy: 'Show',
     filterAll: 'Whole campus',
     filterGroup: 'By group',
@@ -956,7 +1576,6 @@ const en = {
   // School reference data (phase P1): campuses, rooms, calendar, time grids, settings
   ref: {
     common: {
-    aucun: 'None',
       delete: 'Delete',
       editItem: 'Edit {{name}}',
       deleteItem: 'Delete {{name}}',
@@ -1546,9 +2165,6 @@ const en = {
       reasonHelp: 'Sent to the head of program',
       acceptedToast: 'Assignment accepted',
       refusedToast: 'Assignment declined',
-      groups: 'Groups',
-      period: 'Term',
-      hours: 'Volume',
       co: 'co-taught',
       students_one: '{{count}} student',
       students_other: '{{count}} students',

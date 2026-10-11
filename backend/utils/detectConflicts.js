@@ -3,7 +3,6 @@ import {
     Conflit,
     ConflitAffectation,
     Creneau,
-    Users,
 } from "../models/index.js";
 import { Op } from "sequelize";
 import { notifierConflit, notifierAdministrateurs } from "./notificationHelper.js";
