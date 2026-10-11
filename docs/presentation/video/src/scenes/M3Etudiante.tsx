@@ -60,8 +60,8 @@ export const M3Etudiante: React.FC<{ duree: number }> = ({ duree }) => {
   return (
     <AbsoluteFill style={{ background: C.bg }}>
       <div style={{ position: "absolute", left: 140, top: 380, width: 900 }}>
-        <Line size={84} style={fadeUp(titre)}>Son emploi du temps</Line>
-        <Line size={84} color={C.inkSoft} style={{ ...fadeUp(titre), marginTop: 12 }}>
+        <Line size={72} style={fadeUp(titre)}>Son emploi du temps</Line>
+        <Line size={72} color={C.inkSoft} style={{ ...fadeUp(titre), marginTop: 12 }}>
           arrive sur son téléphone.
         </Line>
         {phrases(46, false)}

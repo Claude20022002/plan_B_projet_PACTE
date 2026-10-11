@@ -13,9 +13,10 @@ import { S9Fin } from "./scenes/S9Fin";
 import { BEAT, C } from "./theme";
 
 /**
- * « Une matinée à l'école » : la vidéo du lot V-1 (../script-video-motion-design.md). Une seule
- * histoire, de l'étudiante à l'administration, sans les devoirs. Premier montage : il reprend les
- * scènes encore valables de l'ancienne vidéo et en ajoute trois (quiz, « Bientôt », administration).
+ * « Une journée à l'école » : la vidéo du lot V-1 (../script-video-motion-design.md). Une seule
+ * histoire, de l'étudiante à l'administration, sans les devoirs. Second montage, du 11 octobre
+ * 2026 : il utilise les captures du jour (app-*, prof-*, admin-*), prises un lundi à 13 h 40 sur la
+ * plateforme de démonstration, d'où les heures de l'après-midi. Le quiz reste sur maquettes.
  * Les anciennes compositions de Root.tsx ne changent pas.
  */
 
@@ -26,8 +27,8 @@ type Scene = { rendu: (duree: number) => React.ReactNode; repere?: string };
 const SCENES: Record<string, Scene> = {
   title: { rendu: () => <S1Intro phrase={PROMESSE} /> },
   outils: { rendu: () => <S2Outils />, repere: "Aujourd'hui" },
-  etudiante: { rendu: (duree) => <M3Etudiante duree={duree} />, repere: "7 h 40 · L'étudiante" },
-  alerte: { rendu: () => <S5Alerte capture="captures/app-01-tableau.png" />, repere: "7 h 40 · L'étudiante" },
+  etudiante: { rendu: (duree) => <M3Etudiante duree={duree} />, repere: "13 h 20 · L'étudiante" },
+  alerte: { rendu: () => <S5Alerte capture="captures/app-01-tableau.png" />, repere: "13 h 20 · L'étudiante" },
   prof: {
     rendu: () => (
       <M4Site capture="captures/prof-01-tableau.png" titre="Le professeur" suite="retrouve sa séance." lignes={["La salle, l'heure, la classe : tout est là.", "L'appel est à un geste."]} origine="40% 30%" />
@@ -47,30 +48,29 @@ const SCENES: Record<string, Scene> = {
 };
 
 // ─── Durées, en temps à 120 BPM (1 temps = 0,5 s). La bande-son les lit (scripts/composer-musique.py).
-// « resultats » s'arrête à 5 s, avant le plan du devoir noté ; « supports » à 3,5 s, avant le PDF,
-// que la scène « admin » montre ensuite.
+// Les résultats d'un quiz et les supports de la Bibliothèque n'ont pas de scène : ni le quiz ni la
+// bibliothèque n'étaient branchés sur la plateforme des captures du 11 octobre.
 export const TEMPS_SALLE = {
   title: 12 * BEAT, //       0:00  l'emblème, le nom, la promesse
   outils: 16 * BEAT, //      0:06  six outils éparpillés
-  agenda: 18 * BEAT, //      0:14  le mois, puis le détail d'un cours
+  etudiante: 18 * BEAT, //   0:14  le tableau du jour, le mois, le détail d'un cours
   alerte: 14 * BEAT, //      0:23  cours reporté
-  appel: 16 * BEAT, //       0:30  l'appel par QR code
-  quiz: 40 * BEAT, //        0:38  le quiz : la salle et le téléphone
-  bientot: 24 * BEAT, //     0:58  maquettes : le schéma et l'extrait vidéo sur le téléphone
-  resultats: 10 * BEAT, //   1:10  le classement, le résultat de l'étudiante
-  supports: 7 * BEAT, //     1:15  les supports du cours
-  admin: 18 * BEAT, //       1:18  l'emploi du temps du mois
-  fin: 12 * BEAT, //         1:27  la promesse, web · iPhone · Android
+  prof: 14 * BEAT, //        0:30  le tableau de l'enseignant
+  appel: 22 * BEAT, //       0:37  l'appel projeté et le scanner
+  quiz: 40 * BEAT, //        0:48  le quiz : la salle et le téléphone
+  bientot: 24 * BEAT, //     1:08  maquettes : le schéma et l'extrait vidéo sur le téléphone
+  admin: 18 * BEAT, //       1:20  le tableau de bord de l'administration
+  fin: 12 * BEAT, //         1:29  la promesse, web · iPhone · Android
 } as const;
 
 // Montage pour les réseaux (9:16) : l'accroche d'abord
 export const TEMPS_RESEAUX = {
-  appel: 16 * BEAT, //       0:00
-  quiz: 24 * BEAT, //        0:08
-  bientot: 16 * BEAT, //     0:20
-  alerte: 12 * BEAT, //      0:28
-  agenda: 12 * BEAT, //      0:34
-  fin: 10 * BEAT, //         0:40
+  appel: 18 * BEAT, //       0:00
+  quiz: 24 * BEAT, //        0:09
+  bientot: 16 * BEAT, //     0:21
+  alerte: 12 * BEAT, //      0:29
+  etudiante: 12 * BEAT, //   0:35
+  fin: 10 * BEAT, //         0:41
 } as const;
 
 export const dureeTotale = (temps: Record<string, number>) => Object.values(temps).reduce((s, d) => s + d, 0);

@@ -24,7 +24,7 @@ const AppelProjete: React.FC<{ largeur: number; arrives: number }> = ({ largeur,
         i < arrives ? null : <div key={i} style={{ position: "absolute", left: COLONNES[i % 3] - 4, top: RANGEES[Math.floor(i / 3)] - 4, width: 222, height: 64, background: FOND }} />,
       )}
       {/* Compteur : le nombre de la capture (11) est recouvert, celui du moment redessiné à sa place */}
-      <div style={{ position: "absolute", left: 1236, top: 116, width: 62, height: 62, background: FOND, display: "flex", alignItems: "center", justifyContent: "flex-end", fontFamily: FONT_TITLE, fontWeight: 700, fontSize: 50, color: C.ink }}>
+      <div style={{ position: "absolute", left: 1228, top: 116, width: 62, height: 62, background: FOND, display: "flex", alignItems: "center", justifyContent: "flex-end", fontFamily: FONT_TITLE, fontWeight: 700, fontSize: 50, color: C.ink }}>
         {arrives}
       </div>
     </div>

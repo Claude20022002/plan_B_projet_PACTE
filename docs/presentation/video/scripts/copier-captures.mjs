@@ -25,6 +25,14 @@ const fichiers = [
   "maquette-quiz-mobile-illustration.png",
   "maquette-quiz-mobile-video.png",
   "maquette-quiz-projecteur-illustration.png",
+  // Captures du 11 octobre 2026 : application (nouvelle barre du bas), enseignant, administration
+  "app-01-tableau.png",
+  "app-02-fiche-seance.png",
+  "app-03c-mois.png",
+  "app-04-scanner.png",
+  "prof-01-tableau.png",
+  "prof-05-appel-projection.png",
+  "admin-01-tableau.png",
 ];
 
 let manquants = 0;

@@ -313,7 +313,7 @@ def lire_matinee():
     return montages
 
 
-GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "admin"}
+GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "admin", "etudiante", "prof"}
 
 
 def composer(ids, durees):
