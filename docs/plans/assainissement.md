@@ -16,6 +16,8 @@ Ligne de conduite : **réparer, déployer, puis seulement étendre.**
 
 **Révision du 11 octobre 2026, au soir (décisions du chef de projet).** Ajouté : les règles de code communes aux deux équipes (§ 6, « Règles de code »), les lots **D-1** et **D-2** (devoirs masqués, code gardé) et **Q-1** et **Q-2** (longueur des fichiers signalée par le lint). Modifié : le parcours « quiz donné en devoir » sort de B-8. Les autres décisions du jour (prix, paie, bibliothèque, vidéo, espace Carrière) sont dans `remarques-par-profil.md`, § 1, 5, 8, 9 et 10.
 
+**La soutenance n'est plus un repère** (décision du chef de projet, le 11 octobre 2026 au soir). Dans ce plan, « avant la soutenance » se lit « d'abord » et « après la soutenance » se lit « plus tard » : l'ordre des priorités 1, 2 et 3 reste le même, sans date butoir. Le dépôt GitHub est privé depuis ce même soir (première moitié du lot 0-1).
+
 ## 2. Constats
 
 Chaque constat est tiré du dépôt (mesures du 10 octobre 2026) et renvoie au correctif qui le traite (§ 5).
