@@ -314,6 +314,8 @@ Ces poids restent sous ceux des journées sans trous (5) et du campus unique dan
 
 **Après les captures** : le serveur local, le site, le Metro des captures et l'émulateur sont arrêtés ; l'heure automatique de l'émulateur est rétablie. La base jetable `hestim_captures_test` reste dans le conteneur de test, pour de prochaines captures.
 
+**Bilan des tests du serveur, en fin de journée** : suite d'intégration complète 353 sur 353 (32 fichiers), tests unitaires 184 sur 184, lint sans erreur (18 avertissements de longueur).
+
 **Base de test du groupe A** : une autre suite d'intégration tournait en même temps sur `hestim_test` et les deux se vidaient leurs tables. Le groupe A lance désormais la sienne sur `hestim_a_test` (`DB_NAME=hestim_a_test`), créée dans le même conteneur.
 
 **Incident** : Docker s'est relancé de lui-même pendant les tests (mémoire du poste presque pleine, avec l'émulateur, Maven et la base en même temps) et a arrêté le conteneur `hestim_mysql_test`. Relancé, bases intactes.
