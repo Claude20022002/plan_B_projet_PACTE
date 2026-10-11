@@ -21,7 +21,7 @@ Avancement, demandes au groupe A et questions au chef de projet. Une entrée par
 
 **Pas vérifié** : les tests Playwright (ils demandent un serveur lancé ; B-8).
 
-**Laissé** : `design-system/board/index.js`, un fichier d'index que personne n'importe (les écrans importent les composants un par un). Hors de la liste du plan ; à retirer si le chef de projet le souhaite.
+**Laissé** : `design-system/board/index.js`. Correction : il est bien importé (`pages/dashboard/EnseignantDashboard.jsx`) ; mon outil de recherche l'avait manqué. Il reste.
 
 **Fusion.** Cette branche reprend le commit du journal de `b/d1-masquer-devoirs` : fusionner D-1 d'abord, puis B-1. Les deux lots ne touchent pas les mêmes fichiers de code.
 
@@ -175,6 +175,45 @@ Demande du chef de projet : la 3A IIIA de l'emploi du temps de l'an dernier trai
 **Corrigé au passage.** Le parcours de génération lisait le rapport de la génération précédente encore affiché : il attend maintenant la fin du calcul. Un nom réel, resté des essais du 10 octobre dans les données des parcours, est remplacé par un nom fictif.
 
 **Constat, pour le groupe A.** Le campus préféré se règle par **filière** (`Filieres.id_campus_prefere`), pas par promotion. Or la 3A IIIA est à Stendhal et la 4A IIIA à Gandhi : le solveur ne peut pas le savoir, et la 3A reçoit des séances à Gandhi certains jours (un seul campus par jour est bien respecté). Proposition : un campus préféré par groupe (promotion), qui l'emporte sur celui de la filière.
+
+### Barre du bas de l'application
+
+Le groupe A la fait dans `../planner-a-scan` (branche `a/onglet-scanner`, partie de `b/creer-quiz`, pas encore commitée) : Tableau, Semaine, Scanner, Bibliothèque, Compte ; l'onglet Activités sort de la barre, la page reste joignable. Le groupe B n'y touche pas pour ne pas doubler le travail ; il relira la PR (`mobile/` est son dossier).
+
+### Lots enchaînés (une branche par lot, en chaîne à partir de `b/creer-quiz` dans `../planner-b-r7`)
+
+Ordre de fusion de la chaîne : `b/cq3-une-adresse` → `b/q2-longueur` → `b/b5-confirmations` → `b/b6-exports` → `b/b9-fiches-aide` → `b/b2-aujourdhui` → `b/r14-alertes` → `b/r6-activites` → `b/b3-traductions` → `b/r11-visa` → `b/b4-couleurs`.
+
+- **CQ-3** : plus aucun lien de l'enseignant vers le site du quiz pour lancer une partie (sélecteur « Quiz » → « Mes quiz », tableau de bord et page Activités ouvrent le lancement dans Planner). Panneau « Quiz en direct » sorti de `Jeux.jsx`. Exception assumée : « Le faire moi-même » ouvre l'éditeur du service de quiz.
+- **Q-2** : `max-lines` 300 en avertissement (site, application) ; 25 fichiers signalés dans le site, aucun dans l'application.
+- **B-5** : `useConfirmation()` (contexte, sur le modèle de `useToast`) remplace les trois `window.confirm`. Vérifié dans un navigateur.
+- **B-6** : menu d'export à trois entrées (PDF officiel, Excel, abonnement agenda) ; CSV, iCal, YAML retirés ; `exportEmploiDuTemps.js` 858 → 392 lignes. Vérifié dans un navigateur.
+- **B-9** : test des 30 fiches d'aide (textes fr/en, thème, pages existantes, aucun texte orphelin) dans `npm run test:unit` ; un lien cassé exprès le fait échouer.
+- **B-2** : `aujourdhui()` et `dansJours(n)` dans `shared/dates.js` (UTC + un décalage écrit à un seul endroit, jamais le fuseau du navigateur) ; les 11 copies retirées.
+- **R-14** : une alerte de quiz ouvre la partie (`/jeux?partie=<id>`) ou ses résultats (`/jeux?resultats=<id>`) ; liste des alertes cliquable ; module de liens testé.
+- **R-6** : page Activités de l'enseignant en deux zones (quiz, puis jeux), historique en bas. Vérifié dans un navigateur.
+- **B-3** : les 10 pages traduites (sections notFound, forgot, reset, notifs, reports, mesSeances, conflits, stats, etudiants, utilisateurs) ; messages de validation en clés ; 10 clés mortes et un doublon retirés ; fr et en ont les mêmes clés. Vérifié dans un navigateur, site en anglais : plus de texte d'interface en français sur ces pages.
+- **R-11, écran** : colonne « À vérifier » dans les heures du mois, liste des séances à confirmer ou écarter (motif facultatif, décision annulable). Écrit contre la route du groupe A, **à fusionner après `a/r11-seances-a-verifier`**. Vérifié dans un navigateur avec le serveur de sa branche.
+- **B-4** : plus de couleur hexadécimale dans `pages/` ni `components/layouts/` (jetons `ds.nav`, `ds.white`, `ds.document`) ; seuls restent le noir et le blanc des QR codes.
+
+Vérifié à chaque lot : lint (0 erreur), build, tests unitaires du site (15 sur 15), tests de l'application (38 sur 38).
+
+### B-8 terminé (branche `b/b8-parcours`)
+
+- Job `test-parcours` ajouté en fin de `.github/workflows/ci-cd.yml` (MySQL, Chromium, image du vrai solveur, `npm run test:parcours`, rapport joint en cas d'échec). Il ne touche pas aux lignes d'A-4 : **à fusionner après A-4**, fusion simulée sans conflit. Pas encore exécuté : il tournera à l'ouverture de la PR.
+- Ancienne suite retirée (`app.spec.cjs`, sa préparation aux mots de passe `password123` écrits en dur, `test-watcher.cjs`) : c'est la part « identifiants de test » d'A-2. `npm test` lance les parcours (9 sur 9).
+- Reste le parcours « Créer un quiz » : à écrire une fois `b/b8-parcours` et `b/creer-quiz` fusionnées (l'outillage et l'écran sont sur deux branches).
+
+### Demandes au groupe A (nouvelles)
+
+- **R-14** : ajouter au lien des notifications de quiz `?partie=<id_quiz_partie>` (« Quiz en cours ») et `?resultats=<id_quiz_partie>` (« Résultats du quiz ») dans `backend/services/quiz/parties.js` (l. 117 et 291) ; le site ignore ce paramètre, l'application ouvre directement la partie.
+- **R-11** : le serveur renvoie des libellés français (`libelle`, `note`) ; l'écran ne les affiche pas (il traduit à partir du code `etat`). Ils peuvent rester pour d'autres usages.
+
+### Reste au groupe B
+
+- **R-8** : attend la phrase de la promesse.
+- **B-7** (découpage de `Cours.jsx`, `Calendrier.jsx`, `Affectations.jsx`, `DashboardLayout.jsx`) : B-3 et B-4 sont faits, mais seuls les parcours couvrent la mise en page ; les trois autres pages n'ont aucun test. Décision demandée au chef de projet avant de commencer.
+- Plus tard : écrans de R-9, R-10, R-13, onglet « Menu », espace Carrière.
 
 ## 11 octobre 2026
 
