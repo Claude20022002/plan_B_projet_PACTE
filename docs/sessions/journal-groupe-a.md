@@ -2,6 +2,18 @@
 
 Avancement, demandes au groupe B et questions au chef de projet. Une entrée par session, la plus récente en haut.
 
+## 11 octobre 2026, soir : A-10
+
+Branche `a/a10-documentation`, partie de `main` après la fusion n° 5.
+
+- **Index** : `docs/README.md` (l'ancien, un résumé des associations de décembre 2025, devient `docs/archives/associations-2025.md`). Le README du dépôt y renvoie. Tous les liens relatifs de l'index, du README, de PRODUCT et des archives ont été vérifiés.
+- **Archivés** avec `git mv`, sans rien supprimer, dans `docs/archives/` : `AUDIT_TECHNIQUE.md`, `ARCHITECTURE_PLAN.md`, `secure_jwt_architecture.md`, les rapports `.md` de `docs/rapports/` et `compte-rendu-2026-10-10.md`.
+- **Documents de l'école** (cahier des charges, livrable 2, remarques) : de `docs/rapports/` à `docs/ecole/`, car ils restent une référence. PRODUCT.md suit.
+- **Laissés en place, signalés « anciens » dans l'index** : `docs/api/` (à réécrire avec A-5), `docs/architecture/`, `docs/database/`, `docs/maquettes/`, `backend/README.md`, `backend/SEED_README.md`, `frontend/README.md`.
+- **Pas touché** : les fichiers audio de la vidéo (servent encore à `Root.tsx` ; les retirer de l'historique, c'est 0-1) ; les plans, qui citent encore les anciens chemins.
+- **Demande au groupe B** : `frontend/STRUCTURE_CREEE.md` et `frontend/GUIDE_DEMARRAGE.md` (dans la liste des fichiers inutiles) et `frontend/README.md` (décembre 2025) sont dans son dossier.
+- Le lien vers `FORK.md` du moteur de quiz ne marchera qu'une fois `a/ia4-modifier-quiz` fusionnée dans la branche `hestim` du fork.
+
 ## 11 octobre 2026, après-midi
 
 ### Fusion (lot 0-2)
@@ -23,6 +35,29 @@ Avancement, demandes au groupe B et questions au chef de projet. Une entrée par
 | A-7 | `a/a7-verrou-taches` | Verrou `GET_LOCK` autour des cinq tâches périodiques, journal des passages | Deux passages simultanés : un envoi (deux sans le verrou) |
 
 Limite d'A-7 : le journal n'écrit pas les passages qui n'ont rien fait, sinon le rappel de l'appel écrirait une ligne par minute.
+
+### Lots de la soirée
+
+Chacun sur sa branche, partie de `integration/2026-10-11` : la PR de chacun se fait après la fusion de cette dernière.
+
+| Lot | Branche | Résultat | Vérifié |
+|---|---|---|---|
+| A-8 | `a/a8-tests-solveur` | `ContraintesTest` (327 lignes) découpé en une classe par règle : `ConflitsTest`, `CapaciteSalleTest`, `DisponibilitesTest` (vacataire, jour entier bloqué), `TrajetEntreCampusTest`, `HeuresParJourTest`, `PreferencesTest`, sur une base commune `GrilleDeTest`. Cas ajoutés : trois leçons dans une salle, co-enseignants, paliers de capacité, temps de trajet réglable, enseignant qui change de campus, plafond de l'enseignant | Solveur : 34 tests au lieu de 20 (`mvn clean verify`). Une date bloquée (férié) ne passe pas par le solveur : le déploiement la saute, déjà testé par `generation.test.js` |
+| IA-4 (reste) | `a/ia4-modifier-quiz`, dans les deux dépôts | Fork : `POST /api/v1/hestim/quiz/<id>` remplace titre et questions d'un quiz de l'enseignant (422 si le quiz n'est pas à lui). Planner : `GET` et `PUT /api/quiz/mes-quiz/:id` (`services/quiz/mesQuiz.js`) | Fork 20 sur 20 ; `mesQuiz.test.js` 6 sur 6 |
+| R-10, serveur | `a/r10-changement-telephone` | Migration 0041. L'étudiant déclare depuis l'application le téléphone qu'il tient en main ; l'administration accepte (ce téléphone, et lui seul, est lié) ou refuse | Serveur entier : 184 unitaires, 361 intégration |
+
+Écart à la règle 4 : `models/index.js` (521 lignes) prend quatre lignes, l'enregistrement du modèle de R-10. C'est le registre des modèles, aucun autre fichier ne peut les recevoir.
+
+### Demandes au groupe B
+
+- **IA-5, éditeur « Mes quiz »** : `GET /api/quiz/mes-quiz/:id` rend `{ id, titre, description, questions, modifiable }` (questions `{ question, time, type, answers: [{ answer, right }] }`, ABCD et CHECK seulement) ; `PUT` reçoit `{ titre, description?, questions }`. `modifiable: false` : le quiz contient un autre type de question, à modifier dans le service de quiz.
+- **R-10, écrans** : dans l'application, « J'ai changé de téléphone » (`POST /api/presences/telephone/demande { motif? }`, avec les en-têtes du scan ; `GET` pour l'état) ; pour l'administration, les demandes en attente (`GET /api/presences/demandes-telephone`, puis `POST …/:id/accepter` ou `…/refuser { motif? }`), à placer dans « À traiter » avec R-9.
+- **Journal de sécurité** : traduire `telephone_demande`, `telephone_change_accepte` et `telephone_change_refuse` dans `frontend/src/i18n` (à côté de `appareil_delie`).
+
+### Pour le chef de projet
+
+- Le dépôt du quiz a maintenant trois branches du groupe A : `a/quiz-salles`, `a/r2-fork` (contient la précédente) et `a/ia4-modifier-quiz` (contient les deux). Pousser la dernière suffit.
+- **Paquet `quiz-correctif3.tar.gz`** (depuis `a/ia4-modifier-quiz`) : les deux correctifs du quiz et la route d'IA-4, tout en Python. Il remplace `quiz-correctif1` et `quiz-correctif2` ; même commande de déploiement. Jamais lancé sur le serveur.
 
 ## 11 octobre 2026
 
