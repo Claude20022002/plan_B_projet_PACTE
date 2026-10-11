@@ -12,10 +12,13 @@ import {
     Link as MuiLink,
 } from '@mui/material';
 import { motion } from 'motion/react';
+import { useTranslation } from 'react-i18next';
 import { authAPI } from '../services/api';
 
+/** Mot de passe oublié : demande du lien de réinitialisation par email. */
 export default function ForgotPassword() {
     const navigate = useNavigate();
+    const { t } = useTranslation();
     const [email, setEmail] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -30,7 +33,7 @@ export default function ForgotPassword() {
             await authAPI.forgotPassword(email);
             setSuccess(true);
         } catch (err) {
-            setError(err.message || 'Une erreur est survenue');
+            setError(err.message || t('forgot.erreur'));
         } finally {
             setLoading(false);
         }
@@ -62,14 +65,13 @@ export default function ForgotPassword() {
                         }}
                     >
                         <Typography variant="h4" fontWeight="bold" gutterBottom align="center" sx={{ mb: 3 }}>
-                            Mot de passe oublié ?
+                            {t('forgot.titre')}
                         </Typography>
 
                         {success ? (
                             <Box>
                                 <Alert severity="success" sx={{ mb: 3 }}>
-                                    Si cet email existe dans notre système, un lien de réinitialisation a été envoyé.
-                                    Vérifiez votre boîte de réception.
+                                    {t('forgot.envoye')}
                                 </Alert>
                                 <Button
                                     fullWidth
@@ -77,13 +79,13 @@ export default function ForgotPassword() {
                                     onClick={() => navigate('/connexion')}
                                     sx={{ mt: 2 }}
                                 >
-                                    Retour à la connexion
+                                    {t('forgot.retourConnexion')}
                                 </Button>
                             </Box>
                         ) : (
                             <>
                                 <Typography variant="body1" color="text.secondary" align="center" sx={{ mb: 3 }}>
-                                    Entrez votre adresse email et nous vous enverrons un lien pour réinitialiser votre mot de passe.
+                                    {t('forgot.intro')}
                                 </Typography>
 
                                 {error && (
@@ -95,7 +97,7 @@ export default function ForgotPassword() {
                                 <form onSubmit={handleSubmit}>
                                     <TextField
                                         fullWidth
-                                        label="Adresse email"
+                                        label={t('login.email')}
                                         type="email"
                                         value={email}
                                         onChange={(e) => setEmail(e.target.value)}
@@ -112,13 +114,13 @@ export default function ForgotPassword() {
                                         disabled={loading}
                                         sx={{ mt: 3, mb: 2 }}
                                     >
-                                        {loading ? <CircularProgress size={24} /> : 'Envoyer le lien de réinitialisation'}
+                                        {loading ? <CircularProgress size={24} /> : t('forgot.envoyer')}
                                     </Button>
                                 </form>
 
                                 <Box sx={{ textAlign: 'center', mt: 2 }}>
                                     <MuiLink component={Link} to="/connexion" underline="hover">
-                                        Retour à la connexion
+                                        {t('forgot.retourConnexion')}
                                     </MuiLink>
                                 </Box>
                             </>
