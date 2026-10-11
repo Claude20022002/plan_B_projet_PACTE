@@ -1,9 +1,8 @@
 import { Op } from "sequelize";
 import { Reservation, ReservationParticipant } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { repondreErreurPlanning } from "../utils/erreursPlanning.js";
 import { pick } from "../utils/validationHelper.js";
-import { ErreurMetier } from "../services/planning/enseignements.js";
-import { ViolationsBloquantes } from "../services/planning/seances.js";
 import {
     INCLUDES_RESERVATION,
     annulerReservation,
@@ -33,13 +32,8 @@ const lireParticipants = (body) =>
         role: p.role || "participant",
     }));
 
-const repondreErreur = (res, error) => {
-    if (error instanceof ViolationsBloquantes) {
-        return res.status(409).json({ message: "La réservation enfreint des règles", error: error.violations.find((v) => v.bloquant)?.message, violations: error.violations });
-    }
-    if (error instanceof ErreurMetier) return res.status(error.status).json({ message: error.message, error: error.message });
-    throw error;
-};
+// 409 avec la liste des règles enfreintes, 4xx métier, au format commun (A-5) ; sinon l'erreur remonte
+const repondreErreur = repondreErreurPlanning;
 
 /** Visible par l'administration, le demandeur et les personnes participantes. */
 const peutVoir = (reservation, user) =>

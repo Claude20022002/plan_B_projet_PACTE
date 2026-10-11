@@ -1,9 +1,8 @@
 import { Op } from "sequelize";
 import { Appartenir, SessionExamen, SessionExamenGroupe, Surveillance } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { repondreErreurPlanning } from "../utils/erreursPlanning.js";
 import { pick } from "../utils/validationHelper.js";
-import { ErreurMetier } from "../services/planning/enseignements.js";
-import { ViolationsBloquantes } from "../services/planning/seances.js";
 import { avecAncetres } from "../services/planning/groupes.js";
 import {
     INCLUDES_EXAMEN,
@@ -31,13 +30,8 @@ const lireSalles = (body) =>
     Array.isArray(body.salles) ? body.salles.map((s) => ({ id_salle: Number(s.id_salle), ...(Number.isInteger(s.effectif) ? { effectif: s.effectif } : {}) })) : undefined;
 const lireGroupes = (body) => (Array.isArray(body.groupes) ? [...new Set(body.groupes.map(Number))] : undefined);
 
-const repondreErreur = (res, error) => {
-    if (error instanceof ViolationsBloquantes) {
-        return res.status(409).json({ message: "L'épreuve enfreint des règles", error: error.violations.find((v) => v.bloquant)?.message, violations: error.violations });
-    }
-    if (error instanceof ErreurMetier) return res.status(error.status).json({ message: error.message, error: error.message });
-    throw error;
-};
+// 409 avec la liste des règles enfreintes, 4xx métier, au format commun (A-5) ; sinon l'erreur remonte
+const repondreErreur = repondreErreurPlanning;
 
 export const getExamens = asyncHandler(async (req, res) => {
     const where = {};
