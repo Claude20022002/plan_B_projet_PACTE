@@ -88,7 +88,29 @@ Demandes du groupe A, faites : modèles CSV des pages Étudiants et Enseignants 
 ### Questions au chef de projet
 
 - **Onglet Activités de l'application** : `remarques-par-profil.md`, § 10, dit qu'il sort de la barre du bas. Le retirer maintenant, ou avec l'onglet « Menu » ? Il donne aujourd'hui accès aux jeux des modules (terminal Linux), que le scan ne remplace pas.
-- **Ordre de fusion des branches du groupe B** : D-1, B-1, R-7, scan, puis CQ-2 (après CQ-1 du groupe A). `b/donnees-fictives` est indépendante.
+- **Ordre de fusion des branches du groupe B** : D-1, B-1, R-7, scan, puis CQ-2 (après CQ-1 du groupe A). `b/donnees-fictives` et `b/b8-parcours` sont indépendantes.
+
+### B-8 : parcours de démonstration (branche `b/b8-parcours`, partie de `cc0d028`)
+
+**Fait** (deux tranches sur trois).
+- `npm run test:parcours` (`frontend/playwright.parcours.config.cjs`) : chaque passage repart d'une base jetable (`hestim_b_parcours_test`), préparée par `tests/parcours/serveur.mjs` avec les outils des tests d'intégration du serveur, **avant** son démarrage (Playwright lance les serveurs avant sa préparation globale). Les comptes sont créés à ce moment et écrits dans `tests/parcours/.donnees.json`, non versionné : **aucun identifiant n'est écrit dans les tests**.
+- Ports du groupe B par défaut (5001, 5174), modifiables par `PARCOURS_PORT_API` et `PARCOURS_PORT_SITE`.
+- **Connexion** : les trois rôles arrivent sur leur tableau de bord ; mauvais mot de passe refusé ; page protégée renvoyée à la connexion.
+- **Appel par QR** : Mes classes → Faire l'appel → Projeter le QR code (fenêtre à part) ; trois scans simulés comme l'application ; les noms apparaissent, pas les absents ; validation et bilan.
+- **Demande de report puis décision** : l'enseignante demande, l'administration approuve, l'enseignante voit « Approuvée ».
+
+**Vérifié.** 7 tests sur 7, sur trois passages de suite.
+
+**Pas fait.**
+- Le parcours de la génération (il demande le solveur, ou un faux : `backend/tests/integration/generation.test.js` en lance déjà un, sur `SOLVER_URL`), et celui qui remplace « quiz donné en devoir » : décisions ci-dessous.
+- L'entrée dans la CI : après A-4, qui modifie `.github/workflows/ci-cd.yml` en premier.
+- L'ancienne suite `tests/app.spec.cjs` (928 lignes, mots de passe de démonstration écrits en dur, connexion par `localStorage` qui n'existe plus) est laissée telle quelle. Proposition : la retirer une fois B-8 dans la CI.
+- Les fichiers `.cjs` et `.mjs` des tests ne sont pas couverts par le lint du site, qui ne lit que `.js` et `.jsx`.
+
+### Questions au chef de projet (B-8)
+
+- **Parcours qui remplace « quiz donné en devoir »** : « quiz généré par l'IA, relu puis créé », avec une fausse IA et un faux service de quiz ? Ou « quiz lancé en direct » (CQ-2), qui demande en plus un faux serveur de jeu ?
+- **Génération** : la lancer avec le vrai solveur dans la CI (une image Java de plus à construire), ou avec un faux solveur qui rend une solution fixe, comme le test d'intégration ?
 
 ## 11 octobre 2026
 
