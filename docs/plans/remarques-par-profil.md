@@ -130,7 +130,7 @@ Le principe est retenu. Décisions du 11 octobre 2026 :
 - **Utilisateur facturé** : tout compte actif dans le mois (étudiant, enseignant, administration). Un compte créé mais inactif n'est pas facturé. Le compteur de comptes actifs (R-12) sert de base au relevé. La définition proposée d'« actif », à valider : au moins une connexion dans le mois.
 - **Payeur** : l'école, toujours. Rien n'est facturé directement à un étudiant.
 - **Coût de l'IA** : inclus dans le prix par utilisateur, avec un plafond (le quota par enseignant existe déjà). Au-delà du plafond, la génération s'arrête jusqu'au mois suivant ; pas de supplément.
-- **Prix** : **4,99 MAD par mois**, retenu par le chef de projet le 11 octobre 2026 « par étudiant ». À confirmer : ce prix s'applique-t-il aussi aux comptes actifs des enseignants et de l'administration, ou seuls les étudiants actifs sont-ils comptés ? Restent des propositions non validées : minimum de 500 MAD par mois et par établissement, dégressif au-delà de 1 000 comptes, 20 quiz générés par enseignant et par mois. Les tarifs du fournisseur d'IA et les prix des concurrents restent à vérifier.
+- **Prix** : **4,99 MAD par compte actif et par mois**, tous rôles confondus (décision du 11 octobre 2026). Restent des propositions non validées : minimum de 500 MAD par mois et par établissement, dégressif au-delà de 1 000 comptes, 20 quiz générés par enseignant et par mois. Les tarifs du fournisseur d'IA et les prix des concurrents restent à vérifier.
 - **La facturation reste hors du produit** au début : un relevé mensuel exporté suffit. Pas de paiement en ligne.
 - **HESTIM** : premier établissement, donc conditions de lancement à décider (gratuité pendant le pilote, prix réduit ensuite).
 - **Licence du moteur de quiz** : elle permet un usage commercial, à condition de laisser publiés les fichiers modifiés (R-2).
@@ -174,8 +174,8 @@ Effort : **S** = une demi-journée au plus ; **M** = 1 à 3 jours ; **L** = plus
 
 ## 8. Points ouverts
 
-- **R-11, la paie** : l'appel validé ne suffit pas (décision du 11 octobre), et la réponse « l'appel sert de preuve » du § 3 ne tient plus. À demander à la scolarité de HESTIM : quel document déclenche le paiement d'un vacataire, et qui le signe ? Piste à confirmer avec elle : l'appel reste un indice, Planner préremplit l'état du mois, l'enseignant le confirme et un responsable le vise avant l'export. Le lot R-11 attend cette réponse.
-- **Prix par compte actif** (§ 5) : à fixer, et la définition d'« actif » à valider.
+- **R-11, la paie** : l'appel validé ne suffit pas (décision du 11 octobre), et la réponse « l'appel sert de preuve » du § 3 ne tient plus. **Solution retenue le 11 octobre : un relevé mensuel, pas de retour du bouton « confirmé » par séance.** (1) Planner prépare le relevé du mois de chaque enseignant : les séances avec un appel validé sont cochées d'office, les autres marquées « à vérifier ». (2) L'enseignant ne traite que les exceptions, puis confirme ses heures d'un geste ; sa déclaration est datée et inscrite au journal. (3) L'administration vise le relevé, puis exporte ; sans visa, rien ne part dans l'export des vacataires. Avant la soutenance, seule l'étape 3 se fait (R-11 tel qu'écrit au § 7) ; les étapes 1 et 2 viennent après. Reste à faire valider par la scolarité de HESTIM : quel document déclenche aujourd'hui le paiement d'un vacataire, et qui le signe ?
+- **Définition d'un compte « actif »** (§ 5) : à valider.
 - **La promesse** (R-8) : la phrase proposée est un point de départ, à écrire avec vos mots.
 - **Date de la soutenance** : inconnue, peut-être la semaine du 12 octobre 2026.
 
@@ -191,3 +191,16 @@ Un « mini Indeed » pour les étudiants de HESTIM, dans l'application mobile. A
 - **« HESTIM d'abord »** : pas de champ d'exclusivité tant que HESTIM Planner n'est pas devenu Planner. Aujourd'hui tous les comptes sont de HESTIM.
 - **Projets pour le CV** : un accompagnement par classe (filière et niveau). Les idées de projets portent déjà une filière et un niveau ; l'application ne les filtre pas encore sur la classe de l'étudiant.
 - **StudyLib devient uniquement la bibliothèque.** Les retours de stage et les idées de projets y vivent aujourd'hui (onglet Bibliothèque de l'application) : où ils iront reste à décider.
+
+## 10. Idées pour après la soutenance : bibliothèque, application, jeux
+
+Décisions et souhaits du chef de projet le 11 octobre 2026. Aucun lot avant la soutenance.
+
+- **Bibliothèque sur le web** : le site de StudyLib reste, renommé « Bibliothèque », pour les étudiants et les enseignants sur ordinateur.
+- **Supports de cours** : aujourd'hui les enseignants les déposent sur Moodle. Souhait : que la partie web serve à cela pour les enseignants et les étudiants, et que l'étudiant retrouve ces supports à tout moment dans la bibliothèque de l'application. Le dépôt par un enseignant, publié sans modération, et la lecture par module dans l'application existent déjà ; restent à décider le sort de Moodle avec l'école et la reprise des supports existants.
+- **Devoirs** : pas de devoir pour le moment, seulement des jeux pédagogiques. Ils sont **masqués dès maintenant, sans supprimer le code**, car ils pourront revenir (lots D-1 et D-2 de `assainissement.md`).
+- **Onglet Jeux / Activités** : il sort de la barre du bas ; il ne sert que lorsqu'un enseignant lance un jeu. Souhait : comme Wooclap, un scan depuis l'application ouvre le jeu dans une vue navigateur, pour alléger l'application.
+- **Organisation de l'application** : un onglet « Menu » qui range les options, à la manière de Facebook.
+- **Vidéos YouTube recommandées par l'IA** : gardées, affichées « en cours de développement ».
+- **Suggestions de projets** : gardées.
+- **Événements** : gérés uniquement dans le calendrier de l'application ; ils sortent de la bibliothèque.

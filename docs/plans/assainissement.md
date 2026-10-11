@@ -14,6 +14,8 @@ Ligne de conduite : **réparer, déployer, puis seulement étendre.**
 
 **Révision du 11 octobre 2026 (relecture de l'équipe B, constats revérifiés dans le dépôt).** Corrigé : le constat sur « aujourd'hui » en UTC (le Maroc est à UTC+0, § 2 et B-2), le nombre de fichiers à dialogues natifs (3, pas 5), le critère des couleurs (B-4) et celui du découpage (B-7). Mis à jour : l'application mobile des enseignants passe de « à garder » à « idée pour un plan futur » (décision du 11 octobre, § 3.3). Ajouté : le renvoi à `remarques-par-profil.md` et son lot R-11, les deux autres dépôts (0-5), le paquet maj29 à refaire (0-3), les fiches d'aide et les traductions mortes (B-3, B-9), l'organisation de travail à deux équipes dans un même dossier (§ 6) et deux décisions ouvertes (§ 7).
 
+**Révision du 11 octobre 2026, au soir (décisions du chef de projet).** Ajouté : les règles de code communes aux deux équipes (§ 6, « Règles de code »), les lots **D-1** et **D-2** (devoirs masqués, code gardé) et **Q-1** et **Q-2** (longueur des fichiers signalée par le lint). Modifié : le parcours « quiz donné en devoir » sort de B-8. Les autres décisions du jour (prix, paie, bibliothèque, vidéo, espace Carrière) sont dans `remarques-par-profil.md`, § 1, 5, 8, 9 et 10.
+
 ## 2. Constats
 
 Chaque constat est tiré du dépôt (mesures du 10 octobre 2026) et renvoie au correctif qui le traite (§ 5).
@@ -140,6 +142,8 @@ Effort : **S** = une demi-journée au plus ; **M** = 1 à 3 jours ; **L** = plus
 | **A-8** | Tests du solveur : salle, enseignant ou groupe en double, capacité, vacataire hors de ses disponibilités, trajet entre campus, jour bloqué | Une classe de test par règle, dans la CI | M | 2 |
 | **A-9** | Procédure de retour arrière dans `DEPLOIEMENT.md` (image `avant-<date>`, restauration de la sauvegarde, migrations) ; script qui ne garde que les 3 derniers paquets | La procédure a été suivie une fois à blanc | S | 1 |
 | **A-10** | Ranger la documentation : la référence reste à sa place (README, PRODUCT, DESIGN, DEPLOIEMENT, `docs/plans/`, `docs/recette/`) ; les anciens rapports et `AUDIT_TECHNIQUE.md` partent dans `docs/archives/` ; un index dans `docs/README.md` | Une personne qui arrive trouve la doc à jour en un clic | S | 2 |
+| **D-2** | Devoirs fermés côté serveur par une variable d'environnement (`DEVOIRS_ACTIFS`, éteinte par défaut) : les routes des devoirs répondent « indisponible » et les activités d'un étudiant n'en listent plus. **Le code et les tables restent** : les devoirs pourront revenir. Les tests des devoirs tournent avec la variable allumée. Après D-1 de l'équipe B | Variable éteinte : aucune route de devoir ne répond ; variable allumée : tous les tests des devoirs passent | S | 2 |
+| **Q-1** | Avec A-4 : la règle ESLint `max-lines` (300 lignes, hors lignes vides et commentaires) en **avertissement** dans `backend/`, pour voir les fichiers longs sans bloquer la CI (§ 6, « Règles de code ») | Le lint liste les fichiers trop longs ; la CI reste verte | S | 1 |
 
 ### Équipe B : interface
 
@@ -154,6 +158,10 @@ Effort : **S** = une demi-journée au plus ; **M** = 1 à 3 jours ; **L** = plus
 | **B-7** | Découper les gros fichiers en composants (dialogue, tableau, chargement) : `Cours.jsx`, `Calendrier.jsx`, `Affectations.jsx`, `DashboardLayout.jsx`. **Après B-3 et B-4**, pour éviter les conflits | Chaque fichier a une seule responsabilité (la page assemble, les dialogues et les tableaux sont des composants à part), sans changement visible. Le nombre de lignes est un indice, pas le critère | L | 3 |
 | **B-8** | Tests Playwright des parcours de démonstration, lancés dans la CI avec la base de test : connexion, appel par QR (côté enseignant), quiz donné en devoir puis rendu, demande de report puis décision, génération puis publication. Deux parcours demandent de **faux services dans la CI** : le quiz en devoir lit les quiz dans ClassQuiz (un faux service qui répond aux routes signées), et la génération appelle le solveur (le lancer, ou le simuler). Le scan d'un étudiant ne passe que par l'application : il se simule par un appel à l'API avec les en-têtes du mobile. Trois parcours pilotés existent déjà comme base (appel projeté, quiz par l'IA, aide), écrits le 10 octobre hors du dépôt : à reprendre dans `frontend/tests/` | Les 5 parcours sont verts dans la CI | L | 1 |
 | **B-9** | Fiches d'aide (`components/aide/`) : chaque PR qui retire ou renomme un écran met à jour les fiches qui le citent (B-6 retire trois exports, par exemple). Un test vérifie que chaque fiche a ses textes dans les deux langues et que sa page existe | Le test échoue sur une fiche sans texte ou sans page | S | 2 |
+| **D-1** | Masquer les devoirs sur le site et dans l'application (décision du 11 octobre : pas de devoir pour le moment, seulement des jeux pédagogiques). Un seul interrupteur dans `shared/`, lu par le site et par l'application ; il cache les entrées (page Activités, « Mes classes », quiz par l'IA « en devoir », onglet Jeux de l'application, route de l'écran de devoir) et les fiches d'aide qui en parlent. **Aucun fichier n'est supprimé** : les devoirs pourront revenir | Interrupteur éteint : plus aucun écran ni texte ne mentionne un devoir ; interrupteur allumé : tout revient | M | 1 |
+| **Q-2** | La règle ESLint `max-lines` (300 lignes, hors lignes vides et commentaires) en **avertissement** dans `frontend/` et `mobile/` (§ 6, « Règles de code ») | Le lint liste les fichiers trop longs ; la CI reste verte | S | 1 |
+
+**B-8, modifié le 11 octobre** : les devoirs étant masqués (D-1), le parcours « quiz donné en devoir puis rendu » sort de la liste. Proposition de remplacement, à valider par le chef de projet : « quiz généré par l'IA, relu puis créé », avec une fausse IA (un essai piloté existe déjà comme base).
 
 ### Ensuite : les lots gardés (§ 3.4)
 
@@ -180,6 +188,18 @@ Les réponses aux critiques des dix profils (administrateur, professeur, étudia
   - `.github/workflows/ci-cd.yml` : modifié par A-4 puis par B-8. A fusionne en premier, B se met à jour avant d'ouvrir sa PR.
 - **Contrat de l'API** : les correctifs de l'équipe A ne changent pas l'API (A-6 est un pur refactor). Tout changement de contrat (A-5) est annoncé dans la PR et appliqué côté site par l'équipe B dans la foulée.
 - **Point hebdomadaire** du chef de projet : état des lots, blocages, et rien de neuf hors de ce plan.
+
+### Règles de code (décision du 11 octobre 2026)
+
+Demande du chef de projet : plus de longs fichiers, un travail par composants, un code facile à maintenir et commenté. Mesure du 11 octobre : 19 fichiers de plus de 400 lignes dans `frontend/src`, 11 dans `backend/`, aucun dans `mobile/src` ni dans `solver/`.
+
+- **Un fichier, une responsabilité.** Sur le site et dans l'application, la page assemble ; le chargement des données va dans un hook (`useXxx`), chaque dialogue, tableau ou carte dans son composant. Sur le serveur : la route déclare, le contrôleur lit la requête et répond, la règle métier vit dans `services/`.
+- **Repère de longueur : 300 lignes par fichier, 200 pour un contrôleur.** C'est un signal, pas le critère : un fichier court qui fait deux choses est aussi à découper. Le lint le signale en avertissement (Q-1, Q-2).
+- **Tout fichier nouveau respecte le repère.** Un lot ne fait jamais grossir un fichier déjà trop long : il extrait d'abord dans un composant ou un service la partie qu'il doit modifier, puis la modifie là.
+- **Pas de grand découpage avant la soutenance.** Les découpages complets (A-6, B-7) restent en priorité 3 : ils touchent beaucoup de code sans rien changer de visible, donc ils se font avec les tests des parcours (B-8) en place.
+- **Commentaires.** Chaque fichier commence par un commentaire qui dit son rôle, comme le font déjà les écrans de l'application. Chaque fonction exportée a une ligne qui dit ce qu'elle rend. Un commentaire explique **pourquoi** (une règle de l'école, un piège, une limite), pas ce que la ligne fait déjà. En français, comme le reste du code. Pas de code laissé en commentaire.
+- **Noms** : en français dans le code récent ; un fichier ancien garde sa langue tant qu'il n'est pas repris.
+- **Revue** : la personne qui relit une PR refuse un fichier nouveau trop long, une fonction exportée sans commentaire ou une logique métier écrite dans une page ou un contrôleur.
 
 ## 7. Décisions ouvertes (chef de projet)
 
