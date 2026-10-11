@@ -5,8 +5,7 @@ import reactRefresh from 'eslint-plugin-react-refresh'
 import { defineConfig, globalIgnores } from 'eslint/config'
 
 export default defineConfig([
-  // MIGRATION_EXAMPLE.jsx : exemple de documentation (jamais importé), pas du code de l'application
-  globalIgnores(['dist', 'src/hooks/api/_shared/MIGRATION_EXAMPLE.jsx']),
+  globalIgnores(['dist']),
   {
     files: ['**/*.{js,jsx}'],
     extends: [

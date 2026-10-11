@@ -14,7 +14,6 @@ import path from 'path';
  *   pdf-export      → jsPDF + jspdf-autotable (chargé on-demand)
  *   excel-export    → XLSX + PapaParse (chargé on-demand)
  *   auth            → Contextes auth (chargé toujours, léger)
- *   query           → TanStack Query (chargé toujours)
  *
  * ⚠️  pdf-export et excel-export ne doivent JAMAIS être importés statiquement.
  *     Utiliser uniquement via import() dynamique dans les handlers d'export.
@@ -25,11 +24,6 @@ function manualChunks(id) {
       id.includes('node_modules/react-dom/') ||
       id.includes('node_modules/react-router')) {
     return 'react-core';
-  }
-
-  // ── TanStack Query ────────────────────────────────────────────────────
-  if (id.includes('@tanstack/react-query')) {
-    return 'query';
   }
 
   // ── MUI Icons — séparé du core car tree-shaking agressif ─────────────
@@ -110,7 +104,6 @@ export default defineConfig({
       'react-dom',
       'react-router-dom',
       '@mui/material',
-      '@tanstack/react-query',
       'axios',
       // UMD sans export ESM : servi brut par Vite, il plante (« this » indéfini).
       // optimizeDeps ne concerne que le serveur de dev : le bundle de production
