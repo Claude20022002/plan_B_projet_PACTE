@@ -129,6 +129,71 @@ class ContraintesTest {
     }
 
     @Test
+    void equipementsDeLaSalle() {
+        Lecon tp = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        tp.setEquipementsRequis(Set.of("Vidéoprojecteur", "Postes informatiques"));
+        // La salle n'a aucun des équipements demandés, puis un seul des deux : refusée dans les deux cas
+        verifier.verifyThat(ContraintesEmploiDuTemps::equipementsSalle).given(tp).penalizesBy(1);
+        g1.setEquipements(Set.of("Vidéoprojecteur"));
+        verifier.verifyThat(ContraintesEmploiDuTemps::equipementsSalle).given(tp).penalizesBy(1);
+        // Tout ce qui est demandé s'y trouve ; un équipement en plus ne gêne pas
+        labo.setEquipements(Set.of("Vidéoprojecteur", "Postes informatiques", "Tableau interactif"));
+        tp.setSalle(labo);
+        verifier.verifyThat(ContraintesEmploiDuTemps::equipementsSalle).given(tp).penalizesBy(0);
+
+        // Rien de demandé, ou pas de salle : la règle ne s'applique pas
+        Lecon sansBesoin = lecon(lun1, g2, Set.of(11L), Set.of(101L));
+        Lecon sansSalle = lecon(lun1, null, Set.of(12L), Set.of(102L));
+        sansSalle.setEquipementsRequis(Set.of("Vidéoprojecteur"));
+        verifier.verifyThat(ContraintesEmploiDuTemps::equipementsSalle).given(sansBesoin, sansSalle).penalizesBy(0);
+    }
+
+    @Test
+    void campusDeLaFiliere() {
+        // La filière préfère Gandhi (campus 1) : une salle de Stendhal (campus 2) coûte 2 points souples
+        Lecon ailleurs = lecon(lun1, st, Set.of(10L), Set.of(100L));
+        ailleurs.setCampusPrefere(1L);
+        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(2);
+        ailleurs.setSalle(g1);
+        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(0);
+
+        // Une filière sans campus préféré, ou une leçon sans salle, ne coûte rien
+        Lecon sansPreference = lecon(lun1, st, Set.of(11L), Set.of(101L));
+        Lecon sansSalle = lecon(lun1, null, Set.of(12L), Set.of(102L));
+        sansSalle.setCampusPrefere(1L);
+        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(sansPreference, sansSalle).penalizesBy(0);
+    }
+
+    @Test
+    void voeuPrefere() {
+        Lecon a = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        Voeu prefere = new Voeu(10L, 1L, Voeu.Type.PREFERE);
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, prefere).rewardsWith(1);
+        // Le vœu d'un collègue, ou un vœu sur un autre créneau, ne rapporte rien
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, new Voeu(11L, 1L, Voeu.Type.PREFERE)).rewardsWith(0);
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, new Voeu(10L, 3L, Voeu.Type.PREFERE)).rewardsWith(0);
+
+        // Une demi-journée sur deux créneaux préférés rapporte un point par créneau
+        a.setLongueur(2);
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, prefere, new Voeu(10L, 2L, Voeu.Type.PREFERE)).rewardsWith(2);
+        // Un vœu « à éviter » n'est pas une préférence
+        verifier.verifyThat(ContraintesEmploiDuTemps::voeuPrefere).given(a, new Voeu(10L, 1L, Voeu.Type.EVITER)).rewardsWith(0);
+    }
+
+    @Test
+    void pasDeSalleEnDistanciel() {
+        // Une séance à distance qui garde une salle la prend à un cours en présentiel : 5 points souples
+        Lecon aDistance = lecon(lun1, g1, Set.of(10L), Set.of(100L));
+        aDistance.setDistanciel(true);
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(aDistance).penalizesBy(5);
+        aDistance.setSalle(null);
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(aDistance).penalizesBy(0);
+
+        Lecon enSalle = lecon(lun1, g2, Set.of(11L), Set.of(101L));
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(enSalle).penalizesBy(0);
+    }
+
+    @Test
     void grilleDuRegimeEtDisponibilites() {
         Lecon initiale = lecon(soir, g1, Set.of(10L), Set.of(100L));
         verifier.verifyThat(ContraintesEmploiDuTemps::grilleDuRegime).given(initiale).penalizesBy(1);
