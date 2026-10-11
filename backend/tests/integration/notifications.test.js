@@ -47,3 +47,28 @@ describe("GET /api/notifications/user/:id", () => {
         expect(res.body.every((n) => n.lue === false)).toBe(true);
     });
 });
+
+describe("Devoirs fermés : leurs notifications sont masquées (lot D-2)", () => {
+    test("masquées des deux listes tant que les devoirs sont fermés, de retour s'ils rouvrent", async () => {
+        const autre = await createUser("etudiant");
+        await Notification.bulkCreate([
+            { id_user: autre.id_user, titre: "Nouveau devoir", message: "Quiz Spark", lue: false },
+            { id_user: autre.id_user, titre: "Devoir corrigé", message: "Votre note", lue: false },
+            { id_user: autre.id_user, titre: "Quiz en cours", message: "Rejoignez la partie", lue: false },
+        ]);
+        const client = await loginAs(autre);
+        const titres = async (chemin) => (await client.get(chemin)).body.map((n) => n.titre).sort();
+        const toutes = `/api/notifications/user/${autre.id_user}`;
+        const nonLues = `${toutes}/non-lues`;
+
+        process.env.DEVOIRS_ACTIFS = "false";
+        try {
+            expect(await titres(toutes)).toEqual(["Quiz en cours"]);
+            expect(await titres(nonLues)).toEqual(["Quiz en cours"]);
+        } finally {
+            process.env.DEVOIRS_ACTIFS = "true";
+        }
+        // Rien n'a été supprimé
+        expect(await titres(nonLues)).toEqual(["Devoir corrigé", "Nouveau devoir", "Quiz en cours"]);
+    });
+});
