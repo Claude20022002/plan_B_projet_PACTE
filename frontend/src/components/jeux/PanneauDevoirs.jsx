@@ -22,6 +22,7 @@ import {
 } from '@mui/material';
 import { devoirsAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 import { ds } from '../../design-system/tokens';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
 import SelecteurClasse from '../planning/SelecteurClasse';
@@ -193,6 +194,7 @@ function NotesDevoir({ idDevoir, fermer }) {
  * donne un de ses quiz en devoir dans un module et consulte les notes.
  */
 export default function PanneauDevoirs({ enseignant }) {
+  const confirmer = useConfirmation();
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const toast = useToast();
@@ -221,7 +223,7 @@ export default function PanneauDevoirs({ enseignant }) {
   }, [charger]);
 
   const supprimer = async (d) => {
-    if (!window.confirm(t('jeux.devoirs.confirmerSuppression', { titre: d.titre }))) return;
+    if (!(await confirmer(t('jeux.devoirs.confirmerSuppression', { titre: d.titre })))) return;
     try {
       await devoirsAPI.supprimer(d.id);
       charger();

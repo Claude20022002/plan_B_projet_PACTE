@@ -13,6 +13,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider }  from '../contexts/ThemeContext';
 import { AuthProvider }   from '../contexts/AuthContext';
 import { ToastProvider }  from '../contexts/ToastContext';
+import { ConfirmationProvider } from '../contexts/ConfirmationContext';
 import { queryClient }    from '../services/queryClient';
 import { useGlobalQueryError } from '../hooks/api/_shared/useGlobalQueryError';
 
@@ -34,7 +35,8 @@ export default function AppProviders({ children }) {
         <QueryClientProvider client={queryClient}>
           <ToastProvider>
             <QueryErrorBridge />
-            {children}
+            {/* Fenêtre de confirmation commune (useConfirmation, à la place de window.confirm) */}
+            <ConfirmationProvider>{children}</ConfirmationProvider>
           </ToastProvider>
         </QueryClientProvider>
       </AuthProvider>

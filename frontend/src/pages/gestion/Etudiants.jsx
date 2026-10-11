@@ -34,6 +34,7 @@ import ImportCsvDialog from '../../components/common/ImportCsvDialog';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_ETUDIANTS } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 
 // Modèle d'import : le groupe par son nom (celui affiché dans Groupes), pas par son identifiant
 const MODELE_CSV = [
@@ -49,6 +50,7 @@ const validationSchema = yup.object({
 });
 
 export default function Etudiants() {
+    const confirmer = useConfirmation();
     const [etudiants, setEtudiants] = useState([]);
     const [users, setUsers] = useState([]);
     const [groupes, setGroupes] = useState([]);
@@ -148,15 +150,14 @@ export default function Etudiants() {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')) {
-            try {
-                await etudiantAPI.delete(id);
-                setSuccess('Étudiant supprimé avec succès');
-                loadEtudiants();
-            } catch (error) {
-                console.error('Erreur:', error);
-                setError('Erreur lors de la suppression');
-            }
+        if (!(await confirmer('Êtes-vous sûr de vouloir supprimer cet étudiant ?'))) return;
+        try {
+            await etudiantAPI.delete(id);
+            setSuccess('Étudiant supprimé avec succès');
+            loadEtudiants();
+        } catch (error) {
+            console.error('Erreur:', error);
+            setError('Erreur lors de la suppression');
         }
     };
 

@@ -35,6 +35,7 @@ import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAP
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_AFFECTATIONS } from '../../utils/exportColumns';
 import { useAuth } from '../../contexts/AuthContext';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
 import { useTranslation } from 'react-i18next';
 import ViolationsDialog from '../../components/planning/ViolationsDialog';
 import AssistantCreneauxDialog from '../../components/planning/AssistantCreneauxDialog';
@@ -57,6 +58,7 @@ const validationSchema = yup.object({
 });
 
 export default function Affectations() {
+    const confirmer = useConfirmation();
     const { user } = useAuth();
     const { t } = useTranslation();
     const theme = useTheme();
@@ -279,13 +281,12 @@ export default function Affectations() {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cette affectation ?')) {
-            try {
-                await affectationAPI.delete(id);
-                loadAffectations();
-            } catch (error) {
-                console.error('Erreur:', error);
-            }
+        if (!(await confirmer('Êtes-vous sûr de vouloir supprimer cette affectation ?'))) return;
+        try {
+            await affectationAPI.delete(id);
+            loadAffectations();
+        } catch (error) {
+            console.error('Erreur:', error);
         }
     };
 

@@ -23,6 +23,8 @@ const fr = {
     themeDark: 'Mode sombre',
     logout: 'Se déconnecter',
     errorLoad: 'Impossible de charger les données. Vérifiez votre connexion puis réessayez.',
+    confirmTitle: 'Confirmation',
+    delete: 'Supprimer',
   },
   securite: {
     titre: 'Double authentification',

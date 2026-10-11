@@ -23,6 +23,8 @@ const en = {
     themeDark: 'Dark mode',
     logout: 'Sign out',
     errorLoad: 'The data could not be loaded. Check your connection and try again.',
+    confirmTitle: 'Confirmation',
+    delete: 'Delete',
   },
   securite: {
     titre: 'Two-factor authentication',
