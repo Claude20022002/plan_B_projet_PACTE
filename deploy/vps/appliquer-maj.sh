@@ -79,6 +79,24 @@ if [ -f "$PAQUET/Dockerfile.studylib" ]; then
     sleep 20
 fi
 
+CADDY_NOUVEAU="$PAQUET/deploy-vps/Caddyfile.vps"
+CADDY_ACTUEL="$HESTIM/deploy/vps/Caddyfile.vps"
+if [ -f "$CADDY_NOUVEAU" ] && ! cmp -s "$CADDY_NOUVEAU" "$CADDY_ACTUEL"; then
+    echo "== Aiguillage (Caddy) : le fichier a changé"
+    # Validé dans le conteneur (il a les adresses des sites) avant d'être mis en place : un
+    # fichier refusé laisse l'aiguillage actuel en service
+    docker cp "$CADDY_NOUVEAU" hestim_caddy:/tmp/Caddyfile.nouveau
+    if docker exec hestim_caddy caddy validate --config /tmp/Caddyfile.nouveau --adapter caddyfile >/dev/null 2>&1; then
+        cp "$CADDY_ACTUEL" "$CADDY_ACTUEL.avant-$DATE"
+        # cp (et non mv) : le conteneur monte ce fichier, il doit garder le même inode
+        cp "$CADDY_NOUVEAU" "$CADDY_ACTUEL"
+        docker exec hestim_caddy caddy reload --config /etc/caddy/Caddyfile --adapter caddyfile
+        echo "aiguillage rechargé (ancien fichier : $CADDY_ACTUEL.avant-$DATE)"
+    else
+        echo "ATTENTION : nouveau Caddyfile refusé par Caddy, l'aiguillage actuel est gardé" >&2
+    fi
+fi
+
 echo "== Contrôles (attendu : 404, 400, 200, 200)"
 code() { curl -s -o /dev/null -w '%{http_code}' "$@"; }
 echo "route inexistante : $(code https://planner.finadmintech.fr/api/route-inexistante)"
@@ -87,6 +105,7 @@ echo "site HESTIM       : $(code https://planner.finadmintech.fr/)"
 echo "FinAdminTech      : $(code https://finadmintech.fr/)"
 [ -f "$PAQUET/Dockerfile.classquiz" ] && echo "Quiz (ClassQuiz)  : $(code https://quiz.finadmintech.fr/)"
 [ -f "$PAQUET/Dockerfile.classquiz-api" ] && echo "API ClassQuiz     : $(code https://quiz.finadmintech.fr/api/v1/users/me) (attendu : 401 sans session)"
+echo "relais du quiz    : $(code 'https://planner.finadmintech.fr/socket.io/?EIO=4&transport=polling') (attendu : 200 ; 404 = aiguillage non rechargé)"
 [ -f "$PAQUET/Dockerfile.studylib" ] && echo "API bibliothèque  : $(code -H 'Accept: application/json' https://planner.finadmintech.fr/biblio/api/internship-reviews/recent) (attendu : 401 sans jeton)"
 
 cat <<EOF

@@ -82,8 +82,9 @@ export const seanceEnCours = async (idEnseignant) => {
 /**
  * Enregistre une partie signalée par le fork. Idempotent sur game_id (le fork peut réessayer).
  * Retourne { partie, notifies } ; null si l'expéditeur n'est pas un enseignant de Planner.
+ * `seanceChoisie` : séance désignée par l'enseignant (partie lancée depuis Planner, lancement.js).
  */
-export const enregistrerPartie = async (evenement) => {
+export const enregistrerPartie = async (evenement, seanceChoisie = null) => {
     const email = String(evenement.user_email ?? "").toLowerCase();
     const enseignant = email ? await Users.findOne({ where: { email } }) : null;
     if (!enseignant || !enseignant.actif || !ROLES_ENSEIGNANT.includes(enseignant.role)) return null;
@@ -91,7 +92,7 @@ export const enregistrerPartie = async (evenement) => {
     const existante = await QuizPartie.findOne({ where: { game_id: String(evenement.game_id) } });
     if (existante) return { partie: existante, notifies: 0 };
 
-    const seance = await seanceEnCours(enseignant.id_user);
+    const seance = seanceChoisie ?? (await seanceEnCours(enseignant.id_user));
     const partie = await QuizPartie.create({
         game_id: String(evenement.game_id),
         pin: String(evenement.game_pin),

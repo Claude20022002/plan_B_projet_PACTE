@@ -7,6 +7,7 @@ import { groupesDeLEtudiant, inscritsDuModule, modulesDuJoueur, peutProposerDans
 import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 import { mesClasses, peutViserClasse } from "../planning/mesClasses.js";
 import { idCompte } from "../oidc/provider.js";
+import { appelerClassQuiz, cheminSigne, definirClientClassQuiz, signatureClassQuiz } from "./clientClassQuiz.js";
 
 /**
  * Devoirs notés (phase Q). L'enseignant donne l'un de ses quiz ClassQuiz en devoir dans un module
@@ -21,69 +22,8 @@ const TYPES_NOTES = new Set(["ABCD", "CHECK", "TEXT", "RANGE", "ORDER"]);
 const TYPES_ACCEPTES = new Set([...TYPES_NOTES, "VOTING", "SLIDE"]);
 const DUREE_MAX_MS = 366 * 24 * 3600 * 1000;
 
-// ── Client du fork ClassQuiz (requêtes signées) ───────────────────────────
-
-const secret = () => {
-    const valeur = process.env.QUIZ_WEBHOOK_SECRET || "";
-    return valeur.length >= 32 ? valeur : null;
-};
-// Adresse interne de l'API ClassQuiz (réseau docker) ; QUIZ_URL publique en repli
-const baseClassQuiz = () => (process.env.QUIZ_API_INTERNE || process.env.QUIZ_URL || "").replace(/\/$/, "");
-
-/**
- * Signature d'une requête vers le fork : HMAC-SHA256 de « horodatage.MÉTHODE.chemin », suivi pour
- * une écriture de « .<SHA-256 du corps> » (un corps modifié en chemin est refusé).
- */
-export const signatureClassQuiz = (cle, horodatage, methode, chemin, corps = null) =>
-    crypto
-        .createHmac("sha256", cle)
-        .update(`${horodatage}.${methode}.${chemin}${corps === null ? "" : `.${crypto.createHash("sha256").update(corps).digest("hex")}`}`)
-        .digest("hex");
-
-/** Lecture (GET) ou, avec un corps, écriture (POST, JSON) signée. Lecture introuvable : null. */
-let clientClassQuiz = async (chemin, corps = null) => {
-    const cle = secret();
-    const base = baseClassQuiz();
-    if (!cle || !base) throw new ErreurMetier("PlannerQuiz n'est pas configuré", 503);
-    const horodatage = String(Math.floor(Date.now() / 1000));
-    const methode = corps === null ? "GET" : "POST";
-    const texte = corps === null ? null : JSON.stringify(corps);
-    const entetes = { "X-Hestim-Timestamp": horodatage, "X-Hestim-Signature": signatureClassQuiz(cle, horodatage, methode, chemin, texte) };
-    let reponse;
-    try {
-        reponse = await fetch(`${base}${chemin}`, {
-            method: methode,
-            headers: texte === null ? entetes : { ...entetes, "Content-Type": "application/json" },
-            ...(texte === null ? {} : { body: texte }),
-            signal: AbortSignal.timeout(texte === null ? 8000 : 15000),
-        });
-    } catch {
-        throw new ErreurMetier("PlannerQuiz est injoignable", 502);
-    }
-    if (reponse.status === 404) {
-        if (texte === null) return null;
-        throw new ErreurMetier("PlannerQuiz ne sait pas encore créer de quiz : mettez-le à jour", 502);
-    }
-    if (reponse.status === 422) throw new ErreurMetier(`PlannerQuiz a refusé le quiz${await detailDe(reponse)}`, 422);
-    if (!reponse.ok) throw new ErreurMetier(`PlannerQuiz a répondu ${reponse.status}`, 502);
-    return reponse.json();
-};
-
-const detailDe = async (reponse) => {
-    try {
-        const { detail } = await reponse.json();
-        return typeof detail === "string" && detail ? ` : ${detail.slice(0, 200)}` : "";
-    } catch {
-        return "";
-    }
-};
-
-/** Tests : remplace l'appel à ClassQuiz ((chemin, corps) → données) */
-export const definirClientClassQuiz = (client) => {
-    clientClassQuiz = client;
-};
-
-const cheminSigne = (chemin, params) => `${chemin}?${new URLSearchParams(params).toString()}`;
+// Le client signé du fork vit dans clientClassQuiz.js ; les tests le remplacent encore par ce module
+export { definirClientClassQuiz, signatureClassQuiz };
 
 /**
  * Crée un quiz privé dans ClassQuiz pour l'enseignant, sans qu'il ait à ouvrir ClassQuiz : son
@@ -93,7 +33,7 @@ const cheminSigne = (chemin, params) => `${chemin}?${new URLSearchParams(params)
  */
 export const creerQuizClassQuiz = async (user, quiz) => {
     if (user.role !== "enseignant") throw new ErreurMetier("Réservé aux enseignants", 403);
-    const cree = await clientClassQuiz("/api/v1/hestim/quiz", {
+    const cree = await appelerClassQuiz("/api/v1/hestim/quiz", {
         email: user.email,
         sub: idCompte(user.id_user),
         username: user.email.split("@")[0].slice(0, 100),
@@ -108,7 +48,7 @@ export const creerQuizClassQuiz = async (user, quiz) => {
 /** Quiz de l'enseignant dans ClassQuiz : [{ id, titre, nb_questions }] */
 export const quizDisponibles = async (user) => {
     if (user.role !== "enseignant") throw new ErreurMetier("Réservé aux enseignants", 403);
-    return (await clientClassQuiz(cheminSigne("/api/v1/hestim/quizzes", { email: user.email }))) ?? [];
+    return (await appelerClassQuiz(cheminSigne("/api/v1/hestim/quizzes", { email: user.email }))) ?? [];
 };
 
 // ── Correction ────────────────────────────────────────────────────────────
@@ -278,7 +218,7 @@ export const creerDevoir = async (user, donnees = {}) => {
     }
     if (type !== "quiz") throw new ErreurMetier("Seuls les quiz se donnent en devoir", 400);
     if (typeof quizId !== "string" || !/^[0-9a-f-]{36}$/i.test(quizId)) throw new ErreurMetier("quiz_id invalide", 400);
-    const quiz = await clientClassQuiz(cheminSigne(`/api/v1/hestim/quiz/${quizId}`, { email: user.email }));
+    const quiz = await appelerClassQuiz(cheminSigne(`/api/v1/hestim/quiz/${quizId}`, { email: user.email }));
     if (!quiz) throw new ErreurMetier("Quiz introuvable dans vos quiz PlannerQuiz", 404);
     const questions = (Array.isArray(quiz.questions) ? quiz.questions : []).filter((q) => TYPES_ACCEPTES.has(q?.type));
     if (!questions.some((q) => TYPES_NOTES.has(q.type))) throw new ErreurMetier("Ce quiz n'a aucune question notable", 400);

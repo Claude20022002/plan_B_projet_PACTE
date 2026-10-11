@@ -12,8 +12,18 @@
 		Referrer-Policy strict-origin-when-cross-origin
 		-Server
 	}
-	reverse_proxy frontend:80 {
-		header_up X-Forwarded-Proto {scheme}
+	# Écran du projecteur dans Planner (lot CQ-1) : le WebSocket du moteur de quiz, sur la même
+	# origine que le site. Planner n'utilise pas /socket.io lui-même. Les cookies de session de
+	# Planner (chemin « / ») ne sont pas transmis au moteur : il n'en a pas besoin.
+	handle /socket.io/* {
+		reverse_proxy quiz-api:80 {
+			header_up -Cookie
+		}
+	}
+	handle {
+		reverse_proxy frontend:80 {
+			header_up X-Forwarded-Proto {scheme}
+		}
 	}
 }
 

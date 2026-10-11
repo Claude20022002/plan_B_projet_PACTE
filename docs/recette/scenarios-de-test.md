@@ -17,6 +17,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 ## 0. Mise en production
 
 - [ ] Le script `appliquer-maj.sh` se termine sans erreur et affiche les contrôles 404, 400, 200, 200, puis 200 (quiz), 401 (API ClassQuiz) et 401 (bibliothèque).
+- [ ] Le script affiche « aiguillage rechargé » la première fois que le paquet contient le relais du quiz, et le contrôle « relais du quiz » répond 200. Ce paquet doit être préparé avec `--classquiz` : la route de lancement vit dans le moteur de quiz.
 - [ ] `docker exec hestim_backend node -p process.versions.tz` répond `2026c`.
 - [ ] `https://planner.finadmintech.fr/api/activites` répond 401 (et non 404).
 - [ ] Le script de démo des stages s'exécute (retour de stage Cybel avec photo, 128 idées de projets).
@@ -168,6 +169,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Fin de partie : dans Planner, les résultats du quiz montrent à l'enseignant la colonne « Sorties » (nombre · durée), en orange pour les étudiants concernés.
 - [ ] Un étudiant qui consulte les résultats ne voit aucune colonne « Sorties », ni pour lui ni pour les autres.
 - [ ] Le projecteur n'affiche jamais de nom ni de sortie.
+- [ ] Non-régression du moteur (seul son identifiant donne désormais la main sur une partie) : une partie lancée depuis ClassQuiz s'anime comme avant sur son écran d'animation, et la télécommande (QR de l'écran d'animation) pilote toujours la partie.
 
 ## 5. Application mobile : bibliothèque et stages
 
