@@ -139,3 +139,7 @@ test-results
 
 playwright-report
 studylib-drive-a32da7a10364
+
+# Parcours de démonstration (B-8) : comptes du passage en cours, rapport
+tests/parcours/.donnees.json
+playwright-report-parcours/
