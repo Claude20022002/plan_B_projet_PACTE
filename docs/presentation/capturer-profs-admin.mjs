@@ -102,6 +102,9 @@ let idSeance = null;
     await photo(s.page, "admin-03-generation", "/gestion/generation-automatique");
     await photo(s.page, "admin-04-edt-mensuel", "/emploi-du-temps/mensuel", 3500);
     await photo(s.page, "admin-05-suivi", "/gestion/suivi");
+    // Second onglet de la page : les heures du mois par enseignant (base de la paie des vacataires)
+    await s.page.getByRole("tab", { name: /heures du mois/i }).click();
+    await photo(s.page, "admin-05b-heures-du-mois", null, 3000);
     await photo(s.page, "admin-06-emplois-du-temps", "/gestion/emplois-du-temps", 3500);
     await photo(s.page, "admin-07-enseignements", "/gestion/enseignements");
     await photo(s.page, "admin-08-salles", "/gestion/salles");
