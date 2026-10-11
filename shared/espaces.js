@@ -35,8 +35,9 @@ export const ESPACES = [
 ];
 
 /**
- * Adresse d'un espace pour un rôle donné. Quiz : l'enseignant arrive sur ses quiz (connexion
- * unique par Planner), l'étudiant sur la saisie du code de partie.
+ * Adresse d'un espace pour un rôle donné. Quiz : l'enseignant reste dans Planner, sur « Mes quiz »
+ * de la page Activités (lot CQ-3 : une seule adresse) ; l'étudiant arrive sur la saisie du code de
+ * partie du service de quiz.
  * @param {string} code
  * @param {{ role?: string, urlQuiz?: string|null }} contexte
  * @returns {string|null} null si l'espace n'est pas disponible
@@ -46,10 +47,8 @@ export const adresseEspace = (code, { role, urlQuiz } = {}) => {
   if (role === 'admin' && code === 'quiz') return null;
   if (code === 'quiz') {
     if (typeof urlQuiz !== 'string' || !/^https?:\/\//.test(urlQuiz)) return null;
-    const base = urlQuiz.replace(/\/$/, '');
-    // ?sso=1 : ClassQuiz connecte l'enseignant par son compte Planner sans afficher sa page de
-    // connexion (déjà connecté là-bas : il arrive directement sur ses quiz)
-    return role === 'enseignant' ? `${base}/account/login?sso=1&returnTo=%2Fdashboard` : `${base}/play`;
+    if (role === 'enseignant') return '/jeux';
+    return `${urlQuiz.replace(/\/$/, '')}/play`;
   }
   return ESPACES.find((e) => e.code === code)?.chemin ?? null;
 };

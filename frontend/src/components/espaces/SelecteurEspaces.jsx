@@ -19,6 +19,8 @@ const lireUrlQuiz = () => {
 
 // Toutes les pages de ce site, Activités compris, sont dans l'espace Planner
 const courant = 'planner';
+// Chemin de ce site (la bibliothèque, sous /biblio/, est une autre application sur la même origine)
+const estDansPlanner = (adresse) => typeof adresse === 'string' && adresse.startsWith('/') && !adresse.startsWith('/biblio');
 
 /**
  * Sélecteur des espaces HESTIM (Planner, Bibliothèque, Quiz), présent sur chaque page :
@@ -45,8 +47,10 @@ export default function SelecteurEspaces({ role, sx }) {
   const aller = (espace) => {
     setOuvert(false);
     if (espace.code === courant) return;
-    // Planner est cette application ; Bibliothèque et Quiz en sont d'autres
+    // Planner est cette application, comme « Mes quiz » de l'enseignant ; la bibliothèque et le
+    // quiz des étudiants sont d'autres applications
     if (espace.code === 'planner') navigate(role ? `/dashboard/${role}` : '/');
+    else if (estDansPlanner(espace.adresse)) navigate(espace.adresse);
     else window.location.assign(espace.adresse);
   };
 
@@ -82,7 +86,7 @@ export default function SelecteurEspaces({ role, sx }) {
           {espaces.map((e, index) => {
             const Icone = ICONES[e.icone];
             const ici = e.code === courant;
-            const externe = e.code === 'bibliotheque' || e.code === 'quiz';
+            const externe = !estDansPlanner(e.adresse) && e.code !== 'planner';
             return (
               <ButtonBase
                 key={e.code}

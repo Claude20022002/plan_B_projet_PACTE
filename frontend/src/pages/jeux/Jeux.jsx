@@ -27,13 +27,13 @@ import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau'
 import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
 import ZoneQuizEtDevoirs from '../../components/jeux/ZoneQuizEtDevoirs';
+import PanneauQuizDirect from '../../components/quiz/PanneauQuizDirect';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { jeuxAPI, quizAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
-import { adresseEspace } from '../../../../shared/espaces.js';
 import { CONTEXTE_DEVOIRS, DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 
 const RAFRAICHISSEMENT_QUIZ_MS = 20000;
@@ -167,9 +167,6 @@ export default function Jeux() {
   };
 
   const titreJeu = (code) => libelle(accueil?.jeux.find((j) => j.code === code)?.titre, i18n.language) || code;
-  const urlQuiz = urlSure(quiz.config?.url) ? quiz.config.url : null;
-  const lancerQuiz = quiz.config?.peutLancer ? adresseEspace('quiz', { role: user?.role, urlQuiz }) : null;
-  const rejoindreQuiz = !quiz.config?.peutLancer ? adresseEspace('quiz', { role: user?.role, urlQuiz }) : null;
   const modules = accueil?.modules ?? [];
 
   return (
@@ -187,56 +184,8 @@ export default function Jeux() {
             seulement, un enseignant ne joue pas ── */}
         {accueil && !enseignant && <SceneJoueur user={user} profil={accueil.profil} jeux={accueil.jeux} onChoisir={choisirAvatar} />}
 
-        {/* ── Quiz en direct (ClassQuiz) ─────────────────────────────── */}
-        {urlQuiz && (
-          <Panneau
-            titre={t('jeux.quiz.titre')}
-            titreId="quiz-titre"
-            droite={
-              lancerQuiz ? (
-                <Button size="small" variant="contained" href={lancerQuiz} sx={boutonPanneauPlein}>
-                  {t('board.launchQuiz')}
-                </Button>
-              ) : null
-            }
-          >
-            {quiz.parties.length === 0 ? (
-              <LignePanneau
-                premier
-                action={
-                  rejoindreQuiz ? (
-                    <Button size="small" variant="outlined" href={rejoindreQuiz} sx={boutonPanneau}>
-                      {t('jeux.quiz.saisirCode')}
-                    </Button>
-                  ) : null
-                }
-              >
-                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>
-                  {t(enseignant ? 'jeux.quiz.aucuneEnseignant' : 'jeux.quiz.aucune')}
-                </Typography>
-              </LignePanneau>
-            ) : (
-              quiz.parties.map((p, i) => (
-                <LignePanneau
-                  key={p.id}
-                  premier={i === 0}
-                  lampe={ds.board.live}
-                  action={
-                    <Button size="small" variant="contained" href={p.url} sx={boutonPanneauPlein}>
-                      {t(enseignant ? 'jeux.quiz.ouvrir' : 'jeux.quiz.rejoindre')}
-                    </Button>
-                  }
-                >
-                  <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.live, letterSpacing: '0.12em' }}>{t('jeux.quiz.enCours')}</Capitales>
-                  <Box sx={{ fontWeight: 600 }}>{p.titre}</Box>
-                  <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                    {[p.module?.nom, t('jeux.quiz.code', { pin: p.pin })].filter(Boolean).join(' · ')}
-                  </Box>
-                </LignePanneau>
-              ))
-            )}
-          </Panneau>
-        )}
+        {/* ── Quiz en direct : parties en cours, lancement dans Planner (CQ-3) ── */}
+        <PanneauQuizDirect enseignant={enseignant} role={user?.role} config={quiz.config} parties={quiz.parties} />
 
         {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
         {enseignant && (

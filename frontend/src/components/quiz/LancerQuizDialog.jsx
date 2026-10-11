@@ -10,13 +10,14 @@ import { quizAPI } from '../../services/api';
  * les étudiants, puis ouvre l'écran à projeter. Trois gestes en tout jusqu'à la première question :
  * « Lancer un quiz », le quiz, « Démarrer ». Sans quiz adapté, « Créer un quiz » est à un geste.
  */
-export default function LancerQuizDialog({ seance, classe, onClose, onCreer }) {
+export default function LancerQuizDialog({ ouvert: ouvertDemande, seance = null, classe = '', onClose, onCreer }) {
   const { t } = useTranslation();
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState(null);
   const [erreur, setErreur] = useState('');
   const [enCours, setEnCours] = useState(null); // id du quiz en cours de lancement
-  const ouvert = Boolean(seance);
+  // Ouvert par « ouvert », ou dès qu'une séance est désignée (Mes classes)
+  const ouvert = Boolean(ouvertDemande ?? seance);
 
   useEffect(() => {
     if (!ouvert) return undefined;
@@ -36,7 +37,7 @@ export default function LancerQuizDialog({ seance, classe, onClose, onCreer }) {
     setEnCours(q.id);
     setErreur('');
     try {
-      const partie = await quizAPI.lancer({ id_quiz: q.id, id_affectation: seance.id_affectation });
+      const partie = await quizAPI.lancer({ id_quiz: q.id, id_affectation: seance?.id_affectation ?? null });
       // Le jeton d'animation voyage dans l'état de navigation, jamais dans l'adresse
       navigate('/quiz/projection', { state: { partie: { ...partie, titre: partie.titre || q.titre } } });
     } catch (e) {
@@ -47,7 +48,7 @@ export default function LancerQuizDialog({ seance, classe, onClose, onCreer }) {
 
   return (
     <Dialog open={ouvert} onClose={enCours ? undefined : onClose} fullWidth maxWidth="sm">
-      <DialogTitle>{t('quizDirect.lancer.titre', { classe })}</DialogTitle>
+      <DialogTitle>{classe ? t('quizDirect.lancer.titre', { classe }) : t('board.launchQuiz')}</DialogTitle>
       <DialogContent dividers>
         {erreur && <Alert severity="error" sx={{ mb: 2 }}>{erreur}</Alert>}
         {quiz === null && !erreur && <Skeleton variant="rectangular" height={120} />}
