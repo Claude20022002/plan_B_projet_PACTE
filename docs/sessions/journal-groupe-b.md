@@ -25,6 +25,25 @@ Avancement, demandes au groupe A et questions au chef de projet. Une entrée par
 
 **Fusion.** Cette branche reprend le commit du journal de `b/d1-masquer-devoirs` : fusionner D-1 d'abord, puis B-1. Les deux lots ne touchent pas les mêmes fichiers de code.
 
+### R-7 : noms des espaces (branche `b/r7-nommage`, dossier `../planner-b-r7`)
+
+Partie de `b/d1-masquer-devoirs`, car D-1 et R-7 modifient les mêmes fichiers de textes. **Ordre de fusion : D-1, B-1, puis R-7.** Le journal n'est tenu que sur `b/b1-code-mort`, pour ne pas créer de conflit.
+
+**Fait.**
+- Sélecteur d'espaces (`shared/espaces.js`, site et application) : « Jeux » devient « Activités », comme le menu du site et l'onglet de l'application.
+- Quiz par l'IA : le message « aucun quiz » ne cite plus « PlannerQuiz ».
+- Application, réglage Apparence : le thème « StudyLib » devient « Bibliothèque ».
+- Messages d'erreur de la page et de l'onglet Activités : « activités » au lieu de « jeux ».
+- Les mots « jeu » et « jeux » restent quand ils désignent un contenu (« Tous les jeux », « Jeux de vos modules »), pas l'espace.
+
+**Vérifié.** Plus aucun « StudyLib », « ClassQuiz » ou « PlannerQuiz » dans les textes affichés du site et de l'application (seulement dans des commentaires). Lint du site : 0 erreur, 7 avertissements connus ; build réussi ; `npx expo lint` : 0 erreur, 3 avertissements anciens ; tests de l'application : 32 sur 32.
+
+**Hors du lot** : ni la bibliothèque ni le quiz n'ont de copie du sélecteur d'espaces, contrairement à ce que dit le commentaire de `SelecteurEspaces.jsx`.
+
+### Demandes au groupe A (R-7)
+
+- Des messages renvoyés par le serveur et affichés tels quels citent encore « PlannerQuiz » : `backend/services/quiz/devoirs.js` (l. 47 à 68), `backend/services/ia/quiz.js` (l. 344), `backend/routes/oidcRoutes.js` (l. 34 et 52). Proposition : « le service de quiz » ou « l'espace Quiz ». `client_name` (`services/oidc/provider.js`) peut rester « PlannerQuiz HESTIM » s'il n'est pas affiché.
+
 ## 11 octobre 2026
 
 ### Point de départ
