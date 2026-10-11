@@ -23,7 +23,7 @@ const ETUDIANTS = [["Salma", "Bennani"], ["Yassine", "Alami"], ["Imane", "Tazi"]
 export const preparerDonnees = async (racine) => {
   const serveur = (chemin) => import(pathToFileURL(path.join(racine, "backend", chemin)).href);
   const { resetDatabase, createUser, createPlanningFixture, PASSWORD } = await serveur("tests/integration/helpers/testApp.js");
-  const { Affectation, Appartenir, Creneau } = await serveur("models/index.js");
+  const { Affectation, AnneeUniversitaire, Appartenir, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, Periode } = await serveur("models/index.js");
 
   await resetDatabase();
   const admin = await createUser("admin", { prenom: "Admin", nom: "Parcours", email: "admin.parcours@exemple.hestim.test" });
@@ -54,6 +54,16 @@ export const preparerDonnees = async (racine) => {
   const generation = await preparerGeneration(racine, admin, grille);
   // Après la génération GEN, qui crée l'année 2026-2027
   const iiia = await preparerIiia(racine);
+
+  // La classe du jour est aussi un enseignement de l'enseignante, comme dans les vraies données :
+  // « Créer un quiz » n'accepte qu'un groupe qui suit le module. Sur une autre année, inactive, pour
+  // ne rien changer aux générations du S1 et du S2 (parcours iiia et generation)
+  const annee = await AnneeUniversitaire.create({ libelle: "2025-2026", date_debut: "2025-09-01", date_fin: "2026-07-31", active: false });
+  const s1 = await Periode.create({ id_annee: annee.id_annee, code: "S1", date_debut: "2025-09-15", date_fin: "2026-01-23", nb_semaines: 15 });
+  const composante = await CoursComposante.create({ id_cours: fixture.cours.id_cours, type: "CM", volume_heures: 21, niveau_groupe: "promotion" });
+  const enseignement = await Enseignement.create({ id_composante: composante.id_composante, id_periode: s1.id_periode, heures_prevues: 21 });
+  await enseignement.setGroupes([fixture.groupe.id_groupe]);
+  await EnseignementEnseignant.create({ id_enseignement: enseignement.id_enseignement, id_user: enseignante.id_user, role: "principal", statut_service: "accepte" });
 
   const compte = (u) => ({ email: u.email, prenom: u.prenom, nom: u.nom });
   return {
