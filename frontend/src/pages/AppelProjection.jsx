@@ -161,7 +161,7 @@ export default function AppelProjection() {
             <Button variant="outlined" onClick={() => setVerification(true)} disabled={presents.length === 0} title={t('appel.verifierAide')} sx={boutonSombre}>
               {t('appel.verifier')}
             </Button>
-            <Button variant="contained" startIcon={<CheckCircle />} onClick={() => setValider(true)} sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: '#FFFFFF' } }}>
+            <Button variant="contained" startIcon={<CheckCircle />} onClick={() => setValider(true)} sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: ds.white } }}>
               {t('appel.projection.valider')}
             </Button>
           </>

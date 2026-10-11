@@ -47,6 +47,31 @@ export const ds = {
   // Commun au web et au mobile (shared/design-tokens.json)
   board: partages.board,
 
+  // Blanc pur : surfaces sur la marine (cadre du logo, avatar), boutons clairs du panneau
+  white: '#FFFFFF',
+
+  // Menu et en-têtes sur la marine du logo (DashboardLayout, Accueil, Connexion)
+  nav: {
+    letter: '#FFFFFF',
+    letterSoft: '#D3DAF1',
+    letterDim: '#B9C3E6',
+    icon: '#8D9BCF',
+  },
+
+  // Emploi du temps officiel imprimé (EDT du mois, format A4 de HESTIM) : les couleurs du
+  // document papier de l'école, distinctes de celles de l'écran
+  document: {
+    fond: '#FFFFFF',
+    encre: '#000000',
+    rouge: '#C00000',
+    marine: brand.navy,
+    orange: '#F8CBAD',
+    orangeTexte: '#843C0C',
+    vide: '#F2F2F2',
+    evenement: '#DDEBF7',
+    bord: '#7F7F7F',
+  },
+
   // Commun au web et au mobile (shared/design-tokens.json)
   status: partages.status,
 

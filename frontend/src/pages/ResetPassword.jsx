@@ -17,6 +17,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../services/api';
+import { ds } from '../design-system/tokens';
 
 /** Réinitialisation du mot de passe, ou premier choix du mot de passe (lien d'invitation). */
 export default function ResetPassword() {
@@ -91,7 +92,7 @@ export default function ResetPassword() {
                     display: 'flex',
                     alignItems: 'center',
                     justifyContent: 'center',
-                    background: '#0B0B0D', // fond du panneau (charte HESTIM)
+                    background: ds.board.ground, // fond du panneau (charte HESTIM)
                     padding: 2,
                 }}
             >
@@ -116,7 +117,7 @@ export default function ResetPassword() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: '#0B0B0D', // fond du panneau (charte HESTIM)
+                background: ds.board.ground, // fond du panneau (charte HESTIM)
                 padding: 2,
             }}
         >

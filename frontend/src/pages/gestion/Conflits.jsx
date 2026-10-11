@@ -11,12 +11,13 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { conflitAPI, affectationAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { ds } from '../../design-system/tokens';
 
 // ── Palette, par code de segment (libellés : conflits.segments.<code>) ─────────
 const COLORS = {
-    sans:       '#2e7d32',
-    salle:      '#c62828',
-    enseignant: '#e8a020',
+    sans:       ds.colors.success.text,
+    salle:      ds.colors.danger.text,
+    enseignant: ds.colors.warning.text,
 };
 
 // ── Tooltip ───────────────────────────────────────────────────────────────────
@@ -173,7 +174,7 @@ export default function Conflits() {
                                                 >
                                                     {donut.map((entry) => (
                                                         <Cell key={entry.name}
-                                                            fill={COLORS[entry.code] || '#888'} />
+                                                            fill={COLORS[entry.code] || ds.lineUnknown} />
                                                     ))}
                                                 </Pie>
                                                 <Tooltip content={<CustomTooltip />} />
@@ -209,7 +210,7 @@ export default function Conflits() {
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                         <Box sx={{
                                                             width: 12, height: 12, borderRadius: '50%',
-                                                            bgcolor: COLORS[entry.code] || '#888',
+                                                            bgcolor: COLORS[entry.code] || ds.lineUnknown,
                                                             flexShrink: 0,
                                                         }} />
                                                         <Typography variant="body2">{entry.name}</Typography>
@@ -217,7 +218,7 @@ export default function Conflits() {
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                         <Chip label={entry.value} size="small" variant="outlined" />
                                                         <Typography variant="body2" fontWeight={700}
-                                                            sx={{ color: COLORS[entry.code] || '#888', minWidth: 48, textAlign: 'right' }}>
+                                                            sx={{ color: COLORS[entry.code] || ds.lineUnknown, minWidth: 48, textAlign: 'right' }}>
                                                             {entry.pct} %
                                                         </Typography>
                                                     </Box>
@@ -227,7 +228,7 @@ export default function Conflits() {
                                                     <Box sx={{
                                                         height: '100%',
                                                         width: `${Math.min(100, entry.pct)}%`,
-                                                        bgcolor: COLORS[entry.code] || '#888',
+                                                        bgcolor: COLORS[entry.code] || ds.lineUnknown,
                                                         borderRadius: 3,
                                                         transition: 'width .4s ease',
                                                     }} />
