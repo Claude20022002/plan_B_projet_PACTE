@@ -187,38 +187,8 @@ export default function Jeux() {
         {/* ── Quiz en direct : parties en cours, lancement dans Planner (CQ-3) ── */}
         <PanneauQuizDirect enseignant={enseignant} role={user?.role} config={quiz.config} parties={quiz.parties} />
 
-        {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
-        {enseignant && (
-          <Panneau titre={t('jeux.historiqueProf.titre')} titreId="historique-titre">
-            {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
-            {historiqueProf?.length === 0 && (
-              <LignePanneau premier>
-                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide', { context: CONTEXTE_DEVOIRS })}</Typography>
-              </LignePanneau>
-            )}
-            {(historiqueProf ?? []).map((e, i) => (
-              <LignePanneau
-                key={e.id}
-                premier={i === 0}
-                action={
-                  e.type === 'quiz' ? (
-                    <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(e.id_partie)}>
-                      {t('jeux.resultats.voir')}
-                    </Button>
-                  ) : null
-                }
-              >
-                <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>
-                  {t(`jeux.historiqueProf.types.${e.type}`)} · {new Date(e.date).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
-                </Capitales>
-                <Box sx={{ fontWeight: 600 }}>{e.type === 'defis' ? libelle(e.titre, i18n.language) : e.titre}</Box>
-                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                  {[e.module ? `${e.module.code} · ${e.module.nom}` : null, detailHistorique(e)].filter(Boolean).join(' · ')}
-                </Box>
-              </LignePanneau>
-            ))}
-          </Panneau>
-        )}
+        {/* ── Mes quiz (créer, relire) : la zone quiz de l'enseignant, en haut (R-6) ── */}
+        {accueil && <ZoneQuizEtDevoirs enseignant={enseignant} />}
 
         {/* ── Étudiant : quiz terminés (résultats, défi par équipes, nuages de mots) ── */}
         {!enseignant && historique.length > 0 && (
@@ -247,9 +217,6 @@ export default function Jeux() {
             ))}
           </Panneau>
         )}
-
-        {/* ── Devoirs notés et quiz par l'IA (devoirs masqués : l'IA seule) ── */}
-        {accueil && <ZoneQuizEtDevoirs enseignant={enseignant} />}
 
         {/* ── Jeux de mes modules ─────────────────────────────────────── */}
         {(enseignant || modules.length > 0) && (
@@ -360,6 +327,39 @@ export default function Jeux() {
             <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.bientot')}</Typography>
           </LignePanneau>
         </Panneau>
+
+        {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
+        {enseignant && (
+          <Panneau titre={t('jeux.historiqueProf.titre')} titreId="historique-titre">
+            {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
+            {historiqueProf?.length === 0 && (
+              <LignePanneau premier>
+                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide', { context: CONTEXTE_DEVOIRS })}</Typography>
+              </LignePanneau>
+            )}
+            {(historiqueProf ?? []).map((e, i) => (
+              <LignePanneau
+                key={e.id}
+                premier={i === 0}
+                action={
+                  e.type === 'quiz' ? (
+                    <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(e.id_partie)}>
+                      {t('jeux.resultats.voir')}
+                    </Button>
+                  ) : null
+                }
+              >
+                <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>
+                  {t(`jeux.historiqueProf.types.${e.type}`)} · {new Date(e.date).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
+                </Capitales>
+                <Box sx={{ fontWeight: 600 }}>{e.type === 'defis' ? libelle(e.titre, i18n.language) : e.titre}</Box>
+                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
+                  {[e.module ? `${e.module.code} · ${e.module.nom}` : null, detailHistorique(e)].filter(Boolean).join(' · ')}
+                </Box>
+              </LignePanneau>
+            ))}
+          </Panneau>
+        )}
       </Box>
 
       <ResultatsQuiz idPartie={resultats} onClose={() => setResultats(null)} />
