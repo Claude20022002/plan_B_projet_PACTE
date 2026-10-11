@@ -17,7 +17,7 @@ web
 
 HESTIM Planner est la plateforme de planification des cours et de réservation des salles de HESTIM Engineering & Business School. Elle centralise les données pédagogiques, empêche les conflits d'horaire (salle, enseignant, groupe), génère automatiquement les emplois du temps sous contraintes, et synchronise les plannings entre administration, enseignants et étudiants.
 
-Réussite (cahier des charges PACTE, `docs/rapports/Descriptif du projet PACTE - 3A-IIIA.pdf`) : application complète et déployée ; emploi du temps dynamique et synchronisé ; tableau de bord analytique (taux d'occupation des salles, fréquence d'utilisation, heures creuses / pics d'activité) ; démonstration d'un report de cours automatique ; notifications lors des modifications de planning ; interface « claire et intuitive conforme aux principes UX/UI ».
+Réussite (cahier des charges PACTE, `docs/ecole/Descriptif du projet PACTE - 3A-IIIA.pdf`) : application complète et déployée ; emploi du temps dynamique et synchronisé ; tableau de bord analytique (taux d'occupation des salles, fréquence d'utilisation, heures creuses / pics d'activité) ; démonstration d'un report de cours automatique ; notifications lors des modifications de planning ; interface « claire et intuitive conforme aux principes UX/UI ».
 
 ## Positioning
 
@@ -47,7 +47,7 @@ Contrairement aux suites génériques (Pronote, Hyperplanning, WebUntis, Celcat)
 
 ## Evidence on Hand
 
-- Cahier des charges PACTE : `docs/rapports/Descriptif du projet PACTE - 3A-IIIA.pdf`.
+- Cahier des charges PACTE : `docs/ecole/Descriptif du projet PACTE - 3A-IIIA.pdf`.
 - Emploi du temps réel : `docs/exemple_emploi_du_temp - 3A IIIA (Du 30 Mars Au 26 Avril 2026).pdf` et `docs/exemple_emploi_du_temps_donnee.yaml`.
 - Maquettes d'origine : `docs/maquettes/img/`.
 - Données de démonstration : `backend/seed.js` (structure HESTIM : bâtiments, filières, groupes, cours, environ 90 enseignants et 400 étudiants fictifs).
