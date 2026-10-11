@@ -13,12 +13,13 @@
 | Élément | État |
 |---|---|
 | Production | **maj27**, à la connaissance de ce compte rendu. Aucun déploiement n'a été confirmé depuis : à vérifier auprès du chef de projet. |
-| Branche de Planner | `feature/phase-e-timefold`, **48 commits d'avance sur `main`**, dernier commit `4276d0d`. |
-| Fichiers non commités dans Planner | Ce compte rendu et `docs/plans/assainissement.md` (retrait du repère « soutenance »). |
+| Branche de Planner | `feature/phase-e-timefold`, **67 commits d'avance sur `main`** en local, dont 20 pas encore poussés (relevé du 11 octobre, après les lots du groupe A). |
+| Lots du groupe A | **Six lots fusionnés en local** dans `feature/phase-e-timefold` : A-1, A-2, R-11 côté serveur, CQ-1, A-9 avec R-3, A-4 avec Q-1. **A-3** est fait sur `a/a3-sauvegarde-quotidienne`, pas fusionné : il attend la destination des sauvegardes. Détail dans `journal-groupe-a.md`. |
+| Lots du groupe B | Sur leurs branches `b/…`, dans les dossiers `../planner-b` et `../planner-b-r7` ; aucune n'est fusionnée dans `feature/phase-e-timefold`. D-1 est fait sur `b/d1-masquer-devoirs`. Détail dans `journal-groupe-b.md`, sur cette branche. |
 | Fusion dans `main` | **Aucune PR n'est ouverte.** Les PR n° 1 à 3 sont fusionnées ; la PR n° 4 citée par les plans reste à créer. |
 | Dépôt GitHub de Planner | **Privé** depuis le 11 octobre au soir (dit par le chef de projet). `docs/users.xlsx` (noms et adresses) reste versionné et dans l'historique : la seconde moitié du lot 0-1 reste à faire. |
 | Code mort du site (B-1) | **Commencé** : le fournisseur React Query est retiré de `AppProviders.jsx` (commit `4276d0d`), le lint et le build passent. Restent à supprimer les fichiers que plus rien n'importe et la dépendance `@tanstack/react-query`. |
-| Dépôt du quiz (`../ClassQuiz`) | Dernier commit `5916cba5`. 1 fichier non commité : `frontend/static/site.webmanifest`. |
+| Dépôt du quiz (`../ClassQuiz`) | Dernier commit `5916cba5`. **5 fichiers non commités** : `frontend/static/site.webmanifest` et les quatre fichiers Python de CQ-1, qui corrigent la prise de main d'une partie par son seul code. **La faille reste ouverte en production tant que le moteur n'est pas redéployé.** |
 | Dépôt de la bibliothèque (`../StudyLib`) | Dernier commit `090ccce`. **11 fichiers non commités** (espace de l'enseignant, types Exercice et Article, un test). |
 | Paquet maj29 | **Périmé** (construit sur `d0dfe0f`, avant les retraits de fonctions). À refaire (lot 0-3). |
 

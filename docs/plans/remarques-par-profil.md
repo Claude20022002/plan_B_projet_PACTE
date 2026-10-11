@@ -16,11 +16,11 @@ Il complète `assainissement.md` sans le remplacer : quand une réponse existe d
 | Utilisateur facturé | **Tout compte actif dans le mois, quel que soit son rôle.** La facture va à l'école : rien n'est jamais facturé directement à un étudiant (§ 5). |
 | Coût de l'IA | **Inclus dans le prix par utilisateur, avec un plafond** (§ 5). |
 | Nom de la bibliothèque | **« Bibliothèque »** dans tous les écrans. StudyLib devient uniquement la bibliothèque : les stages, les offres et les projets en sortent pour l'espace Carrière (§ 9). |
-| Vidéo | Elle est **présentée pendant la soutenance**, et une version est publiée sur les réseaux (§ 6). |
+| Vidéo | **Deux montages** : un pour une présentation en salle, un pour les réseaux (§ 6). |
 | Soutenance | **Elle n'est plus un repère** (décision du 11 octobre au soir, qui remplace « peut-être la semaine du 12 octobre »). Dans ce plan, « avant la soutenance » se lit « d'abord » et « après la soutenance » se lit « plus tard ». |
 | Dépôt GitHub | **Privé** depuis le 11 octobre au soir. |
 | Application : barre du bas | L'onglet Jeux en sort. Proposition faite au chef de projet, **non validée** : Tableau, Semaine, Scanner, Bibliothèque, Menu ; le Menu range en tuiles les cours, la carrière et le reste (§ 10). |
-| Paie des vacataires | **L'appel validé ne suffit pas** comme preuve qu'un cours a eu lieu. La façon de faire de l'école n'est pas connue : à lui demander (§ 8). |
+| Paie des vacataires | **L'appel validé ne suffit pas** comme preuve qu'un cours a eu lieu : c'est un indice. Solution retenue : un **relevé mensuel**, visé par l'administration avant l'export (§ 8). Reste à la faire valider par la scolarité de HESTIM. |
 | Espace Carrière dans l'application | Stages, offres et projets pour les étudiants de HESTIM, **après la soutenance** (§ 9). |
 | Outils Google (Gmail, Agenda, Drive) | Non connectés pour l'instant : le besoin n'est plus connu. |
 
@@ -69,7 +69,7 @@ Il complète `assainissement.md` sans le remplacer : quand une réponse existe d
 | Critique | Réponse | Lot | Quand |
 |---|---|---|---|
 | Plus de travail : réservations, téléphones à délier, demandes de report | Regrouper ce qui l'attend sur son tableau de bord (le panneau « À traiter » existe) : reports en attente, téléphones à délier, séances sans appel. Et alléger la source la plus fréquente : l'étudiant demande lui-même le changement de téléphone (R-10) | R-9, R-10 | Après |
-| Risque sur la paie : une séance planifiée et passée est comptée réalisée d'office, même si le cours n'a pas eu lieu | L'appel sert de preuve. Dans « Heures du mois » et dans l'export des vacataires, une séance sans appel validé est marquée « à vérifier ». L'administration la confirme ou l'écarte avant l'export. Aucune action de plus pour l'enseignant | R-11 | Maintenant, priorité 1 |
+| Risque sur la paie : une séance planifiée et passée est comptée réalisée d'office, même si le cours n'a pas eu lieu | L'appel validé est un indice, pas une preuve. Dans « Heures du mois » et dans l'export des vacataires, une séance sans appel validé est marquée « à vérifier ». L'administration la confirme ou l'écarte avant l'export. Plus tard, l'enseignant confirme ses heures une fois par mois (relevé mensuel, § 8) | R-11 | Maintenant, priorité 1 |
 | Sauvegardes faites seulement à chaque mise à jour, sur le même serveur | Sauvegarde quotidienne hors du serveur, restauration testée | A-3 | Maintenant |
 
 ### Professeur
@@ -78,7 +78,7 @@ Il complète `assainissement.md` sans le remplacer : quand une réponse existe d
 |---|---|---|---|
 | Le quiz se lance sur un autre site | Lancer et projeter le quiz depuis Planner. En attendant : arrivée sans reconnexion, même onglet, lien de retour (fait) | CQ-1 à CQ-3 | Maintenant |
 | Un quiz créé par l'IA ne se modifie plus depuis Planner | Route de mise à jour d'un quiz (reste de IA-4) et éditeur « Mes quiz » (reste de IA-5) | IA-4, IA-5 | Après |
-| Plus de devoir « fichier », pas d'export des notes | Le devoir « fichier » a été retiré par décision : on ne le remet pas. Pour les notes : un export CSV des notes d'un devoir, protégé contre les formules comme les autres exports | R-13 | Après |
+| Plus de devoir « fichier », pas d'export des notes | Le devoir « fichier » a été retiré par décision : on ne le remet pas. Pour les notes : un export CSV des notes d'un devoir, protégé contre les formules comme les autres exports. Les devoirs étant masqués (D-1, D-2), ce lot attend leur retour | R-13 | Au retour des devoirs |
 
 ### Étudiant
 
@@ -86,7 +86,7 @@ Il complète `assainissement.md` sans le remplacer : quand une réponse existe d
 |---|---|---|---|
 | Un compte lié à un seul téléphone : téléphone cassé ou changé, il ne peut plus pointer | Depuis l'application, l'étudiant déclare son nouveau téléphone ; l'administration reçoit la demande et l'accepte d'un geste. La demande est tracée, pour que la protection contre la fraude reste entière | R-10 | Après |
 | Pas de pointage sans smartphone | L'enseignant coche à la main sur son écran d'appel : c'est en place et expliqué dans l'aide. Rien de plus | — | Fait |
-| Les alertes de devoir et de quiz ne s'ouvrent pas au toucher | Dans l'application, une alerte ou un push de devoir ouvre le devoir, celle d'un quiz ouvre la partie | R-14 | Maintenant, priorité 2 |
+| Les alertes de devoir et de quiz ne s'ouvrent pas au toucher | Dans l'application, une alerte ou un push de quiz ouvre la partie. Les devoirs étant masqués (D-1), l'ouverture d'un devoir attend leur retour | R-14 | Maintenant, priorité 2 |
 
 ### Investisseur
 
@@ -141,7 +141,7 @@ Le principe est retenu. Décisions du 11 octobre 2026 :
 
 Elle se fait **une fois les problèmes actuels réglés** : une vidéo montre les écrans, et les écrans bougent encore.
 
-Décision du 11 octobre 2026 : elle est **présentée pendant la soutenance**, et une version va sur les réseaux. Il faut donc deux montages de la même histoire : un pour la salle (16:9, 60 à 75 secondes) et un pour les réseaux (vertical, plus court, sous-titres incrustés, données fictives, accord de l'école pour son nom et son logo). La soutenance pouvant tomber la semaine du 12 octobre, le lot V-1 passe avant elle si les écrans sont gelés à temps.
+Décision du 11 octobre 2026 : deux montages de la même histoire, un pour une présentation en salle (16:9, 60 à 75 secondes) et un pour les réseaux (vertical, plus court, sous-titres incrustés, données fictives, accord de l'école pour son nom et son logo). La soutenance n'étant plus un repère, le seul préalable est que les écrans ne bougent plus : le lot V-1 commence une fois D-1 et R-7 fusionnés.
 
 - **Courte** : 60 à 75 secondes. Une personne qui la lance ne doit jamais se demander quand elle finit : une barre de progression discrète reste visible, et la durée est annoncée avant la lecture.
 - **Une seule histoire**, pas une liste de fonctions : une matinée à l'école. L'emploi du temps arrive sur le téléphone de l'étudiante ; le professeur projette le QR code et la classe est pointée en une minute ; il lance un quiz, les réponses s'affichent ; l'administration voit la séance faite. La promesse (R-8) ouvre et ferme la vidéo.
@@ -149,7 +149,7 @@ Décision du 11 octobre 2026 : elle est **présentée pendant la soutenance**, e
 - **Outil** : le dépôt contient déjà un projet de vidéo (`docs/presentation/video`, Remotion). La nouvelle le remplace ; ses fichiers audio ne sont plus versionnés (ils pèsent l'essentiel des 88 Mo du dépôt).
 - **Distincte des vidéos de guide** par rôle (G-2, G-3 de `espace-enseignant.md`), qui restent reportées : celles-ci expliquent comment faire, celle-là dit ce que c'est.
 
-Lot **V-1**, après la soutenance ou juste avant si le périmètre est gelé à temps.
+Lot **V-1**, par le chef de projet, une fois D-1 et R-7 fusionnés.
 
 ## 7. Lots nouveaux
 
@@ -169,21 +169,21 @@ Effort : **S** = une demi-journée au plus ; **M** = 1 à 3 jours ; **L** = plus
 | **R-10** | L'étudiant demande le changement de téléphone depuis l'application ; l'administration l'accepte d'un geste | A (route), B (écrans) | M | Après |
 | **R-11** | Séances sans appel validé marquées « à vérifier » dans « Heures du mois » et dans l'export des vacataires | A (calcul), B (écran) | M | Maintenant, priorité 1 |
 | **R-12** | Compteurs d'usage mensuels tirés des tables existantes, avec export | A | M | Après |
-| **R-13** | Export CSV des notes d'un devoir | A (route), B (bouton) | S | Après |
-| **R-14** | Application : une alerte ou un push de devoir ou de quiz ouvre le bon écran | B | S | Maintenant, priorité 2 |
-| **V-1** | Vidéo de présentation en motion design, 60 à 75 secondes | Chef de projet | L | Après |
+| **R-13** | Export CSV des notes d'un devoir | A (route), B (bouton) | S | Au retour des devoirs |
+| **R-14** | Application : une alerte ou un push de quiz ouvre la partie (celle d'un devoir : au retour des devoirs) | B | S | Maintenant, priorité 2 |
+| **V-1** | Vidéo de présentation en motion design, 60 à 75 secondes, en deux montages | Chef de projet | L | Après D-1 et R-7 |
 | **P-1 à P-5** | De HESTIM Planner à Planner (§ 4) | A et B | L | Planner |
 
 ## 8. Points ouverts
 
-- **R-11, la paie** : l'appel validé ne suffit pas (décision du 11 octobre), et la réponse « l'appel sert de preuve » du § 3 ne tient plus. **Solution retenue le 11 octobre : un relevé mensuel, pas de retour du bouton « confirmé » par séance.** (1) Planner prépare le relevé du mois de chaque enseignant : les séances avec un appel validé sont cochées d'office, les autres marquées « à vérifier ». (2) L'enseignant ne traite que les exceptions, puis confirme ses heures d'un geste ; sa déclaration est datée et inscrite au journal. (3) L'administration vise le relevé, puis exporte ; sans visa, rien ne part dans l'export des vacataires. Avant la soutenance, seule l'étape 3 se fait (R-11 tel qu'écrit au § 7) ; les étapes 1 et 2 viennent après. Reste à faire valider par la scolarité de HESTIM : quel document déclenche aujourd'hui le paiement d'un vacataire, et qui le signe ?
+- **R-11, la paie** : l'appel validé ne suffit pas (décision du 11 octobre), et la réponse « l'appel sert de preuve » du § 3 ne tient plus. **Solution retenue le 11 octobre : un relevé mensuel, pas de retour du bouton « confirmé » par séance.** (1) Planner prépare le relevé du mois de chaque enseignant : les séances avec un appel validé sont cochées d'office, les autres marquées « à vérifier ». (2) L'enseignant ne traite que les exceptions, puis confirme ses heures d'un geste ; sa déclaration est datée et inscrite au journal. (3) L'administration vise le relevé, puis exporte ; sans visa, rien ne part dans l'export des vacataires. D'abord, seule l'étape 3 se fait (R-11 tel qu'écrit au § 7) ; les étapes 1 et 2 viennent plus tard. **Écart à trancher** : le côté serveur de R-11, livré le 11 octobre, laisse partir dans l'export une séance « à vérifier », avec sa mention ; la règle « sans visa, rien ne part » n'est donc pas encore appliquée. Reste à faire valider par la scolarité de HESTIM : quel document déclenche aujourd'hui le paiement d'un vacataire, et qui le signe ?
 - **Définition d'un compte « actif »** (§ 5) : à valider.
 - **La promesse** (R-8) : la phrase proposée est un point de départ, à écrire avec vos mots.
 - **Prix, propositions non validées** (§ 5) : le minimum par établissement, le dégressif et le plafond de quiz par enseignant.
 - **Jeu ouvert par un scan** (§ 10) : dans une vue navigateur, comme Wooclap, ou dans l'écran actuel de l'application ? La vue navigateur allège l'application mais perd le blocage des captures d'écran.
 - **Bibliothèque à la place de Moodle** (§ 10) : la position de l'école sur Moodle et la reprise des supports existants.
 
-Tranchés le 11 octobre (§ 1) : l'utilisateur facturé, le coût de l'IA, le nom de la bibliothèque, la place de la vidéo.
+Tranchés le 11 octobre (§ 1) : l'utilisateur facturé, le coût de l'IA, le nom de la bibliothèque, les deux montages de la vidéo.
 
 ## 9. Idée pour après la soutenance : l'espace Carrière
 
