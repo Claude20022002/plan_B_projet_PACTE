@@ -150,10 +150,11 @@ class ContraintesTest {
 
     @Test
     void campusDeLaFiliere() {
-        // La filière préfère Gandhi (campus 1) : une salle de Stendhal (campus 2) coûte 2 points souples
+        // La filière préfère Gandhi (campus 1) : une salle de Stendhal (campus 2) est pénalisée, une
+        // fois par leçon (le vérificateur compte les pénalités, pas leur poids de 2 points souples)
         Lecon ailleurs = lecon(lun1, st, Set.of(10L), Set.of(100L));
         ailleurs.setCampusPrefere(1L);
-        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(2);
+        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(1);
         ailleurs.setSalle(g1);
         verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(0);
 
@@ -182,10 +183,10 @@ class ContraintesTest {
 
     @Test
     void pasDeSalleEnDistanciel() {
-        // Une séance à distance qui garde une salle la prend à un cours en présentiel : 5 points souples
+        // Une séance à distance qui garde une salle la prend à un cours en présentiel
         Lecon aDistance = lecon(lun1, g1, Set.of(10L), Set.of(100L));
         aDistance.setDistanciel(true);
-        verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(aDistance).penalizesBy(5);
+        verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(aDistance).penalizesBy(1);
         aDistance.setSalle(null);
         verifier.verifyThat(ContraintesEmploiDuTemps::salleInutileEnDistanciel).given(aDistance).penalizesBy(0);
 
