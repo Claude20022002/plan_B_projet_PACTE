@@ -1497,7 +1497,8 @@ const en = {
   },
   landing: {
     signIn: 'Sign in',
-    tagline: "HESTIM's course and room schedule, as easy to read as a departures board.",
+    // The promise (R-8): the same on the home page, the README and the video
+    tagline: 'Your timetable, one gesture away.',
     body: 'Students, teachers and the administration see the same information at the same time: where to be, when, and what has changed.',
     cta: 'Open the platform',
     featuresTitle: 'What the platform shows',

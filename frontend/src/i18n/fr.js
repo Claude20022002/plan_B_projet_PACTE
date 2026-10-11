@@ -1493,7 +1493,8 @@ const fr = {
   },
   landing: {
     signIn: 'Connexion',
-    tagline: 'Le planning des cours et des salles de HESTIM, lisible comme un tableau des départs.',
+    // La promesse (lot R-8, phrase du chef de projet) : la même sur l'accueil, le README et la vidéo
+    tagline: 'Votre emploi du temps accessible en un geste.',
     body: "Étudiants, enseignants et administration voient la même information, au même moment : où être, à quelle heure, et ce qui a changé.",
     cta: 'Accéder à la plateforme',
     featuresTitle: 'Ce que la plateforme affiche',
