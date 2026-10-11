@@ -130,6 +130,8 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Suivi du réalisé, onglet des modules : s'affiche en moins d'une seconde.
 - [ ] Export CSV des heures des vacataires et export CSV de l'emploi du temps : s'ouvrent dans Excel avec les bonnes colonnes, même pour une salle ou un groupe dont le nom contient « ; » ou des guillemets.
 - [ ] Un nom qui commence par `=` (par ex. une entreprise de vacataire `=1+1`) s'affiche tel quel dans Excel, sans être calculé.
+- [ ] Export CSV des heures des vacataires : une dernière colonne `etat`. Une séance passée sans appel validé y porte « à vérifier (pas d'appel validé) » ; une séance dont l'enseignant a validé l'appel, « appel validé ».
+- [ ] Au démarrage qui suit la mise à jour, le journal du backend indique la migration 0039 (visas des séances) appliquée, sans erreur.
 - [ ] L'EDT du mois s'imprime en PDF au format HESTIM.
 
 ## 4. Activités (quiz, devoirs, jeux)
