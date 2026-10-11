@@ -1,0 +1,59 @@
+/*
+ * Style commun des maquettes de quiz (docs/presentation/maquettes). Ce ne sont PAS des captures de
+ * l'application : ces écrans montrent une fonction à venir (illustration, extrait vidéo dans une
+ * question). Les couleurs, polices et mesures reprennent le thème « Planner sombre » réel
+ * (shared/design-tokens.json, mobile/src/app/quiz.jsx) pour qu'ils se raccordent aux vraies captures.
+ * Les polices sont injectées par scripts/capturer-maquettes.mjs.
+ */
+:root {
+    --fond: #0b0b0d;
+    --cellule: #212124;
+    --filet: #2c2c30;
+    --lettre: #f2f1ec;
+    --lettre-attenuee: #a6a6ac;
+    --cadre: #001861;
+    --annule: #ff5a5f;
+    --en-cours: #3fcb74;
+    /* Couleurs des quatre réponses : COULEURS_REPONSES de mobile/src/app/quiz.jsx */
+    --reponse-1: #3b63e0;
+    --reponse-2: #0f8a7e;
+    --reponse-3: #7048c9;
+    --reponse-4: #b03a8c;
+    --panneau: "Barlow Condensed", sans-serif;
+    --texte: "Barlow", sans-serif;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--fond); color: var(--lettre); font-family: var(--texte); overflow: hidden; }
+
+/* ── Téléphone : 390 × 844 points, comme les captures mobile-*.png (rendues à l'échelle 2) ── */
+.telephone { width: 390px; height: 844px; display: flex; flex-direction: column; background: var(--fond); }
+.etat { height: 47px; background: var(--cadre); display: flex; align-items: flex-end; justify-content: space-between; padding: 0 28px 6px; font: 600 15px var(--texte); color: #fff; }
+.etat svg { height: 12px; }
+.barre { background: var(--cadre); display: flex; align-items: center; padding: 10px 4px 8px 16px; }
+.barre h1 { flex: 1; font: 700 22px var(--panneau); text-transform: uppercase; letter-spacing: 1.2px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.barre .fermer { width: 44px; height: 44px; display: grid; place-items: center; }
+.question { flex: 1; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+.entete { display: flex; align-items: center; gap: 14px; }
+.chrono { flex: none; width: 56px; height: 56px; border-radius: 50%; border: 3px solid var(--annule); display: grid; place-items: center; font: 700 24px var(--panneau); }
+.enonce { font: 700 20px/26px var(--panneau); }
+.illustration { background: var(--cellule); border: 1px solid var(--filet); border-radius: 3px; overflow: hidden; position: relative; }
+.illustration svg { display: block; width: 100%; height: auto; }
+.legende { font: 400 13px/18px var(--texte); color: var(--lettre-attenuee); display: flex; align-items: center; gap: 6px; }
+.grille { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: auto; }
+.tuile { min-height: 96px; border-radius: 3px; display: grid; place-items: center; padding: 12px; font: 600 20px var(--panneau); color: #fff; text-align: center; }
+.tuile:nth-child(1) { background: var(--reponse-1); }
+.tuile:nth-child(2) { background: var(--reponse-2); }
+.tuile:nth-child(3) { background: var(--reponse-3); }
+.tuile:nth-child(4) { background: var(--reponse-4); }
+.repere { height: 34px; display: grid; place-items: center; }
+.repere i { width: 134px; height: 5px; border-radius: 3px; background: var(--lettre); opacity: 0.85; }
+
+/* Traits des schémas : même encre que le texte du panneau */
+.trait { stroke: var(--lettre); stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.plein { fill: var(--lettre); }
+.cote { stroke: var(--lettre-attenuee); stroke-width: 1.2; fill: none; }
+.etiquette { font: 600 15px var(--panneau); fill: var(--lettre); letter-spacing: 0.5px; }
+.etiquette.discrete { fill: var(--lettre-attenuee); font-weight: 500; }
+.force { stroke: #f26322; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.force-texte { font: 700 16px var(--panneau); fill: #f26322; letter-spacing: 0.5px; }

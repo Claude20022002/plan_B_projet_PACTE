@@ -1,0 +1,46 @@
+<!doctype html>
+<!--
+  MAQUETTE, pas une capture : question de quiz avec une illustration, sur le téléphone de l'étudiant.
+  Aujourd'hui l'application n'affiche pas d'image dans une question (mobile/src/app/quiz.jsx) :
+  en partie projetée, l'illustration est à l'écran de la salle. Cet écran montre la suite prévue.
+  Rendu : node ../docs/presentation/scripts/capturer-maquettes.mjs (depuis frontend/).
+-->
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Maquette : question illustrée sur le téléphone</title>
+    <link rel="stylesheet" href="commun.css">
+    <style>
+        /* Le schéma prend toute la place libre : c'est lui que l'étudiant doit lire */
+        .illustration { flex: 1; display: grid; place-items: center; }
+        .tuile { min-height: 120px; }
+    </style>
+</head>
+<body>
+    <main class="telephone">
+        <div class="etat" data-insertion="etat"></div>
+        <header class="barre">
+            <h1>Résistance des matériaux</h1>
+            <span class="fermer" data-insertion="fermer"></span>
+        </header>
+
+        <section class="question">
+            <div class="entete">
+                <div class="chrono">18</div>
+                <p class="enonce">Que vaut le moment fléchissant maximal dans cette poutre&nbsp;?</p>
+            </div>
+
+            <figure class="illustration" data-insertion="poutre"></figure>
+            <p class="legende"><span data-insertion="loupe"></span>Toucher le schéma pour l'agrandir</p>
+
+            <div class="grille">
+                <div class="tuile">15 kN·m</div>
+                <div class="tuile">30 kN·m</div>
+                <div class="tuile">60 kN·m</div>
+                <div class="tuile">120 kN·m</div>
+            </div>
+        </section>
+        <div class="repere"><i></i></div>
+    </main>
+</body>
+</html>

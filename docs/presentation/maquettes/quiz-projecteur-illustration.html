@@ -1,0 +1,63 @@
+<!doctype html>
+<!--
+  MAQUETTE, pas une capture : la même question que quiz-mobile-illustration.html, projetée dans la
+  salle pendant un quiz en direct. C'est là que l'illustration se voit aujourd'hui ; le téléphone
+  n'affiche que les quatre formes. L'écran du projecteur dans Planner (lot CQ-2) n'est pas encore
+  fusionné : cette image en donne l'intention, pas le dessin définitif.
+  Rendu : node ../docs/presentation/scripts/capturer-maquettes.mjs (depuis frontend/).
+-->
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Maquette : question illustrée au projecteur</title>
+    <link rel="stylesheet" href="commun.css">
+    <style>
+        .ecran { width: 1920px; height: 1080px; display: grid; grid-template-rows: 96px 1fr 300px; }
+        .bandeau { background: var(--cadre); display: flex; align-items: center; gap: 40px; padding: 0 56px; font: 700 34px var(--panneau); letter-spacing: 2.5px; text-transform: uppercase; color: #fff; }
+        .bandeau .seance { flex: 1; font-weight: 500; color: #c9d1ec; }
+        .bandeau .code b { font-size: 44px; letter-spacing: 6px; margin-left: 14px; }
+        .scene { display: grid; grid-template-columns: 1fr 860px; gap: 56px; padding: 48px 56px 36px; align-items: center; }
+        .rang { font: 600 30px var(--panneau); letter-spacing: 3px; text-transform: uppercase; color: var(--lettre-attenuee); }
+        .scene h2 { font: 700 76px/84px var(--panneau); margin: 18px 0 40px; }
+        .suivi { display: flex; align-items: center; gap: 36px; font: 600 34px var(--panneau); letter-spacing: 1.5px; text-transform: uppercase; color: var(--lettre-attenuee); }
+        .suivi .chrono { width: 120px; height: 120px; border-width: 6px; font-size: 56px; color: var(--lettre); }
+        .suivi b { color: var(--lettre); font-size: 48px; }
+        .scene .illustration { padding: 20px 28px; }
+        .reponses { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; padding: 0 56px 44px; }
+        .reponse { border-radius: 4px; display: flex; align-items: center; gap: 28px; padding: 0 36px; font: 700 54px var(--panneau); letter-spacing: 1px; color: #fff; }
+        .reponse:nth-child(1) { background: var(--reponse-1); }
+        .reponse:nth-child(2) { background: var(--reponse-2); }
+        .reponse:nth-child(3) { background: var(--reponse-3); }
+        .reponse:nth-child(4) { background: var(--reponse-4); }
+        .reponse svg { flex: none; width: 72px; height: 72px; }
+    </style>
+</head>
+<body>
+    <main class="ecran">
+        <header class="bandeau">
+            <span>HESTIM Planner</span>
+            <span class="seance">Quiz en direct · Résistance des matériaux · GCAU 3A</span>
+            <span class="code">Code<b>482 913</b></span>
+        </header>
+
+        <section class="scene">
+            <div>
+                <p class="rang">Question 6 sur 16</p>
+                <h2>Que vaut le moment fléchissant maximal dans cette poutre&nbsp;?</h2>
+                <div class="suivi">
+                    <div class="chrono">18</div>
+                    <span><b>23</b> réponses sur 29</span>
+                </div>
+            </div>
+            <figure class="illustration" data-insertion="poutre"></figure>
+        </section>
+
+        <section class="reponses">
+            <div class="reponse"><span data-forme="0"></span>15 kN·m</div>
+            <div class="reponse"><span data-forme="1"></span>30 kN·m</div>
+            <div class="reponse"><span data-forme="2"></span>60 kN·m</div>
+            <div class="reponse"><span data-forme="3"></span>120 kN·m</div>
+        </section>
+    </main>
+</body>
+</html>

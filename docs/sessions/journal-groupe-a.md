@@ -196,6 +196,27 @@ La correction écrite avec CQ-1 compare l'identifiant de la partie. Relue le 11 
 
 **Reste à faire, par le chef de projet** : commiter les sept fichiers Python de `../ClassQuiz` (pas `frontend/static/site.webmanifest`, qui n'est pas de ce lot), puis déployer le moteur avec `--classquiz`. **La faille reste ouverte en production jusque-là.**
 
+### Paquet du moteur de quiz seul (branche `a/d2-devoirs-fermes`)
+
+Le correctif du moteur ne pouvait pas partir sans tout Planner, qui demande une nouvelle image du backend.
+
+**Fait.**
+- `preparer-maj.sh <nom> --quiz-seul` : un paquet qui ne contient que le code Python du moteur. Rien à construire avant.
+- `deploy/vps/appliquer-quiz.sh` : étiquette `avant-<date>` sur l'image de l'API du quiz, superposition, redémarrage de l'API et du worker, contrôles, commande de retour arrière. Ni base ni Planner touchés. Il refuse un paquet complet.
+- `DEPLOIEMENT.md`, « Corriger le moteur de quiz seul ».
+- Le paquet `deploy/vps/paquets/quiz-correctif1.tar.gz` est prêt (commit du quiz `7492697a`, aucun fichier non commité).
+
+**Vérifié.** Depuis la version en production (maj27, commit du quiz `0c10f5ef`), le code Python n'a changé que dans cinq fichiers : ni dépendance, ni migration. Le paquet d'essai, construit sur l'image de l'API de ce PC sous une étiquette jetable : l'application se charge et contient les trois corrections.
+
+**Pas vérifié** : `appliquer-quiz.sh` n'a jamais tourné sur le serveur.
+
+### Vidéo : script et maquettes (`docs/presentation/`)
+
+Sur demande du chef de projet.
+- `script-video-motion-design.md` : une matinée à l'école, 1 min 54 pour la salle et 45 s pour les réseaux, sans les devoirs. **À valider.**
+- Trois maquettes dans `captures/` (`maquette-quiz-*.png`), sources dans `maquettes/`, rendues par `scripts/capturer-maquettes.mjs`. **Ce ne sont pas des captures** : l'application n'affiche ni image ni vidéo dans une question.
+- Aucune vraie capture refaite : les écrans changent encore tant que D-1 et R-7 ne sont pas fusionnés.
+
 ### Demandes au groupe B
 
 - **Site du quiz, page du joueur** : `frontend/src/routes/play/+page.svelte` envoie `gameData.game_id` à la statistique « Joined Game ». Le moteur ne le fournit plus : retirer cette propriété.

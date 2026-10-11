@@ -20,6 +20,19 @@ Un paquet `majNN` ne contient que le code. Il se superpose aux images déjà en 
 
 `appliquer-maj.sh` fait dans l'ordre : contrôle des dépendances, sauvegarde de la base dans `/root/sauvegardes`, étiquette `avant-<date>` sur les images en service, superposition, redémarrage du backend (qui applique ses migrations), puis du site, rechargement de l'aiguillage Caddy s'il a changé. Il affiche à la fin les commandes de retour arrière **avec la date du jour déjà remplie** : les copier avant de fermer le terminal.
 
+### Corriger le moteur de quiz seul
+
+Pour un correctif du moteur (le code Python de `../ClassQuiz`) qui ne doit pas attendre la prochaine mise à jour de Planner. Le paquet ne contient ni Planner, ni le site du quiz, ni migration : la base n'est pas touchée.
+
+1. **Sur le PC**, dans Git Bash, depuis la racine du dépôt, le correctif étant commité dans `../ClassQuiz` :
+   `bash deploy/vps/preparer-maj.sh quiz-correctifN --quiz-seul`
+2. **Vérifier le fichier `VERSION`** affiché : le commit du quiz attendu, aucune ligne de fichier non commité.
+3. **Copier `deploy/vps/paquets/quiz-correctifN.tar.gz` dans `/root`** du serveur, puis, hors des heures de cours (les parties en cours sont coupées) :
+   `cd /root && tar -xzf quiz-correctifN.tar.gz && bash quiz-correctifN/deploy-vps/appliquer-quiz.sh /root/quiz-correctifN`
+4. **Lire les contrôles**, copier la commande de retour arrière affichée, puis jouer une partie d'essai.
+
+Si les dépendances Python du quiz (`Pipfile`) ont changé, ce paquet ne suffit pas : il faut une nouvelle image de l'API.
+
 ### Quand les dépendances changent
 
 La superposition ne met pas à jour les modules npm du backend. Si `backend/package-lock.json` demande un module absent de l'image, `preparer-maj.sh` puis `appliquer-maj.sh` **s'arrêtent avec la liste des modules en cause**, avant d'avoir rien modifié. Il faut alors une nouvelle image.

@@ -1,0 +1,88 @@
+<!doctype html>
+<!--
+  MAQUETTE, pas une capture : l'étudiant regarde un court extrait vidéo (image et son) sur son
+  téléphone, puis répond. L'application ne lit pas encore de vidéo ni de son dans une question.
+  Sujet : filière Master Achats et Supply Chain. L'incoterm décrit (le vendeur livre à bord du
+  navire) est FOB.
+  Rendu : node ../docs/presentation/scripts/capturer-maquettes.mjs (depuis frontend/).
+-->
+<html lang="fr">
+<head>
+    <meta charset="utf-8">
+    <title>Maquette : extrait vidéo dans une question</title>
+    <link rel="stylesheet" href="commun.css">
+    <style>
+        .lecteur svg.scene { display: block; width: 100%; height: auto; }
+        .sous-titre { position: absolute; left: 0; right: 0; bottom: 44px; text-align: center; padding: 0 14px; }
+        .sous-titre span { display: inline; background: rgba(11, 11, 13, 0.82); color: #fff; font: 600 14px/22px var(--texte); padding: 3px 8px; border-radius: 2px; box-decoration-break: clone; -webkit-box-decoration-break: clone; }
+        .commandes { position: absolute; left: 0; right: 0; bottom: 0; height: 38px; display: flex; align-items: center; gap: 10px; padding: 0 12px; background: linear-gradient(transparent, rgba(11, 11, 13, 0.9)); font: 500 13px var(--panneau); letter-spacing: 0.5px; }
+        .commandes svg { flex: none; width: 20px; height: 20px; }
+        .piste { flex: 1; height: 4px; border-radius: 2px; background: rgba(242, 241, 236, 0.28); position: relative; }
+        .piste i { position: absolute; inset: 0 60% 0 0; border-radius: 2px; background: var(--lettre); }
+        .piste b { position: absolute; left: 40%; top: 50%; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--lettre); }
+        /* Le son de l'extrait : barres dont la partie déjà écoutée est claire */
+        .onde { display: flex; align-items: center; gap: 3px; height: 30px; }
+        .onde i { flex: 1; border-radius: 1px; background: var(--filet); }
+        .onde i.lu { background: var(--en-cours); }
+        .tuile { min-height: 112px; }
+    </style>
+</head>
+<body>
+    <main class="telephone">
+        <div class="etat" data-insertion="etat"></div>
+        <header class="barre">
+            <h1>Logistique internationale</h1>
+            <span class="fermer" data-insertion="fermer"></span>
+        </header>
+
+        <section class="question">
+            <figure class="illustration lecteur">
+                <!-- Image de l'extrait : un quai, un navire porte-conteneurs, une grue -->
+                <svg class="scene" viewBox="0 0 358 201" role="img" aria-label="Extrait vidéo : un conteneur est chargé à bord d'un navire, sur un quai">
+                    <rect width="358" height="201" fill="#0E1F4F" />
+                    <rect y="128" width="358" height="73" fill="#000E3D" />
+                    <circle cx="292" cy="46" r="20" fill="#F26322" opacity="0.9" />
+                    <!-- Navire -->
+                    <path d="M150 128 L168 158 H330 L346 128 Z" fill="#212124" />
+                    <rect x="296" y="96" width="34" height="32" fill="#2C2C30" />
+                    <rect x="302" y="102" width="22" height="6" fill="#F2F1EC" opacity="0.7" />
+                    <g>
+                        <rect x="176" y="110" width="28" height="18" fill="#3B63E0" /><rect x="206" y="110" width="28" height="18" fill="#0F8A7E" />
+                        <rect x="236" y="110" width="28" height="18" fill="#B03A8C" /><rect x="266" y="110" width="28" height="18" fill="#7048C9" />
+                        <rect x="191" y="92" width="28" height="18" fill="#1592C9" /><rect x="221" y="92" width="28" height="18" fill="#46508F" />
+                    </g>
+                    <!-- Grue du quai et conteneur en cours de chargement -->
+                    <path d="M40 158 V40 M40 40 H206 M40 58 L88 40 M40 40 L26 58 V70" stroke="#F2F1EC" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round" />
+                    <path d="M160 40 V64" stroke="#F2F1EC" stroke-width="2" />
+                    <rect x="142" y="64" width="36" height="20" fill="#F26322" />
+                    <rect y="158" width="150" height="43" fill="#212124" />
+                    <rect x="14" y="140" width="30" height="18" fill="#0F8A7E" /><rect x="60" y="140" width="30" height="18" fill="#3B63E0" /><rect x="92" y="140" width="30" height="18" fill="#7048C9" />
+                </svg>
+                <p class="sous-titre"><span>« …le vendeur a rempli son obligation dès que la marchandise est à bord du navire. »</span></p>
+                <div class="commandes">
+                    <span data-insertion="pause"></span>
+                    <div class="piste"><i></i><b></b></div>
+                    <span>0:18 / 0:45</span>
+                    <span data-insertion="son"></span>
+                </div>
+            </figure>
+
+            <div class="onde" data-insertion="onde" aria-hidden="true"></div>
+            <p class="legende"><span data-insertion="casque"></span>Extrait de 45 secondes, avec le son. Vous pouvez le revoir une fois.</p>
+
+            <div class="entete">
+                <div class="chrono">24</div>
+                <p class="enonce">Quel incoterm le responsable logistique décrit-il&nbsp;?</p>
+            </div>
+
+            <div class="grille">
+                <div class="tuile">EXW</div>
+                <div class="tuile">FOB</div>
+                <div class="tuile">CIF</div>
+                <div class="tuile">DDP</div>
+            </div>
+        </section>
+        <div class="repere"><i></i></div>
+    </main>
+</body>
+</html>
