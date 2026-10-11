@@ -41,7 +41,11 @@ export const getAllAffectations = asyncHandler(async (req, res) => {
     // En deux temps : total et identifiants de la page sans jointure (lus dans l'index de date),
     // puis ces seules séances avec leurs détails. Trier le résultat joint complet avant LIMIT
     // coûtait ~230 ms sur une année de séances.
-    const ordre = [["date_seance", "DESC"], ["id_affectation", "DESC"]];
+    // Par défaut les plus récentes d'abord (listes de gestion). « ordre=asc » rend les plus proches
+    // d'abord : une page est plafonnée à 100 séances, et un tableau des prochaines séances qui
+    // demande trois jours de campus (plus de 200) perdait celles du jour, coupées en fin de tri.
+    const sens = req.query.ordre === "asc" ? "ASC" : "DESC";
+    const ordre = [["date_seance", sens], ["id_affectation", sens]];
     const [count, pageIds] = await Promise.all([
         Affectation.count({ where }),
         Affectation.findAll({ where, attributes: ["id_affectation"], order: ordre, limit, offset, raw: true }),
