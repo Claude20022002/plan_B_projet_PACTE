@@ -64,7 +64,9 @@ describe("Webhook « partie démarrée » de ClassQuiz", () => {
 
         const notes = await Notification.findAll({ where: { titre: "Quiz en cours" } });
         expect(notes.map((n) => n.id_user)).toEqual([etudiant.id_user]);
-        expect(notes[0]).toMatchObject({ lien: "/jeux" });
+        // L'application ouvre directement la partie (R-14) ; le site ignore le paramètre
+        const partie = await QuizPartie.findOne();
+        expect(notes[0]).toMatchObject({ lien: `/jeux?partie=${partie.id_quiz_partie}` });
         expect(notes[0].message).toContain("Révision PySpark");
 
         // Le fork peut réessayer : pas de doublon ni de seconde notification
@@ -197,6 +199,8 @@ describe("Fin de partie : scores, équipes et nuages de mots", () => {
         const notes = await Notification.findAll({ where: { titre: "Résultats du quiz" } });
         expect(notes.map((n) => n.id_user).sort()).toEqual([etudiant.id_user, yanis.id_user, sara.id_user].sort());
         expect(notes.find((n) => n.id_user === etudiant.id_user).message).toBe("Spark : 2400 pts, 2e sur 6.");
+        const partie = await QuizPartie.findOne({ where: { game_id: gameId } });
+        expect(notes.every((n) => n.lien === `/jeux?resultats=${partie.id_quiz_partie}`)).toBe(true);
 
         // Le fork renvoie aussi à l'enregistrement des résultats : pas de doublon
         expect((await envoyer(corps)).status).toBe(200);
