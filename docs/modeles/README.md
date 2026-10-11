@@ -13,7 +13,7 @@ Deux fichiers Excel à copier, remplir puis importer depuis le site. Les personn
 - **Pas de colonne de mot de passe.** Chaque personne importée reçoit par email un lien d'invitation pour choisir le sien.
 - **`groupe`** est le nom du groupe le plus fin, tel qu'il s'affiche dans la page Groupes (`IIIA-3A-TD1` n'est qu'un exemple). Un groupe inconnu fait refuser la ligne ; une case vide crée l'étudiant sans groupe.
 - **`statut`** vaut `permanent` ou `vacataire`. Toute autre valeur fait refuser la ligne.
-- Une adresse déjà utilisée ou un numéro d'étudiant déjà pris fait refuser la ligne ; les autres lignes sont importées, et le bilan liste les lignes à corriger.
+- Une personne qui a déjà sa fiche d'étudiant ou d'enseignant, ou un numéro d'étudiant déjà pris, fait refuser la ligne ; les autres lignes sont importées, et le bilan liste les lignes à corriger.
 
 ## Ne pas versionner de vraie liste
 
