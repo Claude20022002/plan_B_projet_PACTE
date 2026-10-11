@@ -266,7 +266,8 @@ cd frontend && vercel --prod
 - [ ] `VITE_API_URL` contient l'URL Railway exacte
 - [ ] Seed lancé après le premier déploiement
 - [ ] Secrets GitHub Actions configurés (si CI/CD activé)
-- [ ] Test de connexion admin : `admin@hestim.ma` / `password123`
+- [ ] Mots de passe de démonstration remplacés (`deploy/vps/mots-de-passe-demo.mjs`), puis contrôle : `deploy/vps/verifier-mots-de-passe-demo.mjs` se termine par « OK »
+- [ ] Test de connexion admin avec le mot de passe écrit par ce script (plus jamais `password123`)
 
 ---
 

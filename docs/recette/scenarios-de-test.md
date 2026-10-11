@@ -22,6 +22,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Le script de démo des stages s'exécute (retour de stage Cybel avec photo, 128 idées de projets).
 - [ ] Sur GitHub, la CI de `main` est verte (Build Frontend, Test Backend avec l'étape « Banc des requêtes SQL », Test Mobile, Test Solveur).
 - [ ] Au démarrage, le journal du backend indique les migrations 0035 (index), 0036 (journal de sécurité) et 0037 (compteurs de connexion) appliquées, sans erreur.
+- [ ] Aucun compte ne s'ouvre avec un mot de passe de démonstration : le script `deploy/vps/verifier-mots-de-passe-demo.mjs` (commande en tête du fichier, lecture seule) se termine par « OK ». S'il liste des comptes, réinitialiser leur mot de passe puis le relancer. Date et résultat du dernier passage : …
 
 ## 1. Connexion et sécurité
 
