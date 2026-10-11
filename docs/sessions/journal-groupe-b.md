@@ -159,6 +159,22 @@ Demande du chef de projet : pas de long formulaire, le moins d'actions possible.
 - Quatre contraintes n'ont pas de test unitaire dans `ContraintesTest.java` : équipements de la salle, campus de la filière, vœu « préférer », pas de salle en distanciel.
 - Le plafond d'heures par semaine d'un enseignant (`max_heures_semaine`) n'entre pas dans le problème : le solveur ne peut pas le changer (les séances de la semaine sont fixées par les services), et les règles du déploiement ne font qu'avertir. Proposition : le signaler dès la préparation, comme les disponibilités insuffisantes (`avertissements` de `probleme.js`).
 - Le samedi après-midi ne vaut que pour le régime initial (paramètre `samedi_apres_midi_initiale`) : c'est voulu d'après son nom, à confirmer pour l'alternance.
+- Précision du chef de projet : **il n'y a pas de co-enseignant** à HESTIM. Le code les accepte, mais aucun scénario n'en utilise.
+
+### B-8 : scénario IIIA, deux promotions (branche `b/b8-parcours`)
+
+Demande du chef de projet : la 3A IIIA de l'emploi du temps de l'an dernier traitée comme une classe de cette année, à côté de la 4A IIIA d'octobre 2026, générées ensemble par le vrai solveur, pour regarder le résultat depuis deux profils.
+
+**Fait.**
+- `tests/parcours/donneesIiia.mjs` : modules, rythme hebdomadaire, salles et campus repris des deux PDF de `docs/` ; enseignants aux noms fictifs, partage gardé (une enseignante a cours avec les deux promotions) ; Business English par groupe de TD ; deux modules en distanciel ; un étudiant 3A (groupe 1) et un 4A.
+- `tests/parcours/grille.mjs` : la grille de l'école, commune à tous les scénarios (quatre créneaux du lundi au vendredi, vendredi après-midi décalé, samedi matin). Le scénario GEN l'utilise aussi.
+- `iiia.spec.cjs` : génération depuis l'écran, puis vérifications sur la première semaine et sur l'emploi du temps du mois de chaque étudiant (captures jointes au rapport Playwright).
+
+**Résultat.** 406 séances, 17 enseignements placés, 0 incomplet, 0 règle dure enfreinte ; aucune classe ni aucun enseignant à deux endroits ; labos et capacités respectés ; chaque étudiant ne voit que sa promotion. Suite complète : 9 sur 9, trois passages de suite.
+
+**Corrigé au passage.** Le parcours de génération lisait le rapport de la génération précédente encore affiché : il attend maintenant la fin du calcul. Un nom réel, resté des essais du 10 octobre dans les données des parcours, est remplacé par un nom fictif.
+
+**Constat, pour le groupe A.** Le campus préféré se règle par **filière** (`Filieres.id_campus_prefere`), pas par promotion. Or la 3A IIIA est à Stendhal et la 4A IIIA à Gandhi : le solveur ne peut pas le savoir, et la 3A reçoit des séances à Gandhi certains jours (un seul campus par jour est bien respecté). Proposition : un campus préféré par groupe (promotion), qui l'emporte sur celui de la filière.
 
 ## 11 octobre 2026
 
