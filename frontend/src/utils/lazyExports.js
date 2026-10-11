@@ -54,27 +54,6 @@ export async function exportToPDFLazy(affectations, filename, title, role) {
   return exportToPDF(affectations, filename, title, role);
 }
 
-// ── Export CSV ────────────────────────────────────────────────────────────
-
-export async function exportToCSVLazy(affectations, filename) {
-  const { exportToCSV } = await import('./exportEmploiDuTemps.js');
-  return exportToCSV(affectations, filename);
-}
-
-// ── Export iCal ───────────────────────────────────────────────────────────
-
-export async function exportToiCalLazy(affectations, filename, title) {
-  const { exportToiCal } = await import('./exportEmploiDuTemps.js');
-  return exportToiCal(affectations, filename, title);
-}
-
-// ── Export YAML ───────────────────────────────────────────────────────────
-
-export async function exportToYAMLLazy(affectations, filename, meta) {
-  const { exportToYAML } = await import('./exportEmploiDuTemps.js');
-  return exportToYAML(affectations, filename, meta);
-}
-
 // ── Hook intégré pour les boutons d'export ────────────────────────────────
 
 /**
