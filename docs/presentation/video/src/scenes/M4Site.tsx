@@ -12,11 +12,11 @@ const BW = 1100;
  * 11 octobre 2026, prises sur la plateforme de démonstration.
  * `origine` : point fixe du zoom lent, en % de la capture (là où l'œil doit aller).
  */
-export const M4Site: React.FC<{ capture: string; titre: string; suite: string; lignes: string[]; origine?: string }> = ({ capture, titre, suite, lignes, origine = "45% 30%" }) => {
+export const M4Site: React.FC<{ capture: string; titre: string; suite: string; lignes: [string, string]; origine?: string }> = ({ capture, titre, suite, lignes, origine = "45% 30%" }) => {
   const cadre = useEnter(6, 28);
   const l1 = useEnter(4);
   const hauteur = (BW * 9) / 16 + BROWSER_BAR;
-  const entrees = lignes.map((_, i) => useEnter((3 + 4 * i) * BEAT));
+  const entrees = [useEnter(3 * BEAT), useEnter(7 * BEAT)];
 
   return (
     <AbsoluteFill style={{ background: C.bg }}>

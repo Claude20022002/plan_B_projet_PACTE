@@ -1,16 +1,14 @@
 import React from "react";
 import { AbsoluteFill, Audio, Sequence, staticFile } from "remotion";
 import { Progression, Repere } from "./components/Habillage";
-import { M10Admin } from "./scenes/M10Admin";
+import { M3Etudiante } from "./scenes/M3Etudiante";
+import { M4Site } from "./scenes/M4Site";
+import { M5Appel } from "./scenes/M5Appel";
 import { M6Quiz } from "./scenes/M6Quiz";
 import { M7Bientot } from "./scenes/M7Bientot";
 import { S1Intro } from "./scenes/S1Intro";
 import { S2Outils } from "./scenes/S2Outils";
-import { S4Agenda } from "./scenes/S4Agenda";
 import { S5Alerte } from "./scenes/S5Alerte";
-import { S6Supports } from "./scenes/S6Supports";
-import { S7Resultats } from "./scenes/S7Resultats";
-import { S8Appel } from "./scenes/S8Appel";
 import { S9Fin } from "./scenes/S9Fin";
 import { BEAT, C } from "./theme";
 
@@ -28,14 +26,23 @@ type Scene = { rendu: (duree: number) => React.ReactNode; repere?: string };
 const SCENES: Record<string, Scene> = {
   title: { rendu: () => <S1Intro phrase={PROMESSE} /> },
   outils: { rendu: () => <S2Outils />, repere: "Aujourd'hui" },
-  agenda: { rendu: () => <S4Agenda />, repere: "7 h 40 · L'étudiante" },
-  alerte: { rendu: () => <S5Alerte />, repere: "7 h 40 · L'étudiante" },
-  appel: { rendu: () => <S8Appel />, repere: "8 h 30 · La salle" },
-  quiz: { rendu: (duree) => <M6Quiz duree={duree} />, repere: "9 h 10 · Le quiz" },
+  etudiante: { rendu: (duree) => <M3Etudiante duree={duree} />, repere: "7 h 40 · L'étudiante" },
+  alerte: { rendu: () => <S5Alerte capture="captures/app-01-tableau.png" />, repere: "7 h 40 · L'étudiante" },
+  prof: {
+    rendu: () => (
+      <M4Site capture="captures/prof-01-tableau.png" titre="Le professeur" suite="retrouve sa séance." lignes={["La salle, l'heure, la classe : tout est là.", "L'appel est à un geste."]} origine="40% 30%" />
+    ),
+    repere: "13 h 30 · Le professeur",
+  },
+  appel: { rendu: (duree) => <M5Appel duree={duree} />, repere: "13 h 35 · La salle" },
+  quiz: { rendu: (duree) => <M6Quiz duree={duree} />, repere: "14 h 10 · Le quiz" },
   bientot: { rendu: (duree) => <M7Bientot duree={duree} />, repere: "À venir" },
-  resultats: { rendu: () => <S7Resultats legende="Chacun voit où il en est." />, repere: "9 h 30 · Les résultats" },
-  supports: { rendu: () => <S6Supports />, repere: "Après le cours · La Bibliothèque" },
-  admin: { rendu: () => <M10Admin />, repere: "10 h · L'administration" },
+  admin: {
+    rendu: () => (
+      <M4Site capture="captures/admin-01-tableau.png" titre="L'administration" suite="voit tout le campus." lignes={["Chaque séance, sa salle, son enseignant.", "Aucun conflit dans l'emploi du temps."]} origine="50% 35%" />
+    ),
+    repere: "Toute la journée · L'administration",
+  },
   fin: { rendu: () => <S9Fin phrase={PROMESSE} /> },
 };
 
