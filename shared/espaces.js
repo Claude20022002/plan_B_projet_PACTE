@@ -25,7 +25,7 @@ export const ESPACES = [
   {
     code: 'jeux',
     icone: 'games',
-    titre: { fr: 'Jeux', en: 'Games' },
+    titre: { fr: 'Activités', en: 'Activities' },
     resume: { fr: 'Terminal Linux et défis de vos modules', en: 'Linux terminal and module challenges' },
     chemin: '/jeux',
   },
