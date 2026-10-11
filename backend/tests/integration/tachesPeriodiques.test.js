@@ -2,6 +2,7 @@ import { resetDatabase, closeDatabase, createUser, createPlanningFixture } from 
 import { Notification } from "../../models/index.js";
 import { rappelerAppels } from "../../services/presences/rappelAppel.js";
 import { passage, tacheUnique } from "../../services/taches/periodiques.js";
+import { aLHeureDeLEcole } from "./helpers/heureLocale.js";
 
 /**
  * Tâches périodiques (lot A-7) : deux instances de l'API lancent les mêmes minuteries ; le verrou
@@ -12,7 +13,7 @@ import { passage, tacheUnique } from "../../services/taches/periodiques.js";
 let enseignant;
 let lien;
 
-const finDeSeance = new Date("2027-01-04T10:40:00+01:00");
+const finDeSeance = aLHeureDeLEcole("2027-01-04", "10:40");
 
 beforeAll(async () => {
     await resetDatabase();
