@@ -24,9 +24,18 @@ const DECISIONS = ["confirmee", "ecartee"];
 export const NOTE_APPEL = "Un appel validé est un indice que le cours a eu lieu, pas une preuve. Les séances sans appel validé sont à confirmer ou à écarter avant l'export.";
 
 /**
- * Rend, pour chaque séance demandée, `{ etat, libelle, compte, appel_ouvert, motif, decide_le }`
- * dans une Map indexée par id_affectation. `appel_ouvert` : un appel a été lancé sans être validé.
+ * Rend l'état d'une séance pour la paie, `{ etat, libelle, compte, appel_ouvert, motif, decide_le }`,
+ * d'après son appel et son visa (chacun absent ou null). `appel_ouvert` : un appel a été lancé sans
+ * être validé. Sans lecture en base : les listes chargent appel et visa avec leurs séances.
  */
+export const etatDeLaSeance = (appel, visa) => {
+    // Une décision inconnue (ligne modifiée à la main) ne vaut pas décision
+    const decision = DECISIONS.includes(visa?.decision) ? visa.decision : null;
+    const etat = decision ?? (appel?.ferme_le ? "appel_valide" : "a_verifier");
+    return { etat, ...ETATS[etat], appel_ouvert: Boolean(appel && !appel.ferme_le), motif: decision ? visa.motif : null, decide_le: decision ? visa.updatedAt : null };
+};
+
+/** Rend l'état pour la paie de chaque séance demandée, dans une Map indexée par id_affectation. */
 export const etatsDesSeances = async (ids) => {
     if (!ids.length) return new Map();
     const [appels, visas] = await Promise.all([
@@ -35,16 +44,7 @@ export const etatsDesSeances = async (ids) => {
     ]);
     const appelDe = new Map(appels.map((a) => [a.id_affectation, a]));
     const visaDe = new Map(visas.map((v) => [v.id_affectation, v]));
-    return new Map(
-        ids.map((id) => {
-            const appel = appelDe.get(id);
-            const visa = visaDe.get(id);
-            // Une décision inconnue (ligne modifiée à la main) ne vaut pas décision
-            const decision = DECISIONS.includes(visa?.decision) ? visa.decision : null;
-            const etat = decision ?? (appel?.ferme_le ? "appel_valide" : "a_verifier");
-            return [id, { etat, ...ETATS[etat], appel_ouvert: Boolean(appel && !appel.ferme_le), motif: decision ? visa.motif : null, decide_le: decision ? visa.updatedAt : null }];
-        })
-    );
+    return new Map(ids.map((id) => [id, etatDeLaSeance(appelDe.get(id), visaDe.get(id))]));
 };
 
 /**
