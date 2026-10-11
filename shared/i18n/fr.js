@@ -34,6 +34,8 @@ const partage = {
     noSessionsBody: "Votre emploi du temps ne contient pas de séance dans les prochains jours. Les changements apparaîtront ici dès qu'ils seront publiés.",
     changed: 'Modifiée',
     previously: 'Avant : {{value}}',
+    // Séance en cours : son heure de fin, plus claire qu'un « dans 2 heures » qui se lisait « commence dans »
+    endsAt: 'Fin à {{heure}}',
     weekTitle: 'Semaine du {{date}}',
     nextDay: '{{day}}',
     sessionsCount_one: '{{count}} séance',

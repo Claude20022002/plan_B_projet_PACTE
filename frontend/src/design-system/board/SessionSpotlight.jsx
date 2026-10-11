@@ -46,7 +46,7 @@ export default function SessionSpotlight({ session: s, phase, variant = 'board',
 
   const when =
     phase === 'live'
-      ? `${t('status.live')} · ${relativeTo(s.end, i18n.language, now)}`
+      ? `${t('status.live')} · ${t('board.endsAt', { heure: s.endLabel })}`
       : relativeTo(s.start, i18n.language, now);
 
   const where = [s.building, s.floor !== null && s.floor !== undefined ? t('board.floor', { floor: s.floor }) : null]
