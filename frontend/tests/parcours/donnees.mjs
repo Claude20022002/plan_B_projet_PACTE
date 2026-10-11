@@ -10,7 +10,9 @@
  */
 import { pathToFileURL } from "node:url";
 import path from "node:path";
+import { creerGrille } from "./grille.mjs";
 import { preparerGeneration } from "./donneesGeneration.mjs";
+import { preparerIiia } from "./donneesIiia.mjs";
 
 // Le Maroc est à UTC+0 toute l'année ; la séance doit tomber « aujourd'hui » pour le serveur
 const FUSEAU = "Africa/Casablanca";
@@ -25,7 +27,7 @@ export const preparerDonnees = async (racine) => {
 
   await resetDatabase();
   const admin = await createUser("admin", { prenom: "Admin", nom: "Parcours", email: "admin.parcours@exemple.hestim.test" });
-  const enseignante = await createUser("enseignant", { prenom: "Nadia", nom: "Haidrar", email: "prof.parcours@exemple.hestim.test" });
+  const enseignante = await createUser("enseignant", { prenom: "Nadia", nom: "Sefrioui", email: "prof.parcours@exemple.hestim.test" });
   const etudiants = [];
   for (const [i, [prenom, nom]] of ETUDIANTS.entries()) {
     etudiants.push(await createUser("etudiant", { prenom, nom, email: `etu${i + 1}.parcours@exemple.hestim.test` }));
@@ -48,7 +50,10 @@ export const preparerDonnees = async (racine) => {
     id_user_admin: admin.id_user,
   });
 
-  const generation = await preparerGeneration(racine, admin);
+  const grille = await creerGrille(Creneau);
+  const generation = await preparerGeneration(racine, admin, grille);
+  // Après la génération GEN, qui crée l'année 2026-2027
+  const iiia = await preparerIiia(racine);
 
   const compte = (u) => ({ email: u.email, prenom: u.prenom, nom: u.nom });
   return {
@@ -58,5 +63,6 @@ export const preparerDonnees = async (racine) => {
     etudiants: etudiants.map(compte),
     seance: { id: seance.id_affectation, cours: fixture.cours.nom_cours, groupe: fixture.groupe.nom_groupe },
     generation,
+    iiia,
   };
 };

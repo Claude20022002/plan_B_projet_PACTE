@@ -4,7 +4,7 @@
  * solveur : ici, chaque règle est vérifiée sur ce que le service Timefold rend vraiment.
  *
  * Une filière à part (GEN), pour ne pas croiser les autres parcours : une promotion de 40 et son
- * TD de 20, une salle de cours et un labo, une grille lundi (4 créneaux) et mardi matin (2).
+ * TD de 20, une salle de cours et un labo ; la grille commune de l'école (grille.mjs).
  * Semestre S2 2027, du lundi 1er mars au 22 mai. Enseignements :
  *  - CM de Machine Learning pour la promotion, par un permanent ;
  *  - TP en labo pour le TD, par un vacataire qui n'a déclaré que le mardi matin ;
@@ -16,7 +16,7 @@ import { pathToFileURL } from "node:url";
 import path from "node:path";
 
 /** Crée la filière GEN et ce qu'il faut pour la générer ; rend ce que le parcours vérifie. */
-export const preparerGeneration = async (racine, admin) => {
+export const preparerGeneration = async (racine, admin, grille) => {
   const serveur = (chemin) => import(pathToFileURL(path.join(racine, "backend", chemin)).href);
   const { createUser } = await serveur("tests/integration/helpers/testApp.js");
   const m = await serveur("models/index.js");
@@ -33,9 +33,9 @@ export const preparerGeneration = async (racine, admin) => {
   const salle = await m.Salle.create({ nom_salle: "G-GEN1", type_salle: "Salle de cours", capacite: 50, id_campus: gandhi.id_campus });
   const labo = await m.Salle.create({ nom_salle: "G-GENLAB", type_salle: "Labo informatique", capacite: 25, id_campus: gandhi.id_campus });
 
-  const creneau = (jour_semaine, heure_debut, heure_fin, rang) => m.Creneau.create({ jour_semaine, heure_debut, heure_fin, duree_minutes: 90, rang });
-  const lundi = [await creneau("lundi", "09:00", "10:45", 1), await creneau("lundi", "11:00", "12:30", 2), await creneau("lundi", "13:30", "15:15", 3), await creneau("lundi", "15:30", "17:00", 4)];
-  const mardi = [await creneau("mardi", "09:00", "10:45", 1), await creneau("mardi", "11:00", "12:30", 2)];
+  const lundi = grille.lundi;
+  // Le vacataire ne déclare que le mardi matin
+  const mardi = grille.mardi.slice(0, 2);
 
   const annee = await m.AnneeUniversitaire.create({ libelle: "2026-2027", date_debut: "2026-09-01", date_fin: "2027-07-31", active: true });
   const periode = await m.Periode.create({ id_annee: annee.id_annee, code: "S2", date_debut: "2027-03-01", date_fin: "2027-05-22", nb_semaines: 12 });

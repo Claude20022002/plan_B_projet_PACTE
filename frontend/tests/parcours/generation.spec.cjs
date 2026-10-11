@@ -4,10 +4,9 @@
  * du planning devient active. Le test vérifie ensuite, sur les séances publiées, chaque règle posée
  * par les données (donneesGeneration.mjs).
  *
- * La semaine type n'a qu'une solution sans règle dure enfreinte : le TP du vacataire le mardi matin
- * (ses seuls créneaux déclarés), en labo ; le CM de la promotion le lundi matin (le lundi après-midi
- * est pris par une séance posée à la main, et le mardi matin par le TP de son propre TD), dans une
- * salle d'au moins 40 places.
+ * Règles attendues : le TP du vacataire le mardi matin (ses seuls créneaux déclarés), en labo ; le CM
+ * de la promotion hors du lundi après-midi (pris par une séance posée à la main) et jamais en même
+ * temps que le TP de son propre TD, dans une salle d'au moins 40 places.
  */
 const { test, expect } = require("@playwright/test");
 const { lireDonnees, seConnecter } = require("./outils.cjs");
@@ -37,6 +36,10 @@ test("génération puis publication : le solveur respecte toutes les règles", a
   await page.getByRole("combobox", { name: "Durée de calcul" }).click();
   await page.getByRole("option", { name: "30 s" }).click();
   await page.getByRole("button", { name: "Lancer la génération" }).click();
+  // Le rapport affiché avant la fin est celui de la génération précédente : attendre la fin du calcul
+  const arreter = page.getByRole("button", { name: "Arrêter et garder" });
+  await expect(arreter).toBeVisible();
+  await expect(arreter).toBeHidden({ timeout: 180_000 });
 
   // Rapport : des séances créées, aucune règle dure enfreinte, le module sans enseignant écarté
   await expect(chiffre(page, "séances créées")).toHaveText(/^[1-9]\d*$/, { timeout: 180_000 });
@@ -61,7 +64,6 @@ test("génération puis publication : le solveur respecte toutes les règles", a
     expect(s.id_user_enseignant).toBe(g.enseignants.vacataire);
   }
   for (const s of cm) {
-    expect(s.creneau?.jour_semaine, `CM du ${s.date_seance} le lundi`).toBe("lundi");
     expect(s.id_creneau, `CM du ${s.date_seance} hors du lundi après-midi déjà pris`).not.toBe(g.creneaux.lundiApresMidi);
     // La promotion compte 40 étudiants : toute salle d'au moins 40 places convient (pas le labo de 25)
     expect(s.salle?.capacite, `CM du ${s.date_seance} dans une salle assez grande`).toBeGreaterThanOrEqual(40);

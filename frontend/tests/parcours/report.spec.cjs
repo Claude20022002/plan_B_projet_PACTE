@@ -8,6 +8,8 @@ const { test, expect } = require("@playwright/test");
 const { lireDonnees, seConnecter } = require("./outils.cjs");
 
 const MOTIF = "Jury de soutenance le même jour";
+// Deux connexions et deux écrans, souvent juste après les générations qui chargent la machine
+test.setTimeout(90_000);
 
 test("demande de report : envoyée par l'enseignante, approuvée par l'administration", async ({ browser }) => {
   const { admin, enseignante, motDePasse } = lireDonnees();
