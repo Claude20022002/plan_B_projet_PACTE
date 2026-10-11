@@ -9,6 +9,7 @@ import { purgerCompteursDebit } from "./middleware/rateLimiterMiddleware.js";
 import { purgerGenerations } from "./services/ia/quiz.js";
 import { demarrerRenvoiQuotidien } from "./services/calendrier/envoiEdt.js";
 import { demarrerRappelsAppel } from "./services/presences/rappelAppel.js";
+import { passage } from "./services/taches/periodiques.js";
 
 dotenv.config();
 
@@ -52,23 +53,20 @@ const seedIfRequested = async () => {
             console.log(`--> Serveur lancé sur http://localhost:${PORT}`);
         });
 
+        // Chaque tâche périodique passe par un verrou MySQL : avec deux instances, une seule la fait (lot A-7)
+
         // Séances planifiées ou confirmées, une fois passées → réalisées (suivi du réalisé, phase P7) : au démarrage puis chaque heure
-        const actualiserRealise = () =>
-            marquerRealisees()
-                .then((n) => n && console.log(`--> ${n} séance(s) marquée(s) réalisée(s)`))
-                .catch((error) => console.error("--> Suivi du réalisé :", error.message));
+        const actualiserRealise = () => passage("suivi-realise", marquerRealisees, (n) => n && `${n} séance(s) marquée(s) réalisée(s)`);
         actualiserRealise();
         setInterval(actualiserRealise, 60 * 60 * 1000).unref();
 
         // Journal de sécurité (au-delà de la durée de conservation) et compteurs des limiteurs de
         // connexion (fenêtres terminées) : au démarrage puis chaque jour
         const purgerSecurite = () => {
-            purgerJournal()
-                .then((n) => n && console.log(`--> Journal de sécurité : ${n} événement(s) ancien(s) supprimé(s)`))
-                .catch((error) => console.error("--> Journal de sécurité :", error.message));
-            purgerCompteursDebit().catch((error) => console.error("--> Limiteurs de débit :", error.message));
+            passage("purge-journal", purgerJournal, (n) => n && `${n} événement(s) ancien(s) supprimé(s) du journal de sécurité`);
+            passage("purge-limiteurs", purgerCompteursDebit);
             // Quiz par IA : générations interrompues, brouillons et supports de plus de 30 jours
-            purgerGenerations().catch((error) => console.error("--> Quiz par IA :", error.message));
+            passage("purge-quiz-ia", purgerGenerations);
         };
         purgerSecurite();
         setInterval(purgerSecurite, 24 * 60 * 60 * 1000).unref();

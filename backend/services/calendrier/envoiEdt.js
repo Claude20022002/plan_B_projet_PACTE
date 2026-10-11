@@ -1,5 +1,6 @@
 import { Op } from "sequelize";
 import sequelize from "../../config/db.js";
+import { passage } from "../taches/periodiques.js";
 import {
     Affectation,
     Appartenir,
@@ -226,12 +227,8 @@ export const demarrerRenvoiQuotidien = () => {
         const jourLocal = `${partie("year")}-${partie("month")}-${partie("day")}`;
         if (Number(partie("hour")) !== heure || dernierJour === jourLocal) return;
         dernierJour = jourLocal;
-        try {
-            const bilan = await renvoyerChangements(maintenant);
-            if (bilan.modifie) console.log(`--> EDT du mois : ${bilan.modifie} classe(s) prévenue(s) d'un changement`);
-        } catch (error) {
-            console.error("--> Renvoi des EDT :", error.message);
-        }
+        // Une seule instance à la fois (lot A-7) ; une seconde, plus tard, ne trouve plus de changement
+        await passage("renvoi-edt", () => renvoyerChangements(maintenant), (bilan) => `${bilan.modifie} classe(s) prévenue(s) d'un changement sur ${bilan.classes}`);
     };
     const minuterie = setInterval(verifier, 10 * 60 * 1000);
     minuterie.unref();
