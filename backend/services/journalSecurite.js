@@ -28,6 +28,9 @@ export const EVENEMENTS = [
     "compte_supprime",
     "comptes_importes",
     "appareil_delie",
+    "telephone_demande",
+    "telephone_change_accepte",
+    "telephone_change_refuse",
     "quiz_ia_genere",
 ];
 
