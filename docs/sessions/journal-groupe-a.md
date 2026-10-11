@@ -73,7 +73,7 @@ Le lot touche **deux dépôts**. Dans Planner, tout est sur la branche. Dans `..
 **Faille corrigée dans le moteur.** Le moteur donnait la main sur une partie à **quiconque connaissait son code à six chiffres**, que tous les étudiants reçoivent : l'identifiant envoyé n'était pas comparé. Essai sur un moteur jetable, avant correction : faux identifiant, main prise ; code inconnu, main prise. Même défaut sur la télécommande (`register_as_remote`), qui renvoie en plus les questions avec leurs réponses. Les deux vérifient maintenant l'identifiant de la partie. **Cette faille existe en production tant que le moteur n'est pas redéployé.**
 
 **Vérifié.**
-- Planner : 4 tests nouveaux (`quizLancement.test.js`). Tests unitaires et suite d'intégration complète : résultat ci-dessous.
+- Planner : 4 tests nouveaux (`quizLancement.test.js`). Tests unitaires : 180 sur 180. Suite d'intégration complète : 349 sur 349 (32 fichiers).
 - Moteur : 13 tests Python sur 13 (`test_hestim.py`, 2 nouveaux), lancés dans l'image de l'API.
 - De bout en bout, moteur, base et Redis jetables, appelés par le client signé de Planner : partie créée ; quiz d'un collègue, compte inconnu et demande mal formée refusés (422) ; corps modifié, mauvais secret et signature absente refusés (401) ; le code et l'identifiant rendus donnent la main par le WebSocket ; faux identifiant et code inconnu refusés après correction.
 - Relais, sur des conteneurs Caddy jetables : les deux fichiers sont valides ; `/socket.io/` part vers le moteur sans cookie, le reste du site garde ses cookies, l'adresse du quiz est inchangée.
@@ -89,6 +89,28 @@ Le lot touche **deux dépôts**. Dans Planner, tout est sur la branche. Dans `..
 - `backend/services/quiz/parties.js` (déjà trop long) a grossi d'une ligne.
 - La liste des quiz de l'enseignant est servie par `GET /api/devoirs/quiz-disponibles` : D-2 ne devra pas la fermer avec les devoirs.
 - Le texte d'un refus du moteur passe de « a refusé le quiz » à « a refusé la demande ».
+
+### A-9 et R-3 : retour arrière et contrôle des dépendances (branche `a/a9-retour-arriere`, à la suite de CQ-1)
+
+**Fait.**
+- **R-3** : `deploy/vps/verifier-dependances.mjs` compare `backend/package-lock.json` aux modules réellement installés dans l'image du backend. `preparer-maj.sh` le lance contre l'image du PC et s'arrête si un module manque ou change de version. `appliquer-maj.sh` le relance contre l'image en ligne, avant toute sauvegarde ou construction : c'est ce second contrôle qui fait foi, car l'image du PC peut être plus récente que celle du serveur.
+- **A-9, procédure** : `DEPLOIEMENT.md` s'ouvre sur le serveur de production : mise à jour par paquet, changement de dépendances (reconstruire, garder l'ancienne image sous `avant-image-majNN`, charger), retour arrière (code seul ; avec migration ; quiz, bibliothèque, aiguillage).
+- **A-9, nettoyage** : `deploy/vps/nettoyer-paquets.sh` garde les 3 derniers paquets et les 3 dernières images `avant-<date>`. Sans `--supprimer`, il ne fait que montrer.
+- **Lot 0-5, la part du groupe A** : avec `--classquiz`, le fichier `VERSION` du paquet porte le commit du quiz et ses fichiers non commités.
+- Le paquet emporte `nettoyer-paquets.sh`, et `appliquer-maj.sh` l'installe sur le serveur.
+
+**Vérifié.**
+- Contrôle des dépendances : image récente du PC, « identiques » ; image d'avant le lot IA, arrêt avec 23 modules absents (`pdfjs-dist`, `mammoth`, `jszip` et leurs dépendances). Même résultat lancé dans l'image, comme le fait `appliquer-maj.sh`.
+- `preparer-maj.sh` complet : un paquet d'essai préparé puis supprimé ; il contient le contrôle, l'aiguillage et le `package-lock.json`.
+- Nettoyage : dossier factice et étiquettes d'images factices, à blanc puis avec `--supprimer`. Sur le vrai dossier `deploy/vps/paquets` (17 paquets), **à blanc seulement** : rien n'y a été supprimé.
+- Restauration avec migration (cas 2 du guide), déroulée telle qu'écrite sur une base jetable : la table ajoutée par la « migration » disparaît, la base retrouve ses 67 tables et ses 39 migrations.
+
+**Pas vérifié : la procédure n'a pas été suivie à blanc sur le serveur.** C'est le résultat attendu du lot A-9 ; il reste au chef de projet. Le retour arrière des images et le rechargement de Caddy n'ont été essayés que sur ce PC.
+
+**À savoir.**
+- Le site a été reconstruit (`frontend/dist`, non versionné) : l'ancien build venait de Git Bash et bloquait `preparer-maj.sh`.
+- Le contrôle des dépendances ignore les modules que le paquet apporte lui-même (`MODULES_SUPERPOSES`, aujourd'hui `proxy-addr`).
+- Le guide dit de vider la base avant de la restaurer : une restauration par-dessus laisserait les tables de la migration, et le paquet suivant échouerait.
 
 ### Demandes au groupe B
 

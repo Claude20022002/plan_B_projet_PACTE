@@ -13,6 +13,18 @@ COMPOSE=(docker compose --env-file .env.docker -f docker-compose.yml -f deploy/v
 
 echo "== Version du paquet"; cat "$PAQUET/VERSION"
 
+echo "== Dépendances du backend : image en ligne contre paquet"
+# Avant toute sauvegarde ou construction : si les dépendances ont changé, la superposition donnerait
+# un backend qui ne démarre pas. Le script s'arrête ici, rien n'a été touché (lot R-3).
+if [ -f "$PAQUET/deploy-vps/verifier-dependances.mjs" ]; then
+    SUPERPOSES="$(ls "$PAQUET/backend/node_modules" 2>/dev/null | tr '\n' ' ')"
+    # shellcheck disable=SC2086  # un argument par module superposé
+    docker run --rm --entrypoint node \
+        -v "$PAQUET/backend/package-lock.json:/tmp/attendu.json:ro" \
+        -v "$PAQUET/deploy-vps/verifier-dependances.mjs:/tmp/verifier-dependances.mjs:ro" \
+        claude20022002/hestim-backend:latest /tmp/verifier-dependances.mjs /tmp/attendu.json /app/node_modules/.package-lock.json $SUPERPOSES
+fi
+
 echo "== Sauvegarde de la base (le backend applique ses migrations au démarrage)"
 mkdir -p /root/sauvegardes && chmod 700 /root/sauvegardes
 # Mot de passe lu dans le conteneur : jamais affiché ni passé en argument visible de l'hôte
@@ -45,6 +57,7 @@ docker build -q -t claude20022002/hestim-frontend:latest -f "$PAQUET/Dockerfile.
 
 echo "== Scripts d'exploitation"
 cp "$PAQUET"/deploy-vps/*.mjs "$PAQUET"/deploy-vps/appliquer-maj.sh "$HESTIM/deploy/vps/"
+[ -f "$PAQUET/deploy-vps/nettoyer-paquets.sh" ] && cp "$PAQUET/deploy-vps/nettoyer-paquets.sh" "$HESTIM/deploy/vps/"
 [ -d "$PAQUET/deploy-vps/demo" ] && rm -rf "$HESTIM/deploy/vps/demo" && cp -r "$PAQUET/deploy-vps/demo" "$HESTIM/deploy/vps/demo"
 
 cd "$HESTIM"

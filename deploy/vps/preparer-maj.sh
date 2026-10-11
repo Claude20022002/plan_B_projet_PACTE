@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 # Prépare sur le PC une mise à jour « par superposition » du backend et du site déjà en ligne :
 # FROM l'image actuelle + COPY du code (quelques Mo à envoyer au lieu de toute l'image).
-# Valable tant que les dépendances (package*.json) n'ont pas changé ; sinon reconstruire l'image.
+# Valable tant que les dépendances (package*.json) n'ont pas changé ; sinon reconstruire l'image :
+# le script s'arrête de lui-même dans ce cas (verifier-dependances.mjs).
 #
 # Avant : construire le site depuis PowerShell (Git Bash réécrit « /api » en chemin Windows) :
 #   cd frontend; $env:VITE_API_URL="/api"; npm run build
@@ -38,6 +39,26 @@ if grep -rlq "Program Files" frontend/dist; then
     exit 1
 fi
 
+# Paquets npm du backend mis à jour pour un correctif de sécurité, sans changement de dépendances
+# (même arbre) : superposés dans /app/node_modules au lieu de reconstruire l'image.
+MODULES_SUPERPOSES=(proxy-addr)
+
+# Dépendances du backend (lot R-3) : la superposition ne les met pas à jour. Premier contrôle, contre
+# l'image du PC ; appliquer-maj.sh refait le même contre l'image réellement en ligne, qui fait foi.
+IMAGE_BACKEND=claude20022002/hestim-backend:latest
+if docker image inspect "$IMAGE_BACKEND" >/dev/null 2>&1; then
+    INSTALLE="$(mktemp)"
+    MSYS_NO_PATHCONV=1 docker run --rm --entrypoint cat "$IMAGE_BACKEND" /app/node_modules/.package-lock.json > "$INSTALLE"
+    if ! node deploy/vps/verifier-dependances.mjs backend/package-lock.json "$INSTALLE" "${MODULES_SUPERPOSES[@]}"; then
+        rm -f "$INSTALLE"
+        echo "Paquet non préparé." >&2
+        exit 1
+    fi
+    rm -f "$INSTALLE"
+else
+    echo "ATTENTION : image $IMAGE_BACKEND absente de ce PC, dépendances non contrôlées ici (elles le seront sur le serveur)" >&2
+fi
+
 rm -rf "$TRAVAIL" "$SORTIE/$NOM.tar.gz"
 mkdir -p "$TRAVAIL/backend" "$TRAVAIL/shared" "$TRAVAIL/site"
 
@@ -46,9 +67,6 @@ tar -C backend -cf - \
     --exclude=node_modules --exclude='.env' --exclude='.env.*' --exclude='*.log' \
     --exclude=tests --exclude=.impeccable --exclude='storage' . | tar -C "$TRAVAIL/backend" -xf -
 tar -C shared -cf - --exclude=node_modules . | tar -C "$TRAVAIL/shared" -xf -
-# Paquets npm du backend mis à jour pour un correctif de sécurité, sans changement de dépendances
-# (même arbre) : superposés dans /app/node_modules au lieu de reconstruire l'image.
-MODULES_SUPERPOSES=(proxy-addr)
 for module in "${MODULES_SUPERPOSES[@]}"; do
     mkdir -p "$TRAVAIL/backend/node_modules"
     cp -r "backend/node_modules/$module" "$TRAVAIL/backend/node_modules/$module"
@@ -57,7 +75,7 @@ cp -r frontend/dist "$TRAVAIL/site/dist"
 cp frontend/nginx.conf "$TRAVAIL/site/nginx.conf"
 # Scripts d'exploitation à jour (renommage, mots de passe de démonstration…)
 mkdir -p "$TRAVAIL/deploy-vps"
-cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh "$TRAVAIL/deploy-vps/"
+cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh deploy/vps/nettoyer-paquets.sh "$TRAVAIL/deploy-vps/"
 # Aiguillage interne : appliqué seulement s'il a changé (relais /socket.io/ du lot CQ-1)
 cp deploy/vps/Caddyfile.vps "$TRAVAIL/deploy-vps/"
 # Contenus de démonstration (retours de stage et leurs photos)
@@ -129,6 +147,11 @@ git status --porcelain >> "$TRAVAIL/VERSION"
 if [ "$AVEC_STUDYLIB" = "--studylib" ]; then
     echo "StudyLib : $(git -C "$RACINE/../StudyLib" rev-parse --short HEAD)" >> "$TRAVAIL/VERSION"
     git -C "$RACINE/../StudyLib" status --porcelain >> "$TRAVAIL/VERSION"
+fi
+if [ "$AVEC_CLASSQUIZ" = "--classquiz" ]; then
+    # Les lignes qui suivent le commit sont les fichiers non commités : un paquet propre n'en a aucune
+    echo "ClassQuiz : $(git -C "$RACINE/../ClassQuiz" rev-parse --short HEAD)" >> "$TRAVAIL/VERSION"
+    git -C "$RACINE/../ClassQuiz" status --porcelain >> "$TRAVAIL/VERSION"
 fi
 
 tar -C "$SORTIE" -czf "$SORTIE/$NOM.tar.gz" "$NOM"
