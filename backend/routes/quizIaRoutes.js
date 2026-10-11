@@ -8,9 +8,11 @@ import { creerDansClassQuiz, disponibilite, etatGeneration, lancerGeneration, me
 
 /**
  * Quiz générés par l'IA (enseignants) — docs/plans/quiz-ia.md
- *  - GET    /api/quiz-ia/disponibilite                       service configuré, générations restantes
+ *  - GET    /api/quiz-ia/disponibilite                       service configuré, sujet seul possible, générations restantes
  *  - POST   /api/quiz-ia/generations?id_cours=&id_groupe=&plage=&nombre=&type=&difficulte=&langue=&temps=&nom=
  *                                                            corps : le support (PDF, DOCX, PPTX) → { id_generation, statut }
+ *                                                            &sujet= (200 caractères au plus) : sans corps, le quiz est tiré
+ *                                                            du sujet seul ; avec un support, il précise la demande
  *  - GET    /api/quiz-ia/generations                         mes 20 dernières générations
  *  - GET    /api/quiz-ia/generations/:id                     état et brouillon
  *  - PUT    /api/quiz-ia/generations/:id/questions           brouillon relu { questions }
@@ -43,7 +45,7 @@ router.post(
     limiteIa,
     lireSupport,
     planification(async (req, res) => {
-        const { id_cours, id_groupe, plage, nombre, type, difficulte, langue, temps, nom } = req.query;
+        const { id_cours, id_groupe, plage, nombre, type, difficulte, langue, temps, nom, sujet } = req.query;
         const reglages = {
             ...(nombre !== undefined ? { nombre: Number(nombre) } : {}),
             ...(type !== undefined ? { type } : {}),
@@ -52,7 +54,7 @@ router.post(
             ...(temps !== undefined ? { temps: Number(temps) } : {}),
         };
         const fichier = { contenu: Buffer.isBuffer(req.body) ? req.body : null, type: req.get("Content-Type"), nom };
-        res.status(202).json(await lancerGeneration(req.user, { id_cours, id_groupe, plage, reglages, fichier }, contexteDe(req)));
+        res.status(202).json(await lancerGeneration(req.user, { id_cours, id_groupe, plage, reglages, fichier, sujet }, contexteDe(req)));
     })
 );
 
