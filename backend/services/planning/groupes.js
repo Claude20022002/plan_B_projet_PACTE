@@ -49,6 +49,21 @@ const avecFamilles = async (idsGroupes, transaction) => {
     return idsGroupes.filter((id) => parId.has(id)).map((id) => ({ groupe: parId.get(id), famille: tous.filter((g) => g.id_filiere === parId.get(id).id_filiere) }));
 };
 
+/**
+ * Campus préféré des groupes donnés : celui du premier groupe qui en a un, en remontant de chaque
+ * groupe vers sa promotion (un TD sans campus prend celui de sa promotion). Deux promotions d'une
+ * même filière peuvent ainsi avoir cours sur deux campus.
+ * @returns {Promise<number|null>} null si aucun n'en a : l'appelant se rabat sur la filière
+ */
+export const campusPrefereDesGroupes = async (idsGroupes, transaction) => {
+    for (const { groupe, famille } of await avecFamilles(idsGroupes, transaction)) {
+        const lignee = [groupe, ...ancetres(groupe, new Map(famille.map((g) => [g.id_groupe, g])))];
+        const campus = lignee.find((g) => g.id_campus_prefere)?.id_campus_prefere;
+        if (campus) return campus;
+    }
+    return null;
+};
+
 /** Identifiants des groupes donnés suivis de leurs ancêtres, sans doublon. */
 export const avecAncetres = async (idsGroupes, transaction) => {
     const ids = new Set();

@@ -40,6 +40,8 @@ const Groupe = sequelize.define(
         id_groupe_parent: DataTypes.INTEGER,
         // Année d'études (1 à 5) : « 4A | IIIA (S7) »
         annee: DataTypes.INTEGER,
+        // Campus préféré du groupe : il l'emporte sur celui de la filière (services/planning/groupes.js)
+        id_campus_prefere: DataTypes.INTEGER,
     },
     {
         tableName: "Groupes",
