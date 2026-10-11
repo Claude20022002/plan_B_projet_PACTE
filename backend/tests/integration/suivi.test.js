@@ -4,6 +4,7 @@ import {
     Affectation,
     AnneeUniversitaire,
     Appartenir,
+    AppelSeance,
     Campus,
     Cours,
     CoursComposante,
@@ -15,6 +16,7 @@ import {
     Periode,
     ResponsableFiliere,
     Salle,
+    VisaSeance,
 } from "../../models/index.js";
 import { aujourdhui } from "../../services/planning/affectationRules.js";
 
@@ -122,5 +124,66 @@ describe("Avancement et heures", () => {
         expect(csv.text).toMatch(/;1,8;SUI-NOSQL NoSQL;SUI-4A;G-SUI/);
         expect((await clients.admin.get("/api/suivi/vacataires.csv?mois=octobre")).status).toBe(400);
         expect(MOIS).toMatch(/^\d{4}-\d{2}$/);
+    });
+});
+
+describe("Séances à vérifier avant la paie (R-11)", () => {
+    // Séance d'avant-hier, réalisée d'office par le premier test ; son mois peut être le précédent
+    const cible = () => ref.seances.planifieePassee;
+    const mois = () => decaler(-2).slice(0, 7);
+    const heuresDu = async () => (await clients.admin.get(`/api/suivi/enseignants?mois=${mois()}`)).body.find((h) => h.id_user === vacataire.id_user);
+    const dansLaListe = async (id) => (await clients.admin.get(`/api/suivi/seances-a-verifier?mois=${mois()}`)).body.seances.find((s) => s.id_affectation === id);
+    const ligneCsv = async () => (await clients.admin.get(`/api/suivi/vacataires.csv?mois=${mois()}`)).text.split("\r\n").find((l) => l.includes(`;${decaler(-2)};`));
+    const viser = (id, corps) => clients.admin.send("put", `/api/suivi/seances/${id}/visa`, corps);
+
+    test("sans appel validé, la séance est à vérifier dans les heures, la liste et l'export", async () => {
+        const heures = await heuresDu();
+        expect(heures.seances_a_verifier).toBeGreaterThan(0);
+        expect(heures.heures_a_verifier).toBe(heures.heures_realisees);
+        const liste = await clients.admin.get(`/api/suivi/seances-a-verifier?mois=${mois()}`);
+        expect(liste.body.note).toMatch(/indice.*pas une preuve/);
+        expect(liste.body.a_verifier).toBe(heures.seances_a_verifier);
+        expect(liste.body.seances.find((s) => s.id_affectation === cible().id_affectation)).toMatchObject({ etat: "a_verifier", heures: 1.8, groupe: "SUI-4A", appel_ouvert: false, enseignants: [{ id_user: vacataire.id_user, statut: "vacataire" }] });
+        expect(await ligneCsv()).toMatch(/;à vérifier \(pas d'appel validé\)$/);
+    });
+
+    test("un appel lancé ne suffit pas ; validé, la séance sort de la liste", async () => {
+        const appel = await AppelSeance.create({ id_affectation: cible().id_affectation, secret: "s".repeat(64), ouvert_le: new Date() });
+        expect(await dansLaListe(cible().id_affectation)).toMatchObject({ etat: "a_verifier", appel_ouvert: true });
+        await appel.update({ ferme_le: new Date() });
+        expect(await dansLaListe(cible().id_affectation)).toBeUndefined();
+        expect(await ligneCsv()).toMatch(/;appel validé$/);
+        await appel.destroy();
+    });
+
+    test("l'administration écarte, confirme, puis revient sur sa décision", async () => {
+        const avant = await heuresDu();
+        const ecartee = await viser(cible().id_affectation, { decision: "ecartee", motif: "  Cours non tenu  " });
+        expect(ecartee.body).toMatchObject({ etat: "ecartee", compte: false, motif: "Cours non tenu" });
+        const apres = await heuresDu();
+        expect(apres.heures_ecartees).toBe(1.8);
+        expect(apres.seances_a_verifier).toBe(avant.seances_a_verifier - 1);
+        expect(apres.heures_realisees).toBeLessThan(avant.heures_realisees);
+        // Écartée : absente de l'export, mais encore dans la liste pour revenir dessus
+        expect(await ligneCsv()).toBeUndefined();
+        expect(await dansLaListe(cible().id_affectation)).toMatchObject({ etat: "ecartee", motif: "Cours non tenu" });
+
+        expect((await viser(cible().id_affectation, { decision: "confirmee" })).body).toMatchObject({ etat: "confirmee", compte: true, motif: null });
+        expect(await ligneCsv()).toMatch(/;confirmée par l'administration$/);
+        expect((await heuresDu()).heures_realisees).toBe(avant.heures_realisees);
+
+        expect((await viser(cible().id_affectation, { decision: null })).body.etat).toBe("a_verifier");
+        expect(await VisaSeance.count()).toBe(0);
+    });
+
+    test("refus : hors administration, décision inconnue, séance non réalisée ou introuvable", async () => {
+        expect((await clients.vacataire.send("put", `/api/suivi/seances/${cible().id_affectation}/visa`, { decision: "confirmee" })).status).toBe(403);
+        expect((await clients.vacataire.get(`/api/suivi/seances-a-verifier?mois=${mois()}`)).status).toBe(403);
+        expect((await viser(cible().id_affectation, { decision: "payee" })).status).toBe(400);
+        expect((await viser(ref.seances.future.id_affectation, { decision: "confirmee" })).status).toBe(409);
+        expect((await viser(ref.seances.reporteePassee.id_affectation, { decision: "ecartee" })).status).toBe(409);
+        expect((await viser(999999, { decision: "confirmee" })).status).toBe(404);
+        expect((await clients.admin.get("/api/suivi/seances-a-verifier?mois=octobre")).status).toBe(400);
+        expect(await VisaSeance.count()).toBe(0);
     });
 });

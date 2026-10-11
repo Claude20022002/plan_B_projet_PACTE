@@ -40,13 +40,41 @@ Avancement, demandes au groupe B et questions au chef de projet. Une entrée par
 
 **Hors du groupe A** : les identifiants de test lus dans des variables d'environnement vivent dans `frontend/` (groupe B, avec B-8).
 
+### R-11, côté serveur : séances à vérifier avant la paie (branche `a/r11-seances-a-verifier`, à la suite d'A-2)
+
+**Fait.**
+- **État d'une séance réalisée** (`backend/services/planning/visaSeances.js`) : `appel_valide` (l'enseignant a fermé l'appel), `a_verifier` (pas d'appel validé, pas de décision), `confirmee` ou `ecartee` (décision de l'administration). La décision l'emporte toujours sur l'appel.
+- **Table `VisasSeance`** (migration 0039) : une ligne par séance décidée, avec le motif, l'administrateur et la date.
+- **Heures du mois** (`GET /api/suivi/enseignants`) : `heures_realisees` ne compte plus les séances écartées ; trois champs s'ajoutent.
+- **Export des vacataires** : les séances écartées n'y sont plus ; une colonne `etat` s'ajoute en dernière position.
+- **Deux routes nouvelles**, réservées à l'administration (contrat ci-dessous).
+
+**Vérifié.** Suite d'intégration `suivi` : 9 tests sur 9, dont 4 nouveaux (à vérifier dans les heures, la liste et l'export ; appel lancé puis validé ; écarter, confirmer, annuler ; refus). Tests unitaires : 180 sur 180. Suite d'intégration complète : 345 sur 345 (31 fichiers).
+
+**Pas vérifié** : la migration 0039 sur une copie de la base de production.
+
+**Limites à connaître.**
+- Une séance à vérifier **part quand même dans l'export**, marquée « à vérifier ». C'est la lettre du lot. La règle « sans visa, rien ne part » (`remarques-par-profil.md`, § 8, étape 3) n'est pas appliquée : question au chef de projet ci-dessous.
+- Écarter une séance ne change pas l'avancement des modules : la séance y reste « réalisée ».
+- La décision n'est pas inscrite au journal de sécurité ; la table garde qui a décidé et quand.
+- `backend/models/index.js`, déjà trop long, a grossi de deux lignes (enregistrement du modèle).
+
 ### Demandes au groupe B
+
+- **R-11, côté écran** : la route est prête, sur la branche `a/r11-seances-a-verifier`. À écrire après sa fusion. Contrat :
+  - `GET /api/suivi/enseignants?mois=AAAA-MM` : chaque ligne garde `heures_realisees` et gagne `heures_a_verifier` (part de `heures_realisees` sans appel validé ni décision), `heures_ecartees` et `seances_a_verifier` (un nombre).
+  - `GET /api/suivi/seances-a-verifier?mois=AAAA-MM` rend `{ mois, note, a_verifier, seances }`. `note` est la phrase à afficher (« un appel validé est un indice, pas une preuve »). Chaque séance : `id_affectation`, `date`, `debut`, `fin`, `heures`, `module`, `groupe`, `salle`, `enseignants` (`id_user`, `nom`, `prenom`, `statut`), `etat` (`a_verifier`, `confirmee` ou `ecartee`), `libelle`, `appel_ouvert` (un appel a été lancé sans être validé), `motif`, `decide_le`. Les séances dont l'appel est validé n'y figurent pas.
+  - `PUT /api/suivi/seances/:id/visa`, corps `{ decision, motif? }` : `decision` vaut `"confirmee"`, `"ecartee"` ou `null` (annuler la décision). Rend le nouvel état de la séance. 400 si la décision est inconnue, 404 si la séance n'existe pas, 409 si elle n'est pas réalisée.
+  - L'export CSV ne change pas d'adresse.
 
 - **Modèles CSV du site** : `MODELE_CSV` dans `frontend/src/pages/gestion/Etudiants.jsx` et `Enseignants.jsx` cite des noms plausibles avec des adresses `@hestim.ma`. Les remplacer par les personnes fictives de `docs/modeles/` (`@exemple.hestim.test`).
 - **Journal de la console** : `frontend/src/utils/fileImport.js` écrit dans la console du navigateur toutes les lignes lues d'un fichier Excel (`console.log("Données parsées depuis Excel:", …)`), donc des noms et des adresses. À retirer.
 - **D-2** et notifications « devoir » : demandes lues dans votre journal. D-2 est le lot 8 du groupe A ; la question des notifications est posée au chef de projet ci-dessous.
 
 ### Questions au chef de projet
+
+- **R-11, l'export** : une séance « à vérifier » doit-elle partir dans l'export avec sa mention (fait aujourd'hui), ou en être retenue tant que l'administration ne l'a pas confirmée (« sans visa, rien ne part ») ? Le changement tient en une ligne.
+- **R-11, l'avancement** : une séance écartée doit-elle aussi sortir des heures réalisées du module ?
 
 - **`POST /api/users/import`** n'est plus appelée par le site. La garder (elle est testée), ou l'inscrire parmi les routes à retirer ?
 - **Notifications « devoir » déjà envoyées** (question du groupe B) : les masquer côté serveur avec D-2, ou les laisser ?

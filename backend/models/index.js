@@ -24,6 +24,7 @@ import SessionExamenSalle from "./SessionExamenSalle.js";
 import Surveillance from "./Surveillance.js";
 import RetourSeance from "./RetourSeance.js";
 import RetourSeanceParticipation from "./RetourSeanceParticipation.js";
+import VisaSeance from "./VisaSeance.js";
 import PushToken from "./PushToken.js";
 import OidcPayload from "./OidcPayload.js";
 import QuizPartie from "./QuizPartie.js";
@@ -614,6 +615,7 @@ export {
     Surveillance,
     RetourSeance,
     RetourSeanceParticipation,
+    VisaSeance,
     PushToken,
     OidcPayload,
     QuizPartie,

@@ -18,6 +18,7 @@ import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, aujourdhui, minutes } from "./affectationRules.js";
 import { appliquerRamadan, horairesSurPlage } from "./ramadan.js";
 import { filieresDuResponsable } from "./droits.js";
+import { NOTE_APPEL, etatsDesSeances } from "./visaSeances.js";
 
 /**
  * Suivi du réalisé (phase P7). Une séance devient « réalisée » d'office une fois passée, si elle
@@ -150,22 +151,73 @@ const realiseesDuMois = async (mois) => {
         order: [["date_seance", "ASC"]],
     });
     await appliquerRamadan(seances);
+    // État pour la paie (R-11) : appel validé, à vérifier, confirmée ou écartée par l'administration
+    const etats = await etatsDesSeances(seances.map((s) => s.id_affectation));
+    for (const s of seances) s.paie = etats.get(s.id_affectation);
     return seances;
 };
 
-/** Heures réalisées par enseignant sur un mois. */
+/** Titulaire et co-enseignants d'une séance : chacun est compté pour toute sa durée. */
+const enseignantsDe = (seance) => [...new Set([seance.id_user_enseignant, ...(seance.enseignement?.services ?? []).map((x) => x.id_user)])];
+
+/**
+ * Heures par enseignant sur un mois. `heures_realisees` ne compte plus les séances écartées par
+ * l'administration ; `heures_a_verifier` en est la part sans appel validé ni décision (R-11).
+ */
 export const suiviEnseignants = async ({ mois }) => {
     const seances = await realiseesDuMois(mois);
     const parUser = new Map();
     for (const s of seances) {
-        for (const idUser of new Set([s.id_user_enseignant, ...(s.enseignement?.services ?? []).map((x) => x.id_user)])) {
-            parUser.set(idUser, (parUser.get(idUser) || 0) + heures(s.creneau));
+        for (const idUser of enseignantsDe(s)) {
+            const total = parUser.get(idUser) ?? { realisees: 0, aVerifier: 0, ecartees: 0, seancesAVerifier: 0 };
+            if (s.paie.compte) total.realisees += heures(s.creneau);
+            else total.ecartees += heures(s.creneau);
+            if (s.paie.etat === "a_verifier") {
+                total.aVerifier += heures(s.creneau);
+                total.seancesAVerifier += 1;
+            }
+            parUser.set(idUser, total);
         }
     }
     const enseignants = await Enseignant.findAll({ where: { id_user: [...parUser.keys()] }, include: [{ model: Users, as: "user", attributes: ["nom", "prenom"] }] });
     return enseignants
-        .map((e) => ({ id_user: e.id_user, nom: e.user.nom, prenom: e.user.prenom, statut: e.statut, entreprise: e.entreprise, heures_realisees: arrondi(parUser.get(e.id_user)) }))
+        .map((e) => {
+            const total = parUser.get(e.id_user);
+            return { id_user: e.id_user, nom: e.user.nom, prenom: e.user.prenom, statut: e.statut, entreprise: e.entreprise, heures_realisees: arrondi(total.realisees), heures_a_verifier: arrondi(total.aVerifier), heures_ecartees: arrondi(total.ecartees), seances_a_verifier: total.seancesAVerifier };
+        })
         .sort((a, b) => a.nom.localeCompare(b.nom));
+};
+
+/**
+ * Séances réalisées d'un mois que l'appel ne suffit pas à retenir : celles à vérifier, et celles
+ * déjà confirmées ou écartées (pour pouvoir revenir sur une décision). Les séances dont l'appel
+ * est validé, sans décision, n'y figurent pas.
+ */
+export const seancesAVerifier = async ({ mois }) => {
+    const seances = (await realiseesDuMois(mois)).filter((s) => s.paie.etat !== "appel_valide");
+    const enseignants = await Enseignant.findAll({ where: { id_user: [...new Set(seances.flatMap(enseignantsDe))] }, include: [{ model: Users, as: "user", attributes: ["nom", "prenom"] }] });
+    const parId = new Map(enseignants.map((e) => [e.id_user, { id_user: e.id_user, nom: e.user.nom, prenom: e.user.prenom, statut: e.statut }]));
+    return {
+        mois,
+        note: NOTE_APPEL,
+        a_verifier: seances.filter((s) => s.paie.etat === "a_verifier").length,
+        seances: seances.map((s) => ({
+            id_affectation: s.id_affectation,
+            date: s.date_seance,
+            debut: String(s.creneau.heure_debut).slice(0, 5),
+            fin: String(s.creneau.heure_fin).slice(0, 5),
+            heures: arrondi(heures(s.creneau)),
+            module: `${s.cours?.code_cours} ${s.cours?.nom_cours}`,
+            groupe: s.groupe?.nom_groupe ?? null,
+            salle: s.salle?.nom_salle ?? null,
+            enseignants: enseignantsDe(s).map((id) => parId.get(id)).filter(Boolean),
+            etat: s.paie.etat,
+            libelle: s.paie.libelle,
+            appel_ouvert: s.paie.appel_ouvert,
+            motif: s.paie.motif,
+            decide_le: s.paie.decide_le,
+        })),
+    };
 };
 
 /**
@@ -179,17 +231,21 @@ export const champCsv = (v) => {
     return /[;"\r\n]/.test(texte) ? `"${texte.replace(/"/g, '""')}"` : texte;
 };
 
-/** Export CSV (séparateur « ; ») des heures réalisées par les vacataires sur un mois, une ligne par séance. */
+/**
+ * Export CSV (séparateur « ; ») des heures réalisées par les vacataires sur un mois, une ligne par
+ * séance. Les séances écartées par l'administration n'y sont pas ; la colonne « etat » dit pour
+ * chaque autre si elle reste à vérifier (R-11).
+ */
 export const exportVacataires = async ({ mois }) => {
-    const seances = await realiseesDuMois(mois);
+    const seances = (await realiseesDuMois(mois)).filter((s) => s.paie.compte);
     const vacataires = await Enseignant.findAll({ where: { statut: "vacataire" }, include: [{ model: Users, as: "user", attributes: ["nom", "prenom", "email"] }] });
     const parId = new Map(vacataires.map((v) => [v.id_user, v]));
-    const lignes = [["nom", "prenom", "email", "entreprise", "date", "debut", "fin", "heures", "module", "groupe", "salle"]];
+    const lignes = [["nom", "prenom", "email", "entreprise", "date", "debut", "fin", "heures", "module", "groupe", "salle", "etat"]];
     for (const s of seances) {
-        for (const idUser of new Set([s.id_user_enseignant, ...(s.enseignement?.services ?? []).map((x) => x.id_user)])) {
+        for (const idUser of enseignantsDe(s)) {
             const v = parId.get(idUser);
             if (!v) continue;
-            lignes.push([v.user.nom, v.user.prenom, v.user.email, v.entreprise, s.date_seance, String(s.creneau.heure_debut).slice(0, 5), String(s.creneau.heure_fin).slice(0, 5), String(arrondi(heures(s.creneau))).replace(".", ","), `${s.cours?.code_cours} ${s.cours?.nom_cours}`, s.groupe?.nom_groupe, s.salle?.nom_salle ?? "distanciel"]);
+            lignes.push([v.user.nom, v.user.prenom, v.user.email, v.entreprise, s.date_seance, String(s.creneau.heure_debut).slice(0, 5), String(s.creneau.heure_fin).slice(0, 5), String(arrondi(heures(s.creneau))).replace(".", ","), `${s.cours?.code_cours} ${s.cours?.nom_cours}`, s.groupe?.nom_groupe, s.salle?.nom_salle ?? "distanciel", s.paie.libelle]);
         }
     }
     // BOM : Excel ouvre le fichier en UTF-8 (accents)
