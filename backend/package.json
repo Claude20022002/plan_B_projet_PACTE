@@ -8,7 +8,8 @@
         "dev": "nodemon server.js",
         "seed": "node seed.js",
         "migrate": "node migrations/cli.js",
-        "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+        "lint": "eslint .",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
         "test:integration": "node --experimental-vm-modules node_modules/jest/bin/jest.js --config jest.integration.config.js",
         "banc:preparer": "node tests/banc/preparer-base.mjs",
         "banc:requetes": "node tests/banc/mesurer-requetes.mjs",
@@ -39,6 +40,9 @@
         "umzug": "^3.8.3"
     },
     "devDependencies": {
+        "@eslint/js": "^9.39.5",
+        "eslint": "^9.39.5",
+        "globals": "^16.5.0",
         "jest": "^30.3.0",
         "nodemon": "^3.1.10",
         "supertest": "^7.2.2"

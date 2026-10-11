@@ -121,7 +121,6 @@ export const calendrierIcs = (nom, evenements, maintenant = new Date()) => {
 
 // ── Contenu par rôle ─────────────────────────────────────────────────────
 
-const hhmm = (h) => String(h ?? "").slice(0, 5);
 const lieuDe = (s) => {
     const composante = s.enseignement?.composante;
     if (composante?.modalite === "distanciel") return ["Distanciel", composante.mention].filter(Boolean).join(" · ");

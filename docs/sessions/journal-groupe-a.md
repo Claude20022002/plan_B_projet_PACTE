@@ -112,8 +112,30 @@ Le lot touche **deux dépôts**. Dans Planner, tout est sur la branche. Dans `..
 - Le contrôle des dépendances ignore les modules que le paquet apporte lui-même (`MODULES_SUPERPOSES`, aujourd'hui `proxy-addr`).
 - Le guide dit de vider la base avant de la restaurer : une restauration par-dessus laisserait les tables de la migration, et le paquet suivant échouerait.
 
+### A-4 et Q-1 : ESLint pour le backend (branche `a/a4-eslint-backend`, à la suite d'A-9)
+
+**Fait.**
+- `backend/eslint.config.js` : règles recommandées, comme le site ; une variable ou un import inutilisé est une erreur. `npm run lint` dans `backend/`.
+- **CI** : étape « Lint » ajoutée au travail « Test Backend », bloquante, avant les tests.
+- **Q-1** : `max-lines` en avertissement, 300 lignes par fichier et 200 pour un contrôleur, hors lignes vides et commentaires.
+- **19 erreurs levées**, dont 16 dans le code : 9 imports ou variables jamais utilisés, 2 `catch` dont l'erreur n'était pas lue, 1 paramètre d'Express renommé `_next`, 2 expressions régulières de nettoyage annotées (elles visent exprès les caractères de contrôle), 1 espace insécable écrite en clair remplacée par son code, 1 calcul corrigé (ci-dessous). Les 3 autres, dans un test, étaient des champs écartés exprès (`const { a, ...reste }`) : la règle les accepte désormais.
+- **Un défaut corrigé au passage** (`services/planning/edtMensuel.js`) : l'année d'un groupe sans chiffre dans son niveau valait « NaN » au lieu de rester vide. Le `?? null` qui devait l'éviter ne servait à rien.
+
+**Vérifié.** `npm run lint` : 0 erreur, 18 avertissements de longueur. Un fichier d'essai avec une variable inutilisée fait sortir le lint en erreur (code 1). Les dépendances livrées n'ont pas changé (ESLint est un outil de développement) : le contrôle R-3 répond « identiques », l'audit passe. Tests unitaires : 180 sur 180. Suite d'intégration complète : 349 sur 349 au second passage.
+
+**Un passage instable, à surveiller.** Au premier passage complet, `presences.test.js` a échoué en entier (17 tests) après 32 secondes, soit le délai de 30 secondes accordé à la préparation de la base. Relancée seule, la suite passe ; relancé en entier, tout passe. Même symptôme au premier passage de R-11 sur `suivi.test.js`. La cause n'est pas établie : la machine faisait tourner Docker et le lint en même temps. Si la CI montre le même échec, le délai de préparation est à relever.
+
+**Les 18 fichiers signalés** (lignes comptées par le lint) :
+- contrôleurs, repère 200 : `authController` 562, `emploiDuTempsController` 427, `demandeReportController` 416, `statistiquesController` 386, `etudiantController` 351, `enseignantController` 277, `affectationController` 266, `userController` 222 ;
+- autres, repère 300 : `seed.js` 821, `validationMiddleware.js` 544, `models/index.js` 517, `services/annonces/annonces.js` 344, `services/quiz/parties.js` 334, `services/planning/affectationRules.js` 310, `services/ia/quiz.js` 308, `services/quiz/devoirs.js` 306, et deux fichiers de tests (310 et 305).
+
+C'est la liste de départ d'A-6, qui attend B-8.
+
+**Pas vérifié** : la CI elle-même, qui ne tourne qu'à l'ouverture d'une PR.
+
 ### Demandes au groupe B
 
+- **CI** : `.github/workflows/ci-cd.yml` est modifié par A-4 (une étape « Lint » dans « Test Backend »). B-8 se met à jour sur cette branche fusionnée avant d'y toucher.
 - **CQ-2, écran du projecteur** : à écrire après la fusion de `a/cq1-partie-signee` et le redéploiement du moteur. Contrat :
   - `POST /api/quiz/parties`, corps `{ id_quiz, id_affectation? }`, enseignant seulement. `id_quiz` vient de `GET /api/devoirs/quiz-disponibles`. Rend 201 et `{ id_quiz_partie, id_affectation, titre, nb_questions, notifies, animation: { game_pin, game_id, socket } }`.
   - Refus : 400 (quiz mal formé), 403 (pas enseignant), 404 (séance inconnue ou d'un collègue), 409 (séance d'un autre jour, annulée ou reportée), 422 (quiz inconnu du moteur pour cet enseignant), 502 ou 503 (moteur injoignable, pas à jour ou non configuré).

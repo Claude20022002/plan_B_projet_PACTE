@@ -5,7 +5,6 @@ import {
     Salle,
     Creneau,
     Users,
-    Disponibilite,
     Appartenir,
     Etudiant,
     Filiere,

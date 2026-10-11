@@ -23,7 +23,7 @@ const SEUIL_MS = Number(args.seuil ?? 20);
 
 await runMigrations();
 const { default: app } = await import("../../app.js");
-const { AuthSession, Users, Affectation, Appartenir, Groupe, Periode } = await import("../../models/index.js");
+const { AuthSession, Users, Appartenir, Groupe, Periode } = await import("../../models/index.js");
 const { signerJetonAcces } = await import("../../utils/jetons.js");
 
 // Journal des requêtes : chaque requête SQL et sa durée (option benchmark de Sequelize)

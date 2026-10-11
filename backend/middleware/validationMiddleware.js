@@ -1,4 +1,4 @@
-import { body, param, query, validationResult } from "express-validator";
+import { body, param, validationResult } from "express-validator";
 import { LONGUEUR_MIN } from "../utils/passwordHelper.js";
 import {
     TYPES_SALLE,

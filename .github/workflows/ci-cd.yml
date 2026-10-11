@@ -95,6 +95,11 @@ jobs:
       - name: Audit des dépendances
         run: npm audit --omit=dev --audit-level=high
 
+      # Bloquant : une erreur échoue la CI (variable ou import inutilisé…). Les avertissements
+      # « max-lines » signalent les fichiers à découper sans rien bloquer.
+      - name: Lint
+        run: npm run lint
+
       - name: Tests unitaires
         run: npm test --if-present
         env:
