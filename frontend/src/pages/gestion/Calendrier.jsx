@@ -105,8 +105,8 @@ export default function Calendrier() {
                 await chargerAnnees();
                 const [campus, filieres, groupes] = await Promise.all([
                     campusAPI.getAll(),
-                    filiereAPI.getAll({ limit: 100 }),
-                    groupeAPI.getAll({ limit: 100 }),
+                    filiereAPI.getTous(),
+                    groupeAPI.getTous(),
                 ]);
                 setCibles({ campus: campus || [], filieres: filieres.data || filieres || [], groupes: groupes.data || groupes || [] });
             } catch {

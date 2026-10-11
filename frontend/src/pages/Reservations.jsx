@@ -84,7 +84,7 @@ export default function Reservations() {
             fetchAll(salleAPI.getAll),
             fetchAll(enseignantAPI.getAll),
             fetchAll(groupeAPI.getAll),
-            user?.role === 'enseignant' ? affectationAPI.getByEnseignant(user.id_user, { limit: 100 }).then((r) => r.data ?? r) : Promise.resolve([]),
+            user?.role === 'enseignant' ? fetchAll((p) => affectationAPI.getByEnseignant(user.id_user, p)) : Promise.resolve([]),
         ])
             .then(([salles, enseignants, groupes, seances]) => setRef({ salles, enseignants, groupes, seances }))
             .catch(() => {});
