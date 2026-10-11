@@ -5,10 +5,12 @@
  * Contenu : un administrateur, une enseignante, une classe de 8 étudiants et une séance
  * aujourd'hui, en cours toute la journée (l'appel ne s'ouvre que le jour de la séance, et
  * « Mes classes » met en avant la classe en cours). Les comptes et leur mot de passe sont créés ici :
- * aucun identifiant n'est écrit dans les tests.
+ * aucun identifiant n'est écrit dans les tests. Les données de la génération sont dans
+ * donneesGeneration.mjs.
  */
 import { pathToFileURL } from "node:url";
 import path from "node:path";
+import { preparerGeneration } from "./donneesGeneration.mjs";
 
 // Le Maroc est à UTC+0 toute l'année ; la séance doit tomber « aujourd'hui » pour le serveur
 const FUSEAU = "Africa/Casablanca";
@@ -46,6 +48,8 @@ export const preparerDonnees = async (racine) => {
     id_user_admin: admin.id_user,
   });
 
+  const generation = await preparerGeneration(racine, admin);
+
   const compte = (u) => ({ email: u.email, prenom: u.prenom, nom: u.nom });
   return {
     motDePasse: PASSWORD,
@@ -53,5 +57,6 @@ export const preparerDonnees = async (racine) => {
     enseignante: compte(enseignante),
     etudiants: etudiants.map(compte),
     seance: { id: seance.id_affectation, cours: fixture.cours.nom_cours, groupe: fixture.groupe.nom_groupe },
+    generation,
   };
 };
