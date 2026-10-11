@@ -35,7 +35,8 @@ import ma.hestim.solver.domain.Voeu;
  *
  * Préférences (souples) : un groupe reste sur un seul campus dans la journée ; campus de la
  * filière ; séances d'un même enseignement sur des jours différents ; CM avant TD/TP du même
- * module ; journées sans trous ; vœux des enseignants ; pas de samedi après-midi.
+ * module ; journées sans trous ; vœux des enseignants ; pas de samedi après-midi ; une salle à la
+ * taille du groupe ; la même salle pour deux cours qui se suivent.
  *
  * Une leçon sans salle (allowsUnassigned) reste visible des règles qui ne dépendent pas de la
  * salle : sinon, retirer la salle d'une leçon masquerait ses conflits d'enseignant ou de groupe
@@ -84,6 +85,8 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
                 voeuPrefere(factory),
                 samediApresMidi(factory),
                 salleInutileEnDistanciel(factory),
+                salleSurdimensionnee(factory),
+                changementDeSalle(factory),
         };
     }
 
@@ -313,5 +316,25 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
                 .filter(l -> l.isDistanciel() && l.getSalle() != null)
                 .penalize(HardSoftScore.ofSoft(5))
                 .asConstraint("Pas de salle en distanciel");
+    }
+
+    // Bon usage des salles : les calculs sont dans UsageDesSalles
+
+    Constraint salleSurdimensionnee(ConstraintFactory factory) {
+        return factory.forEach(Lecon.class)
+                .filter(l -> l.getSalle() != null && UsageDesSalles.placesPerdues(l) > 0)
+                .penalize(HardSoftScore.ONE_SOFT, UsageDesSalles::placesPerdues)
+                .asConstraint("Salle à la taille du groupe");
+    }
+
+    Constraint changementDeSalle(ConstraintFactory factory) {
+        // Journée des étudiants de chaque groupe le plus fin, comme pour les trous
+        return factory.forEach(Lecon.class)
+                .expand(Lecon::getFeuillesEffectives)
+                .flattenLast(feuilles -> feuilles)
+                .groupBy((l, g) -> new Journee(g, l.getJour()), toList((l, g) -> l))
+                .filter((journee, lecons) -> lecons.size() > 1 && UsageDesSalles.changementsDeSalle(lecons) > 0)
+                .penalize(HardSoftScore.ofSoft(2), (journee, lecons) -> UsageDesSalles.changementsDeSalle(lecons))
+                .asConstraint("Même salle pour deux cours qui se suivent");
     }
 }
