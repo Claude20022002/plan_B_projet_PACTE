@@ -12,7 +12,7 @@ const fr = {
   ...partageFr,
   app: {
     nom: 'HESTIM Planner',
-    onglets: { tableau: 'Tableau', semaine: 'Semaine', jeux: 'Activités', bibliotheque: 'Bibliothèque', compte: 'Compte' },
+    onglets: { tableau: 'Tableau', semaine: 'Semaine', scanner: 'Scanner', jeux: 'Activités', bibliotheque: 'Bibliothèque', compte: 'Compte' },
     connexion: {
       titre: 'Connexion',
       email: 'Email HESTIM',
@@ -321,7 +321,7 @@ const en = {
   ...partageEn,
   app: {
     nom: 'HESTIM Planner',
-    onglets: { tableau: 'Board', semaine: 'Week', jeux: 'Activities', bibliotheque: 'Library', compte: 'Account' },
+    onglets: { tableau: 'Board', semaine: 'Week', scanner: 'Scan', jeux: 'Activities', bibliotheque: 'Library', compte: 'Account' },
     connexion: {
       titre: 'Sign in',
       email: 'HESTIM email',

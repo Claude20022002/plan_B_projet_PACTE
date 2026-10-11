@@ -36,7 +36,7 @@ export default function Quiz() {
   }, []);
 
   const lien = useMemo(() => (origine ? lireLienPartie(typeof url === 'string' ? url : '', origine) : null), [origine, url]);
-  const sortir = () => (router.canGoBack() ? router.back() : router.replace('/jeux'));
+  const sortir = () => (router.canGoBack() ? router.back() : router.replace('/'));
   const fermer = (
     <Pressable
       onPress={() =>

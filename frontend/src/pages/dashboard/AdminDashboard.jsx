@@ -175,7 +175,10 @@ export default function AdminDashboard() {
         affectationAPI.getAll({
           date_from: toLocalISODate(),
           date_to: toLocalISODate(new Date(Date.now() + DAYS_AHEAD * 86400000)),
-          limit: 400,
+          // Les plus proches d'abord : la page est plafonnée à 100 séances par le serveur, et sans cet
+          // ordre un campus chargé perdait les séances du jour au profit de celles du surlendemain
+          ordre: 'asc',
+          limit: 100,
         }),
         conflitAPI.getNonResolus({ limit: 5 }).catch(() => ({ data: [], pagination: { total: 0 } })),
         demandeReportAPI.getByStatut('en_attente').catch(() => []),
