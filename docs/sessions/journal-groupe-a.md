@@ -308,6 +308,14 @@ Ces poids restent sous ceux des journées sans trous (5) et du campus unique dan
 
 **Reste, pour le groupe B** : deux autres pages demandent plus de 100 séances d'un coup (`EmploiDuTempsAdmin.jsx` avec `limit: 1000`, `Affectations.jsx` avec `limit: 10000`) et n'en reçoivent que 100.
 
+### Vidéo : second montage, avec les captures du jour
+
+`out/matinee-ecole.mp4` (1 min 35) et `out/matinee-ecole-9x16.mp4` (46 s) sont refaits. Les scènes de l'étudiante, de l'alerte, du professeur, de l'appel et de l'administration utilisent les captures du 11 octobre ; l'appel montre le vrai écran projeté, dont les noms sont découverts un à un. Le quiz reste sur maquettes. Les résultats d'un quiz et la Bibliothèque sont sortis du montage, faute de captures à jour. Détail et limites dans `docs/presentation/video/README.md`.
+
+**Après les captures** : le serveur local, le site, le Metro des captures et l'émulateur sont arrêtés ; l'heure automatique de l'émulateur est rétablie. La base jetable `hestim_captures_test` reste dans le conteneur de test, pour de prochaines captures.
+
+**Incident** : Docker s'est relancé de lui-même pendant les tests (mémoire du poste presque pleine, avec l'émulateur, Maven et la base en même temps) et a arrêté le conteneur `hestim_mysql_test`. Relancé, bases intactes.
+
 ### Demandes au groupe B
 
 - **Groupes, champ à ajouter** : `id_campus_prefere` dans le formulaire d'un groupe (surtout d'une promotion), comme pour une filière.
