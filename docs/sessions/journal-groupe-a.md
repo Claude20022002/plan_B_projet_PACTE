@@ -59,8 +59,46 @@ Avancement, demandes au groupe B et questions au chef de projet. Une entrée par
 - La décision n'est pas inscrite au journal de sécurité ; la table garde qui a décidé et quand.
 - `backend/models/index.js`, déjà trop long, a grossi de deux lignes (enregistrement du modèle).
 
+### CQ-1 : partie en direct lancée depuis Planner (branche `a/cq1-partie-signee`, à la suite de R-11)
+
+Le lot touche **deux dépôts**. Dans Planner, tout est sur la branche. Dans `../ClassQuiz`, quatre fichiers sont modifiés sur `main` **sans commit** (le dossier est partagé avec le groupe B, je n'y ai pas changé de branche) : `classquiz/routers/hestim.py`, `classquiz/helpers/hestim.py`, `classquiz/socket_server/__init__.py`, `classquiz/tests/test_hestim.py`.
+
+**Fait.**
+- **Moteur, route signée** `POST /api/v1/hestim/parties` : crée la partie d'un quiz de l'enseignant (pas d'un quiz public d'un autre compte), sans captcha, et rend son code et son identifiant. Elle n'envoie pas le webhook « partie démarrée » : Planner enregistre lui-même la partie.
+- **Planner** `POST /api/quiz/parties` `{ id_quiz, id_affectation? }` (`backend/services/quiz/lancement.js`) : demande la partie au moteur, la rattache à la séance désignée (ou à la séance en cours), prévient les étudiants, rend de quoi animer la partie.
+- **Relais** `/socket.io/` sur l'adresse de Planner, dans `deploy/Caddyfile` et `deploy/vps/Caddyfile.vps`. Les cookies de Planner n'y sont pas transmis au moteur.
+- **Paquet de mise à jour** : `preparer-maj.sh` emporte `Caddyfile.vps` ; `appliquer-maj.sh` le valide, le met en place et recharge Caddy seulement s'il a changé, puis contrôle le relais.
+- **Client du moteur sorti de `devoirs.js`** (441 lignes, 381 après) vers `backend/services/quiz/clientClassQuiz.js`.
+
+**Faille corrigée dans le moteur.** Le moteur donnait la main sur une partie à **quiconque connaissait son code à six chiffres**, que tous les étudiants reçoivent : l'identifiant envoyé n'était pas comparé. Essai sur un moteur jetable, avant correction : faux identifiant, main prise ; code inconnu, main prise. Même défaut sur la télécommande (`register_as_remote`), qui renvoie en plus les questions avec leurs réponses. Les deux vérifient maintenant l'identifiant de la partie. **Cette faille existe en production tant que le moteur n'est pas redéployé.**
+
+**Vérifié.**
+- Planner : 4 tests nouveaux (`quizLancement.test.js`). Tests unitaires et suite d'intégration complète : résultat ci-dessous.
+- Moteur : 13 tests Python sur 13 (`test_hestim.py`, 2 nouveaux), lancés dans l'image de l'API.
+- De bout en bout, moteur, base et Redis jetables, appelés par le client signé de Planner : partie créée ; quiz d'un collègue, compte inconnu et demande mal formée refusés (422) ; corps modifié, mauvais secret et signature absente refusés (401) ; le code et l'identifiant rendus donnent la main par le WebSocket ; faux identifiant et code inconnu refusés après correction.
+- Relais, sur des conteneurs Caddy jetables : les deux fichiers sont valides ; `/socket.io/` part vers le moteur sans cookie, le reste du site garde ses cookies, l'adresse du quiz est inchangée.
+
+**Pas vérifié.**
+- `appliquer-maj.sh` sur le serveur : le rechargement de Caddy n'a été essayé que sur Docker Desktop.
+- L'écran d'animation et la télécommande du site ClassQuiz dans un navigateur, après la correction (ils envoient bien l'identifiant, d'après leur code). Une case de recette le demande.
+- Les tests Python qui demandent PostgreSQL, Redis et Meilisearch (`test_server.py`…).
+
+**Limites à connaître.**
+- Une partie créée mais jamais animée reste proposée aux étudiants pendant deux heures, comme aujourd'hui.
+- Le moteur refuse une seconde prise de main : si l'enseignant recharge l'écran du projecteur, la partie est perdue. À traiter avec CQ-2.
+- `backend/services/quiz/parties.js` (déjà trop long) a grossi d'une ligne.
+- La liste des quiz de l'enseignant est servie par `GET /api/devoirs/quiz-disponibles` : D-2 ne devra pas la fermer avec les devoirs.
+- Le texte d'un refus du moteur passe de « a refusé le quiz » à « a refusé la demande ».
+
 ### Demandes au groupe B
 
+- **CQ-2, écran du projecteur** : à écrire après la fusion de `a/cq1-partie-signee` et le redéploiement du moteur. Contrat :
+  - `POST /api/quiz/parties`, corps `{ id_quiz, id_affectation? }`, enseignant seulement. `id_quiz` vient de `GET /api/devoirs/quiz-disponibles`. Rend 201 et `{ id_quiz_partie, id_affectation, titre, nb_questions, notifies, animation: { game_pin, game_id, socket } }`.
+  - Refus : 400 (quiz mal formé), 403 (pas enseignant), 404 (séance inconnue ou d'un collègue), 409 (séance d'un autre jour, annulée ou reportée), 422 (quiz inconnu du moteur pour cet enseignant), 502 ou 503 (moteur injoignable, pas à jour ou non configuré).
+  - L'écran ouvre un client socket.io sur la même origine, chemin `animation.socket` (`/socket.io/`), puis émet `register_as_admin` avec `{ game_pin, game_id }`. Le moteur répond `registered_as_admin` (la partie, avec ses questions) ou `error`.
+  - **`animation.game_id` donne la main sur la partie.** Il n'est rendu que par cette route : ne pas le mettre dans une adresse, un journal ou le stockage du navigateur.
+  - En développement, le serveur Vite doit relayer `/socket.io/` vers le moteur (fichier du groupe B).
+- **Site ClassQuiz** (`../ClassQuiz/frontend`, groupe B) : aucun changement demandé ; l'écran d'animation et la télécommande sont à réessayer après la correction du moteur.
 - **R-11, côté écran** : la route est prête, sur la branche `a/r11-seances-a-verifier`. À écrire après sa fusion. Contrat :
   - `GET /api/suivi/enseignants?mois=AAAA-MM` : chaque ligne garde `heures_realisees` et gagne `heures_a_verifier` (part de `heures_realisees` sans appel validé ni décision), `heures_ecartees` et `seances_a_verifier` (un nombre).
   - `GET /api/suivi/seances-a-verifier?mois=AAAA-MM` rend `{ mois, note, a_verifier, seances }`. `note` est la phrase à afficher (« un appel validé est un indice, pas une preuve »). Chaque séance : `id_affectation`, `date`, `debut`, `fin`, `heures`, `module`, `groupe`, `salle`, `enseignants` (`id_user`, `nom`, `prenom`, `statut`), `etat` (`a_verifier`, `confirmee` ou `ecartee`), `libelle`, `appel_ouvert` (un appel a été lancé sans être validé), `motif`, `decide_le`. Les séances dont l'appel est validé n'y figurent pas.
@@ -72,6 +110,9 @@ Avancement, demandes au groupe B et questions au chef de projet. Une entrée par
 - **D-2** et notifications « devoir » : demandes lues dans votre journal. D-2 est le lot 8 du groupe A ; la question des notifications est posée au chef de projet ci-dessous.
 
 ### Questions au chef de projet
+
+- **Moteur de quiz, faille de prise de main** : la correction attend dans `../ClassQuiz` (4 fichiers, non commités). À commiter et à déployer avec `--classquiz` sans attendre le reste : aujourd'hui, un étudiant qui connaît le code d'une partie peut en prendre la main.
+- **Dépôt du quiz** : faut-il une branche par lot dans `../ClassQuiz` aussi, et un dossier de travail par groupe comme pour Planner ?
 
 - **R-11, l'export** : une séance « à vérifier » doit-elle partir dans l'export avec sa mention (fait aujourd'hui), ou en être retenue tant que l'administration ne l'a pas confirmée (« sans visa, rien ne part ») ? Le changement tient en une ligne.
 - **R-11, l'avancement** : une séance écartée doit-elle aussi sortir des heures réalisées du module ?

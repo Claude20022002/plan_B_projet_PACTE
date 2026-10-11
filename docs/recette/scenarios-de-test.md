@@ -169,6 +169,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Fin de partie : dans Planner, les résultats du quiz montrent à l'enseignant la colonne « Sorties » (nombre · durée), en orange pour les étudiants concernés.
 - [ ] Un étudiant qui consulte les résultats ne voit aucune colonne « Sorties », ni pour lui ni pour les autres.
 - [ ] Le projecteur n'affiche jamais de nom ni de sortie.
+- [ ] Non-régression du moteur (seul son identifiant donne désormais la main sur une partie) : une partie lancée depuis ClassQuiz s'anime comme avant sur son écran d'animation, et la télécommande (QR de l'écran d'animation) pilote toujours la partie.
 
 ## 5. Application mobile : bibliothèque et stages
 
