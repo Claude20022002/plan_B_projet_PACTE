@@ -483,6 +483,9 @@ export const disponibiliteAPI = {
 
 // ==================== STATISTIQUES ====================
 export const statistiquesAPI = {
+    // Usage du mois (R-12) : { mois, definition_actif, comptes_actifs: { total, etudiant, enseignant, admin }, appels_valides, quiz: { parties, joueurs }, devoirs_rendus }
+    usage: (mois) => request(`/statistiques/usage?mois=${encodeURIComponent(mois)}`),
+    exportUsage: (mois) => telecharger(`/statistiques/usage.csv?mois=${encodeURIComponent(mois)}`, `usage-${mois}.csv`),
     getStatistiquesGlobales: (params) => {
         const query = new URLSearchParams(params || {}).toString();
         return request(`/statistiques/dashboard${query ? `?${query}` : ''}`);
