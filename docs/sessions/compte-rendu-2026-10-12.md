@@ -6,17 +6,19 @@
 
 Rédigé par le groupe A. Ce qui concerne le groupe B vient de ses branches et de son journal, sans relecture de son code.
 
+**Mis à jour le 11 octobre au soir par le groupe B** (§ 1, 2, 4, 5 bis, 7 et 8) : tous ses lots prévus jusqu'à B-4 sont faits, la fusion est simulée de nouveau avec ses dernières branches, et le reste à faire est recompté.
+
 ## 1. L'essentiel en dix lignes
 
 1. **Rien n'est dans `main`.** Tout le travail des deux groupes est sur des branches ; `main` a 105 commits de retard sur le groupe A. C'est le premier point à régler (§ 4).
 2. **La production est toujours en maj27**, à la connaissance de ce compte rendu. Aucun déploiement n'a été confirmé.
 3. **Une faille du quiz est ouverte en production** : un étudiant qui connaît le code d'une partie peut en prendre la main. Le correctif est prêt et empaqueté, pas déployé (§ 5).
 4. **Le groupe A a fini sa liste de priorité 1**, plus le campus par promotion, le quiz sur un sujet seul et deux préférences de salles dans le solveur.
-5. **Le groupe B a 18 branches, aucune poussée**, et travaille en ce moment sur l'écran de R-11.
-6. **Les branches se fusionnent avec trois petits conflits**, déjà identifiés (§ 4).
+5. **Le groupe B a 19 branches, aucune poussée**, toutes commitées. Il a fini ses lots de priorité 1 et 2, plus B-4 (§ 5 bis).
+6. **Les branches se fusionnent avec trois petits conflits**, déjà identifiés, et confirmés le soir avec les dernières branches du groupe B (§ 4).
 7. **L'onglet Jeux de l'application est remplacé par « Scanner »**, dans un dossier à part, pas encore commité.
 8. **La vidéo a un second montage** sur les captures du jour ; le quiz y est encore sur maquettes.
-9. **Il reste 14 lots prévus à développer** (§ 7).
+9. **Il reste 12 lots prévus à développer** (§ 7), et 6 petites demandes pour le groupe B.
 10. **Le poste manque de mémoire** : l'émulateur, Docker et les tests ensemble ont fait tomber Docker une fois (§ 9).
 
 ## 2. État vérifié le 11 octobre à midi
@@ -27,9 +29,9 @@ Rédigé par le groupe A. Ce qui concerne le groupe B vient de ses branches et d
 | `main` (GitHub) | Commit `1736313` du 10 octobre. Aucune PR ouverte. |
 | Groupe A, dossier `plan_B_projet_PACTE` | Branche `a/d2-devoirs-fermes`, **105 commits d'avance sur `main`, poussée**. Elle contient tout le travail du groupe A et `feature/phase-e-timefold`. Dernier commit `a1c71da`. |
 | Groupe A, dossier `../planner-a-scan` | Branche `a/onglet-scanner`, partie de `b/creer-quiz`. **11 fichiers non commités** : l'onglet Scanner (`mobile/`) et deux corrections de tableaux (`frontend/`, `shared/i18n`). |
-| Groupe B, dossier `../planner-b` | Branche `b/b1-code-mort`, propre. |
-| Groupe B, dossier `../planner-b-r7` | Branche `b/r11-visa`, **3 fichiers non commités** (travail en cours). |
-| Branches du groupe B | 18 branches locales, **aucune poussée**. |
+| Groupe B, dossier `../planner-b` | Branche `b/compte-rendu` (cette mise à jour), propre. |
+| Groupe B, dossier `../planner-b-r7` | Branche `b/b4-couleurs`, propre (le soir). |
+| Branches du groupe B | 19 branches locales, **aucune poussée**, tout est commité (le soir). |
 | Dépôt du quiz (`../ClassQuiz`) | Branche `main`, propre, dernier commit `7492697a` (correctif de la prise de main). |
 | Dépôt de la bibliothèque (`../StudyLib`) | **11 fichiers non commités**, depuis le 10 octobre (lot 0-5). |
 | Paquets (`deploy/vps/paquets`) | `quiz-correctif1.tar.gz` prêt. `maj29.tar.gz` **périmé**. |
@@ -56,31 +58,30 @@ C'est le lot 0-2, et il bloque le déploiement. Le chef de projet fusionne.
 **Avant de fusionner.**
 
 - Commiter `../planner-a-scan` en deux lots : l'onglet Scanner (`mobile/`), puis les corrections de tableaux (`frontend/`, `shared/i18n`).
-- Le groupe B commite son travail en cours (`b/r11-visa`).
 - Commiter ou écarter les 11 fichiers de `../StudyLib`.
 
-**Branches à réunir** : `a/d2-devoirs-fermes`, `b/b3-traductions` (elle contient quatorze lots du groupe B), `b/b1-code-mort`, `b/b8-parcours`, `b/donnees-fictives`, `b/r11-visa`, `a/onglet-scanner`.
+**Branches à réunir** : `a/d2-devoirs-fermes`, `b/b4-couleurs` (la chaîne du groupe B : seize lots, de D-1 à B-4, dont l'écran de R-11 et B-3), `b/b1-code-mort`, `b/b8-parcours`, `b/donnees-fictives`, `a/onglet-scanner`, puis `b/compte-rendu` (ce document). Fusionner `a/d2-devoirs-fermes` en premier satisfait toutes les dépendances du groupe B : CQ-1 avant CQ-2, la route de R-11 avant son écran, A-4 avant le job de CI des parcours.
 
 **Conflits connus**, relevés par des fusions simulées deux à deux :
 
 | Fichier | Résolution |
 |---|---|
 | `frontend/src/providers/AppProviders.jsx` | Garder `ConfirmationProvider` autour de `{children}`, dans `ToastProvider` ; retirer `QueryClientProvider`, `QueryErrorBridge` et leurs deux imports. |
-| `frontend/package.json` | Garder les deux lignes de script, `test:unit` et `test:parcours`. |
+| `frontend/package.json` | Garder `test:unit` (chaîne) et les trois scripts de `b/b8-parcours` : `test` et `test:parcours` lancent les parcours, `test:report` ouvre leur rapport. Les anciens scripts (`test:ui`, `test:auth`…) sont retirés. |
 | `docs/sessions/journal-groupe-b.md` | Garder les deux textes. |
 
-D'autres conflits peuvent apparaître quand les fusions s'enchaînent, et `b/r11-visa` n'a pas été simulée. **Aucun test n'a tourné sur l'ensemble réuni.**
+Le groupe B a refait la fusion complète le soir, dans cet ordre, sur une copie jetable : mêmes trois conflits, rien d'autre (`b/donnees-fictives` et `a/onglet-scanner` passent sans conflit ; `a/onglet-scanner` n'a pas de commit propre tant que son travail n'est pas commité). **Aucun test n'a tourné sur l'ensemble réuni.**
 
 **Commandes**, depuis le dossier du groupe A :
 
 ```powershell
 git switch -c integration/2026-10-11 a/d2-devoirs-fermes
-git merge --no-ff b/b3-traductions      # conflit : AppProviders.jsx
+git merge --no-ff b/b4-couleurs         # conflit : AppProviders.jsx
 git merge --no-ff b/b1-code-mort        # conflits : journal du groupe B, AppProviders.jsx
 git merge --no-ff b/b8-parcours         # conflit : package.json
 git merge --no-ff b/donnees-fictives
-git merge --no-ff b/r11-visa
 git merge --no-ff a/onglet-scanner
+git merge --no-ff b/compte-rendu
 git push -u origin integration/2026-10-11
 gh pr create --base main --head integration/2026-10-11 --title "Fusion des lots des groupes A et B du 11 octobre"
 gh pr merge --merge                     # une fois la CI verte
@@ -126,6 +127,34 @@ cd /root && tar -xzf quiz-correctif1.tar.gz && bash quiz-correctif1/deploy-vps/a
 
 Jouer ensuite une partie d'essai avec la télécommande : c'est le seul vrai contrôle.
 
+## 5 bis. Ce que le groupe B a fait les 10 et 11 octobre
+
+Le détail, les vérifications et les limites de chaque lot sont dans `journal-groupe-b.md` (branche `b/b1-code-mort`). « Navigateur » : l'écran a été essayé pour de vrai, avec Playwright.
+
+| Lot | Résultat | Vérifié |
+|---|---|---|
+| D-1 | Devoirs masqués sur le site et dans l'application (un interrupteur, `shared/fonctions.js`) | Lint, build, tests de l'application |
+| B-1 | Couche React Query morte retirée (45 fichiers, environ 2 950 lignes) | Lint, build |
+| R-7 | Noms des espaces ; Activités sort du sélecteur (on y entre par le scan) | Lint, tests |
+| Scan d'un quiz | Le viseur de l'application lit aussi le QR d'une partie et l'ouvre dans une vue navigateur (`QUIZ_DANS_L_APPLICATION`, éteint ; le lecteur natif est gardé) | Tests de l'application |
+| CQ-2 | Lancer un quiz en trois gestes et le projeter dans Planner (QR, questions, réponses par choix, classement) | Tests unitaires ; **aucune vraie partie jouée** |
+| Créer un quiz | Un écran : un sujet ou un document, puis « Générer » ou « Le faire moi-même » | Navigateur ; le sujet seul s'active dès que le serveur renvoie `sujet: true` (c'est le cas sur `a/d2-devoirs-fermes`) |
+| CQ-3 | Plus aucun lien de l'enseignant vers le site du quiz pour lancer une partie | Lint, build |
+| Q-2 | Fichiers de plus de 300 lignes signalés par le lint (25 dans le site, aucun dans l'application) | Lint |
+| B-5 | La fenêtre de confirmation commune remplace les trois `window.confirm` | Navigateur |
+| B-6 | Menu d'export à trois entrées (PDF officiel, Excel, abonnement agenda) | Navigateur |
+| B-9 | Test des 30 fiches d'aide (textes fr et en, pages existantes) | Échoue sur un lien cassé exprès |
+| B-2 | Une seule fonction `aujourdhui()`, dans `shared/dates.js` | Tests |
+| R-14 | Une alerte de quiz ouvre la partie ou ses résultats (liens `/jeux?partie=` et `/jeux?resultats=`) | Tests de l'application |
+| R-6 | Page Activités de l'enseignant en deux zones : les quiz, puis les jeux | Navigateur |
+| B-3 | Les 10 pages en français en dur sont traduites ; clés mortes retirées ; fr et en ont les mêmes clés | Navigateur, site en anglais |
+| R-11, écran | Colonne « À vérifier » et liste des séances à confirmer ou écarter avant l'export | Navigateur, avec le serveur de `a/r11-seances-a-verifier` |
+| B-4 | Plus de couleur en dur dans les pages et la mise en page (seuls restent le noir et le blanc des QR) | Lint, build |
+| B-8 | Parcours connexion, appel par QR, report, génération avec le vrai solveur, scénario IIIA (3A et 4A générées ensemble : 406 séances, 0 règle dure) ; job de CI ; ancienne suite retirée | 9 sur 9, trois passages ; **la CI n'a pas tourné** |
+| Données fictives | Modèles CSV fictifs ; l'import Excel n'écrit plus les lignes dans la console | Lint |
+
+Vérifié aussi : le solveur reçoit tous les paramètres de la planification, et ses tests Java passent.
+
 ## 6. La vidéo
 
 - **Script** : `docs/presentation/script-video-motion-design.md`, **à valider**. Il décrit une matinée ; les montages racontent un après-midi, parce que les captures ont été prises sur une séance de 13 h 30.
@@ -151,12 +180,13 @@ Jouer ensuite une partie d'essai avec la télécommande : c'est le seul vrai con
 | Groupe A | **Serveur de jeu** : `player_answer` et `everyone_answered` partent vers toutes les parties en cours (`classquiz/socket_server/__init__.py`, lignes 349 et 354). Deux classes qui jouent en même temps faussent le compteur l'une de l'autre. Proposition du groupe B : `room=f"admin:{game_pin}"`. **Pas traité** ; à joindre au correctif du quiz avant de le déployer, ou dans un second paquet. |
 | Groupe B | Afficher l'avertissement `plafond_hebdomadaire` dans l'écran de génération. |
 | Groupe B | Ajouter `id_campus_prefere` au formulaire d'un groupe. |
-| Groupe B | Activer la génération sur un sujet seul quand `disponibilite.sujet` est vrai. |
+| ~~Groupe B~~ | ~~Activer la génération sur un sujet seul quand `disponibilite.sujet` est vrai.~~ **Déjà prêt** sur `b/creer-quiz` : l'écran s'active seul, avec le même contrat que la route du groupe A. Rien à faire après la fusion. |
+| Groupe A | **R-14** : ajouter `?partie=<id>` (« Quiz en cours ») et `?resultats=<id>` (« Résultats du quiz ») au lien des notifications de quiz (`backend/services/quiz/parties.js`). Le site ignore ce paramètre ; l'application ouvre alors directement la partie. |
 | Groupe B | `EmploiDuTempsAdmin.jsx` et `Affectations.jsx` demandent plus de 100 séances et n'en reçoivent que 100. |
 | Groupe B | Retirer `game_id` de la statistique de la page du joueur (site du quiz). |
 | Groupe B | Le bouton de scan de la barre de titre du Tableau fait double emploi avec l'onglet. |
 
-### Lots prévus, pas développés (14)
+### Lots prévus, pas développés (12)
 
 | Lot | Contenu | Groupe |
 |---|---|---|
@@ -169,11 +199,11 @@ Jouer ensuite une partie d'essai avec la télécommande : c'est le seul vrai con
 | IA-4 (reste) | Route de mise à jour d'un quiz | A |
 | A-6 | Alléger les anciens contrôleurs (après B-8) | A |
 | R-10 | Changement de téléphone demandé par l'étudiant | A et B |
-| R-11, écran | En cours sur `b/r11-visa` | B |
 | R-9 | Téléphones à délier et séances sans appel dans « À traiter » | B |
-| B-4 | Couleurs en dur remplacées par les jetons | B |
-| B-7 | Découper les gros fichiers du site | B |
+| B-7 | Découper les gros fichiers du site (`Cours.jsx`, `Calendrier.jsx`, `Affectations.jsx`, `DashboardLayout.jsx`) | B, décision attendue (§ 8) |
 | IA-5 (reste) | Éditeur « Mes quiz » | B |
+
+Fait par le groupe B depuis le compte rendu de midi : **R-11 (écran)**, **B-4**, et la fin de **B-8** (CI, ancienne suite retirée). Reste à B-8 le parcours « Créer un quiz », à écrire après la fusion (l'outillage et l'écran sont sur deux branches). **R-8** (la promesse sur l'accueil) attend la phrase.
 
 À moitié fait : **A-8** (tests du solveur). En attente du retour des devoirs : **R-13** (export des notes).
 
@@ -197,6 +227,8 @@ L'onglet « Menu » ; l'espace Carrière ; la Bibliothèque à la place de Moodl
 - **Paie** : faire valider le relevé mensuel par la scolarité de HESTIM.
 - **Fournisseur d'IA** : la décision de l'école bloque IA-7.
 - **Compte « actif »** : au moins une connexion dans le mois ?
+- **B-7** : seule la mise en page est couverte par les parcours de test ; `Cours.jsx`, `Calendrier.jsx` et `Affectations.jsx` n'en ont aucun. Découper d'abord la mise en page seule, ou écrire d'abord un parcours pour chacune des trois autres pages ?
+- **R-8** : la phrase de la promesse, pour la page d'accueil.
 
 ## 9. Repères pratiques
 
