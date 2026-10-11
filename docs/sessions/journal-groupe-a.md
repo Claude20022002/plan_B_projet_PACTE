@@ -217,8 +217,29 @@ Sur demande du chef de projet.
 - Trois maquettes dans `captures/` (`maquette-quiz-*.png`), sources dans `maquettes/`, rendues par `scripts/capturer-maquettes.mjs`. **Ce ne sont pas des captures** : l'application n'affiche ni image ni vidéo dans une question.
 - Aucune vraie capture refaite : les écrans changent encore tant que D-1 et R-7 ne sont pas fusionnés.
 
+### Solveur et génération : deux remarques du groupe B (branche `a/d2-devoirs-fermes`)
+
+**Fait.**
+- **Quatre contraintes sans test** : `ContraintesTest.java` gagne quatre vérifications (équipements de la salle, campus de la filière, vœu « préférer », pas de salle en distanciel), chacune avec ses cas sans pénalité.
+- **Plafond d'heures par semaine** : il est signalé dès le début de la génération, dans le même rapport que les disponibilités insuffisantes. Le solveur ne connaît toujours pas ce plafond ; ce n'est pas une contrainte de plus.
+- Les deux avertissements sortent de `probleme.js` pour `backend/services/generation/timefold/avertissements.js` (fonctions pures).
+
+**Comment le plafond est compté.** La semaine type de l'enseignant, séances déjà en place comprises, au plus court : une séance d'un créneau prend la durée du plus court créneau de sa grille. Un dépassement signalé est donc certain ; un plafond tout juste tenu peut encore être dépassé d'un quart d'heure, et l'avertissement par séance, au moment de recopier sur les dates, reste en place.
+
+**Vérifié.** Solveur : 18 tests sur 18 dans l'image Maven (14 pour les contraintes, dont les 4 nouveaux). Backend : 4 tests unitaires nouveaux (`avertissementsGeneration.test.js`), suite d'intégration de la génération 7 sur 7, lint sans erreur.
+
+**Pas vérifié** : la suite d'intégration complète après ce changement, et une génération réelle avec un enseignant au plafond dépassé.
+
+### Vidéo : premier montage d'« Une matinée à l'école » (`docs/presentation/video/`)
+
+Sur demande du chef de projet.
+- Deux compositions nouvelles (`src/Matinee.tsx`) : `out/matinee-ecole.mp4` (16:9, 1 min 33) et `out/matinee-ecole-9x16.mp4` (9:16, 45 s). Les anciennes vidéos ne changent pas. `out/` n'est pas versionné.
+- Trois scènes nouvelles (quiz, « Bientôt », administration), un repère d'heure par scène, une barre de progression ; la bande-son suit les nouvelles durées.
+- **C'est un montage de travail** : captures d'avant le 10 octobre, maquettes pour le quiz, pas de sous-titres anglais. Le détail est dans `video/README.md`.
+
 ### Demandes au groupe B
 
+- **Génération, nouvel avertissement à afficher** : le rapport d'une génération (`rapport.avertissements`) peut contenir `{ type: "plafond_hebdomadaire", id_user, enseignant, statut, plafond_heures, heures_semaine, seances }`, à côté de `disponibilites_insuffisantes`. `GenerationAutomatique.jsx` ne connaît que le second.
 - **Site du quiz, page du joueur** : `frontend/src/routes/play/+page.svelte` envoie `gameData.game_id` à la statistique « Joined Game ». Le moteur ne le fournit plus : retirer cette propriété.
 - **CI** : `.github/workflows/ci-cd.yml` est modifié par A-4 (une étape « Lint » dans « Test Backend »). B-8 se met à jour sur cette branche fusionnée avant d'y toucher.
 - **CQ-2, écran du projecteur** : à écrire après la fusion de `a/cq1-partie-signee` et le redéploiement du moteur. Contrat :

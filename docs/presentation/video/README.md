@@ -13,6 +13,38 @@ Vidéo motion design de **62 s** qui ouvre la présentation (voir `../discours-3
 | `out/carrousel/hestim-planner-carrousel.pdf` | carrousel LinkedIn, 10 pages 1080 × 1350 (`npm run carrousel`) |
 | `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 10), avec sa propre bande-son, pour les réseaux sociaux |
 
+## « Une matinée à l'école » (lot V-1, premier montage du 11 octobre 2026)
+
+La vidéo suivante, décrite dans `../script-video-motion-design.md` : une seule histoire, sans les devoirs. Les compositions ci-dessus ne changent pas ; celles-ci s'y ajoutent (`src/Matinee.tsx`).
+
+| Fichier | Format | Commande |
+| --- | --- | --- |
+| `out/matinee-ecole.mp4` | 1920 × 1080, 1 min 33,5 (187 temps) | `npm run render:matinee` |
+| `out/matinee-ecole-9x16.mp4` | 1080 × 1920, 45 s (90 temps), l'accroche d'abord | `npm run render:matinee-reseaux` |
+
+| # | Début | Scène | Fichier | Images |
+| --- | --- | --- | --- | --- |
+| 1 | 0:00 | L'emblème, le nom, la promesse | `S1Intro.tsx` | animation |
+| 2 | 0:06 | Six outils éparpillés | `S2Outils.tsx` | animation |
+| 3 | 0:14 | 7 h 40, l'étudiante : le mois, le détail d'un cours | `S4Agenda.tsx` | captures |
+| 4 | 0:23 | Cours reporté | `S5Alerte.tsx` | capture, bannière dessinée |
+| 5 | 0:30 | 8 h 30, l'appel par QR code | `S8Appel.tsx` | animation |
+| 6 | 0:38 | 9 h 10, le quiz : la salle et le téléphone | `M6Quiz.tsx` | **maquette** de l'écran de la salle, téléphone redessiné |
+| 7 | 0:58 | « Bientôt » : le schéma et l'extrait vidéo sur le téléphone | `M7Bientot.tsx` | **maquettes** |
+| 8 | 1:10 | Les résultats | `S7Resultats.tsx`, coupée avant le devoir noté | captures |
+| 9 | 1:15 | Les supports du cours | `S6Supports.tsx`, coupée avant le PDF | capture |
+| 10 | 1:18 | L'administration : l'emploi du temps du mois | `M10Admin.tsx` | capture |
+| 11 | 1:27 | La promesse, web · iPhone · Android | `S9Fin.tsx` | animation |
+
+**Ce que ce premier montage n'est pas encore.**
+
+- **Il est plus court que le script** (1 min 33 au lieu de 1 min 54) : l'appel garde son animation de 8 secondes, faute des vrais écrans (appel projeté, scanner).
+- **Les captures des scènes 3, 4, 8, 9 et 10 datent d'avant le 10 octobre.** Celle des résultats montre encore l'ancien menu (« Jeux », « Mes surveillances »). Elles sont à refaire une fois les lots D-1 et R-7 fusionnés.
+- **Les scènes 6 et 7 reposent sur des maquettes** (`../maquettes/`). La scène 7 l'annonce à l'écran (« Bientôt ») ; l'écran de la salle de la scène 6 sera remplacé par une capture du projecteur de Planner (lot CQ-2).
+- **Pas de sous-titres anglais**, ni de durée annoncée avant la lecture. La barre de progression est en place.
+
+Les durées des deux montages sont dans `TEMPS_SALLE` et `TEMPS_RESEAUX` (`src/Matinee.tsx`) ; la bande-son les lit et produit `public/audio/matinee.wav` et `matinee-9x16.wav`.
+
 ## Commandes
 
 ```bash
