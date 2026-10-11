@@ -588,6 +588,10 @@ export const suiviAPI = {
     actualiser: () => request('/suivi/actualiser', { method: 'POST' }),
     modules: (params) => request(avecQuery('/suivi/modules', params)),
     enseignants: (mois) => request(avecQuery('/suivi/enseignants', { mois })),
+    // Séances du mois sans appel validé (R-11) : { mois, note, a_verifier, seances }
+    seancesAVerifier: (mois) => request(avecQuery('/suivi/seances-a-verifier', { mois })),
+    // decision : 'confirmee', 'ecartee', ou null pour annuler la décision
+    viser: (id, decision, motif = null) => request(`/suivi/seances/${encodeURIComponent(id)}/visa`, { method: 'PUT', body: { decision, motif } }),
     exportVacataires: (mois) => telecharger(`/suivi/vacataires.csv?mois=${mois}`, `heures-vacataires-${mois}.csv`),
 };
 

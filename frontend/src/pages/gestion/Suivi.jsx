@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, LinearProgress, MenuItem, Paper, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Typography } from '@mui/material';
-import { Download, Refresh } from '@mui/icons-material';
+import { Box, LinearProgress, MenuItem, Paper, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Typography } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
+import HeuresDuMois from '../../components/suivi/HeuresDuMois';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
@@ -14,11 +14,10 @@ import { filieresGerables } from '../../utils/droits';
 import { ds } from '../../design-system/tokens';
 import { aujourdhui } from '../../../../shared/dates.js';
 
-const moisCourant = () => new Date().toISOString().slice(0, 7);
-
 /**
  * Suivi du réalisé (phase P7) : avancement de chaque enseignement face à son rythme (alerte de
- * retard), heures réalisées par enseignant sur un mois et export CSV des vacataires.
+ * retard), heures réalisées par enseignant sur un mois et export CSV des vacataires
+ * (components/suivi/HeuresDuMois.jsx).
  */
 export default function Suivi() {
     const { t, i18n } = useTranslation();
@@ -36,7 +35,7 @@ export default function Suivi() {
                         <Tab label={t('tracking.tabs.hours')} />
                     </Tabs>
                 )}
-                {onglet === 0 ? <Avancement nombre={nombre} user={user} /> : <Heures nombre={nombre} />}
+                {onglet === 0 ? <Avancement nombre={nombre} user={user} /> : <HeuresDuMois nombre={nombre} />}
             </Paper>
         </DashboardLayout>
     );
@@ -154,103 +153,6 @@ function Avancement({ nombre, user }) {
                                     </TableCell>
                                     <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' }, fontVariantNumeric: 'tabular-nums' }}>{nombre.format(l.heures_planifiees)} h</TableCell>
                                     <TableCell align="right" sx={{ fontVariantNumeric: 'tabular-nums' }}>{nombre.format(l.reste)} h</TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-            )}
-        </>
-    );
-}
-
-function Heures({ nombre }) {
-    const { t } = useTranslation();
-    const toast = useToast();
-    const [mois, setMois] = useState(moisCourant());
-    const [lignes, setLignes] = useState([]);
-    const [loading, setLoading] = useState(true);
-
-    const charger = useCallback(async () => {
-        setLoading(true);
-        try {
-            setLignes(await suiviAPI.enseignants(mois));
-        } catch {
-            toast.error(t('common.errorLoad'));
-        } finally {
-            setLoading(false);
-        }
-    }, [mois, t, toast]);
-
-    useEffect(() => {
-        charger();
-    }, [charger]);
-
-    const actualiser = async () => {
-        try {
-            const { realisees } = await suiviAPI.actualiser();
-            toast.success(t('tracking.refreshed', { count: realisees }));
-            charger();
-        } catch (error) {
-            toast.error(error.message);
-        }
-    };
-
-    const exporter = async () => {
-        try {
-            await suiviAPI.exportVacataires(mois);
-        } catch (error) {
-            toast.error(error.message);
-        }
-    };
-
-    return (
-        <>
-            <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                <TextField type="month" size="small" label={t('tracking.month')} value={mois} onChange={(e) => setMois(e.target.value)} InputLabelProps={{ shrink: true }} />
-                <Stack direction="row" spacing={1}>
-                    <Button startIcon={<Refresh />} onClick={actualiser}>
-                        {t('tracking.refresh')}
-                    </Button>
-                    <Button variant="outlined" startIcon={<Download />} onClick={exporter}>
-                        {t('tracking.exportVisiting')}
-                    </Button>
-                </Stack>
-            </Box>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 820 }}>
-                {t('tracking.hoursIntro')}
-            </Typography>
-            {loading ? (
-                <TableSkeleton rows={6} />
-            ) : lignes.length === 0 ? (
-                <EmptyState title={t('tracking.noHoursTitle')} description={t('tracking.noHoursBody')} />
-            ) : (
-                <TableContainer>
-                    <Table size="small">
-                        <TableHead>
-                            <TableRow>
-                                <TableCell>{t('ref.staff.cols.teacher')}</TableCell>
-                                <TableCell>{t('ref.staff.cols.status')}</TableCell>
-                                <TableCell align="right">{t('tracking.cols.done')}</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {lignes.map((l) => (
-                                <TableRow key={l.id_user} hover>
-                                    <TableCell>
-                                        <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                            {l.nom} {l.prenom}
-                                        </Typography>
-                                        {l.entreprise && (
-                                            <Typography variant="caption" color="text.secondary">
-                                                {l.entreprise}
-                                            </Typography>
-                                        )}
-                                    </TableCell>
-                                    <TableCell>{t(`ref.staff.statuses.${l.statut}`)}</TableCell>
-                                    <TableCell align="right" sx={{ fontFamily: ds.font.board, fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>
-                                        {nombre.format(l.heures_realisees)} h
-                                    </TableCell>
                                 </TableRow>
                             ))}
                         </TableBody>
