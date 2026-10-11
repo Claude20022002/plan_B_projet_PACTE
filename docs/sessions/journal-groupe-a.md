@@ -162,8 +162,43 @@ Sur demande du chef de projet, les branches `a/a1-modele-import`, `a/a2-mots-de-
 
 **Limites.** Les fichiers ne sont pas sauvegardés (documents de la bibliothèque dans MinIO, images des quiz). Personne n'est prévenu d'un échec : il faut lire le journal.
 
+### D-2 : devoirs fermés côté serveur (branche `a/d2-devoirs-fermes`, à la suite d'A-3)
+
+**Fait.**
+- `backend/services/quiz/devoirsActifs.js` : l'interrupteur `DEVOIRS_ACTIFS`, éteint par défaut (seule la valeur `true` ouvre les devoirs), et la garde des routes.
+- **Routes `/api/devoirs`** : fermées, elles répondent 503 avec `{ message, code: "DEVOIRS_FERMES" }`. **`GET /api/devoirs/quiz-disponibles` reste ouverte** : elle sert aussi à lancer une partie en direct (CQ-1).
+- **Activités** (`GET /api/activites`) et **historique de l'enseignant** (`GET /api/jeux/historique`) : plus aucun devoir. Le champ `devoirs` de chaque module reste dans la réponse, vide, pour ne pas changer son format.
+- Variable documentée dans `backend/.env.example` et `.env.docker.example`. Les tests tournent avec la variable allumée (`setupEnv.js`).
+- Aucun fichier, aucune table, aucune migration retirés.
+
+**Vérifié.** Un test nouveau dans `devoirs.test.js` : variable éteinte, les six routes répondent 503, la liste des quiz 200, une requête sans jeton 401 ; les activités de l'étudiant et de l'enseignant et l'historique ne citent plus le devoir, qui reste en base ; variable rallumée, tout revient. Les cinq suites touchées (devoirs, jeux, « Mes classes », lancement du quiz, quiz par l'IA) : 59 tests sur 59. Lint : 0 erreur, 18 avertissements, comme avant.
+
+**Pour rallumer les devoirs** : `DEVOIRS_ACTIFS=true` dans `.env.docker` du serveur, puis redémarrer le backend ; et `DEVOIRS_ACTIFS = true` dans `shared/fonctions.js` (groupe B), puis reconstruire le site et l'application.
+
+**Limites.**
+- Les notifications « Nouveau devoir » déjà envoyées restent dans la liste de l'étudiant ; leur lien ramène aux activités (D-1). Pas de réponse du chef de projet : laissées.
+- En production, la variable est absente de `.env.docker` : les devoirs seront donc fermés dès le déploiement, sans rien ajouter.
+
+### Moteur de quiz : la correction de la prise de main était incomplète (`../ClassQuiz`, non commité)
+
+La correction écrite avec CQ-1 compare l'identifiant de la partie. Relue le 11 octobre : **l'identifiant restait donné à tout joueur**, par deux chemins. Un étudiant qui avait le code pouvait donc toujours prendre la main, ou lire les réponses par la télécommande.
+
+**Fait**, dans trois fichiers de plus :
+- `classquiz/db/models.py`, `to_player_data` : l'identifiant ne part plus dans `joined_game` ni `rejoined_game`, envoyés à chaque joueur.
+- `classquiz/routers/quiz.py`, `GET /api/v1/quiz/join/{game_pin}` : cette route ouverte à tous rendait l'identifiant à qui donnait le code. Elle répond maintenant `{ "exists": true }`. Ni le site du quiz, ni l'application, ni Planner ne l'appellent.
+- `classquiz/socket_server/__init__.py`, `set_control_visibility` : réservé à qui anime la partie (un joueur pouvait masquer les commandes de l'enseignant).
+
+**Vérifié.** `test_hestim.py` : 14 tests sur 14 dans l'image de l'API (1 nouveau : ce qu'un joueur reçoit ne contient pas l'identifiant). Les clients ne lisent pas l'identifiant côté joueur : l'application ne lit que `started` et `game_mode` ; le site du quiz ne s'en sert que pour une statistique.
+
+**Pas vérifié.**
+- Une partie complète dans un navigateur après ces trois changements (animation, télécommande, joueur).
+- `test_server.py`, adapté à la nouvelle réponse de la route, demande PostgreSQL, Redis et Meilisearch : il n'a pas tourné.
+
+**Reste à faire, par le chef de projet** : commiter les sept fichiers Python de `../ClassQuiz` (pas `frontend/static/site.webmanifest`, qui n'est pas de ce lot), puis déployer le moteur avec `--classquiz`. **La faille reste ouverte en production jusque-là.**
+
 ### Demandes au groupe B
 
+- **Site du quiz, page du joueur** : `frontend/src/routes/play/+page.svelte` envoie `gameData.game_id` à la statistique « Joined Game ». Le moteur ne le fournit plus : retirer cette propriété.
 - **CI** : `.github/workflows/ci-cd.yml` est modifié par A-4 (une étape « Lint » dans « Test Backend »). B-8 se met à jour sur cette branche fusionnée avant d'y toucher.
 - **CQ-2, écran du projecteur** : à écrire après la fusion de `a/cq1-partie-signee` et le redéploiement du moteur. Contrat :
   - `POST /api/quiz/parties`, corps `{ id_quiz, id_affectation? }`, enseignant seulement. `id_quiz` vient de `GET /api/devoirs/quiz-disponibles`. Rend 201 et `{ id_quiz_partie, id_affectation, titre, nb_questions, notifies, animation: { game_pin, game_id, socket } }`.
@@ -187,7 +222,7 @@ Sur demande du chef de projet, les branches `a/a1-modele-import`, `a/a2-mots-de-
 - **A-3, la destination** : où envoyer les sauvegardes (autre serveur, stockage objet, Drive de l'école), et qui en détient l'accès ? Et où garder la phrase de chiffrement hors du serveur ? Le script est prêt ; il ne manque que ces réponses pour le mettre en service.
 - **A-3, les fichiers** : faut-il sauvegarder aussi les documents de la bibliothèque et les images des quiz ?
 
-- **Moteur de quiz, faille de prise de main** : la correction attend dans `../ClassQuiz` (4 fichiers, non commités). À commiter et à déployer avec `--classquiz` sans attendre le reste : aujourd'hui, un étudiant qui connaît le code d'une partie peut en prendre la main.
+- **Moteur de quiz, faille de prise de main** : la correction, complétée le 11 octobre, attend dans `../ClassQuiz` (7 fichiers Python, non commités). À commiter et à déployer avec `--classquiz` sans attendre le reste : aujourd'hui, un étudiant qui connaît le code d'une partie peut en prendre la main.
 - **Dépôt du quiz** : faut-il une branche par lot dans `../ClassQuiz` aussi, et un dossier de travail par groupe comme pour Planner ?
 
 - **R-11, l'export** : une séance « à vérifier » doit-elle partir dans l'export avec sa mention (fait aujourd'hui), ou en être retenue tant que l'administration ne l'a pas confirmée (« sans visa, rien ne part ») ? Le changement tient en une ligne.
