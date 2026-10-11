@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Switch, Text, useColorScheme, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useRouter } from 'expo-router';
 import Constants from 'expo-constants';
 import Ecran from '../../board/Ecran';
 import { useAuth } from '../../auth/AuthContext';
@@ -10,13 +11,14 @@ import { CIBLE_TACTILE, creerStyles, espace, FAMILLES, MODES, themePour, usePref
 import { useMargeOnglets } from '../../verre/Verre';
 import { ajouterAuCalendrier } from '../../agenda';
 
-/** Compte : profil, apparence (thème Planner ou StudyLib, clair ou sombre), langue, notifications, déconnexion. */
+/** Compte : profil, apparence (thème Planner ou StudyLib, clair ou sombre), langue, notifications, téléphone de l'appel, déconnexion. */
 export default function Compte() {
   const { couleurs } = useTheme();
   const styles = useStyles();
   const margeBas = useMargeOnglets();
   const { t, i18n } = useTranslation();
   const { utilisateur, deconnexion } = useAuth();
+  const router = useRouter();
   const [erreurAgenda, setErreurAgenda] = useState(false);
   const [alertes, setAlertes] = useState(false);
   const [occupe, setOccupe] = useState(false);
@@ -81,6 +83,18 @@ export default function Compte() {
             <Text style={styles.agendaBouton}>{t('app.compte.agendaAjouter')}</Text>
           </Pressable>
           {erreurAgenda ? <Text style={[styles.detail, { marginTop: 8 }]}>{t('app.compte.agendaErreur')}</Text> : null}
+        </View>
+
+        <Text style={styles.section}>{t('app.compte.telephone')}</Text>
+        <View style={styles.bloc}>
+          <Text style={styles.detail}>{t('app.compte.telephoneAide')}</Text>
+          <Pressable
+            onPress={() => router.push('/telephone')}
+            style={({ pressed }) => [styles.option, styles.optionActive, { marginTop: 12, minHeight: CIBLE_TACTILE, justifyContent: 'center' }, pressed && { opacity: 0.7 }]}
+            accessibilityRole="button"
+          >
+            <Text style={styles.agendaBouton}>{t('app.compte.telephoneOuvrir')}</Text>
+          </Pressable>
         </View>
 
         <Pressable onPress={deconnexion} style={styles.deconnexion} accessibilityRole="button">

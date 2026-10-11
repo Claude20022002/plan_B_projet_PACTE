@@ -4,6 +4,7 @@ import { Box, Button, MenuItem, Paper, Stack, TextField, Typography } from '@mui
 import { PhonelinkErase, ReportProblemOutlined } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import DemandesTelephone from '../../components/presences/DemandesTelephone';
 import EmptyState from '../../design-system/components/EmptyState';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { presenceAPI } from '../../services/api';
@@ -15,8 +16,9 @@ const MOTIFS = ['autre_telephone', 'telephone_d_un_autre', 'appareil_partage', '
 /**
  * Signalements de présence (anti-fraude, lot 2), écran de l'administration : les soupçons de fraude
  * à l'appel, du plus récent au plus ancien. Un compte est lié à un téléphone à son premier scan ;
- * un étudiant qui a changé de téléphone est refusé tant que l'ancien reste lié : on le délie ici,
- * son prochain scan liera le nouveau.
+ * un étudiant qui a changé de téléphone est refusé tant que l'ancien reste lié. En haut, les
+ * changements qu'il a demandés depuis l'application (R-10) ; délier à la main reste possible, et son
+ * prochain scan lie alors le premier téléphone venu.
  */
 export default function SignalementsPresence() {
     const { t, i18n } = useTranslation();
@@ -62,6 +64,7 @@ export default function SignalementsPresence() {
     return (
         <DashboardLayout>
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
+                <DemandesTelephone onDecision={charger} />
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
                     <TextField select size="small" label={t('signalementsPresence.motif')} value={motif} onChange={(e) => setMotif(e.target.value)} sx={{ minWidth: 260 }}>
                         <MenuItem value="">{t('signalementsPresence.tousMotifs')}</MenuItem>

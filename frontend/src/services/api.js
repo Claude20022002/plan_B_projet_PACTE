@@ -723,6 +723,10 @@ export const presenceAPI = {
     // Un compte = un téléphone : { lie, lie_le } ; délier (nouveau téléphone) : { delie }
     telephone: (idUser) => request(`/presences/etudiants/${encodeURIComponent(idUser)}/telephone`),
     delierTelephone: (idUser) => request(`/presences/etudiants/${encodeURIComponent(idUser)}/telephone`, { method: 'DELETE' }),
+    // Changements de téléphone demandés par les étudiants (R-10) : { data: [{ id, statut, motif, demandee_le, etudiant: { id_user, nom, email }, telephone_lie_le }] }
+    demandesTelephone: (statut = 'en_attente') => request(`/presences/demandes-telephone?statut=${encodeURIComponent(statut)}`),
+    accepterDemandeTelephone: (id) => request(`/presences/demandes-telephone/${encodeURIComponent(id)}/accepter`, { method: 'POST' }),
+    refuserDemandeTelephone: (id, motif) => request(`/presences/demandes-telephone/${encodeURIComponent(id)}/refuser`, { method: 'POST', body: motif ? { motif } : {} }),
 };
 
 // Journal de sécurité (administration) : { total, page, par_page, evenements: [{ id_evenement, evenement, id_user, email, acteur, ip, user_agent, details, createdAt }] }

@@ -4,7 +4,9 @@
  *
  * Contenu : un administrateur, une enseignante, une classe de 8 étudiants et une séance
  * aujourd'hui, en cours toute la journée (l'appel ne s'ouvre que le jour de la séance, et
- * « Mes classes » met en avant la classe en cours). Les comptes et leur mot de passe sont créés ici :
+ * « Mes classes » met en avant la classe en cours). S'y ajoute, hors de la classe, une étudiante dont
+ * le compte est déjà lié à un téléphone (parcours du changement de téléphone, R-10). Les comptes et
+ * leur mot de passe sont créés ici :
  * aucun identifiant n'est écrit dans les tests. Les données de la génération sont dans
  * donneesGeneration.mjs.
  */
@@ -17,13 +19,16 @@ import { preparerIiia } from "./donneesIiia.mjs";
 // Le Maroc est à UTC+0 toute l'année ; la séance doit tomber « aujourd'hui » pour le serveur
 const FUSEAU = "Africa/Casablanca";
 const JOURS = ["dimanche", "lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"];
+// Identifiants d'installation de l'application (R-10) : l'ancien téléphone est lié à la préparation
+const TELEPHONES = { ancien: "parcours-ancien-telephone-r10", nouveau: "parcours-nouveau-telephone-r10" };
 const ETUDIANTS = [["Salma", "Bennani"], ["Yassine", "Alami"], ["Imane", "Tazi"], ["Omar", "Idrissi"], ["Kenza", "Berrada"], ["Mehdi", "Chraibi"], ["Sara", "El Fassi"], ["Anas", "Lahlou"]];
 
 /** Vide la base de test, la remplit et rend les comptes et la séance créés. */
 export const preparerDonnees = async (racine) => {
   const serveur = (chemin) => import(pathToFileURL(path.join(racine, "backend", chemin)).href);
   const { resetDatabase, createUser, createPlanningFixture, PASSWORD } = await serveur("tests/integration/helpers/testApp.js");
-  const { Affectation, AnneeUniversitaire, Appartenir, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, Periode } = await serveur("models/index.js");
+  const { Affectation, AnneeUniversitaire, AppareilEtudiant, Appartenir, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, Periode } = await serveur("models/index.js");
+  const { empreinteAppareil } = await serveur("services/presences/appareil.js");
 
   await resetDatabase();
   const admin = await createUser("admin", { prenom: "Admin", nom: "Parcours", email: "admin.parcours@exemple.hestim.test" });
@@ -32,6 +37,8 @@ export const preparerDonnees = async (racine) => {
   for (const [i, [prenom, nom]] of ETUDIANTS.entries()) {
     etudiants.push(await createUser("etudiant", { prenom, nom, email: `etu${i + 1}.parcours@exemple.hestim.test` }));
   }
+  const changeDeTelephone = await createUser("etudiant", { prenom: "Rania", nom: "Kettani", email: "etu.telephone.parcours@exemple.hestim.test" });
+  await AppareilEtudiant.create({ id_user: changeDeTelephone.id_user, appareil: empreinteAppareil(TELEPHONES.ancien), lie_le: new Date() });
   const fixture = await createPlanningFixture({ admin, enseignant: enseignante, etudiant: etudiants[0] });
   for (const e of etudiants.slice(1)) await Appartenir.create({ id_user_etudiant: e.id_user, id_groupe: fixture.groupe.id_groupe });
 
@@ -71,6 +78,7 @@ export const preparerDonnees = async (racine) => {
     admin: compte(admin),
     enseignante: compte(enseignante),
     etudiants: etudiants.map(compte),
+    changementTelephone: { etudiante: compte(changeDeTelephone), ...TELEPHONES },
     seance: { id: seance.id_affectation, cours: fixture.cours.nom_cours, groupe: fixture.groupe.nom_groupe },
     generation,
     iiia,
