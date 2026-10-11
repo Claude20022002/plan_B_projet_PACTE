@@ -29,10 +29,10 @@ Avancement, demandes au groupe A et questions au chef de projet. Une entrée par
 
 Partie de `b/d1-masquer-devoirs`, car D-1 et R-7 modifient les mêmes fichiers de textes. **Ordre de fusion : D-1, B-1, puis R-7.** Le journal n'est tenu que sur `b/b1-code-mort`, pour ne pas créer de conflit.
 
-**Fait.**
-- Sélecteur d'espaces (`shared/espaces.js`, site et application) : « Jeux » devient « Activités », comme le menu du site et l'onglet de l'application.
+**Fait** (corrigé après les remarques du chef de projet, commit `629ab91`).
+- Sélecteur d'espaces (`shared/espaces.js`, site et application) : **l'entrée « Jeux » est retirée**, on entre dans les Activités par le scan du QR projeté (`remarques-par-profil.md`, § 10). Le sélecteur liste Planner, Bibliothèque et Quiz ; la page Activités reste dans le menu du site.
 - Quiz par l'IA : le message « aucun quiz » ne cite plus « PlannerQuiz ».
-- Application, réglage Apparence : le thème « StudyLib » devient « Bibliothèque ».
+- Application, réglage Apparence : le thème garde son nom « StudyLib » (décision du chef de projet).
 - Messages d'erreur de la page et de l'onglet Activités : « activités » au lieu de « jeux ».
 - Les mots « jeu » et « jeux » restent quand ils désignent un contenu (« Tous les jeux », « Jeux de vos modules »), pas l'espace.
 
@@ -43,6 +43,52 @@ Partie de `b/d1-masquer-devoirs`, car D-1 et R-7 modifient les mêmes fichiers d
 ### Demandes au groupe A (R-7)
 
 - Des messages renvoyés par le serveur et affichés tels quels citent encore « PlannerQuiz » : `backend/services/quiz/devoirs.js` (l. 47 à 68), `backend/services/ia/quiz.js` (l. 344), `backend/routes/oidcRoutes.js` (l. 34 et 52). Proposition : « le service de quiz » ou « l'espace Quiz ». `client_name` (`services/oidc/provider.js`) peut rester « PlannerQuiz HESTIM » s'il n'est pas affiché.
+
+### Scan d'un quiz (branche `b/scan-quiz`, partie de `b/r7-nommage`)
+
+Demande du chef de projet : les Activités passent par le scan, comme sur Wooclap.
+
+**Fait.**
+- Application : le même viseur sert à l'appel et aux quiz. Un QR de quiz est l'adresse de la partie (`…/play?pin=…`), y compris celui que la salle d'attente du service de quiz projette déjà (`…&ref=Qr`). Tout autre code part à l'appel comme avant.
+- La partie ne s'ouvre que si elle est lancée dans une séance de l'étudiant : l'application prend son lien personnel (nom, jeton) et ouvre le joueur natif, avec son anti-triche. Sinon, un message le dit.
+- Écran renommé « Scanner », consigne « appel ou quiz ». Logique pure dans `mobile/src/quiz/scan.js`, testée.
+
+**Vérifié.** Tests de l'application : 35 sur 35 ; `npx expo lint` : 0 erreur.
+
+**Pas fait** : l'onglet Activités reste dans la barre du bas (question ci-dessous).
+
+### CQ-2 : lancer et projeter un quiz en direct (branche `b/cq2-projecteur`, partie de `b/scan-quiz`)
+
+Demande du chef de projet : l'enseignant met un quiz en place en quelques clics. Écrit contre la route de CQ-1 du groupe A (`POST /api/quiz/parties`, branche `a/cq1-partie-signee`), **à fusionner après elle**.
+
+**Fait.** Trois gestes jusqu'à la première question : « Lancer un quiz » dans Mes classes (séance en cours), le quiz, « Démarrer ».
+- Dialogue de lancement : mes quiz, un clic lance la partie et ouvre l'écran projeté. Lien vers la création par l'IA.
+- Écran projeté `/quiz/projection`, sans menu : salle d'attente (QR scanné par l'application, code, joueurs), question avec compte à rebours, nombre de réponses par choix avec la bonne réponse mise en avant, classement final. Un seul bouton à la fois ; à la fin du temps, les réponses s'affichent seules.
+- Le jeton d'animation voyage dans l'état de navigation, jamais dans l'adresse.
+- Découpage : la page assemble (86 lignes) ; `hooks/useAnimationQuiz.js` parle au WebSocket ; quatre composants dans `components/quiz/projection/` ; calculs purs dans `utils/animationQuiz.js`, testés par `npm run test:unit` (lanceur de Node, sans dépendance).
+- Écrans projetés sortis d'`App.jsx` dans `routes/projection.jsx` (`App.jsx` passe de 431 à 427 lignes). Plein écran et anti-veille partagés avec l'appel (`hooks/useEcranProjete.js`).
+- Couleurs des réponses dans `shared/quiz/couleurs.js`, reprises par l'application.
+- Dépendance ajoutée : `socket.io-client`, chargé seulement par l'écran projeté.
+
+**Vérifié.** Lint du site : 0 erreur, 7 avertissements connus ; build réussi ; tests unitaires du site : 7 sur 7 ; tests de l'application : 35 sur 35.
+
+**Pas vérifié** : une vraie partie, ni en local ni en ligne. Il faut le serveur avec CQ-1, le service de quiz et le relais `/socket.io/`. En local, Vite ne relaie pas `/socket.io/` : l'essai se fait derrière Caddy.
+
+**Limites.** Le décompte par choix couvre les QCM, les cases à cocher et les votes ; pour le texte, l'intervalle et l'ordre, l'écran n'affiche que le nombre de réponses. Le nombre de « réponses reçues » pendant la question n'est qu'un indice (voir la demande ci-dessous).
+
+### Données personnelles (branche `b/donnees-fictives`, partie de `cc0d028`)
+
+Demandes du groupe A, faites : modèles CSV des pages Étudiants et Enseignants avec des personnes fictives (`@exemple.hestim.test`) ; l'import Excel n'écrit plus les lignes lues dans la console. Lint : 0 erreur.
+
+### Demandes au groupe A (scan et CQ-2)
+
+- **D-2 et la liste des quiz** : « Lancer un quiz » lit `GET /api/devoirs/quiz-disponibles`. Si D-2 ferme toutes les routes `/devoirs`, la liste se vide. Garder celle-ci ouverte, ou la déplacer (par exemple `GET /api/quiz/mes-quiz`, même réponse) : le site change alors une ligne de `api.js`.
+- **Serveur de jeu** (`classquiz/socket_server/__init__.py`, l. 338 et 343) : `player_answer` et `everyone_answered` sont envoyés **à toutes les parties en cours**, sans salle. L'écran ne s'en sert que comme indice, mais deux classes qui jouent en même temps faussent le compteur de chacune. Proposition : `room=f"admin:{game_pin}"`.
+
+### Questions au chef de projet
+
+- **Onglet Activités de l'application** : `remarques-par-profil.md`, § 10, dit qu'il sort de la barre du bas. Le retirer maintenant, ou avec l'onglet « Menu » ? Il donne aujourd'hui accès aux jeux des modules (terminal Linux), que le scan ne remplace pas.
+- **Ordre de fusion des branches du groupe B** : D-1, B-1, R-7, scan, puis CQ-2 (après CQ-1 du groupe A). `b/donnees-fictives` est indépendante.
 
 ## 11 octobre 2026
 
