@@ -2,6 +2,28 @@
 
 Avancement, demandes au groupe B et questions au chef de projet. Une entrée par session, la plus récente en haut.
 
+## 11 octobre 2026, après-midi
+
+### Fusion (lot 0-2)
+
+- `../planner-a-scan` commité en deux lots : `d958e27` (onglet Scanner), `1919f7f` (tableaux).
+- Branche `integration/2026-10-11` (locale, pas poussée) : `a/d2-devoirs-fermes`, puis `b/b4-couleurs`, `b/b1-code-mort`, `b/b8-parcours`, `b/donnees-fictives`, `a/onglet-scanner` et `b/compte-rendu`, dans l'ordre du compte rendu mis à jour par le groupe B. Toutes les branches `a/` et `b/` locales y sont contenues.
+- Conflits : les trois prévus, résolus comme écrit (`AppProviders.jsx`, journal du groupe B, `package.json`). Aucun autre.
+- Vérifié sur l'ensemble, dans une copie à part (`../planner-integration`, installation propre) : site (lint sans erreur, 15 tests unitaires, build), application (lint sans erreur, 38 tests), serveur (lint sans erreur, 184 unitaires, 353 intégration), solveur (20 tests), parcours B-8 (9 sur 9 ; le premier a dépassé son délai au démarrage à froid de Vite, puis il est passé). La CI elle-même n'a pas tourné.
+- **Incident** : un `npm ci` lancé dans `frontend/` de ce dossier a échoué (fichiers tenus par le serveur Vite du port 5181) et a vidé en partie `frontend/node_modules`. À refaire une fois ce serveur arrêté.
+
+### Lots
+
+| Lot | Branche | Résultat | Vérifié |
+|---|---|---|---|
+| Serveur de jeu | `a/quiz-salles` (dépôt du quiz) | `player_answer` va à `admin:<pin>` ; `everyone_answered` à la salle de la partie, et non à `admin:<pin>` comme proposé, car les joueurs l'écoutent aussi (`play/question.svelte`, `mobile/src/quiz/partie.js`) | 2 tests nouveaux, qui échouent sans le correctif ; 16 sur 16 |
+| R-2 | `a/r2-fork` (dépôt du quiz) | `FORK.md` : commit d'origine `711bdde7`, fichiers changés, règles, licence | Relu |
+| Paquet | `deploy/vps/paquets/quiz-correctif2.tar.gz` | Les deux correctifs du quiz ; remplace `quiz-correctif1` | Contenu vérifié ; jamais lancé sur le serveur |
+| R-14, serveur | `a/r14-liens-quiz` | Liens `/jeux?partie=<id>` et `/jeux?resultats=<id>` | `quiz.test.js` 12 sur 12 |
+| A-7 | `a/a7-verrou-taches` | Verrou `GET_LOCK` autour des cinq tâches périodiques, journal des passages | Deux passages simultanés : un envoi (deux sans le verrou) |
+
+Limite d'A-7 : le journal n'écrit pas les passages qui n'ont rien fait, sinon le rappel de l'appel écrirait une ligne par minute.
+
 ## 11 octobre 2026
 
 ### Point de départ
