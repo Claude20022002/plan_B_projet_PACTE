@@ -117,6 +117,8 @@ describe("Avancement et heures", () => {
         const heures = await clients.admin.get(`/api/suivi/enseignants?mois=${mois}`);
         expect(heures.body.find((h) => h.id_user === vacataire.id_user).heures_realisees).toBeGreaterThan(0);
 
+        // La séance d'hier a son appel validé : elle part dans l'export (une séance à vérifier attend le visa)
+        const appel = await AppelSeance.create({ id_affectation: ref.seances.confirmeePassee.id_affectation, secret: "s".repeat(64), ouvert_le: new Date(), ferme_le: new Date() });
         const csv = await clients.admin.get(`/api/suivi/vacataires.csv?mois=${mois}`);
         expect(csv.status).toBe(200);
         expect(csv.headers["content-type"]).toMatch(/text\/csv/);
@@ -124,6 +126,7 @@ describe("Avancement et heures", () => {
         expect(csv.text).toMatch(/;1,8;SUI-NOSQL NoSQL;SUI-4A;G-SUI/);
         expect((await clients.admin.get("/api/suivi/vacataires.csv?mois=octobre")).status).toBe(400);
         expect(MOIS).toMatch(/^\d{4}-\d{2}$/);
+        await appel.destroy();
     });
 });
 
@@ -136,7 +139,7 @@ describe("Séances à vérifier avant la paie (R-11)", () => {
     const ligneCsv = async () => (await clients.admin.get(`/api/suivi/vacataires.csv?mois=${mois()}`)).text.split("\r\n").find((l) => l.includes(`;${decaler(-2)};`));
     const viser = (id, corps) => clients.admin.send("put", `/api/suivi/seances/${id}/visa`, corps);
 
-    test("sans appel validé, la séance est à vérifier dans les heures, la liste et l'export", async () => {
+    test("sans appel validé, la séance est à vérifier dans les heures et la liste, et retenue hors de l'export", async () => {
         const heures = await heuresDu();
         expect(heures.seances_a_verifier).toBeGreaterThan(0);
         expect(heures.heures_a_verifier).toBe(heures.heures_realisees);
@@ -144,7 +147,8 @@ describe("Séances à vérifier avant la paie (R-11)", () => {
         expect(liste.body.note).toMatch(/indice.*pas une preuve/);
         expect(liste.body.a_verifier).toBe(heures.seances_a_verifier);
         expect(liste.body.seances.find((s) => s.id_affectation === cible().id_affectation)).toMatchObject({ etat: "a_verifier", heures: 1.8, groupe: "SUI-4A", appel_ouvert: false, enseignants: [{ id_user: vacataire.id_user, statut: "vacataire" }] });
-        expect(await ligneCsv()).toMatch(/;à vérifier \(pas d'appel validé\)$/);
+        // Retenue jusqu'au visa : on ne paie pas une séance qui n'a peut-être pas eu lieu
+        expect(await ligneCsv()).toBeUndefined();
     });
 
     test("un appel lancé ne suffit pas ; validé, la séance sort de la liste", async () => {
