@@ -14,6 +14,13 @@ Branche `a/a10-documentation`, partie de `main` après la fusion n° 5.
 - **Demande au groupe B** : `frontend/STRUCTURE_CREEE.md` et `frontend/GUIDE_DEMARRAGE.md` (dans la liste des fichiers inutiles) et `frontend/README.md` (décembre 2025) sont dans son dossier.
 - Le lien vers `FORK.md` du moteur de quiz ne marchera qu'une fois `a/ia4-modifier-quiz` fusionnée dans la branche `hestim` du fork.
 
+### CI rouge après la fusion n° 5 : le fuseau du Maroc
+
+- **Constat** : « Test Backend » échoue sur `main` et sur les PR 6 à 10, toujours sur `rappelAppel.test.js` (3 tests). Le test écrivait les heures en « +01:00 ». La CI a une tzdata 2026c, où le Maroc est à UTC+0 depuis le 20 septembre 2026 (comme la production, `backend/tzdata/LISEZMOI.md`) ; Node 22.23.2 sur le poste a la tzdata 2026a, où il reste à UTC+1. Le test passait donc ici et pas là-bas. Le code est juste ; le test était faux.
+- **Correctif** : branche `a/fuseau-tests` (depuis `main`), `tests/integration/helpers/heureLocale.js` (`aLHeureDeLEcole(jour, heure)`). Même correctif dans le test d'A-7, sur `a/a7-verrou-taches`.
+- **Vérifié** : suite d'intégration entière avec la tzdata 2026c, 356 sur 356.
+- **Pour tester comme la CI sur le poste** : `ICU_TIMEZONE_FILES_DIR=<dépôt>/backend/tzdata` avant `npm run test:integration`, ou mettre Node à 22.23.3 au moins.
+
 ## 11 octobre 2026, après-midi
 
 ### Fusion (lot 0-2)
