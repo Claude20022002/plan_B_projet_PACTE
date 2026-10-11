@@ -17,6 +17,7 @@ import {
     tirerVerification,
     verifierEtudiant,
 } from "../services/presences/appel.js";
+import { deciderDemande, demanderChangement, demandesTelephone, maDemandeTelephone } from "../services/presences/changementTelephone.js";
 
 /**
  * Appel par QR code (phase I1) :
@@ -32,6 +33,12 @@ import {
  *  - GET  /api/presences/signalements                        soupçons de fraude récents (administration)
  *  - GET  /api/presences/etudiants/:idUser/telephone         téléphone lié au compte : { lie, lie_le } (administration)
  *  - DELETE /api/presences/etudiants/:idUser/telephone       délier (nouveau téléphone) : { delie } (administration)
+ * Changement de téléphone (R-10) :
+ *  - POST /api/presences/telephone/demande                   { motif? } : l'étudiant déclare le téléphone en main, depuis l'application
+ *  - GET  /api/presences/telephone/demande                   sa dernière demande, ou null (étudiant)
+ *  - GET  /api/presences/demandes-telephone?statut=          demandes à traiter (administration)
+ *  - POST /api/presences/demandes-telephone/:id/accepter     lier le téléphone déclaré (administration)
+ *  - POST /api/presences/demandes-telephone/:id/refuser      { motif? } (administration)
  */
 const router = express.Router();
 router.use(authenticateToken);
@@ -93,6 +100,31 @@ router.get("/etudiants/:idUser/telephone", planification(async (req, res) => {
 
 router.delete("/etudiants/:idUser/telephone", planification(async (req, res) => {
     res.json(await delierTelephone(req.user, idEtudiant(req), contexteDe(req)));
+}));
+
+router.post("/telephone/demande", planification(async (req, res) => {
+    res.status(201).json(await demanderChangement(req.user, appareilDeLApplication(req), { motif: req.body?.motif }, contexteDe(req)));
+}));
+
+router.get("/telephone/demande", planification(async (req, res) => {
+    res.json({ data: await maDemandeTelephone(req.user) });
+}));
+
+router.get("/demandes-telephone", planification(async (req, res) => {
+    res.json({ data: await demandesTelephone(req.user, { statut: req.query.statut || undefined }) });
+}));
+
+const idDemande = (req) => {
+    const id = Number(req.params.id);
+    return Number.isInteger(id) && id > 0 ? id : -1;
+};
+
+router.post("/demandes-telephone/:id/accepter", planification(async (req, res) => {
+    res.json(await deciderDemande(req.user, idDemande(req), true, {}, contexteDe(req)));
+}));
+
+router.post("/demandes-telephone/:id/refuser", planification(async (req, res) => {
+    res.json(await deciderDemande(req.user, idDemande(req), false, { motif: req.body?.motif }, contexteDe(req)));
 }));
 
 export default router;
