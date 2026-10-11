@@ -4,6 +4,7 @@ import { Affectation, AppareilEtudiant, AppelSeance, Appartenir, Cours, Creneau,
 import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
 import { journaliser } from "../journalSecurite.js";
+import { APPAREIL, empreinteAppareil } from "./appareil.js";
 
 /**
  * Appel par QR code en séance (phase I1). L'enseignant ouvre l'appel le jour de la séance et
@@ -27,14 +28,12 @@ const FUSEAU = process.env.APP_TIMEZONE || "Africa/Casablanca";
 export const FENETRE_MS = 30 * 1000;
 const CODE = /^(\d{1,10})\.(\d{1,12})\.([A-Za-z0-9_-]{22})$/;
 const STATUTS_FERMABLES = ["planifie", "confirme", "reporte"];
-const APPAREIL = /^[A-Za-z0-9_-]{16,64}$/;
 export const VERIFICATION_MAX = 5;
 
 const aujourdhui = (maintenant = new Date()) => maintenant.toLocaleDateString("en-CA", { timeZone: FUSEAU });
 const fenetreDe = (maintenant = new Date()) => Math.floor(maintenant.getTime() / FENETRE_MS);
 const signature = (secret, idSeance, fenetre) => crypto.createHmac("sha256", secret).update(`${idSeance}.${fenetre}`).digest("base64url").slice(0, 22);
 const egal = (a, b) => a.length === b.length && crypto.timingSafeEqual(Buffer.from(a), Buffer.from(b));
-const empreinteAppareil = (appareil) => crypto.createHash("sha256").update(appareil).digest("hex");
 const nomComplet = (u) => (u ? `${u.prenom} ${u.nom}` : null);
 export const adresseDuCode = (code) => `${(process.env.FRONTEND_URL || "").replace(/\/$/, "")}/presence?c=${encodeURIComponent(code)}`;
 

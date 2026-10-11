@@ -38,6 +38,7 @@ import AppelSeance from "./AppelSeance.js";
 import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
 import AppareilEtudiant from "./AppareilEtudiant.js";
+import DemandeTelephone from "./DemandeTelephone.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
 import JournalSecurite from "./JournalSecurite.js";
 import GenerationQuiz from "./GenerationQuiz.js";
@@ -545,6 +546,8 @@ SignalementPresence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", ta
 SignalementPresence.belongsTo(Users, { foreignKey: "id_user_lie", as: "lie", targetKey: "id_user" });
 SignalementPresence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
 Users.hasOne(AppareilEtudiant, { foreignKey: "id_user", as: "appareilAppel", onDelete: "CASCADE" });
+DemandeTelephone.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
+DemandeTelephone.belongsTo(Users, { foreignKey: "id_user_admin", as: "admin", targetKey: "id_user" });
 
 // Double authentification
 Users.hasMany(MfaCodeSecours, { foreignKey: "id_user", as: "codesSecours", onDelete: "CASCADE" });
@@ -629,6 +632,7 @@ export {
     Presence,
     SignalementPresence,
     AppareilEtudiant,
+    DemandeTelephone,
     MfaCodeSecours,
     JournalSecurite,
     GenerationQuiz,
