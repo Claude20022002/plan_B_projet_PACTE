@@ -5,6 +5,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetable';
 import TimetableExportMenu from '../../components/emploi-du-temps/TimetableExportMenu';
 import { affectationAPI } from '../../services/api';
+import { fetchAll } from '../../utils/fetchAll';
 import { useAuth } from '../../contexts/AuthContext';
 
 export default function EmploiDuTempsEnseignant() {
@@ -17,8 +18,8 @@ export default function EmploiDuTempsEnseignant() {
     if (!user?.id_user) return;
     setError(false);
     try {
-      const response = await affectationAPI.getByEnseignant(user.id_user, { limit: 1000 });
-      setAffectations(response?.data || []);
+      // Toutes les pages : le serveur en rend au plus 100 séances à la fois
+      setAffectations(await fetchAll((p) => affectationAPI.getByEnseignant(user.id_user, p)));
     } catch {
       setError(true);
     }
