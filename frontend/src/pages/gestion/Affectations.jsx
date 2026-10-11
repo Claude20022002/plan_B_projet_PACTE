@@ -92,11 +92,11 @@ export default function Affectations() {
     const loadOptions = async () => {
         try {
             const [cours, groupes, salles, creneaux, enseignants] = await Promise.all([
-                coursAPI.getAll(),
-                groupeAPI.getAll(),
-                salleAPI.getAll(),
-                creneauAPI.getAll(),
-                enseignantAPI.getAll(),
+                coursAPI.getTous(),
+                groupeAPI.getTous(),
+                salleAPI.getTous(),
+                creneauAPI.getTous(),
+                enseignantAPI.getTous(),
             ]);
 
             setOptions({
@@ -389,8 +389,8 @@ export default function Affectations() {
                                     </Typography>
                                     <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, mt: 1 }}>
                                         <IconButton size="small" onClick={() => setADeplacer(aff)} aria-label={t('incidents.move')}><AutoAwesome fontSize="small" /></IconButton>
-                                        <IconButton size="small" onClick={() => handleEdit(aff)}><Edit fontSize="small" /></IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)}><Delete fontSize="small" /></IconButton>
+                                        <IconButton size="small" onClick={() => handleEdit(aff)} aria-label={`Modifier la séance ${aff.cours?.nom_cours ?? ''} du ${new Date(aff.date_seance).toLocaleDateString('fr-FR')}`}><Edit fontSize="small" /></IconButton>
+                                        <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)} aria-label={`Supprimer la séance ${aff.cours?.nom_cours ?? ''} du ${new Date(aff.date_seance).toLocaleDateString('fr-FR')}`}><Delete fontSize="small" /></IconButton>
                                     </Box>
                                 </Paper>
                             ))}
@@ -432,10 +432,10 @@ export default function Affectations() {
                                                 <IconButton size="small" onClick={() => setADeplacer(aff)} aria-label={t('incidents.move')} title={t('incidents.move')}>
                                                     <AutoAwesome fontSize="small" />
                                                 </IconButton>
-                                                <IconButton size="small" onClick={() => handleEdit(aff)}>
+                                                <IconButton size="small" onClick={() => handleEdit(aff)} aria-label={`Modifier la séance ${aff.cours?.nom_cours ?? ''} du ${new Date(aff.date_seance).toLocaleDateString('fr-FR')}`}>
                                                     <Edit fontSize="small" />
                                                 </IconButton>
-                                                <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)}>
+                                                <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)} aria-label={`Supprimer la séance ${aff.cours?.nom_cours ?? ''} du ${new Date(aff.date_seance).toLocaleDateString('fr-FR')}`}>
                                                     <Delete fontSize="small" />
                                                 </IconButton>
                                             </TableCell>
@@ -469,8 +469,8 @@ export default function Affectations() {
                         <DialogContent>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                                 <FormControl fullWidth>
-                                    <InputLabel>Cours</InputLabel>
-                                    <Select
+                                    <InputLabel id="seance-id_cours">Cours</InputLabel>
+                                    <Select labelId="seance-id_cours"
                                         name="id_cours"
                                         value={formik.values.id_cours}
                                         onChange={formik.handleChange}
@@ -485,8 +485,8 @@ export default function Affectations() {
                                 </FormControl>
 
                                 <FormControl fullWidth>
-                                    <InputLabel>Groupe</InputLabel>
-                                    <Select
+                                    <InputLabel id="seance-id_groupe">Groupe</InputLabel>
+                                    <Select labelId="seance-id_groupe"
                                         name="id_groupe"
                                         value={formik.values.id_groupe}
                                         onChange={formik.handleChange}
@@ -501,8 +501,8 @@ export default function Affectations() {
                                 </FormControl>
 
                                 <FormControl fullWidth>
-                                    <InputLabel>Enseignant</InputLabel>
-                                    <Select
+                                    <InputLabel id="seance-id_user_enseignant">Enseignant</InputLabel>
+                                    <Select labelId="seance-id_user_enseignant"
                                         name="id_user_enseignant"
                                         value={formik.values.id_user_enseignant}
                                         onChange={formik.handleChange}
@@ -517,8 +517,8 @@ export default function Affectations() {
                                 </FormControl>
 
                                 <FormControl fullWidth>
-                                    <InputLabel>Salle</InputLabel>
-                                    <Select
+                                    <InputLabel id="seance-id_salle">Salle</InputLabel>
+                                    <Select labelId="seance-id_salle"
                                         name="id_salle"
                                         value={formik.values.id_salle}
                                         onChange={formik.handleChange}
@@ -533,8 +533,8 @@ export default function Affectations() {
                                 </FormControl>
 
                                 <FormControl fullWidth>
-                                    <InputLabel>Créneau</InputLabel>
-                                    <Select
+                                    <InputLabel id="seance-id_creneau">Créneau</InputLabel>
+                                    <Select labelId="seance-id_creneau"
                                         name="id_creneau"
                                         value={formik.values.id_creneau}
                                         onChange={formik.handleChange}
@@ -561,8 +561,8 @@ export default function Affectations() {
                                 />
 
                                 <FormControl fullWidth>
-                                    <InputLabel>Statut</InputLabel>
-                                    <Select
+                                    <InputLabel id="seance-statut">Statut</InputLabel>
+                                    <Select labelId="seance-statut"
                                         name="statut"
                                         value={formik.values.statut}
                                         onChange={formik.handleChange}

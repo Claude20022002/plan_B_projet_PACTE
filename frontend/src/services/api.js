@@ -198,6 +198,8 @@ export const enseignantAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/enseignants${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(enseignantAPI.getAll, params),
     getById: (id) => request(`/enseignants/${id}`),
     create: (data) => request('/enseignants', { method: 'POST', body: data }),
     update: (id, data) => request(`/enseignants/${id}`, { method: 'PUT', body: data }),
@@ -334,6 +336,8 @@ export const coursAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/cours${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(coursAPI.getAll, params),
     getById: (id) => request(`/cours/${id}`),
     create: (data) => request('/cours', { method: 'POST', body: data }),
     update: (id, data) => request(`/cours/${id}`, { method: 'PUT', body: data }),
@@ -382,6 +386,8 @@ export const creneauAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/creneaux${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(creneauAPI.getAll, params),
     getById: (id) => request(`/creneaux/${id}`),
     create: (data) => request('/creneaux', { method: 'POST', body: data }),
     update: (id, data) => request(`/creneaux/${id}`, { method: 'PUT', body: data }),
