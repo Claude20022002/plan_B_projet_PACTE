@@ -2,6 +2,18 @@
 
 Avancement, demandes au groupe B et questions au chef de projet. Une entrée par session, la plus récente en haut.
 
+## 11 octobre 2026, soir : A-10
+
+Branche `a/a10-documentation`, partie de `main` après la fusion n° 5.
+
+- **Index** : `docs/README.md` (l'ancien, un résumé des associations de décembre 2025, devient `docs/archives/associations-2025.md`). Le README du dépôt y renvoie. Tous les liens relatifs de l'index, du README, de PRODUCT et des archives ont été vérifiés.
+- **Archivés** avec `git mv`, sans rien supprimer, dans `docs/archives/` : `AUDIT_TECHNIQUE.md`, `ARCHITECTURE_PLAN.md`, `secure_jwt_architecture.md`, les rapports `.md` de `docs/rapports/` et `compte-rendu-2026-10-10.md`.
+- **Documents de l'école** (cahier des charges, livrable 2, remarques) : de `docs/rapports/` à `docs/ecole/`, car ils restent une référence. PRODUCT.md suit.
+- **Laissés en place, signalés « anciens » dans l'index** : `docs/api/` (à réécrire avec A-5), `docs/architecture/`, `docs/database/`, `docs/maquettes/`, `backend/README.md`, `backend/SEED_README.md`, `frontend/README.md`.
+- **Pas touché** : les fichiers audio de la vidéo (servent encore à `Root.tsx` ; les retirer de l'historique, c'est 0-1) ; les plans, qui citent encore les anciens chemins.
+- **Demande au groupe B** : `frontend/STRUCTURE_CREEE.md` et `frontend/GUIDE_DEMARRAGE.md` (dans la liste des fichiers inutiles) et `frontend/README.md` (décembre 2025) sont dans son dossier.
+- Le lien vers `FORK.md` du moteur de quiz ne marchera qu'une fois `a/ia4-modifier-quiz` fusionnée dans la branche `hestim` du fork.
+
 ## 11 octobre 2026, après-midi
 
 ### Fusion (lot 0-2)
