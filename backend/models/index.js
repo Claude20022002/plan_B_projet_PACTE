@@ -538,6 +538,7 @@ EnvoiEdt.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
 
 // Appel par QR code (I1)
 Affectation.hasOne(AppelSeance, { foreignKey: "id_affectation", as: "appel", onDelete: "CASCADE" });
+Affectation.hasOne(VisaSeance, { foreignKey: "id_affectation", as: "visa", onDelete: "CASCADE" });
 Affectation.hasMany(Presence, { foreignKey: "id_affectation", as: "presences", onDelete: "CASCADE" });
 Presence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "seance" });
 Presence.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });

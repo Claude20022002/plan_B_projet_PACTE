@@ -1,6 +1,7 @@
 import { Op } from "sequelize";
 import {
     Affectation,
+    AppelSeance,
     Cours,
     CoursComposante,
     Creneau,
@@ -12,12 +13,13 @@ import {
     Periode,
     Salle,
     Users,
+    VisaSeance,
 } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, aujourdhui, minutes } from "./affectationRules.js";
 import { appliquerRamadan, horairesSurPlage } from "./ramadan.js";
 import { filieresDuResponsable } from "./droits.js";
-import { NOTE_APPEL, etatsDesSeances } from "./visaSeances.js";
+import { NOTE_APPEL, etatDeLaSeance } from "./visaSeances.js";
 
 /**
  * Suivi du réalisé (phase P7). Une séance devient « réalisée » d'office une fois passée, si elle
@@ -146,13 +148,15 @@ const realiseesDuMois = async (mois) => {
             { model: Groupe, as: "groupe", attributes: ["nom_groupe"] },
             { model: Salle, as: "salle", attributes: ["nom_salle"] },
             { model: Enseignement, as: "enseignement", include: [{ model: EnseignementEnseignant, as: "services", where: { role: "co_enseignant", statut_service: "accepte" }, required: false }] },
+            // Appel et visa dans la même requête : la liste du mois garde son budget de requêtes (banc SQL)
+            { model: AppelSeance, as: "appel", attributes: ["id_affectation", "ferme_le"], required: false },
+            { model: VisaSeance, as: "visa", required: false },
         ],
         order: [["date_seance", "ASC"]],
     });
     await appliquerRamadan(seances);
     // État pour la paie (R-11) : appel validé, à vérifier, confirmée ou écartée par l'administration
-    const etats = await etatsDesSeances(seances.map((s) => s.id_affectation));
-    for (const s of seances) s.paie = etats.get(s.id_affectation);
+    for (const s of seances) s.paie = etatDeLaSeance(s.appel, s.visa);
     return seances;
 };
 
