@@ -1,14 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Box, ButtonBase, IconButton, Popover, Tooltip } from '@mui/material';
-import { Apps, CalendarMonth, LocalLibrary, NorthEast, Quiz, SportsEsports } from '@mui/icons-material';
+import { Apps, CalendarMonth, LocalLibrary, NorthEast, Quiz } from '@mui/icons-material';
 import { ESPACES, adresseEspace } from '../../../../shared/espaces.js';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { quizAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 
-const ICONES = { calendar: CalendarMonth, library: LocalLibrary, games: SportsEsports, quiz: Quiz };
+const ICONES = { calendar: CalendarMonth, library: LocalLibrary, quiz: Quiz };
 
 // Adresse de ClassQuiz : demandée une fois par session de page
 let configQuiz = null;
@@ -17,22 +17,20 @@ const lireUrlQuiz = () => {
   return configQuiz;
 };
 
-/** Espace courant d'après l'adresse : /jeux… → Jeux, le reste de Planner → Planner */
-const espaceCourant = (pathname) => (pathname.startsWith('/jeux') ? 'jeux' : 'planner');
+// Toutes les pages de ce site, Activités compris, sont dans l'espace Planner
+const courant = 'planner';
 
 /**
- * Sélecteur des espaces HESTIM (Planner, Bibliothèque, Jeux, Quiz), présent sur chaque page :
+ * Sélecteur des espaces HESTIM (Planner, Bibliothèque, Quiz), présent sur chaque page :
  * un geste pour l'ouvrir, un pour choisir. Même liste et même ordre que dans StudyLib, ClassQuiz
  * et l'application mobile (shared/espaces.js). Habillé en petit panneau des départs.
  */
 export default function SelecteurEspaces({ role, sx }) {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
-  const location = useLocation();
   const bouton = useRef(null);
   const [ouvert, setOuvert] = useState(false);
   const [urlQuiz, setUrlQuiz] = useState(null);
-  const courant = espaceCourant(location.pathname);
 
   useEffect(() => {
     let actif = true;
@@ -47,9 +45,8 @@ export default function SelecteurEspaces({ role, sx }) {
   const aller = (espace) => {
     setOuvert(false);
     if (espace.code === courant) return;
-    // Planner et Jeux sont des pages de cette application ; Bibliothèque et Quiz, d'autres applications
+    // Planner est cette application ; Bibliothèque et Quiz en sont d'autres
     if (espace.code === 'planner') navigate(role ? `/dashboard/${role}` : '/');
-    else if (espace.code === 'jeux') navigate('/jeux');
     else window.location.assign(espace.adresse);
   };
 

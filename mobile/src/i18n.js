@@ -155,7 +155,7 @@ const fr = {
       themes: {
         planner: 'Planner',
         plannerAide: 'Le panneau des départs HESTIM.',
-        studylib: 'Bibliothèque',
+        studylib: 'StudyLib',
         studylibAide: 'Le style clair de la bibliothèque.',
       },
       mode: 'Mode d’affichage',
@@ -462,7 +462,7 @@ const en = {
       themes: {
         planner: 'Planner',
         plannerAide: 'The HESTIM departure board.',
-        studylib: 'Library',
+        studylib: 'StudyLib',
         studylibAide: 'The library’s clean style.',
       },
       mode: 'Display mode',

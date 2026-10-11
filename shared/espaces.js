@@ -22,13 +22,8 @@ export const ESPACES = [
     resume: { fr: 'Supports de cours, stages, projets', en: 'Course materials, internships, projects' },
     chemin: '/biblio/',
   },
-  {
-    code: 'jeux',
-    icone: 'games',
-    titre: { fr: 'Activités', en: 'Activities' },
-    resume: { fr: 'Terminal Linux et défis de vos modules', en: 'Linux terminal and module challenges' },
-    chemin: '/jeux',
-  },
+  // Pas d'espace Activités : on y entre par le scan du QR que projette l'enseignant, comme sur
+  // Wooclap (remarques-par-profil.md, § 10) ; le menu du site garde sa page.
   {
     code: 'quiz',
     icone: 'quiz',
@@ -47,8 +42,8 @@ export const ESPACES = [
  * @returns {string|null} null si l'espace n'est pas disponible
  */
 export const adresseEspace = (code, { role, urlQuiz } = {}) => {
-  // L'administration ne gère pas les jeux ni les quiz
-  if (role === 'admin' && (code === 'jeux' || code === 'quiz')) return null;
+  // L'administration ne gère pas les quiz
+  if (role === 'admin' && code === 'quiz') return null;
   if (code === 'quiz') {
     if (typeof urlQuiz !== 'string' || !/^https?:\/\//.test(urlQuiz)) return null;
     const base = urlQuiz.replace(/\/$/, '');
