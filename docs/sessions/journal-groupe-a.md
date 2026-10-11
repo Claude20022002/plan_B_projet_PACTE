@@ -237,6 +237,43 @@ Sur demande du chef de projet.
 - Trois scènes nouvelles (quiz, « Bientôt », administration), un repère d'heure par scène, une barre de progression ; la bande-son suit les nouvelles durées.
 - **C'est un montage de travail** : captures d'avant le 10 octobre, maquettes pour le quiz, pas de sous-titres anglais. Le détail est dans `video/README.md`.
 
+### Application : l'onglet Jeux remplacé par « Scanner » (branche `a/onglet-scanner`, dossier `../planner-a-scan`)
+
+**Écart aux règles, sur décision du chef de projet** : le groupe A a écrit dans `mobile/`, le dossier du groupe B. La branche part de `b/creer-quiz`, la plus avancée de l'application, dans un dossier de travail à part. Rien n'est commité.
+
+**Fait.**
+- Barre du bas : Tableau, Semaine, **Scanner**, Bibliothèque, Compte (`mobile/src/app/(onglets)/_layout.jsx`). Toucher l'onglet pose l'écran `/scanner` par-dessus les onglets ; le bouton Fermer et le retour d'Android ramènent à l'onglet d'où l'on vient.
+- **La page Activités n'a plus d'onglet** (décision : jeux des modules masqués pour l'instant). Elle reste dans le code et reste joignable par une notification de quiz.
+- Les retours de secours de quatre écrans (quiz, résultats, terminal, devoir) vont au Tableau, plus à la page masquée.
+- Libellé `app.onglets.scanner`, en français et en anglais.
+
+**Un défaut trouvé à l'essai et corrigé** : la première version ouvrait le scanner par un lien d'onglet. Le scanner remplaçait alors les onglets, le bouton Fermer y ramenait en boucle et le retour d'Android quittait l'application.
+
+**Vérifié**, dans l'émulateur : l'onglet ouvre le scanner depuis Semaine et depuis Compte ; Fermer et le retour d'Android reviennent à l'onglet de départ. `npx expo lint` : 0 erreur ; tests de l'application : 35 sur 35.
+
+**Pas vérifié** : un vrai téléphone, un iPhone, et un scan réel (l'émulateur n'a pas de QR devant sa caméra).
+
+**À voir par le groupe B.**
+- Le bouton de scan de la barre de titre du Tableau fait maintenant double emploi avec l'onglet.
+- Le terminal Linux et le choix du personnage n'ont plus d'entrée.
+
+### Captures pour la vidéo, le 11 octobre (`docs/presentation/captures/`)
+
+- **Site, enseignant et administration** : 20 images `prof-*.png` et `admin-*.png`, par `docs/presentation/capturer-profs-admin.mjs`.
+- **Application** : 11 images `app-*.png`, prises dans l'émulateur avec `scripts/pilote-emulateur.py`.
+
+**Comment elles ont été prises.** Sur une plateforme locale : le serveur du groupe A (`a/d2-devoirs-fermes`), le site et l'application de `a/onglet-scanner`, et une copie jetable de la base de démonstration (`hestim_captures_test`, dans le conteneur de test). Les noms sont ceux du jeu de démonstration. L'horloge du serveur, du navigateur et de l'émulateur était réglée sur le lundi 12 octobre 2026, 13 h 40, pour avoir une séance en cours ; le script a ouvert un appel et coché 11 présents sur 28.
+
+**Ce qui manque dans ces captures.**
+- **Aucun quiz** : le moteur de quiz n'était pas branché, donc ni « Lancer un quiz », ni l'écran projeté de CQ-2.
+- **La bibliothèque** : non installée en local, l'onglet affichait « indisponible ».
+- **Les séances « à vérifier »** dans « Heures du mois » : l'écran de R-11 n'est pas encore écrit.
+
+**Remarqué en passant, pour le groupe B.**
+- Tableau de l'enseignant : la séance en cours affiche « EN COURS · DANS 2 HEURES ».
+- Tableau de l'administration, un lundi à 13 h 45 : la liste commence à « Demain », sans les séances de l'après-midi.
+- Le menu de l'administration garde « Mes surveillances ».
+
 ### Demandes au groupe B
 
 - **Génération, nouvel avertissement à afficher** : le rapport d'une génération (`rapport.avertissements`) peut contenir `{ type: "plafond_hebdomadaire", id_user, enseignant, statut, plafond_heures, heures_semaine, seances }`, à côté de `disponibilites_insuffisantes`. `GenerationAutomatique.jsx` ne connaît que le second.
