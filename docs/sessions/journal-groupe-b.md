@@ -2,6 +2,29 @@
 
 Avancement, demandes au groupe A et questions au chef de projet. Une entrée par session, la plus récente en haut.
 
+## 11 octobre 2026, au soir
+
+### Point de départ
+
+- Dépôt privé (dit par le chef de projet). La soutenance n'est plus un repère : les lots suivent l'ordre du compte rendu, § 5.
+- 0-1 (historique) et 0-2 (fusion dans `main`) ne sont toujours pas faits. Comme pour D-1, le travail part de `feature/phase-e-timefold` (`cc0d028`), dans `../planner-b`. Rien n'a été poussé.
+
+### B-1 : code mort du site (branche `b/b1-code-mort`)
+
+**Fait.**
+- Supprimés : `hooks/api/`, `services/domains/`, `services/queries/`, `services/apiClient.js`, `services/queryClient.js`, `services/index.js`.
+- Les trois fichiers isolés, trouvés en suivant les imports depuis `main.jsx` : `components/emploi-du-temps/OptimizedCalendar.jsx`, `design-system/components/MetricCard.jsx`, `hooks/useMemoized.js`.
+- Dépendance `@tanstack/react-query` retirée, avec son chunk et son pré-bundling dans `vite.config.js` et l'exception du lint pour `MIGRATION_EXAMPLE.jsx`.
+- `services/api.js` est la seule couche d'accès au serveur.
+
+**Vérifié.** Aucun import restant vers ces fichiers ; lint : 0 erreur, les 7 avertissements connus ; build réussi.
+
+**Pas vérifié** : les tests Playwright (ils demandent un serveur lancé ; B-8).
+
+**Laissé** : `design-system/board/index.js`, un fichier d'index que personne n'importe (les écrans importent les composants un par un). Hors de la liste du plan ; à retirer si le chef de projet le souhaite.
+
+**Fusion.** Cette branche reprend le commit du journal de `b/d1-masquer-devoirs` : fusionner D-1 d'abord, puis B-1. Les deux lots ne touchent pas les mêmes fichiers de code.
+
 ## 11 octobre 2026
 
 ### Point de départ
