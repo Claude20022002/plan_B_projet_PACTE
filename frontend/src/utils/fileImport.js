@@ -77,7 +77,6 @@ export const parseFile = async (file) => {
                         return;
                     }
 
-                    console.log("Données parsées depuis Excel:", filteredData);
                     resolve(filteredData);
                 } catch (error) {
                     reject(

@@ -38,7 +38,7 @@ import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
 // Modèle d'import : le groupe par son nom (celui affiché dans Groupes), pas par son identifiant
 const MODELE_CSV = [
     'nom;prenom;email;telephone;numero_etudiant;niveau;groupe',
-    'BENALI;Hamza;hamza.benali@hestim.ma;+212600000000;E2026001;3A;IIIA-3A-TD1',
+    'EXEMPLE;Amine;amine.exemple@exemple.hestim.test;;E2026001;3A;IIIA-3A-TD1',
 ].join('\n');
 
 const validationSchema = yup.object({
