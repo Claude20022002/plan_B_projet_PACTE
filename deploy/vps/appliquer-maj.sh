@@ -57,7 +57,9 @@ docker build -q -t claude20022002/hestim-frontend:latest -f "$PAQUET/Dockerfile.
 
 echo "== Scripts d'exploitation"
 cp "$PAQUET"/deploy-vps/*.mjs "$PAQUET"/deploy-vps/appliquer-maj.sh "$HESTIM/deploy/vps/"
-[ -f "$PAQUET/deploy-vps/nettoyer-paquets.sh" ] && cp "$PAQUET/deploy-vps/nettoyer-paquets.sh" "$HESTIM/deploy/vps/"
+for script in nettoyer-paquets.sh sauvegarder.sh; do
+    [ -f "$PAQUET/deploy-vps/$script" ] && cp "$PAQUET/deploy-vps/$script" "$HESTIM/deploy/vps/"
+done
 [ -d "$PAQUET/deploy-vps/demo" ] && rm -rf "$HESTIM/deploy/vps/demo" && cp -r "$PAQUET/deploy-vps/demo" "$HESTIM/deploy/vps/demo"
 
 cd "$HESTIM"

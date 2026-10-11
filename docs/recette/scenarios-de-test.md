@@ -19,6 +19,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Le fichier `VERSION` du paquet porte le commit attendu, et aucune ligne de fichier non commité pour Planner, la bibliothèque ou le quiz.
 - [ ] `appliquer-maj.sh` commence par « Dépendances du backend : identiques à celles de l'image ». S'il s'arrête sur une liste de modules, rien n'a été modifié : suivre `DEPLOIEMENT.md`, « Quand les dépendances changent ».
 - [ ] Les commandes de retour arrière affichées en fin de script sont copiées et gardées.
+- [ ] Sauvegarde quotidienne : la dernière ligne de `/var/log/hestim-sauvegarde.log` date de cette nuit et dit « envoyé vers … » ; le fichier du jour est bien présent à la destination hors du serveur.
 - [ ] Le script `appliquer-maj.sh` se termine sans erreur et affiche les contrôles 404, 400, 200, 200, puis 200 (quiz), 401 (API ClassQuiz) et 401 (bibliothèque).
 - [ ] Le script affiche « aiguillage rechargé » la première fois que le paquet contient le relais du quiz, et le contrôle « relais du quiz » répond 200. Ce paquet doit être préparé avec `--classquiz` : la route de lancement vit dans le moteur de quiz.
 - [ ] `docker exec hestim_backend node -p process.versions.tz` répond `2026c`.

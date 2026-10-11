@@ -156,7 +156,12 @@ Effort : **S** = une demi-journée au plus ; **M** = 1 à 3 jours ; **L** = plus
 ## 6. Décisions attendues du chef de projet
 
 - **B-8** : quel parcours remplace « quiz donné en devoir » ? Proposition : « quiz généré par l'IA, relu puis créé », avec une fausse IA.
-- **Fichiers inutiles** : la suppression demandée le 11 octobre au soir a été bloquée par le garde-fou de la session. La liste est prête ; le chef de projet la lance ou l'autorise.
+- **Fichiers inutiles** : la suppression demandée le 11 octobre au soir a été bloquée par le garde-fou de la session. Le chef de projet la lance ou l'autorise. La liste (56 fichiers, relevée en suivant les imports depuis `frontend/src/main.jsx` et `backend/server.js`) :
+  - **Site, couche React Query (38)** : `frontend/src/hooks/api/`, `services/domains/`, `services/queries/`, `services/apiClient.js`, `services/queryClient.js`, `services/index.js`. Ensuite : retirer la dépendance `@tanstack/react-query`, ses deux mentions dans `vite.config.js` et l'exception de `eslint.config.js`.
+  - **Site, fichiers isolés (3)** : `components/emploi-du-temps/OptimizedCalendar.jsx`, `design-system/components/MetricCard.jsx`, `hooks/useMemoized.js`.
+  - **Serveur (4)** : `controllers/historiqueAffectationController.js`, `routes/historiqueAffectationRoutes.js`, `utils/index.js`, `utils/dateHelper.js` (et sa ligne dans `jest.config.js`).
+  - **Documents (11)** : `AUDIT_TECHNIQUE.md`, `ARCHITECTURE_PLAN.md`, `frontend/STRUCTURE_CREEE.md`, `frontend/GUIDE_DEMARRAGE.md`, `docs/sessions/compte-rendu-2026-10-10.md`, et dans `docs/rapports/` : `AMELIORATIONS_PROPOSEES.md`, `ANALYSE_COMPLETE.md`, `ANALYSE_PAGES_MANQUANTES.md`, `CREATION_PAGES_RESUME.md`, `MODIFICATIONS_APPLIQUEES.md`, `RESUME_ANALYSE_COMPLETE.md`.
+  - **Laissés, faute de certitude** : `docs/users.xlsx` (lot A-1), le projet vidéo et ses fichiers audio, les captures de présentation, les paquets de `deploy/vps/paquets`, `docs/api/`, `secure_jwt_architecture.md`.
 - **Sauvegardes** (A-3) : où les envoyer hors du serveur, et qui en a l'accès ?
 - **Paie** : faire valider le relevé mensuel par la scolarité de HESTIM (quel document déclenche aujourd'hui le paiement d'un vacataire, et qui le signe ?).
 - **Fournisseur d'IA** : la décision de l'école bloque IA-7.

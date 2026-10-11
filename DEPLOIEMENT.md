@@ -74,6 +74,44 @@ Restaurer sans vider la base (sans l'étape 3) laisserait en place les tables de
 
 **Après un retour arrière** : relancer les contrôles de la recette (section 0), et noter dans le journal du groupe A la date, le paquet et la raison.
 
+### Sauvegarde quotidienne
+
+`appliquer-maj.sh` ne sauvegarde la base qu'au moment d'une mise à jour, et sur le serveur lui-même. `deploy/vps/sauvegarder.sh` le fait chaque nuit et **sort les sauvegardes du serveur** : il exporte les bases MySQL (Planner et la bibliothèque) et la base du quiz, les chiffre, les envoie avec `rclone`, et garde 14 jours des deux côtés. Il ne sauvegarde pas les fichiers (documents de la bibliothèque, images des quiz).
+
+**Mise en place, une fois, en `root` :**
+
+1. Installer les deux outils : `apt install rclone gnupg`.
+2. Déclarer la destination hors du serveur : `rclone config` (un autre serveur en SFTP, un stockage objet ou un Drive ; `rclone` connaît les trois). Noter le nom donné, par exemple `hors-site`.
+3. Créer la phrase de chiffrement, lisible par `root` seul :
+   `openssl rand -base64 48 > /root/hestim-sauvegarde.cle && chmod 600 /root/hestim-sauvegarde.cle`
+   **La copier aussi ailleurs que sur le serveur** (coffre de mots de passe du chef de projet). Sans elle, aucune sauvegarde ne se relit ; si elle n'existe que sur le serveur, elle disparaît avec lui.
+4. Écrire `/root/hestim-sauvegarde.conf` (`chmod 600`) :
+
+   ```bash
+   PHRASE=/root/hestim-sauvegarde.cle
+   DESTINATION=hors-site:hestim-sauvegardes
+   ```
+
+5. Lancer une première fois à la main et lire la sortie : `bash /opt/hestim/deploy/vps/sauvegarder.sh ; echo "code $?"`. Attendu : deux lignes « ok », « envoyé vers … », code 0.
+6. Programmer la tâche (`crontab -e`) :
+   `15 2 * * * bash /opt/hestim/deploy/vps/sauvegarder.sh >> /var/log/hestim-sauvegarde.log 2>&1`
+
+**Lire le résultat.** Code 0 : tout est fait. Code 1 : un export a échoué (le journal dit lequel). Code 3 : les sauvegardes sont faites mais **ne sont pas sorties du serveur**. Regarder `/var/log/hestim-sauvegarde.log` chaque semaine : une sauvegarde que personne ne regarde finit par ne plus se faire.
+
+**Restaurer.** Récupérer le fichier voulu (`rclone copy hors-site:hestim-sauvegardes/mysql-<date>.sql.gz.gpg /root/`), puis :
+
+```bash
+# Bases MySQL (Planner et bibliothèque). L'export recrée chaque base si elle manque.
+gpg --batch --pinentry-mode loopback --passphrase-file /root/hestim-sauvegarde.cle -d /root/mysql-<date>.sql.gz.gpg \
+  | gunzip | docker exec -i hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot'
+
+# Base du quiz, dans une base vide
+gpg --batch --pinentry-mode loopback --passphrase-file /root/hestim-sauvegarde.cle -d /root/quiz-<date>.sql.gz.gpg \
+  | gunzip | docker exec -i hestim_quiz_db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB" -q'
+```
+
+Sur un serveur neuf, ces commandes suffisent. **Sur un serveur qui a déjà ses bases, arrêter d'abord le backend, la bibliothèque et le quiz, puis vider chaque base à restaurer** (étapes 1 à 3 du cas 2 ci-dessus) : restaurer par-dessus laisserait en place les tables créées depuis la sauvegarde. L'export ne contient ni les comptes ni les réglages de MySQL : les mots de passe du serveur qui reçoit la restauration ne changent pas.
+
 ### Faire de la place
 
 Chaque mise à jour laisse une archive, un dossier extrait et des images `avant-<date>`. `nettoyer-paquets.sh` garde les 3 derniers. Sans option, il montre ce qu'il supprimerait ; il ne supprime qu'avec `--supprimer` :

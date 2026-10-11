@@ -17,7 +17,9 @@ Il complète `assainissement.md` sans le remplacer : quand une réponse existe d
 | Coût de l'IA | **Inclus dans le prix par utilisateur, avec un plafond** (§ 5). |
 | Nom de la bibliothèque | **« Bibliothèque »** dans tous les écrans. StudyLib devient uniquement la bibliothèque : les stages, les offres et les projets en sortent pour l'espace Carrière (§ 9). |
 | Vidéo | Elle est **présentée pendant la soutenance**, et une version est publiée sur les réseaux (§ 6). |
-| Soutenance | Peut-être la semaine du 12 octobre 2026 (« la semaine prochaine », dit le 11 octobre). **Date inconnue.** |
+| Soutenance | **Elle n'est plus un repère** (décision du 11 octobre au soir, qui remplace « peut-être la semaine du 12 octobre »). Dans ce plan, « avant la soutenance » se lit « d'abord » et « après la soutenance » se lit « plus tard ». |
+| Dépôt GitHub | **Privé** depuis le 11 octobre au soir. |
+| Application : barre du bas | L'onglet Jeux en sort. Proposition faite au chef de projet, **non validée** : Tableau, Semaine, Scanner, Bibliothèque, Menu ; le Menu range en tuiles les cours, la carrière et le reste (§ 10). |
 | Paie des vacataires | **L'appel validé ne suffit pas** comme preuve qu'un cours a eu lieu. La façon de faire de l'école n'est pas connue : à lui demander (§ 8). |
 | Espace Carrière dans l'application | Stages, offres et projets pour les étudiants de HESTIM, **après la soutenance** (§ 9). |
 | Outils Google (Gmail, Agenda, Drive) | Non connectés pour l'instant : le besoin n'est plus connu. |
@@ -177,7 +179,9 @@ Effort : **S** = une demi-journée au plus ; **M** = 1 à 3 jours ; **L** = plus
 - **R-11, la paie** : l'appel validé ne suffit pas (décision du 11 octobre), et la réponse « l'appel sert de preuve » du § 3 ne tient plus. **Solution retenue le 11 octobre : un relevé mensuel, pas de retour du bouton « confirmé » par séance.** (1) Planner prépare le relevé du mois de chaque enseignant : les séances avec un appel validé sont cochées d'office, les autres marquées « à vérifier ». (2) L'enseignant ne traite que les exceptions, puis confirme ses heures d'un geste ; sa déclaration est datée et inscrite au journal. (3) L'administration vise le relevé, puis exporte ; sans visa, rien ne part dans l'export des vacataires. Avant la soutenance, seule l'étape 3 se fait (R-11 tel qu'écrit au § 7) ; les étapes 1 et 2 viennent après. Reste à faire valider par la scolarité de HESTIM : quel document déclenche aujourd'hui le paiement d'un vacataire, et qui le signe ?
 - **Définition d'un compte « actif »** (§ 5) : à valider.
 - **La promesse** (R-8) : la phrase proposée est un point de départ, à écrire avec vos mots.
-- **Date de la soutenance** : inconnue, peut-être la semaine du 12 octobre 2026.
+- **Prix, propositions non validées** (§ 5) : le minimum par établissement, le dégressif et le plafond de quiz par enseignant.
+- **Jeu ouvert par un scan** (§ 10) : dans une vue navigateur, comme Wooclap, ou dans l'écran actuel de l'application ? La vue navigateur allège l'application mais perd le blocage des captures d'écran.
+- **Bibliothèque à la place de Moodle** (§ 10) : la position de l'école sur Moodle et la reprise des supports existants.
 
 Tranchés le 11 octobre (§ 1) : l'utilisateur facturé, le coût de l'IA, le nom de la bibliothèque, la place de la vidéo.
 

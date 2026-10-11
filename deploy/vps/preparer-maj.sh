@@ -75,7 +75,7 @@ cp -r frontend/dist "$TRAVAIL/site/dist"
 cp frontend/nginx.conf "$TRAVAIL/site/nginx.conf"
 # Scripts d'exploitation à jour (renommage, mots de passe de démonstration…)
 mkdir -p "$TRAVAIL/deploy-vps"
-cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh deploy/vps/nettoyer-paquets.sh "$TRAVAIL/deploy-vps/"
+cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh deploy/vps/nettoyer-paquets.sh deploy/vps/sauvegarder.sh "$TRAVAIL/deploy-vps/"
 # Aiguillage interne : appliqué seulement s'il a changé (relais /socket.io/ du lot CQ-1)
 cp deploy/vps/Caddyfile.vps "$TRAVAIL/deploy-vps/"
 # Contenus de démonstration (retours de stage et leurs photos)

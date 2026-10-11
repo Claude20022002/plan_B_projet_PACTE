@@ -133,6 +133,35 @@ C'est la liste de départ d'A-6, qui attend B-8.
 
 **Pas vérifié** : la CI elle-même, qui ne tourne qu'à l'ouverture d'une PR.
 
+### Fusion des six premiers lots
+
+Sur demande du chef de projet, les branches `a/a1-modele-import`, `a/a2-mots-de-passe-demo`, `a/r11-seances-a-verifier`, `a/cq1-partie-signee`, `a/a9-retour-arriere` et `a/a4-eslint-backend` sont fusionnées dans `feature/phase-e-timefold`, **en local**, avec un commit de fusion par lot (20 commits d'avance sur `origin`). Elles ne sont pas fusionnées dans `main` : cela reste le lot 0-2 (PR vers `main`, CI verte). Rien n'a été poussé par le groupe A.
+
+### A-3 : sauvegarde quotidienne hors du serveur (branche `a/a3-sauvegarde-quotidienne`)
+
+**Fait.**
+- `deploy/vps/sauvegarder.sh` : exporte les bases MySQL de la plateforme (Planner et la bibliothèque, sans les bases système) et la base PostgreSQL du quiz, chiffre chaque export (GPG, AES-256), l'envoie hors du serveur avec `rclone`, garde 14 jours sur le serveur et à distance.
+- `DEPLOIEMENT.md`, « Sauvegarde quotidienne » : mise en place en six étapes, lecture du résultat, restauration.
+- Le paquet de mise à jour emporte le script ; une case de recette demande de lire le journal de la nuit.
+
+**Choix faits sans attendre la décision sur la destination.**
+- **`rclone` pour l'envoi** : il sait écrire vers un autre serveur, un stockage objet ou un Drive, les trois pistes du plan. La destination n'est qu'un réglage.
+- **Chiffrement obligatoire** : une sauvegarde contient les comptes, les présences et les notes, et elle quitte le serveur. Sans phrase de chiffrement, le script refuse de tourner.
+- **Sans destination, le script sort en code 3** après avoir fait les sauvegardes sur le serveur : le lot n'est pas rempli tant que rien ne sort.
+
+**Vérifié**, sur ce PC, avec la base de test, une base de quiz jetable et `rclone` vers un dossier « distant » :
+- passage complet : deux fichiers chiffrés, envoyés, code 0 ; aucun fichier en clair sur le disque ;
+- rétention : un fichier de 20 jours est supprimé des deux côtés ; un fichier étranger à la destination n'est pas touché ;
+- sans phrase : refus, code 1 ; sans destination : code 3 ; envoi en échec : code 3, les fichiers restent sur le serveur ;
+- export MySQL en échec : aucun faux fichier laissé, le quiz part quand même, code 1 ;
+- **restauration sur un serveur MySQL vide** : les 6 bases retrouvent leur nombre de tables et de comptes, le mot de passe du serveur qui reçoit ne change pas ; restauration du quiz dans une base vide ; une mauvaise phrase est refusée.
+
+**Un défaut trouvé à l'essai et corrigé** : un export en échec laissait un fichier chiffré de 1 Ko, annoncé « ok ». Il aurait été envoyé comme une sauvegarde.
+
+**Pas vérifié** : rien sur le serveur (installation de `rclone` et `gnupg`, cron, vraie destination). Le résultat attendu du lot, « une restauration réussie est documentée », est rempli sur ce PC, pas en production.
+
+**Limites.** Les fichiers ne sont pas sauvegardés (documents de la bibliothèque dans MinIO, images des quiz). Personne n'est prévenu d'un échec : il faut lire le journal.
+
 ### Demandes au groupe B
 
 - **CI** : `.github/workflows/ci-cd.yml` est modifié par A-4 (une étape « Lint » dans « Test Backend »). B-8 se met à jour sur cette branche fusionnée avant d'y toucher.
@@ -154,6 +183,9 @@ C'est la liste de départ d'A-6, qui attend B-8.
 - **D-2** et notifications « devoir » : demandes lues dans votre journal. D-2 est le lot 8 du groupe A ; la question des notifications est posée au chef de projet ci-dessous.
 
 ### Questions au chef de projet
+
+- **A-3, la destination** : où envoyer les sauvegardes (autre serveur, stockage objet, Drive de l'école), et qui en détient l'accès ? Et où garder la phrase de chiffrement hors du serveur ? Le script est prêt ; il ne manque que ces réponses pour le mettre en service.
+- **A-3, les fichiers** : faut-il sauvegarder aussi les documents de la bibliothèque et les images des quiz ?
 
 - **Moteur de quiz, faille de prise de main** : la correction attend dans `../ClassQuiz` (4 fichiers, non commités). À commiter et à déployer avec `--classquiz` sans attendre le reste : aujourd'hui, un étudiant qui connaît le code d'une partie peut en prendre la main.
 - **Dépôt du quiz** : faut-il une branche par lot dans `../ClassQuiz` aussi, et un dossier de travail par groupe comme pour Planner ?
