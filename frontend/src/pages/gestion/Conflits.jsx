@@ -98,7 +98,6 @@ export default function Conflits() {
             const base = segments.reduce((s, d) => s + d.value, 0) || 1;
             setDonutData(segments.map(d => ({
                 ...d,
-                name: t(`conflits.segments.${d.code}`),
                 pct: ((d.value / base) * 100).toFixed(1),
             })));
         } catch (err) { console.error(err); }
@@ -111,6 +110,9 @@ export default function Conflits() {
             loadDonutData();
         } catch (err) { console.error(err); }
     };
+
+    // Libellés des segments dans la langue de l'écran
+    const donut = donutData.map((d) => ({ ...d, name: t(`conflits.segments.${d.code}`) }));
 
     // ── Rendu ─────────────────────────────────────────────────────────────────
     return (
@@ -146,7 +148,7 @@ export default function Conflits() {
                 </Box>
 
                 {/* ── Donut chart ──────────────────────────────────────── */}
-                {donutData.length > 0 && (
+                {donut.length > 0 && (
                     <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
                         <CardContent sx={{ pb: '16px !important' }}>
                             <Typography variant="h6" fontWeight="bold" mb={2}>
@@ -162,14 +164,14 @@ export default function Conflits() {
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
-                                                    data={donutData}
+                                                    data={donut}
                                                     cx="50%" cy="50%"
                                                     innerRadius={65} outerRadius={95}
                                                     dataKey="value"
                                                     startAngle={90} endAngle={-270}
                                                     strokeWidth={2}
                                                 >
-                                                    {donutData.map((entry) => (
+                                                    {donut.map((entry) => (
                                                         <Cell key={entry.name}
                                                             fill={COLORS[entry.code] || '#888'} />
                                                     ))}
@@ -198,7 +200,7 @@ export default function Conflits() {
                                 {/* Légende */}
                                 <Grid size={{ xs: 12, md: 7 }}>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        {donutData.map((entry) => (
+                                        {donut.map((entry) => (
                                             <Box key={entry.name}>
                                                 <Box sx={{
                                                     display: 'flex', justifyContent: 'space-between',

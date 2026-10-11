@@ -105,7 +105,8 @@ export default function Statistiques() {
             setCharge(chargeData?.charge_enseignants || []);
             setGroupes(groupesData?.occupation_groupes || []);
         } catch {
-            setError(t('stats.erreur'));
+            // Clé du message, traduite à l'affichage : le chargement ne dépend pas de la langue
+            setError('stats.erreur');
         } finally {
             setLoading(false);
         }
@@ -205,7 +206,7 @@ export default function Statistiques() {
                 </Typography>
 
                 {loading && <LinearProgress sx={{ mb: 2 }} />}
-                {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
+                {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{t(error)}</Alert>}
 
                 {/* ── KPI Cards ──────────────────────────────────────────────── */}
                 <KpiStrip items={kpiItems} legende={t('stats.kpi.legende')} />

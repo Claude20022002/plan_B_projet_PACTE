@@ -42,7 +42,7 @@ export default function ResetPassword() {
         if (!token || !id_user) {
             setError(t('reset.lienInvalide'));
         }
-    }, [token, id_user]);
+    }, [token, id_user, t]);
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
