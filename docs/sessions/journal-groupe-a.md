@@ -45,7 +45,7 @@ Chacun sur sa branche, partie de `integration/2026-10-11` : la PR de chacun se f
 ### Pour le chef de projet
 
 - Le dépôt du quiz a maintenant trois branches du groupe A : `a/quiz-salles`, `a/r2-fork` (contient la précédente) et `a/ia4-modifier-quiz` (contient les deux). Pousser la dernière suffit.
-- IA-4 demande de redéployer le fork (paquet complet, pas seulement `quiz-correctif2`) : la route de mise à jour est nouvelle.
+- **Paquet `quiz-correctif3.tar.gz`** (depuis `a/ia4-modifier-quiz`) : les deux correctifs du quiz et la route d'IA-4, tout en Python. Il remplace `quiz-correctif1` et `quiz-correctif2` ; même commande de déploiement. Jamais lancé sur le serveur.
 
 ## 11 octobre 2026
 
