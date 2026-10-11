@@ -25,6 +25,7 @@ import DashboardLayout from "../components/layouts/DashboardLayout";
 import { notificationAPI } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 
 const TYPE_COLOR = {
     success: "success",
@@ -33,14 +34,9 @@ const TYPE_COLOR = {
     info:    "primary",
 };
 
-const TYPE_LABEL = {
-    success: "Succès",
-    warning: "Avertissement",
-    error:   "Erreur",
-    info:    "Info",
-};
-
+/** Mes notifications : la liste, marquer comme lu, ouvrir l'élément concerné. */
 export default function Notifications() {
+    const { t, i18n } = useTranslation();
     const { user }    = useAuth();
     const navigate    = useNavigate();
     const [notifications, setNotifications] = useState([]);
@@ -57,7 +53,7 @@ export default function Notifications() {
             const data = await notificationAPI.getByUser(user.id_user);
             setNotifications(data.data || data || []);
         } catch {
-            setError("Erreur lors du chargement des notifications");
+            setError(t("notifs.erreurChargement"));
         } finally {
             setLoading(false);
         }
@@ -69,17 +65,17 @@ export default function Notifications() {
             await notificationAPI.marquerCommeLue(id);
             loadNotifications();
         } catch {
-            setError("Erreur lors de la mise à jour");
+            setError(t("notifs.erreurMaj"));
         }
     };
 
     const handleMarkAllRead = async () => {
         try {
             await notificationAPI.marquerToutesLues(user.id_user);
-            setSuccess("Toutes les notifications marquées comme lues");
+            setSuccess(t("notifs.toutesLues"));
             loadNotifications();
         } catch {
-            setError("Erreur lors de la mise à jour");
+            setError(t("notifs.erreurMaj"));
         }
     };
 
@@ -100,11 +96,11 @@ export default function Notifications() {
                 <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                         <Typography variant="h5" fontWeight="bold">
-                            Mes Notifications
+                            {t("notifs.titre")}
                         </Typography>
                         {unreadCount > 0 && (
                             <Chip
-                                label={`${unreadCount} non lue${unreadCount > 1 ? "s" : ""}`}
+                                label={t("notifs.nonLues", { count: unreadCount })}
                                 color="primary"
                                 icon={<NotificationsIcon />}
                                 size="small"
@@ -118,7 +114,7 @@ export default function Notifications() {
                             onClick={handleMarkAllRead}
                             variant="outlined"
                         >
-                            Tout marquer comme lu
+                            {t("notifs.toutLu")}
                         </Button>
                     )}
                 </Box>
@@ -133,11 +129,11 @@ export default function Notifications() {
                 <Paper>
                     {loading ? (
                         <Box sx={{ p: 3, textAlign: "center" }}>
-                            <Typography>Chargement…</Typography>
+                            <Typography>{t("common.loading")}</Typography>
                         </Box>
                     ) : notifications.length === 0 ? (
                         <Box sx={{ p: 4, textAlign: "center" }}>
-                            <Typography color="text.secondary">Aucune notification</Typography>
+                            <Typography color="text.secondary">{t("notifs.aucune")}</Typography>
                         </Box>
                     ) : (
                         <List disablePadding>
@@ -154,22 +150,24 @@ export default function Notifications() {
                                         secondaryAction={
                                             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                                                 {notif.lien && (
-                                                    <Tooltip title="Accéder à l'élément">
+                                                    <Tooltip title={t("notifs.ouvrir")}>
                                                         <IconButton
                                                             size="small"
                                                             color="primary"
                                                             onClick={() => handleClick(notif)}
+                                                            aria-label={t("notifs.ouvrir")}
                                                         >
                                                             <OpenInNew fontSize="small" />
                                                         </IconButton>
                                                     </Tooltip>
                                                 )}
                                                 {!notif.lue && (
-                                                    <Tooltip title="Marquer comme lu">
+                                                    <Tooltip title={t("notifs.marquerLu")}>
                                                         <IconButton
                                                             size="small"
                                                             color="success"
                                                             onClick={(e) => handleMarkAsRead(notif.id_notification, e)}
+                                                            aria-label={t("notifs.marquerLu")}
                                                         >
                                                             <CheckCircle fontSize="small" />
                                                         </IconButton>
@@ -198,13 +196,13 @@ export default function Notifications() {
                                                             {notif.titre}
                                                         </Typography>
                                                         <Chip
-                                                            label={TYPE_LABEL[notif.type_notification] || notif.type_notification}
+                                                            label={t(`notifs.types.${notif.type_notification}`, { defaultValue: notif.type_notification })}
                                                             size="small"
                                                             color={TYPE_COLOR[notif.type_notification] || "default"}
                                                         />
                                                         {notif.lien && (
                                                             <Chip
-                                                                label="Cliquable"
+                                                                label={t("notifs.cliquable")}
                                                                 size="small"
                                                                 variant="outlined"
                                                                 color="primary"
@@ -229,7 +227,7 @@ export default function Notifications() {
                                                             component="span"
                                                             sx={{ display: "block", mt: 0.5 }}
                                                         >
-                                                            {new Date(notif.date_envoi || notif.date_creation).toLocaleString("fr-FR")}
+                                                            {new Date(notif.date_envoi || notif.date_creation).toLocaleString(i18n.language)}
                                                         </Typography>
                                                     </Box>
                                                 }
