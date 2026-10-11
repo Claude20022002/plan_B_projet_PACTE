@@ -3,11 +3,12 @@ import { Affectation, Notification } from "../../models/index.js";
 import { fermerAppel, ouvrirAppel } from "../../services/presences/appel.js";
 import { rappelerAppels } from "../../services/presences/rappelAppel.js";
 import { mesClasses } from "../../services/planning/mesClasses.js";
+import { aLHeureDeLEcole } from "./helpers/heureLocale.js";
 
 /**
  * Rappel de l'appel : 5 minutes avant la fin d'une séance, l'enseignant qui n'a pas terminé
  * l'appel est prévenu, une seule fois. La séance de la fixture a lieu le lundi 4 janvier 2027,
- * de 9 h à 10 h 45 (heure de Casablanca, UTC+1).
+ * de 9 h à 10 h 45 (heure de Casablanca).
  */
 
 let admin;
@@ -15,7 +16,7 @@ let enseignant;
 let fixture;
 let lien;
 
-const a = (heure) => new Date(`2027-01-04T${heure}:00+01:00`);
+const a = (heure) => aLHeureDeLEcole("2027-01-04", heure);
 const rappels = () => Notification.findAll({ where: { id_user: enseignant.id_user, lien }, order: [["id_notification", "ASC"]], raw: true });
 
 beforeAll(async () => {
@@ -32,7 +33,7 @@ describe("Rappel de l'appel", () => {
         expect(await rappelerAppels(a("08:58"))).toBe(0);
         expect(await rappelerAppels(a("10:39"))).toBe(0);
         expect(await rappelerAppels(a("10:46"))).toBe(0);
-        expect(await rappelerAppels(new Date("2027-01-05T10:42:00+01:00"))).toBe(0);
+        expect(await rappelerAppels(aLHeureDeLEcole("2027-01-05", "10:42"))).toBe(0);
         expect(await rappels()).toHaveLength(0);
     });
 
