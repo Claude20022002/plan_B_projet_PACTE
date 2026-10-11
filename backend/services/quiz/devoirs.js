@@ -41,7 +41,7 @@ export const creerQuizClassQuiz = async (user, quiz) => {
         description: quiz.description ?? "",
         questions: quiz.questions,
     });
-    if (typeof cree?.id !== "string" || !/^[0-9a-f-]{36}$/i.test(cree.id)) throw new ErreurMetier("Réponse inattendue de PlannerQuiz", 502);
+    if (typeof cree?.id !== "string" || !/^[0-9a-f-]{36}$/i.test(cree.id)) throw new ErreurMetier("Réponse inattendue du service de quiz", 502);
     return cree;
 };
 
@@ -219,7 +219,7 @@ export const creerDevoir = async (user, donnees = {}) => {
     if (type !== "quiz") throw new ErreurMetier("Seuls les quiz se donnent en devoir", 400);
     if (typeof quizId !== "string" || !/^[0-9a-f-]{36}$/i.test(quizId)) throw new ErreurMetier("quiz_id invalide", 400);
     const quiz = await appelerClassQuiz(cheminSigne(`/api/v1/hestim/quiz/${quizId}`, { email: user.email }));
-    if (!quiz) throw new ErreurMetier("Quiz introuvable dans vos quiz PlannerQuiz", 404);
+    if (!quiz) throw new ErreurMetier("Quiz introuvable dans vos quiz", 404);
     const questions = (Array.isArray(quiz.questions) ? quiz.questions : []).filter((q) => TYPES_ACCEPTES.has(q?.type));
     if (!questions.some((q) => TYPES_NOTES.has(q.type))) throw new ErreurMetier("Ce quiz n'a aucune question notable", 400);
     const champs = { type: "quiz", titre: String(quiz.titre ?? "Devoir").slice(0, 255), quiz_id: quizId, questions };

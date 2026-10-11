@@ -2,7 +2,7 @@ import crypto from "crypto";
 import { ErreurMetier } from "../planning/enseignements.js";
 
 /**
- * Client du fork ClassQuiz (« PlannerQuiz » dans les écrans) : requêtes signées vers ses routes
+ * Client du fork ClassQuiz (l'espace « Quiz » dans les écrans) : requêtes signées vers ses routes
  * /api/v1/hestim/…, qui ne servent qu'à Planner. Le secret est celui du webhook
  * (QUIZ_WEBHOOK_SECRET, 32 caractères au moins) ; sans lui ou sans adresse, tout appel répond 503.
  */
@@ -37,7 +37,7 @@ const detailDe = async (reponse) => {
 let client = async (chemin, corps = null) => {
     const cle = secret();
     const base = baseClassQuiz();
-    if (!cle || !base) throw new ErreurMetier("PlannerQuiz n'est pas configuré", 503);
+    if (!cle || !base) throw new ErreurMetier("Le service de quiz n'est pas configuré", 503);
     const horodatage = String(Math.floor(Date.now() / 1000));
     const methode = corps === null ? "GET" : "POST";
     const texte = corps === null ? null : JSON.stringify(corps);
@@ -51,15 +51,15 @@ let client = async (chemin, corps = null) => {
             signal: AbortSignal.timeout(texte === null ? 8000 : 15000),
         });
     } catch {
-        throw new ErreurMetier("PlannerQuiz est injoignable", 502);
+        throw new ErreurMetier("Le service de quiz est injoignable", 502);
     }
     if (reponse.status === 404) {
         if (texte === null) return null;
         // Route d'écriture absente : le fork en ligne est plus ancien que Planner
-        throw new ErreurMetier("PlannerQuiz ne connaît pas encore cette action : mettez-le à jour", 502);
+        throw new ErreurMetier("Le service de quiz ne connaît pas encore cette action : mettez-le à jour", 502);
     }
-    if (reponse.status === 422) throw new ErreurMetier(`PlannerQuiz a refusé la demande${await detailDe(reponse)}`, 422);
-    if (!reponse.ok) throw new ErreurMetier(`PlannerQuiz a répondu ${reponse.status}`, 502);
+    if (reponse.status === 422) throw new ErreurMetier(`Le service de quiz a refusé la demande${await detailDe(reponse)}`, 422);
+    if (!reponse.ok) throw new ErreurMetier(`Le service de quiz a répondu ${reponse.status}`, 502);
     return reponse.json();
 };
 

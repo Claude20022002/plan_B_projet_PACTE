@@ -47,7 +47,7 @@ export const lancerPartie = async (user, { id_quiz, id_affectation = null } = {}
     const seance = await seanceDeLaPartie(user, id_affectation);
 
     const creee = await appelerClassQuiz("/api/v1/hestim/parties", { email: user.email, quiz_id: String(id_quiz).toLowerCase() });
-    if (!UUID.test(String(creee?.game_id ?? "")) || !/^\d{4,12}$/.test(String(creee?.game_pin ?? ""))) throw new ErreurMetier("Réponse inattendue de PlannerQuiz", 502);
+    if (!UUID.test(String(creee?.game_id ?? "")) || !/^\d{4,12}$/.test(String(creee?.game_pin ?? ""))) throw new ErreurMetier("Réponse inattendue du service de quiz", 502);
 
     // La route signée n'envoie pas le webhook « game.started » : Planner enregistre lui-même la
     // partie, avec la séance choisie (le webhook aurait pu arriver avant, sans la connaître)
