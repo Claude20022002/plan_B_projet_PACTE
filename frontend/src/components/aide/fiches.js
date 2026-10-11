@@ -6,8 +6,12 @@
  *  - pages : pages où la fiche est proposée en premier (début du chemin) ;
  *  - lien : page ouverte par « Y aller » ;
  *  - responsable : réservée aux responsables de filière.
+ *  - devoirs : ne s'affiche que si les devoirs sont actifs (lot D-1).
  * Une fiche ne décrit que ce qui existe à l'écran : la mettre à jour avec la page qu'elle explique.
+ * Devoirs masqués : les textes qui les citent ont une variante « _sansDevoirs » (CONTEXTE_DEVOIRS).
  */
+import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
+
 export const FICHES = [
   // ── Administration ───────────────────────────────────────────────────────
   { id: 'adminDemarrer', roles: ['admin'], theme: 'annee', pages: ['/dashboard/admin', '/gestion/preparation'], lien: '/gestion/preparation' },
@@ -29,7 +33,7 @@ export const FICHES = [
   { id: 'profRappel', roles: ['enseignant'], theme: 'seance', pages: ['/appel', '/mes-classes'], lien: '/mes-classes' },
   { id: 'profQuizDirect', roles: ['enseignant'], theme: 'seance', pages: ['/mes-classes', '/jeux', '/dashboard/enseignant'], lien: '/mes-classes' },
   { id: 'profQuizIa', roles: ['enseignant'], theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
-  { id: 'profDevoir', roles: ['enseignant'], theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
+  { id: 'profDevoir', roles: ['enseignant'], devoirs: true, theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
   { id: 'profEcrire', roles: ['enseignant'], theme: 'classe', pages: ['/annonces', '/mes-classes'], lien: '/mes-classes' },
   { id: 'profSupports', roles: ['enseignant'], theme: 'classe', pages: ['/mes-classes'], lien: '/biblio/' },
   { id: 'profReport', roles: ['enseignant'], theme: 'planning', pages: ['/mes-affectations', '/demandes-report', '/dashboard/enseignant', '/emploi-du-temps/enseignant'], lien: '/mes-affectations' },
@@ -50,7 +54,8 @@ export const FICHES = [
 export const THEMES = ['seance', 'classe', 'planning', 'annee', 'quotidien', 'comptes', 'compte', 'etudiant'];
 
 /** Fiches visibles par cet utilisateur. */
-export const fichesPour = (role, responsable = false) => FICHES.filter((f) => f.roles.includes(role) && (!f.responsable || responsable));
+export const fichesPour = (role, responsable = false) =>
+  FICHES.filter((f) => f.roles.includes(role) && (!f.responsable || responsable) && (!f.devoirs || DEVOIRS_ACTIFS));
 
 /** La fiche concerne-t-elle la page ouverte ? */
 export const concernePage = (fiche, chemin) => fiche.pages.some((p) => chemin === p || chemin.startsWith(`${p}/`) || (p.length > 1 && chemin.startsWith(p)));

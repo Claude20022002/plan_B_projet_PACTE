@@ -13,6 +13,7 @@ import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as ReTooltip,
     ResponsiveContainer, PieChart, Pie, Cell,
 } from 'recharts';
+import { useTranslation } from 'react-i18next';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import { ds, lineColor } from '../design-system/tokens';
 import { calendrierAPI, statistiquesAPI } from '../services/api';
@@ -34,12 +35,12 @@ const renderPieLabel = ({ cx, cy, midAngle, innerRadius, outerRadius, percent })
 const numberFr = new Intl.NumberFormat('fr-FR', { maximumFractionDigits: 1 });
 
 /** Indicateurs en lignes réglées libellé | valeur | détail — même vocabulaire que le panneau */
-function KpiStrip({ items }) {
+function KpiStrip({ items, legende }) {
     return (
         <Box sx={{ mb: 3, bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px`, overflowX: 'auto' }}>
             <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
                 <caption style={{ position: 'absolute', width: 1, height: 1, overflow: 'hidden', clip: 'rect(0 0 0 0)' }}>
-                    Indicateurs de la période
+                    {legende}
                 </caption>
                 <tbody>
                     {items.map((item) => (
@@ -62,7 +63,9 @@ function KpiStrip({ items }) {
     );
 }
 
+/** Statistiques de l'administration : indicateurs, graphiques, charge des enseignants et des groupes. */
 export default function Statistiques() {
+    const { t, i18n } = useTranslation();
     const [kpis,      setKpis]      = useState(null);
     const [charge,    setCharge]    = useState([]);
     const [groupes,   setGroupes]   = useState([]);
@@ -102,7 +105,8 @@ export default function Statistiques() {
             setCharge(chargeData?.charge_enseignants || []);
             setGroupes(groupesData?.occupation_groupes || []);
         } catch {
-            setError('Erreur lors du chargement des statistiques');
+            // Clé du message, traduite à l'affichage : le chargement ne dépend pas de la langue
+            setError('stats.erreur');
         } finally {
             setLoading(false);
         }
@@ -112,8 +116,8 @@ export default function Statistiques() {
 
     const handleExport = () => {
         exportMultiSheet([
-            { name: 'Charge enseignants', data: charge,  columns: COLS_CHARGE_ENSEIGNANTS  },
-            { name: 'Volume par groupe',  data: groupes, columns: COLS_OCCUPATION_GROUPES  },
+            { name: t('stats.feuilles.charge'), data: charge,  columns: COLS_CHARGE_ENSEIGNANTS  },
+            { name: t('stats.feuilles.groupes'),  data: groupes, columns: COLS_OCCUPATION_GROUPES  },
         ], 'Statistiques_KPIs');
     };
 
@@ -124,36 +128,36 @@ export default function Statistiques() {
 
     const kpiItems = [
         {
-            title:    'Occupation des salles',
+            title:    t('stats.kpi.occupation'),
             value:    kpis?.taux_occupation_salles?.valeur,
             unit:     '%',
-            subtitle: `${kpis?.taux_occupation_salles?.detail?.salles_occupees || 0} / ${kpis?.taux_occupation_salles?.detail?.total_salles || 0} salles utilisées`,
+            subtitle: t('stats.kpi.sallesUtilisees', { utilisees: kpis?.taux_occupation_salles?.detail?.salles_occupees || 0, total: kpis?.taux_occupation_salles?.detail?.total_salles || 0 }),
         },
         {
-            title:    'Heures / enseignant',
+            title:    t('stats.kpi.heuresEnseignant'),
             value:    kpis?.moyenne_heures_enseignant?.valeur,
             unit:     'h',
-            subtitle: `${kpis?.moyenne_heures_enseignant?.detail?.enseignants_actifs || 0} enseignants actifs`,
+            subtitle: t('stats.kpi.enseignantsActifs', { count: kpis?.moyenne_heures_enseignant?.detail?.enseignants_actifs || 0 }),
         },
         {
-            title:    'Heures / étudiant',
+            title:    t('stats.kpi.heuresEtudiant'),
             value:    kpis?.moyenne_heures_etudiant?.valeur,
             unit:     'h',
-            subtitle: `${kpis?.moyenne_heures_etudiant?.detail?.etudiants_concernes || 0} étudiants concernés`,
+            subtitle: t('stats.kpi.etudiantsConcernes', { count: kpis?.moyenne_heures_etudiant?.detail?.etudiants_concernes || 0 }),
         },
         {
-            title:    'Taux de conflits',
+            title:    t('stats.kpi.conflits'),
             value:    kpis?.taux_conflits?.valeur,
             unit:     '%',
             tone:     kpis?.taux_conflits?.valeur > 5 ? ds.colors.danger.text : undefined,
-            subtitle: `${kpis?.taux_conflits?.detail?.conflits_non_resolus || 0} conflits non résolus`,
+            subtitle: t('stats.kpi.nonResolus', { count: kpis?.taux_conflits?.detail?.conflits_non_resolus || 0 }),
         },
         {
-            title:    'Durée moyenne',
+            title:    t('stats.kpi.duree'),
             value:    kpis?.duree_moyenne_cours?.valeur,
             unit:     'min',
             subtitle: kpis?.duree_moyenne_cours?.valeur_heures
-                ? `≈ ${numberFr.format(kpis.duree_moyenne_cours.valeur_heures)} h par séance` : '',
+                ? t('stats.kpi.parSeance', { heures: numberFr.format(kpis.duree_moyenne_cours.valeur_heures) }) : '',
         },
     ];
 
@@ -164,32 +168,32 @@ export default function Statistiques() {
                 <Box sx={{ mb: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', flexWrap: 'wrap', gap: 2 }}>
                         <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
-                            <TextField select size="small" label="Périmètre" value={perimetre}
+                            <TextField select size="small" label={t('stats.perimetre')} value={perimetre}
                                 onChange={e => setPerimetre(e.target.value)} sx={{ minWidth: 220 }}>
-                                <MenuItem value="">Année universitaire en cours</MenuItem>
+                                <MenuItem value="">{t('stats.anneeEnCours')}</MenuItem>
                                 {annees.map((a) => (
-                                    <MenuItem key={a.id_annee} value={`annee:${a.id_annee}`}>Année {a.libelle}</MenuItem>
+                                    <MenuItem key={a.id_annee} value={`annee:${a.id_annee}`}>{t('stats.annee', { annee: a.libelle })}</MenuItem>
                                 ))}
-                                <MenuItem value="tout">Toutes les années</MenuItem>
-                                <MenuItem value="libre">Période personnalisée</MenuItem>
+                                <MenuItem value="tout">{t('stats.toutes')}</MenuItem>
+                                <MenuItem value="libre">{t('stats.libre')}</MenuItem>
                             </TextField>
                             {perimetre === 'libre' && (
                                 <>
-                                    <TextField size="small" type="date" label="Début"
+                                    <TextField size="small" type="date" label={t('stats.debut')}
                                         value={dateDebut} onChange={e => setDateDebut(e.target.value)}
                                         InputLabelProps={{ shrink: true }} sx={{ width: 160 }} />
-                                    <TextField size="small" type="date" label="Fin"
+                                    <TextField size="small" type="date" label={t('stats.fin')}
                                         value={dateFin} onChange={e => setDateFin(e.target.value)}
                                         InputLabelProps={{ shrink: true }} sx={{ width: 160 }} />
                                 </>
                             )}
                             <Button variant="outlined" startIcon={<Refresh />}
                                 onClick={load} disabled={loading} size="small">
-                                Actualiser
+                                {t('stats.actualiser')}
                             </Button>
                             <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small"
                                 disabled={!charge.length && !groupes.length}>
-                                Exporter Excel
+                                {t('stats.exporter')}
                             </Button>
                         </Box>
                     </Box>
@@ -197,36 +201,36 @@ export default function Statistiques() {
 
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     {periode
-                        ? `${periode.annee ? `Année ${periode.annee} · ` : ''}du ${new Date(`${periode.date_debut}T12:00:00`).toLocaleDateString('fr-FR')} au ${new Date(`${periode.date_fin}T12:00:00`).toLocaleDateString('fr-FR')}`
-                        : 'Toutes les années'}
+                        ? `${periode.annee ? `${t('stats.annee', { annee: periode.annee })} · ` : ''}${t('stats.du', { debut: new Date(`${periode.date_debut}T12:00:00`).toLocaleDateString(i18n.language), fin: new Date(`${periode.date_fin}T12:00:00`).toLocaleDateString(i18n.language) })}`
+                        : t('stats.toutes')}
                 </Typography>
 
                 {loading && <LinearProgress sx={{ mb: 2 }} />}
-                {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{error}</Alert>}
+                {error && <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>{t(error)}</Alert>}
 
                 {/* ── KPI Cards ──────────────────────────────────────────────── */}
-                <KpiStrip items={kpiItems} />
+                <KpiStrip items={kpiItems} legende={t('stats.kpi.legende')} />
 
                 {/* ── Graphiques ─────────────────────────────────────────────── */}
                 <Paper elevation={2} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
                         <TrendingUp color="primary" />
-                        <Typography variant="h6" fontWeight="bold">Visualisations</Typography>
+                        <Typography variant="h6" fontWeight="bold">{t('stats.visualisations')}</Typography>
                         {loading && <CircularProgress size={16} sx={{ ml: 1 }} />}
                     </Box>
                     <Tabs value={tab} onChange={(_, v) => setTab(v)}
                         sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
                         variant="scrollable" scrollButtons="auto">
-                        <Tab label="Répartition par filière" />
-                        <Tab label="Créneaux demandés" />
-                        <Tab label="Occupation des salles" />
+                        <Tab label={t('stats.onglets.filieres')} />
+                        <Tab label={t('stats.onglets.creneaux')} />
+                        <Tab label={t('stats.onglets.salles')} />
                     </Tabs>
 
                     {/* Tab 0 — Filières */}
                     {tab === 0 && (
                         filiereData.length === 0 ? (
                             <Box sx={{ textAlign: 'center', py: 6 }}>
-                                <Typography color="text.secondary">Aucune donnée filière disponible</Typography>
+                                <Typography color="text.secondary">{t('stats.vide.filieres')}</Typography>
                             </Box>
                         ) : (
                             <Grid container spacing={3} alignItems="center">
@@ -241,13 +245,13 @@ export default function Statistiques() {
                                                     <Cell key={f.nom} fill={lineColor(f.id_filiere)} />
                                                 ))}
                                             </Pie>
-                                            <ReTooltip formatter={(v, n) => [`${v} séances`, n]} />
+                                            <ReTooltip formatter={(v, n) => [t('stats.seances', { count: v }), n]} />
                                         </PieChart>
                                     </ResponsiveContainer>
                                 </Grid>
                                 <Grid size={{ xs: 12, md: 7 }}>
                                     <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                                        Détail par filière
+                                        {t('stats.detailFilieres')}
                                     </Typography>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                         {filiereData.map((f) => (
@@ -261,7 +265,7 @@ export default function Statistiques() {
                                                         </Typography>
                                                     </Box>
                                                     <Box sx={{ display: 'flex', gap: 0.5 }}>
-                                                        <Chip label={`${f.nombre_seances} séances`} size="small" variant="outlined" />
+                                                        <Chip label={t('stats.seances', { count: f.nombre_seances })} size="small" variant="outlined" />
                                                         <Chip label={`${numberFr.format(f.nombre_heures)} h`} size="small" variant="outlined" />
                                                     </Box>
                                                 </Box>
@@ -282,7 +286,7 @@ export default function Statistiques() {
                     {tab === 1 && (
                         creneauData.length === 0 ? (
                             <Box sx={{ textAlign: 'center', py: 6 }}>
-                                <Typography color="text.secondary">Aucune donnée de créneaux disponible</Typography>
+                                <Typography color="text.secondary">{t('stats.vide.creneaux')}</Typography>
                             </Box>
                         ) : (
                             <ResponsiveContainer width="100%" height={300}>
@@ -292,7 +296,7 @@ export default function Statistiques() {
                                     <XAxis dataKey="label" angle={-35} textAnchor="end"
                                         tick={{ fontSize: 11 }} interval={0} />
                                     <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                                    <ReTooltip formatter={v => [`${v} affectation(s)`, 'Demandes']}
+                                    <ReTooltip formatter={v => [t('stats.seances', { count: v }), t('stats.demandes')]}
                                         labelFormatter={l => `Créneau : ${l}`} />
                                     {/* Une seule couleur : les couleurs de ligne sont réservées aux filières */}
                                     <Bar dataKey="count" radius={[3, 3, 0, 0]} fill={ds.brand.navy} />
@@ -305,7 +309,7 @@ export default function Statistiques() {
                     {tab === 2 && (
                         sallesGraph.length === 0 ? (
                             <Box sx={{ textAlign: 'center', py: 6 }}>
-                                <Typography color="text.secondary">Aucune donnée d'occupation disponible</Typography>
+                                <Typography color="text.secondary">{t('stats.vide.salles')}</Typography>
                             </Box>
                         ) : (
                             <>
@@ -318,7 +322,7 @@ export default function Statistiques() {
                                         <YAxis dataKey="nom" type="category"
                                             tick={{ fontSize: 11 }} width={85} />
                                         <ReTooltip formatter={(v, n, p) =>
-                                            [`${v}% (${p.payload.heures}h)`, "Taux d'occupation"]} />
+                                            [`${v}% (${p.payload.heures}h)`, t('stats.tauxOccupation')]} />
                                         <Bar dataKey="taux" radius={[0, 6, 6, 0]}>
                                             {sallesGraph.map((e, i) => (
                                                 <Cell key={i}
@@ -328,7 +332,7 @@ export default function Statistiques() {
                                     </BarChart>
                                 </ResponsiveContainer>
                                 <Box sx={{ display: 'flex', gap: 2, mt: 1.5, flexWrap: 'wrap' }}>
-                                    {[[ds.colors.success.text,'Faible (< 40 %)'],[ds.colors.warning.text,'Moyen (40–70 %)'],[ds.colors.danger.text,'Élevé (> 70 %)']].map(([c, l]) => (
+                                    {[[ds.colors.success.text, t('stats.niveaux.faible')], [ds.colors.warning.text, t('stats.niveaux.moyen')], [ds.colors.danger.text, t('stats.niveaux.eleve')]].map(([c, l]) => (
                                         <Box key={l} sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                                             <Box sx={{ width: 12, height: 12, borderRadius: 1, bgcolor: c }} />
                                             <Typography variant="caption" color="text.secondary">{l}</Typography>
@@ -348,21 +352,21 @@ export default function Statistiques() {
                         <Paper elevation={2} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                 <School color="primary" />
-                                <Typography variant="h6" fontWeight="bold">Charge par enseignant</Typography>
+                                <Typography variant="h6" fontWeight="bold">{t('stats.charge')}</Typography>
                                 <Chip label={`${charge.length}`} size="small" variant="outlined" sx={{ ml: 'auto' }} />
                             </Box>
                             <Divider sx={{ mb: 2 }} />
                             {charge.length === 0 ? (
-                                <Typography color="text.secondary" align="center" sx={{ py: 3 }}>Aucune donnée</Typography>
+                                <Typography color="text.secondary" align="center" sx={{ py: 3 }}>{t('stats.vide.aucune')}</Typography>
                             ) : (
                                 <TableContainer sx={{ maxHeight: 380 }}>
                                     <Table size="small" stickyHeader>
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell sx={{ fontWeight: 'bold' }}>Enseignant</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Séances</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Heures</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Cours</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold' }}>{t('stats.colonnes.enseignant')}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('stats.colonnes.seances')}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('stats.colonnes.heures')}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('stats.colonnes.cours')}</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>
@@ -382,7 +386,7 @@ export default function Statistiques() {
                                                                     {e.prenom} {e.nom}
                                                                 </Typography>
                                                                 {surcharge && (
-                                                                    <Chip label="Surchargé" size="small" color="error"
+                                                                    <Chip label={t('stats.surcharge')} size="small" color="error"
                                                                         sx={{ ml: 0.5, height: 18, fontSize: 10 }} />
                                                                 )}
                                                             </Box>
@@ -410,21 +414,21 @@ export default function Statistiques() {
                         <Paper elevation={2} sx={{ p: 3, borderRadius: 2, height: '100%' }}>
                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 2 }}>
                                 <People color="primary" />
-                                <Typography variant="h6" fontWeight="bold">Volume horaire par groupe</Typography>
+                                <Typography variant="h6" fontWeight="bold">{t('stats.volumeGroupes')}</Typography>
                                 <Chip label={`${groupes.length}`} size="small" variant="outlined" sx={{ ml: 'auto' }} />
                             </Box>
                             <Divider sx={{ mb: 2 }} />
                             {groupes.length === 0 ? (
-                                <Typography color="text.secondary" align="center" sx={{ py: 3 }}>Aucune donnée</Typography>
+                                <Typography color="text.secondary" align="center" sx={{ py: 3 }}>{t('stats.vide.aucune')}</Typography>
                             ) : (
                                 <TableContainer sx={{ maxHeight: 380 }}>
                                     <Table size="small" stickyHeader>
                                         <TableHead>
                                             <TableRow>
-                                                <TableCell sx={{ fontWeight: 'bold' }}>Groupe</TableCell>
-                                                <TableCell sx={{ fontWeight: 'bold' }}>Niveau</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Séances</TableCell>
-                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>Heures</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold' }}>{t('stats.colonnes.groupe')}</TableCell>
+                                                <TableCell sx={{ fontWeight: 'bold' }}>{t('stats.colonnes.niveau')}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('stats.colonnes.seances')}</TableCell>
+                                                <TableCell align="right" sx={{ fontWeight: 'bold' }}>{t('stats.colonnes.heures')}</TableCell>
                                             </TableRow>
                                         </TableHead>
                                         <TableBody>

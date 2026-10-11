@@ -10,12 +10,14 @@ import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { conflitAPI, affectationAPI } from '../../services/api';
 import { useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { ds } from '../../design-system/tokens';
 
-// ── Palette ───────────────────────────────────────────────────────────────────
+// ── Palette, par code de segment (libellés : conflits.segments.<code>) ─────────
 const COLORS = {
-    'Sans conflit':          '#2e7d32',
-    'Conflits de salle':     '#c62828',
-    "Conflits d'enseignant": '#e8a020',
+    sans:       ds.colors.success.text,
+    salle:      ds.colors.danger.text,
+    enseignant: ds.colors.warning.text,
 };
 
 // ── Tooltip ───────────────────────────────────────────────────────────────────
@@ -30,7 +32,9 @@ function CustomTooltip({ active, payload }) {
     );
 }
 
+/** Conflits de planification (administration) : répartition, liste, détail et résolution. */
 export default function Conflits() {
+    const { t, i18n } = useTranslation();
     const navigate = useNavigate();
 
     // ── Tableau ───────────────────────────────────────────────────────────────
@@ -86,10 +90,10 @@ export default function Conflits() {
 
             // Construire les segments — toujours inclure "Sans conflit" si nAff > 0
             const segments = [];
-            if (nSans  > 0) segments.push({ name: 'Sans conflit',          value: nSans  });
-            if (nSalle > 0) segments.push({ name: 'Conflits de salle',     value: nSalle });
-            if (nEns   > 0) segments.push({ name: "Conflits d'enseignant", value: nEns   });
-            if (nAutre > 0) segments.push({ name: 'Autres conflits',       value: nAutre });
+            if (nSans  > 0) segments.push({ code: 'sans',       value: nSans  });
+            if (nSalle > 0) segments.push({ code: 'salle',      value: nSalle });
+            if (nEns   > 0) segments.push({ code: 'enseignant', value: nEns   });
+            if (nAutre > 0) segments.push({ code: 'autre',      value: nAutre });
 
             // Fallback si pas d'affectations : afficher uniquement les conflits par type
             const base = segments.reduce((s, d) => s + d.value, 0) || 1;
@@ -108,6 +112,9 @@ export default function Conflits() {
         } catch (err) { console.error(err); }
     };
 
+    // Libellés des segments dans la langue de l'écran
+    const donut = donutData.map((d) => ({ ...d, name: t(`conflits.segments.${d.code}`) }));
+
     // ── Rendu ─────────────────────────────────────────────────────────────────
     return (
         <DashboardLayout>
@@ -119,17 +126,17 @@ export default function Conflits() {
                         <Button startIcon={<ArrowBack />}
                             onClick={() => navigate('/dashboard/admin')}
                             variant="outlined" size="small">
-                            Retour
+                            {t('common.back')}
                         </Button>
                         <Typography variant="h5" fontWeight="bold">
-                            Gestion des Conflits
+                            {t('conflits.titre')}
                         </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         {[
-                            { key: 'all',         label: 'Tous',        color: 'primary' },
-                            { key: 'non-resolus', label: 'Non résolus', color: 'error'   },
-                            { key: 'resolus',     label: 'Résolus',     color: 'success' },
+                            { key: 'all',         label: t('conflits.filtres.tous'),       color: 'primary' },
+                            { key: 'non-resolus', label: t('conflits.filtres.nonResolus'), color: 'error'   },
+                            { key: 'resolus',     label: t('conflits.filtres.resolus'),    color: 'success' },
                         ].map(({ key, label, color }) => (
                             <Button key={key} size="small"
                                 variant={filter === key ? 'contained' : 'outlined'}
@@ -142,11 +149,11 @@ export default function Conflits() {
                 </Box>
 
                 {/* ── Donut chart ──────────────────────────────────────── */}
-                {donutData.length > 0 && (
+                {donut.length > 0 && (
                     <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
                         <CardContent sx={{ pb: '16px !important' }}>
                             <Typography variant="h6" fontWeight="bold" mb={2}>
-                                Répartition des conflits
+                                {t('conflits.repartition')}
                             </Typography>
 
                             {/* MUI v7 Grid — prop `size` obligatoire */}
@@ -158,16 +165,16 @@ export default function Conflits() {
                                         <ResponsiveContainer width="100%" height="100%">
                                             <PieChart>
                                                 <Pie
-                                                    data={donutData}
+                                                    data={donut}
                                                     cx="50%" cy="50%"
                                                     innerRadius={65} outerRadius={95}
                                                     dataKey="value"
                                                     startAngle={90} endAngle={-270}
                                                     strokeWidth={2}
                                                 >
-                                                    {donutData.map((entry) => (
+                                                    {donut.map((entry) => (
                                                         <Cell key={entry.name}
-                                                            fill={COLORS[entry.name] || '#888'} />
+                                                            fill={COLORS[entry.code] || ds.lineUnknown} />
                                                     ))}
                                                 </Pie>
                                                 <Tooltip content={<CustomTooltip />} />
@@ -185,7 +192,7 @@ export default function Conflits() {
                                                 {totalConflits}
                                             </Typography>
                                             <Typography variant="body2" color="text.secondary" mt={0.5}>
-                                                {totalConflits <= 1 ? 'conflit détecté' : 'conflits détectés'}
+                                                {t('conflits.detectes', { count: totalConflits })}
                                             </Typography>
                                         </Box>
                                     </Box>
@@ -194,7 +201,7 @@ export default function Conflits() {
                                 {/* Légende */}
                                 <Grid size={{ xs: 12, md: 7 }}>
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                        {donutData.map((entry) => (
+                                        {donut.map((entry) => (
                                             <Box key={entry.name}>
                                                 <Box sx={{
                                                     display: 'flex', justifyContent: 'space-between',
@@ -203,7 +210,7 @@ export default function Conflits() {
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                         <Box sx={{
                                                             width: 12, height: 12, borderRadius: '50%',
-                                                            bgcolor: COLORS[entry.name] || '#888',
+                                                            bgcolor: COLORS[entry.code] || ds.lineUnknown,
                                                             flexShrink: 0,
                                                         }} />
                                                         <Typography variant="body2">{entry.name}</Typography>
@@ -211,7 +218,7 @@ export default function Conflits() {
                                                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                                                         <Chip label={entry.value} size="small" variant="outlined" />
                                                         <Typography variant="body2" fontWeight={700}
-                                                            sx={{ color: COLORS[entry.name] || '#888', minWidth: 48, textAlign: 'right' }}>
+                                                            sx={{ color: COLORS[entry.code] || ds.lineUnknown, minWidth: 48, textAlign: 'right' }}>
                                                             {entry.pct} %
                                                         </Typography>
                                                     </Box>
@@ -221,7 +228,7 @@ export default function Conflits() {
                                                     <Box sx={{
                                                         height: '100%',
                                                         width: `${Math.min(100, entry.pct)}%`,
-                                                        bgcolor: COLORS[entry.name] || '#888',
+                                                        bgcolor: COLORS[entry.code] || ds.lineUnknown,
                                                         borderRadius: 3,
                                                         transition: 'width .4s ease',
                                                     }} />
@@ -233,8 +240,7 @@ export default function Conflits() {
                                         {totalAff > 0 && (
                                             <Box sx={{ mt: 0.5, p: 1.5, bgcolor: 'action.hover', borderRadius: 1 }}>
                                                 <Typography variant="body2" color="text.secondary">
-                                                    Sur <strong>{totalAff}</strong> affectation(s) planifiée(s),{' '}
-                                                    <strong style={{ color: '#c62828' }}>{totalConflits}</strong> conflit(s) détecté(s)
+                                                    {t('conflits.resume', { seances: totalAff, count: totalConflits })}
                                                 </Typography>
                                             </Box>
                                         )}
@@ -248,7 +254,7 @@ export default function Conflits() {
                 {/* ── Alerte filtre ─────────────────────────────────────── */}
                 {filter === 'non-resolus' && conflits.length > 0 && (
                     <Alert severity="warning" sx={{ mb: 2 }}>
-                        {conflits.length} conflit(s) non résolu(s) nécessitent votre attention
+                        {t('conflits.attention', { count: conflits.length })}
                     </Alert>
                 )}
 
@@ -257,18 +263,18 @@ export default function Conflits() {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell sx={{ fontWeight: 700 }}>Type</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }}>Description</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }}>Date de détection</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }}>Statut</TableCell>
-                                <TableCell sx={{ fontWeight: 700 }} align="right">Actions</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{t('conflits.colonnes.type')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{t('conflits.colonnes.description')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{t('conflits.colonnes.detection')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }}>{t('conflits.colonnes.statut')}</TableCell>
+                                <TableCell sx={{ fontWeight: 700 }} align="right">{t('conflits.colonnes.actions')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
                             {conflits.length === 0 ? (
                                 <TableRow>
                                     <TableCell colSpan={5} align="center" sx={{ py: 5, color: 'text.secondary' }}>
-                                        Aucun conflit dans cette catégorie
+                                        {t('conflits.aucun')}
                                     </TableCell>
                                 </TableRow>
                             ) : conflits.map((c) => (
@@ -286,11 +292,11 @@ export default function Conflits() {
                                     </TableCell>
                                     <TableCell>{c.description}</TableCell>
                                     <TableCell>
-                                        {new Date(c.date_detection).toLocaleDateString('fr-FR')}
+                                        {new Date(c.date_detection).toLocaleDateString(i18n.language)}
                                     </TableCell>
                                     <TableCell>
                                         <Chip
-                                            label={c.resolu ? 'Résolu' : 'Non résolu'}
+                                            label={t(c.resolu ? 'conflits.resolu' : 'conflits.nonResolu')}
                                             color={c.resolu ? 'success' : 'error'}
                                             size="small"
                                             icon={c.resolu ? <CheckCircleOutline /> : <Warning />}
@@ -299,13 +305,13 @@ export default function Conflits() {
                                     <TableCell align="right">
                                         <IconButton size="small"
                                             onClick={() => { setSelected(c); setDialogOpen(true); }}
-                                            aria-label="Voir les détails">
+                                            aria-label={t('conflits.details')}>
                                             <Visibility />
                                         </IconButton>
                                         {!c.resolu && (
                                             <IconButton size="small" color="success"
                                                 onClick={() => handleResoudre(c.id_conflit)}
-                                                aria-label="Marquer comme résolu">
+                                                aria-label={t('conflits.marquerResolu')}>
                                                 <CheckCircle />
                                             </IconButton>
                                         )}
@@ -327,37 +333,37 @@ export default function Conflits() {
 
                 {/* ── Dialog détail ─────────────────────────────────────── */}
                 <Dialog open={dialogOpen} onClose={() => setDialogOpen(false)} maxWidth="sm" fullWidth>
-                    <DialogTitle>Détails du conflit</DialogTitle>
+                    <DialogTitle>{t('conflits.titreDetails')}</DialogTitle>
                     <DialogContent dividers>
                         {selected && (
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
-                                <Typography><strong>Type :</strong> {selected.type_conflit}</Typography>
-                                <Typography><strong>Description :</strong> {selected.description}</Typography>
+                                <Typography><strong>{t('conflits.colonnes.type')} :</strong> {selected.type_conflit}</Typography>
+                                <Typography><strong>{t('conflits.colonnes.description')} :</strong> {selected.description}</Typography>
                                 <Typography>
-                                    <strong>Date de détection :</strong>{' '}
-                                    {new Date(selected.date_detection).toLocaleString('fr-FR')}
+                                    <strong>{t('conflits.colonnes.detection')} :</strong>{' '}
+                                    {new Date(selected.date_detection).toLocaleString(i18n.language)}
                                 </Typography>
                                 <Typography>
-                                    <strong>Statut :</strong>{' '}
+                                    <strong>{t('conflits.colonnes.statut')} :</strong>{' '}
                                     <Chip size="small"
-                                        label={selected.resolu ? 'Résolu' : 'Non résolu'}
+                                        label={t(selected.resolu ? 'conflits.resolu' : 'conflits.nonResolu')}
                                         color={selected.resolu ? 'success' : 'error'} />
                                 </Typography>
                                 {selected.resolu && selected.date_resolution && (
                                     <Typography>
-                                        <strong>Résolu le :</strong>{' '}
-                                        {new Date(selected.date_resolution).toLocaleString('fr-FR')}
+                                        <strong>{t('conflits.resoluLe')} :</strong>{' '}
+                                        {new Date(selected.date_resolution).toLocaleString(i18n.language)}
                                     </Typography>
                                 )}
                             </Box>
                         )}
                     </DialogContent>
                     <DialogActions>
-                        <Button onClick={() => setDialogOpen(false)}>Fermer</Button>
+                        <Button onClick={() => setDialogOpen(false)}>{t('common.close')}</Button>
                         {selected && !selected.resolu && (
                             <Button variant="contained" color="success"
                                 onClick={() => { handleResoudre(selected.id_conflit); setDialogOpen(false); }}>
-                                Marquer comme résolu
+                                {t('conflits.marquerResolu')}
                             </Button>
                         )}
                     </DialogActions>

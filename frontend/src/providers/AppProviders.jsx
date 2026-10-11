@@ -12,6 +12,7 @@ import CssBaseline from '@mui/material/CssBaseline';
 import { ThemeProvider }  from '../contexts/ThemeContext';
 import { AuthProvider }   from '../contexts/AuthContext';
 import { ToastProvider }  from '../contexts/ToastContext';
+import { ConfirmationProvider } from '../contexts/ConfirmationContext';
 
 /**
  * @param {{ children: React.ReactNode }} props
@@ -21,7 +22,10 @@ export default function AppProviders({ children }) {
     <ThemeProvider>
       <CssBaseline />
       <AuthProvider>
-        <ToastProvider>{children}</ToastProvider>
+        <ToastProvider>
+          {/* Fenêtre de confirmation commune (useConfirmation, à la place de window.confirm) */}
+          <ConfirmationProvider>{children}</ConfirmationProvider>
+        </ToastProvider>
       </AuthProvider>
     </ThemeProvider>
   );

@@ -588,6 +588,10 @@ export const suiviAPI = {
     actualiser: () => request('/suivi/actualiser', { method: 'POST' }),
     modules: (params) => request(avecQuery('/suivi/modules', params)),
     enseignants: (mois) => request(avecQuery('/suivi/enseignants', { mois })),
+    // Séances du mois sans appel validé (R-11) : { mois, note, a_verifier, seances }
+    seancesAVerifier: (mois) => request(avecQuery('/suivi/seances-a-verifier', { mois })),
+    // decision : 'confirmee', 'ecartee', ou null pour annuler la décision
+    viser: (id, decision, motif = null) => request(`/suivi/seances/${encodeURIComponent(id)}/visa`, { method: 'PUT', body: { decision, motif } }),
     exportVacataires: (mois) => telecharger(`/suivi/vacataires.csv?mois=${mois}`, `heures-vacataires-${mois}.csv`),
 };
 
@@ -607,6 +611,10 @@ export const appartenanceAPI = {
 export const quizAPI = {
     // { actif, url, peutLancer } : où envoyer l'enseignant pour lancer une partie
     getConfig: () => request('/quiz/config'),
+    // Mes quiz { data: [{ id, titre, nb_questions, modifie_le }] } ; la route vit encore sous /devoirs
+    mesQuiz: () => request('/devoirs/quiz-disponibles'),
+    // Lance une partie en direct pour une séance d'aujourd'hui (CQ-1) → { id_quiz_partie, titre, nb_questions, notifies, animation: { game_pin, game_id, socket } }
+    lancer: ({ id_quiz, id_affectation }) => request('/quiz/parties', { method: 'POST', body: { id_quiz, id_affectation } }),
     getPartiesEnCours: () => request('/quiz/parties/en-cours'),
     // Parties terminées (enseignant) ou mes scores (étudiant)
     getHistorique: () => request('/quiz/parties/historique'),
@@ -634,6 +642,8 @@ export const quizIaAPI = {
     // Support (PDF, DOCX, PPTX) et réglages { id_cours, id_groupe?, plage?, nombre, type, difficulte, langue, temps } → { id_generation, statut }
     generer: (fichier, params) =>
         request(avecQuery('/quiz-ia/generations', { ...params, nom: fichier.name }), { method: 'POST', body: fichier, headers: { 'Content-Type': typeDuFichier(fichier) } }),
+    // Sans document, à partir d'un sujet (« Créer un quiz ») : seulement si disponibilite() annonce { sujet: true }
+    genererSurSujet: (sujet, params) => request(avecQuery('/quiz-ia/generations', { ...params, sujet }), { method: 'POST' }),
     lister: () => request('/quiz-ia/generations'),
     // { id_generation, statut: en_cours | pret | erreur | creation | cree, erreur, questions, nom_source, id_quiz_classquiz }
     etat: (id) => request(`/quiz-ia/generations/${encodeURIComponent(id)}`),

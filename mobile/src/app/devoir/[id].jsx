@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useState } from 'react';
 import { Alert, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { useLocalSearchParams, useRouter } from 'expo-router';
+import { Redirect, useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
 import { chargerDevoir, rendreDevoir } from '../../api/donnees';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
+import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 
 const reponseInitiale = (q) => {
   if (q.type === 'CHECK') return [];
@@ -89,11 +90,16 @@ function Saisie({ question: q, valeur, changer, fige }) {
   return null;
 }
 
+/** Écran d'un devoir ; devoirs masqués (lot D-1) : une ancienne alerte ramène à l'onglet Activités. */
+export default function DevoirSiActif() {
+  return DEVOIRS_ACTIFS ? <Devoir /> : <Redirect href="/jeux" />;
+}
+
 /**
  * Devoir noté sur téléphone : les questions du quiz (sans les réponses), une copie rendue avant
  * la date limite et notée sur 20 par Planner ; la correction s'affiche après la date limite.
  */
-export default function Devoir() {
+function Devoir() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
   const { couleurs } = useTheme();

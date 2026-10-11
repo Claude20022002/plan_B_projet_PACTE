@@ -283,10 +283,10 @@ function LanguageSwitch({ onDark = false }) {
           px: 1.25,
           py: 0.25,
           lineHeight: 1.6,
-          color: onDark ? '#B9C3E6' : 'text.secondary',
+          color: onDark ? ds.nav.letterDim : 'text.secondary',
           borderColor: onDark ? 'rgba(255,255,255,0.22)' : 'divider',
           '&.Mui-selected': {
-            color: onDark ? '#FFFFFF' : 'primary.main',
+            color: onDark ? ds.nav.letter : 'primary.main',
             bgcolor: onDark ? 'rgba(255,255,255,0.14)' : 'action.selected',
           },
         },
@@ -370,10 +370,10 @@ export default function DashboardLayout({ children }) {
     <Box
       component="nav"
       aria-label={t('nav.menu')}
-      sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: ds.brand.navy, color: '#FFFFFF' }}
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: ds.brand.navy, color: ds.nav.letter }}
     >
       <Box sx={{ px: 2, pt: 2.5, pb: 2 }}>
-        <Box sx={{ bgcolor: '#FFFFFF', borderRadius: `${ds.radius.md}px`, px: 1.5, py: 1, display: 'inline-flex' }}>
+        <Box sx={{ bgcolor: ds.white, borderRadius: `${ds.radius.md}px`, px: 1.5, py: 1, display: 'inline-flex' }}>
           <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: 26, display: 'block' }} />
         </Box>
         <Box
@@ -388,7 +388,7 @@ export default function DashboardLayout({ children }) {
         >
           Planner
         </Box>
-        <Box sx={{ fontSize: '0.8125rem', color: '#B9C3E6' }}>{role ? t(`roles.${role}`) : ''}</Box>
+        <Box sx={{ fontSize: '0.8125rem', color: ds.nav.letterDim }}>{role ? t(`roles.${role}`) : ''}</Box>
       </Box>
 
       <Box sx={{ flexGrow: 1, overflowY: 'auto', px: 1.25, pb: 2 }}>
@@ -404,7 +404,7 @@ export default function DashboardLayout({ children }) {
                   fontSize: '0.75rem',
                   letterSpacing: '0.16em',
                   textTransform: 'uppercase',
-                  color: '#8D9BCF',
+                  color: ds.nav.icon,
                 }}
               >
                 {t(group.section)}
@@ -424,8 +424,8 @@ export default function DashboardLayout({ children }) {
                     sx={{
                       my: 0.25,
                       px: 1.25,
-                      color: selected ? '#FFFFFF' : '#D3DAF1',
-                      '& .MuiListItemIcon-root': { color: selected ? ds.brand.orange : '#8D9BCF', minWidth: 34 },
+                      color: selected ? ds.nav.letter : ds.nav.letterSoft,
+                      '& .MuiListItemIcon-root': { color: selected ? ds.brand.orange : ds.nav.icon, minWidth: 34 },
                       '&.Mui-selected, &.Mui-selected:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
                       '&:hover': { bgcolor: 'rgba(255,255,255,0.07)' },
                       '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: -2 },
@@ -460,14 +460,14 @@ export default function DashboardLayout({ children }) {
             '&:focus-visible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 2 },
           }}
         >
-          <Avatar src={user?.avatar_url} sx={{ width: 34, height: 34, bgcolor: '#FFFFFF', color: ds.brand.navy, fontSize: '0.875rem', fontWeight: 700 }}>
+          <Avatar src={user?.avatar_url} sx={{ width: 34, height: 34, bgcolor: ds.white, color: ds.brand.navy, fontSize: '0.875rem', fontWeight: 700 }}>
             {!user?.avatar_url && initials}
           </Avatar>
           <Box sx={{ minWidth: 0 }}>
-            <Typography variant="body2" fontWeight={600} noWrap sx={{ color: '#FFFFFF' }}>
+            <Typography variant="body2" fontWeight={600} noWrap sx={{ color: ds.nav.letter }}>
               {user?.prenom} {user?.nom}
             </Typography>
-            <Typography variant="caption" noWrap sx={{ color: '#B9C3E6', display: 'block' }}>
+            <Typography variant="caption" noWrap sx={{ color: ds.nav.letterDim, display: 'block' }}>
               {user?.email}
             </Typography>
           </Box>
@@ -479,13 +479,13 @@ export default function DashboardLayout({ children }) {
             <IconButton
               onClick={toggleTheme}
               aria-label={mode === 'dark' ? t('common.themeLight') : t('common.themeDark')}
-              sx={{ color: '#D3DAF1' }}
+              sx={{ color: ds.nav.letterSoft }}
             >
               {mode === 'dark' ? <LightModeOutlined /> : <DarkModeOutlined />}
             </IconButton>
           </Tooltip>
           <Tooltip title={t('common.logout')}>
-            <IconButton onClick={handleLogout} aria-label={t('common.logout')} sx={{ color: '#D3DAF1' }}>
+            <IconButton onClick={handleLogout} aria-label={t('common.logout')} sx={{ color: ds.nav.letterSoft }}>
               <Logout />
             </IconButton>
           </Tooltip>
@@ -518,7 +518,7 @@ export default function DashboardLayout({ children }) {
             top: 0,
             zIndex: (theme) => theme.zIndex.appBar,
             bgcolor: isDesktop ? 'background.paper' : ds.brand.navy,
-            color: isDesktop ? 'text.primary' : '#FFFFFF',
+            color: isDesktop ? 'text.primary' : ds.nav.letter,
             borderBottomColor: isDesktop ? 'divider' : ds.brand.navy,
           }}
         >

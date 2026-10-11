@@ -1,4 +1,5 @@
 import * as XLSX from 'xlsx';
+import { aujourdhui } from '../../../shared/dates.js';
 
 /**
  * Exporte un tableau de données vers un fichier Excel (.xlsx).
@@ -39,7 +40,7 @@ export function exportToExcel(data, columns, filename, sheetName = 'Export') {
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31)); // max 31 chars
 
-    const date = new Date().toISOString().slice(0, 10);
+    const date = aujourdhui();
     XLSX.writeFile(wb, `HESTIM_${filename}_${date}.xlsx`);
 }
 
@@ -66,7 +67,7 @@ export function exportMultiSheet(sheets, filename) {
         XLSX.utils.book_append_sheet(wb, ws, name.slice(0, 31));
     }
 
-    const date = new Date().toISOString().slice(0, 10);
+    const date = aujourdhui();
     XLSX.writeFile(wb, `HESTIM_${filename}_${date}.xlsx`);
 }
 

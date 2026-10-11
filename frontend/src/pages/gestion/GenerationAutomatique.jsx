@@ -31,6 +31,7 @@ import { calendrierAPI, filiereAPI, generationAutomatiqueAPI } from '../../servi
 import { useToast } from '../../contexts/ToastContext';
 import { fetchAll } from '../../utils/fetchAll';
 import { ds } from '../../design-system/tokens';
+import { aujourdhui } from '../../../../shared/dates.js';
 
 const DUREES = [30, 60, 120, 300];
 const TON_STATUT = { running: 'info', completed: 'success', failed: 'danger' };
@@ -97,7 +98,7 @@ function Lancement({ dateHeure }) {
                 const liste = annees.flatMap((a) => a.periodes.map((p) => ({ ...p, libelle_annee: a.libelle, active: a.active })));
                 setPeriodes(liste);
                 setFilieres(toutes);
-                const today = new Date().toISOString().slice(0, 10);
+                const today = aujourdhui();
                 const courante = liste.find((p) => p.active && p.date_fin >= today) || liste.find((p) => p.active) || liste[0];
                 setIdPeriode(courante?.id_periode ?? '');
                 // Reprendre le suivi d'une génération en cours, sinon afficher le dernier rapport

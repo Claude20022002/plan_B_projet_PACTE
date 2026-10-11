@@ -35,6 +35,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { ds, lineColor } from '../../design-system/tokens';
+import { aujourdhui } from '../../../../shared/dates.js';
 
 /**
  * Enseignements d'une période : ce qui sera réellement planifié (une composante de module,
@@ -69,7 +70,7 @@ export default function Enseignements() {
                 const liste = annees.flatMap((a) => a.periodes.map((p) => ({ ...p, libelle_annee: a.libelle, active: a.active })));
                 setPeriodes(liste);
                 setFilieres(listeFilieres);
-                const parDefaut = liste.find((p) => p.active && p.date_debut <= new Date().toISOString().slice(0, 10) && p.date_fin >= new Date().toISOString().slice(0, 10)) || liste.find((p) => p.active) || liste[0];
+                const parDefaut = liste.find((p) => p.active && p.date_debut <= aujourdhui() && p.date_fin >= aujourdhui()) || liste.find((p) => p.active) || liste[0];
                 setIdPeriode(parDefaut?.id_periode ?? '');
                 if (!parDefaut) setLoading(false);
             } catch {

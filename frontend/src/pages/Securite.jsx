@@ -137,7 +137,7 @@ export default function Securite() {
     );
 
     return (
-        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: '#0B0B0D', p: 2 }}>
+        <Box sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', bgcolor: ds.board.ground, p: 2 }}>
             <Container maxWidth="sm">
                 <Paper sx={{ p: { xs: 3, sm: 4 }, borderRadius: `${ds.radius.sm}px` }}>
                     {titre('securite.titre')}

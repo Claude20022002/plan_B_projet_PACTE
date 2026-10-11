@@ -13,9 +13,10 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { fetchAll } from '../utils/fetchAll';
 import OngletsEmploisDuTemps from '../components/gestion/OngletsEmploisDuTemps';
+import { ds } from '../design-system/tokens';
 
 // Couleurs du document officiel (EDT HESTIM) : hors du style « panneau », réservé à l'impression
-const DOC = { rouge: '#C00000', marine: '#001861', orange: '#F8CBAD', orangeTexte: '#843C0C', vide: '#F2F2F2', evenement: '#DDEBF7', bord: '#7F7F7F' };
+const DOC = ds.document;
 const moisCourant = () => new Date().toISOString().slice(0, 7);
 const heure = (h) => h.replace(':', 'h');
 
@@ -214,7 +215,7 @@ export default function EdtMensuel() {
             ) : !edt ? (
                 <EmptyState title={t('monthly.emptyTitle')} description={t('monthly.emptyBody')} />
             ) : (
-                <Box className="edt-document" sx={{ bgcolor: '#FFFFFF', color: '#000000', p: { xs: 1, md: 2 }, overflowX: 'auto', fontFamily: 'Arial, Helvetica, sans-serif' }}>
+                <Box className="edt-document" sx={{ bgcolor: DOC.fond, color: DOC.encre, p: { xs: 1, md: 2 }, overflowX: 'auto', fontFamily: 'Arial, Helvetica, sans-serif' }}>
                     <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
                         <img src="/HESTIM.png" alt="HESTIM" style={{ height: 42 }} />
                         <span style={{ fontSize: 13, fontWeight: 700 }}>

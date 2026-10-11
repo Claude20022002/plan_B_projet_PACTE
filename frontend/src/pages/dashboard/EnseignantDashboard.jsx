@@ -11,7 +11,7 @@ import ChangesList from '../../design-system/board/ChangesList';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
-import { adresseEspace } from '../../../../shared/espaces.js';
+import LancerQuizDialog from '../../components/quiz/LancerQuizDialog';
 
 const HORIZON_DAYS = 14;
 
@@ -81,6 +81,8 @@ export default function EnseignantDashboard() {
   const [error, setError] = useState(false);
   // Jeux (ClassQuiz) : bouton proposé seulement si la plateforme en a un
   const [quiz, setQuiz] = useState(null);
+  // Séance pour laquelle l'enseignant lance un quiz en direct (CQ-3 : dans Planner)
+  const [quizPour, setQuizPour] = useState(null);
 
   useEffect(() => {
     let actif = true;
@@ -157,13 +159,13 @@ export default function EnseignantDashboard() {
           {t('nav.myClasses')}
         </Button>
       )}
-      {/* ClassQuiz : l'enseignant y choisit et lance son quiz ; la partie est rattachée à cette
-          séance et ses étudiants sont prévenus (webhook « partie démarrée ») */}
-      {quiz?.peutLancer && s.status !== 'annule' && (
+      {/* Quiz en direct, lancé et projeté dans Planner : le jour de la séance seulement (le serveur
+          refuse un autre jour) ; la partie est rattachée à la séance et ses étudiants sont prévenus */}
+      {quiz?.peutLancer && s.status !== 'annule' && s.date === toLocalISODate() && (
         <Button
           variant="outlined"
           startIcon={<SportsEsports />}
-          href={adresseEspace('quiz', { role: 'enseignant', urlQuiz: quiz.url })}
+          onClick={() => setQuizPour({ id_affectation: s.id })}
           sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
         >
           {t('board.launchQuiz')}
@@ -242,6 +244,7 @@ export default function EnseignantDashboard() {
           )}
         </Box>
       </Box>
+      <LancerQuizDialog seance={quizPour} onClose={() => setQuizPour(null)} />
     </DashboardLayout>
   );
 }

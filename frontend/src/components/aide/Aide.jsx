@@ -6,6 +6,7 @@ import { ArrowForward, Close, ExpandMore, HelpOutline, Search } from '@mui/icons
 import { useAuth } from '../../contexts/AuthContext';
 import { estResponsable } from '../../utils/droits';
 import { THEMES, concernePage, correspond, fichesPour } from './fiches';
+import { CONTEXTE_DEVOIRS } from '../../../../shared/fonctions.js';
 
 /**
  * Bouton d'aide de la barre du haut (lot G-1) : un panneau de fiches « comment faire » propres au
@@ -24,9 +25,10 @@ export default function Aide({ aller }) {
   const fiches = useMemo(
     () =>
       fichesPour(user?.role, estResponsable(user)).map((f) => {
-        const etapes = t(`aide.fiches.${f.id}.etapes`, { returnObjects: true });
-        const note = t(`aide.fiches.${f.id}.note`, { defaultValue: '' });
-        const titre = t(`aide.fiches.${f.id}.titre`);
+        // Devoirs masqués : une fiche qui les cite lit sa variante « _sansDevoirs » si elle en a une
+        const etapes = t(`aide.fiches.${f.id}.etapes`, { returnObjects: true, context: CONTEXTE_DEVOIRS });
+        const note = t(`aide.fiches.${f.id}.note`, { defaultValue: '', context: CONTEXTE_DEVOIRS });
+        const titre = t(`aide.fiches.${f.id}.titre`, { context: CONTEXTE_DEVOIRS });
         return { ...f, titre, etapes: Array.isArray(etapes) ? etapes : [], note, texte: [titre, ...(Array.isArray(etapes) ? etapes : []), note].join(' ') };
       }),
     [user, t]

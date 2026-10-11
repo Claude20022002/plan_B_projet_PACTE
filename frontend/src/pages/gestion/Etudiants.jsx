@@ -34,6 +34,8 @@ import ImportCsvDialog from '../../components/common/ImportCsvDialog';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_ETUDIANTS } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
+import { useConfirmation } from '../../contexts/ConfirmationContext';
+import { useTranslation } from 'react-i18next';
 
 // Modèle d'import : le groupe par son nom (celui affiché dans Groupes), pas par son identifiant
 const MODELE_CSV = [
@@ -42,13 +44,17 @@ const MODELE_CSV = [
 ].join('\n');
 
 const validationSchema = yup.object({
-    id_user: yup.number().required('L\'utilisateur est requis'),
-    numero_etudiant: yup.string().required('Le numéro étudiant est requis'),
-    niveau: yup.string().required('Le niveau est requis'),
-    id_groupe: yup.number().required('Le groupe est requis'),
+    // Messages : des clés de traduction, traduites à l'affichage
+    id_user: yup.number().required('etudiants.erreurs.utilisateur'),
+    numero_etudiant: yup.string().required('etudiants.erreurs.numero'),
+    niveau: yup.string().required('etudiants.erreurs.niveau'),
+    id_groupe: yup.number().required('etudiants.erreurs.groupe'),
 });
 
+/** Gestion des étudiants (administration) : liste, fiche, import et export. */
 export default function Etudiants() {
+    const { t } = useTranslation();
+    const confirmer = useConfirmation();
     const [etudiants, setEtudiants] = useState([]);
     const [users, setUsers] = useState([]);
     const [groupes, setGroupes] = useState([]);
@@ -98,7 +104,7 @@ export default function Etudiants() {
             setTotal(data.pagination?.total || 0);
         } catch (error) {
             console.error('Erreur:', error);
-            setError('Erreur lors du chargement des étudiants');
+            setError(t('etudiants.erreurChargement'));
         }
     };
 
@@ -117,10 +123,10 @@ export default function Etudiants() {
                 setSuccess('');
                 if (editing) {
                     await etudiantAPI.update(editing.id_user, values);
-                    setSuccess('Étudiant modifié avec succès');
+                    setSuccess(t('etudiants.modifie'));
                 } else {
                     await etudiantAPI.create(values);
-                    setSuccess('Étudiant créé avec succès');
+                    setSuccess(t('etudiants.cree'));
                 }
                 formik.resetForm();
                 setOpen(false);
@@ -129,7 +135,7 @@ export default function Etudiants() {
                 loadUsers();
             } catch (error) {
                 console.error('Erreur:', error);
-                setError(error.message || 'Erreur lors de la sauvegarde');
+                setError(error.message || t('etudiants.erreurSauvegarde'));
             } finally {
                 setSubmitting(false);
             }
@@ -148,15 +154,14 @@ export default function Etudiants() {
     };
 
     const handleDelete = async (id) => {
-        if (window.confirm('Êtes-vous sûr de vouloir supprimer cet étudiant ?')) {
-            try {
-                await etudiantAPI.delete(id);
-                setSuccess('Étudiant supprimé avec succès');
-                loadEtudiants();
-            } catch (error) {
-                console.error('Erreur:', error);
-                setError('Erreur lors de la suppression');
-            }
+        if (!(await confirmer(t('etudiants.confirmerSuppression')))) return;
+        try {
+            await etudiantAPI.delete(id);
+            setSuccess(t('etudiants.supprime'));
+            loadEtudiants();
+        } catch (error) {
+            console.error('Erreur:', error);
+            setError(t('etudiants.erreurSuppression'));
         }
     };
 
@@ -170,7 +175,7 @@ export default function Etudiants() {
             const propre = Object.fromEntries(Object.entries(l).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]));
             const nomGroupe = String(propre.groupe ?? '').toLowerCase();
             if (nomGroupe && !parNom.has(nomGroupe)) {
-                erreurs.push({ ligne: index + 2, libelle: propre.email, message: `Groupe inconnu : ${propre.groupe}` });
+                erreurs.push({ ligne: index + 2, libelle: propre.email, message: t('etudiants.groupeInconnu', { groupe: propre.groupe }) });
                 return;
             }
             valides.push({ ...propre, email: String(propre.email ?? '').toLowerCase(), id_groupe: nomGroupe ? parNom.get(nomGroupe) : null });
@@ -189,8 +194,8 @@ export default function Etudiants() {
     const handleExport = async () => {
         try {
             const data = await etudiantAPI.getAll({ page: 1, limit: 10000 });
-            await exportToExcelLazy(data.data || [], COLS_ETUDIANTS, 'Etudiants', 'Étudiants');
-        } catch { setError('Erreur lors de l\'export'); }
+            await exportToExcelLazy(data.data || [], COLS_ETUDIANTS, 'Etudiants', t('etudiants.fichierExport'));
+        } catch { setError(t('etudiants.erreurExport')); }
     };
 
 
@@ -212,10 +217,10 @@ export default function Etudiants() {
                             variant="outlined"
                             size="small"
                         >
-                            Retour
+                            {t('common.back')}
                         </Button>
                         <Typography variant="h5" fontWeight="bold">
-                            Gestion des Étudiants
+                            {t('etudiants.titre')}
                         </Typography>
                     </Box>
                     <Box sx={{ display: 'flex', gap: 1 }}>
@@ -224,10 +229,10 @@ export default function Etudiants() {
                             startIcon={<UploadFile />}
                             onClick={() => setImportOuvert(true)}
                         >
-                            Importer (Excel/CSV)
+                            {t('etudiants.importer')}
                         </Button>
                         <Button variant="outlined" startIcon={<Download />} onClick={handleExport} size="small">
-                            Exporter Excel
+                            {t('etudiants.exporter')}
                         </Button>
                         <Button
                             variant="contained"
@@ -240,7 +245,7 @@ export default function Etudiants() {
                                 setOpen(true);
                             }}
                         >
-                            Ajouter un étudiant
+                            {t('etudiants.ajouter')}
                         </Button>
                     </Box>
                 </Box>
@@ -265,7 +270,7 @@ export default function Etudiants() {
                     <Box sx={{ p: 2 }}>
                         <TextField
                             fullWidth
-                            placeholder="Rechercher un étudiant..."
+                            placeholder={t('etudiants.rechercher')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
                             InputProps={{
@@ -279,13 +284,13 @@ export default function Etudiants() {
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell>Numéro</TableCell>
-                                <TableCell>Nom</TableCell>
-                                <TableCell>Prénom</TableCell>
-                                <TableCell>Email</TableCell>
-                                <TableCell>Niveau</TableCell>
-                                <TableCell>Groupe</TableCell>
-                                <TableCell align="right">Actions</TableCell>
+                                <TableCell>{t('etudiants.colonnes.numero')}</TableCell>
+                                <TableCell>{t('etudiants.colonnes.nom')}</TableCell>
+                                <TableCell>{t('etudiants.colonnes.prenom')}</TableCell>
+                                <TableCell>{t('etudiants.colonnes.email')}</TableCell>
+                                <TableCell>{t('etudiants.colonnes.niveau')}</TableCell>
+                                <TableCell>{t('etudiants.colonnes.groupe')}</TableCell>
+                                <TableCell align="right">{t('etudiants.colonnes.actions')}</TableCell>
                             </TableRow>
                         </TableHead>
                         <TableBody>
@@ -298,10 +303,10 @@ export default function Etudiants() {
                                     <TableCell>{etu.niveau}</TableCell>
                                     <TableCell>{etu.groupe?.nom_groupe || '-'}</TableCell>
                                     <TableCell align="right">
-                                        <IconButton size="small" onClick={() => handleEdit(etu)}>
+                                        <IconButton size="small" onClick={() => handleEdit(etu)} aria-label={t('etudiants.modifier')}>
                                             <Edit />
                                         </IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDelete(etu.id_user)}>
+                                        <IconButton size="small" color="error" onClick={() => handleDelete(etu.id_user)} aria-label={t('common.delete')}>
                                             <Delete />
                                         </IconButton>
                                     </TableCell>
@@ -325,16 +330,16 @@ export default function Etudiants() {
 
                 <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
                     <form onSubmit={formik.handleSubmit}>
-                        <DialogTitle>{editing ? 'Modifier l\'étudiant' : 'Nouvel étudiant'}</DialogTitle>
+                        <DialogTitle>{t(editing ? 'etudiants.titreModifier' : 'etudiants.titreNouveau')}</DialogTitle>
                         <DialogContent>
                             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
                                 <FormControl fullWidth>
-                                    <InputLabel>Utilisateur</InputLabel>
+                                    <InputLabel>{t('etudiants.champs.utilisateur')}</InputLabel>
                                     <Select
                                         name="id_user"
                                         value={formik.values.id_user}
                                         onChange={formik.handleChange}
-                                        label="Utilisateur"
+                                        label={t('etudiants.champs.utilisateur')}
                                         error={formik.touched.id_user && Boolean(formik.errors.id_user)}
                                     >
                                         {users.map((user) => (
@@ -346,29 +351,29 @@ export default function Etudiants() {
                                 </FormControl>
                                 <TextField
                                     fullWidth
-                                    label="Numéro étudiant"
+                                    label={t('etudiants.champs.numero')}
                                     name="numero_etudiant"
                                     value={formik.values.numero_etudiant}
                                     onChange={formik.handleChange}
                                     error={formik.touched.numero_etudiant && Boolean(formik.errors.numero_etudiant)}
-                                    helperText={formik.touched.numero_etudiant && formik.errors.numero_etudiant}
+                                    helperText={formik.touched.numero_etudiant && formik.errors.numero_etudiant && t(formik.errors.numero_etudiant)}
                                 />
                                 <TextField
                                     fullWidth
-                                    label="Niveau"
+                                    label={t('etudiants.colonnes.niveau')}
                                     name="niveau"
                                     value={formik.values.niveau}
                                     onChange={formik.handleChange}
                                     error={formik.touched.niveau && Boolean(formik.errors.niveau)}
-                                    helperText={formik.touched.niveau && formik.errors.niveau}
+                                    helperText={formik.touched.niveau && formik.errors.niveau && t(formik.errors.niveau)}
                                 />
                                 <FormControl fullWidth>
-                                    <InputLabel>Groupe</InputLabel>
+                                    <InputLabel>{t('etudiants.colonnes.groupe')}</InputLabel>
                                     <Select
                                         name="id_groupe"
                                         value={formik.values.id_groupe}
                                         onChange={formik.handleChange}
-                                        label="Groupe"
+                                        label={t('etudiants.colonnes.groupe')}
                                         error={formik.touched.id_groupe && Boolean(formik.errors.id_groupe)}
                                     >
                                         {groupes.map((groupe) => (
@@ -381,9 +386,9 @@ export default function Etudiants() {
                             </Box>
                         </DialogContent>
                         <DialogActions>
-                            <Button onClick={() => setOpen(false)}>Annuler</Button>
+                            <Button onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
                             <Button type="submit" variant="contained">
-                                {editing ? 'Modifier' : 'Créer'}
+                                {t(editing ? 'etudiants.modifier' : 'etudiants.creer')}
                             </Button>
                         </DialogActions>
                     </form>
@@ -392,8 +397,8 @@ export default function Etudiants() {
             <ImportCsvDialog
                 open={importOuvert}
                 onClose={() => setImportOuvert(false)}
-                titre="Importer des étudiants"
-                intro="Une ligne par étudiant. Colonnes obligatoires : nom, prenom, email, numero_etudiant, niveau. Facultatives : telephone, groupe (nom du groupe le plus fin, tel qu'affiché dans Groupes). Chaque étudiant reçoit un lien d'invitation par email pour choisir son mot de passe."
+                titre={t('etudiants.titreImport')}
+                intro={t('etudiants.introImport')}
                 modele={MODELE_CSV}
                 nomModele="modele-etudiants.csv"
                 onImport={importer}
