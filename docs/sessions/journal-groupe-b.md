@@ -107,10 +107,32 @@ Demandes du groupe A, faites : modèles CSV des pages Étudiants et Enseignants 
 - L'ancienne suite `tests/app.spec.cjs` (928 lignes, mots de passe de démonstration écrits en dur, connexion par `localStorage` qui n'existe plus) est laissée telle quelle. Proposition : la retirer une fois B-8 dans la CI.
 - Les fichiers `.cjs` et `.mjs` des tests ne sont pas couverts par le lint du site, qui ne lit que `.js` et `.jsx`.
 
-### Questions au chef de projet (B-8)
+### Réponses du chef de projet (B-8)
 
-- **Parcours qui remplace « quiz donné en devoir »** : « quiz généré par l'IA, relu puis créé », avec une fausse IA et un faux service de quiz ? Ou « quiz lancé en direct » (CQ-2), qui demande en plus un faux serveur de jeu ?
-- **Génération** : la lancer avec le vrai solveur dans la CI (une image Java de plus à construire), ou avec un faux solveur qui rend une solution fixe, comme le test d'intégration ?
+- **Parcours qui remplace « quiz donné en devoir »** : il s'appelle **« Créer un quiz »**, et l'écran doit être simplifié d'abord (ci-dessous). Le parcours s'écrira sur l'écran simplifié, avec une fausse IA.
+- **Solveur** : il ne sert qu'à la planification (emploi du temps), pas aux quiz. Le parcours « génération puis publication » reste à trancher : vrai solveur dans la CI, ou faux solveur comme `backend/tests/integration/generation.test.js`.
+
+### Créer un quiz en un geste (branche `b/creer-quiz`, partie de `b/cq2-projecteur`)
+
+Demande du chef de projet : pas de long formulaire, le moins d'actions possible.
+
+**Fait.**
+- Un seul écran « Créer un quiz » : la classe (déjà choisie depuis Mes classes), un champ « Sujet du quiz » avec un trombone pour joindre un document, puis « Générer » ou « Le faire moi-même ». Plus de réglages : 10 questions à une bonne réponse, 30 secondes, dans la langue de l'écran ; tout se corrige à la relecture, avant la création.
+- « Le faire moi-même » ouvre l'éditeur du service de quiz, déjà connecté (`adresseEditeurQuiz`, `shared/espaces.js`). Planner n'a pas encore d'éditeur à lui (reste d'IA-5).
+- Le sujet saisi devient le titre proposé à la relecture.
+- Le mot « IA » quitte les titres : panneau « Mes quiz » (Activités), bouton « Créer un quiz » (Activités, Mes classes, Lancer un quiz), fiche d'aide réécrite.
+- Découpage : `QuizIa.jsx` passe de 511 à 120 lignes ; relecture, éditeur d'une question et règles du brouillon dans `components/quiz/creation/` et `utils/brouillonQuiz.js`, sans changement de comportement. Clés de texte du long formulaire retirées.
+
+**Vérifié.** Lint : 0 erreur ; build réussi ; tests unitaires du site : 7 sur 7. Essai dans un vrai navigateur, sur la base des parcours, génération déclarée disponible et service de quiz configuré : classe pré-choisie, « Générer » désactivé avec un sujet seul et activé avec un document, « Le faire moi-même » vers l'éditeur.
+
+**Pas vérifié** : une vraie génération (fausse IA à écrire avec le parcours B-8).
+
+### Demande au groupe A (Créer un quiz)
+
+- **Générer à partir d'un sujet seul**, sans document. Contrat proposé :
+  - `GET /api/quiz-ia/disponibilite` rend en plus `sujet: true` quand c'est possible ; le site n'active le chemin qu'à cette condition.
+  - `POST /api/quiz-ia/generations?…&sujet=<texte>` **sans corps** : les mêmes paramètres qu'aujourd'hui (`id_cours`, `id_groupe`, `nombre`, `type`, `difficulte`, `langue`, `temps`), le sujet (200 caractères au plus) et le nom du module guident l'IA. `nom_source` vaut le sujet. Le reste ne change pas (suivi, relecture, création).
+  - Avec un document et un sujet, le document reste la source ; le sujet peut préciser la consigne.
 
 ## 11 octobre 2026
 
