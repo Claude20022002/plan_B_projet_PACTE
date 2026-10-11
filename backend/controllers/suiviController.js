@@ -3,9 +3,11 @@ import { ErreurMetier } from "../services/planning/enseignements.js";
 import {
     exportVacataires,
     marquerRealisees,
+    seancesAVerifier,
     suiviEnseignants,
     suiviModules,
 } from "../services/planning/suivi.js";
+import { viserSeance } from "../services/planning/visaSeances.js";
 
 /**
  * Suivi du réalisé (phase P7).
@@ -24,7 +26,15 @@ export const getEnseignants = planification(async (req, res) => {
     res.json(await suiviEnseignants({ mois: req.query.mois }));
 });
 
-export const getExportVacataires = planification(async (req, res) => {
+export const getSeancesAVerifier = planification(async (req, res) => {
+    res.json(await seancesAVerifier({ mois: req.query.mois }));
+});
+
+export const putVisa = planification(async (req, res) => {
+    res.json(await viserSeance(req.user, Number(req.params.id), { decision: req.body?.decision ?? null, motif: req.body?.motif }));
+});
+
+export const getExportVacataires =planification(async (req, res) => {
     const csv = await exportVacataires({ mois: req.query.mois });
     res.setHeader("Content-Type", "text/csv; charset=utf-8");
     res.setHeader("Content-Disposition", `attachment; filename="heures-vacataires-${req.query.mois}.csv"`);
