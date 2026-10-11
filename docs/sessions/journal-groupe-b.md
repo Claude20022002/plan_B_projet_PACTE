@@ -134,6 +134,32 @@ Demande du chef de projet : pas de long formulaire, le moins d'actions possible.
   - `POST /api/quiz-ia/generations?…&sujet=<texte>` **sans corps** : les mêmes paramètres qu'aujourd'hui (`id_cours`, `id_groupe`, `nombre`, `type`, `difficulte`, `langue`, `temps`), le sujet (200 caractères au plus) et le nom du module guident l'IA. `nom_source` vaut le sujet. Le reste ne change pas (suivi, relecture, création).
   - Avec un document et un sujet, le document reste la source ; le sujet peut préciser la consigne.
 
+### Décisions du chef de projet (suite)
+
+- **Jeu ouvert par un scan** : dans une **vue navigateur**, comme Wooclap, tant que les quiz ne comptent pas dans la note. Le lecteur natif est gardé pour de futurs devoirs notés (QCM), car il bloque les captures. Fait sur `b/creer-quiz` : interrupteur `QUIZ_DANS_L_APPLICATION` (éteint) dans `shared/fonctions.js`, lu par le scanner et l'onglet Activités (`mobile/src/quiz/ouvrir.js`). Lint de l'application : 0 erreur ; 35 tests sur 35.
+- **Génération dans les parcours** : avec le **vrai** solveur. Fait (ci-dessous).
+
+### B-8, tranche 3 : génération puis publication (branche `b/b8-parcours`)
+
+**Fait.** L'administration génère le S2 de la filière GEN depuis l'écran (calcul de 30 s) ; le rapport ne montre aucune règle dure enfreinte et signale le module sans enseignant ; la version générée devient active. Puis, sur les séances publiées : TP du vacataire sur ses seuls créneaux déclarés, en labo ; CM le lundi, hors du créneau pris par une séance posée à la main, dans une salle d'au moins 40 places ; férié sauté ; séance manuelle conservée ; aucun chevauchement pour la promotion et son TD.
+- Le solveur est le conteneur construit depuis `solver/` (`docker build -t hestim-solver:parcours solver`), lancé par `tests/parcours/solveur.mjs` et retiré à la fin ; ou un solveur fourni par `PARCOURS_SOLVEUR_URL` (prévu pour la CI).
+
+**Vérifié.** Suite complète : 8 sur 8.
+
+**Reste pour B-8** : l'entrée dans la CI (après A-4 ; la CI devra construire l'image du solveur), et le parcours « Créer un quiz », avec une fausse IA.
+
+### Vérification du solveur (demande du chef de projet)
+
+**Conclusion : le solveur reçoit tous les paramètres nécessaires à la planification des cours, et les applique.**
+- **Ce qu'il reçoit** (`backend/services/generation/timefold/probleme.js`) : la grille par régime (séances d'un ou deux créneaux consécutifs) ; les salles disponibles (type, capacité, équipements, campus) ; pour chaque enseignement, l'enseignant principal et les co-enseignants acceptés, les groupes et toute leur hiérarchie (un CM de promotion occupe ses TD et TP), l'effectif, le type de salle et les équipements requis, le distanciel, le campus de la filière ; les indisponibilités, vœux « éviter » et « préférer », et la règle des vacataires (disponibles seulement sur les créneaux déclarés) ; les heures maximales par jour (groupe, enseignant) ; le samedi après-midi ; les temps de trajet entre campus ; les séances déjà en place (posées à la main, autres filières), épinglées.
+- **Ce qui est traité après lui, au déploiement sur les dates**, par les règles de planification : jours fériés, indisponibilités ponctuelles, examens, réservations (la date est sautée), variante Ramadan de la grille, semaines de début et de fin, volume prévu.
+- **Ce qui le prouve** : les 14 tests Java du solveur passent (lancés dans le conteneur Maven, sur une copie de `solver/`) ; le parcours ci-dessus vérifie de bout en bout ce que le vrai solveur rend.
+
+**À l'attention du groupe A** (`solver/` et `backend/` sont à lui) :
+- Quatre contraintes n'ont pas de test unitaire dans `ContraintesTest.java` : équipements de la salle, campus de la filière, vœu « préférer », pas de salle en distanciel.
+- Le plafond d'heures par semaine d'un enseignant (`max_heures_semaine`) n'entre pas dans le problème : le solveur ne peut pas le changer (les séances de la semaine sont fixées par les services), et les règles du déploiement ne font qu'avertir. Proposition : le signaler dès la préparation, comme les disponibilités insuffisantes (`avertissements` de `probleme.js`).
+- Le samedi après-midi ne vaut que pour le régime initial (paramètre `samedi_apres_midi_initiale`) : c'est voulu d'après son nom, à confirmer pour l'alternance.
+
 ## 11 octobre 2026
 
 ### Point de départ
