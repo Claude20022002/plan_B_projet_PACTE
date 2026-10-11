@@ -14,3 +14,13 @@ export const DEVOIRS_ACTIFS = false;
  * et 'cle' sinon : seuls les textes qui parlent de devoirs ont besoin d'une variante.
  */
 export const CONTEXTE_DEVOIRS = DEVOIRS_ACTIFS ? undefined : 'sansDevoirs';
+
+/**
+ * Partie de quiz ouverte depuis l'application (scan du QR projeté, onglet Activités). Décision du
+ * chef de projet, le 11 octobre : tant que les quiz ne comptent pas dans la note, la partie s'ouvre
+ * dans une vue navigateur, comme Wooclap, ce qui allège l'application. Le lecteur natif
+ * (mobile/src/app/quiz.jsx) reste dans le code : il bloque les captures d'écran et signale les
+ * sorties de l'application, utiles le jour où des devoirs notés (QCM) reviennent. Passer à true
+ * pour le rallumer.
+ */
+export const QUIZ_DANS_L_APPLICATION = false;

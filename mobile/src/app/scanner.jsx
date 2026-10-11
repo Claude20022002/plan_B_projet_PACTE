@@ -8,11 +8,13 @@ import Ecran, { Message } from '../board/Ecran';
 import { planner } from '../api/client';
 import { chargerConfigQuiz, chargerPartiesQuiz } from '../api/donnees';
 import { origineDe, partieDuPin, pinScanne } from '../quiz/scan';
+import { ouvrirPartie as ouvrirLaPartie } from '../quiz/ouvrir';
+import { QUIZ_DANS_L_APPLICATION } from '../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
 
 /**
  * Scan du QR affiché par l'enseignant. Appel (I1) : la présence est enregistrée aussitôt. Quiz :
- * la partie s'ouvre si elle est lancée dans l'une de mes séances (quiz/scan.js). Un seul envoi par
+ * la partie s'ouvre si elle est lancée dans l'une de mes séances (quiz/scan.js, quiz/ouvrir.js). Un seul envoi par
  * code lu ; en cas d'erreur (code expiré, autre groupe), l'étudiant peut scanner de nouveau.
  */
 export default function Scanner() {
@@ -41,7 +43,11 @@ export default function Scanner() {
       return;
     }
     partieOuverte.current = true;
-    router.replace({ pathname: '/quiz', params: { url: partie.url, id: String(partie.id), titre: partie.titre } });
+    await ouvrirLaPartie({ router, partie, couleurs, remplacer: true });
+    // Vue navigateur : le scanner se ferme derrière elle (au retour, l'étudiant retrouve l'application)
+    if (QUIZ_DANS_L_APPLICATION) return;
+    if (router.canGoBack()) router.back();
+    else router.replace('/');
   };
 
   const lu = async ({ data }) => {

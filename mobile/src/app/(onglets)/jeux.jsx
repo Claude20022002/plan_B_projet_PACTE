@@ -9,6 +9,7 @@ import { chargerActivites, chargerHistoriqueQuiz, choisirAvatar } from '../../ap
 import ChoixPersonnage from '../../jeux/ChoixPersonnage';
 import Personnage from '../../jeux/Personnage';
 import Scene from '../../jeux/Scene';
+import { ouvrirPartie } from '../../quiz/ouvrir';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
@@ -69,9 +70,9 @@ export default function Jeux() {
   const jeux = [...new Map(modules.flatMap((m) => m.jeux).map((j) => [j.code, j])).values()];
   const total = jeux.reduce((somme, j) => ({ points: somme.points + j.progression.points, reussis: somme.reussis + j.progression.reussis }), { points: 0, reussis: 0 });
   const rien = donnees && !donnees.erreur && !modules.some((m) => m.quiz.length || devoirsDe(m).length || m.jeux.length);
-  // La partie se joue dans l'application (écran /quiz, joueur natif) ; un quiz n'apparaît que
-  // lorsqu'un enseignant lance une partie dans une séance de l'étudiant
-  const ouvrir = (p) => router.push({ pathname: '/quiz', params: { url: p.url, id: String(p.id), titre: p.titre } });
+  // Vue navigateur ou lecteur natif selon QUIZ_DANS_L_APPLICATION (quiz/ouvrir.js) ; un quiz
+  // n'apparaît que lorsqu'un enseignant lance une partie dans une séance de l'étudiant
+  const ouvrir = (p) => ouvrirPartie({ router, partie: p, couleurs });
   const historique = donnees?.historique ?? [];
   const dateCourte = (iso) => new Date(iso).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
