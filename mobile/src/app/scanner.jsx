@@ -9,6 +9,7 @@ import { planner } from '../api/client';
 import { chargerConfigQuiz, chargerPartiesQuiz } from '../api/donnees';
 import { origineDe, partieDuPin, pinScanne } from '../quiz/scan';
 import { ouvrirPartie as ouvrirLaPartie } from '../quiz/ouvrir';
+import { proposerChangement } from '../telephone/etat';
 import { QUIZ_DANS_L_APPLICATION } from '../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
 
@@ -64,7 +65,7 @@ export default function Scanner() {
       const s = r.seance;
       setResultat({ ok: true, texte: t(r.deja ? 'app.appel.deja' : 'app.appel.ok'), detail: [s.cours, `${s.heure_debut}–${s.heure_fin}`, s.salle].filter(Boolean).join(' · ') });
     } catch (e) {
-      setResultat({ ok: false, texte: e?.message || t('app.appel.erreur') });
+      setResultat({ ok: false, texte: e?.message || t('app.appel.erreur'), changement: proposerChangement(e) });
     } finally {
       enCours.current = false;
     }
@@ -105,6 +106,12 @@ export default function Scanner() {
         >
           <Text style={styles.boutonTexte}>{t(resultat.ok ? 'app.commun.fermer' : 'app.appel.recommencer')}</Text>
         </Pressable>
+        {/* Refus « compte lié à un autre téléphone » (R-10) : déclarer le nouveau sans chercher dans le Compte */}
+        {resultat.changement ? (
+          <Pressable onPress={() => router.replace('/telephone')} style={({ pressed }) => [styles.lien, pressed && { opacity: 0.7 }]} accessibilityRole="button">
+            <Text style={styles.lienTexte}>{t('app.appel.changeTelephone')}</Text>
+          </Pressable>
+        ) : null}
       </View>
     );
   } else {
@@ -131,6 +138,8 @@ const useStyles = creerStyles((t) => ({
   texte: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 15, textAlign: 'center', lineHeight: 22 },
   bouton: { minHeight: CIBLE_TACTILE, paddingHorizontal: 20, justifyContent: 'center', borderRadius: t.rayons.sm, backgroundColor: t.couleurs.cadre },
   boutonTexte: { color: t.couleurs.surCadre, fontFamily: t.polices.texteGras, fontSize: 15 },
+  lien: { minHeight: CIBLE_TACTILE, paddingHorizontal: 12, justifyContent: 'center' },
+  lienTexte: { color: t.couleurs.lettre, fontFamily: t.polices.texteGras, fontSize: 15, textDecorationLine: 'underline' },
   viseur: { position: 'absolute', alignSelf: 'center', top: '22%', width: 240, height: 240, borderWidth: 3, borderColor: '#FFFFFF', borderRadius: 16 },
   consigne: { position: 'absolute', bottom: 48, left: 24, right: 24, textAlign: 'center', color: '#FFFFFF', fontFamily: t.polices.texteGras, fontSize: 16, textShadowColor: 'rgba(0,0,0,0.8)', textShadowRadius: 6 },
 }));
