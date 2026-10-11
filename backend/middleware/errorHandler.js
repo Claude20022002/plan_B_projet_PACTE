@@ -12,7 +12,8 @@ export const detailErreur = (err) => (process.env.NODE_ENV === "production" ? un
  * Middleware de gestion globale des erreurs
  * Doit être placé en dernier dans le fichier server.js
  */
-export const errorHandler = (err, req, res, next) => {
+// Quatre paramètres : c'est à leur nombre qu'Express reconnaît un gestionnaire d'erreurs
+export const errorHandler = (err, req, res, _next) => {
     let error = { ...err };
     error.message = err.message;
 
@@ -21,7 +22,6 @@ export const errorHandler = (err, req, res, next) => {
 
     // Erreur Sequelize - Validation
     if (err.name === "SequelizeValidationError") {
-        const message = err.errors.map((e) => e.message).join(", ");
         error = {
             message: "Erreur de validation",
             errors: err.errors.map((e) => ({
@@ -34,7 +34,6 @@ export const errorHandler = (err, req, res, next) => {
 
     // Erreur Sequelize - Contrainte unique
     if (err.name === "SequelizeUniqueConstraintError") {
-        const message = err.errors.map((e) => e.message).join(", ");
         error = {
             message: "Erreur de contrainte unique",
             error: "Une ressource avec ces valeurs existe déjà",

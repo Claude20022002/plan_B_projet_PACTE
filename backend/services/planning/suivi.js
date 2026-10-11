@@ -10,7 +10,6 @@ import {
     Filiere,
     Groupe,
     Periode,
-    RetourSeance,
     Salle,
     Users,
 } from "../../models/index.js";

@@ -57,7 +57,7 @@ const demiDe = (creneau) => (minutes(creneau.heure_debut) < APRES_MIDI ? "matin"
 /** Intitulé de la classe : « 2ème année du cycle Ingénieur d'Etat en … » et « 4A | IIIA (S7) ». */
 const intitules = (groupe, periode) => {
     const filiere = groupe.filiere;
-    const annee = groupe.annee ?? Number(String(groupe.niveau).match(/\d/)?.[0]) ?? null;
+    const annee = groupe.annee ?? (Number(String(groupe.niveau).match(/\d/)?.[0]) || null);
     const anneeCycle = annee && filiere?.premiere_annee_cycle ? annee - filiere.premiere_annee_cycle + 1 : annee;
     const semestre = annee && periode ? (periode.code === "S1" ? 2 * annee - 1 : 2 * annee) : null;
     return {

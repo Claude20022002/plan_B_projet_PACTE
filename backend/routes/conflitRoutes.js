@@ -1,5 +1,4 @@
 import express from "express";
-import { Op } from "sequelize";
 import { Conflit, ConflitAffectation, Affectation } from "../models/index.js";
 import { authenticateToken, requireAdmin } from "../middleware/index.js";
 import { detailErreur } from "../middleware/errorHandler.js";

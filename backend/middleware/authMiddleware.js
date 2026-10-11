@@ -166,7 +166,7 @@ export const optionalAuth = async (req, res, next) => {
             if (!erreur) req.jetonVerifie = token;
         }
         next();
-    } catch (error) {
+    } catch {
         // En cas d'erreur, on continue sans authentification
         next();
     }
