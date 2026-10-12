@@ -8,6 +8,8 @@ Rédigé le 11 octobre 2026. Il remplace `prompt-video-motion-design.md` (vidéo
 - **La scène 7 ne dit plus « Bientôt »** : elle présente les formes d'un quiz (en direct, avec un schéma, avec un extrait vidéo). Les deux dernières restent des maquettes ; la règle « des écrans réels, sauf une scène annoncée » ne s'applique donc plus à cette scène.
 - **Une scène de plus : la bibliothèque de jeux pédagogiques** (scène 8), « par module, inspirés de ceux qui existent déjà ». Elle montre le seul jeu d'aujourd'hui, Terminal Linux.
 
+- **Corrections du 13 octobre** : une seule promesse (« Votre emploi du temps accessible en un geste. »), une action à la dernière image, un vrai QR dans le scanner, plus de code sur l'écran du quiz, les téléphones à l'heure de l'histoire (13 h 32 à 15 h 20).
+
 `video/README.md` donne le tableau des douze scènes et ce qui sépare encore le montage de ce script.
 
 ## 1. Ce qui change

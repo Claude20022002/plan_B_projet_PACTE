@@ -4,17 +4,19 @@ import { Embleme } from "../components/Embleme";
 import { FlapText } from "../components/Flap";
 import { Line } from "../components/Frames";
 import { fadeUp, useEnter, usePortrait } from "../components/motion";
-import { C } from "../theme";
+import { C, FONT_TITLE } from "../theme";
 
 /**
  * 9 · 38–42 s : l'emblème se réassemble en accéléré, le nom et les supports (web, iPhone, Android)
  * basculent en volets ;
  * dernière seconde immobile pour enchaîner sur la première slide.
  */
-export const S9Fin: React.FC<{ phrase?: string }> = ({ phrase: texte = "L'école, à l'heure." }) => {
+export const S9Fin: React.FC<{ phrase?: string; action?: string }> = ({ phrase: texte = "L'école, à l'heure.", action }) => {
   const portrait = usePortrait();
   const cadre = useEnter(0, 12);
   const phrase = useEnter(46);
+  // L'action arrive quand les volets ont fini de tourner
+  const appel = useEnter(104);
 
   return (
     <AbsoluteFill style={{ background: C.bg, alignItems: "center", justifyContent: "center" }}>
@@ -40,6 +42,11 @@ export const S9Fin: React.FC<{ phrase?: string }> = ({ phrase: texte = "L'école
         ) : (
           <FlapText text="WEB · IPHONE · ANDROID" start={54} fontSize={50} stagger={1} flip={4} hiddenBefore />
         )}
+        {action ? (
+          <div style={{ ...fadeUp(appel), padding: portrait ? "16px 34px" : "12px 30px", borderRadius: 6, background: C.navy, color: "#FFFFFF", fontFamily: FONT_TITLE, fontWeight: 700, fontSize: portrait ? 46 : 42, letterSpacing: "0.06em", textTransform: "uppercase", textAlign: "center", maxWidth: portrait ? 900 : 1500 }}>
+            {action}
+          </div>
+        ) : null}
       </div>
     </AbsoluteFill>
   );

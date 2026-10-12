@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { Line, PhoneFrame, Screen } from "../components/Frames";
+import { Heure, Line, PhoneFrame, Screen } from "../components/Frames";
 import { fadeUp, useEnter } from "../components/motion";
 import { BEAT, C } from "../theme";
 import { phoneGeometry } from "./S3Convergence";
@@ -35,10 +35,14 @@ export const M9Bibliotheque: React.FC<{ duree: number }> = ({ duree }) => {
         </Line>
       </div>
       <PhoneFrame screenHeight={SCREEN_H} style={{ left: gauche, top, opacity: supports, transform: `translateY(${(1 - supports) * 120}px)` }}>
-        <Screen src="captures/mobile-39-supports-module.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 20%" duration={duree} />
+        <Screen src="captures/mobile-39-supports-module.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 20%" duration={duree}>
+          <Heure texte="14:45" />
+        </Screen>
       </PhoneFrame>
       <PhoneFrame screenHeight={SCREEN_H} style={{ left: gauche + phoneW + GAP, top, opacity: espaces, transform: `translateY(${(1 - espaces) * 120}px)` }}>
-        <Screen src="captures/app-07-espaces.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1]} duration={duree} />
+        <Screen src="captures/app-07-espaces.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1]} duration={duree}>
+          <Heure texte="14:45" fond="#000b2c" />
+        </Screen>
       </PhoneFrame>
     </AbsoluteFill>
   );

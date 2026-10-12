@@ -25,6 +25,8 @@ const EcranDeSalle: React.FC<{ largeur: number; chrono: number; recues: number; 
   <div style={{ width: largeur, height: (largeur * 9) / 16, borderRadius: RADIUS, overflow: "hidden", boxShadow: `${SHADOW}, 0 0 0 1px ${C.rule}`, position: "relative" }}>
     <div style={{ position: "absolute", left: 0, top: 0, width: 1920, height: 1080, transform: `scale(${largeur / 1920})`, transformOrigin: "0 0", fontFamily: FONT_TITLE, fontWeight: 700, color: C.ink }}>
       <Img src={staticFile("captures/maquette-quiz-projecteur-illustration.png")} style={{ width: 1920, height: 1080, display: "block" }} />
+      {/* Le « CODE 482 913 » de la maquette est recouvert : le quiz se rejoint depuis la séance, sans code */}
+      <div style={{ position: "absolute", left: 1580, top: 10, width: 320, height: 76, background: "#001861" }} />
       {/* Chrono : l'intérieur du cercle est recouvert, le chiffre redessiné à la même place */}
       <div style={{ position: "absolute", left: 64, top: 523, width: 104, height: 104, borderRadius: 52, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 56 }}>{chrono}</div>
       {/* Compteur de réponses */}
