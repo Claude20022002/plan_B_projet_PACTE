@@ -1,6 +1,6 @@
 # Script de la vidéo qui vend (lot V-2)
 
-Rédigé le 13 octobre 2026. Il succède à `script-video-motion-design.md` (lot V-1), qui reste la référence du montage actuel (`video/out/matinee-ecole.mp4`, 1 min 15). Rien de ce script n'est encore monté.
+Rédigé le 13 octobre 2026. Il succède à `script-video-motion-design.md` (lot V-1), qui reste la référence du montage actuel (`video/out/matinee-ecole.mp4`, 1 min 15). La vidéo A, « Direction », est montée depuis le 13 octobre (`video/out/direction.mp4`, 60 s) ; ses écarts avec ce script sont dans `video/README.md`. La vidéo B et les formats courts ne le sont pas.
 
 **Statut : à valider par le chef de projet.** Les points à trancher sont au § 9.
 

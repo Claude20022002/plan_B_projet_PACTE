@@ -13,6 +13,37 @@ Vidéo motion design de **62 s** qui ouvre la présentation (voir `../discours-3
 | `out/carrousel/hestim-planner-carrousel.pdf` | carrousel LinkedIn, 10 pages 1080 × 1350 (`npm run carrousel`) |
 | `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 10), avec sa propre bande-son, pour les réseaux sociaux |
 
+## « Direction » (lot V-2, premier montage du 13 octobre 2026)
+
+La vidéo pour ceux qui décident et paient, d'après `../script-video-vendeur.md` (§ 5) : une promesse, trois preuves, ce que l'école y gagne, une action. Composition `Direction` (`src/Direction.tsx`).
+
+| Fichier | Format | Commande |
+| --- | --- | --- |
+| `out/direction.mp4` | 1920 × 1080, 60 s (120 temps) | `npm run render:direction` |
+
+| # | Début | Plan | Titre à l'écran | Fichier | Image |
+| --- | --- | --- | --- | --- | --- |
+| 1 | 0:00 | Le panneau « Prochains départs · Campus » | Tout le campus, sur un écran. | `D1PlanSite.tsx` | `admin-01` (13 octobre) |
+| 2 | 0:04 | Six outils éparpillés | 6 outils qui ne se parlent pas. | `S2Outils.tsx` | animation |
+| 3 | 0:10 | Le téléphone, puis la séance en cours en grand | Chaque étudiant sait où aller. | `D3Etudiant.tsx` | `app-01` (11 octobre) |
+| 4 | 0:15 | Cours reporté | Prévenu à la seconde, sur son téléphone. | `S5Alerte.tsx` | `app-01`, bannière dessinée |
+| 5 | 0:20 | L'appel projeté et le scanner | L'appel en une minute. | `M5Appel.tsx` | `prof-05` (13 octobre), caméra redessinée |
+| 6 | 0:32 | Le quiz en direct | Un quiz lancé depuis la séance. | `M6Quiz.tsx` | **maquette** de l'écran de la salle |
+| 7 | 0:40 | Le classement de la classe | Le classement, aussitôt. | `D1PlanSite.tsx` | `web-21` (d'avant le 10 octobre) |
+| 8 | 0:44 | L'emploi du temps du mois d'une classe | Un mois planifié, sans conflit. | `D1PlanSite.tsx` | `admin-04b` (13 octobre) |
+| 9 | 0:49 | Les heures du mois par enseignant | Chaque heure faite est comptée. | `D1PlanSite.tsx` | `admin-05b` (13 octobre) |
+| 10 | 0:54 | L'emblème, la promesse, l'action | Demandez une démonstration · planner.hestim.ma | `S9Fin.tsx` | animation |
+
+**Écarts avec le script.**
+
+- **Plan 9** : le script disait « Les heures faites, prêtes pour la paie. ». La capture du jour affiche « à vérifier » sur chaque ligne (aucun appel n'est validé dans la base de captures) : le titre dit donc seulement que les heures sont comptées.
+- **Plans 2 et 4** : les textes sont ceux des scènes existantes, pas ceux du script.
+- **Titres à 104 px**, et non 130 : à 130 px, un titre de six mots ne tient plus sous un écran qui occupe les deux tiers de l'image.
+- **Pas de voix off, pas de plan réel de la salle, pas de doigt à l'image** sauf dans le quiz.
+- **`planner.hestim.ma` est une adresse fictive**, à remplacer avant toute diffusion.
+- **« En une minute » et « sans conflit » ne sont pas mesurés** : vrais sur le jeu de démonstration seulement.
+- Sur les écrans du site, le menu de gauche est hors cadre ; le titre de la page est rogné en fin de zoom au plan 9.
+
 ## « Une journée à l'école » (lot V-1, septième montage du 13 octobre 2026)
 
 Le script suivant, pour une vidéo plus courte et tournée vers un public à la fois, est `../script-video-vendeur.md` (lot V-2, pas encore monté).
