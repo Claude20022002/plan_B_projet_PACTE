@@ -26,6 +26,7 @@ import { EventRepeat, QrCode2 } from '@mui/icons-material';
 import { useNavigate } from 'react-router-dom';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import { affectationAPI, demandeReportAPI } from '../services/api';
+import { fetchAll } from '../utils/fetchAll';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
@@ -65,8 +66,8 @@ export default function MesAffectations() {
 
     const loadAffectations = async () => {
         try {
-            const data = await affectationAPI.getByEnseignant(user.id_user, { limit: 1000 });
-            setAffectations(data.data || []);
+            // Toutes les pages : le serveur en rend au plus 100 séances à la fois
+            setAffectations(await fetchAll((p) => affectationAPI.getByEnseignant(user.id_user, p)));
         } catch {
             setError(t('mesSeances.erreurChargement'));
         } finally {

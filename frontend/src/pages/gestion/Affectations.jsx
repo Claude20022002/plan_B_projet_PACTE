@@ -32,8 +32,7 @@ import { useTheme } from '@mui/material/styles';
 import { Add, Edit, Delete, Visibility, Download, AutoAwesome } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI, imprevuAPI } from '../../services/api';
-import { exportToExcelLazy } from '../../utils/lazyExports';
-import { COLS_AFFECTATIONS } from '../../utils/exportColumns';
+import { exporterToutesLesSeances } from '../../utils/exportSeances';
 import { useAuth } from '../../contexts/AuthContext';
 import { useConfirmation } from '../../contexts/ConfirmationContext';
 import { useTranslation } from 'react-i18next';
@@ -275,8 +274,7 @@ export default function Affectations() {
 
     const handleExport = async () => {
         try {
-            const data = await affectationAPI.getAll({ page: 1, limit: 10000 });
-            await exportToExcelLazy(data.data || [], COLS_AFFECTATIONS, 'Affectations', 'Affectations');
+            await exporterToutesLesSeances();
         } catch { setError('Erreur lors de l\'export'); }
     };
 

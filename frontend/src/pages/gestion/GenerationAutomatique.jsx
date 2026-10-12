@@ -26,6 +26,7 @@ import { PlayArrow, Stop } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
+import AvertissementsGeneration from '../../components/planning/AvertissementsGeneration';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { calendrierAPI, filiereAPI, generationAutomatiqueAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
@@ -213,22 +214,10 @@ function Rapport({ rapport }) {
     const { t, i18n } = useTranslation();
     const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
     const incomplets = rapport.enseignements.filter((e) => !e.complet);
-    const avertissements = rapport.avertissements ?? [];
 
     return (
         <Stack spacing={2.5}>
-            {avertissements.length > 0 && (
-                <Box sx={{ borderLeft: '3px solid', borderColor: 'warning.main', pl: 1.5 }}>
-                    <Typography variant="subtitle2" sx={{ mb: 0.5 }}>
-                        {t('gen.report.warningsTitle')}
-                    </Typography>
-                    {avertissements.map((a) => (
-                        <Typography key={a.id_user} variant="body2" color="text.secondary">
-                            {t('gen.report.notEnoughAvailability', { name: a.enseignant, sessions: a.seances, free: a.creneaux_libres })}
-                        </Typography>
-                    ))}
-                </Box>
-            )}
+            <AvertissementsGeneration avertissements={rapport.avertissements ?? []} nombre={nombre} />
             <Stack direction="row" spacing={3} flexWrap="wrap" useFlexGap>
                 <Chiffre libelle={t('gen.report.created')} valeur={rapport.seances_creees} />
                 <Chiffre libelle={t('gen.report.teachings')} valeur={rapport.enseignements.length} />
