@@ -2,6 +2,29 @@
 
 Avancement, demandes au groupe A et questions au chef de projet. Une entrée par session, la plus récente en haut.
 
+## 12 octobre 2026 (session menée pour le groupe B à la demande du chef de projet)
+
+### Lots faits, après les décisions du chef de projet
+
+| Lot | Branche | Résultat |
+|---|---|---|
+| Listes complètes | `b/listes-completes` (PR 16) | `getTous()` sur les API paginées ; Conflits, Étudiants, Calendrier, Salles, tableau de l'enseignant et Réservations chargent tout |
+| A-5, site | `b/a5-messages` | `messageDe()` dans `services/api.js` : message du format commun, et le premier champ en cause pour une validation ou un doublon |
+| R-11 et R-12 | `b/r11-r12-ecrans` (partie de `b/b8-creer-quiz`) | Heures du mois : avertissement des séances de vacataires retenues hors de l'export. Suivi : onglet « Usage du mois » (`components/suivi/UsageDuMois.jsx`) avec l'export du relevé |
+| R-8 | `b/r8-promesse` | L'accroche de l'accueil devient « Votre emploi du temps accessible en un geste » (et en anglais) |
+| B-7, parcours | `b/b7-parcours` (contient `b/b8-creer-quiz` et `b/listes-completes`) | Parcours `cours.spec.cjs`, `calendrier.spec.cjs`, `affectations.spec.cjs` : le découpage peut commencer sous ce filet |
+
+**Trouvé par le parcours des séances** : les listes du formulaire « Planifier une séance » n'avaient que 10 éléments (chargées sans limite, le serveur en rend 10 par défaut). Corrigé (`getTous()` sur les cours, créneaux et enseignants). Au passage : chaque liste du formulaire est reliée à son libellé, et les boutons Modifier et Supprimer d'une séance ont un nom (lecteurs d'écran).
+
+**Vérifié** : 15 parcours sur 15 sur `b/b7-parcours` ; lint 0 erreur ; 19 tests unitaires ; build. L'onglet « Usage du mois » essayé dans un navigateur sur une fusion de test avec les branches du groupe A (`a/r12-compteurs`, `a/r11-export-retenu`).
+
+**Parcours et données partagées** : tous les parcours partagent la même base. Le parcours du calendrier ajoute les fériés de **2025-2026**, pas de 2026-2027 : les fériés de 2026-2027 (le 11 janvier 2027) bloquaient la date du parcours des reports.
+
+### Reste
+
+- **B-7, le découpage** de `Cours.jsx` (662 lignes), `Calendrier.jsx` (660) et `Affectations.jsx` (611), maintenant que les parcours existent.
+- Rien d'autre sans décision.
+
 ## 11 octobre 2026, nuit (session menée pour le groupe B à la demande du chef de projet)
 
 ### Point de départ
