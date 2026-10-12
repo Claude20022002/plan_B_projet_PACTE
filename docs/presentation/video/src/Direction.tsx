@@ -26,7 +26,7 @@ const ADRESSE = "planner.hestim.ma";
 type Scene = { rendu: (duree: number) => React.ReactNode; repere?: string };
 const SCENES: Record<string, Scene> = {
   campus: {
-    rendu: (duree) => <D1PlanSite capture="captures/admin-01-tableau.png" titre="Tout le campus, sur un écran." zoom={[1.15, 1.2]} origine="100% 18%" duree={duree} />,
+    rendu: (duree) => <D1PlanSite capture="captures/admin-01-tableau.png" titre="Tout le campus, sur un écran." zoom={[1.15, 1.2]} origine="100% 0%" duree={duree} />,
     repere: "Lundi, 13 h 40 · La scolarité",
   },
   outils: { rendu: () => <S2Outils />, repere: "Hier" },
@@ -43,7 +43,7 @@ const SCENES: Record<string, Scene> = {
     repere: "La scolarité",
   },
   heures: {
-    rendu: (duree) => <D1PlanSite capture="captures/admin-05b-heures-du-mois.png" titre="Les heures, prêtes pour la paie." zoom={[1.2, 1.3]} origine="83% 22%" duree={duree} />,
+    rendu: (duree) => <D1PlanSite capture="captures/admin-05b-heures-du-mois.png" titre="Chaque heure faite est comptée." zoom={[1.2, 1.3]} origine="83% 0%" duree={duree} />,
     repere: "La scolarité",
   },
   fin: { rendu: () => <S9Fin phrase={PROMESSE} action={ACTION} adresse={ADRESSE} /> },
