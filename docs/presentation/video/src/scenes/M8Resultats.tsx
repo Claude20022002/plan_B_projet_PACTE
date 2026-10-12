@@ -2,13 +2,12 @@ import React from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
 import { BrowserFrame, BROWSER_BAR, Line, PhoneFrame, Screen } from "../components/Frames";
 import { fadeUp, ramp, useEnter } from "../components/motion";
-import { BEAT, C } from "../theme";
+import { C } from "../theme";
 import { phoneGeometry } from "./S3Convergence";
 
 const BW = 1080;
 const SCREEN_H = 780;
 const GAP = 70;
-const TELEPHONE = 6 * BEAT; // le résultat de l'étudiante arrive à 3 s
 
 /**
  * 8 · les résultats du quiz : le classement de la classe chez le professeur, puis le résultat de
@@ -17,6 +16,7 @@ const TELEPHONE = 6 * BEAT; // le résultat de l'étudiante arrive à 3 s
  */
 export const M8Resultats: React.FC<{ duree: number }> = ({ duree }) => {
   const frame = useCurrentFrame();
+  const TELEPHONE = Math.round(duree * 0.42); // le résultat de l'étudiante arrive avant la mi-scène
   const cadre = useEnter(4, 26);
   const tel = useEnter(TELEPHONE, 26);
   const l1 = useEnter(6);

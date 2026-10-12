@@ -5,6 +5,7 @@ import { M3Etudiante } from "./scenes/M3Etudiante";
 import { M5Appel } from "./scenes/M5Appel";
 import { M6Quiz } from "./scenes/M6Quiz";
 import { M7Formes } from "./scenes/M7Formes";
+import { M7Jeux } from "./scenes/M7Jeux";
 import { M8Resultats } from "./scenes/M8Resultats";
 import { M9Bibliotheque } from "./scenes/M9Bibliotheque";
 import { M10Admin } from "./scenes/M10Admin";
@@ -16,9 +17,9 @@ import { BEAT, C } from "./theme";
 
 /**
  * « Une journée à l'école » : la vidéo du lot V-1 (../script-video-motion-design.md). Une seule
- * histoire, de l'étudiante à l'administration, sans les devoirs. Quatrième montage, du 12 octobre
- * 2026 : les onze scènes du script, resserrées (1 min 25 au lieu de 1 min 54) ; la scène « Bientôt »
- * est devenue « les formes d'un quiz ». Les captures app-*, prof-* et admin-* datent du
+ * histoire, de l'étudiante à l'administration, sans les devoirs. Cinquième montage, du 12 octobre
+ * 2026 : douze scènes en 1 min 15 (la durée décidée pour la salle) ; la scène « Bientôt » est devenue
+ * « les formes d'un quiz », et la bibliothèque de jeux pédagogiques a sa scène. Les captures app-*, prof-* et admin-* datent du
  * 11 octobre (un lundi à 13 h 40, d'où les heures de l'après-midi). Le quiz reste sur maquettes.
  * Les anciennes compositions de Root.tsx ne changent pas.
  */
@@ -35,6 +36,7 @@ const SCENES: Record<string, Scene> = {
   appel: { rendu: (duree) => <M5Appel duree={duree} />, repere: "13 h 35 · La salle" },
   quiz: { rendu: (duree) => <M6Quiz duree={duree} />, repere: "14 h 10 · Le quiz" },
   formes: { rendu: (duree) => <M7Formes duree={duree} />, repere: "14 h 10 · Le quiz" },
+  jeux: { rendu: (duree) => <M7Jeux duree={duree} />, repere: "Entre les cours · Les jeux" },
   resultats: { rendu: (duree) => <M8Resultats duree={duree} />, repere: "14 h 30 · Les résultats" },
   supports: { rendu: (duree) => <M9Bibliotheque duree={duree} />, repere: "Le soir · La Bibliothèque" },
   admin: { rendu: (duree) => <M10Admin duree={duree} />, repere: "Toute la journée · L'administration" },
@@ -45,23 +47,25 @@ const SCENES: Record<string, Scene> = {
 export const TEMPS_SALLE = {
   title: 10 * BEAT, //       0:00  l'emblème, le nom, la promesse
   outils: 12 * BEAT, //      0:05  six outils éparpillés
-  etudiante: 18 * BEAT, //   0:11  le tableau du jour, le mois, le détail d'un cours
-  alerte: 12 * BEAT, //      0:20  cours reporté
-  appel: 22 * BEAT, //       0:26  l'appel projeté et le scanner
-  quiz: 28 * BEAT, //        0:37  le quiz en direct : la salle et le téléphone
-  formes: 16 * BEAT, //      0:51  les formes d'un quiz : en direct, avec un schéma, avec une vidéo
-  resultats: 12 * BEAT, //   0:59  le classement de la classe, le résultat de l'étudiante
-  supports: 14 * BEAT, //    1:05  la Bibliothèque, une seule connexion
-  admin: 16 * BEAT, //       1:12  l'emploi du temps du mois, les heures faites
-  fin: 10 * BEAT, //         1:20  la promesse, web · iPhone · Android
+  etudiante: 14 * BEAT, //   0:11  le tableau du jour, le mois, le détail d'un cours
+  alerte: 10 * BEAT, //      0:18  cours reporté
+  appel: 18 * BEAT, //       0:23  l'appel projeté et le scanner
+  quiz: 22 * BEAT, //        0:32  le quiz en direct : la salle et le téléphone
+  formes: 10 * BEAT, //      0:43  les formes d'un quiz : en direct, avec un schéma, avec une vidéo
+  jeux: 10 * BEAT, //        0:48  la bibliothèque de jeux pédagogiques
+  resultats: 10 * BEAT, //   0:53  le classement de la classe, le résultat de l'étudiante
+  supports: 12 * BEAT, //    0:58  la Bibliothèque, une seule connexion
+  admin: 12 * BEAT, //       1:04  l'emploi du temps du mois, les heures faites
+  fin: 10 * BEAT, //         1:10  la promesse, web · iPhone · Android
 } as const;
 
 // Montage pour les réseaux (9:16, 40 s) : l'accroche d'abord
 export const TEMPS_RESEAUX = {
-  appel: 14 * BEAT, //       0:00
-  quiz: 20 * BEAT, //        0:07
-  formes: 14 * BEAT, //      0:17
-  alerte: 12 * BEAT, //      0:24
+  appel: 12 * BEAT, //       0:00
+  quiz: 18 * BEAT, //        0:06
+  formes: 10 * BEAT, //      0:15
+  jeux: 10 * BEAT, //        0:20
+  alerte: 10 * BEAT, //      0:25
   etudiante: 10 * BEAT, //   0:30
   fin: 10 * BEAT, //         0:35
 } as const;

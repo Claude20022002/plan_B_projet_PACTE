@@ -7,7 +7,7 @@ import { phoneGeometry } from "./S3Convergence";
 
 const SCREEN_H = 800;
 const GAP = 56;
-const ESPACES = 5 * BEAT; // le second téléphone arrive à 2,5 s
+const ESPACES = 4 * BEAT; // le second téléphone arrive à 2 s
 
 /**
  * 9 · la Bibliothèque et la connexion unique. À gauche, les supports d'un cours ; à droite, le
