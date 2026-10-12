@@ -1,5 +1,6 @@
 import { Notification } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { sansNotificationsDeDevoirs } from "../services/quiz/devoirsActifs.js";
 
 /**
  * Contrôleur des notifications.
@@ -49,7 +50,7 @@ const HISTORIQUE_MAX = 200;
 // 🔍 Notifications d'un utilisateur (propriétaire ou admin, contrôlé par la route)
 export const getNotificationsByUser = asyncHandler(async (req, res) => {
     const notifications = await Notification.findAll({
-        where: { id_user: req.params.id_user },
+        where: sansNotificationsDeDevoirs({ id_user: req.params.id_user }),
         order: [["date_envoi", "DESC"], ["id_notification", "DESC"]],
         limit: HISTORIQUE_MAX,
     });
@@ -59,7 +60,7 @@ export const getNotificationsByUser = asyncHandler(async (req, res) => {
 // 🔍 Notifications non lues d'un utilisateur (propriétaire ou admin, contrôlé par la route)
 export const getNotificationsNonLuesByUser = asyncHandler(async (req, res) => {
     const notifications = await Notification.findAll({
-        where: { id_user: req.params.id_user, lue: false },
+        where: sansNotificationsDeDevoirs({ id_user: req.params.id_user, lue: false }),
         order: [["date_envoi", "DESC"]],
     });
     res.json(notifications);
