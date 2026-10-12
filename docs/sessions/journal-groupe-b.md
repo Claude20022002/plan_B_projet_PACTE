@@ -2,6 +2,53 @@
 
 Avancement, demandes au groupe A et questions au chef de projet. Une entrée par session, la plus récente en haut.
 
+## 11 octobre 2026, nuit (session menée pour le groupe B à la demande du chef de projet)
+
+### Point de départ
+
+- Tout est dans `main` (`33c25f8`). Chaque lot part de `main`, dans `../planner-b`. Rien n'a été poussé.
+
+### Petites demandes (branche `b/petites-demandes`)
+
+**Fait.**
+- **Plafond hebdomadaire** : le rapport de génération l'affiche (« au moins 9 h par semaine pour un plafond de 8 h »). Les avertissements passent dans `components/planning/AvertissementsGeneration.jsx` (la page avait 435 lignes) ; une sorte inconnue n'est pas affichée.
+- **Campus préféré d'un groupe** : champ du formulaire, dans `components/groupes/GroupeDialog.jsx` (la page avait 384 lignes). Essayé dans un navigateur : une promotion créée garde son campus.
+- **Listes tronquées à 100** : emplois du temps d'un groupe et d'un enseignant, « Mes séances » et l'export Excel des séances chargent toutes les pages ; « tout le campus » charge une fenêtre (semaine passée et huit semaines à venir) et le dit sous les filtres.
+- **Bouton de scan en double** retiré de la barre de titre du Tableau (application).
+- **Journal de sécurité** : les trois événements du changement de téléphone sont traduits.
+- **Site du quiz** (dépôt `../ClassQuiz`, branche `b/joueur-sans-game-id`) : la statistique « Joined Game » ne cite plus `game_id`, que le joueur ne reçoit plus.
+
+**Reste** : d'autres pages demandent encore plus de 100 éléments et n'en reçoivent que 100 : `Conflits.jsx` (1 000), `Etudiants.jsx` (1 000 et 10 000), `EnseignantDashboard.jsx` (200), `Calendrier.jsx` et `Salles.jsx` (100, tronqué au-delà).
+
+### R-10 et R-9 (branche `b/r10-telephone`)
+
+**Fait.**
+- **Application** : écran « Mon téléphone » (`app/telephone.jsx`), ouvert depuis le Compte ou depuis le scanner après un refus 409 ; l'étudiant déclare le téléphone en main et voit l'état de sa demande. Logique pure testée (`src/telephone/etat.js`).
+- **Site** : les demandes en attente en haut des signalements de présence, à accepter ou à refuser avec un motif (`components/presences/DemandesTelephone.jsx`).
+- **« À traiter »** (R-9) : le panneau passe dans `components/dashboard/FileATraiter.jsx` et montre aussi les changements de téléphone et les séances du mois sans appel validé (R-11), qui mènent aux heures du mois.
+- **Parcours** `telephone.spec.cjs` : déclaré depuis l'application, accepté depuis « À traiter ».
+
+**Pas vérifié** : l'écran de l'application sur un vrai téléphone ou dans l'émulateur (seulement l'export Android, qui compile).
+
+### IA-5 et la fin de B-8 (branche `b/b8-creer-quiz`, qui contient `b/ia5-mes-quiz` et `b/r10-telephone`)
+
+**Fait.**
+- **Éditeur « Mes quiz »** : le panneau « Mes quiz » de la page Activités liste aussi les quiz du service de quiz ; « Modifier » ouvre l'éditeur, qui reprend celui des questions générées (titre, énoncés, réponses, choix unique ou multiple, questions ajoutées ou retirées). Un quiz avec d'autres types se modifie dans le service de quiz.
+- **Faux services des parcours** : `fauxServiceQuiz.mjs` (routes signées, signature vérifiée comme le vrai) et `fausseIa.mjs` (fournisseur « compatible OpenAI »), démarrés par `serveur.mjs` (ports 5199 et 5198).
+- **Parcours** `mesQuiz.spec.cjs` (modifier un quiz) et `creerQuiz.spec.cjs` (« Créer un quiz » : classe, sujet, génération, relecture, création), qui termine B-8.
+
+**Vérifié** sur les trois branches réunies : lint du site 0 erreur (32 avertissements connus), 19 tests unitaires, build ; application 0 erreur, 40 tests ; **12 parcours sur 12**.
+
+**Ordre de fusion** : `b/petites-demandes`, `b/r10-telephone`, puis `b/b8-creer-quiz` (le conflit de `donnees.mjs` entre les deux dernières est déjà résolu dans celle-ci).
+
+### Demandes au groupe A
+
+- **« Mes classes » et « Créer un quiz » ne sont pas d'accord** : le sélecteur propose aussi une classe qui ne vient que de l'emploi du temps (une séance sans enseignement), mais la génération la refuse (« Ce groupe ne suit pas ce module », `services/ia/quiz.js`, l. 164, par `inscritsDuModule`). Trouvé par le parcours, dont la classe n'avait pas d'enseignement. Soit la génération accepte les classes de « Mes classes », soit « Mes classes » ne les propose pas dans ce dialogue.
+
+### Questions au chef de projet
+
+- Rien de nouveau : B-7 et R-8 attendent toujours (compte rendu du 13, § 5).
+
 ## 11 octobre 2026, au soir
 
 ### Point de départ
