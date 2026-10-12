@@ -72,11 +72,11 @@ export default function Conflits() {
         try {
             // Charger TOUS les conflits + total affectations en parallèle
             const [cRes, aRes] = await Promise.all([
-                conflitAPI.getAll({ limit: 1000 }),
+                conflitAPI.getTous(),
                 affectationAPI.getAll({ limit: 1 }),
             ]);
 
-            const all  = cRes.data || [];
+            const all  = cRes || [];
             const nAff = aRes.pagination?.total ?? 0;
             const nTotal = all.length;
 

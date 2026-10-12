@@ -2,6 +2,7 @@
  * Service API centralisé pour communiquer avec le backend
  */
 import { typeDuFichier } from '../utils/fichiers';
+import { fetchAll } from '../utils/fetchAll';
 
 // Même origine que le frontend : proxy Vite en dev, nginx en production
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
@@ -178,6 +179,8 @@ export const userAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/users${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(userAPI.getAll, params),
     getById: (id) => request(`/users/${id}`),
     create: (data) => request('/users', { method: 'POST', body: data }),
     update: (id, data) => request(`/users/${id}`, { method: 'PUT', body: data }),
@@ -216,6 +219,8 @@ export const etudiantAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/etudiants${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(etudiantAPI.getAll, params),
     getById: (id) => request(`/etudiants/${id}`),
     create: (data) => request('/etudiants', { method: 'POST', body: data }),
     update: (id, data) => request(`/etudiants/${id}`, { method: 'PUT', body: data }),
@@ -230,6 +235,8 @@ export const filiereAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/filieres${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(filiereAPI.getAll, params),
     getById: (id) => request(`/filieres/${id}`),
     create: (data) => request('/filieres', { method: 'POST', body: data }),
     update: (id, data) => request(`/filieres/${id}`, { method: 'PUT', body: data }),
@@ -245,6 +252,8 @@ export const groupeAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/groupes${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(groupeAPI.getAll, params),
     getById: (id) => request(`/groupes/${id}`),
     create: (data) => request('/groupes', { method: 'POST', body: data }),
     update: (id, data) => request(`/groupes/${id}`, { method: 'PUT', body: data }),
@@ -262,6 +271,8 @@ export const salleAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/salles${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(salleAPI.getAll, params),
     getById: (id) => request(`/salles/${id}`),
     getDisponibles: (params) => {
         const query = new URLSearchParams(params).toString();
@@ -403,6 +414,8 @@ export const conflitAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/conflits${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(conflitAPI.getAll, params),
     getById: (id) => request(`/conflits/${id}`),
     getNonResolus: (params) => {
         const query = new URLSearchParams(params).toString();
