@@ -13,13 +13,13 @@ Vidéo motion design de **62 s** qui ouvre la présentation (voir `../discours-3
 | `out/carrousel/hestim-planner-carrousel.pdf` | carrousel LinkedIn, 10 pages 1080 × 1350 (`npm run carrousel`) |
 | `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 10), avec sa propre bande-son, pour les réseaux sociaux |
 
-## « Une journée à l'école » (lot V-1, quatrième montage du 12 octobre 2026)
+## « Une journée à l'école » (lot V-1, cinquième montage du 12 octobre 2026)
 
-La vidéo décrite dans `../script-video-motion-design.md` : une seule histoire, sans les devoirs, en onze scènes resserrées. Les compositions ci-dessus ne changent pas ; celles-ci s'y ajoutent (`src/Matinee.tsx`). Les montages précédents sont gardés dans `out/old_videos/` (le deuxième, 1 min 35 ; le troisième, 1 min 54, avec la scène « Bientôt »).
+La vidéo décrite dans `../script-video-motion-design.md` : une seule histoire, sans les devoirs, en douze scènes et 1 min 15, la durée décidée pour la salle. Les compositions ci-dessus ne changent pas ; celles-ci s'y ajoutent (`src/Matinee.tsx`). Les montages précédents sont gardés dans `out/old_videos/` (du deuxième au quatrième).
 
 | Fichier | Format | Commande |
 | --- | --- | --- |
-| `out/matinee-ecole.mp4` | 1920 × 1080, 1 min 25 (170 temps) | `npm run render:matinee` |
+| `out/matinee-ecole.mp4` | 1920 × 1080, 1 min 15 (150 temps) | `npm run render:matinee` |
 | `out/matinee-ecole-9x16.mp4` | 1080 × 1920, 40 s (80 temps), l'accroche d'abord | `npm run render:matinee-reseaux` |
 
 | # | Début | Scène | Fichier | Images |
@@ -27,14 +27,15 @@ La vidéo décrite dans `../script-video-motion-design.md` : une seule histoire,
 | 1 | 0:00 | L'emblème, le nom, la promesse | `S1Intro.tsx` | animation |
 | 2 | 0:05 | Six outils éparpillés | `S2Outils.tsx` | animation |
 | 3 | 0:11 | L'étudiante : le tableau du jour, le mois, le détail d'un cours | `M3Etudiante.tsx` | captures du 11 octobre (`app-*`) |
-| 4 | 0:20 | Cours reporté | `S5Alerte.tsx` | capture du 11 octobre, bannière dessinée |
-| 5 | 0:26 | L'appel projeté et le scanner | `M5Appel.tsx` | captures du 11 octobre (`prof-05`, `app-04`) ; les noms sont découverts un à un |
-| 6 | 0:37 | Le quiz en direct : la salle et le téléphone | `M6Quiz.tsx` | **maquette** de l'écran de la salle, téléphone redessiné |
-| 7 | 0:51 | Un quiz, plusieurs formes : en direct, avec un schéma, avec un extrait vidéo | `M7Formes.tsx` | téléphone redessiné, deux **maquettes** |
-| 8 | 0:59 | Les résultats : le classement de la classe, puis celui de l'étudiante | `M8Resultats.tsx` | `web-21`, `mobile-13` (d'avant le 10 octobre) |
-| 9 | 1:05 | Une seule connexion : les supports d'un cours, puis le panneau des espaces | `M9Bibliotheque.tsx` | `mobile-39` (d'avant le 10 octobre), `app-07` (11 octobre) |
-| 10 | 1:12 | L'administration : l'emploi du temps du mois, puis les heures faites | `M10Admin.tsx` | `web-09`, `admin-05b` (11 octobre) |
-| 11 | 1:20 | La promesse, web · iPhone · Android | `S9Fin.tsx` | animation |
+| 4 | 0:18 | Cours reporté | `S5Alerte.tsx` | capture du 11 octobre, bannière dessinée |
+| 5 | 0:23 | L'appel projeté et le scanner | `M5Appel.tsx` | captures du 11 octobre (`prof-05`, `app-04`) ; les noms sont découverts un à un |
+| 6 | 0:32 | Le quiz en direct : la salle et le téléphone | `M6Quiz.tsx` | **maquette** de l'écran de la salle, téléphone redessiné |
+| 7 | 0:43 | Un quiz, plusieurs formes : en direct, avec un schéma, avec un extrait vidéo | `M7Formes.tsx` | téléphone redessiné, deux **maquettes** |
+| 8 | 0:48 | Une bibliothèque de jeux pédagogiques | `M7Jeux.tsx` | `mobile-25` (Terminal Linux, d'avant le 10 octobre) |
+| 9 | 0:53 | Les résultats : le classement de la classe, puis celui de l'étudiante | `M8Resultats.tsx` | `web-21`, `mobile-13` (d'avant le 10 octobre) |
+| 10 | 0:58 | Une seule connexion : les supports d'un cours, puis le panneau des espaces | `M9Bibliotheque.tsx` | `mobile-39` (d'avant le 10 octobre), `app-07` (11 octobre) |
+| 11 | 1:04 | L'administration : l'emploi du temps du mois, puis les heures faites | `M10Admin.tsx` | `web-09`, `admin-05b` (11 octobre) |
+| 12 | 1:10 | La promesse, web · iPhone · Android | `S9Fin.tsx` | animation |
 
 Les captures du 11 octobre viennent de la plateforme de démonstration, un lundi à 13 h 40 : l'histoire se passe donc l'après-midi (13 h 20, 13 h 35, 14 h 10, 14 h 30), et non le matin comme dans le script.
 
@@ -42,7 +43,8 @@ Les captures du 11 octobre viennent de la plateforme de démonstration, un lundi
 
 - **Le quiz reste sur maquettes** (`../maquettes/`) : le moteur de quiz n'était pas branché pendant les captures.
 - **La scène 7 montre deux formes qui n'existent pas encore** (décision du 12 octobre : le mot « Bientôt » est retiré). L'application n'affiche ni image ni vidéo dans une question ; à l'écran, rien ne les distingue plus du quiz en direct, qui existe.
-- **Trois captures datent d'avant le 10 octobre** (`web-21`, `mobile-13`, `mobile-39`) : aucune n'affiche un ancien nom à l'image, mais elles sont à refaire après R-7. `web-21` est cadrée sur la fenêtre du classement, parce que le reste de la page s'appelle encore « Jeux ».
+- **La bibliothèque de jeux n'a qu'un jeu** (scène 8) : Terminal Linux. La scène annonce une bibliothèque « par module, inspirée des jeux qui existent déjà » ; c'est une décision du 12 octobre (`../../sessions/compte-rendu-2026-10-14.md`, § 6), pas encore un écran.
+- **Quatre captures datent d'avant le 10 octobre** (`web-21`, `mobile-13`, `mobile-39`, `mobile-25`) : aucune n'affiche un ancien nom à l'image, mais elles sont à refaire après R-7. `web-21` est cadrée sur la fenêtre du classement, parce que le reste de la page s'appelle encore « Jeux ».
 - **La scène 10 ne montre pas la séance du matin « faite »** : elle montre les heures faites par enseignant sur le mois.
 - **Les heures des téléphones ne se suivent pas** (2:03, 10:10, 10:34, 1:48) : ce sont celles des captures.
 - **Le scanner** montre la scène factice de la caméra de l'émulateur, pas un QR.
