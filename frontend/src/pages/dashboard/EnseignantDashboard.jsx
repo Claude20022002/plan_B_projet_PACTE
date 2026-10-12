@@ -6,6 +6,7 @@ import { EventRepeat, FactCheck, Groups, SportsEsports, ViewWeek } from '@mui/ic
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { affectationAPI, demandeReportAPI, notificationAPI, quizAPI } from '../../services/api';
+import { fetchAll } from '../../utils/fetchAll';
 import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
 import ChangesList from '../../design-system/board/ChangesList';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
@@ -108,17 +109,17 @@ export default function EnseignantDashboard() {
     setError(false);
     try {
       const [affectations, demandes, notifications] = await Promise.all([
-        affectationAPI.getByEnseignant(user.id_user, {
+        // Toutes les pages de l'horizon : le serveur en rend au plus 100 séances à la fois
+        fetchAll((p) => affectationAPI.getByEnseignant(user.id_user, p), {
           date_from: toLocalISODate(),
           date_to: toLocalISODate(new Date(Date.now() + HORIZON_DAYS * 86400000)),
-          limit: 200,
         }),
         demandeReportAPI.getByEnseignant(user.id_user).catch(() => []),
         notificationAPI.getNonLues(user.id_user).catch(() => []),
       ]);
       // Planifiée = confirmée pour l'enseignant (aucune confirmation à donner, sauf demande de report)
       setSessions(
-        (affectations?.data || [])
+        (affectations || [])
           .map(toBoardSession)
           .map((s) => (s.status === 'planifie' ? { ...s, status: 'confirme' } : s))
           .sort(byStart)

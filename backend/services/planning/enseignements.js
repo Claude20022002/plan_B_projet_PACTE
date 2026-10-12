@@ -22,10 +22,12 @@ const origineDuGroupe = (groupe) => groupe.EnseignementGroupe?.id_composante_ori
 /** Clé « composante|groupe » : un groupe mutualisé reste couvert au titre de son propre module. */
 const cleCouverture = (enseignement, groupe) => `${origineDuGroupe(groupe) ?? enseignement.id_composante}|${groupe.id_groupe}`;
 
+/** Erreur métier : message affichable, statut HTTP et code facultatif (format commun, utils/erreurs.js). */
 export class ErreurMetier extends Error {
-    constructor(message, status = 400) {
+    constructor(message, status = 400, code = undefined) {
         super(message);
         this.status = status;
+        this.code = code;
     }
 }
 

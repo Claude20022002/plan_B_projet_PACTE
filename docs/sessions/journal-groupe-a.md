@@ -2,6 +2,40 @@
 
 Avancement, demandes au groupe B et questions au chef de projet. Une entrée par session, la plus récente en haut.
 
+## 11 octobre 2026, nuit : décisions du chef de projet appliquées
+
+### Décisions reçues
+
+| N° | Décision | Suite |
+|---|---|---|
+| 1 | Compte actif : au moins une connexion dans le mois | R-12 fait |
+| 2 | Feu vert pour le format d'erreur commun | A-5 fait |
+| 3 | B-7 : les parcours d'abord | Faits (groupe B) |
+| 4 | Une séance « à vérifier » est retenue hors de l'export de la paie jusqu'au visa | Fait. **Reste à décider** : une séance écartée sort-elle aussi des heures réalisées du *module* (elle sort déjà de celles de l'enseignant) ? |
+| 5 | Une classe de l'emploi du temps de l'enseignant suffit pour un quiz | Fait |
+| 6 | Sauvegardes | Question posée : de quelles données il s'agit (réponse donnée en séance : base de Planner, documents de la bibliothèque, base et images du quiz) |
+| 7 | La promesse : « Votre emploi du temps accessible en un geste » | Accueil (groupe B) et README |
+| 8, 9 | Relevé mensuel et fournisseur d'IA | Plus tard |
+| 10 | Réécriture de l'historique | Question posée : pourquoi (réponse : `docs/users.xlsx` et l'audio restent lisibles dans l'historique) |
+| 11 | Notifications de devoirs déjà envoyées : masquées pour le moment | Fait |
+| 12 | `POST /api/users/import` : gardée (import Excel) | Rien à faire |
+| 13 | Dépôt du quiz : une branche par lot, un dossier par groupe | Écrit dans `FORK.md` (branche `a/fork-regles-equipes` du fork) |
+| 14 | Vidéo pour la salle : 1 min 15 | À appliquer au montage (lot V-1, chef de projet) ; le montage actuel fait 1 min 35 |
+
+### Lots faits (une branche chacun, partie de `main`)
+
+| Lot | Branche | Résultat | Vérifié |
+|---|---|---|---|
+| R-11 | `a/r11-export-retenu` | L'export de la paie n'emporte plus que les séances à l'appel validé ou confirmées | `suivi.test.js` 9 sur 9, avec les deux tzdata |
+| Quiz par l'IA | `a/quiz-classe-du-prof` | Une classe de l'emploi du temps de l'enseignant est acceptée ; droits dans `services/ia/droits.js` | `quizIa.test.js` ; le nouveau test échoue avec l'ancienne règle |
+| Devoirs | `a/notifs-devoirs-masquees` | « Nouveau devoir » et « Devoir corrigé » masqués des listes de notifications tant que les devoirs sont fermés ; rien n'est supprimé | `notifications.test.js` |
+| R-12 | `a/r12-compteurs` | `GET /api/statistiques/usage?mois=` et `.csv` : comptes actifs par rôle (sessions et journal de sécurité), appels validés, quiz joués, devoirs rendus | `usage.test.js` |
+| A-5 | `a/a5-format-erreur` | `{ message, code, violations? }` partout où passent le gestionnaire global et `planification()` ; quatre contrôleurs qui recopiaient le répondeur des règles y passent aussi ; `docs/api/ERREURS.md` | Serveur entier : 188 unitaires, 373 intégration ; 9 parcours |
+
+Limite d'A-5 : les anciens contrôleurs qui répondent eux-mêmes gardent `{ message, error }` jusqu'à A-6.
+
+Limite de R-12 : les bornes du mois sont en UTC (l'heure de l'école depuis le 20 septembre 2026) ; un mois antérieur à cette date est décalé d'une heure à ses bords.
+
 ## 11 octobre 2026, soir : A-10
 
 Branche `a/a10-documentation`, partie de `main` après la fusion n° 5.

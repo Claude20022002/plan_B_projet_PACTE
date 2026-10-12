@@ -8,12 +8,14 @@ import { ds } from '../../design-system/tokens';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
 import CreerQuizDialog from '../quiz/creation/CreerQuizDialog';
 import RelireQuiz from '../quiz/creation/RelireQuiz';
+import ListeMesQuiz from '../quiz/mesQuiz/ListeMesQuiz';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
 
 /**
  * « Mes quiz » de l'enseignant (page Activités) : « Créer un quiz » en un geste (générer, ou le
  * faire soi-même dans l'éditeur du service de quiz), puis les quiz générés, à relire avant leur
- * création. Le panneau n'apparaît que si l'une des deux façons de créer est installée.
+ * création, puis tous les quiz du service de quiz, modifiables depuis Planner (IA-5). Le panneau
+ * n'apparaît que si l'une des deux façons de créer est installée.
  * @param {{ preselection?: { id_cours, id_groupe }, donnerEnDevoir?: (generation) => void, ouvrirGeneration?: boolean }} props
  *   ouvrirGeneration : « Créer un quiz » s'ouvre d'emblée (arrivée depuis « Mes classes »)
  */
@@ -88,6 +90,7 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
             </Capitales>
           </LignePanneau>
         ))}
+        <ListeMesQuiz />
       </Panneau>
       <CreerQuizDialog
         ouvert={creer}

@@ -96,6 +96,7 @@ export default function Tableau() {
     chargerSupports([codeVedette]).then(setSupports).catch(() => setSupports({}));
   }, [codeVedette]);
 
+  // Le scan a son onglet, au milieu de la barre du bas : la barre de titre ne garde que les alertes
   const cloche = (
     <Pressable onPress={() => router.push('/alertes')} style={styles.cloche} accessibilityRole="button" accessibilityLabel={`${t('app.tableau.alertes')} : ${alertes.length}`}>
       <MaterialCommunityIcons name="bell-outline" size={24} color={couleurs.surCadre} />

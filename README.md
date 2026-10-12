@@ -1,5 +1,7 @@
 # HESTIM Planner
 
+**Votre emploi du temps accessible en un geste.**
+
 Plateforme de planification des cours et de réservation des salles de l'école HESTIM
 (Casablanca, campus Gandhi et Stendhal), avec génération automatique des emplois du temps,
 application mobile pour les étudiants et bibliothèque de ressources partagée.

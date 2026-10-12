@@ -236,11 +236,12 @@ export const champCsv = (v) => {
 
 /**
  * Export CSV (séparateur « ; ») des heures réalisées par les vacataires sur un mois, une ligne par
- * séance. Les séances écartées par l'administration n'y sont pas ; la colonne « etat » dit pour
- * chaque autre si elle reste à vérifier (R-11).
+ * séance. N'y partent que les séances retenues pour la paie (R-11) : appel validé, ou confirmées
+ * par l'administration. Une séance écartée n'y est pas ; une séance à vérifier attend le visa
+ * (décision du chef de projet, 11 octobre 2026 : ne jamais payer une séance qui n'a pas eu lieu).
  */
 export const exportVacataires = async ({ mois }) => {
-    const seances = (await realiseesDuMois(mois)).filter((s) => s.paie.compte);
+    const seances = (await realiseesDuMois(mois)).filter((s) => s.paie.compte && s.paie.etat !== "a_verifier");
     const vacataires = await Enseignant.findAll({ where: { statut: "vacataire" }, include: [{ model: Users, as: "user", attributes: ["nom", "prenom", "email"] }] });
     const parId = new Map(vacataires.map((v) => [v.id_user, v]));
     const lignes = [["nom", "prenom", "email", "entreprise", "date", "debut", "fin", "heures", "module", "groupe", "salle", "etat"]];

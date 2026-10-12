@@ -157,3 +157,12 @@ export const chargerProgressionJeu = (code) => planner(`/jeux/${encodeURICompone
  */
 export const enregistrerReussite = (code, idDefi, indices, commandes) =>
   planner(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices, commandes } });
+
+/** Dernière demande de changement de téléphone (R-10) : { id, statut, motif, demandee_le, decidee_le }, ou null. */
+export const chargerDemandeTelephone = async () => (await planner('/presences/telephone/demande'))?.data ?? null;
+
+/**
+ * Déclare le téléphone en main comme nouveau téléphone pour l'appel : l'identifiant d'installation
+ * part dans l'en-tête X-Appareil, comme pour le scan. Rend la demande enregistrée.
+ */
+export const demanderChangementTelephone = (motif) => planner('/presences/telephone/demande', { method: 'POST', body: motif ? { motif } : {} });

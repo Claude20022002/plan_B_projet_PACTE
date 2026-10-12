@@ -13,6 +13,8 @@ import {
 } from "../controllers/statistiquesController.js";
 import { authenticateToken, requireAdmin } from "../middleware/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { planification } from "../utils/erreursPlanning.js";
+import { usageCsv, usageDuMois } from "../services/statistiques/usage.js";
 
 const router = express.Router();
 
@@ -86,5 +88,14 @@ router.get(
 
 // 📊 GET /api/statistiques/kpis - KPIs consolidés (occupation salles, heures enseignant/étudiant, créneaux, conflits, durée, filières)
 router.get("/kpis", authenticateToken, requireAdmin, asyncHandler(getKPIs));
+
+// 📊 GET /api/statistiques/usage?mois=AAAA-MM - Compteurs d'usage du mois (R-12) ; .csv pour l'export
+router.get("/usage", planification(async (req, res) => res.json(await usageDuMois({ mois: req.query.mois }))));
+router.get("/usage.csv", planification(async (req, res) => {
+    const csv = await usageCsv({ mois: req.query.mois });
+    res.setHeader("Content-Type", "text/csv; charset=utf-8");
+    res.setHeader("Content-Disposition", `attachment; filename="usage-${req.query.mois}.csv"`);
+    res.send(csv);
+}));
 
 export default router;

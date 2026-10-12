@@ -86,12 +86,12 @@ export default function Salles() {
         setLoading(true);
         try {
             const [listeSalles, listeCampus, referentiel, parametres] = await Promise.all([
-                salleAPI.getAll({ limit: 100 }),
+                salleAPI.getTous(),
                 campusAPI.getAll(),
                 salleAPI.getReferentiel(),
                 parametrePlanningAPI.getAll().catch(() => null),
             ]);
-            setSalles(listeSalles.data || []);
+            setSalles(listeSalles);
             setCampus(listeCampus || []);
             setTypes(referentiel.types_salle || []);
             if (parametres?.ratio_capacite_examen) setRatioExamen(parametres.ratio_capacite_examen.valeur);
