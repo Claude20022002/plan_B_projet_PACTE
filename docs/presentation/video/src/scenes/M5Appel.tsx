@@ -64,7 +64,7 @@ const VueCamera: React.FC = () => {
  * 5 · l'appel par QR code : l'écran projeté par le professeur, et le scanner de l'application.
  * `duree` (en images) cale l'arrivée des présents : la scène sert au montage long et au court.
  */
-export const M5Appel: React.FC<{ duree: number }> = ({ duree }) => {
+export const M5Appel: React.FC<{ duree: number; titre?: string; sous?: string }> = ({ duree, titre, sous: sousTitre }) => {
   const frame = useCurrentFrame();
   const portrait = usePortrait();
   const entree = useEnter(6, 28);
@@ -81,9 +81,9 @@ export const M5Appel: React.FC<{ duree: number }> = ({ duree }) => {
   );
   const phrases = (taille: number, sous: number) => (
     <>
-      <Line size={taille} style={fadeUp(l1)}>L'appel en une minute : chacun scanne, son nom apparaît.</Line>
+      <Line size={taille} style={fadeUp(l1)}>{titre ?? "L'appel en une minute : chacun scanne, son nom apparaît."}</Line>
       <Line size={sous} weight={400} color={C.inkSoft} style={{ ...fadeUp(l2), marginTop: 14 }}>
-        Le code change toutes les 30 secondes : impossible de le passer à un absent.
+        {sousTitre ?? "Le code change toutes les 30 secondes : impossible de le passer à un absent."}
       </Line>
     </>
   );
@@ -115,7 +115,8 @@ export const M5Appel: React.FC<{ duree: number }> = ({ duree }) => {
       <PhoneFrame screenHeight={screenH} style={{ left: gauche + largeur + 64, top: haut + (hauteur - phoneH) / 2, opacity: entree, transform: `translateX(${(1 - entree) * 200}px)` }}>
         {telephone}
       </PhoneFrame>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 840, textAlign: "center" }}>{phrases(50, 38)}</div>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 840, textAlign: "center" }}>{/* Un titre donné par le montage est court : il s'écrit en grand */}
+        {titre ? phrases(96, 50) : phrases(50, 38)}</div>
     </AbsoluteFill>
   );
 };

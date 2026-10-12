@@ -12,6 +12,7 @@ import { S8Chiffres } from "./scenes/S8Chiffres";
 import { S9Fin } from "./scenes/S9Fin";
 import { BEAT, C, FPS } from "./theme";
 import { Carrousel, HAUTEUR, LARGEUR, NB_PAGES } from "./carrousel/Carrousel";
+import { Direction, TEMPS_DIRECTION } from "./Direction";
 import { Matinee, MatineeReseaux, TEMPS_RESEAUX, TEMPS_SALLE, dureeTotale } from "./Matinee";
 
 // ─── Timings (en temps à 120 BPM ; 1 temps = 15 images = 0,5 s) ─────────────────────────
@@ -121,6 +122,7 @@ export const RemotionRoot: React.FC = () => (
     />
     {/* « Une matinée à l'école » (lot V-1) : montage pour la salle, puis pour les réseaux */}
     <Composition id="Matinee" component={Matinee} durationInFrames={dureeTotale(TEMPS_SALLE)} fps={FPS} width={1920} height={1080} />
+    <Composition id="Direction" component={Direction} durationInFrames={dureeTotale(TEMPS_DIRECTION)} fps={FPS} width={1920} height={1080} />
     <Composition id="MatineeReseaux" component={MatineeReseaux} durationInFrames={dureeTotale(TEMPS_RESEAUX)} fps={FPS} width={1080} height={1920} />
     {/* Carrousel LinkedIn : une image par page (npm run carrousel) */}
     <Composition id="Carrousel" component={Carrousel} durationInFrames={NB_PAGES} fps={FPS} width={LARGEUR} height={HAUTEUR} />
