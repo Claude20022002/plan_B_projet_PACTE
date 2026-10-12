@@ -33,8 +33,8 @@ export const M10Admin: React.FC<{ duree: number }> = ({ duree }) => {
         </Line>
       </div>
       <BrowserFrame width={BW} style={{ left: 780, top: (1080 - hauteur) / 2, opacity: cadre, transform: `translateX(${(1 - cadre) * 300}px)` }}>
-        <Screen src="captures/web-09-edt-mensuel.png" srcW={1920} srcH={1080} width={BW} origin="55% 40%" zoom={[1, 1.08]} duration={duree} />
-        <Screen src="captures/admin-05b-heures-du-mois.png" srcW={1920} srcH={1080} width={BW} origin="60% 30%" zoom={[1, 1.08]} duration={duree} opacity={ramp(frame, suivi, suivi + 10)} />
+        <Screen src="captures/web-09-edt-mensuel.png" srcW={1920} srcH={1080} width={BW} origin="0% 20%" zoom={[1, 1.04]} duration={duree} />
+        <Screen src="captures/admin-05b-heures-du-mois.png" srcW={1920} srcH={1080} width={BW} origin="0% 20%" zoom={[1, 1.04]} duration={duree} opacity={ramp(frame, suivi, suivi + 10)} />
       </BrowserFrame>
     </AbsoluteFill>
   );

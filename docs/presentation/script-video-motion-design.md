@@ -2,7 +2,7 @@
 
 Rédigé le 11 octobre 2026. Il remplace `prompt-video-motion-design.md` (vidéo de 42 s) et le tableau des scènes de `video/README.md` (62 s) comme référence de ce que la vidéo raconte. Il suit `docs/plans/remarques-par-profil.md`, § 6.
 
-**Statut : à valider par le chef de projet.** Rien n'est encore monté : les scènes de `video/src/scenes/` sont celles de l'ancienne vidéo.
+**Statut : à valider par le chef de projet.** Un montage des onze scènes existe depuis le 12 octobre 2026 (`video/out/matinee-ecole.mp4`, 1 min 54, et `matinee-ecole-9x16.mp4`, 45 s) ; `video/README.md` dit ce qui le sépare encore de ce script.
 
 ## 1. Ce qui change
 

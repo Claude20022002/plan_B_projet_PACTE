@@ -38,7 +38,7 @@ export const M9Bibliotheque: React.FC<{ duree: number }> = ({ duree }) => {
         <Screen src="captures/mobile-39-supports-module.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 20%" duration={duree} />
       </PhoneFrame>
       <PhoneFrame screenHeight={SCREEN_H} style={{ left: gauche + phoneW + GAP, top, opacity: espaces, transform: `translateY(${(1 - espaces) * 120}px)` }}>
-        <Screen src="captures/app-07-espaces.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.1]} origin="50% 92%" duration={duree} />
+        <Screen src="captures/app-07-espaces.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1]} duration={duree} />
       </PhoneFrame>
     </AbsoluteFill>
   );
