@@ -1,7 +1,7 @@
 import sequelize from "../../config/db.js";
 import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { CoursComposante, Enseignement, EnseignementEnseignant, GenerationQuiz, JournalSecurite } from "../../models/index.js";
+import { Affectation, CoursComposante, Enseignement, EnseignementEnseignant, GenerationQuiz, JournalSecurite } from "../../models/index.js";
 import { definirClientIa } from "../../services/ia/client.js";
 import { attendreGenerations, purgerGenerations } from "../../services/ia/quiz.js";
 import { PDF, creerPdf, phrase } from "../helpers/supports.js";
@@ -108,6 +108,24 @@ describe("Disponibilité et droits", () => {
         const res = await deposer(await loginAs(prof), { id_groupe: fixture.autreGroupe.id_groupe });
         expect(res.status).toBe(400);
         expect(res.body.message).toMatch(/ne suit pas ce module/);
+    });
+
+    test("une classe de son emploi du temps, sans enseignement, est acceptée", async () => {
+        // Une séance posée à la main avec l'autre groupe : l'enseignant a ce module avec cette classe
+        const seance = await Affectation.create({
+            date_seance: fixture.affectation.date_seance,
+            statut: "confirme",
+            id_cours: fixture.cours.id_cours,
+            id_groupe: fixture.autreGroupe.id_groupe,
+            id_user_enseignant: prof.id_user,
+            id_salle: fixture.salle.id_salle,
+            id_creneau: fixture.creneau.id_creneau,
+            id_user_admin: admin.id_user,
+        });
+        const res = await deposer(await loginAs(prof), { id_groupe: fixture.autreGroupe.id_groupe });
+        expect(res.status).toBe(202);
+        await attendreGenerations();
+        await seance.destroy();
     });
 
     test("fichier refusé tout de suite (type), sans génération créée ni appel à l'IA", async () => {

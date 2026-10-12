@@ -1,8 +1,7 @@
 import { Op } from "sequelize";
-import { Cours, GenerationQuiz, Groupe } from "../../models/index.js";
+import { Cours, GenerationQuiz } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
-import { mesClasses, peutViserClasse } from "../planning/mesClasses.js";
-import { inscritsDuModule, peutProposerDansModule } from "../jeux/jeux.js";
+import { contexteAutorise } from "./droits.js";
 import { journaliser } from "../journalSecurite.js";
 import { estConfigure, genererJson } from "./client.js";
 import { consigneSysteme, difficulteConnue, langueConnue, lireSujet, messageUtilisateur } from "./consigne.js";
@@ -145,26 +144,6 @@ const executer = async (generation, cours, contexte) => {
         id_user: generation.id_user,
         details: { id_generation: generation.id_generation, id_cours: generation.id_cours, statut: generation.statut, questions: valides.length, jetons: jetons.entree + jetons.sortie },
     });
-};
-
-// ── Droits ───────────────────────────────────────────────────────────────
-
-/** Module de ses services ou de son emploi du temps ; classe facultative, mais alors la sienne. */
-const contexteAutorise = async (user, idCours, idGroupe) => {
-    if (user?.role !== "enseignant") throw new ErreurMetier("Réservé aux enseignants", 403);
-    const cours = await Cours.findByPk(Number(idCours) || 0, { attributes: ["id_cours", "code_cours", "nom_cours", "id_filiere"] });
-    if (!cours) throw new ErreurMetier("Module introuvable", 404);
-    const classes = await mesClasses(user);
-    if (!(await peutProposerDansModule(user, cours)) && !classes.some((c) => c.id_cours === cours.id_cours)) {
-        throw new ErreurMetier("Vous ne pouvez générer un quiz que pour vos modules", 403);
-    }
-    let groupe = null;
-    if (idGroupe !== undefined && idGroupe !== null && idGroupe !== "") {
-        groupe = await Groupe.findByPk(Number(idGroupe) || 0);
-        if (!groupe || !(await inscritsDuModule(cours.id_cours)).groupes.includes(groupe.id_groupe)) throw new ErreurMetier("Ce groupe ne suit pas ce module", 400);
-        if (!(await peutViserClasse(user, cours, groupe.id_groupe, { classes }))) throw new ErreurMetier("Ce groupe n'est pas l'une de vos classes dans ce module", 403);
-    }
-    return { cours, groupe };
 };
 
 const depuis24h = () => new Date(Date.now() - 24 * 3600 * 1000);
