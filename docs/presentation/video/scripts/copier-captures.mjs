@@ -33,6 +33,8 @@ const fichiers = [
   "prof-01-tableau.png",
   "prof-05-appel-projection.png",
   "admin-01-tableau.png",
+  "admin-05b-heures-du-mois.png",
+  "app-07-espaces.png",
 ];
 
 let manquants = 0;
