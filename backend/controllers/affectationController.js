@@ -9,11 +9,11 @@ import {
 import { Op } from "sequelize";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
-import { ViolationsBloquantes, enregistrerSeance, notifierChangementSeance, supprimerSeance, verifierSeance } from "../services/planning/seances.js";
+import { enregistrerSeance, notifierChangementSeance, supprimerSeance, verifierSeance } from "../services/planning/seances.js";
 import { STATUTS_ACTIFS, aujourdhui } from "../services/planning/affectationRules.js";
-import { ErreurMetier } from "../services/planning/enseignements.js";
 import { notifierNouvelleAffectation } from "../utils/notificationHelper.js";
 import { pick } from "../utils/validationHelper.js";
+import { repondreErreurPlanning } from "../utils/erreursPlanning.js";
 import { appliquerRamadan } from "../services/planning/ramadan.js";
 import { etudiantAppartientAuGroupe } from "../middleware/accessMiddleware.js";
 
@@ -148,14 +148,8 @@ const lireDonnees = (body) => {
     return donnees;
 };
 
-/** 409 avec la liste des règles enfreintes, 4xx métier, sinon l'erreur remonte. */
-const repondreErreur = (res, error) => {
-    if (error instanceof ViolationsBloquantes) {
-        return res.status(409).json({ message: error.message, error: error.violations.find((v) => v.bloquant)?.message, violations: error.violations });
-    }
-    if (error instanceof ErreurMetier) return res.status(error.status).json({ message: error.message, error: error.message });
-    throw error;
-};
+// 409 avec la liste des règles enfreintes, 4xx métier, au format commun (A-5) ; sinon l'erreur remonte
+const repondreErreur = repondreErreurPlanning;
 
 const jourLisible = (affectation) => `${affectation.date_seance}${affectation.creneau ? ` à ${String(affectation.creneau.heure_debut).slice(0, 5)}` : ""}`;
 

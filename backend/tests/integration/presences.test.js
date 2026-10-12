@@ -193,7 +193,7 @@ describe("Un compte = un téléphone", () => {
     test("depuis un autre téléphone que celui du compte : refus et signalement", async () => {
         const res = await (await application(etudiantTp, TELEPHONE_C)).scanner({ code });
         expect(res.status).toBe(409);
-        expect(res.body.error).toMatch(/lié à un autre téléphone/);
+        expect(res.body.message).toMatch(/lié à un autre téléphone/);
         expect(await SignalementPresence.count({ where: { id_affectation: seance.id_affectation, id_user: etudiantTp.id_user, motif: "autre_telephone" } })).toBe(1);
         const liste = (await (await loginAs(enseignant)).get(`/api/presences/seances/${seance.id_affectation}`)).body;
         expect(liste.etudiants.find((e) => e.id_user === etudiantTp.id_user).present).toBe(false);
@@ -204,7 +204,7 @@ describe("Un compte = un téléphone", () => {
         await Appartenir.create({ id_user_etudiant: nouveau.id_user, id_groupe: fixture.groupe.id_groupe });
         const res = await (await application(nouveau, TELEPHONE_B)).scanner({ code });
         expect(res.status).toBe(409);
-        expect(res.body.error).toMatch(/compte d'un autre étudiant/);
+        expect(res.body.message).toMatch(/compte d'un autre étudiant/);
         const signalement = await SignalementPresence.findOne({ where: { id_user: nouveau.id_user, motif: "telephone_d_un_autre" } });
         expect(signalement.id_user_lie).toBe(etudiantTp.id_user);
         expect(await AppareilEtudiant.findByPk(nouveau.id_user)).toBeNull();

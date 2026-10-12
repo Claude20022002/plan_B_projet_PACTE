@@ -1,5 +1,8 @@
+import { corpsErreur } from "../utils/erreurs.js";
+
 /**
- * Middleware de gestion centralisée des erreurs
+ * Middleware de gestion centralisée des erreurs. Toutes les réponses suivent le format commun de
+ * l'API, { message, code?, violations? } (utils/erreurs.js, docs/api/ERREURS.md).
  */
 
 /**
@@ -8,85 +11,48 @@
  */
 export const detailErreur = (err) => (process.env.NODE_ENV === "production" ? undefined : err?.message);
 
+const champs = (err) => err.errors.map((e) => ({ champ: e.path, message: e.message }));
+
 /**
- * Middleware de gestion globale des erreurs
- * Doit être placé en dernier dans le fichier server.js
+ * Erreurs connues (Sequelize, jetons) : rend [statut, message, options] au format commun, ou null.
  */
-// Quatre paramètres : c'est à leur nombre qu'Express reconnaît un gestionnaire d'erreurs
+const erreurConnue = (err) => {
+    switch (err.name) {
+        case "SequelizeValidationError":
+            return [400, "Erreur de validation", { code: "VALIDATION", violations: champs(err) }];
+        case "SequelizeUniqueConstraintError":
+            return [409, "Une ressource avec ces valeurs existe déjà", { code: "DEJA_EXISTANT", violations: champs(err) }];
+        case "SequelizeForeignKeyConstraintError":
+            return [400, "La ressource référencée n'existe pas", { code: "REFERENCE_INCONNUE" }];
+        case "SequelizeDatabaseError":
+            return [500, "Une erreur s'est produite lors de l'accès à la base de données", { code: "ERREUR_BASE" }];
+        case "JsonWebTokenError":
+            return [401, "Le jeton fourni n'est pas valide", { code: "TOKEN_INVALID" }];
+        case "TokenExpiredError":
+            return [401, "Votre session a expiré, veuillez vous reconnecter", { code: "TOKEN_EXPIRED" }];
+        default:
+            return null;
+    }
+};
+
+/**
+ * Middleware de gestion globale des erreurs, placé en dernier (app.js).
+ * Quatre paramètres : c'est à leur nombre qu'Express reconnaît un gestionnaire d'erreurs.
+ */
 export const errorHandler = (err, req, res, _next) => {
-    let error = { ...err };
-    error.message = err.message;
-
-    // Log de l'erreur pour le débogage
     console.error("❌ Erreur:", err);
-
-    // Erreur Sequelize - Validation
-    if (err.name === "SequelizeValidationError") {
-        error = {
-            message: "Erreur de validation",
-            errors: err.errors.map((e) => ({
-                field: e.path,
-                message: e.message,
-            })),
-        };
-        return res.status(400).json(error);
+    const connue = erreurConnue(err);
+    if (connue) {
+        const [statut, message, options] = connue;
+        return res.status(statut).json(corpsErreur(statut, message, options));
     }
-
-    // Erreur Sequelize - Contrainte unique
-    if (err.name === "SequelizeUniqueConstraintError") {
-        error = {
-            message: "Erreur de contrainte unique",
-            error: "Une ressource avec ces valeurs existe déjà",
-            details: err.errors.map((e) => ({
-                field: e.path,
-                message: e.message,
-            })),
-        };
-        return res.status(409).json(error);
-    }
-
-    // Erreur Sequelize - Clé étrangère
-    if (err.name === "SequelizeForeignKeyConstraintError") {
-        error = {
-            message: "Erreur de référence",
-            error: "La ressource référencée n'existe pas",
-            details: detailErreur(err),
-        };
-        return res.status(400).json(error);
-    }
-
-    // Erreur Sequelize - Base de données
-    if (err.name === "SequelizeDatabaseError") {
-        error = {
-            message: "Erreur de base de données",
-            error: "Une erreur s'est produite lors de l'accès à la base de données",
-        };
-        return res.status(500).json(error);
-    }
-
-    // Erreur JWT
-    if (err.name === "JsonWebTokenError") {
-        error = {
-            message: "Token invalide",
-            error: "Le token fourni n'est pas valide",
-        };
-        return res.status(401).json(error);
-    }
-
-    if (err.name === "TokenExpiredError") {
-        error = {
-            message: "Token expiré",
-            error: "Votre session a expiré, veuillez vous reconnecter",
-        };
-        return res.status(401).json(error);
-    }
-
     // Erreur par défaut : le message d'une erreur interne (500) n'est renvoyé qu'en développement
-    const statut = error.statusCode || 500;
+    const statut = err.statusCode || err.status || 500;
     const production = process.env.NODE_ENV === "production";
-    res.status(statut).json({
-        message: statut >= 500 && production ? "Erreur serveur" : error.message || "Erreur serveur",
-        error: production ? "Une erreur s'est produite" : err.message,
+    const message = statut >= 500 && production ? "Erreur serveur" : err.message || "Erreur serveur";
+    return res.status(statut).json({
+        // Le code d'une erreur système (ECONNREFUSED…) ne sort pas : seulement celui d'une erreur prévue
+        ...corpsErreur(statut, message, { code: statut < 500 ? err.code : undefined }),
         ...(process.env.NODE_ENV === "development" && { stack: err.stack }),
     });
 };

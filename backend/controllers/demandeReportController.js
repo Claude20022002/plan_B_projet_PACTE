@@ -1,10 +1,10 @@
 import { DemandeReport, Affectation, Users, Cours, Groupe, Salle, Creneau } from "../models/index.js";
 import { notifierAdministrateurs } from "../utils/notificationHelper.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
+import { repondreErreurPlanning } from "../utils/erreursPlanning.js";
 import { pick } from "../utils/validationHelper.js";
-import { ViolationsBloquantes, enregistrerSeance, notifierChangementSeance } from "../services/planning/seances.js";
+import { enregistrerSeance, notifierChangementSeance } from "../services/planning/seances.js";
 import { jourDe } from "../services/planning/affectationRules.js";
-import { ErreurMetier } from "../services/planning/enseignements.js";
 
 /**
  * Créneau d'arrivée d'un report : celui que la demande précise, sinon le créneau de même rang
@@ -339,11 +339,8 @@ export const traiterDemandeReport = asyncHandler(async (req, res) => {
                 action: "report",
             });
         } catch (error) {
-            if (error instanceof ViolationsBloquantes) {
-                return res.status(409).json({ message: error.message, error: error.violations.find((v) => v.bloquant)?.message, violations: error.violations });
-            }
-            if (error instanceof ErreurMetier) return res.status(error.status).json({ message: error.message, error: error.message });
-            throw error;
+            // Au format commun (A-5) : 409 et règles enfreintes, 4xx métier ; sinon l'erreur remonte
+            return repondreErreurPlanning(res, error);
         }
         await demande.update({ statut_demande: nouveauStatut, id_creneau_nouveau: creneau.id_creneau });
 
