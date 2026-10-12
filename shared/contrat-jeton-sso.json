@@ -1,0 +1,18 @@
+{
+    "_": "Contrat du jeton d'accès entre HESTIM Planner (qui le signe) et StudyLib (qui le vérifie). Le même fichier existe dans les deux dépôts (StudyLib : tests/Fixtures/contrat-jeton-sso.json) ; les tests de chaque côté s'y réfèrent et comparent les deux copies quand les dépôts sont voisins. Toute évolution se fait dans les deux à la fois.",
+    "algorithme": "RS256",
+    "emetteur": "hestim-planner",
+    "audience": "studylib",
+    "obligatoires": ["sub", "sid", "email", "role"],
+    "facultatives": {
+        "prenom": "texte",
+        "nom": "texte",
+        "filiere": "texte ou null",
+        "annee": "entier ou null"
+    },
+    "roles": {
+        "etudiant": "student",
+        "enseignant": "teacher",
+        "admin": "admin"
+    }
+}
