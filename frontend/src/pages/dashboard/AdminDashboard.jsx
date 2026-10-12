@@ -1,12 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Box, Button, ButtonBase, Skeleton, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
+import { Alert, Box, Button, Skeleton, ToggleButton, ToggleButtonGroup, Typography } from '@mui/material';
 import { Add, ArrowForward } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import { affectationAPI, conflitAPI, demandeReportAPI, statistiquesAPI } from '../../services/api';
+import { affectationAPI, conflitAPI, demandeReportAPI, presenceAPI, statistiquesAPI, suiviAPI } from '../../services/api';
+import FileATraiter from '../../components/dashboard/FileATraiter';
+import { aujourdhui } from '../../../../shared/dates.js';
 import { DepartureBoard } from '../../design-system/board';
-import { byStart, findSpotlight, formatDayLabel, toBoardSession, toLocalISODate } from '../../utils/session';
+import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
 
@@ -17,88 +19,6 @@ const sectionTitleSx = {
   letterSpacing: '0.12em',
   textTransform: 'uppercase',
 };
-
-/** File « À traiter » : conflits ouverts et demandes de report en attente, du plus urgent au moins urgent */
-function QueuePanel({ conflicts, conflictsTotal, reports, loading }) {
-  const { t, i18n } = useTranslation();
-  const navigate = useNavigate();
-  const empty = !loading && conflicts.length === 0 && reports.length === 0;
-
-  const Row = ({ tone, title, detail, onClick }) => (
-    <Box component="li" sx={{ borderBottom: '1px solid', borderColor: 'divider', '&:last-of-type': { borderBottom: 0 } }}>
-      <ButtonBase onClick={onClick} sx={{ width: '100%', display: 'flex', alignItems: 'flex-start', gap: 1.5, px: 2, py: 1.5, textAlign: 'left', '&:hover': { bgcolor: 'action.hover' } }}>
-        <Box component="span" aria-hidden="true" sx={{ mt: '7px', width: 8, height: 8, borderRadius: '50%', flexShrink: 0, bgcolor: tone }} />
-        <Box sx={{ minWidth: 0, flexGrow: 1 }}>
-          <Typography sx={{ fontWeight: 600, fontSize: '0.9375rem', lineHeight: 1.35 }}>{title}</Typography>
-          <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.875rem', lineHeight: 1.45, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-            {detail}
-          </Typography>
-        </Box>
-        <ArrowForward fontSize="small" sx={{ mt: '2px', color: 'text.secondary' }} />
-      </ButtonBase>
-    </Box>
-  );
-
-  return (
-    <Box component="section" aria-labelledby="queue-title" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px`, alignSelf: 'start' }}>
-      <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography id="queue-title" component="h2" sx={sectionTitleSx}>
-          {t('admin.toHandle')}
-        </Typography>
-        {!loading && !empty && (
-          <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.875rem' }}>
-            {[
-              conflictsTotal ? t('admin.openConflicts', { count: conflictsTotal }) : null,
-              reports.length ? t('admin.pendingReports', { count: reports.length }) : null,
-            ]
-              .filter(Boolean)
-              .join(' · ')}
-          </Typography>
-        )}
-      </Box>
-
-      {loading && (
-        <Box sx={{ p: 2, display: 'grid', gap: 1.5 }}>
-          {[0, 1, 2].map((i) => (
-            <Skeleton key={i} variant="rectangular" height={44} sx={{ borderRadius: '3px' }} />
-          ))}
-        </Box>
-      )}
-
-      {empty && <Typography sx={{ px: 2, py: 2.5, color: 'text.secondary', fontSize: '0.9375rem' }}>{t('admin.nothingToHandle')}</Typography>}
-
-      {!loading && !empty && (
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, p: 0 }}>
-          {conflicts.map((c) => (
-            <Row
-              key={`c-${c.id_conflit}`}
-              tone={ds.colors.danger.text}
-              title={t(`admin.conflictType.${c.type_conflit}`, { defaultValue: c.type_conflit })}
-              detail={c.description}
-              onClick={() => navigate('/gestion/conflits')}
-            />
-          ))}
-          {reports.map((r) => (
-            <Row
-              key={`r-${r.id_demande}`}
-              tone={ds.colors.warning.text}
-              title={t('admin.reportTitle', {
-                teacher: [r.enseignant?.prenom, r.enseignant?.nom].filter(Boolean).join(' ') || '-',
-              })}
-              detail={[
-                r.affectation?.cours?.nom_cours,
-                r.nouvelle_date ? t('admin.reportTo', { date: formatDayLabel(String(r.nouvelle_date).slice(0, 10), i18n.language) }) : null,
-              ]
-                .filter(Boolean)
-                .join(' · ')}
-              onClick={() => navigate('/gestion/demandes-report')}
-            />
-          ))}
-        </Box>
-      )}
-    </Box>
-  );
-}
 
 /** Bande réglée d'indicateurs : quatre chiffres lisibles d'un coup d'œil, qui mènent aux statistiques */
 function IndicatorsStrip({ kpis, loading }) {
@@ -156,6 +76,8 @@ export default function AdminDashboard() {
   const [conflicts, setConflicts] = useState([]);
   const [conflictsTotal, setConflictsTotal] = useState(0);
   const [reports, setReports] = useState([]);
+  const [telephones, setTelephones] = useState([]);
+  const [aVerifier, setAVerifier] = useState(0);
   const [kpis, setKpis] = useState(null);
   const [building, setBuilding] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -171,7 +93,7 @@ export default function AdminDashboard() {
     if (!silent) setLoading(true);
     setError(false);
     try {
-      const [affectations, nonResolus, demandes, stats] = await Promise.all([
+      const [affectations, nonResolus, demandes, stats, telephones, visas] = await Promise.all([
         affectationAPI.getAll({
           date_from: toLocalISODate(),
           date_to: toLocalISODate(new Date(Date.now() + DAYS_AHEAD * 86400000)),
@@ -183,12 +105,17 @@ export default function AdminDashboard() {
         conflitAPI.getNonResolus({ limit: 5 }).catch(() => ({ data: [], pagination: { total: 0 } })),
         demandeReportAPI.getByStatut('en_attente').catch(() => []),
         statistiquesAPI.getKPIs().catch(() => null),
+        // R-9 : changements de téléphone en attente, séances du mois à confirmer ou écarter avant la paie
+        presenceAPI.demandesTelephone().catch(() => ({ data: [] })),
+        suiviAPI.seancesAVerifier(aujourdhui().slice(0, 7)).catch(() => null),
       ]);
       setSessions((affectations?.data || []).map(toBoardSession).sort(byStart));
       setConflicts(nonResolus?.data || []);
       setConflictsTotal(nonResolus?.pagination?.total ?? (nonResolus?.data || []).length);
       setReports((demandes?.data || demandes || []).slice(0, 5));
       setKpis(stats?.kpis || null);
+      setTelephones((telephones?.data || []).slice(0, 5));
+      setAVerifier(visas?.a_verifier ?? 0);
     } catch {
       setError(true);
     } finally {
@@ -270,7 +197,7 @@ export default function AdminDashboard() {
           />
         </Box>
         <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, alignContent: 'start' }}>
-          <QueuePanel conflicts={conflicts} conflictsTotal={conflictsTotal} reports={reports} loading={loading} />
+          <FileATraiter conflicts={conflicts} conflictsTotal={conflictsTotal} reports={reports} telephones={telephones} aVerifier={aVerifier} loading={loading} />
           <IndicatorsStrip kpis={kpis} loading={loading} />
         </Box>
       </Box>

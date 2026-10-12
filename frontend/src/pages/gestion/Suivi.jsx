@@ -23,7 +23,8 @@ export default function Suivi() {
     const { t, i18n } = useTranslation();
     const { user } = useAuth();
     const admin = user?.role === 'admin';
-    const [onglet, setOnglet] = useState(0);
+    // « ?onglet=heures » ouvre les heures du mois (lien « séances à vérifier » du tableau de bord, R-9)
+    const [onglet, setOnglet] = useState(() => (admin && new URLSearchParams(window.location.search).get('onglet') === 'heures' ? 1 : 0));
     const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
 
     return (
