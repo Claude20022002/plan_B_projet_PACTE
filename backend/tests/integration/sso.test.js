@@ -1,8 +1,10 @@
 import crypto from "crypto";
+import fs from "fs";
 import jwt from "jsonwebtoken";
 import { resetDatabase, closeDatabase, createUser, loginAs, anonymous, PASSWORD } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Appartenir, Cours, Filiere, Groupe } from "../../models/index.js";
+import { Appartenir, Cours, Filiere, Groupe, Users } from "../../models/index.js";
+import { AUDIENCES, EMETTEUR } from "../../utils/jetons.js";
 
 /**
  * Phase C1 : Planner fournisseur d'identité. Jetons RS256 vérifiables avec le JWKS, client mobile
@@ -14,6 +16,9 @@ let enseignant;
 let groupeTd;
 
 const MOBILE = { "X-Client": "mobile" };
+// Contrat du jeton : une copie ici, une dans StudyLib (dépôt voisin, absent en intégration continue)
+const CONTRAT = new URL("../../../shared/contrat-jeton-sso.json", import.meta.url);
+const COPIE_STUDYLIB = new URL("../../../../StudyLib/tests/Fixtures/contrat-jeton-sso.json", import.meta.url);
 const cookieDe = (reponse, nom) => (reponse.headers["set-cookie"] || []).find((c) => c.startsWith(`${nom}=`));
 const jetonDuCookie = (reponse) => decodeURIComponent(cookieDe(reponse, "access_token").split(";")[0].slice("access_token=".length));
 const connexionMobile = (user) => anonymous().post("/api/auth/login").set(MOBILE).send({ email: user.email, password: PASSWORD });
@@ -53,6 +58,39 @@ describe("Jetons RS256 et JWKS", () => {
         expect(charge).toMatchObject({ sub: String(etudiant.id_user), role: "etudiant", email: etudiant.email, filiere: "IIIA", groupe: "IIIA-4A", annee: 4 });
         expect(charge.aud).toEqual(["planner", "studylib"]);
         expect(charge.sid).toBeTruthy();
+    });
+
+    test("le jeton respecte le contrat partagé avec StudyLib (shared/contrat-jeton-sso.json)", async () => {
+        const contrat = JSON.parse(fs.readFileSync(CONTRAT, "utf8"));
+        expect(contrat.emetteur).toBe(EMETTEUR);
+        expect(AUDIENCES).toContain(contrat.audience);
+        // Tous les rôles de Planner ont un rôle StudyLib, et aucun autre n'est annoncé
+        expect(Object.keys(contrat.roles).sort()).toEqual([...Users.getAttributes().role.values].sort());
+
+        for (const user of [etudiant, enseignant]) {
+            const connexion = await anonymous().post("/api/auth/login").send({ email: user.email, password: PASSWORD });
+            const { header, payload } = jwt.decode(jetonDuCookie(connexion), { complete: true });
+            expect(header.alg).toBe(contrat.algorithme);
+            expect(payload.iss).toBe(contrat.emetteur);
+            expect(payload.aud).toContain(contrat.audience);
+            for (const nom of contrat.obligatoires) {
+                expect(typeof payload[nom]).toBe("string");
+                expect(payload[nom]).not.toBe("");
+            }
+            for (const [nom, type] of Object.entries(contrat.facultatives)) {
+                // Un étudiant les porte toutes ; filière et année n'existent pas pour un enseignant
+                if (user === etudiant) expect(payload).toHaveProperty(nom);
+                if (payload[nom] === undefined) continue;
+                const attendu = type.startsWith("entier") ? Number.isInteger(payload[nom]) : typeof payload[nom] === "string";
+                expect(attendu || (type.endsWith("ou null") && payload[nom] === null)).toBe(true);
+            }
+            expect(contrat.roles).toHaveProperty(payload.role);
+        }
+
+        // Dépôts voisins : les deux copies du contrat sont identiques
+        if (fs.existsSync(COPIE_STUDYLIB)) {
+            expect(JSON.parse(fs.readFileSync(COPIE_STUDYLIB, "utf8"))).toEqual(contrat);
+        }
     });
 
     test("jeton forgé refusé : HS256 signé avec la clé publique, alg none, kid inconnu", async () => {
