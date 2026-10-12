@@ -13,9 +13,11 @@ Vidéo motion design de **62 s** qui ouvre la présentation (voir `../discours-3
 | `out/carrousel/hestim-planner-carrousel.pdf` | carrousel LinkedIn, 10 pages 1080 × 1350 (`npm run carrousel`) |
 | `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 10), avec sa propre bande-son, pour les réseaux sociaux |
 
-## « Une journée à l'école » (lot V-1, sixième montage du 13 octobre 2026)
+## « Une journée à l'école » (lot V-1, septième montage du 13 octobre 2026)
 
-La vidéo décrite dans `../script-video-motion-design.md` : une seule histoire, sans les devoirs, en douze scènes et 1 min 15, la durée décidée pour la salle. Les compositions ci-dessus ne changent pas ; celles-ci s'y ajoutent (`src/Matinee.tsx`). Les montages précédents sont gardés dans `out/old_videos/` (du deuxième au cinquième).
+Le script suivant, pour une vidéo plus courte et tournée vers un public à la fois, est `../script-video-vendeur.md` (lot V-2, pas encore monté).
+
+La vidéo décrite dans `../script-video-motion-design.md` : une seule histoire, sans les devoirs, en douze scènes et 1 min 15, la durée décidée pour la salle. Les compositions ci-dessus ne changent pas ; celles-ci s'y ajoutent (`src/Matinee.tsx`). Les montages précédents sont gardés dans `out/old_videos/` (du deuxième au sixième).
 
 | Fichier | Format | Commande |
 | --- | --- | --- |
@@ -34,13 +36,14 @@ La vidéo décrite dans `../script-video-motion-design.md` : une seule histoire,
 | 8 | 0:47 | 14 h 30 | Les résultats : le classement de la classe, puis celui de l'étudiante | `M8Resultats.tsx` | `web-21`, `mobile-13` (d'avant le 10 octobre) |
 | 9 | 0:52 | 14 h 45 | Une seule connexion : les supports d'un cours, puis le panneau des espaces | `M9Bibliotheque.tsx` | `mobile-39` (d'avant le 10 octobre), `app-07` (11 octobre) |
 | 10 | 0:58 | 15 h 20 | Une bibliothèque de jeux pédagogiques | `M7Jeux.tsx` | `mobile-25` (Terminal Linux, d'avant le 10 octobre) |
-| 11 | 1:03 | | L'administration : l'emploi du temps du mois, puis les heures faites | `M10Admin.tsx` | `web-09`, `admin-05b` (11 octobre) |
+| 11 | 1:03 | | L'administration : l'emploi du temps du mois, puis les heures faites | `M10Admin.tsx` | `admin-04b`, `admin-05b` (13 octobre) |
 | 12 | 1:09 | | La promesse, web · iPhone · Android, l'action | `S9Fin.tsx` | animation |
 
 **Corrections du 13 octobre** (après une relecture « marketing » du cinquième montage) :
 
-- **Une seule promesse**, celle de l'accueil du site : « Votre emploi du temps accessible en un geste. » (décision n° 7). Elle ouvre et ferme la vidéo.
-- **Une action pour finir** : « Demandez une démonstration pour votre école », sans adresse (`ACTION` dans `src/Matinee.tsx`). À remplacer par une adresse ou un QR quand il y en aura une à montrer.
+- **Une seule promesse**, qui ouvre et ferme la vidéo : « Toute l'école à l'heure, dans une seule application. » (13 octobre au soir ; elle remplace celle de l'accueil du site, jugée trop étroite pour la vidéo : `../script-video-vendeur.md`, § 3).
+- **Une action pour finir** : « Demandez une démonstration », suivie de `planner.hestim.ma` (`ACTION` et `ADRESSE` dans `src/Matinee.tsx`). **Cette adresse est fictive** : à remplacer par la vraie avant toute diffusion.
+- **Captures du site refaites le 13 octobre** : l'appel projeté, les heures du mois et l'emploi du temps du mois d'une classe (`admin-04b`, à la place de `web-09`). Les captures de l'application, du quiz et de la Bibliothèque ne sont pas refaites (`../script-video-vendeur.md`, § 8).
 - **Un vrai QR dans le viseur du scanner** : la scène factice de la caméra de l'émulateur est recouverte par le QR de l'appel projeté (`VueCamera`, `M5Appel.tsx`).
 - **Plus de « CODE 482 913 »** sur l'écran de la salle : il contredisait « sans code à saisir ». Il est recouvert dans la scène ; la maquette (`../maquettes/`) le porte toujours.
 - **Les téléphones sont à l'heure de l'histoire** : l'heure de la barre d'état est redessinée sur chaque capture (`Heure`, `components/Frames.tsx`), ainsi que « Mis à jour à » sur le tableau du jour. L'histoire commence à 13 h 32, le cours de 13 h 30 étant « en cours » sur les captures, et les scènes se suivent dans l'ordre des heures (la Bibliothèque avant la pause).
