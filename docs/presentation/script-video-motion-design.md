@@ -19,6 +19,9 @@ Rédigé le 11 octobre 2026. Il remplace `prompt-video-motion-design.md` (vidéo
 ## 2. Règles de la vidéo
 
 - **La promesse ouvre et ferme la vidéo.** Phrase proposée, à écrire avec vos mots : « L'emploi du temps, l'appel et les quiz d'une école, au même endroit. »
+- **Planner et la Bibliothèque, deux questions.** Planner répond à « où et quand » ; la Bibliothèque (StudyLib en interne) répond à « avec quoi je travaille » : dépôt de ressources par module, modération, recherche, stages et retours d'expérience, projets. Ce n'est pas du calendrier : la vidéo dit que le produit couvre la **vie de l'étudiant**, pas seulement son emploi du temps.
+- **Une seule connexion.** Planner est le fournisseur d'identité : le même compte ouvre Planner, la Bibliothèque et les quiz, sur le web comme dans l'application. À dire une fois, à la scène 9, sans entrer dans le détail technique.
+- **Quatre rôles, un écran chacun.** Étudiant (surtout sur téléphone), enseignant (disponibilités, appel, quiz), responsable de filière (maquette, groupes, services), administration (calendrier, génération, imprévus, examens, suivi, paie des vacataires). Les scènes 3 à 10 montrent trois d'entre eux ; le responsable de filière tient en une phrase de sous-titre à la scène 10.
 - **Lisible sans le son.** Chaque scène a un sous-titre, en français et en anglais. Aucune information n'est portée par la voix seule.
 - **On sait toujours où l'on en est.** La durée est annoncée avant la lecture, et une barre de progression fine reste en bas de l'image.
 - **Des écrans réels, sauf une scène.** La scène 7 montre des fonctions à venir : ses images sont des maquettes, et le mot **« Bientôt »** reste à l'écran pendant toute la scène.
@@ -39,8 +42,8 @@ Rédigé le 11 octobre 2026. Il remplace `prompt-video-motion-design.md` (vidéo
 | 6 | 0:50 | 20 s | **9 h 10, le quiz.** Il le lance depuis sa séance ; la question et son schéma sont à l'écran de la salle ; sur les téléphones, quatre formes ; le compteur de réponses monte ; la bonne réponse s'allume | « Un quiz rattaché à la séance, sans code à saisir. » | À faire : « Mes classes », téléphone du joueur. Écran de la salle : `maquette-quiz-projecteur-illustration` en attendant le lot CQ-2 |
 | 7 | 1:10 | 12 s | **Bientôt.** Deux téléphones côte à côte : le schéma sur le téléphone, puis un extrait vidéo avec le son, suivi de sa question | « Bientôt : le schéma et l'extrait vidéo, sur le téléphone de chacun. » | `maquette-quiz-mobile-illustration`, `maquette-quiz-mobile-video` |
 | 8 | 1:22 | 8 s | Le classement de la classe, puis le résultat de l'étudiante | « Chacun voit où il en est. » | `web-21-resultats-enseignant`, `mobile-13-resultats` |
-| 9 | 1:30 | 8 s | Les supports du cours dans la Bibliothèque | « Les supports du cours, à tout moment. » | `mobile-39-supports-module`, à refaire après R-7 |
-| 10 | 1:38 | 10 s | **L'administration.** L'emploi du temps du mois, généré sans conflit ; la séance du matin apparaît faite | « Un emploi du temps sans conflit. Une matinée suivie de bout en bout. » | `web-09-edt-mensuel` ; à faire : heures du mois |
+| 9 | 1:30 | 8 s | Les supports du cours dans la Bibliothèque ; le même compte ouvre Planner puis la Bibliothèque, sans nouvelle saisie | « Une seule connexion. Planner dit où et quand ; la Bibliothèque, avec quoi on travaille. » | `mobile-39-supports-module`, à refaire après R-7 |
+| 10 | 1:38 | 10 s | **L'administration.** L'emploi du temps du mois, généré sans conflit ; la séance du matin apparaît faite | « Un emploi du temps sans conflit, préparé par les responsables de filière et suivi de bout en bout. » | `web-09-edt-mensuel` ; à faire : heures du mois |
 | 11 | 1:48 | 6 s | L'emblème, le nom, « Web · iPhone · Android » ; dernière seconde immobile | La promesse | Animation existante (`S9Fin`) |
 
 ### La scène 6, en détail
