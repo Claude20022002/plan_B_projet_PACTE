@@ -14,6 +14,7 @@ import { BEAT, C } from "./theme";
  * « Direction » : la vidéo du lot V-2 (../script-video-vendeur.md, § 5), pour ceux qui décident et
  * paient. Une promesse, trois preuves (chacun sait où aller, l'appel en une minute, le quiz dans le
  * cours), ce que l'école y gagne, une action. Le produit est à l'image dès la première seconde.
+ * Les écrans du site sont cadrés sans le menu de gauche : le zoom part du bord droit.
  * Les compositions de Matinee.tsx et de Root.tsx ne changent pas.
  */
 
@@ -25,7 +26,7 @@ const ADRESSE = "planner.hestim.ma";
 type Scene = { rendu: (duree: number) => React.ReactNode; repere?: string };
 const SCENES: Record<string, Scene> = {
   campus: {
-    rendu: (duree) => <D1PlanSite capture="captures/admin-01-tableau.png" titre="Tout le campus, sur un écran." zoom={[1, 1.14]} origine="38% 22%" duree={duree} />,
+    rendu: (duree) => <D1PlanSite capture="captures/admin-01-tableau.png" titre="Tout le campus, sur un écran." zoom={[1.15, 1.2]} origine="100% 18%" duree={duree} />,
     repere: "Lundi, 13 h 40 · La scolarité",
   },
   outils: { rendu: () => <S2Outils />, repere: "Hier" },
@@ -38,11 +39,11 @@ const SCENES: Record<string, Scene> = {
     repere: "Le cours",
   },
   mois: {
-    rendu: (duree) => <D1PlanSite capture="captures/admin-04b-edt-mensuel-classe.png" titre="Un mois planifié, sans conflit." zoom={[1, 1.5]} origine="62% 72%" duree={duree} />,
+    rendu: (duree) => <D1PlanSite capture="captures/admin-04b-edt-mensuel-classe.png" titre="Un mois planifié, sans conflit." zoom={[1.3, 1.37]} origine="74% 70%" duree={duree} />,
     repere: "La scolarité",
   },
   heures: {
-    rendu: (duree) => <D1PlanSite capture="captures/admin-05b-heures-du-mois.png" titre="Les heures, prêtes pour la paie." zoom={[1, 1.3]} origine="56% 24%" duree={duree} />,
+    rendu: (duree) => <D1PlanSite capture="captures/admin-05b-heures-du-mois.png" titre="Les heures, prêtes pour la paie." zoom={[1.2, 1.3]} origine="83% 22%" duree={duree} />,
     repere: "La scolarité",
   },
   fin: { rendu: () => <S9Fin phrase={PROMESSE} action={ACTION} adresse={ADRESSE} /> },

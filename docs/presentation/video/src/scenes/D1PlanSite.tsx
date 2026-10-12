@@ -5,6 +5,7 @@ import { fadeUp, useEnter } from "../components/motion";
 import { C } from "../theme";
 
 const BW = 1280;
+const HAUT = 92; // sous le repère de la scène
 
 /**
  * Un plan de la vidéo « Direction » : un écran du site en grand (les deux tiers de l'image), qui se
@@ -19,10 +20,10 @@ export const D1PlanSite: React.FC<{ capture: string; titre: string; zoom: [numbe
 
   return (
     <AbsoluteFill style={{ background: C.bg }}>
-      <BrowserFrame width={BW} style={{ left: (1920 - BW) / 2, top: 44, opacity: cadre, transform: `translateY(${(1 - cadre) * 60}px) scale(${0.96 + 0.04 * cadre})` }}>
+      <BrowserFrame width={BW} style={{ left: (1920 - BW) / 2, top: HAUT, opacity: cadre, transform: `translateY(${(1 - cadre) * 60}px) scale(${0.96 + 0.04 * cadre})` }}>
         <Screen src={capture} srcW={1920} srcH={1080} width={BW} origin={origine} zoom={zoom} duration={duree} />
       </BrowserFrame>
-      <Line size={104} style={{ ...fadeUp(texte, 26), position: "absolute", left: 60, right: 60, top: 44 + hauteur + 38, textAlign: "center" }}>
+      <Line size={104} style={{ ...fadeUp(texte, 26), position: "absolute", left: 60, right: 60, top: HAUT + hauteur + 34, textAlign: "center" }}>
         {titre}
       </Line>
     </AbsoluteFill>
