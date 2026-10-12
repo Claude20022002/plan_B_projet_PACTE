@@ -2,7 +2,12 @@
 
 Rédigé le 11 octobre 2026. Il remplace `prompt-video-motion-design.md` (vidéo de 42 s) et le tableau des scènes de `video/README.md` (62 s) comme référence de ce que la vidéo raconte. Il suit `docs/plans/remarques-par-profil.md`, § 6.
 
-**Statut : à valider par le chef de projet.** Un montage des onze scènes existe depuis le 12 octobre 2026 (`video/out/matinee-ecole.mp4`, 1 min 54, et `matinee-ecole-9x16.mp4`, 45 s) ; `video/README.md` dit ce qui le sépare encore de ce script.
+**Statut : à valider par le chef de projet.** Le montage du 12 octobre 2026 (`video/out/matinee-ecole.mp4`, 1 min 25, et `matinee-ecole-9x16.mp4`, 40 s) suit ce script avec deux décisions prises ce jour-là, qui l'emportent sur les sections 2 à 4 ci-dessous :
+
+- **Plus court** : chaque scène est resserrée, 1 min 25 au lieu de 1 min 54 pour la salle, 40 s au lieu de 45 s pour les réseaux.
+- **La scène 7 ne dit plus « Bientôt »** : elle présente les formes d'un quiz (en direct, avec un schéma, avec un extrait vidéo). Les deux dernières restent des maquettes ; la règle « des écrans réels, sauf une scène annoncée » ne s'applique donc plus à cette scène.
+
+`video/README.md` donne le tableau des scènes et ce qui sépare encore le montage de ce script.
 
 ## 1. Ce qui change
 
