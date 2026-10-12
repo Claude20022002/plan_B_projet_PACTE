@@ -133,6 +133,24 @@ Si `appliquer-maj.sh` refuse les dépendances (image en ligne plus ancienne), ch
 
 ## 6. Décisions attendues du chef de projet
 
+**Mise à jour du 12 octobre (soir)** : le chef de projet suit les recommandations ci-dessous, sauf mention contraire.
+
+| Question | Recommandation retenue |
+|---|---|
+| R-11, seconde question | Oui : une séance écartée sort aussi des heures réalisées du **module**, pour que module, enseignant et export donnent le même total. À faire par le groupe A (petit lot). |
+| Sauvegardes (A-3) | Un stockage objet compatible S3, **hors du serveur**, avec copie chiffrée chaque nuit. La phrase de chiffrement est gardée par le chef de projet et une seconde personne de confiance. Le script est prêt ; il reste à ouvrir le compte de stockage. |
+| Réécriture de l'historique (0-1) | Pas maintenant : le dépôt est privé et les personnes du fichier sont fictives. À faire seulement si l'école confirme qu'un nom ou une adresse est réel. |
+| Plus tard | Inchangé (relevé mensuel, fournisseur d'IA, vidéo à 1 min 15). |
+
+**Autres décisions du 12 octobre (soir)** :
+
+- **Application mobile : un seul bouton de scan**, celui de la barre d'onglets. Le second (icône dans l'en-tête du Tableau) est retiré (`mobile/src/app/(onglets)/index.jsx`, non commité, groupe B).
+- **Vidéo** : « Connexion unique », la formule « Planner : où et quand / Bibliothèque : avec quoi je travaille » et les quatre rôles sont ajoutés au script (`script-video-motion-design.md`, § 2 et scènes 9 et 10).
+- **APK de test Android** : le profil `preview` d'`eas.json` produit déjà un APK. **`eas init` n'a pas été fait** (pas d'identifiant de projet dans `app.json`) : à faire une fois avec le compte Expo de l'école, puis `npx eas-cli@latest build --platform android --profile preview` depuis `mobile/`.
+- **Groupe A indisponible pour les lourdes tâches** : n'engager que des lots légers côté serveur (R-11 ci-dessus) ; A-3 et A-6 attendent.
+
+Questions d'origine, pour mémoire :
+
 - **R-11, la seconde question** : une séance écartée doit-elle sortir aussi des heures réalisées du **module** ? Elle sort déjà des heures de l'enseignant et de l'export.
 - **Sauvegardes (A-3)** : où envoyer chaque nuit, hors du serveur, la copie chiffrée (Google Drive de l'école, second serveur, stockage S3…), qui y a accès, qui garde la phrase de chiffrement. À sauvegarder : la base de Planner (déjà faite chaque nuit, mais sur le serveur lui-même), les documents de la bibliothèque, la base et les images du quiz. Le script est prêt.
 - **Réécriture de l'historique (0-1)** : `docs/users.xlsx` (noms, adresses `@hestim.ma`, mots de passe de démonstration) reste lisible dans l'historique, que d'autres ont pu cloner quand le dépôt était public. Personnes fictives : rien d'urgent. Personnes réelles : réécrire l'historique (tout le monde reclone) et prévenir l'école.
