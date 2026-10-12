@@ -34,6 +34,8 @@ const fichiers = [
   "prof-05-appel-projection.png",
   "admin-01-tableau.png",
   "admin-05b-heures-du-mois.png",
+  // Captures du 13 octobre 2026 (capturer-video.mjs) : le mois d'une classe, au format officiel
+  "admin-04b-edt-mensuel-classe.png",
   "app-07-espaces.png",
   // Le seul jeu de la bibliothèque de jeux aujourd'hui : Terminal Linux
   "mobile-25-terminal-commandes.png",

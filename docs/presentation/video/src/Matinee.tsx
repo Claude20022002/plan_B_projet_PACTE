@@ -24,10 +24,13 @@ import { BEAT, C } from "./theme";
  * Les anciennes compositions de Root.tsx ne changent pas.
  */
 
-// La promesse ouvre et ferme la vidéo : celle de l'accueil du site (décision n° 7 du chef de projet)
-const PROMESSE = "Votre emploi du temps accessible en un geste.";
-// L'action de la dernière image. Aucune adresse : celle de la démonstration n'est pas montrée.
-const ACTION = "Demandez une démonstration pour votre école";
+// La promesse ouvre et ferme la vidéo (13 octobre 2026) : plus large que l'emploi du temps seul, elle
+// reprend « à l'heure », le mot du panneau des départs (../script-video-vendeur.md, § 3)
+const PROMESSE = "Toute l'école à l'heure, dans une seule application.";
+// L'action de la dernière image. L'adresse est FICTIVE, choisie pour le montage : à remplacer par
+// la vraie avant toute diffusion (jamais le domaine de démonstration).
+const ACTION = "Demandez une démonstration";
+const ADRESSE = "planner.hestim.ma";
 
 type Scene = { rendu: (duree: number) => React.ReactNode; repere?: string };
 const SCENES: Record<string, Scene> = {
@@ -42,7 +45,7 @@ const SCENES: Record<string, Scene> = {
   resultats: { rendu: (duree) => <M8Resultats duree={duree} />, repere: "14 h 30 · Les résultats" },
   supports: { rendu: (duree) => <M9Bibliotheque duree={duree} />, repere: "14 h 45 · La Bibliothèque" },
   admin: { rendu: (duree) => <M10Admin duree={duree} />, repere: "Toute la journée · L'administration" },
-  fin: { rendu: () => <S9Fin phrase={PROMESSE} action={ACTION} /> },
+  fin: { rendu: () => <S9Fin phrase={PROMESSE} action={ACTION} adresse={ADRESSE} /> },
 };
 
 // ─── Durées, en temps à 120 BPM (1 temps = 0,5 s). La bande-son les lit (scripts/composer-musique.py).

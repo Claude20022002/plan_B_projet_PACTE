@@ -11,7 +11,7 @@ import { C, FONT_TITLE } from "../theme";
  * basculent en volets ;
  * dernière seconde immobile pour enchaîner sur la première slide.
  */
-export const S9Fin: React.FC<{ phrase?: string; action?: string }> = ({ phrase: texte = "L'école, à l'heure.", action }) => {
+export const S9Fin: React.FC<{ phrase?: string; action?: string; adresse?: string }> = ({ phrase: texte = "L'école, à l'heure.", action, adresse }) => {
   const portrait = usePortrait();
   const cadre = useEnter(0, 12);
   const phrase = useEnter(46);
@@ -45,6 +45,7 @@ export const S9Fin: React.FC<{ phrase?: string; action?: string }> = ({ phrase: 
         {action ? (
           <div style={{ ...fadeUp(appel), padding: portrait ? "16px 34px" : "12px 30px", borderRadius: 6, background: C.navy, color: "#FFFFFF", fontFamily: FONT_TITLE, fontWeight: 700, fontSize: portrait ? 46 : 42, letterSpacing: "0.06em", textTransform: "uppercase", textAlign: "center", maxWidth: portrait ? 900 : 1500 }}>
             {action}
+            {adresse ? <div style={{ marginTop: 4, fontSize: portrait ? 54 : 50, letterSpacing: "0.02em", textTransform: "none" }}>{adresse}</div> : null}
           </div>
         ) : null}
       </div>
