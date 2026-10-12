@@ -53,6 +53,6 @@ test("maquette : créer un module, ajouter une composante, le renommer, le suppr
   // Supprimer, après confirmation
   await page.getByRole("button", { name: "Supprimer Réseaux et sécurité", exact: true }).click();
   await page.getByRole("dialog").getByRole("button", { name: "Supprimer" }).click();
-  await expect(page.getByText("Supprimé")).toBeVisible();
+  await expect(page.getByText("Supprimé").first()).toBeVisible();
   await expect(page.getByRole("row", { name: /PRC-RES/ })).toHaveCount(0);
 });
