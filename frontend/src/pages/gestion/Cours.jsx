@@ -3,12 +3,6 @@ import { useTranslation } from 'react-i18next';
 import {
     Box,
     Button,
-    Collapse,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    IconButton,
     MenuItem,
     Paper,
     Stack,
@@ -23,7 +17,7 @@ import {
     ToggleButtonGroup,
     Typography,
 } from '@mui/material';
-import { Add, Delete, Edit, KeyboardArrowDown, KeyboardArrowRight, UploadFile } from '@mui/icons-material';
+import { Add, UploadFile } from '@mui/icons-material';
 import LigneModule from '../../components/cours/LigneModule';
 import ModuleDialog from '../../components/cours/ModuleDialog';
 import ComposanteDialog from '../../components/cours/ComposanteDialog';
@@ -128,7 +122,6 @@ export default function Cours() {
                   }
                 : { ...MODULE_VIDE, id_filiere: filiere === 'toutes' ? filieres[0]?.id_filiere ?? '' : filiere },
         });
-
 
     const enregistrerModule = async (event) => {
         event.preventDefault();
