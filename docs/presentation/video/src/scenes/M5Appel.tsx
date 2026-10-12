@@ -32,9 +32,9 @@ const AppelProjete: React.FC<{ largeur: number; arrives: number }> = ({ largeur,
 );
 
 // Le viseur du scanner sur la capture app-04-scanner.png (1080 × 2400), et le QR de l'appel projeté
-// sur prof-05-appel-projection.png (carré blanc de 734 px, à partir de 254 × 153 ; 12 px de marge)
+// sur prof-05-appel-projection.png (carré blanc de 734 px, à partir de 254 × 153 ; 5 px de marge)
 const VISEUR = { x: 226, y: 771, cote: 627 };
-const QR = { x: 242, y: 141, cote: 758 };
+const QR = { x: 249, y: 148, cote: 744 };
 
 /**
  * Ce que la caméra voit : la capture du scanner montre la scène factice de l'émulateur, recouverte
