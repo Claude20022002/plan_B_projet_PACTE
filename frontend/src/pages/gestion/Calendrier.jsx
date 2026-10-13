@@ -3,26 +3,21 @@ import { useTranslation } from 'react-i18next';
 import {
     Box,
     Button,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    FormControlLabel,
     IconButton,
     MenuItem,
     Paper,
     Stack,
-    Switch,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
     TextField,
     Typography,
 } from '@mui/material';
 import { Add, Delete, Edit, EventAvailable, Flag } from '@mui/icons-material';
+import AnneeDialog from '../../components/calendrier/AnneeDialog';
+import PeriodeDialog from '../../components/calendrier/PeriodeDialog';
+import EvenementDialog from '../../components/calendrier/EvenementDialog';
+import ConfirmationDialog from '../../components/calendrier/ConfirmationDialog';
+import { ANNEE_VIDE, EVENEMENT_VIDE, PERIODE_VIDE, hhmm } from '../../components/calendrier/constantes';
+import SectionSemestres from '../../components/calendrier/SectionSemestres';
+import SectionEvenements from '../../components/calendrier/SectionEvenements';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import EmptyState from '../../design-system/components/EmptyState';
@@ -30,31 +25,6 @@ import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { calendrierAPI, campusAPI, evenementAPI, filiereAPI, groupeAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
-
-const TYPES_EVENEMENT = ['vacances', 'examen', 'ferie', 'ramadan', 'stage', 'reunion', 'formation', 'autre'];
-const PORTEES = ['etablissement', 'campus', 'filiere', 'niveau', 'groupe'];
-
-const ANNEE_VIDE = { libelle: '', date_debut: '', date_fin: '', active: false };
-const PERIODE_VIDE = { code: 'S1', libelle: '', date_debut: '', date_fin: '', nb_semaines: 16 };
-const EVENEMENT_VIDE = {
-    titre: '',
-    description: '',
-    date_debut: '',
-    date_fin: '',
-    type_evenement: 'vacances',
-    bloque_affectations: true,
-    portee: 'etablissement',
-    id_cible: '',
-    niveau: '',
-    heure_debut: '',
-    heure_fin: '',
-};
-
-const hhmm = (heure) => (heure ? String(heure).slice(0, 5) : '');
-
-// Le type est une catégorie, pas un état : pastille neutre (le rouge et l'orange restent aux états).
-// Seul le Ramadan se distingue, en marine voilé, car il change la grille horaire.
-const toneType = (type) => (type === 'ramadan' ? 'info' : 'neutral');
 
 export default function Calendrier() {
     const { t, i18n } = useTranslation();
@@ -185,9 +155,6 @@ export default function Calendrier() {
                   }
                 : { ...EVENEMENT_VIDE, date_debut: annee?.date_debut || '', date_fin: annee?.date_debut || '' },
         });
-
-    const champEvenement = (nom) => (event) =>
-        setEvenementDialog((d) => ({ ...d, form: { ...d.form, [nom]: event.target.value, ...(nom === 'portee' ? { id_cible: '', niveau: '' } : {}) } }));
 
     const enregistrerEvenement = async (event) => {
         event.preventDefault();
@@ -329,320 +296,38 @@ export default function Calendrier() {
                         </Box>
 
                         {/* Semestres */}
-                        <Box sx={{ mt: 2.5 }}>
-                            <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 1 }}>
-                                <Typography variant="h2" component="h2">
-                                    {t('ref.calendar.semesters')}
-                                </Typography>
-                                <Button size="small" startIcon={<Add />} onClick={() => setPeriodeDialog({ open: true, editing: null, form: { ...PERIODE_VIDE, code: annee?.periodes?.some((p) => p.code === 'S1') ? 'S2' : 'S1' } })}>
-                                    {t('ref.calendar.addSemester')}
-                                </Button>
-                            </Box>
-                            {annee?.periodes?.length ? (
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell sx={{ width: 90 }}>{t('ref.calendar.cols.code')}</TableCell>
-                                            <TableCell>{t('ref.calendar.cols.dates')}</TableCell>
-                                            <TableCell align="right">{t('ref.calendar.cols.weeks')}</TableCell>
-                                            <TableCell align="right">{t('ref.rooms.cols.actions')}</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {annee.periodes.map((periode) => (
-                                            <TableRow key={periode.id_periode}>
-                                                <TableCell sx={{ fontWeight: 600 }}>{periode.code}</TableCell>
-                                                <TableCell>
-                                                    {plage(periode.date_debut, periode.date_fin)}
-                                                    {periode.libelle && (
-                                                        <Typography component="span" variant="body2" color="text.secondary">
-                                                            {' '}· {periode.libelle}
-                                                        </Typography>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell align="right">{periode.nb_semaines}</TableCell>
-                                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => setPeriodeDialog({ open: true, editing: periode, form: { code: periode.code, libelle: periode.libelle || '', date_debut: periode.date_debut, date_fin: periode.date_fin, nb_semaines: periode.nb_semaines } })}
-                                                        aria-label={t('ref.common.editItem', { name: periode.code })}
-                                                    >
-                                                        <Edit fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton size="small" color="error" onClick={() => setASupprimer({ type: 'periode', item: periode })} aria-label={t('ref.common.deleteItem', { name: periode.code })}>
-                                                        <Delete fontSize="small" />
-                                                    </IconButton>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            ) : (
-                                <Typography variant="body2" color="text.secondary">
-                                    {t('ref.calendar.noSemester')}
-                                </Typography>
-                            )}
-                        </Box>
+                        <SectionSemestres
+                            annee={annee}
+                            plage={plage}
+                            onAjouter={() => setPeriodeDialog({ open: true, editing: null, form: { ...PERIODE_VIDE, code: annee?.periodes?.some((p) => p.code === 'S1') ? 'S2' : 'S1' } })}
+                            onModifier={(periode) => setPeriodeDialog({ open: true, editing: periode, form: { code: periode.code, libelle: periode.libelle || '', date_debut: periode.date_debut, date_fin: periode.date_fin, nb_semaines: periode.nb_semaines } })}
+                            onSupprimer={(periode) => setASupprimer({ type: 'periode', item: periode })}
+                        />
                     </Paper>
 
                     {/* Événements */}
-                    <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
-                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                            <Stack direction="row" spacing={1.5} alignItems="center">
-                                <Typography variant="h2" component="h2">
-                                    {t('ref.calendar.events')}
-                                </Typography>
-                                {nbAConfirmer > 0 && <StateChip tone="warning">{t('ref.calendar.toConfirmCount', { count: nbAConfirmer })}</StateChip>}
-                            </Stack>
-                            <Stack direction="row" spacing={1.5} alignItems="center">
-                                <FormControlLabel
-                                    control={<Switch size="small" checked={aConfirmerSeulement} onChange={(e) => setAConfirmerSeulement(e.target.checked)} />}
-                                    label={t('ref.calendar.onlyToConfirm')}
-                                />
-                                <Button variant="contained" startIcon={<Add />} onClick={() => ouvrirEvenement()}>
-                                    {t('ref.calendar.addEvent')}
-                                </Button>
-                            </Stack>
-                        </Box>
-                        {evenementsAffiches.length === 0 ? (
-                            <Typography variant="body2" color="text.secondary" sx={{ py: 3 }}>
-                                {t('ref.calendar.noEvents')}
-                            </Typography>
-                        ) : (
-                            <TableContainer>
-                                <Table size="small">
-                                    <TableHead>
-                                        <TableRow>
-                                            <TableCell>{t('ref.calendar.eventCols.dates')}</TableCell>
-                                            <TableCell>{t('ref.calendar.eventCols.title')}</TableCell>
-                                            <TableCell>{t('ref.calendar.eventCols.type')}</TableCell>
-                                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.calendar.eventCols.scope')}</TableCell>
-                                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.calendar.eventCols.blocking')}</TableCell>
-                                            <TableCell>{t('ref.calendar.eventCols.state')}</TableCell>
-                                            <TableCell align="right">{t('ref.rooms.cols.actions')}</TableCell>
-                                        </TableRow>
-                                    </TableHead>
-                                    <TableBody>
-                                        {evenementsAffiches.map((evenement) => (
-                                            <TableRow key={evenement.id_evenement} hover>
-                                                <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                                    {plage(evenement.date_debut, evenement.date_fin)}
-                                                    {evenement.heure_debut && (
-                                                        <Typography variant="caption" color="text.secondary" sx={{ display: 'block' }}>
-                                                            {hhmm(evenement.heure_debut)} – {hhmm(evenement.heure_fin)}
-                                                        </Typography>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell sx={{ fontWeight: 600 }}>{evenement.titre}</TableCell>
-                                                <TableCell>
-                                                    <StateChip tone={toneType(evenement.type_evenement)}>{t(`ref.eventTypes.${evenement.type_evenement}`)}</StateChip>
-                                                </TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, whiteSpace: 'nowrap' }}>{libelleCible(evenement)}</TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                                                    {evenement.bloque_affectations ? t('ref.calendar.blocking') : t('ref.calendar.notBlocking')}
-                                                </TableCell>
-                                                <TableCell>
-                                                    {/* Seule la date à confirmer appelle une action : elle seule est signalée */}
-                                                    {evenement.date_confirmee ? (
-                                                        <Typography variant="body2" color="text.secondary">
-                                                            {t('ref.calendar.confirmed')}
-                                                        </Typography>
-                                                    ) : (
-                                                        <StateChip tone="warning">{t('ref.calendar.toConfirm')}</StateChip>
-                                                    )}
-                                                </TableCell>
-                                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                                                    {!evenement.date_confirmee && (
-                                                        <Button
-                                                            size="small"
-                                                            onClick={() => setConfirmation({ open: true, evenement, date_debut: evenement.date_debut, date_fin: evenement.date_fin })}
-                                                        >
-                                                            {t('ref.calendar.confirm')}
-                                                        </Button>
-                                                    )}
-                                                    <IconButton size="small" onClick={() => ouvrirEvenement(evenement)} aria-label={t('ref.common.editItem', { name: evenement.titre })}>
-                                                        <Edit fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton size="small" color="error" onClick={() => setASupprimer({ type: 'evenement', item: evenement })} aria-label={t('ref.common.deleteItem', { name: evenement.titre })}>
-                                                        <Delete fontSize="small" />
-                                                    </IconButton>
-                                                </TableCell>
-                                            </TableRow>
-                                        ))}
-                                    </TableBody>
-                                </Table>
-                            </TableContainer>
-                        )}
-                    </Paper>
+                    <SectionEvenements
+                        evenements={evenementsAffiches}
+                        nbAConfirmer={nbAConfirmer}
+                        aConfirmerSeulement={aConfirmerSeulement}
+                        plage={plage}
+                        libelleCible={libelleCible}
+                        onFiltrer={setAConfirmerSeulement}
+                        onAjouter={() => ouvrirEvenement()}
+                        onModifier={ouvrirEvenement}
+                        onSupprimer={(evenement) => setASupprimer({ type: 'evenement', item: evenement })}
+                        onConfirmer={(evenement) => setConfirmation({ open: true, evenement, date_debut: evenement.date_debut, date_fin: evenement.date_fin })}
+                    />
                 </Stack>
             )}
 
-            {/* Dialogue année */}
-            <Dialog open={anneeDialog.open} onClose={() => setAnneeDialog({ open: false, editing: null, form: ANNEE_VIDE })} maxWidth="xs" fullWidth>
-                <form onSubmit={enregistrerAnnee}>
-                    <DialogTitle>{anneeDialog.editing ? t('ref.calendar.editYear') : t('ref.calendar.newYear')}</DialogTitle>
-                    <DialogContent>
-                        <Stack spacing={2} sx={{ mt: 1 }}>
-                            <TextField
-                                label={t('ref.calendar.fields.label')}
-                                value={anneeDialog.form.libelle}
-                                onChange={(e) => setAnneeDialog((d) => ({ ...d, form: { ...d.form, libelle: e.target.value } }))}
-                                helperText={t('ref.calendar.fields.labelHelp')}
-                                inputProps={{ pattern: '\\d{4}-\\d{4}' }}
-                                required
-                                autoFocus
-                            />
-                            <Stack direction="row" spacing={2}>
-                                <TextField fullWidth type="date" label={t('ref.calendar.fields.start')} value={anneeDialog.form.date_debut} onChange={(e) => setAnneeDialog((d) => ({ ...d, form: { ...d.form, date_debut: e.target.value } }))} InputLabelProps={{ shrink: true }} required />
-                                <TextField fullWidth type="date" label={t('ref.calendar.fields.end')} value={anneeDialog.form.date_fin} onChange={(e) => setAnneeDialog((d) => ({ ...d, form: { ...d.form, date_fin: e.target.value } }))} InputLabelProps={{ shrink: true }} required />
-                            </Stack>
-                            <FormControlLabel
-                                control={<Switch checked={anneeDialog.form.active} onChange={(e) => setAnneeDialog((d) => ({ ...d, form: { ...d.form, active: e.target.checked } }))} />}
-                                label={t('ref.calendar.fields.active')}
-                            />
-                        </Stack>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setAnneeDialog({ open: false, editing: null, form: ANNEE_VIDE })}>{t('common.cancel')}</Button>
-                        <Button type="submit" variant="contained">
-                            {t('common.save')}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+            <AnneeDialog etat={anneeDialog} setEtat={setAnneeDialog} onSubmit={enregistrerAnnee} />
 
-            {/* Dialogue semestre */}
-            <Dialog open={periodeDialog.open} onClose={() => setPeriodeDialog({ open: false, editing: null, form: PERIODE_VIDE })} maxWidth="xs" fullWidth>
-                <form onSubmit={enregistrerPeriode}>
-                    <DialogTitle>{periodeDialog.editing ? t('ref.calendar.editSemester') : t('ref.calendar.addSemester')}</DialogTitle>
-                    <DialogContent>
-                        <Stack spacing={2} sx={{ mt: 1 }}>
-                            <Stack direction="row" spacing={2}>
-                                <TextField select fullWidth label={t('ref.calendar.fields.code')} value={periodeDialog.form.code} onChange={(e) => setPeriodeDialog((d) => ({ ...d, form: { ...d.form, code: e.target.value } }))}>
-                                    <MenuItem value="S1">S1</MenuItem>
-                                    <MenuItem value="S2">S2</MenuItem>
-                                </TextField>
-                                <TextField fullWidth type="number" label={t('ref.calendar.fields.weeks')} value={periodeDialog.form.nb_semaines} onChange={(e) => setPeriodeDialog((d) => ({ ...d, form: { ...d.form, nb_semaines: e.target.value } }))} inputProps={{ min: 1, max: 30 }} required />
-                            </Stack>
-                            <TextField label={t('ref.calendar.fields.semesterLabel')} value={periodeDialog.form.libelle} onChange={(e) => setPeriodeDialog((d) => ({ ...d, form: { ...d.form, libelle: e.target.value } }))} />
-                            <Stack direction="row" spacing={2}>
-                                <TextField fullWidth type="date" label={t('ref.calendar.fields.start')} value={periodeDialog.form.date_debut} onChange={(e) => setPeriodeDialog((d) => ({ ...d, form: { ...d.form, date_debut: e.target.value } }))} InputLabelProps={{ shrink: true }} required />
-                                <TextField fullWidth type="date" label={t('ref.calendar.fields.end')} value={periodeDialog.form.date_fin} onChange={(e) => setPeriodeDialog((d) => ({ ...d, form: { ...d.form, date_fin: e.target.value } }))} InputLabelProps={{ shrink: true }} required />
-                            </Stack>
-                        </Stack>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setPeriodeDialog({ open: false, editing: null, form: PERIODE_VIDE })}>{t('common.cancel')}</Button>
-                        <Button type="submit" variant="contained">
-                            {t('common.save')}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+            <PeriodeDialog etat={periodeDialog} setEtat={setPeriodeDialog} onSubmit={enregistrerPeriode} />
 
-            {/* Dialogue événement */}
-            <Dialog open={evenementDialog.open} onClose={() => setEvenementDialog({ open: false, editing: null, form: EVENEMENT_VIDE })} maxWidth="sm" fullWidth>
-                <form onSubmit={enregistrerEvenement}>
-                    <DialogTitle>{evenementDialog.editing ? t('ref.calendar.editEvent') : t('ref.calendar.addEvent')}</DialogTitle>
-                    <DialogContent>
-                        <Stack spacing={2} sx={{ mt: 1 }}>
-                            <TextField label={t('ref.calendar.fields.title')} value={evenementDialog.form.titre} onChange={champEvenement('titre')} required autoFocus />
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField select fullWidth label={t('ref.calendar.fields.type')} value={evenementDialog.form.type_evenement} onChange={champEvenement('type_evenement')}>
-                                    {TYPES_EVENEMENT.map((type) => (
-                                        <MenuItem key={type} value={type}>
-                                            {t(`ref.eventTypes.${type}`)}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                <TextField fullWidth type="date" label={t('ref.calendar.fields.start')} value={evenementDialog.form.date_debut} onChange={champEvenement('date_debut')} InputLabelProps={{ shrink: true }} required />
-                                <TextField fullWidth type="date" label={t('ref.calendar.fields.end')} value={evenementDialog.form.date_fin} onChange={champEvenement('date_fin')} InputLabelProps={{ shrink: true }} required />
-                            </Stack>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField select fullWidth label={t('ref.calendar.fields.scope')} value={evenementDialog.form.portee} onChange={champEvenement('portee')}>
-                                    {PORTEES.map((portee) => (
-                                        <MenuItem key={portee} value={portee}>
-                                            {t(`ref.scopes.${portee}`)}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                {evenementDialog.form.portee === 'campus' && (
-                                    <TextField select fullWidth label={t('ref.calendar.fields.campus')} value={evenementDialog.form.id_cible} onChange={champEvenement('id_cible')} required>
-                                        {cibles.campus.map((c) => (
-                                            <MenuItem key={c.id_campus} value={c.id_campus}>
-                                                {c.nom}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                )}
-                                {['filiere', 'niveau'].includes(evenementDialog.form.portee) && (
-                                    <TextField select fullWidth label={t('ref.calendar.fields.program')} value={evenementDialog.form.id_cible} onChange={champEvenement('id_cible')} required>
-                                        {cibles.filieres.map((f) => (
-                                            <MenuItem key={f.id_filiere} value={f.id_filiere}>
-                                                {f.nom_filiere}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                )}
-                                {evenementDialog.form.portee === 'niveau' && (
-                                    <TextField fullWidth label={t('ref.calendar.fields.level')} value={evenementDialog.form.niveau} onChange={champEvenement('niveau')} placeholder="3ème année" required />
-                                )}
-                                {evenementDialog.form.portee === 'groupe' && (
-                                    <TextField select fullWidth label={t('ref.calendar.fields.group')} value={evenementDialog.form.id_cible} onChange={champEvenement('id_cible')} required>
-                                        {cibles.groupes.map((g) => (
-                                            <MenuItem key={g.id_groupe} value={g.id_groupe}>
-                                                {g.nom_groupe}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                )}
-                            </Stack>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField fullWidth type="time" label={t('ref.calendar.fields.timeStart')} value={evenementDialog.form.heure_debut} onChange={champEvenement('heure_debut')} InputLabelProps={{ shrink: true }} helperText={t('ref.calendar.fields.timeHelp')} />
-                                <TextField fullWidth type="time" label={t('ref.calendar.fields.timeEnd')} value={evenementDialog.form.heure_fin} onChange={champEvenement('heure_fin')} InputLabelProps={{ shrink: true }} />
-                            </Stack>
-                            <TextField label={t('ref.calendar.fields.description')} value={evenementDialog.form.description} onChange={champEvenement('description')} multiline minRows={2} />
-                            <FormControlLabel
-                                control={
-                                    <Switch
-                                        checked={evenementDialog.form.bloque_affectations}
-                                        onChange={(e) => setEvenementDialog((d) => ({ ...d, form: { ...d.form, bloque_affectations: e.target.checked } }))}
-                                    />
-                                }
-                                label={t('ref.calendar.fields.blocking')}
-                            />
-                        </Stack>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setEvenementDialog({ open: false, editing: null, form: EVENEMENT_VIDE })}>{t('common.cancel')}</Button>
-                        <Button type="submit" variant="contained">
-                            {t('common.save')}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+            <EvenementDialog etat={evenementDialog} setEtat={setEvenementDialog} cibles={cibles} onSubmit={enregistrerEvenement} />
 
-            {/* Confirmation d'une fête lunaire */}
-            <Dialog open={confirmation.open} onClose={() => setConfirmation({ open: false, evenement: null, date_debut: '', date_fin: '' })} maxWidth="xs" fullWidth>
-                <form onSubmit={confirmer}>
-                    <DialogTitle>{t('ref.calendar.confirmTitle', { name: confirmation.evenement?.titre })}</DialogTitle>
-                    <DialogContent>
-                        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-                            {t('ref.calendar.confirmIntro')}
-                        </Typography>
-                        <Stack direction="row" spacing={2}>
-                            <TextField fullWidth type="date" label={t('ref.calendar.fields.start')} value={confirmation.date_debut} onChange={(e) => setConfirmation((c) => ({ ...c, date_debut: e.target.value }))} InputLabelProps={{ shrink: true }} required />
-                            <TextField fullWidth type="date" label={t('ref.calendar.fields.end')} value={confirmation.date_fin} onChange={(e) => setConfirmation((c) => ({ ...c, date_fin: e.target.value }))} InputLabelProps={{ shrink: true }} required />
-                        </Stack>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setConfirmation({ open: false, evenement: null, date_debut: '', date_fin: '' })}>{t('common.cancel')}</Button>
-                        <Button type="submit" variant="contained">
-                            {t('ref.calendar.confirm')}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+            <ConfirmationDialog etat={confirmation} setEtat={setConfirmation} onSubmit={confirmer} />
 
             <ConfirmDialog
                 open={Boolean(aSupprimer)}
