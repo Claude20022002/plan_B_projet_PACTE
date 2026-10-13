@@ -24,50 +24,56 @@ import { BEAT, C } from "./theme";
  * Les anciennes compositions de Root.tsx ne changent pas.
  */
 
-// La promesse ouvre et ferme la vidéo (proposition du plan, à écrire avec les mots de l'école)
-const PROMESSE = "L'emploi du temps, l'appel et les quiz d'une école, au même endroit.";
+// La promesse ouvre et ferme la vidéo (13 octobre 2026) : plus large que l'emploi du temps seul, elle
+// reprend « à l'heure », le mot du panneau des départs (../script-video-vendeur.md, § 3)
+const PROMESSE = "Toute l'école à l'heure, dans une seule application.";
+// L'action de la dernière image. L'adresse est FICTIVE, choisie pour le montage : à remplacer par
+// la vraie avant toute diffusion (jamais le domaine de démonstration).
+const ACTION = "Demandez une démonstration";
+const ADRESSE = "planner.hestim.ma";
 
 type Scene = { rendu: (duree: number) => React.ReactNode; repere?: string };
 const SCENES: Record<string, Scene> = {
   title: { rendu: () => <S1Intro phrase={PROMESSE} /> },
   outils: { rendu: () => <S2Outils />, repere: "Aujourd'hui" },
-  etudiante: { rendu: (duree) => <M3Etudiante duree={duree} />, repere: "13 h 20 · L'étudiante" },
-  alerte: { rendu: () => <S5Alerte capture="captures/app-01-tableau.png" />, repere: "13 h 20 · L'étudiante" },
+  etudiante: { rendu: (duree) => <M3Etudiante duree={duree} />, repere: "13 h 32 · L'étudiante" },
+  alerte: { rendu: () => <S5Alerte capture="captures/app-01-tableau.png" aLHeure />, repere: "13 h 32 · L'étudiante" },
   appel: { rendu: (duree) => <M5Appel duree={duree} />, repere: "13 h 35 · La salle" },
   quiz: { rendu: (duree) => <M6Quiz duree={duree} />, repere: "14 h 10 · Le quiz" },
   formes: { rendu: (duree) => <M7Formes duree={duree} />, repere: "14 h 10 · Le quiz" },
-  jeux: { rendu: (duree) => <M7Jeux duree={duree} />, repere: "Entre les cours · Les jeux" },
+  jeux: { rendu: (duree) => <M7Jeux duree={duree} />, repere: "15 h 20 · La pause" },
   resultats: { rendu: (duree) => <M8Resultats duree={duree} />, repere: "14 h 30 · Les résultats" },
-  supports: { rendu: (duree) => <M9Bibliotheque duree={duree} />, repere: "Le soir · La Bibliothèque" },
+  supports: { rendu: (duree) => <M9Bibliotheque duree={duree} />, repere: "14 h 45 · La Bibliothèque" },
   admin: { rendu: (duree) => <M10Admin duree={duree} />, repere: "Toute la journée · L'administration" },
-  fin: { rendu: () => <S9Fin phrase={PROMESSE} /> },
+  fin: { rendu: () => <S9Fin phrase={PROMESSE} action={ACTION} adresse={ADRESSE} /> },
 };
 
 // ─── Durées, en temps à 120 BPM (1 temps = 0,5 s). La bande-son les lit (scripts/composer-musique.py).
+// L'ordre suit les heures de l'histoire : les résultats et la Bibliothèque avant la pause.
 export const TEMPS_SALLE = {
   title: 10 * BEAT, //       0:00  l'emblème, le nom, la promesse
   outils: 12 * BEAT, //      0:05  six outils éparpillés
   etudiante: 14 * BEAT, //   0:11  le tableau du jour, le mois, le détail d'un cours
   alerte: 10 * BEAT, //      0:18  cours reporté
   appel: 18 * BEAT, //       0:23  l'appel projeté et le scanner
-  quiz: 22 * BEAT, //        0:32  le quiz en direct : la salle et le téléphone
-  formes: 10 * BEAT, //      0:43  les formes d'un quiz : en direct, avec un schéma, avec une vidéo
-  jeux: 10 * BEAT, //        0:48  la bibliothèque de jeux pédagogiques
-  resultats: 10 * BEAT, //   0:53  le classement de la classe, le résultat de l'étudiante
-  supports: 12 * BEAT, //    0:58  la Bibliothèque, une seule connexion
-  admin: 12 * BEAT, //       1:04  l'emploi du temps du mois, les heures faites
-  fin: 10 * BEAT, //         1:10  la promesse, web · iPhone · Android
+  quiz: 20 * BEAT, //        0:32  le quiz en direct : la salle et le téléphone
+  formes: 10 * BEAT, //      0:42  les formes d'un quiz : en direct, avec un schéma, avec une vidéo
+  resultats: 10 * BEAT, //   0:47  le classement de la classe, le résultat de l'étudiante
+  supports: 12 * BEAT, //    0:52  la Bibliothèque, une seule connexion
+  jeux: 10 * BEAT, //        0:58  la bibliothèque de jeux pédagogiques
+  admin: 12 * BEAT, //       1:03  l'emploi du temps du mois, les heures faites
+  fin: 12 * BEAT, //         1:09  la promesse, web · iPhone · Android, l'action
 } as const;
 
 // Montage pour les réseaux (9:16, 40 s) : l'accroche d'abord
 export const TEMPS_RESEAUX = {
   appel: 12 * BEAT, //       0:00
-  quiz: 18 * BEAT, //        0:06
-  formes: 10 * BEAT, //      0:15
-  jeux: 10 * BEAT, //        0:20
-  alerte: 10 * BEAT, //      0:25
-  etudiante: 10 * BEAT, //   0:30
-  fin: 10 * BEAT, //         0:35
+  quiz: 16 * BEAT, //        0:06
+  formes: 10 * BEAT, //      0:14
+  jeux: 10 * BEAT, //        0:19
+  alerte: 10 * BEAT, //      0:24
+  etudiante: 10 * BEAT, //   0:29
+  fin: 12 * BEAT, //         0:34
 } as const;
 
 export const dureeTotale = (temps: Record<string, number>) => Object.values(temps).reduce((s, d) => s + d, 0);

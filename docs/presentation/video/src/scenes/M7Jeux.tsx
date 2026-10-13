@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill } from "remotion";
-import { Line, PhoneFrame, Screen } from "../components/Frames";
+import { Heure, Line, PhoneFrame, Screen } from "../components/Frames";
 import { fadeUp, useEnter, usePortrait } from "../components/motion";
 import { BEAT, C } from "../theme";
 import { PHONE_LEFT, PHONE_SCREEN_H, PHONE_TOP, PORTRAIT_SCREEN_H, PORTRAIT_TOP, phoneGeometry, portraitLeft } from "./S3Convergence";
@@ -18,7 +18,11 @@ export const M7Jeux: React.FC<{ duree: number }> = ({ duree }) => {
   const tel = useEnter(6, 26);
   const screenH = portrait ? PORTRAIT_SCREEN_H : PHONE_SCREEN_H;
   const { screenW } = phoneGeometry(screenH);
-  const ecran = <Screen src="captures/mobile-25-terminal-commandes.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.03]} origin="50% 30%" duration={duree} />;
+  const ecran = (
+    <Screen src="captures/mobile-25-terminal-commandes.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.03]} origin="50% 30%" duration={duree}>
+      <Heure texte="15:20" />
+    </Screen>
+  );
 
   if (portrait) {
     return (

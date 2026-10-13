@@ -141,3 +141,14 @@ export const Line: React.FC<{
 }> = ({ children, size = 48, color = C.ink, weight = 600, style }) => (
   <div style={{ fontFamily: FONT_TEXT, fontWeight: weight, fontSize: size, lineHeight: 1.18, color, ...style }}>{children}</div>
 );
+
+/**
+ * Heure de la barre d'état d'un téléphone, redessinée par-dessus celle de la capture (repère de
+ * l'image, 1080 × 2400) : les captures n'ont pas été prises à l'heure de l'histoire. Le cache couvre
+ * aussi les icônes de notification de l'émulateur. `fond` : couleur de la barre sur la capture.
+ */
+export const Heure: React.FC<{ texte: string; fond?: string }> = ({ texte, fond = "#001861" }) => (
+  <div style={{ position: "absolute", left: 56, top: 34, width: 300, height: 68, paddingLeft: 24, background: fond, display: "flex", alignItems: "center", fontFamily: FONT_TEXT, fontWeight: 600, fontSize: 35, color: "#FFFFFF" }}>
+    {texte}
+  </div>
+);

@@ -1,16 +1,29 @@
 import React from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
-import { Line, PhoneFrame, Screen } from "../components/Frames";
+import { Heure, Line, PhoneFrame, Screen } from "../components/Frames";
 import { fadeUp, ramp, useEnter, usePortrait } from "../components/motion";
-import { C } from "../theme";
+import { C, FONT_TEXT } from "../theme";
 import { PHONE_LEFT, PHONE_SCREEN_H, PHONE_TOP, PORTRAIT_SCREEN_H, PORTRAIT_TOP, phoneGeometry, portraitLeft } from "./S3Convergence";
 
 // Trois écrans de l'application, captures du 11 octobre 2026 (nouvelle barre du bas, avec Scanner)
 const ECRANS = [
-  { src: "captures/app-01-tableau.png", phrase: "La prochaine séance, sa salle en grand." },
-  { src: "captures/app-03c-mois.png", phrase: "Le mois d'un coup d'œil." },
-  { src: "captures/app-02-fiche-seance.png", phrase: "Chaque cours : salle, heure, enseignant." },
+  { src: "captures/app-01-tableau.png", phrase: "La prochaine séance, sa salle en grand.", fond: "#001861", tableau: true },
+  { src: "captures/app-03c-mois.png", phrase: "Le mois d'un coup d'œil.", fond: "#001861", tableau: false },
+  { src: "captures/app-02-fiche-seance.png", phrase: "Chaque cours : salle, heure, enseignant.", fond: "#000b2c", tableau: false },
 ];
+
+// L'heure de l'histoire : le cours de 13 h 30 vient de commencer (la capture date de 14 h 03)
+export const HEURE_ETUDIANTE = "13:32";
+
+/** Le tableau du jour (app-01-tableau.png) remis à l'heure : barre d'état et « Mis à jour à ». */
+export const HeureTableau: React.FC = () => (
+  <>
+    <Heure texte={HEURE_ETUDIANTE} />
+    <div style={{ position: "absolute", left: 40, top: 340, width: 300, height: 56, background: "#f3f4f7", display: "flex", alignItems: "center", paddingLeft: 4, fontFamily: FONT_TEXT, fontSize: 30, color: "#5f6778" }}>
+      Mis à jour à {HEURE_ETUDIANTE}
+    </div>
+  </>
+);
 
 /**
  * 3 · l'étudiante et son emploi du temps : le tableau du jour, le mois, puis le détail d'un cours.
@@ -30,7 +43,9 @@ export const M3Etudiante: React.FC<{ duree: number }> = ({ duree }) => {
 
   const ecran = ECRANS.map((e, i) => (
     <div key={e.src} style={{ position: "absolute", inset: 0, opacity: visible(i) }}>
-      <Screen src={e.src} srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.03]} origin="50% 30%" duration={duree} />
+      <Screen src={e.src} srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.03]} origin="50% 30%" duration={duree}>
+        {e.tableau ? <HeureTableau /> : <Heure texte={HEURE_ETUDIANTE} fond={e.fond} />}
+      </Screen>
     </div>
   ));
   const phrases = (taille: number, centre: boolean) => (

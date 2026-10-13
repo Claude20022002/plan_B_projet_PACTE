@@ -11,6 +11,7 @@
     "render:vertical": "npm run assets && npm run musique && remotion render HestimPlannerVertical out/hestim-planner-9x16.mp4",
     "render:accroche": "npm run assets && npm run musique && remotion render HestimPlannerAccroche out/hestim-planner-9x16-accroche.mp4",
     "render:matinee": "npm run assets && npm run musique && remotion render Matinee out/matinee-ecole.mp4",
+    "render:direction": "npm run assets && npm run musique && remotion render Direction out/direction.mp4",
     "render:matinee-reseaux": "npm run assets && npm run musique && remotion render MatineeReseaux out/matinee-ecole-9x16.mp4",
     "carrousel": "npm run assets && python scripts/carrousel.py"
   },

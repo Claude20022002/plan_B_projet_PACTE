@@ -1,6 +1,6 @@
 import React from "react";
 import { AbsoluteFill, useCurrentFrame } from "remotion";
-import { BrowserFrame, BROWSER_BAR, Line, PhoneFrame, Screen } from "../components/Frames";
+import { BrowserFrame, BROWSER_BAR, Heure, Line, PhoneFrame, Screen } from "../components/Frames";
 import { fadeUp, ramp, useEnter } from "../components/motion";
 import { C } from "../theme";
 import { phoneGeometry } from "./S3Convergence";
@@ -33,7 +33,9 @@ export const M8Resultats: React.FC<{ duree: number }> = ({ duree }) => {
         <Screen src="captures/web-21-resultats-enseignant.png" srcW={1920} srcH={1080} width={BW} origin="50% 47%" zoom={[1.66, 1.74]} duration={duree} />
       </BrowserFrame>
       <PhoneFrame screenHeight={SCREEN_H} style={{ left: gauche + BW + GAP, top, opacity: tel, transform: `translateX(${(1 - tel) * 300}px)` }}>
-        <Screen src="captures/mobile-13-resultats.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 25%" duration={duree} />
+        <Screen src="captures/mobile-13-resultats.png" srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 25%" duration={duree}>
+          <Heure texte="14:30" />
+        </Screen>
       </PhoneFrame>
       <div style={{ position: "absolute", left: 0, right: 0, top: 940, textAlign: "center" }}>
         <Line size={52} style={{ ...fadeUp(l1), opacity: l1 * (1 - ramp(frame, TELEPHONE, TELEPHONE + 6)), position: "absolute", left: 0, right: 0 }}>
