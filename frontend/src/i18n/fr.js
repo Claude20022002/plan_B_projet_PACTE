@@ -1562,6 +1562,7 @@ const fr = {
     downloadPdf: 'PDF officiel',
     downloadExcel: 'Excel',
     subscribeAgenda: 'Dans mon agenda (abonnement)',
+    monthView: 'Vue du mois (imprimable)',
     filterBy: 'Afficher',
     filterAll: 'Tout le campus',
     campusWindow: 'Séances de tout le campus, de la semaine passée aux {{weeks}} semaines à venir. Pour une autre période, choisissez un groupe ou un enseignant.',

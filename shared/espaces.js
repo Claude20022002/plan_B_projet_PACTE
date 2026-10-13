@@ -20,7 +20,7 @@ export const ESPACES = [
     icone: 'library',
     titre: { fr: 'Bibliothèque', en: 'Library' },
     resume: { fr: 'Supports de cours, stages, projets', en: 'Course materials, internships, projects' },
-    chemin: '/biblio/',
+    chemin: '/biblio/dashboard',
   },
   // Pas d'espace Activités : on y entre par le scan du QR que projette l'enseignant, comme sur
   // Wooclap (remarques-par-profil.md, § 10) ; le menu du site garde sa page.

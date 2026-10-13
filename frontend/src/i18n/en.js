@@ -1566,6 +1566,7 @@ const en = {
     downloadPdf: 'Official PDF',
     downloadExcel: 'Excel',
     subscribeAgenda: 'In my calendar (subscription)',
+    monthView: 'Month view (printable)',
     filterBy: 'Show',
     filterAll: 'Whole campus',
     campusWindow: 'Sessions across the campus, from last week to the next {{weeks}} weeks. For another period, choose a group or a teacher.',

@@ -28,6 +28,7 @@ export default function TimetableExportMenu({ affectations, fileBase, title, rol
       <Menu anchorEl={anchor} open={Boolean(anchor)} onClose={() => setAnchor(null)}>
         <MenuItem onClick={run(() => exportToPDFLazy(affectations, fileBase, title, role))}>{t('timetable.downloadPdf')}</MenuItem>
         <MenuItem onClick={run(() => exportToExcelLazy(affectations, [], 'EmploiDuTemps', fileBase))}>{t('timetable.downloadExcel')}</MenuItem>
+        {role === 'etudiant' && <MenuItem onClick={run(() => navigate('/emploi-du-temps/mensuel'))}>{t('timetable.monthView')}</MenuItem>}
         <MenuItem onClick={run(() => navigate('/parametres'))}>{t('timetable.subscribeAgenda')}</MenuItem>
       </Menu>
     </>
