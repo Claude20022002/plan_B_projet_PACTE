@@ -87,6 +87,8 @@ export const suiviModules = async ({ id_periode, id_filiere = null, user }) => {
     const seances = await Affectation.findAll({
         where: { id_enseignement: enseignements.map((e) => e.id_enseignement), statut: STATUTS_ACTIFS },
         attributes: ["id_enseignement", "statut", "date_seance", "id_creneau"],
+        // Le visa dans la même requête : une séance écartée par l'administration (R-11) n'a pas eu lieu et sort aussi des heures du module
+        include: [{ model: VisaSeance, as: "visa", attributes: ["decision"], required: false }],
         raw: true,
     });
     const creneaux = new Map((await Creneau.findAll({ where: { id_creneau: [...new Set(seances.map((s) => s.id_creneau))] } })).map((c) => [c.id_creneau, c]));
@@ -104,7 +106,7 @@ export const suiviModules = async ({ id_periode, id_filiere = null, user }) => {
         const duree = heures(horaires(creneaux.get(s.id_creneau), String(s.date_seance).slice(0, 10)));
         const total = totaux.get(s.id_enseignement) ?? { planifiees: 0, realisees: 0 };
         total.planifiees += duree;
-        if (s.statut === "realise") total.realisees += duree;
+        if (s.statut === "realise" && s["visa.decision"] !== "ecartee") total.realisees += duree;
         totaux.set(s.id_enseignement, total);
     }
 
