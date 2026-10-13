@@ -80,10 +80,12 @@ export default function MesClasses() {
 
   const genererQuiz = (c) => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } });
 
-  const ouvrirSupports = async (classe) => {
+  // L'enseignant partage ses supports dans la bibliothèque : la page du module s'ouvre sur le dépôt
+  const partagerSupport = async (classe) => {
     const supports = await supportsDuCours(classe.code_cours);
+    const page = supports?.url ?? '/biblio/documents';
     // La bibliothèque (StudyLib) est une autre application sur la même origine : navigation complète
-    window.location.assign(supports?.url ?? '/biblio/');
+    window.location.assign(`${page}${page.includes('?') ? '&' : '?'}upload=1`);
   };
 
   const libelleSeance = (c) => {
@@ -109,6 +111,12 @@ export default function MesClasses() {
             {t(`classes.page.appel.${seance.appel}`)}
           </Button>
         )}
+        {/* Un autre jour : le bouton reste visible, pour qu'on sache où se fait l'appel */}
+        {seance && !seance.appel && (
+          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<FactCheck />} disabled>
+            {t('classes.page.appelLeJour')}
+          </Button>
+        )}
         {/* Devoirs masqués (lot D-1) : le bouton revient avec l'interrupteur */}
         {DEVOIRS_ACTIFS && (
           <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Quiz />} onClick={() => navigate('/jeux', { state: { donnerDevoir: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
@@ -127,7 +135,7 @@ export default function MesClasses() {
             {t('classes.page.quizDirect')}
           </Button>
         )}
-        <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<LocalLibrary />} onClick={() => ouvrirSupports(c)}>
+        <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<LocalLibrary />} onClick={() => partagerSupport(c)}>
           {t('classes.page.supports')}
         </Button>
       </Box>

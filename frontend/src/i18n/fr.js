@@ -478,7 +478,7 @@ const fr = {
     effectif_other: '{{count}} étudiants',
     page: {
       titre: 'Mes classes',
-      sousTitre: 'La classe en cours d’abord : appel, quiz, message à la classe et supports de cours.',
+      sousTitre: 'La classe en cours d’abord : appel, quiz et partage de vos supports de cours.',
       enCours: 'En cours',
       autres: 'Mes autres classes',
       toutes: 'Mes classes',
@@ -492,7 +492,8 @@ const fr = {
       quizIa: 'Créer un quiz',
       quizDirect: 'Lancer un quiz',
       ecrire: 'Écrire à la classe',
-      supports: 'Supports de cours',
+      supports: 'Partager un support',
+      appelLeJour: 'Appel le jour de la séance',
       rappelFaire: '{{classe}} se termine à {{fin}} et l’appel n’a pas été fait.',
       rappelTerminer: '{{classe}} se termine à {{fin}} : l’appel est encore ouvert. Terminez-le pour enregistrer les présences.',
     },
