@@ -110,7 +110,8 @@ test("Paramètres : le thème StudyLib retire les fonds noirs du panneau et la m
   expect(await variable("--board-ground")).toBe("#FFFFFF");
   expect(await variable("--nav-fond")).toBe("#FFFFFF");
 
-  // Retour au thème Planner : les variables disparaissent, les couleurs du panneau reviennent
+  // Retour au thème Planner : le panneau reste clair (cartes claires, lot V-1), le menu redevient marine
   await page.getByRole("button", { name: "Planner", exact: true }).click();
-  expect(await variable("--board-ground")).toBe("");
+  expect(await variable("--board-ground")).toBe("#FFFFFF");
+  expect(await variable("--nav-fond")).toBe("");
 });
