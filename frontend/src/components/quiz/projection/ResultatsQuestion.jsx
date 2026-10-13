@@ -50,7 +50,7 @@ export default function ResultatsQuestion({ question, reponses, derniere, onSuiv
           startIcon={derniere ? <EmojiEvents /> : null}
           endIcon={derniere ? null : <NavigateNext />}
           onClick={onSuivant}
-          sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: '#FFFFFF' } }}
+          sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: ds.board.letter, opacity: 0.88 } }}
         >
           {t(derniere ? 'quizDirect.classementFinal' : 'quizDirect.suivant')}
         </Button>

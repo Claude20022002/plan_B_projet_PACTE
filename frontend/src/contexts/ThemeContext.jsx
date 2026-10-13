@@ -3,7 +3,7 @@ import { createTheme, ThemeProvider as MUIThemeProvider } from '@mui/material/st
 import GlobalStyles from '@mui/material/GlobalStyles';
 import { frFR, enUS } from '@mui/material/locale';
 import { useTranslation } from 'react-i18next';
-import { ds } from '../design-system/tokens';
+import { FAMILLES, paletteDe, variablesCss } from '../design-system/familles';
 
 const ThemeContext = createContext(null);
 
@@ -25,8 +25,6 @@ const readStoredMode = () => {
     }
 };
 
-const FAMILLES = ['planner', 'studylib'];
-
 const readStoredFamille = () => {
     try {
         const famille = localStorage.getItem('themeFamille');
@@ -36,105 +34,49 @@ const readStoredFamille = () => {
     }
 };
 
-// Thème de la bibliothèque StudyLib (mêmes valeurs que l'application : mobile/src/theme.js) :
-// Inter, bleu #1D4ED8, gris ardoise, coins plus arrondis, casse normale.
-const STUDYLIB = {
-    font: '"Inter", "Segoe UI", system-ui, sans-serif',
-    radius: { xs: 6, sm: 10, md: 14, lg: 18 },
-    clair: { ground: '#F8FAFC', surface: '#FFFFFF', line: '#E2E8F0', strong: '#CBD5E1', text: '#0F172A', dim: '#64748B', primary: '#1D4ED8', primaryDark: '#1E3A8A', head: '#F1F5F9', hover: '#EFF6FF', selected: '#DBEAFE' },
-    sombre: { ground: '#0F172A', surface: '#1E293B', line: '#334155', strong: '#475569', text: '#F1F5F9', dim: '#94A3B8', primary: '#60A5FA', primaryDark: '#93C5FD', head: '#0F172A', hover: 'rgba(241, 245, 249, 0.06)', selected: 'rgba(96, 165, 250, 0.16)' },
-};
-
-// Panneau des séances et menu en thème StudyLib : plus de fond noir ni de marine, les gris ardoise
-// et le bleu de la bibliothèque. Ils remplacent les variables CSS de design-system/tokens.js.
-const PANNEAU_STUDYLIB = {
-    clair: {
-        board: { titre: '#0F172A', ground: '#FFFFFF', frame: '#E2E8F0', cell: '#F1F5F9', cellHinge: '#CBD5E1', seam: '#E2E8F0', letter: '#0F172A', letterDim: '#64748B', onTime: '#0F172A', live: '#15803D', delayed: '#B45309', cancelled: '#DC2626' },
-        nav: { fond: '#FFFFFF', letter: '#0F172A', letterSoft: '#334155', letterDim: '#64748B', icon: '#64748B', selection: '#DBEAFE', survol: '#F1F5F9', filet: '#E2E8F0', bordBouton: '#CBD5E1', boutonActif: '#DBEAFE' },
-    },
-    sombre: {
-        board: { titre: '#F1F5F9', ground: '#1E293B', frame: '#334155', cell: '#0F172A', cellHinge: '#020617', seam: '#334155', letter: '#F1F5F9', letterDim: '#94A3B8', onTime: '#F1F5F9', live: '#4ADE80', delayed: '#FB923C', cancelled: '#F87171' },
-        nav: { fond: '#0F172A', letter: '#F1F5F9', letterSoft: '#CBD5E1', letterDim: '#94A3B8', icon: '#94A3B8', selection: 'rgba(96, 165, 250, 0.16)', survol: 'rgba(241, 245, 249, 0.06)', filet: '#1E293B', bordBouton: '#334155', boutonActif: 'rgba(96, 165, 250, 0.16)' },
-    },
-};
-
-const variablesCss = (famille, mode) => {
-    if (famille !== 'studylib') return {};
-    const { board, nav } = PANNEAU_STUDYLIB[mode === 'light' ? 'clair' : 'sombre'];
-    return {
-        ...Object.fromEntries(Object.entries(board).map(([cle, valeur]) => [`--board-${cle}`, valeur])),
-        ...Object.fromEntries(Object.entries(nav).map(([cle, valeur]) => [`--nav-${cle}`, valeur])),
-    };
-};
-
-// Vocabulaire « volet » : capitales condensées espacées (en-têtes, boutons, horaires, codes)
-const flapLabelPlanner = {
-    fontFamily: ds.font.board,
-    fontWeight: 600,
-    textTransform: 'uppercase',
-    letterSpacing: '0.06em',
-};
-
+// Palette de la famille choisie (design-system/familles.js) habillée en thème MUI
 const buildTheme = (mode, language, famille = 'planner') => {
-    const isLight = mode === 'light';
-    const sl = famille === 'studylib';
-    const p = sl ? STUDYLIB[isLight ? 'clair' : 'sombre'] : null;
-    const c = ds.colors;
-    const b = ds.boardBrut;
-    const fontTitres = sl ? STUDYLIB.font : ds.font.board;
-    const fontCorps = sl ? STUDYLIB.font : ds.font.body;
-    const rayon = sl ? STUDYLIB.radius : ds.radius;
-    const flapLabel = sl ? { fontFamily: STUDYLIB.font, fontWeight: 600, textTransform: 'none', letterSpacing: 0 } : flapLabelPlanner;
-
-    const surface = sl ? p.surface : isLight ? c.bg.surface : b.cell;
-    const ground = sl ? p.ground : isLight ? c.bg.app : b.ground;
-    const line = sl ? p.line : isLight ? c.border.default : b.seam;
-    const textPrimary = sl ? p.text : isLight ? c.text.primary : b.letter;
-    const textSecondary = sl ? p.dim : isLight ? c.text.secondary : b.letterDim;
-    const strong = sl ? p.strong : isLight ? c.border.strong : b.seam;
-    const enteteTableau = sl ? p.head : isLight ? '#F6F7FA' : b.ground;
+    const p = paletteDe(famille, mode);
+    const { rayon, libelle, bouton } = p;
 
     return createTheme(
         {
             palette: {
                 mode,
                 primary: {
-                    main: sl ? p.primary : isLight ? ds.brand.navy : '#8FA6F0',
-                    dark: sl ? p.primaryDark : ds.brand.navyDeep,
-                    light: sl ? '#3B82F6' : '#3350A8',
-                    contrastText: sl ? (isLight ? '#FFFFFF' : '#0F172A') : isLight ? '#FFFFFF' : b.ground,
+                    main: p.primary,
+                    dark: p.primaryDark,
+                    light: p.primaryLight,
+                    contrastText: p.contrastText,
                 },
                 secondary: {
-                    main: ds.brand.orange,
+                    main: '#F26322',
                     contrastText: '#1A0A02',
                 },
-                success: { main: isLight ? c.success.text : b.live },
-                warning: { main: isLight ? c.warning.text : b.delayed },
-                error: { main: isLight ? c.danger.text : b.cancelled },
-                info: { main: isLight ? c.info.text : '#8FA6F0' },
-                background: { default: ground, paper: surface },
-                text: { primary: textPrimary, secondary: textSecondary },
-                divider: line,
-                action: {
-                    hover: sl ? p.hover : isLight ? '#EEF0F5' : 'rgba(242, 241, 236, 0.06)',
-                    selected: sl ? p.selected : isLight ? ds.brand.navySoft : 'rgba(143, 166, 240, 0.16)',
-                },
+                success: { main: p.success },
+                warning: { main: p.warning },
+                error: { main: p.error },
+                info: { main: p.info },
+                background: { default: p.ground, paper: p.surface },
+                text: { primary: p.text, secondary: p.dim },
+                divider: p.line,
+                action: { hover: p.hover, selected: p.selected },
             },
             typography: {
-                fontFamily: fontCorps,
-                h1: { fontFamily: fontTitres, fontSize: '1.75rem', lineHeight: 1.15, fontWeight: 700, letterSpacing: '0.01em' },
-                h2: { fontFamily: fontTitres, fontSize: '1.375rem', lineHeight: 1.2, fontWeight: 700, letterSpacing: '0.01em' },
-                h3: { fontFamily: fontTitres, fontSize: '1.125rem', lineHeight: 1.25, fontWeight: 600, letterSpacing: '0.02em' },
-                h4: { fontFamily: fontTitres, fontSize: '1.0625rem', lineHeight: 1.3, fontWeight: 600 },
-                h5: { fontFamily: fontTitres, fontSize: '1rem', lineHeight: 1.3, fontWeight: 600 },
-                h6: { fontFamily: fontTitres, fontSize: '1rem', lineHeight: 1.3, fontWeight: 600 },
+                fontFamily: p.fontCorps,
+                h1: { fontFamily: p.fontTitres, fontSize: '1.75rem', lineHeight: 1.15, fontWeight: 700, letterSpacing: '0.01em' },
+                h2: { fontFamily: p.fontTitres, fontSize: '1.375rem', lineHeight: 1.2, fontWeight: 700, letterSpacing: '0.01em' },
+                h3: { fontFamily: p.fontCorps, fontSize: '1.125rem', lineHeight: 1.25, fontWeight: 600, letterSpacing: '0.02em' },
+                h4: { fontFamily: p.fontCorps, fontSize: '1.0625rem', lineHeight: 1.3, fontWeight: 600 },
+                h5: { fontFamily: p.fontCorps, fontSize: '1rem', lineHeight: 1.3, fontWeight: 600 },
+                h6: { fontFamily: p.fontCorps, fontSize: '1rem', lineHeight: 1.3, fontWeight: 600 },
                 subtitle1: { fontSize: '0.9375rem', fontWeight: 600 },
                 subtitle2: { fontSize: '0.875rem', fontWeight: 600 },
                 body1: { fontSize: '0.9375rem', lineHeight: 1.55 },
                 body2: { fontSize: '0.875rem', lineHeight: 1.5 },
                 caption: { fontSize: '0.8125rem', lineHeight: 1.4 },
-                overline: { ...flapLabel, fontSize: '0.75rem', lineHeight: 1.6, letterSpacing: '0.1em' },
-                button: { ...flapLabel, fontSize: '0.9375rem' },
+                overline: { ...libelle, fontSize: '0.75rem', lineHeight: 1.6 },
+                button: { ...bouton, fontSize: '0.9375rem' },
             },
             shape: { borderRadius: rayon.md },
             components: {
@@ -150,16 +92,17 @@ const buildTheme = (mode, language, famille = 'planner') => {
                     defaultProps: { elevation: 0 },
                     styleOverrides: {
                         root: { backgroundImage: 'none' },
-                        outlined: { borderColor: line },
+                        outlined: { borderColor: p.line },
                     },
                 },
                 MuiCard: {
                     defaultProps: { variant: 'outlined' },
                     styleOverrides: {
+                        // Carte : filet et ombre douce (DESIGN.md, Elevation & Depth)
                         root: {
                             borderRadius: rayon.md,
-                            borderColor: line,
-                            boxShadow: 'none',
+                            borderColor: p.line,
+                            boxShadow: p.ombreCarte,
                         },
                     },
                 },
@@ -174,9 +117,9 @@ const buildTheme = (mode, language, famille = 'planner') => {
                         },
                         sizeSmall: { minHeight: 32, fontSize: '0.8125rem', paddingLeft: 10, paddingRight: 10 },
                         containedPrimary: {
-                            '&:hover': { backgroundColor: sl ? p.primaryDark : isLight ? ds.brand.navyDeep : '#A9BBF4' },
+                            '&:hover': { backgroundColor: p.primaryHover },
                         },
-                        outlined: { borderColor: strong },
+                        outlined: { borderColor: p.strong },
                     },
                 },
                 MuiIconButton: {
@@ -186,10 +129,10 @@ const buildTheme = (mode, language, famille = 'planner') => {
                 },
                 MuiChip: {
                     styleOverrides: {
-                        // Pastille = petit volet : angles presque droits, capitales condensées
+                        // Pastille d'état : pilule ronde, libellé en capitales
                         root: {
-                            ...flapLabel,
-                            borderRadius: rayon.xs,
+                            ...libelle,
+                            borderRadius: 999,
                             fontSize: '0.75rem',
                             letterSpacing: '0.08em',
                             height: 26,
@@ -201,8 +144,8 @@ const buildTheme = (mode, language, famille = 'planner') => {
                     styleOverrides: {
                         root: {
                             backgroundImage: 'none',
-                            backgroundColor: surface,
-                            borderBottom: `1px solid ${line}`,
+                            backgroundColor: p.surface,
+                            borderBottom: `1px solid ${p.line}`,
                         },
                     },
                 },
@@ -221,18 +164,17 @@ const buildTheme = (mode, language, famille = 'planner') => {
                 },
                 MuiTableCell: {
                     styleOverrides: {
-                        // En-têtes de colonnes comme sur un panneau : capitales condensées, filets fins
+                        // En-têtes de colonnes : libellés en capitales sur gris doux, filets fins
                         head: {
-                            ...flapLabel,
+                            ...libelle,
                             fontSize: '0.75rem',
-                            letterSpacing: '0.1em',
-                            color: textSecondary,
-                            backgroundColor: enteteTableau,
-                            borderBottom: `1px solid ${strong}`,
+                            color: p.dim,
+                            backgroundColor: p.head,
+                            borderBottom: `1px solid ${p.strong}`,
                             whiteSpace: 'nowrap',
                         },
                         root: {
-                            borderBottomColor: line,
+                            borderBottomColor: p.line,
                             fontVariantNumeric: 'tabular-nums',
                         },
                     },
@@ -241,7 +183,7 @@ const buildTheme = (mode, language, famille = 'planner') => {
                     styleOverrides: {
                         root: {
                             '&.MuiTableRow-hover:hover': {
-                                backgroundColor: sl ? p.hover : isLight ? '#F6F7FA' : 'rgba(242, 241, 236, 0.04)',
+                                backgroundColor: p.hover,
                             },
                         },
                     },
@@ -263,8 +205,8 @@ const buildTheme = (mode, language, famille = 'planner') => {
                 MuiTooltip: {
                     styleOverrides: {
                         tooltip: {
-                            backgroundColor: b.ground,
-                            color: b.letter,
+                            backgroundColor: p.tooltip.fond,
+                            color: p.tooltip.texte,
                             fontSize: '0.8125rem',
                             borderRadius: rayon.sm,
                         },
@@ -287,7 +229,7 @@ const buildTheme = (mode, language, famille = 'planner') => {
                 },
                 MuiTab: {
                     styleOverrides: {
-                        root: { ...flapLabel, fontSize: '0.875rem', minHeight: 44 },
+                        root: { ...bouton, fontSize: '0.875rem', minHeight: 44 },
                     },
                 },
             },

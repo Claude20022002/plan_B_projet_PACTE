@@ -49,7 +49,7 @@ export default function SalleAttente({ pin, adresse, joueurs, onDemarrer }) {
           startIcon={<PlayArrow />}
           onClick={onDemarrer}
           disabled={joueurs.length === 0}
-          sx={{ mt: 2, bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: '#FFFFFF' } }}
+          sx={{ mt: 2, bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: ds.board.letter, opacity: 0.88 } }}
         >
           {t('quizDirect.demarrer')}
         </Button>

@@ -70,7 +70,7 @@ export default function Accueil() {
     <Box sx={{ minHeight: '100vh', bgcolor: ds.board.ground, color: ds.board.letter, display: 'flex', flexDirection: 'column' }}>
       <Box
         component="header"
-        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: { xs: 2, md: 6 }, py: 2, bgcolor: ds.board.frame }}
+        sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: { xs: 2, md: 6 }, py: 2, bgcolor: ds.nav.fond }}
       >
         <Box sx={{ bgcolor: ds.white, borderRadius: `${ds.radius.md}px`, px: 1.25, py: 0.75, display: 'inline-flex' }}>
           <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: { xs: 24, md: 28 }, display: 'block' }} />
@@ -158,7 +158,7 @@ export default function Accueil() {
             <Typography
               id="features-title"
               component="h2"
-              sx={{ px: 1.5, pt: 0.5, pb: 1, color: ds.nav.letter, fontFamily: ds.font.board, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '1.0625rem' }}
+              sx={{ px: 1.5, pt: 0.5, pb: 1, color: ds.board.titre, fontFamily: ds.font.board, fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', fontSize: '1.0625rem' }}
             >
               {t('landing.featuresTitle')}
             </Typography>

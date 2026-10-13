@@ -1,5 +1,5 @@
 {
-  "$description": "Jetons partagés par le web (frontend) et l'application mobile : marque, panneau, statuts, lignes. Une seule source de vérité.",
+  "$description": "Jetons partagés par le web (frontend) et l'application mobile : marque, surfaces, statuts, lignes, palette de jeu. Une seule source de vérité (DESIGN.md).",
   "brand": {
     "navy": "#001861",
     "navyDeep": "#000E3D",
@@ -7,6 +7,90 @@
     "red": "#DB1F26",
     "orange": "#F26322",
     "green": "#137D3F"
+  },
+  "surface": {
+    "clair": {
+      "sol": "#F5F7FB",
+      "carte": "#FFFFFF",
+      "doux": "#F0F2F7",
+      "filet": "#E3E7EF",
+      "filetAppuye": "#C9CFDB",
+      "encre": "#0D1326",
+      "encreSeconde": "#3F4759",
+      "encreEffacee": "#5F6778",
+      "primaire": "#001861",
+      "primaireSurvol": "#000E3D",
+      "primaireVoile": "#E8ECF7"
+    },
+    "nuit": {
+      "sol": "#0F172A",
+      "carte": "#1E293B",
+      "doux": "#162032",
+      "filet": "#334155",
+      "filetAppuye": "#475569",
+      "encre": "#F1F5F9",
+      "encreSeconde": "#CBD5E1",
+      "encreEffacee": "#94A3B8",
+      "primaire": "#8FA6F0",
+      "primaireSurvol": "#A9BBF4",
+      "primaireVoile": "rgba(143, 166, 240, 0.16)"
+    }
+  },
+  "rayon": {
+    "petit": 8,
+    "moyen": 12,
+    "grand": 16
+  },
+  "ombre": {
+    "carte": "0 1px 3px rgba(13, 19, 38, 0.08)",
+    "releve": "0 6px 20px rgba(13, 19, 38, 0.10)",
+    "flottant": "0 12px 32px rgba(13, 19, 38, 0.18)"
+  },
+  "jeu": {
+    "reponses": [
+      {
+        "couleur": "#1F5FBF",
+        "encre": "#FFFFFF",
+        "forme": "triangle"
+      },
+      {
+        "couleur": "#E8B400",
+        "encre": "#0D1326",
+        "forme": "losange"
+      },
+      {
+        "couleur": "#7B3FBF",
+        "encre": "#FFFFFF",
+        "forme": "cercle"
+      },
+      {
+        "couleur": "#139EA3",
+        "encre": "#FFFFFF",
+        "forme": "carre"
+      },
+      {
+        "couleur": "#D6458F",
+        "encre": "#FFFFFF",
+        "forme": "etoile"
+      },
+      {
+        "couleur": "#46508F",
+        "encre": "#FFFFFF",
+        "forme": "hexagone"
+      }
+    ],
+    "equipes": [
+      "#D7263D",
+      "#1F5FBF",
+      "#2E9E4F",
+      "#E8B400",
+      "#7B3FBF",
+      "#F26322",
+      "#139EA3",
+      "#D6458F"
+    ],
+    "bonne": "#137D3F",
+    "mauvaise": "#B5161C"
   },
   "board": {
     "ground": "#0B0B0D",

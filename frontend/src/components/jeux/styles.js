@@ -10,12 +10,12 @@ export const boutonPanneau = {
   '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 2 },
 };
 
-/** Bouton principal sur le panneau : plein blanc cassé, lettres noires */
+/** Bouton principal sur le panneau : plein, aux couleurs inversées du panneau */
 export const boutonPanneauPlein = {
   bgcolor: ds.board.letter,
   color: ds.board.ground,
   fontFamily: ds.font.board,
   letterSpacing: '0.08em',
-  '&:hover': { bgcolor: '#FFFFFF' },
+  '&:hover': { bgcolor: ds.board.letter, opacity: 0.88 },
   '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 2 },
 };

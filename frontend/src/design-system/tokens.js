@@ -1,9 +1,9 @@
 /**
- * Design tokens — HESTIM Planner « panneau à volets ».
+ * Design tokens — HESTIM Planner, cartes claires (DESIGN.md).
  *
- * Deux sols pour un même système :
- *   - board  : le panneau des départs (noir mat, lettres blanches) pour les séances en direct ;
- *   - bureau : la version claire pour les écrans de gestion denses.
+ * Sol clair et cartes blanches ; mode nuit en ardoise (ds.surface.nuit), jamais en noir.
+ * `ds.board` (l'ancien panneau des départs) reste le temps de la refonte (lot V-2) : ses
+ * variables CSS pointent désormais vers les surfaces claires (design-system/familles.js).
  * Les couleurs de marque sont relevées sur le logo officiel (public/HESTIM.png).
  */
 
@@ -11,6 +11,7 @@ import { tokens as partages, lineColor } from '../../../shared/tokens.js';
 
 // Couleurs exactes du logo HESTIM (shared/design-tokens.json)
 const brand = partages.brand;
+const clair = partages.surface.clair;
 
 // Menu sur la marine du logo
 const NAV = {
@@ -36,19 +37,19 @@ export const ds = {
   colors: {
     // Sol « bureau » (clair) — écrans de gestion
     bg: {
-      app: '#F3F4F7',
-      surface: '#FFFFFF',
-      subtle: '#EEF0F5',
-      elevated: '#FFFFFF',
+      app: clair.sol,
+      surface: clair.carte,
+      subtle: clair.doux,
+      elevated: clair.carte,
     },
     text: {
-      primary: '#0D1326',
-      secondary: '#3F4759',
-      muted: '#5F6778',
+      primary: clair.encre,
+      secondary: clair.encreSeconde,
+      muted: clair.encreEffacee,
     },
     border: {
-      default: '#DADDE5',
-      strong: '#B9BECB',
+      default: clair.filet,
+      strong: clair.filetAppuye,
     },
     // Accent d'action : le bleu marine du logo (contraste 15:1 sur blanc)
     brand: {
@@ -61,6 +62,12 @@ export const ds = {
     danger: { text: '#B5161C', bg: '#FCE8E9', border: '#F2B4B6' },
     info: { text: brand.navy, bg: brand.navySoft, border: '#BCC6E6' },
   },
+
+  // Sols, cartes et textes en clair et en nuit (shared/design-tokens.json)
+  surface: partages.surface,
+
+  // Salle de jeu des quiz : couleur, encre et forme de chaque réponse, couleurs d'équipe
+  jeu: partages.jeu,
 
   // Commun au web et au mobile (shared/design-tokens.json)
   // titre : texte posé sur le cadre (en-têtes des panneaux, jour en cours)
@@ -104,16 +111,18 @@ export const ds = {
     mono: 'ui-monospace, "Cascadia Mono", "Segoe UI Mono", Consolas, "Liberation Mono", monospace',
   },
 
+  // Angles doux : pastilles 6, boutons et champs 8, cartes 12, dialogues et tuiles de jeu 16
   radius: {
-    xs: 2,
-    sm: 3,
-    md: 4,
-    lg: 6,
+    xs: 6,
+    sm: partages.rayon.petit,
+    md: partages.rayon.moyen,
+    lg: partages.rayon.grand,
   },
 
   shadow: {
-    card: '0 1px 2px rgba(13, 19, 38, 0.06)',
-    popover: '0 12px 32px rgba(13, 19, 38, 0.18)',
+    card: partages.ombre.carte,
+    raised: partages.ombre.releve,
+    popover: partages.ombre.flottant,
   },
 
   motion: {

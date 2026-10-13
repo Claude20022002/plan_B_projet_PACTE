@@ -14,7 +14,7 @@ import { ds } from '../../../design-system/tokens';
 export default function QuestionProjetee({ question, numero, total, restant, reponsesRecues, nbJoueurs, diapositive, onVoir, onSuivant }) {
   const { t } = useTranslation();
   const choix = Array.isArray(question?.answers) ? question.answers : [];
-  const boutonClair = { bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: '#FFFFFF' } };
+  const boutonClair = { bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: ds.board.letter, opacity: 0.88 } };
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: { xs: 2, md: 3 } }}>

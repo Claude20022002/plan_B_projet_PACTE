@@ -78,7 +78,7 @@ export default function SelecteurEspaces({ role, sx }) {
       >
         <Box
           component="h2"
-          sx={{ m: 0, px: 1, pt: 0.25, pb: 0.75, color: '#FFFFFF', fontFamily: ds.font.board, fontWeight: 700, fontSize: '0.9375rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}
+          sx={{ m: 0, px: 1, pt: 0.25, pb: 0.75, color: ds.board.titre, fontFamily: ds.font.board, fontWeight: 700, fontSize: '0.9375rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}
         >
           {t('espaces.titre')}
         </Box>
