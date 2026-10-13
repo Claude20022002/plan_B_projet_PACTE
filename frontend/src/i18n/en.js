@@ -464,7 +464,7 @@ const en = {
     effectif_other: '{{count}} students',
     page: {
       titre: 'My classes',
-      sousTitre: 'The class in progress comes first: attendance, quizzes, message to the class and course materials.',
+      sousTitre: 'The class in progress comes first: attendance, quizzes and sharing your course material.',
       enCours: 'In progress',
       autres: 'My other classes',
       toutes: 'My classes',
@@ -478,7 +478,8 @@ const en = {
       quizIa: 'Create a quiz',
       quizDirect: 'Start a quiz',
       ecrire: 'Write to the class',
-      supports: 'Course materials',
+      supports: 'Share course material',
+      appelLeJour: 'Attendance on the day of the session',
       rappelFaire: '{{classe}} ends at {{fin}} and attendance has not been taken.',
       rappelTerminer: '{{classe}} ends at {{fin}}: attendance is still open. Close it to record who was present.',
     },
