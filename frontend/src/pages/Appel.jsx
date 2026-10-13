@@ -173,7 +173,7 @@ export default function Appel() {
 
   return (
     <DashboardLayout>
-      <Button startIcon={<ArrowBack />} onClick={() => navigate('/mes-affectations')} sx={{ mb: 1 }}>
+      <Button startIcon={<ArrowBack />} onClick={() => navigate('/mes-classes')} sx={{ mb: 1 }}>
         {t('appel.retour')}
       </Button>
       <Typography variant="h1" component="h2" sx={{ mb: 0.5 }}>

@@ -42,7 +42,6 @@ import {
   CalendarMonth,
   Category,
   DarkModeOutlined,
-  PaletteOutlined,
   EventAvailable,
   EventRepeat,
   Groups,
@@ -142,7 +141,6 @@ const navigationFor = (user) => {
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
           { key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' },
-          { key: 'nav.mySessions', icon: <Assignment />, path: '/mes-affectations' },
           { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
           { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },
           { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
@@ -260,10 +258,10 @@ function LanguageSwitch({ onDark = false }) {
           py: 0.25,
           lineHeight: 1.6,
           color: onDark ? ds.nav.letterDim : 'text.secondary',
-          borderColor: onDark ? 'rgba(255,255,255,0.22)' : 'divider',
+          borderColor: onDark ? ds.nav.bordBouton : 'divider',
           '&.Mui-selected': {
             color: onDark ? ds.nav.letter : 'primary.main',
-            bgcolor: onDark ? 'rgba(255,255,255,0.14)' : 'action.selected',
+            bgcolor: onDark ? ds.nav.boutonActif : 'action.selected',
           },
         },
       }}
@@ -280,7 +278,7 @@ function LanguageSwitch({ onDark = false }) {
 export default function DashboardLayout({ children }) {
   const { t } = useTranslation();
   const { user, logout } = useAuth();
-  const { mode, toggleTheme, famille, toggleFamille } = useTheme();
+  const { mode, toggleTheme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const isDesktop = useMediaQuery('(min-width:900px)');
@@ -332,7 +330,7 @@ export default function DashboardLayout({ children }) {
     <Box
       component="nav"
       aria-label={t('nav.menu')}
-      sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: ds.brand.navy, color: ds.nav.letter }}
+      sx={{ height: '100%', display: 'flex', flexDirection: 'column', bgcolor: ds.nav.fond, color: ds.nav.letter }}
     >
       <Box sx={{ px: 2, pt: 2.5, pb: 2 }}>
         <Box sx={{ bgcolor: ds.white, borderRadius: `${ds.radius.md}px`, px: 1.5, py: 1, display: 'inline-flex' }}>
@@ -388,8 +386,8 @@ export default function DashboardLayout({ children }) {
                       px: 1.25,
                       color: selected ? ds.nav.letter : ds.nav.letterSoft,
                       '& .MuiListItemIcon-root': { color: selected ? ds.brand.orange : ds.nav.icon, minWidth: 34 },
-                      '&.Mui-selected, &.Mui-selected:hover': { bgcolor: 'rgba(255,255,255,0.12)' },
-                      '&:hover': { bgcolor: 'rgba(255,255,255,0.07)' },
+                      '&.Mui-selected, &.Mui-selected:hover': { bgcolor: ds.nav.selection },
+                      '&:hover': { bgcolor: ds.nav.survol },
                       '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: -2 },
                     }}
                   >
@@ -406,7 +404,7 @@ export default function DashboardLayout({ children }) {
         ))}
       </Box>
 
-      <Box sx={{ px: 2, py: 1.75, borderTop: '1px solid rgba(255,255,255,0.12)' }}>
+      <Box sx={{ px: 2, py: 1.75, borderTop: `1px solid ${ds.nav.filet}` }}>
         <Box
           component="button"
           type="button"
@@ -437,15 +435,6 @@ export default function DashboardLayout({ children }) {
         <Box sx={{ mt: 1.5, display: 'flex', alignItems: 'center', gap: 1 }}>
           <LanguageSwitch onDark />
           <Box sx={{ flexGrow: 1 }} />
-          <Tooltip title={famille === 'studylib' ? t('common.themePlanner') : t('common.themeStudylib')}>
-            <IconButton
-              onClick={toggleFamille}
-              aria-label={famille === 'studylib' ? t('common.themePlanner') : t('common.themeStudylib')}
-              sx={{ color: famille === 'studylib' ? ds.brand.orange : ds.nav.letterSoft }}
-            >
-              <PaletteOutlined />
-            </IconButton>
-          </Tooltip>
           <Tooltip title={mode === 'dark' ? t('common.themeLight') : t('common.themeDark')}>
             <IconButton
               onClick={toggleTheme}
@@ -476,7 +465,7 @@ export default function DashboardLayout({ children }) {
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
           ModalProps={{ keepMounted: true }}
-          PaperProps={{ sx: { width: RAIL_WIDTH, bgcolor: ds.brand.navy } }}
+          PaperProps={{ sx: { width: RAIL_WIDTH, bgcolor: ds.nav.fond } }}
         >
           {rail}
         </Drawer>
@@ -488,9 +477,9 @@ export default function DashboardLayout({ children }) {
           sx={{
             top: 0,
             zIndex: (theme) => theme.zIndex.appBar,
-            bgcolor: isDesktop ? 'background.paper' : ds.brand.navy,
+            bgcolor: isDesktop ? 'background.paper' : ds.nav.fond,
             color: isDesktop ? 'text.primary' : ds.nav.letter,
-            borderBottomColor: isDesktop ? 'divider' : ds.brand.navy,
+            borderBottomColor: isDesktop ? 'divider' : ds.nav.fond,
           }}
         >
           <Toolbar sx={{ minHeight: { xs: 56, md: 64 }, px: { xs: 1, sm: 2, md: 3 }, gap: 0.5 }}>

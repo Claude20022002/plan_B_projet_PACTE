@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useMemo, useState } from 'react';
 import { createTheme, ThemeProvider as MUIThemeProvider } from '@mui/material/styles';
+import GlobalStyles from '@mui/material/GlobalStyles';
 import { frFR, enUS } from '@mui/material/locale';
 import { useTranslation } from 'react-i18next';
 import { ds } from '../design-system/tokens';
@@ -44,6 +45,28 @@ const STUDYLIB = {
     sombre: { ground: '#0F172A', surface: '#1E293B', line: '#334155', strong: '#475569', text: '#F1F5F9', dim: '#94A3B8', primary: '#60A5FA', primaryDark: '#93C5FD', head: '#0F172A', hover: 'rgba(241, 245, 249, 0.06)', selected: 'rgba(96, 165, 250, 0.16)' },
 };
 
+// Panneau des séances et menu en thème StudyLib : plus de fond noir ni de marine, les gris ardoise
+// et le bleu de la bibliothèque. Ils remplacent les variables CSS de design-system/tokens.js.
+const PANNEAU_STUDYLIB = {
+    clair: {
+        board: { titre: '#0F172A', ground: '#FFFFFF', frame: '#E2E8F0', cell: '#F1F5F9', cellHinge: '#CBD5E1', seam: '#E2E8F0', letter: '#0F172A', letterDim: '#64748B', onTime: '#0F172A', live: '#15803D', delayed: '#B45309', cancelled: '#DC2626' },
+        nav: { fond: '#FFFFFF', letter: '#0F172A', letterSoft: '#334155', letterDim: '#64748B', icon: '#64748B', selection: '#DBEAFE', survol: '#F1F5F9', filet: '#E2E8F0', bordBouton: '#CBD5E1', boutonActif: '#DBEAFE' },
+    },
+    sombre: {
+        board: { titre: '#F1F5F9', ground: '#1E293B', frame: '#334155', cell: '#0F172A', cellHinge: '#020617', seam: '#334155', letter: '#F1F5F9', letterDim: '#94A3B8', onTime: '#F1F5F9', live: '#4ADE80', delayed: '#FB923C', cancelled: '#F87171' },
+        nav: { fond: '#0F172A', letter: '#F1F5F9', letterSoft: '#CBD5E1', letterDim: '#94A3B8', icon: '#94A3B8', selection: 'rgba(96, 165, 250, 0.16)', survol: 'rgba(241, 245, 249, 0.06)', filet: '#1E293B', bordBouton: '#334155', boutonActif: 'rgba(96, 165, 250, 0.16)' },
+    },
+};
+
+const variablesCss = (famille, mode) => {
+    if (famille !== 'studylib') return {};
+    const { board, nav } = PANNEAU_STUDYLIB[mode === 'light' ? 'clair' : 'sombre'];
+    return {
+        ...Object.fromEntries(Object.entries(board).map(([cle, valeur]) => [`--board-${cle}`, valeur])),
+        ...Object.fromEntries(Object.entries(nav).map(([cle, valeur]) => [`--nav-${cle}`, valeur])),
+    };
+};
+
 // Vocabulaire « volet » : capitales condensées espacées (en-têtes, boutons, horaires, codes)
 const flapLabelPlanner = {
     fontFamily: ds.font.board,
@@ -57,7 +80,7 @@ const buildTheme = (mode, language, famille = 'planner') => {
     const sl = famille === 'studylib';
     const p = sl ? STUDYLIB[isLight ? 'clair' : 'sombre'] : null;
     const c = ds.colors;
-    const b = ds.board;
+    const b = ds.boardBrut;
     const fontTitres = sl ? STUDYLIB.font : ds.font.board;
     const fontCorps = sl ? STUDYLIB.font : ds.font.body;
     const rayon = sl ? STUDYLIB.radius : ds.radius;
@@ -290,26 +313,35 @@ export const ThemeProvider = ({ children }) => {
         });
     };
 
-    // Planner (panneau des départs) ou StudyLib (bibliothèque) : même choix que dans l'application
-    const toggleFamille = () => {
-        setFamille((precedente) => {
-            const suivante = precedente === 'planner' ? 'studylib' : 'planner';
-            try {
-                localStorage.setItem('themeFamille', suivante);
-            } catch {
-                // Préférence non mémorisée : sans conséquence
-            }
-            return suivante;
-        });
+    // Planner (panneau des départs) ou StudyLib (bibliothèque) : choisi dans les Paramètres, retenu sur le navigateur
+    const memoriser = (cle, valeur) => {
+        try {
+            localStorage.setItem(cle, valeur);
+        } catch {
+            // Préférence non mémorisée : sans conséquence
+        }
+    };
+    const choisirFamille = (suivante) => {
+        if (!FAMILLES.includes(suivante)) return;
+        setFamille(suivante);
+        memoriser('themeFamille', suivante);
+    };
+    const choisirMode = (suivant) => {
+        if (suivant !== 'light' && suivant !== 'dark') return;
+        setMode(suivant);
+        memoriser('themeMode', suivant);
     };
 
     const theme = useMemo(() => buildTheme(mode, i18n.language, famille), [mode, i18n.language, famille]);
 
-    const value = { mode, toggleTheme, famille, toggleFamille, theme };
+    const value = { mode, toggleTheme, choisirMode, famille, choisirFamille, theme };
 
     return (
         <ThemeContext.Provider value={value}>
-            <MUIThemeProvider theme={theme}>{children}</MUIThemeProvider>
+            <MUIThemeProvider theme={theme}>
+                <GlobalStyles styles={{ ':root': variablesCss(famille, mode) }} />
+                {children}
+            </MUIThemeProvider>
         </ThemeContext.Provider>
     );
 };

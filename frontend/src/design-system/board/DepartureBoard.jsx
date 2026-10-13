@@ -252,7 +252,7 @@ export default function DepartureBoard({
             px: { xs: 1, sm: 1.5 },
             pt: isBoard ? 0.5 : 1.5,
             pb: isBoard ? 1 : 1.5,
-            color: isBoard ? '#FFFFFF' : palette.text,
+            color: isBoard ? ds.board.titre : palette.text,
             bgcolor: isBoard ? 'transparent' : palette.ground,
             borderBottom: isBoard ? 'none' : `1px solid ${palette.seam}`,
             fontFamily: ds.font.board,
@@ -358,7 +358,7 @@ export default function DepartureBoard({
                           fontSize: '0.8125rem',
                           letterSpacing: '0.14em',
                           textTransform: 'uppercase',
-                          color: group.date === today ? (isBoard ? '#FFFFFF' : ds.brand.navy) : palette.dim,
+                          color: group.date === today ? (isBoard ? ds.board.titre : ds.brand.navy) : palette.dim,
                           bgcolor: isBoard ? 'rgba(242, 241, 236, 0.03)' : ds.colors.bg.subtle,
                         }}
                       >

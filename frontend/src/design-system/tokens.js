@@ -12,6 +12,24 @@ import { tokens as partages, lineColor } from '../../../shared/tokens.js';
 // Couleurs exactes du logo HESTIM (shared/design-tokens.json)
 const brand = partages.brand;
 
+// Menu sur la marine du logo
+const NAV = {
+  fond: brand.navy,
+  letter: '#FFFFFF',
+  letterSoft: '#D3DAF1',
+  letterDim: '#B9C3E6',
+  icon: '#8D9BCF',
+  selection: 'rgba(255,255,255,0.12)',
+  survol: 'rgba(255,255,255,0.07)',
+  filet: 'rgba(255,255,255,0.12)',
+  bordBouton: 'rgba(255,255,255,0.22)',
+  boutonActif: 'rgba(255,255,255,0.14)',
+};
+
+// Le panneau et le menu passent par des variables CSS : le thème StudyLib les redéfinit
+// (contexts/ThemeContext.jsx) sans toucher aux écrans. Valeur de repli : celle de Planner.
+const parVariables = (prefixe, valeurs) => Object.fromEntries(Object.entries(valeurs).map(([cle, valeur]) => [cle, `var(--${prefixe}-${cle}, ${valeur})`]));
+
 export const ds = {
   brand,
 
@@ -45,18 +63,17 @@ export const ds = {
   },
 
   // Commun au web et au mobile (shared/design-tokens.json)
-  board: partages.board,
+  // titre : texte posé sur le cadre (en-têtes des panneaux, jour en cours)
+  board: parVariables('board', { ...partages.board, titre: '#FFFFFF' }),
+  // Valeurs brutes, là où une couleur calculée est nécessaire (thème MUI)
+  boardBrut: partages.board,
 
   // Blanc pur : surfaces sur la marine (cadre du logo, avatar), boutons clairs du panneau
   white: '#FFFFFF',
 
   // Menu et en-têtes sur la marine du logo (DashboardLayout, Accueil, Connexion)
-  nav: {
-    letter: '#FFFFFF',
-    letterSoft: '#D3DAF1',
-    letterDim: '#B9C3E6',
-    icon: '#8D9BCF',
-  },
+  nav: parVariables('nav', NAV),
+  navBrut: NAV,
 
   // Emploi du temps officiel imprimé (EDT du mois, format A4 de HESTIM) : les couleurs du
   // document papier de l'école, distinctes de celles de l'écran

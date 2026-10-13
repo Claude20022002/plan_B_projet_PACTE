@@ -20,8 +20,16 @@ const en = {
     language: 'Language',
     themeLight: 'Light mode',
     themeDark: 'Dark mode',
-    themeStudylib: 'StudyLib theme',
-    themePlanner: 'Planner theme',
+    apparence: {
+      titre: 'Appearance',
+      intro: 'The Planner theme (departure board) or the StudyLib library theme, light or dark. Remembered on this browser.',
+      theme: 'Theme',
+      planner: 'Planner',
+      studylib: 'StudyLib',
+      mode: 'Mode',
+      clair: 'Light',
+      sombre: 'Dark',
+    },
     logout: 'Sign out',
     errorLoad: 'The data could not be loaded. Check your connection and try again.',
     confirmTitle: 'Confirmation',
@@ -378,7 +386,7 @@ const en = {
   },
   appel: {
     titre: 'Roll call',
-    retour: 'My sessions',
+    retour: 'My classes',
     qrAlt: 'Roll call QR code, to scan with the HESTIM app',
     change: 'New code in {{secondes}} s',
     presents: '{{presents}} / {{attendus}} present',
@@ -805,7 +813,7 @@ const en = {
       "profReport": {
         "titre": "I cannot teach a session",
         "etapes": [
-          "Open “My sessions” and ask for rescheduling on the session.",
+          "Open “My reschedule requests” and click “New request”, or “Request rescheduling” from the board.",
           "Give the reason and the date you would like: the administration receives the request and answers.",
           "Follow the answer in “My reschedule requests”."
         ],

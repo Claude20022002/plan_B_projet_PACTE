@@ -36,7 +36,7 @@ export const FICHES = [
   { id: 'profDevoir', roles: ['enseignant'], devoirs: true, theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
   { id: 'profEcrire', roles: ['enseignant'], theme: 'classe', pages: ['/annonces', '/mes-classes'], lien: '/mes-classes' },
   { id: 'profSupports', roles: ['enseignant'], theme: 'classe', pages: ['/mes-classes'], lien: '/biblio/' },
-  { id: 'profReport', roles: ['enseignant'], theme: 'planning', pages: ['/mes-affectations', '/demandes-report', '/dashboard/enseignant', '/emploi-du-temps/enseignant'], lien: '/mes-affectations' },
+  { id: 'profReport', roles: ['enseignant'], theme: 'planning', pages: ['/mes-affectations', '/demandes-report', '/dashboard/enseignant', '/emploi-du-temps/enseignant'], lien: '/demandes-report' },
   { id: 'profAbsence', roles: ['enseignant'], theme: 'planning', pages: ['/disponibilites'], lien: '/disponibilites' },
   { id: 'profDispos', roles: ['enseignant'], theme: 'planning', pages: ['/disponibilites'], lien: '/disponibilites' },
   { id: 'profServices', roles: ['enseignant'], theme: 'planning', pages: ['/mes-services'], lien: '/mes-services' },

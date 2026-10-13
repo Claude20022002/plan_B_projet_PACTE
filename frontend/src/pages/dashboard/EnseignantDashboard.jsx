@@ -155,6 +155,12 @@ export default function EnseignantDashboard() {
           {t('classes.page.appel.a_faire')}
         </Button>
       )}
+      {/* Un autre jour : l'appel reste visible, pour qu'on sache où le faire */}
+      {s.status !== 'annule' && s.date !== toLocalISODate() && (
+        <Button variant="outlined" startIcon={<FactCheck />} disabled sx={{ '&.Mui-disabled': { color: ds.board.letterDim, borderColor: ds.board.seam } }}>
+          {t('classes.page.appelLeJour')}
+        </Button>
+      )}
       {s.status !== 'annule' && (
         <Button variant="outlined" startIcon={<Groups />} onClick={() => navigate('/mes-classes')} sx={{ color: ds.board.letter, borderColor: ds.board.seam }}>
           {t('nav.myClasses')}
@@ -176,7 +182,7 @@ export default function EnseignantDashboard() {
         <Button
           variant="outlined"
           startIcon={<EventRepeat />}
-          onClick={() => navigate('/mes-affectations')}
+          onClick={() => navigate('/demandes-report')}
           sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
         >
           {t('board.requestReport')}
