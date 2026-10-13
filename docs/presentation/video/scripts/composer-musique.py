@@ -313,7 +313,7 @@ def lire_matinee():
     return montages
 
 
-GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "admin", "etudiante", "prof"}
+GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "formes", "jeux", "admin", "etudiante", "prof"}
 
 
 def composer(ids, durees):
@@ -370,6 +370,12 @@ def composer(ids, durees):
                 volets(sfx, s, s + 0.7, 0.18)  # « BIENTÔT » en volets
                 sfx.ajouter(s + 0.6, souffle(0.5, haut=True), 0.3)  # premier téléphone
                 sfx.ajouter(s + d * 0.4, souffle(0.5, haut=True), 0.3)  # second téléphone
+            elif i == "formes":
+                for k in range(3):  # un souffle par téléphone qui entre
+                    sfx.ajouter(s + 0.4 + k * d * 0.18, souffle(0.45, haut=True), 0.3)
+            elif i == "jeux":
+                sfx.ajouter(s + 0.2, souffle(0.5, haut=True), 0.3)
+                sfx.ajouter(s + 1.2, toucher(), 0.4)
             elif i == "admin":
                 sfx.ajouter(s + 0.2, souffle(0.7), 0.4)
         elif i == "chiffres":

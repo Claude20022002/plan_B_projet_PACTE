@@ -129,7 +129,7 @@ Si `appliquer-maj.sh` refuse les dépendances (image en ligne plus ancienne), ch
 | 11 | Notifications de devoirs déjà envoyées : masquées | Fait ; rien n'est supprimé |
 | 12 | `POST /api/users/import` gardée | Rien à faire |
 | 13 | Dépôt du quiz : une branche par lot, un dossier par groupe | Écrit dans `FORK.md` (PR 3 du quiz) |
-| 14 | Vidéo pour la salle : 1 min 15 | À appliquer au montage (V-1) ; il fait 1 min 35 |
+| 14 | Vidéo pour la salle : 1 min 15 | Fait le 12 octobre (soir) : le montage fait 1 min 15, douze scènes (`docs/presentation/video/README.md`) |
 
 ## 6. Décisions attendues du chef de projet
 
@@ -148,6 +148,33 @@ Si `appliquer-maj.sh` refuse les dépendances (image en ligne plus ancienne), ch
 - **Vidéo** : « Connexion unique », la formule « Planner : où et quand / Bibliothèque : avec quoi je travaille » et les quatre rôles sont ajoutés au script (`script-video-motion-design.md`, § 2 et scènes 9 et 10).
 - **APK de test Android** : le profil `preview` d'`eas.json` produit déjà un APK. **`eas init` n'a pas été fait** (pas d'identifiant de projet dans `app.json`) : à faire une fois avec le compte Expo de l'école, puis `npx eas-cli@latest build --platform android --profile preview` depuis `mobile/`.
 - **Groupe A indisponible pour les lourdes tâches** : n'engager que des lots légers côté serveur (R-11 ci-dessus) ; A-3 et A-6 attendent.
+
+**Décision du 12 octobre (nuit) : une bibliothèque de jeux pédagogiques.**
+
+Planner propose une bibliothèque de jeux pédagogiques, classés par module, inspirés de ceux qui existent déjà sur des sites comme Kahoot ; des jeux et des quiz existants peuvent être repris quand leur licence ou leur auteur le permet. La vidéo le mentionne (scène 8). Aujourd'hui, le catalogue (`shared/jeux/catalogue.js`) contient un jeu, Terminal Linux, repris de Terminal Quest sous licence MIT ; les quiz vivent dans le moteur de quiz.
+
+Ce qui existe déjà dans le moteur de quiz (`../ClassQuiz`), sans être branché à Planner :
+
+| Voie | Route du moteur | Ce qu'elle fait |
+|---|---|---|
+| Import par tableur | `POST /quiz/excel-import` | Crée un quiz depuis un fichier Excel au gabarit du moteur |
+| Import d'un quiz Kahoot par son identifiant | `POST /quiz/import/{id}` | Lit un quiz public sur `create.kahoot.it` et le recrée, images comprises |
+| Export et import d'un quiz entier | `routers/eximport.py` | Passe un quiz d'une installation à une autre |
+
+Solutions pour récupérer des jeux, de la plus sûre à la plus risquée :
+
+| # | Solution | Ce qu'on récupère | Droit | Travail |
+|---|---|---|---|---|
+| 1 | L'enseignant reprend **ses propres** quiz : import par tableur, ou par identifiant Kahoot | Les quiz que les enseignants de l'école ont déjà faits | Sûr : l'auteur reprend son travail | Petit : brancher une route existante dans « Mes quiz » |
+| 2 | Génération par l'IA depuis un support de cours (`docs/plans/quiz-ia.md`) | Des quiz neufs, sur le contenu de l'école | Sûr | Rien à ajouter |
+| 3 | Contenus sous licence libre : banques de questions, jeux à code ouvert, simulations | Des questions et des jeux entiers | Sûr si la licence est respectée : auteur cité, licence gardée, comme pour Terminal Linux | Moyen : un jeu = un moteur et un écran |
+| 4 | S'inspirer des mécaniques (podium, équipes, remise en ordre, estimation) et tout réécrire | Des formes de jeu, pas de contenu | Sûr : une mécanique n'est pas protégée ; le nom, les visuels, les textes et le code le sont | Moyen à grand |
+| 5 | Import par identifiant de quiz **publics** d'autres auteurs | N'importe quel quiz public de Kahoot | **Risqué** : le quiz appartient à son auteur, et l'adresse lue n'est pas une interface officielle de Kahoot | Petit, mais à ne pas ouvrir sans accord |
+| 6 | Aspirer en masse le catalogue d'un site | Tout | **Écarté** (compte rendu du 12 octobre, § 7) | Sans objet |
+
+Recommandation : ouvrir 1 et 2 d'abord (le code existe), choisir deux ou trois jeux sous licence libre pour 3, garder 4 pour les jeux propres à l'école. La voie 5 reste fermée aux quiz dont l'enseignant n'est pas l'auteur tant que les conditions d'utilisation de Kahoot n'ont pas été relues ; une case « Je suis l'auteur de ce quiz » suffit à la limiter.
+
+À vérifier avant tout lot : les conditions d'utilisation de Kahoot (non relues le 12 octobre) ; la licence exacte de chaque jeu ou banque retenu ; pour une licence à partage à l'identique (GPL, CC BY-SA), ce qu'elle impose au code de Planner.
 
 Questions d'origine, pour mémoire :
 

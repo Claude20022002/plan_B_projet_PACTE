@@ -33,6 +33,10 @@ const fichiers = [
   "prof-01-tableau.png",
   "prof-05-appel-projection.png",
   "admin-01-tableau.png",
+  "admin-05b-heures-du-mois.png",
+  "app-07-espaces.png",
+  // Le seul jeu de la bibliothèque de jeux aujourd'hui : Terminal Linux
+  "mobile-25-terminal-commandes.png",
 ];
 
 let manquants = 0;
