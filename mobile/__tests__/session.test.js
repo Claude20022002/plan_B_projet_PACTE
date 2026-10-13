@@ -55,7 +55,11 @@ describe('jetons partagés', () => {
   test('même couleur de ligne pour la même filière, jamais une couleur de statut', () => {
     expect(lineColor('IIIA')).toBe(lineColor('IIIA'));
     expect(tokens.lines).toContain(lineColor('IIIA'));
-    expect(tokens.lines).not.toContain(tokens.board.delayed);
+    // Ni vert, ni orange, ni rouge : aucune valeur d'état, sur le clair comme la nuit
+    for (const etat of ['confirme', 'reporte', 'annule']) {
+      expect(tokens.lines).not.toContain(tokens.status[etat].bureau);
+      expect(tokens.lines).not.toContain(tokens.status[etat].board);
+    }
     expect(lineColor(null)).toBe(tokens.lineUnknown);
   });
 });

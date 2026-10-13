@@ -122,7 +122,6 @@ export const ds = {
     normal: 0.18,
     slow: 0.28,
     ease: [0.16, 1, 0.3, 1],
-    flapStepMs: 28, // décalage entre deux caractères dans la cascade des volets
   },
 };
 

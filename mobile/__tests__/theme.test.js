@@ -20,8 +20,8 @@ describe('Thèmes', () => {
   test('la préférence choisit la famille et le mode ; automatique suit le téléphone', () => {
     expect(themePour({ famille: 'planner', mode: 'automatique' }, 'dark').id).toBe('planner-sombre');
     expect(themePour({ famille: 'planner', mode: 'automatique' }, 'light').id).toBe('planner-clair');
-    // Apparence inconnue (ancien Android) : le panneau sombre d'origine
-    expect(themePour({ famille: 'planner', mode: 'automatique' }, null).id).toBe('planner-sombre');
+    // Apparence inconnue (ancien Android) : clair, comme par défaut
+    expect(themePour({ famille: 'planner', mode: 'automatique' }, null).id).toBe('planner-clair');
     expect(themePour({ famille: 'studylib', mode: 'clair' }, 'dark').id).toBe('studylib-clair');
     expect(themePour({ famille: 'studylib', mode: 'sombre' }, 'light').id).toBe('studylib-sombre');
     expect(themePour({ famille: 'inconnue', mode: 'clair' }, 'light').id).toBe('planner-clair');
@@ -33,21 +33,20 @@ describe('Thèmes', () => {
     expect(MODES).toEqual(['automatique', 'clair', 'sombre']);
     const reference = THEMES['planner-sombre'];
     for (const theme of Object.values(THEMES)) {
-      for (const groupe of ['couleurs', 'polices', 'rayons', 'volet', 'statuts', 'scene']) {
+      for (const groupe of ['couleurs', 'polices', 'rayons', 'statuts', 'verre', 'scene']) {
         expect(Object.keys(theme[groupe]).sort()).toEqual(Object.keys(reference[groupe]).sort());
       }
     }
   });
 
   test.each(Object.keys(THEMES))('%s : textes lisibles (WCAG AA)', (id) => {
-    const { couleurs: c, statuts, scene, volet } = THEMES[id];
+    const { couleurs: c, statuts, scene } = THEMES[id];
     expect(contraste(c.lettre, c.fond)).toBeGreaterThanOrEqual(4.5);
     expect(contraste(c.lettre, c.cellule)).toBeGreaterThanOrEqual(4.5);
     expect(contraste(c.lettreAttenuee, c.fond)).toBeGreaterThanOrEqual(4.5);
     expect(contraste(c.lettreAttenuee, c.cellule)).toBeGreaterThanOrEqual(4.5);
     expect(contraste(c.surCadre, c.cadre)).toBeGreaterThanOrEqual(4.5);
     expect(contraste(c.surAccent, c.accent)).toBeGreaterThanOrEqual(4.5);
-    expect(contraste(volet.lettre, volet.fond)).toBeGreaterThanOrEqual(4.5);
     expect(contraste(scene.texte, scene.ciel)).toBeGreaterThanOrEqual(4.5);
     expect(contraste(scene.texteAttenue, scene.ciel)).toBeGreaterThanOrEqual(4.5);
     // Statuts écrits en petites capitales sur le sol et dans les cartes

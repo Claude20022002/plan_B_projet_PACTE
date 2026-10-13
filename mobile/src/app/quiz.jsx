@@ -4,14 +4,13 @@ import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { usePreventScreenCapture } from 'expo-screen-capture';
-import { SvgXml } from 'react-native-svg';
 import Ecran, { Message } from '../board/Ecran';
 import { chargerConfigQuiz } from '../api/donnees';
-import { FORMES_KAHOOT } from '../quiz/formes';
+import FormeReponse from '../quiz/FormeReponse';
 import { lireLienPartie, ordreAffichage, reponseCases, texteSimple, usePartie } from '../quiz/partie';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
 // Couleurs des réponses : les mêmes qu'au projecteur
-import { COULEURS_REPONSES } from '../../../shared/quiz/couleurs.js';
+import { styleReponse } from '../../../shared/quiz/couleurs.js';
 
 
 /**
@@ -147,19 +146,23 @@ function Question({ question: q, mode, finLe, repondre, tempsEcoule }) {
     return () => clearInterval(minuterie);
   }, [finLe, tempsEcoule]);
 
+  // Couleur et forme suivent le rang d'origine de la réponse, comme au projecteur (l'ordre affiché
+  // est mélangé par joueur) ; une couleur choisie dans l'éditeur du quiz l'emporte
   const tuile = (origine, position, { actif = false, onPress }) => {
     const reponse = reponses[origine];
+    const style = styleReponse(origine, reponse?.color);
     return (
       <Pressable
         key={origine}
         onPress={onPress}
-        style={[styles.tuile, { backgroundColor: reponse?.color ?? COULEURS_REPONSES[position % 4] }, actif && styles.tuileActive]}
+        style={[styles.tuile, { backgroundColor: style.couleur }, actif && styles.tuileActive]}
         accessibilityRole={q.type === 'CHECK' ? 'checkbox' : 'button'}
         accessibilityState={q.type === 'CHECK' ? { checked: actif } : undefined}
         accessibilityLabel={kahoot ? t('app.quiz.reponse', { n: position + 1 }) : texteSimple(reponse?.answer)}
       >
-        {kahoot ? <SvgXml xml={FORMES_KAHOOT[origine % 4]} width={64} height={64} color="#FFFFFF" /> : <Text style={styles.tuileTexte}>{texteSimple(reponse?.answer)}</Text>}
-        {q.type === 'CHECK' ? <MaterialCommunityIcons name={actif ? 'checkbox-marked' : 'checkbox-blank-outline'} size={22} color="#FFFFFF" style={styles.coche} /> : null}
+        <FormeReponse forme={style.forme} taille={kahoot ? 64 : 28} couleur={style.encre} />
+        {kahoot ? null : <Text style={[styles.tuileTexte, { color: style.encre }]}>{texteSimple(reponse?.answer)}</Text>}
+        {q.type === 'CHECK' ? <MaterialCommunityIcons name={actif ? 'checkbox-marked' : 'checkbox-blank-outline'} size={22} color={style.encre} style={styles.coche} /> : null}
       </Pressable>
     );
   };
@@ -258,9 +261,9 @@ const useStyles = creerStyles((t) => ({
   chrono: { width: 56, height: 56, borderRadius: 28, borderWidth: 3, borderColor: t.couleurs.annule, textAlign: 'center', textAlignVertical: 'center', lineHeight: 50, color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: 24 },
   enonce: { flex: 1, color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: 20, lineHeight: 26 },
   grille: { flexDirection: 'row', flexWrap: 'wrap', gap: 10 },
-  tuile: { width: '48%', flexGrow: 1, minHeight: 120, borderRadius: t.rayons.sm, alignItems: 'center', justifyContent: 'center', padding: 12 },
+  tuile: { width: '48%', flexGrow: 1, minHeight: 120, borderRadius: t.rayons.lg, alignItems: 'center', justifyContent: 'center', gap: 8, padding: 12 },
   tuileActive: { borderWidth: 4, borderColor: t.couleurs.lettre },
-  tuileTexte: { color: '#FFFFFF', fontFamily: t.polices.panneau, fontSize: 18, textAlign: 'center' },
+  tuileTexte: { fontFamily: t.polices.texteGras, fontSize: 18, textAlign: 'center' },
   coche: { position: 'absolute', top: 8, right: 8 },
   champ: { minHeight: CIBLE_TACTILE, paddingHorizontal: 12, borderRadius: t.rayons.sm, borderWidth: 1, borderColor: t.couleurs.filet, color: t.couleurs.lettre, fontFamily: t.polices.texte, fontSize: 18 },
   plage: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8 },

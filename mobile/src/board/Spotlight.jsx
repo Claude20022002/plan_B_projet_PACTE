@@ -1,12 +1,11 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { relativeTo } from '../../../shared/session.js';
-import FlapTiles from './FlapTiles';
 import { CIBLE_TACTILE, couleurStatut, creerStyles, espace, useTheme } from '../theme';
 
 /**
- * La séance en vedette (en cours ou prochaine) : l'heure sur les volets, la salle en très grand
- * comme un numéro de quai, puis quand, où, avec qui, et les supports du cours s'il y en a.
+ * La séance en vedette (en cours ou prochaine), dans une carte relevée : l'heure et la salle en
+ * grand, puis quand, où, avec qui, et les supports du cours s'il y en a (DESIGN.md, Prochaine séance).
  */
 export default function Spotlight({ seance: s, phase, maintenant, supports, onSupports }) {
   const { t, i18n } = useTranslation();
@@ -23,7 +22,9 @@ export default function Spotlight({ seance: s, phase, maintenant, supports, onSu
         <Text style={[styles.phase, { color: couleur }]}>{t(`status.${enCours ? 'live' : 'next'}`)}</Text>
         <Text style={styles.quand}>{quand}</Text>
       </View>
-      <FlapTiles valeur={s.startLabel} taille={44} accessibilityLabel={`${t('board.time')} ${s.startLabel}`} />
+      <Text style={styles.heure} maxFontSizeMultiplier={1.4} accessibilityLabel={`${t('board.time')} ${s.startLabel}`}>
+        {s.startLabel}
+      </Text>
       <Text style={styles.cours} numberOfLines={2} maxFontSizeMultiplier={1.4}>
         {s.course}
         {s.courseType ? `  ${s.courseType}` : ''}
@@ -51,13 +52,16 @@ const useStyles = creerStyles((t) => ({
     backgroundColor: t.couleurs.cellule,
     borderRadius: t.rayons.md,
     gap: 10,
-    // Clair : la carte se détache du sol par un filet, comme les cartes StudyLib
-    ...(t.sombre ? null : { borderWidth: 1, borderColor: t.couleurs.filet }),
+    // Clair : filet et ombre douce ; nuit : le filet seul (DESIGN.md, Elevation & Depth)
+    borderWidth: 1,
+    borderColor: t.couleurs.filet,
+    ...(t.sombre ? null : { shadowColor: '#0D1326', shadowOpacity: 0.1, shadowRadius: 10, shadowOffset: { width: 0, height: 4 }, elevation: 3 }),
   },
   entete: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   lampe: { width: 8, height: 8, borderRadius: 4 },
   phase: { fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1) },
   quand: { marginLeft: 'auto', color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 13 },
+  heure: { color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: 40, lineHeight: 44, fontVariant: ['tabular-nums'] },
   cours: { color: t.couleurs.lettre, fontFamily: t.polices.panneau, fontSize: t.famille === 'planner' ? 22 : 19, textTransform: t.capitales, letterSpacing: espace(t, 0.4) },
   salle: { color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: t.famille === 'planner' ? 56 : 44, lineHeight: t.famille === 'planner' ? 60 : 50, letterSpacing: espace(t, 1) },
   details: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.texte, fontSize: 14 },

@@ -92,19 +92,6 @@
     "bonne": "#137D3F",
     "mauvaise": "#B5161C"
   },
-  "board": {
-    "ground": "#0B0B0D",
-    "frame": "#001861",
-    "cell": "#212124",
-    "cellHinge": "#000000",
-    "seam": "#2C2C30",
-    "letter": "#F2F1EC",
-    "letterDim": "#A6A6AC",
-    "onTime": "#F2F1EC",
-    "live": "#3FCB74",
-    "delayed": "#F26322",
-    "cancelled": "#FF5A5F"
-  },
   "status": {
     "planifie": {
       "key": "planifie",
@@ -145,12 +132,5 @@
     "#B03A8C",
     "#46508F"
   ],
-  "lineUnknown": "#6B6B72",
-  "radius": {
-    "xs": 2,
-    "sm": 3,
-    "md": 4,
-    "lg": 6
-  },
-  "flapStepMs": 28
+  "lineUnknown": "#6B6B72"
 }
