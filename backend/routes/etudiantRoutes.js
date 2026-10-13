@@ -11,7 +11,6 @@ import {
 import {
     authenticateToken,
     requireAdmin,
-    requireEnseignant,
     requireOwnResourceOrAdmin,
     asyncHandler,
     validateEtudiantCreation,
@@ -20,11 +19,12 @@ import {
 
 const router = express.Router();
 
-// 🔍 Récupérer tous les étudiants (Admin ou Enseignant)
+// 🔍 Récupérer tous les étudiants (Admin seulement : un enseignant voit ses classes par « mes-classes »,
+// pas toute l'école avec ses adresses et ses téléphones)
 router.get(
     "/",
     authenticateToken,
-    requireEnseignant,
+    requireAdmin,
     asyncHandler(getAllEtudiants)
 );
 

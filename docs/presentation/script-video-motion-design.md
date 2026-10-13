@@ -2,7 +2,15 @@
 
 Rédigé le 11 octobre 2026. Il remplace `prompt-video-motion-design.md` (vidéo de 42 s) et le tableau des scènes de `video/README.md` (62 s) comme référence de ce que la vidéo raconte. Il suit `docs/plans/remarques-par-profil.md`, § 6.
 
-**Statut : à valider par le chef de projet.** Rien n'est encore monté : les scènes de `video/src/scenes/` sont celles de l'ancienne vidéo.
+**Statut : à valider par le chef de projet.** Le montage du 12 octobre 2026 (`video/out/matinee-ecole.mp4`, 1 min 15, et `matinee-ecole-9x16.mp4`, 40 s) suit ce script avec trois décisions prises ce jour-là, qui l'emportent sur les sections 2 à 4 ci-dessous :
+
+- **Plus court** : 1 min 15 pour la salle (la durée décidée, au lieu de 1 min 54), 40 s pour les réseaux.
+- **La scène 7 ne dit plus « Bientôt »** : elle présente les formes d'un quiz (en direct, avec un schéma, avec un extrait vidéo). Les deux dernières restent des maquettes ; la règle « des écrans réels, sauf une scène annoncée » ne s'applique donc plus à cette scène.
+- **Une scène de plus : la bibliothèque de jeux pédagogiques** (scène 8), « par module, inspirés de ceux qui existent déjà ». Elle montre le seul jeu d'aujourd'hui, Terminal Linux.
+
+- **Corrections du 13 octobre** : une seule promesse (« Votre emploi du temps accessible en un geste. »), une action à la dernière image, un vrai QR dans le scanner, plus de code sur l'écran du quiz, les téléphones à l'heure de l'histoire (13 h 32 à 15 h 20).
+
+`video/README.md` donne le tableau des douze scènes et ce qui sépare encore le montage de ce script.
 
 ## 1. Ce qui change
 

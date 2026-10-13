@@ -25,6 +25,8 @@ const EcranDeSalle: React.FC<{ largeur: number; chrono: number; recues: number; 
   <div style={{ width: largeur, height: (largeur * 9) / 16, borderRadius: RADIUS, overflow: "hidden", boxShadow: `${SHADOW}, 0 0 0 1px ${C.rule}`, position: "relative" }}>
     <div style={{ position: "absolute", left: 0, top: 0, width: 1920, height: 1080, transform: `scale(${largeur / 1920})`, transformOrigin: "0 0", fontFamily: FONT_TITLE, fontWeight: 700, color: C.ink }}>
       <Img src={staticFile("captures/maquette-quiz-projecteur-illustration.png")} style={{ width: 1920, height: 1080, display: "block" }} />
+      {/* Le « CODE 482 913 » de la maquette est recouvert : le quiz se rejoint depuis la séance, sans code */}
+      <div style={{ position: "absolute", left: 1580, top: 10, width: 320, height: 76, background: "#001861" }} />
       {/* Chrono : l'intérieur du cercle est recouvert, le chiffre redessiné à la même place */}
       <div style={{ position: "absolute", left: 64, top: 523, width: 104, height: 104, borderRadius: 52, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 56 }}>{chrono}</div>
       {/* Compteur de réponses */}
@@ -45,7 +47,7 @@ const EcranDeSalle: React.FC<{ largeur: number; chrono: number; recues: number; 
  * quatre formes. Les réponses arrivent, l'étudiante touche la sienne, puis la bonne réponse
  * s'allume. `duree` (en images) cale les étapes : la scène sert au montage long et au court.
  */
-export const M6Quiz: React.FC<{ duree: number }> = ({ duree }) => {
+export const M6Quiz: React.FC<{ duree: number; titre?: string }> = ({ duree, titre }) => {
   const frame = useCurrentFrame();
   const portrait = usePortrait();
   const entree = useEnter(8, 28);
@@ -68,7 +70,7 @@ export const M6Quiz: React.FC<{ duree: number }> = ({ duree }) => {
   const telephone = <TelephoneFormes largeur={screenW} chrono={chrono} choisie={frame >= toucher ? BONNE : null} touche={touche} />;
   const phrases = (taille: number, sous: number) => (
     <>
-      <Line size={taille} style={fadeUp(l1)}>La question est à l'écran de la salle.</Line>
+      <Line size={taille} style={fadeUp(l1)}>{titre ?? "La question est à l'écran de la salle."}</Line>
       <div style={{ position: "relative", marginTop: 14, height: sous * 1.3 }}>
         <Line size={sous} weight={400} color={C.inkSoft} style={{ ...fadeUp(l2), opacity: l2 * (1 - revelation), position: "absolute", left: 0, right: 0 }}>
           Sur le téléphone : quatre formes, sans code à saisir.
@@ -107,7 +109,7 @@ export const M6Quiz: React.FC<{ duree: number }> = ({ duree }) => {
       <PhoneFrame screenHeight={screenH} style={{ left: gauche + largeur + 64, top: haut, opacity: entree, transform: `translateX(${(1 - entree) * 200}px)` }}>
         {telephone}
       </PhoneFrame>
-      <div style={{ position: "absolute", left: 0, right: 0, top: 838, textAlign: "center" }}>{phrases(52, 40)}</div>
+      <div style={{ position: "absolute", left: 0, right: 0, top: 838, textAlign: "center" }}>{titre ? phrases(96, 48) : phrases(52, 40)}</div>
     </AbsoluteFill>
   );
 };

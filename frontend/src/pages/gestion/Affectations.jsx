@@ -1,35 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import {
-    Box,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    TablePagination,
-    Button,
-    IconButton,
-    Chip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Typography,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
-    Alert,
-    Snackbar,
-    TextField,
-    Stack,
-    useMediaQuery,
-} from '@mui/material';
+import { Box, Paper, TablePagination, Button, Alert, Snackbar, useMediaQuery } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
-import { Add, Edit, Delete, Visibility, Download, AutoAwesome } from '@mui/icons-material';
+import { Add } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI, imprevuAPI } from '../../services/api';
 import { exporterToutesLesSeances } from '../../utils/exportSeances';
@@ -39,22 +12,14 @@ import { useTranslation } from 'react-i18next';
 import ViolationsDialog from '../../components/planning/ViolationsDialog';
 import AssistantCreneauxDialog from '../../components/planning/AssistantCreneauxDialog';
 import { useFormik } from 'formik';
-import * as yup from 'yup';
-import { formatHeure } from '../../utils/session';
 import DataToolbar from '../../design-system/components/DataToolbar';
 import EmptyState from '../../design-system/components/EmptyState';
 import StatusBadge from '../../design-system/components/StatusBadge';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
+import ListeSeances from '../../components/affectations/ListeSeances';
+import SeanceDialog from '../../components/affectations/SeanceDialog';
+import { valeursVides, validationSchema } from '../../components/affectations/formulaire';
 import OngletsEmploisDuTemps from '../../components/gestion/OngletsEmploisDuTemps';
-
-const validationSchema = yup.object({
-    date_seance: yup.date().required('La date est requise'),
-    id_cours: yup.number().required('Le cours est requis'),
-    id_groupe: yup.number().required('Le groupe est requis'),
-    id_user_enseignant: yup.number().required("L'enseignant est requis"),
-    id_salle: yup.number().required('La salle est requise'),
-    id_creneau: yup.number().required('Le créneau est requis'),
-});
 
 export default function Affectations() {
     const confirmer = useConfirmation();
@@ -91,11 +56,11 @@ export default function Affectations() {
     const loadOptions = async () => {
         try {
             const [cours, groupes, salles, creneaux, enseignants] = await Promise.all([
-                coursAPI.getAll(),
-                groupeAPI.getAll(),
-                salleAPI.getAll(),
-                creneauAPI.getAll(),
-                enseignantAPI.getAll(),
+                coursAPI.getTous(),
+                groupeAPI.getTous(),
+                salleAPI.getTous(),
+                creneauAPI.getTous(),
+                enseignantAPI.getTous(),
             ]);
 
             setOptions({
@@ -128,17 +93,7 @@ export default function Affectations() {
     };
 
     const formik = useFormik({
-        initialValues: {
-            date_seance: '',
-            statut: 'planifie',
-            commentaire: '',
-            id_cours: '',
-            id_groupe: '',
-            id_user_enseignant: '',
-            id_salle: '',
-            id_creneau: '',
-            id_user_admin: user?.id_user || '',
-        },
+        initialValues: valeursVides(user),
         validationSchema,
         enableReinitialize: true,
         onSubmit: async (values, { setSubmitting }) => {
@@ -246,19 +201,7 @@ export default function Affectations() {
         setEditing(null);
         setError('');
         setSuccess('');
-        formik.resetForm({
-            values: {
-                date_seance: '',
-                statut: 'planifie',
-                commentaire: '',
-                id_cours: '',
-                id_groupe: '',
-                id_user_enseignant: '',
-                id_salle: '',
-                id_creneau: '',
-                id_user_admin: user?.id_user || '',
-            },
-        });
+        formik.resetForm({ values: valeursVides(user) });
         setOpen(true);
     };
 
@@ -301,26 +244,6 @@ export default function Affectations() {
         ].filter(Boolean).join(' ').toLowerCase().includes(q);
     });
 
-    const openCreateDialog = () => {
-        setEditing(null);
-        setError('');
-        setSuccess('');
-        formik.resetForm({
-            values: {
-                date_seance: '',
-                statut: 'planifie',
-                commentaire: '',
-                id_cours: '',
-                id_groupe: '',
-                id_user_enseignant: '',
-                id_salle: '',
-                id_creneau: '',
-                id_user_admin: user?.id_user || '',
-            },
-        });
-        setOpen(true);
-    };
-
     return (
         <DashboardLayout>
             <OngletsEmploisDuTemps />
@@ -349,7 +272,7 @@ export default function Affectations() {
 
                 <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                     <DataToolbar search={search} onSearchChange={setSearch} onExport={handleExport}>
-                        <Button variant="contained" startIcon={<Add />} onClick={openCreateDialog}>
+                        <Button variant="contained" startIcon={<Add />} onClick={handleOpenNewDialog}>
                             Planifier une séance
                         </Button>
                     </DataToolbar>
@@ -361,87 +284,10 @@ export default function Affectations() {
                             title="Aucune affectation trouvée"
                             description="Créez une première affectation ou ajustez votre recherche pour retrouver un cours planifié."
                             actionLabel="Nouvelle affectation"
-                            onAction={openCreateDialog}
+                            onAction={handleOpenNewDialog}
                         />
-                    ) : isMobile ? (
-                        <Stack spacing={1.25}>
-                            {filteredAffectations.map((aff) => (
-                                <Paper
-                                    key={aff.id_affectation}
-                                    variant="outlined"
-                                    sx={{ p: 1.5, borderRadius: 2 }}
-                                >
-                                    <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1 }}>
-                                        <Box sx={{ minWidth: 0 }}>
-                                            <Typography variant="body2" fontWeight={800} noWrap>
-                                                {aff.cours?.nom_cours || '-'}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                                {aff.groupe?.nom_groupe || '-'} · {aff.salle?.nom_salle || '-'}
-                                            </Typography>
-                                        </Box>
-                                        <StatusBadge status={aff.statut} />
-                                    </Box>
-                                    <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 1 }}>
-                                        {aff.enseignant?.prenom || ''} {aff.enseignant?.nom || '-'} · {new Date(aff.date_seance).toLocaleDateString('fr-FR')} · {formatHeure(aff.creneau?.heure_debut)} – {formatHeure(aff.creneau?.heure_fin)}
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', justifyContent: 'flex-end', gap: 0.5, mt: 1 }}>
-                                        <IconButton size="small" onClick={() => setADeplacer(aff)} aria-label={t('incidents.move')}><AutoAwesome fontSize="small" /></IconButton>
-                                        <IconButton size="small" onClick={() => handleEdit(aff)}><Edit fontSize="small" /></IconButton>
-                                        <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)}><Delete fontSize="small" /></IconButton>
-                                    </Box>
-                                </Paper>
-                            ))}
-                        </Stack>
                     ) : (
-                        <TableContainer>
-                            <Table size="small" stickyHeader>
-                                <TableHead>
-                                    <TableRow>
-                                        <TableCell>Cours</TableCell>
-                                        <TableCell>Groupe</TableCell>
-                                        <TableCell>Enseignant</TableCell>
-                                        <TableCell>Salle</TableCell>
-                                        <TableCell>Date</TableCell>
-                                        <TableCell>Créneau</TableCell>
-                                        <TableCell>Statut</TableCell>
-                                        <TableCell align="right">Actions</TableCell>
-                                    </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                    {filteredAffectations.map((aff) => (
-                                        <TableRow key={aff.id_affectation}>
-                                            <TableCell sx={{ fontWeight: 700 }}>{aff.cours?.nom_cours || '-'}</TableCell>
-                                            <TableCell>{aff.groupe?.nom_groupe || '-'}</TableCell>
-                                            <TableCell>
-                                                {aff.enseignant?.prenom || ''} {aff.enseignant?.nom || '-'}
-                                            </TableCell>
-                                            <TableCell>{aff.salle?.nom_salle || '-'}</TableCell>
-                                            <TableCell>
-                                                {new Date(aff.date_seance).toLocaleDateString('fr-FR')}
-                                            </TableCell>
-                                            <TableCell sx={{ whiteSpace: 'nowrap' }}>
-                                                {formatHeure(aff.creneau?.heure_debut)} – {formatHeure(aff.creneau?.heure_fin)}
-                                            </TableCell>
-                                            <TableCell>
-                                                <StatusBadge status={aff.statut} />
-                                            </TableCell>
-                                            <TableCell align="right">
-                                                <IconButton size="small" onClick={() => setADeplacer(aff)} aria-label={t('incidents.move')} title={t('incidents.move')}>
-                                                    <AutoAwesome fontSize="small" />
-                                                </IconButton>
-                                                <IconButton size="small" onClick={() => handleEdit(aff)}>
-                                                    <Edit fontSize="small" />
-                                                </IconButton>
-                                                <IconButton size="small" color="error" onClick={() => handleDelete(aff.id_affectation)}>
-                                                    <Delete fontSize="small" />
-                                                </IconButton>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                </TableBody>
-                            </Table>
-                        </TableContainer>
+                        <ListeSeances affectations={filteredAffectations} mobile={isMobile} onDeplacer={setADeplacer} onModifier={handleEdit} onSupprimer={handleDelete} />
                     )}
 
                     <TablePagination
@@ -458,130 +304,7 @@ export default function Affectations() {
                     />
                 </Paper>
 
-                {/* Dialog pour créer/modifier */}
-                <Dialog open={open} onClose={() => setOpen(false)} maxWidth="md" fullWidth>
-                    <form onSubmit={formik.handleSubmit}>
-                        <DialogTitle>
-                            {editing ? 'Modifier l\'affectation' : 'Nouvelle affectation'}
-                        </DialogTitle>
-                        <DialogContent>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                                <FormControl fullWidth>
-                                    <InputLabel>Cours</InputLabel>
-                                    <Select
-                                        name="id_cours"
-                                        value={formik.values.id_cours}
-                                        onChange={formik.handleChange}
-                                        label="Cours"
-                                    >
-                                        {options.cours.map((cours) => (
-                                            <MenuItem key={cours.id_cours} value={cours.id_cours}>
-                                                {cours.nom_cours}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-
-                                <FormControl fullWidth>
-                                    <InputLabel>Groupe</InputLabel>
-                                    <Select
-                                        name="id_groupe"
-                                        value={formik.values.id_groupe}
-                                        onChange={formik.handleChange}
-                                        label="Groupe"
-                                    >
-                                        {options.groupes.map((groupe) => (
-                                            <MenuItem key={groupe.id_groupe} value={groupe.id_groupe}>
-                                                {groupe.nom_groupe}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-
-                                <FormControl fullWidth>
-                                    <InputLabel>Enseignant</InputLabel>
-                                    <Select
-                                        name="id_user_enseignant"
-                                        value={formik.values.id_user_enseignant}
-                                        onChange={formik.handleChange}
-                                        label="Enseignant"
-                                    >
-                                        {options.enseignants.map((ens) => (
-                                            <MenuItem key={ens.id_user} value={ens.id_user}>
-                                                {ens.user?.prenom} {ens.user?.nom}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-
-                                <FormControl fullWidth>
-                                    <InputLabel>Salle</InputLabel>
-                                    <Select
-                                        name="id_salle"
-                                        value={formik.values.id_salle}
-                                        onChange={formik.handleChange}
-                                        label="Salle"
-                                    >
-                                        {options.salles.map((salle) => (
-                                            <MenuItem key={salle.id_salle} value={salle.id_salle}>
-                                                {salle.nom_salle} ({salle.capacite} places)
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-
-                                <FormControl fullWidth>
-                                    <InputLabel>Créneau</InputLabel>
-                                    <Select
-                                        name="id_creneau"
-                                        value={formik.values.id_creneau}
-                                        onChange={formik.handleChange}
-                                        label="Créneau"
-                                    >
-                                        {options.creneaux.map((creneau) => (
-                                            <MenuItem key={creneau.id_creneau} value={creneau.id_creneau}>
-                                                {creneau.jour_semaine} {formatHeure(creneau.heure_debut)} – {formatHeure(creneau.heure_fin)}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
-                                </FormControl>
-
-                                <TextField
-                                    type="date"
-                                    name="date_seance"
-                                    label="Date"
-                                    value={formik.values.date_seance}
-                                    onChange={formik.handleChange}
-                                    InputLabelProps={{
-                                        shrink: true,
-                                    }}
-                                    fullWidth
-                                />
-
-                                <FormControl fullWidth>
-                                    <InputLabel>Statut</InputLabel>
-                                    <Select
-                                        name="statut"
-                                        value={formik.values.statut}
-                                        onChange={formik.handleChange}
-                                        label="Statut"
-                                    >
-                                        <MenuItem value="planifie">Planifié</MenuItem>
-                                        <MenuItem value="confirme">Confirmé</MenuItem>
-                                        <MenuItem value="annule">Annulé</MenuItem>
-                                        <MenuItem value="reporte">Reporté</MenuItem>
-                                    </Select>
-                                </FormControl>
-                            </Box>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setOpen(false)}>Annuler</Button>
-                            <Button type="submit" variant="contained">
-                                {editing ? 'Modifier' : 'Créer'}
-                            </Button>
-                        </DialogActions>
-                    </form>
-                </Dialog>
+                <SeanceDialog open={open} editing={editing} formik={formik} options={options} onClose={() => setOpen(false)} />
             </Box>
             <ViolationsDialog violations={violations?.liste} onClose={() => setViolations(null)} onForcer={violations?.forcer} />
             {/* Assistant de créneaux (I8) : déplacer une séance sur un créneau déjà vérifié */}

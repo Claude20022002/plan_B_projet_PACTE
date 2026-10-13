@@ -4,6 +4,7 @@ import { Embleme } from "../components/Embleme";
 import { Line, PhoneFrame, Screen } from "../components/Frames";
 import { fadeUp, ramp, useEnter, usePortrait } from "../components/motion";
 import { C, FONT_TEXT, FONT_TITLE } from "../theme";
+import { HeureTableau } from "./M3Etudiante";
 import { PHONE_LEFT, PHONE_SCREEN_H, PHONE_TOP, PORTRAIT_SCREEN_H, PORTRAIT_TOP, phoneGeometry, portraitLeft } from "./S3Convergence";
 
 const ENTREE = 45; // 1,5 s dans la scène
@@ -44,7 +45,7 @@ const Notification: React.FC<{ w: number }> = ({ w }) => {
 };
 
 /** 5 · l'accueil de l'application ; une alerte de report descend (1,5 s), reste 3 s, puis remonte. */
-export const S5Alerte: React.FC<{ capture?: string }> = ({ capture = "captures/mobile-38-tableau.png" }) => {
+export const S5Alerte: React.FC<{ capture?: string; aLHeure?: boolean }> = ({ capture = "captures/mobile-38-tableau.png", aLHeure = false }) => {
   const frame = useCurrentFrame();
   const portrait = usePortrait();
   const l1 = useEnter(6);
@@ -79,7 +80,10 @@ export const S5Alerte: React.FC<{ capture?: string }> = ({ capture = "captures/m
         </div>
       )}
       <PhoneFrame screenHeight={screenH} style={{ left, top }}>
-        <Screen src={capture} srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 30%" />
+        <Screen src={capture} srcW={1080} srcH={2400} width={screenW} zoom={[1, 1.04]} origin="50% 30%">
+          {/* `aLHeure` : la capture est le tableau du 11 octobre, remis à l'heure de l'histoire */}
+          {aLHeure ? <HeureTableau /> : null}
+        </Screen>
       </PhoneFrame>
       {/* Bannière agrandie (1,5 × l'écran) et centrée sur le téléphone : lisible au fond d'une salle */}
       <div

@@ -2,9 +2,21 @@ import crypto from "crypto";
 
 const isProduction = process.env.NODE_ENV === "production";
 
-export const ACCESS_COOKIE = isProduction ? "__Host-access_token" : "access_token";
-export const REFRESH_COOKIE = isProduction ? "__Host-refresh_token" : "refresh_token";
-export const CSRF_COOKIE = isProduction ? "__Host-csrf_token" : "csrf_token";
+/**
+ * Noms des cookies. Le préfixe `__Host-` impose le chemin « / » : le cookie de renouvellement,
+ * limité à /api/auth/refresh, serait rejeté par les navigateurs et la session s'arrêterait avec
+ * le jeton d'accès. Il prend donc `__Secure-` (HTTPS seulement, chemin libre).
+ */
+export const nomsCookies = (production) => ({
+    acces: production ? "__Host-access_token" : "access_token",
+    renouvellement: production ? "__Secure-refresh_token" : "refresh_token",
+    csrf: production ? "__Host-csrf_token" : "csrf_token",
+});
+
+const noms = nomsCookies(isProduction);
+export const ACCESS_COOKIE = noms.acces;
+export const REFRESH_COOKIE = noms.renouvellement;
+export const CSRF_COOKIE = noms.csrf;
 
 export const ACCESS_TOKEN_TTL_SECONDS = Number(process.env.JWT_ACCESS_TTL_SECONDS || 15 * 60);
 export const REFRESH_TOKEN_TTL_DAYS = Number(process.env.JWT_REFRESH_TTL_DAYS || 7);

@@ -1,14 +1,8 @@
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
     Box,
     Button,
-    Collapse,
-    Dialog,
-    DialogActions,
-    DialogContent,
-    DialogTitle,
-    IconButton,
     MenuItem,
     Paper,
     Stack,
@@ -23,7 +17,12 @@ import {
     ToggleButtonGroup,
     Typography,
 } from '@mui/material';
-import { Add, Delete, Edit, KeyboardArrowDown, KeyboardArrowRight, UploadFile } from '@mui/icons-material';
+import { Add, UploadFile } from '@mui/icons-material';
+import LigneModule from '../../components/cours/LigneModule';
+import ModuleDialog from '../../components/cours/ModuleDialog';
+import ComposanteDialog from '../../components/cours/ComposanteDialog';
+import { importerModules } from '../../components/cours/importerModules';
+import { COMPOSANTE_VIDE, MODELE_CSV, MODULE_VIDE, TYPES, nombreOuNull, periodeDe } from '../../components/cours/constantes';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
@@ -38,51 +37,6 @@ import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_COURS } from '../../utils/exportColumns';
-import { ds, lineColor } from '../../design-system/tokens';
-
-const SEMESTRES = Array.from({ length: 10 }, (_, i) => `S${i + 1}`);
-const TYPES = ['CM', 'TD', 'TP', 'Projet'];
-const NIVEAUX_GROUPE = ['promotion', 'td', 'tp'];
-const MODALITES = ['presentiel', 'distanciel', 'hybride'];
-
-const MODULE_VIDE = {
-    code_cours: '',
-    nom_cours: '',
-    id_filiere: '',
-    niveau: '',
-    semestre: 'S1',
-    type_cours: 'CM',
-    volume_horaire: '',
-    ects: '',
-    coefficient: 1,
-    id_responsable: '',
-};
-
-const COMPOSANTE_VIDE = {
-    type: 'TD',
-    volume_heures: '',
-    niveau_groupe: 'td',
-    creneaux_par_seance: 2,
-    modalite: 'presentiel',
-    mention: '',
-    type_salle_requis: '',
-    semaine_debut: '',
-    semaine_fin: '',
-    seances_par_semaine: '',
-};
-
-const MODELE_CSV = [
-    'code_cours;nom_cours;code_filiere;niveau;semestre;type_cours;volume_horaire;ects;coefficient',
-    'IIIA-4-TLC;Théorie des langages et Compilation;IIIA;4ème année;S7;CM;21;3;1',
-].join('\n');
-
-const periodeDe = (semestre) => {
-    const numero = Number(String(semestre || '').match(/\d+/)?.[0]);
-    if (!numero) return null;
-    return numero % 2 === 1 ? 'S1' : 'S2';
-};
-
-const nombreOuNull = (valeur) => (valeur === '' || valeur === null || valeur === undefined ? null : Number(valeur));
 
 /**
  * Maquette pédagogique : les modules (cours) de chaque filière et semestre, et pour chacun
@@ -169,8 +123,6 @@ export default function Cours() {
                 : { ...MODULE_VIDE, id_filiere: filiere === 'toutes' ? filieres[0]?.id_filiere ?? '' : filiere },
         });
 
-    const champModule = (nom) => (e) => setModuleDialog((d) => ({ ...d, form: { ...d.form, [nom]: e.target.value } }));
-
     const enregistrerModule = async (event) => {
         event.preventDefault();
         const f = moduleDialog.form;
@@ -218,14 +170,6 @@ export default function Cours() {
                 : { ...COMPOSANTE_VIDE, type: TYPES.find((type) => !module.composantes.some((c) => c.type === type)) || 'TD' },
         });
 
-    const champComposante = (nom) => (e) =>
-        setComposanteDialog((d) => {
-            const form = { ...d.form, [nom]: e.target.value };
-            // Le groupe visé suit le type tant que l'utilisateur ne l'a pas choisi lui-même
-            if (nom === 'type' && !d.editing) form.niveau_groupe = { CM: 'promotion', TD: 'td', TP: 'tp', Projet: 'td' }[e.target.value];
-            return { ...d, form };
-        });
-
     const enregistrerComposante = async (event) => {
         event.preventDefault();
         const f = composanteDialog.form;
@@ -268,45 +212,11 @@ export default function Cours() {
 
     // ── Import ligne à ligne ──────────────────────────────────────────────
     const importer = async (lignes) => {
-        const parCode = new Map(filieres.map((f) => [f.code_filiere.toLowerCase(), f.id_filiere]));
-        const erreurs = [];
-        let reussies = 0;
-        for (const [index, ligne] of lignes.entries()) {
-            const idFiliere = parCode.get(String(ligne.code_filiere || '').trim().toLowerCase()) ?? nombreOuNull(ligne.id_filiere);
-            try {
-                if (!idFiliere) throw new Error(t('ref.curriculum.unknownProgram', { code: ligne.code_filiere || '' }));
-                await coursAPI.create({
-                    code_cours: String(ligne.code_cours || '').trim(),
-                    nom_cours: String(ligne.nom_cours || '').trim(),
-                    id_filiere: idFiliere,
-                    niveau: String(ligne.niveau || '').trim(),
-                    semestre: String(ligne.semestre || '').trim().toUpperCase(),
-                    type_cours: String(ligne.type_cours || 'CM').trim(),
-                    volume_horaire: Number(ligne.volume_horaire),
-                    ects: nombreOuNull(ligne.ects),
-                    coefficient: Number(ligne.coefficient) || 1,
-                });
-                reussies += 1;
-            } catch (error) {
-                erreurs.push({
-                    ligne: index + 2,
-                    libelle: ligne.code_cours,
-                    message: error.response?.data?.error || error.response?.data?.errors?.[0]?.message || error.message,
-                });
-            }
-        }
-        if (reussies) charger();
-        return { reussies, erreurs };
+        const bilan = await importerModules(lignes, filieres, t);
+        if (bilan.reussies) charger();
+        return bilan;
     };
 
-    const libelleSeance = (n) => (Number(n) === 2 ? t('ref.curriculum.halfDay') : t('ref.curriculum.slots', { count: Number(n) }));
-    const rythme = (c) => {
-        if (!c.semaine_debut && !c.seances_par_semaine) return '-';
-        const semaines = c.semaine_debut ? t('ref.curriculum.weeksRange', { from: c.semaine_debut, to: c.semaine_fin || c.semaine_debut }) : '';
-        const parSemaine = c.seances_par_semaine ? t('ref.curriculum.perWeek', { count: c.seances_par_semaine }) : '';
-        return [semaines, parSemaine].filter(Boolean).join(' · ');
-    };
-    const volumeTotal = (m) => m.composantes.reduce((total, c) => total + (Number(c.volume_heures) || 0), 0);
     const nomEnseignant = (id) => {
         const e = enseignants.find((x) => x.id_user === id);
         return e ? `${e.user?.prenom || ''} ${e.user?.nom || ''}`.trim() : '-';
@@ -370,271 +280,30 @@ export default function Cours() {
                                 </TableRow>
                             </TableHead>
                             <TableBody>
-                                {modulesAffiches.map((module) => {
-                                    const ouvert = ouverts.has(module.id_cours);
-                                    return (
-                                        <Fragment key={module.id_cours}>
-                                            <TableRow hover sx={{ '& > td': { borderBottom: ouvert ? 0 : undefined } }}>
-                                                <TableCell sx={{ px: 0.5 }}>
-                                                    <IconButton
-                                                        size="small"
-                                                        onClick={() => basculer(module.id_cours)}
-                                                        aria-expanded={ouvert}
-                                                        aria-label={t(ouvert ? 'ref.curriculum.collapse' : 'ref.curriculum.expand', { name: module.nom_cours })}
-                                                    >
-                                                        {ouvert ? <KeyboardArrowDown fontSize="small" /> : <KeyboardArrowRight fontSize="small" />}
-                                                    </IconButton>
-                                                </TableCell>
-                                                <TableCell>
-                                                    <Stack direction="row" spacing={1} alignItems="center">
-                                                        <Box component="span" aria-hidden sx={{ width: 9, height: 9, borderRadius: '2px', flexShrink: 0, bgcolor: lineColor(module.id_filiere) }} />
-                                                        <Box sx={{ minWidth: 0 }}>
-                                                            <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                                                                {module.nom_cours}
-                                                            </Typography>
-                                                            <Typography variant="caption" color="text.secondary">
-                                                                {module.code_cours} · {module.niveau}
-                                                            </Typography>
-                                                        </Box>
-                                                    </Stack>
-                                                </TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{module.filiere?.code_filiere}</TableCell>
-                                                <TableCell sx={{ fontFamily: ds.font.board, fontWeight: 600 }}>{module.semestre}</TableCell>
-                                                <TableCell>
-                                                    <Typography variant="body2" sx={{ whiteSpace: 'nowrap' }}>
-                                                        {module.composantes.map((c) => `${c.type} ${nombre.format(c.volume_heures)} h`).join(' · ') || '-'}
-                                                    </Typography>
-                                                </TableCell>
-                                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>{nombre.format(volumeTotal(module))} h</TableCell>
-                                                <TableCell align="right" sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{module.ects ?? '-'}</TableCell>
-                                                <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{module.id_responsable ? nomEnseignant(module.id_responsable) : '-'}</TableCell>
-                                                <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                                                    <IconButton size="small" onClick={() => ouvrirModule(module)} aria-label={t('ref.common.editItem', { name: module.nom_cours })}>
-                                                        <Edit fontSize="small" />
-                                                    </IconButton>
-                                                    <IconButton size="small" color="error" onClick={() => setASupprimer({ type: 'module', item: module })} aria-label={t('ref.common.deleteItem', { name: module.nom_cours })}>
-                                                        <Delete fontSize="small" />
-                                                    </IconButton>
-                                                </TableCell>
-                                            </TableRow>
-                                            <TableRow>
-                                                <TableCell colSpan={9} sx={{ py: 0, px: { xs: 0.5, md: 2 }, borderBottom: ouvert ? undefined : 0 }}>
-                                                    <Collapse in={ouvert} timeout="auto" unmountOnExit>
-                                                        <Box sx={{ pl: { md: 5 }, pb: 2, pt: 0.5 }}>
-                                                            <Table size="small" aria-label={t('ref.curriculum.componentsOf', { name: module.nom_cours })}>
-                                                                <TableHead>
-                                                                    <TableRow>
-                                                                        <TableCell>{t('ref.curriculum.compCols.type')}</TableCell>
-                                                                        <TableCell align="right">{t('ref.curriculum.compCols.volume')}</TableCell>
-                                                                        <TableCell>{t('ref.curriculum.compCols.group')}</TableCell>
-                                                                        <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.curriculum.compCols.session')}</TableCell>
-                                                                        <TableCell>{t('ref.curriculum.compCols.mode')}</TableCell>
-                                                                        <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.curriculum.compCols.room')}</TableCell>
-                                                                        <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{t('ref.curriculum.compCols.rhythm')}</TableCell>
-                                                                        <TableCell align="right" />
-                                                                    </TableRow>
-                                                                </TableHead>
-                                                                <TableBody>
-                                                                    {module.composantes.map((c) => (
-                                                                        <TableRow key={c.id_composante}>
-                                                                            <TableCell sx={{ fontFamily: ds.font.board, fontWeight: 600 }}>{c.type}</TableCell>
-                                                                            <TableCell align="right">{nombre.format(c.volume_heures)} h</TableCell>
-                                                                            <TableCell>{t(`ref.groupTypes.${c.niveau_groupe}`)}</TableCell>
-                                                                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{libelleSeance(c.creneaux_par_seance)}</TableCell>
-                                                                            <TableCell>
-                                                                                {c.modalite === 'presentiel' ? (
-                                                                                    <Typography variant="body2" color="text.secondary">
-                                                                                        {t('ref.modes.presentiel')}
-                                                                                    </Typography>
-                                                                                ) : (
-                                                                                    <StateChip tone="info" title={c.mention || undefined}>
-                                                                                        {t(`ref.modes.${c.modalite}`)}
-                                                                                    </StateChip>
-                                                                                )}
-                                                                            </TableCell>
-                                                                            <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
-                                                                                {c.type_salle_requis ? t(`ref.roomTypes.${c.type_salle_requis}`, { defaultValue: c.type_salle_requis }) : '-'}
-                                                                            </TableCell>
-                                                                            <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{rythme(c)}</TableCell>
-                                                                            <TableCell align="right" sx={{ whiteSpace: 'nowrap' }}>
-                                                                                <IconButton size="small" onClick={() => ouvrirComposante(module, c)} aria-label={t('ref.common.editItem', { name: `${module.nom_cours} ${c.type}` })}>
-                                                                                    <Edit fontSize="small" />
-                                                                                </IconButton>
-                                                                                <IconButton size="small" color="error" onClick={() => setASupprimer({ type: 'composante', item: c, module })} aria-label={t('ref.common.deleteItem', { name: `${module.nom_cours} ${c.type}` })}>
-                                                                                    <Delete fontSize="small" />
-                                                                                </IconButton>
-                                                                            </TableCell>
-                                                                        </TableRow>
-                                                                    ))}
-                                                                </TableBody>
-                                                            </Table>
-                                                            {module.composantes.length < TYPES.length && (
-                                                                <Button size="small" startIcon={<Add />} onClick={() => ouvrirComposante(module)} sx={{ mt: 1 }}>
-                                                                    {t('ref.curriculum.addComponent')}
-                                                                </Button>
-                                                            )}
-                                                        </Box>
-                                                    </Collapse>
-                                                </TableCell>
-                                            </TableRow>
-                                        </Fragment>
-                                    );
-                                })}
+                                {modulesAffiches.map((module) => (
+                                    <LigneModule
+                                        key={module.id_cours}
+                                        module={module}
+                                        ouvert={ouverts.has(module.id_cours)}
+                                        nombre={nombre}
+                                        nomEnseignant={nomEnseignant}
+                                        onBasculer={() => basculer(module.id_cours)}
+                                        onModifier={() => ouvrirModule(module)}
+                                        onSupprimer={() => setASupprimer({ type: 'module', item: module })}
+                                        onAjouterComposante={() => ouvrirComposante(module)}
+                                        onModifierComposante={(c) => ouvrirComposante(module, c)}
+                                        onSupprimerComposante={(c) => setASupprimer({ type: 'composante', item: c, module })}
+                                    />
+                                ))}
                             </TableBody>
                         </Table>
                     </TableContainer>
                 )}
             </Paper>
 
-            {/* Module */}
-            <Dialog open={moduleDialog.open} onClose={() => setModuleDialog({ open: false, editing: null, form: MODULE_VIDE })} maxWidth="sm" fullWidth>
-                <form onSubmit={enregistrerModule}>
-                    <DialogTitle>{moduleDialog.editing ? t('ref.curriculum.editModule') : t('ref.curriculum.addModule')}</DialogTitle>
-                    <DialogContent>
-                        <Stack spacing={2} sx={{ mt: 1 }}>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField label={t('ref.curriculum.fields.code')} value={moduleDialog.form.code_cours} onChange={champModule('code_cours')} required autoFocus sx={{ minWidth: 180 }} />
-                                <TextField fullWidth label={t('ref.curriculum.fields.name')} value={moduleDialog.form.nom_cours} onChange={champModule('nom_cours')} required />
-                            </Stack>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField select fullWidth label={t('ref.curriculum.fields.program')} value={moduleDialog.form.id_filiere} onChange={champModule('id_filiere')} required>
-                                    {filieres.map((f) => (
-                                        <MenuItem key={f.id_filiere} value={f.id_filiere}>
-                                            {f.code_filiere} · {f.nom_filiere}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                <TextField fullWidth label={t('ref.curriculum.fields.level')} value={moduleDialog.form.niveau} onChange={champModule('niveau')} placeholder="4ème année" required />
-                                <TextField select label={t('ref.curriculum.fields.semester')} value={moduleDialog.form.semestre} onChange={champModule('semestre')} sx={{ minWidth: 110 }}>
-                                    {SEMESTRES.map((s) => (
-                                        <MenuItem key={s} value={s}>
-                                            {s}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </Stack>
-                            {!moduleDialog.editing && (
-                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                    <TextField select fullWidth label={t('ref.curriculum.fields.firstComponent')} value={moduleDialog.form.type_cours} onChange={champModule('type_cours')}>
-                                        {TYPES.map((type) => (
-                                            <MenuItem key={type} value={type}>
-                                                {type}
-                                            </MenuItem>
-                                        ))}
-                                    </TextField>
-                                    <TextField fullWidth type="number" label={t('ref.curriculum.fields.volume')} value={moduleDialog.form.volume_horaire} onChange={champModule('volume_horaire')} inputProps={{ min: 1 }} required />
-                                </Stack>
-                            )}
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField fullWidth type="number" label={t('ref.curriculum.fields.ects')} value={moduleDialog.form.ects} onChange={champModule('ects')} inputProps={{ min: 0, step: 0.5 }} />
-                                <TextField fullWidth type="number" label={t('ref.curriculum.fields.coefficient')} value={moduleDialog.form.coefficient} onChange={champModule('coefficient')} inputProps={{ min: 0, step: 0.5 }} />
-                                <TextField select fullWidth label={t('ref.curriculum.fields.lead')} value={moduleDialog.form.id_responsable} onChange={champModule('id_responsable')}>
-                                    <MenuItem value="">{t('common.aucun')}</MenuItem>
-                                    {enseignants.map((e) => (
-                                        <MenuItem key={e.id_user} value={e.id_user}>
-                                            {e.user?.prenom} {e.user?.nom}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </Stack>
-                        </Stack>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setModuleDialog({ open: false, editing: null, form: MODULE_VIDE })}>{t('common.cancel')}</Button>
-                        <Button type="submit" variant="contained">
-                            {t('common.save')}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+            <ModuleDialog etat={moduleDialog} setEtat={setModuleDialog} filieres={filieres} enseignants={enseignants} onSubmit={enregistrerModule} />
 
-            {/* Composante */}
-            <Dialog open={composanteDialog.open} onClose={() => setComposanteDialog({ open: false, module: null, editing: null, form: COMPOSANTE_VIDE })} maxWidth="sm" fullWidth>
-                <form onSubmit={enregistrerComposante}>
-                    <DialogTitle>
-                        {composanteDialog.editing ? t('ref.curriculum.editComponent') : t('ref.curriculum.addComponent')}
-                        <Typography variant="body2" color="text.secondary">
-                            {composanteDialog.module?.nom_cours}
-                        </Typography>
-                    </DialogTitle>
-                    <DialogContent>
-                        <Stack spacing={2} sx={{ mt: 1 }}>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField select fullWidth label={t('ref.curriculum.compFields.type')} value={composanteDialog.form.type} onChange={champComposante('type')}>
-                                    {TYPES.map((type) => (
-                                        <MenuItem key={type} value={type} disabled={!composanteDialog.editing && composanteDialog.module?.composantes.some((c) => c.type === type)}>
-                                            {type}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                <TextField fullWidth type="number" label={t('ref.curriculum.compFields.volume')} value={composanteDialog.form.volume_heures} onChange={champComposante('volume_heures')} inputProps={{ min: 0.5, step: 0.5 }} required />
-                            </Stack>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField select fullWidth label={t('ref.curriculum.compFields.group')} value={composanteDialog.form.niveau_groupe} onChange={champComposante('niveau_groupe')}>
-                                    {NIVEAUX_GROUPE.map((n) => (
-                                        <MenuItem key={n} value={n}>
-                                            {t(`ref.groupTypes.${n}`)}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                <TextField
-                                    select
-                                    fullWidth
-                                    label={t('ref.curriculum.compFields.session')}
-                                    value={composanteDialog.form.creneaux_par_seance}
-                                    onChange={champComposante('creneaux_par_seance')}
-                                    helperText={t('ref.curriculum.compFields.sessionHelp')}
-                                >
-                                    {[1, 2, 3, 4].map((n) => (
-                                        <MenuItem key={n} value={n}>
-                                            {libelleSeance(n)}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            </Stack>
-                            <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                <TextField select fullWidth label={t('ref.curriculum.compFields.mode')} value={composanteDialog.form.modalite} onChange={champComposante('modalite')}>
-                                    {MODALITES.map((m) => (
-                                        <MenuItem key={m} value={m}>
-                                            {t(`ref.modes.${m}`)}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                                <TextField fullWidth label={t('ref.curriculum.compFields.mention')} value={composanteDialog.form.mention} onChange={champComposante('mention')} placeholder="Blended Coursera" />
-                            </Stack>
-                            {composanteDialog.form.modalite !== 'distanciel' && (
-                                <TextField select label={t('ref.curriculum.compFields.room')} value={composanteDialog.form.type_salle_requis} onChange={champComposante('type_salle_requis')}>
-                                    <MenuItem value="">{t('ref.curriculum.compFields.anyRoom')}</MenuItem>
-                                    {typesSalle.map((type) => (
-                                        <MenuItem key={type} value={type}>
-                                            {t(`ref.roomTypes.${type}`, { defaultValue: type })}
-                                        </MenuItem>
-                                    ))}
-                                </TextField>
-                            )}
-                            <Box>
-                                <Typography variant="subtitle2" sx={{ mb: 1 }}>
-                                    {t('ref.curriculum.compFields.rhythm')}
-                                </Typography>
-                                <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                                    <TextField fullWidth type="number" label={t('ref.curriculum.compFields.weekStart')} value={composanteDialog.form.semaine_debut} onChange={champComposante('semaine_debut')} inputProps={{ min: 1, max: 30 }} />
-                                    <TextField fullWidth type="number" label={t('ref.curriculum.compFields.weekEnd')} value={composanteDialog.form.semaine_fin} onChange={champComposante('semaine_fin')} inputProps={{ min: 1, max: 30 }} />
-                                    <TextField fullWidth type="number" label={t('ref.curriculum.compFields.perWeek')} value={composanteDialog.form.seances_par_semaine} onChange={champComposante('seances_par_semaine')} inputProps={{ min: 1, max: 20 }} />
-                                </Stack>
-                                <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mt: 0.75 }}>
-                                    {t('ref.curriculum.compFields.rhythmHelp')}
-                                </Typography>
-                            </Box>
-                        </Stack>
-                    </DialogContent>
-                    <DialogActions>
-                        <Button onClick={() => setComposanteDialog({ open: false, module: null, editing: null, form: COMPOSANTE_VIDE })}>{t('common.cancel')}</Button>
-                        <Button type="submit" variant="contained">
-                            {t('common.save')}
-                        </Button>
-                    </DialogActions>
-                </form>
-            </Dialog>
+            <ComposanteDialog etat={composanteDialog} setEtat={setComposanteDialog} typesSalle={typesSalle} onSubmit={enregistrerComposante} />
 
             <ImportCsvDialog
                 open={importOuvert}

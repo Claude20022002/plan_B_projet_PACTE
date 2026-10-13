@@ -80,6 +80,8 @@ export const preparerDonnees = async (racine) => {
     etudiants: etudiants.map(compte),
     changementTelephone: { etudiante: compte(changeDeTelephone), ...TELEPHONES },
     seance: { id: seance.id_affectation, cours: fixture.cours.nom_cours, groupe: fixture.groupe.nom_groupe },
+    // Séance déjà planifiée lundi 4 janvier 2027 à 9 h (createPlanningFixture) : le parcours des séances la percute
+    seanceFixe: { date: String(fixture.affectation.date_seance).slice(0, 10), salle: fixture.salle.nom_salle, groupe: fixture.groupe.nom_groupe, autreGroupe: fixture.autreGroupe.nom_groupe },
     generation,
     iiia,
   };

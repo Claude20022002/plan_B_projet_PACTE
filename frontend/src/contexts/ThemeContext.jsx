@@ -58,8 +58,8 @@ const buildTheme = (mode, language, famille = 'planner') => {
     const p = sl ? STUDYLIB[isLight ? 'clair' : 'sombre'] : null;
     const c = ds.colors;
     const b = ds.board;
-    const fontTitres = sl ? STUDYLIB.font : fontTitres;
-    const fontCorps = sl ? STUDYLIB.font : fontCorps;
+    const fontTitres = sl ? STUDYLIB.font : ds.font.board;
+    const fontCorps = sl ? STUDYLIB.font : ds.font.body;
     const rayon = sl ? STUDYLIB.radius : ds.radius;
     const flapLabel = sl ? { fontFamily: STUDYLIB.font, fontWeight: 600, textTransform: 'none', letterSpacing: 0 } : flapLabelPlanner;
 

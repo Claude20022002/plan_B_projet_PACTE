@@ -162,12 +162,16 @@ describe("Séances à vérifier avant la paie (R-11)", () => {
 
     test("l'administration écarte, confirme, puis revient sur sa décision", async () => {
         const avant = await heuresDu();
+        const heuresDuModule = async () => (await clients.admin.get(`/api/suivi/modules?id_periode=${ref.periode.id_periode}`)).body[0].heures_realisees;
+        const moduleAvant = await heuresDuModule();
         const ecartee = await viser(cible().id_affectation, { decision: "ecartee", motif: "  Cours non tenu  " });
         expect(ecartee.body).toMatchObject({ etat: "ecartee", compte: false, motif: "Cours non tenu" });
         const apres = await heuresDu();
         expect(apres.heures_ecartees).toBe(1.8);
         expect(apres.seances_a_verifier).toBe(avant.seances_a_verifier - 1);
         expect(apres.heures_realisees).toBeLessThan(avant.heures_realisees);
+        // La même séance sort des heures réalisées du module (R-11), et y revient avec sa confirmation
+        expect(moduleAvant - await heuresDuModule()).toBeCloseTo(1.8, 0);
         // Écartée : absente de l'export, mais encore dans la liste pour revenir dessus
         expect(await ligneCsv()).toBeUndefined();
         expect(await dansLaListe(cible().id_affectation)).toMatchObject({ etat: "ecartee", motif: "Cours non tenu" });
@@ -175,6 +179,7 @@ describe("Séances à vérifier avant la paie (R-11)", () => {
         expect((await viser(cible().id_affectation, { decision: "confirmee" })).body).toMatchObject({ etat: "confirmee", compte: true, motif: null });
         expect(await ligneCsv()).toMatch(/;confirmée par l'administration$/);
         expect((await heuresDu()).heures_realisees).toBe(avant.heures_realisees);
+        expect(await heuresDuModule()).toBe(moduleAvant);
 
         expect((await viser(cible().id_affectation, { decision: null })).body.etat).toBe("a_verifier");
         expect(await VisaSeance.count()).toBe(0);

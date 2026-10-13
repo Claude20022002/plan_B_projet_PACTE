@@ -40,6 +40,16 @@ async function ensureCsrfToken() {
 // valide. Une session révoquée ou un compte désactivé mènent à la connexion.
 const REFRESH_CODES = new Set(['TOKEN_EXPIRED', 'TOKEN_MISSING', 'TOKEN_INVALID']);
 
+/**
+ * Message d'une erreur de l'API, au format commun { message, code, violations? } (docs/api/ERREURS.md).
+ * Pour une validation ou un doublon, le premier champ en cause est ajouté au message ; `error`
+ * reste lu pour les anciens contrôleurs, pas encore alignés (lot A-6).
+ */
+const messageDe = (data, defaut) => {
+    const detail = ['VALIDATION', 'DEJA_EXISTANT'].includes(data?.code) ? data.violations?.[0]?.message : null;
+    return [data?.message || data?.error || defaut, detail].filter(Boolean).join(' : ');
+};
+
 const NO_REFRESH_ENDPOINTS = new Set([
     '/auth/login',
     '/auth/refresh',
@@ -102,7 +112,7 @@ async function request(endpoint, options = {}) {
                     await request('/auth/refresh', { method: 'POST' });
                     return request(endpoint, { ...options, _retried: true });
                 } catch {
-                    const error = new Error(data.message || data.error || 'Non autorisé');
+                    const error = new Error(messageDe(data, 'Non autorisé'));
                     error.status = 401;
                     error.response = { data };
                     throw error;
@@ -110,19 +120,19 @@ async function request(endpoint, options = {}) {
             }
 
             if (response.status === 401) {
-                const error = new Error(data.message || data.error || 'Non autorisé');
+                const error = new Error(messageDe(data, 'Non autorisé'));
                 error.status = 401;
                 error.response = { data };
                 throw error;
             }
             // Si erreur 403 (interdit), c'est un problème de permissions
             if (response.status === 403) {
-                const error = new Error(data.message || data.error || 'Accès interdit');
+                const error = new Error(messageDe(data, 'Accès interdit'));
                 error.status = 403;
                 error.response = { data };
                 throw error;
             }
-            const error = new Error(data.message || data.error || `Erreur ${response.status}`);
+            const error = new Error(messageDe(data, `Erreur ${response.status}`));
             error.status = response.status;
             error.response = { data };
             throw error;
@@ -198,6 +208,8 @@ export const enseignantAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/enseignants${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(enseignantAPI.getAll, params),
     getById: (id) => request(`/enseignants/${id}`),
     create: (data) => request('/enseignants', { method: 'POST', body: data }),
     update: (id, data) => request(`/enseignants/${id}`, { method: 'PUT', body: data }),
@@ -334,6 +346,8 @@ export const coursAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/cours${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(coursAPI.getAll, params),
     getById: (id) => request(`/cours/${id}`),
     create: (data) => request('/cours', { method: 'POST', body: data }),
     update: (id, data) => request(`/cours/${id}`, { method: 'PUT', body: data }),
@@ -382,6 +396,8 @@ export const creneauAPI = {
         const query = new URLSearchParams(params).toString();
         return request(`/creneaux${query ? `?${query}` : ''}`);
     },
+    // Toutes les pages (le serveur en rend au plus 100 éléments à la fois) : un tableau
+    getTous: (params) => fetchAll(creneauAPI.getAll, params),
     getById: (id) => request(`/creneaux/${id}`),
     create: (data) => request('/creneaux', { method: 'POST', body: data }),
     update: (id, data) => request(`/creneaux/${id}`, { method: 'PUT', body: data }),
@@ -496,6 +512,9 @@ export const disponibiliteAPI = {
 
 // ==================== STATISTIQUES ====================
 export const statistiquesAPI = {
+    // Usage du mois (R-12) : { mois, definition_actif, comptes_actifs: { total, etudiant, enseignant, admin }, appels_valides, quiz: { parties, joueurs }, devoirs_rendus }
+    usage: (mois) => request(`/statistiques/usage?mois=${encodeURIComponent(mois)}`),
+    exportUsage: (mois) => telecharger(`/statistiques/usage.csv?mois=${encodeURIComponent(mois)}`, `usage-${mois}.csv`),
     getStatistiquesGlobales: (params) => {
         const query = new URLSearchParams(params || {}).toString();
         return request(`/statistiques/dashboard${query ? `?${query}` : ''}`);
@@ -548,7 +567,7 @@ export async function telecharger(endpoint, nomFichier) {
     const response = await fetch(`${API_BASE_URL}${endpoint}`, { credentials: 'include' });
     if (!response.ok) {
         const data = await response.json().catch(() => ({}));
-        const error = new Error(data.error || data.message || `Erreur ${response.status}`);
+        const error = new Error(messageDe(data, `Erreur ${response.status}`));
         error.status = response.status;
         throw error;
     }
