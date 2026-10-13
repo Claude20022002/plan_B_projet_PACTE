@@ -14,6 +14,7 @@ import {
 import { PhotoCamera } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import AbonnementAgenda from '../components/agenda/AbonnementAgenda';
+import Apparence from '../components/parametres/Apparence';
 import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { useAuth } from '../contexts/AuthContext';
@@ -320,6 +321,8 @@ export default function Parametres() {
                         </Box>
                     </form>
                 </Paper>
+
+                <Apparence />
 
                 <AbonnementAgenda />
 

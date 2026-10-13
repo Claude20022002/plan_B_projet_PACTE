@@ -20,8 +20,16 @@ const fr = {
     language: 'Langue',
     themeLight: 'Mode clair',
     themeDark: 'Mode sombre',
-    themeStudylib: 'Thème StudyLib',
-    themePlanner: 'Thème Planner',
+    apparence: {
+      titre: 'Apparence',
+      intro: 'Le thème de Planner (panneau des départs) ou celui de la bibliothèque StudyLib, en clair ou en sombre. Retenu sur ce navigateur.',
+      theme: 'Thème',
+      planner: 'Planner',
+      studylib: 'StudyLib',
+      mode: 'Mode',
+      clair: 'Clair',
+      sombre: 'Sombre',
+    },
     logout: 'Se déconnecter',
     errorLoad: 'Impossible de charger les données. Vérifiez votre connexion puis réessayez.',
     confirmTitle: 'Confirmation',
@@ -378,7 +386,7 @@ const fr = {
   },
   appel: {
     titre: 'Appel',
-    retour: 'Mes séances',
+    retour: 'Mes classes',
     qrAlt: 'QR code de l’appel à scanner avec l’application HESTIM',
     change: 'Nouveau code dans {{secondes}} s',
     presents: '{{presents}} / {{attendus}} présents',
@@ -805,7 +813,7 @@ const fr = {
       "profReport": {
         "titre": "Je ne peux pas assurer une séance",
         "etapes": [
-          "Ouvrez « Mes séances » et cliquez sur « Demander un report » sur la séance.",
+          "Ouvrez « Mes demandes de report » et cliquez sur « Nouvelle demande », ou « Demander un report » depuis le tableau.",
           "Indiquez le motif et la date souhaitée : l’administration reçoit la demande et vous répond.",
           "Suivez la réponse dans « Mes demandes de report »."
         ],

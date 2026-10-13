@@ -22,7 +22,7 @@ export default function Panneau({ titre, droite, children, sx, titreId, componen
             px: { xs: 1, sm: 1.5 },
             pt: 0.5,
             pb: 1,
-            color: '#FFFFFF',
+            color: ds.board.titre,
             fontFamily: ds.font.board,
             fontWeight: 700,
             letterSpacing: '0.12em',
