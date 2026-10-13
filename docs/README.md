@@ -30,6 +30,7 @@ Par où commencer, selon ce que vous venez faire. Tout ce qui est listé ici est
 | [remarques-par-profil.md](plans/remarques-par-profil.md) | Remarques des utilisateurs, lots R, revenu, vidéo |
 | [quiz-ia.md](plans/quiz-ia.md) | Quiz générés par l'IA, quiz dans Planner (lots IA et CQ) |
 | [espace-enseignant.md](plans/espace-enseignant.md) | Espace de l'enseignant |
+| [demo-et-activites.md](plans/demo-et-activites.md) | Comptes de démonstration, supports par classe, jeux et illustrations (lots D, S, P, M, J, I) |
 
 ## Tester et déployer
 
