@@ -191,7 +191,8 @@ export const loginCompteRateLimiter = createRateLimiter({
  */
 export const apiRateLimiter = createRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
-    max: 500, // 500 requêtes (augmenté pour éviter les erreurs 429)
+    // 500 requêtes ; RATE_LIMIT_API_MAX le relève pour les parcours, qui viennent tous de 127.0.0.1
+    max: Number(process.env.RATE_LIMIT_API_MAX) || 500,
     message: "Trop de requêtes, veuillez réessayer plus tard.",
 });
 

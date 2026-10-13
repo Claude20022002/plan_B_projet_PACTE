@@ -38,6 +38,9 @@ process.env.IA_FOURNISSEUR = "openai-compatible";
 process.env.IA_URL = `http://127.0.0.1:${portIa}/v1`;
 process.env.IA_CLE = "cle-des-parcours";
 process.env.IA_MODELE = "fausse-ia";
+// Tous les parcours viennent de 127.0.0.1 : la limite globale de l'API (500 requêtes en 15 min)
+// ferait échouer les derniers quand la série est rapide (CI)
+process.env.RATE_LIMIT_API_MAX = "20000";
 await import(pathToFileURL(path.join(racine, "backend/tests/integration/setupEnv.js")).href);
 
 // La base doit exister avant que le serveur s'y connecte
