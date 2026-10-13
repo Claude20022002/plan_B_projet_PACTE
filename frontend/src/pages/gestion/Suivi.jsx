@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Box, LinearProgress, MenuItem, Paper, Stack, Tab, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tabs, TextField, Typography } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import HeuresDuMois from '../../components/suivi/HeuresDuMois';
+import UsageDuMois from '../../components/suivi/UsageDuMois';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
@@ -17,7 +18,7 @@ import { aujourdhui } from '../../../../shared/dates.js';
 /**
  * Suivi du réalisé (phase P7) : avancement de chaque enseignement face à son rythme (alerte de
  * retard), heures réalisées par enseignant sur un mois et export CSV des vacataires
- * (components/suivi/HeuresDuMois.jsx).
+ * (components/suivi/HeuresDuMois.jsx), usage du mois pour la facturation (UsageDuMois.jsx, R-12).
  */
 export default function Suivi() {
     const { t, i18n } = useTranslation();
@@ -34,9 +35,10 @@ export default function Suivi() {
                     <Tabs value={onglet} onChange={(_, v) => setOnglet(v)} sx={{ mb: 2, borderBottom: '1px solid', borderColor: 'divider' }}>
                         <Tab label={t('tracking.tabs.progress')} />
                         <Tab label={t('tracking.tabs.hours')} />
+                        <Tab label={t('tracking.tabs.usage')} />
                     </Tabs>
                 )}
-                {onglet === 0 ? <Avancement nombre={nombre} user={user} /> : <HeuresDuMois nombre={nombre} />}
+                {onglet === 0 ? <Avancement nombre={nombre} user={user} /> : onglet === 1 ? <HeuresDuMois nombre={nombre} /> : <UsageDuMois nombre={nombre} />}
             </Paper>
         </DashboardLayout>
     );

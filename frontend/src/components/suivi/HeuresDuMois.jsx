@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Box, Button, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
+import { Alert, Box, Button, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import { Download, Refresh } from '@mui/icons-material';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
@@ -57,6 +57,8 @@ export default function HeuresDuMois({ nombre }) {
   };
 
   const heures = (h) => `${nombre.format(h ?? 0)} h`;
+  // Séances de vacataires sans appel validé ni visa : retenues hors de l'export de la paie (R-11)
+  const retenues = lignes.filter((l) => l.statut === 'vacataire').reduce((total, l) => total + (l.seances_a_verifier ?? 0), 0);
 
   return (
     <>
@@ -74,6 +76,11 @@ export default function HeuresDuMois({ nombre }) {
       <Typography variant="body2" color="text.secondary" sx={{ mb: 2, maxWidth: 820 }}>
         {t('tracking.hoursIntro')}
       </Typography>
+      {retenues > 0 && (
+        <Alert severity="warning" sx={{ mb: 2, maxWidth: 820 }}>
+          {t('tracking.visa.retenues', { count: retenues })}
+        </Alert>
+      )}
       {loading ? (
         <TableSkeleton rows={6} />
       ) : lignes.length === 0 ? (
