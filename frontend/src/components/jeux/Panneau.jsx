@@ -1,47 +1,28 @@
 import { Box } from '@mui/material';
+import { carteSx, titreCarteSx } from '../../design-system/cartes';
 import { ds } from '../../design-system/tokens';
 
 /**
- * Panneau des jeux : même matière que le panneau des départs (cadre bleu marine, noir mat,
- * titre en capitales condensées dans le cadre), pour les listes et le terminal.
+ * Carte de liste des écrans Activités, Mes classes et Annonces (DESIGN.md, Cards) : surface claire
+ * à 12 px, en-tête titré avec un complément à droite (`droite`), puis des lignes réglées.
  */
 export default function Panneau({ titre, droite, children, sx, titreId, component = 'section' }) {
   return (
-    <Box
-      component={component}
-      aria-labelledby={titre ? titreId : undefined}
-      sx={{ bgcolor: ds.board.frame, p: { xs: '6px', sm: '8px' }, borderRadius: `${ds.radius.lg}px`, overflow: 'hidden', ...sx }}
-    >
+    <Box component={component} aria-labelledby={titre ? titreId : undefined} sx={{ ...carteSx, ...sx }}>
       {(titre || droite) && (
-        <Box
-          sx={{
-            display: 'flex',
-            alignItems: 'baseline',
-            justifyContent: 'space-between',
-            gap: 2,
-            px: { xs: 1, sm: 1.5 },
-            pt: 0.5,
-            pb: 1,
-            color: ds.board.titre,
-            fontFamily: ds.font.board,
-            fontWeight: 700,
-            letterSpacing: '0.12em',
-            textTransform: 'uppercase',
-            fontSize: { xs: '1rem', sm: '1.125rem' },
-          }}
-        >
-          <Box component="h2" id={titreId} sx={{ m: 0, font: 'inherit', letterSpacing: 'inherit', minWidth: 0 }}>
+        <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 1, px: { xs: 1.5, sm: 2 }, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
+          <Box component="h2" id={titreId} sx={{ ...titreCarteSx, m: 0, minWidth: 0 }}>
             {titre}
           </Box>
-          {droite && <Box sx={{ fontSize: '0.875rem', letterSpacing: '0.08em', opacity: 0.9, flexShrink: 0 }}>{droite}</Box>}
+          {droite && <Box sx={{ flexShrink: 0, color: 'text.secondary', fontWeight: 600, fontVariantNumeric: 'tabular-nums' }}>{droite}</Box>}
         </Box>
       )}
-      <Box sx={{ bgcolor: ds.board.ground, color: ds.board.letter, borderRadius: `${ds.radius.md}px` }}>{children}</Box>
+      <Box>{children}</Box>
     </Box>
   );
 }
 
-/** Ligne de panneau : lampe | contenu | action, séparée par un filet. */
+/** Ligne d'une carte de liste : pastille d'état facultative (`lampe`, une couleur) | contenu | action. */
 export function LignePanneau({ lampe = null, children, action, premier = false }) {
   return (
     <Box
@@ -53,7 +34,8 @@ export function LignePanneau({ lampe = null, children, action, premier = false }
         rowGap: 1,
         px: { xs: 1, sm: 1.5 },
         py: { xs: 1.25, sm: 1.5 },
-        borderTop: premier ? 'none' : `1px solid ${ds.board.seam}`,
+        borderTop: premier ? 'none' : '1px solid',
+        borderColor: 'divider',
       }}
     >
       <Box aria-hidden sx={{ width: 8, height: 8, borderRadius: '50%', justifySelf: 'center', bgcolor: lampe ?? 'transparent' }} />
@@ -63,9 +45,16 @@ export function LignePanneau({ lampe = null, children, action, premier = false }
   );
 }
 
-/** Texte en capitales condensées, comme une colonne du panneau */
-export const Capitales = ({ children, sx, component = 'span' }) => (
-  <Box component={component} sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', ...sx }}>
+/** Intitulé d'une ligne (nom d'un jeu, d'un module, d'une classe) : Barlow 600 en casse normale. */
+export const Intitule = ({ children, sx, component = 'span' }) => (
+  <Box component={component} sx={{ fontWeight: 600, lineHeight: 1.35, ...sx }}>
+    {children}
+  </Box>
+);
+
+/** Libellé court au-dessus d'un intitulé (état, date, catégorie) : capitales condensées, en gris. */
+export const Libelle = ({ children, sx, component = 'span' }) => (
+  <Box component={component} sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '0.75rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'text.secondary', ...sx }}>
     {children}
   </Box>
 );

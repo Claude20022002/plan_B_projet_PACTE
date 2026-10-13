@@ -74,15 +74,15 @@ export default function SelecteurEspaces({ role, sx }) {
         onClose={() => setOuvert(false)}
         anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
         transformOrigin={{ vertical: 'top', horizontal: 'right' }}
-        slotProps={{ paper: { sx: { bgcolor: ds.board.frame, p: '6px', borderRadius: `${ds.radius.lg}px`, width: 340, maxWidth: 'calc(100vw - 24px)' } } }}
+        slotProps={{ paper: { sx: { bgcolor: 'background.paper', p: '6px', borderRadius: `${ds.radius.lg}px`, width: 340, maxWidth: 'calc(100vw - 24px)' } } }}
       >
         <Box
           component="h2"
-          sx={{ m: 0, px: 1, pt: 0.25, pb: 0.75, color: ds.board.titre, fontFamily: ds.font.board, fontWeight: 700, fontSize: '0.9375rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}
+          sx={{ m: 0, px: 1, pt: 0.25, pb: 0.75, color: 'text.primary', fontFamily: ds.font.board, fontWeight: 700, fontSize: '0.9375rem', letterSpacing: '0.12em', textTransform: 'uppercase' }}
         >
           {t('espaces.titre')}
         </Box>
-        <Box component="nav" aria-label={t('espaces.titre')} sx={{ bgcolor: ds.board.ground, borderRadius: `${ds.radius.md}px` }}>
+        <Box component="nav" aria-label={t('espaces.titre')} sx={{ bgcolor: 'background.paper', borderRadius: `${ds.radius.md}px` }}>
           {espaces.map((e, index) => {
             const Icone = ICONES[e.icone];
             const ici = e.code === courant;
@@ -102,24 +102,25 @@ export default function SelecteurEspaces({ role, sx }) {
                   py: 1.25,
                   minHeight: 56,
                   textAlign: 'left',
-                  borderTop: index ? `1px solid ${ds.board.seam}` : 'none',
-                  color: ds.board.letter,
-                  '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+                  borderTop: index ? '1px solid' : 'none',
+                  borderColor: 'divider',
+                  color: 'text.primary',
+                  '&:hover': { bgcolor: 'action.hover' },
                   '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: -2 },
                 }}
               >
                 {/* Lampe : vous êtes ici */}
-                <Box aria-hidden sx={{ width: 8, height: 8, borderRadius: '50%', justifySelf: 'center', bgcolor: ici ? ds.board.live : 'transparent', border: ici ? 'none' : `1px solid ${ds.board.seam}` }} />
-                <Icone sx={{ color: ici ? ds.board.letter : ds.board.letterDim }} />
+                <Box aria-hidden sx={{ width: 8, height: 8, borderRadius: '50%', justifySelf: 'center', bgcolor: ici ? 'success.main' : 'transparent', border: ici ? 'none' : '1px solid', borderColor: 'divider' }} />
+                <Icone sx={{ color: ici ? 'text.primary' : 'text.secondary' }} />
                 <Box sx={{ minWidth: 0 }}>
                   <Box sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '1.0625rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
                     {libelle(e.titre, i18n.language)}
                   </Box>
-                  <Box sx={{ fontSize: '0.8125rem', color: ds.board.letterDim, lineHeight: 1.35 }}>
+                  <Box sx={{ fontSize: '0.8125rem', color: 'text.secondary', lineHeight: 1.35 }}>
                     {ici ? t('espaces.ici') : libelle(e.resume, i18n.language)}
                   </Box>
                 </Box>
-                {externe ? <NorthEast aria-hidden sx={{ fontSize: 16, color: ds.board.letterDim }} /> : <span />}
+                {externe ? <NorthEast aria-hidden sx={{ fontSize: 16, color: 'text.secondary' }} /> : <span />}
               </ButtonBase>
             );
           })}

@@ -89,7 +89,7 @@ const TerminalPanneau = forwardRef(function TerminalPanneau({ partie, titre, eta
     }
   };
 
-  const couleur = { sortie: ds.board.letter, erreur: ds.board.letterDim, commande: ds.board.letter };
+  const couleur = { sortie: 'text.primary', erreur: 'text.secondary', commande: 'text.primary' };
 
   return (
     <Panneau titre={titre} droite={etat} component="div">
@@ -117,7 +117,7 @@ const TerminalPanneau = forwardRef(function TerminalPanneau({ partie, titre, eta
             <Box key={i} component="pre" sx={{ m: 0, font: 'inherit', whiteSpace: 'pre-wrap', wordBreak: 'break-word', color: couleur[l.type], fontStyle: l.type === 'erreur' ? 'italic' : 'normal' }}>
               {l.type === 'commande' ? (
                 <>
-                  <Box component="span" sx={{ color: ds.board.letterDim }}>{l.invite} </Box>
+                  <Box component="span" sx={{ color: 'text.secondary' }}>{l.invite} </Box>
                   {l.texte}
                 </>
               ) : (
@@ -127,12 +127,12 @@ const TerminalPanneau = forwardRef(function TerminalPanneau({ partie, titre, eta
           ))}
         </Box>
         {suggestions.length > 0 && (
-          <Box component="pre" sx={{ m: 0, font: 'inherit', whiteSpace: 'pre-wrap', color: ds.board.letterDim }}>
+          <Box component="pre" sx={{ m: 0, font: 'inherit', whiteSpace: 'pre-wrap', color: 'text.secondary' }}>
             {suggestions.join('   ')}
           </Box>
         )}
         <Box component="label" sx={{ display: 'flex', alignItems: 'baseline', gap: 1 }}>
-          <Box component="span" sx={{ color: ds.board.letterDim, flexShrink: 0, maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <Box component="span" sx={{ color: 'text.secondary', flexShrink: 0, maxWidth: '60%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {invite}
           </Box>
           <Box
@@ -154,7 +154,7 @@ const TerminalPanneau = forwardRef(function TerminalPanneau({ partie, titre, eta
               border: 0,
               outline: 0,
               bgcolor: 'transparent',
-              color: ds.board.letter,
+              color: 'text.primary',
               caretColor: ds.brand.orange,
               font: 'inherit',
             }}

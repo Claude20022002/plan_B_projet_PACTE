@@ -5,14 +5,12 @@ import { Alert, Box, Button, Skeleton } from '@mui/material';
 import { Add, FactCheck, LocalLibrary, Quiz, SportsEsports } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
-import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
+import Panneau, { Intitule, LignePanneau } from '../components/jeux/Panneau';
 import LancerQuizDialog from '../components/quiz/LancerQuizDialog';
-import { boutonPanneau, boutonPanneauPlein } from '../components/jeux/styles';
 import { enseignantAPI, quizAPI, quizIaAPI } from '../services/api';
 import { supportsDuCours } from '../utils/supports';
 import { DEVOIRS_ACTIFS } from '../../../shared/fonctions.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
-import { ds } from '../design-system/tokens';
 
 // Le rappel de l'appel s'affiche dans les dernières minutes de la séance (le serveur envoie
 // aussi une notification, même page fermée : RAPPEL_APPEL_MINUTES)
@@ -104,7 +102,6 @@ export default function MesClasses() {
           <Button
             size="small"
             variant={c.en_cours && seance.appel !== 'ferme' ? 'contained' : 'outlined'}
-            sx={c.en_cours && seance.appel !== 'ferme' ? boutonPanneauPlein : boutonPanneau}
             startIcon={<FactCheck />}
             onClick={() => navigate(`/appel/${seance.id_affectation}`)}
           >
@@ -113,29 +110,29 @@ export default function MesClasses() {
         )}
         {/* Un autre jour : le bouton reste visible, pour qu'on sache où se fait l'appel */}
         {seance && !seance.appel && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<FactCheck />} disabled>
+          <Button size="small" variant="outlined" startIcon={<FactCheck />} disabled>
             {t('classes.page.appelLeJour')}
           </Button>
         )}
         {/* Devoirs masqués (lot D-1) : le bouton revient avec l'interrupteur */}
         {DEVOIRS_ACTIFS && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Quiz />} onClick={() => navigate('/jeux', { state: { donnerDevoir: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
+          <Button size="small" variant="outlined" startIcon={<Quiz />} onClick={() => navigate('/jeux', { state: { donnerDevoir: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
             {t('classes.page.devoir')}
           </Button>
         )}
         {/* Créer un quiz : générer, ou le faire soi-même dans l'éditeur du service de quiz */}
         {(quizIa || quiz) && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Add />} onClick={() => genererQuiz(c)}>
+          <Button size="small" variant="outlined" startIcon={<Add />} onClick={() => genererQuiz(c)}>
             {t('classes.page.quizIa')}
           </Button>
         )}
         {/* Quiz en direct lancé et projeté depuis Planner (CQ-2) */}
         {quiz && c.en_cours && seance && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<SportsEsports />} onClick={() => setLancerPour(c)}>
+          <Button size="small" variant="outlined" startIcon={<SportsEsports />} onClick={() => setLancerPour(c)}>
             {t('classes.page.quizDirect')}
           </Button>
         )}
-        <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<LocalLibrary />} onClick={() => partagerSupport(c)}>
+        <Button size="small" variant="outlined" startIcon={<LocalLibrary />} onClick={() => partagerSupport(c)}>
           {t('classes.page.supports')}
         </Button>
       </Box>
@@ -143,13 +140,13 @@ export default function MesClasses() {
   };
 
   const ligne = (c, i) => (
-    <LignePanneau key={cleClasse(c)} premier={i === 0} lampe={c.en_cours ? ds.board.live : null}>
+    <LignePanneau key={cleClasse(c)} premier={i === 0} lampe={c.en_cours ? 'success.main' : null}>
       <Box sx={{ fontWeight: 600 }}>
         {c.code_cours} {nomClasse(c)}
       </Box>
-      <Capitales sx={{ display: 'block', mt: 0.25, mb: 1.25, fontSize: '0.8125rem', color: ds.board.letterDim }}>
+      <Intitule sx={{ display: 'block', mt: 0.25, mb: 1.25, fontSize: '0.8125rem', color: 'text.secondary' }}>
         {[t('classes.effectif', { count: c.effectif }), libelleSeance(c)].join(' · ')}
-      </Capitales>
+      </Intitule>
       {actions(c)}
     </LignePanneau>
   );

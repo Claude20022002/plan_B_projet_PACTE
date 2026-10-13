@@ -97,7 +97,7 @@ test("Mes classes : partager un support ouvre la bibliothèque sur le dépôt, d
   await expect(page).toHaveURL(/\/biblio\/documents\?filiere=3&module=7&upload=1$/);
 });
 
-test("Paramètres : le thème StudyLib retire les fonds noirs du panneau et la marine du menu", async ({ page }) => {
+test("Paramètres : le thème StudyLib retire la marine du menu", async ({ page }) => {
   const { enseignante, motDePasse } = lireDonnees();
   await seConnecter(page, { email: enseignante.email, motDePasse, role: "enseignant" });
   // Plus de « Mes séances » dans le menu : le tableau et l'emploi du temps les montrent déjà
@@ -107,11 +107,9 @@ test("Paramètres : le thème StudyLib retire les fonds noirs du panneau et la m
   await page.goto("/parametres");
   await page.getByRole("button", { name: "StudyLib", exact: true }).click();
   await page.getByRole("button", { name: "Clair", exact: true }).click();
-  expect(await variable("--board-ground")).toBe("#FFFFFF");
   expect(await variable("--nav-fond")).toBe("#FFFFFF");
 
-  // Retour au thème Planner : le panneau reste clair (cartes claires, lot V-1), le menu redevient marine
+  // Retour au thème Planner : le menu redevient marine (plus de variable)
   await page.getByRole("button", { name: "Planner", exact: true }).click();
-  expect(await variable("--board-ground")).toBe("#FFFFFF");
   expect(await variable("--nav-fond")).toBe("");
 });

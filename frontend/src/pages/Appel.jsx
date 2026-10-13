@@ -187,23 +187,23 @@ export default function Appel() {
       {erreur && <Alert severity="error" sx={{ mb: 2 }}>{erreur}</Alert>}
 
       <Box sx={{ display: 'grid', gap: 2.5, gridTemplateColumns: { xs: '1fr', md: 'minmax(320px, 560px) 1fr' }, alignItems: 'start' }}>
-        <Paper sx={{ p: 2, textAlign: 'center', bgcolor: ds.board.ground, color: ds.board.letter }}>
+        <Paper sx={{ p: 2, textAlign: 'center', bgcolor: 'background.paper', color: 'text.primary' }}>
           {ferme ? (
             <Box sx={{ py: 6 }}>
               <Typography sx={{ fontFamily: ds.font.board, fontSize: '1.5rem', letterSpacing: '0.08em' }}>{t('appel.ferme')}</Typography>
-              <Typography sx={{ mt: 1, color: ds.board.letterDim }}>{t('appel.bilan', { presents, absents: Math.max(0, attendus - presents) })}</Typography>
-              <Button variant="outlined" onClick={ouvrir} sx={{ mt: 2, color: ds.board.letter, borderColor: ds.board.seam }}>
+              <Typography sx={{ mt: 1, color: 'text.secondary' }}>{t('appel.bilan', { presents, absents: Math.max(0, attendus - presents) })}</Typography>
+              <Button variant="outlined" onClick={ouvrir} sx={{ mt: 2, color: 'text.primary', borderColor: 'divider' }}>
                 {t('appel.rouvrir')}
               </Button>
             </Box>
           ) : qr ? (
             <>
               <Box component="img" src={qr.image} alt={t('appel.qrAlt')} sx={{ width: '100%', maxWidth: 520, aspectRatio: '1', borderRadius: 1, bgcolor: '#FFFFFF' }} />
-              <LinearProgress variant="determinate" value={(reste / 30) * 100} sx={{ mt: 1.5, height: 6, borderRadius: 3, bgcolor: ds.board.seam, '& .MuiLinearProgress-bar': { bgcolor: ds.board.letter } }} aria-hidden />
-              <Typography sx={{ mt: 1, fontSize: '0.875rem', color: ds.board.letterDim }}>{t('appel.change', { secondes: reste })}</Typography>
+              <LinearProgress variant="determinate" value={(reste / 30) * 100} sx={{ mt: 1.5, height: 6, borderRadius: 3, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: 'text.primary' } }} aria-hidden />
+              <Typography sx={{ mt: 1, fontSize: '0.875rem', color: 'text.secondary' }}>{t('appel.change', { secondes: reste })}</Typography>
             </>
           ) : (
-            !erreur && <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '1', bgcolor: ds.board.cell }} />
+            !erreur && <Skeleton variant="rectangular" sx={{ width: '100%', aspectRatio: '1', bgcolor: 'action.hover' }} />
           )}
           {!ferme && (
             <Typography sx={{ mt: 2, fontFamily: ds.font.board, fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }} aria-live="polite">
@@ -220,11 +220,11 @@ export default function Appel() {
                 target="_blank"
                 rel="noopener"
                 onClick={projeter}
-                sx={{ mt: 1.5, color: ds.board.letter, borderColor: ds.board.seam }}
+                sx={{ mt: 1.5, color: 'text.primary', borderColor: 'divider' }}
               >
                 {t('appel.projeter')}
               </Button>
-              <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: ds.board.letterDim }}>{t('appel.projeterAide')}</Typography>
+              <Typography sx={{ mt: 1, fontSize: '0.8125rem', color: 'text.secondary' }}>{t('appel.projeterAide')}</Typography>
             </>
           )}
         </Paper>

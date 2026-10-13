@@ -14,7 +14,6 @@ import {
 import { motion } from 'motion/react';
 import { useTranslation } from 'react-i18next';
 import { authAPI } from '../services/api';
-import { ds } from '../design-system/tokens';
 
 /** Mot de passe oublié : demande du lien de réinitialisation par email. */
 export default function ForgotPassword() {
@@ -47,7 +46,7 @@ export default function ForgotPassword() {
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                background: ds.board.ground, // fond du panneau (charte HESTIM)
+                bgcolor: 'background.default', // sol de la page (DESIGN.md)
                 padding: 2,
             }}
         >

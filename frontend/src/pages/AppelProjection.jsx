@@ -140,38 +140,38 @@ export default function AppelProjection() {
     () => (liste?.etudiants ?? []).filter((e) => e.present).sort((a, b) => new Date(b.marque_le ?? 0) - new Date(a.marque_le ?? 0)),
     [liste]
   );
-  const boutonSombre = { color: ds.board.letter, borderColor: ds.board.seam, '&:hover': { borderColor: ds.board.letterDim } };
+  const boutonContour = { color: 'text.primary', borderColor: 'divider', '&:hover': { borderColor: 'text.secondary' } };
 
   return (
-    <Box component="main" sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: ds.board.ground, color: ds.board.letter }}>
+    <Box component="main" sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default', color: 'text.primary' }}>
       {/* Bandeau : la séance, et les commandes de l'enseignant */}
-      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, px: { xs: 2, md: 3 }, py: 1.5, borderBottom: `1px solid ${ds.board.seam}` }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, px: { xs: 2, md: 3 }, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
         <Box sx={{ flexGrow: 1, minWidth: 0 }}>
           <Typography component="h1" noWrap sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: 'clamp(1.25rem, 3vh, 2.25rem)', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1.15 }}>
             {seance?.cours ?? t('appel.titre')}
           </Typography>
           {seance && (
-            <Typography noWrap sx={{ fontSize: 'clamp(0.875rem, 2vh, 1.25rem)', color: ds.board.letterDim }}>
+            <Typography noWrap sx={{ fontSize: 'clamp(0.875rem, 2vh, 1.25rem)', color: 'text.secondary' }}>
               {[seance.groupe, `${seance.heure_debut}–${seance.heure_fin}`, seance.salle].filter(Boolean).join(' · ')}
             </Typography>
           )}
         </Box>
         {ouvert && (
           <>
-            <Button variant="outlined" onClick={() => setVerification(true)} disabled={presents.length === 0} title={t('appel.verifierAide')} sx={boutonSombre}>
+            <Button variant="outlined" onClick={() => setVerification(true)} disabled={presents.length === 0} title={t('appel.verifierAide')} sx={boutonContour}>
               {t('appel.verifier')}
             </Button>
-            <Button variant="contained" startIcon={<CheckCircle />} onClick={() => setValider(true)} sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: ds.board.letter, opacity: 0.88 } }}>
+            <Button variant="contained" startIcon={<CheckCircle />} onClick={() => setValider(true)}>
               {t('appel.projection.valider')}
             </Button>
           </>
         )}
         {termine && (
-          <Button variant="outlined" onClick={ouvrir} sx={boutonSombre}>
+          <Button variant="outlined" onClick={ouvrir} sx={boutonContour}>
             {t('appel.rouvrir')}
           </Button>
         )}
-        <Button onClick={basculerPleinEcran} startIcon={pleinEcran ? <FullscreenExit /> : <Fullscreen />} sx={{ color: ds.board.letterDim }}>
+        <Button onClick={basculerPleinEcran} startIcon={pleinEcran ? <FullscreenExit /> : <Fullscreen />} sx={{ color: 'text.secondary' }}>
           {t(pleinEcran ? 'appel.projection.quitterPleinEcran' : 'appel.projection.pleinEcran')}
         </Button>
       </Box>
@@ -184,10 +184,10 @@ export default function AppelProjection() {
           ) : termine ? (
             <Box role="status" sx={{ py: 6 }}>
               <Typography sx={{ fontFamily: ds.font.board, fontSize: 'clamp(1.75rem, 5vh, 3rem)', letterSpacing: '0.08em' }}>{t('appel.ferme')}</Typography>
-              <Typography sx={{ mt: 1, fontSize: 'clamp(1rem, 2.6vh, 1.5rem)', color: ds.board.letterDim }}>
+              <Typography sx={{ mt: 1, fontSize: 'clamp(1rem, 2.6vh, 1.5rem)', color: 'text.secondary' }}>
                 {t('appel.bilan', { presents: presents.length, absents: Math.max(0, attendus - presents.length) })}
               </Typography>
-              <Button variant="outlined" onClick={() => navigate(`/appel/${id}`)} sx={{ mt: 2.5, ...boutonSombre }}>
+              <Button variant="outlined" onClick={() => navigate(`/appel/${id}`)} sx={{ mt: 2.5, ...boutonContour }}>
                 {t('appel.projection.listeComplete')}
               </Button>
             </Box>
@@ -197,7 +197,7 @@ export default function AppelProjection() {
               <Typography sx={{ fontSize: 'clamp(1rem, 2.6vh, 1.5rem)' }}>{t('appel.projection.consigne')}</Typography>
             </>
           ) : (
-            <Skeleton variant="rectangular" sx={{ width: 'min(68dvh, 100%)', height: 'auto', aspectRatio: '1', bgcolor: ds.board.cell }} />
+            <Skeleton variant="rectangular" sx={{ width: 'min(68dvh, 100%)', height: 'auto', aspectRatio: '1', bgcolor: 'action.hover' }} />
           )}
         </Box>
 
@@ -207,7 +207,7 @@ export default function AppelProjection() {
             {t('appel.presents', { presents: presents.length, attendus })}
           </Typography>
           {liste && presents.length === 0 && !termine && (
-            <Typography sx={{ mt: 1.5, color: ds.board.letterDim }}>{t('appel.projection.aucunPresent')}</Typography>
+            <Typography sx={{ mt: 1.5, color: 'text.secondary' }}>{t('appel.projection.aucunPresent')}</Typography>
           )}
           <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 1.5, p: 0, display: 'grid', gap: 1, gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', maxHeight: { md: 'calc(100dvh - 220px)' }, overflowY: 'auto' }}>
             {presents.map((e) => {
@@ -223,17 +223,18 @@ export default function AppelProjection() {
                     px: 1.25,
                     py: 1,
                     borderRadius: `${ds.radius.md}px`,
-                    bgcolor: ds.board.cell,
-                    border: `1px solid ${nouveau ? ds.board.live : ds.board.seam}`,
+                    bgcolor: 'action.hover',
+                    border: '1px solid',
+                    borderColor: nouveau ? 'success.main' : 'divider',
                     '@keyframes arrivee': { from: { opacity: 0, transform: 'translateY(-8px)' }, to: { opacity: 1, transform: 'none' } },
                     animation: 'arrivee 300ms ease-out',
                     '@media (prefers-reduced-motion: reduce)': { animation: 'none' },
                   }}
                 >
-                  <CheckCircle sx={{ flexShrink: 0, color: nouveau ? ds.board.live : ds.board.letterDim }} aria-hidden />
+                  <CheckCircle sx={{ flexShrink: 0, color: nouveau ? 'success.main' : 'text.secondary' }} aria-hidden />
                   <Box sx={{ minWidth: 0 }}>
                     <Typography noWrap sx={{ fontWeight: 600, lineHeight: 1.2 }}>{e.prenom} {e.nom}</Typography>
-                    <Typography noWrap sx={{ fontSize: '0.75rem', color: ds.board.letterDim }}>{t('appel.projection.present')}</Typography>
+                    <Typography noWrap sx={{ fontSize: '0.75rem', color: 'text.secondary' }}>{t('appel.projection.present')}</Typography>
                   </Box>
                 </Box>
               );

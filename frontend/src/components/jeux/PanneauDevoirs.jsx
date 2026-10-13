@@ -23,11 +23,9 @@ import {
 import { devoirsAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { useConfirmation } from '../../contexts/ConfirmationContext';
-import { ds } from '../../design-system/tokens';
-import Panneau, { Capitales, LignePanneau } from './Panneau';
+import Panneau, { Intitule, LignePanneau } from './Panneau';
 import SelecteurClasse from '../planning/SelecteurClasse';
 import PanneauQuizIa from './QuizIa';
-import { boutonPanneau, boutonPanneauPlein } from './styles';
 
 /** Date limite par défaut : dans une semaine, à 23 h 59 (champ datetime-local) */
 const dansUneSemaine = () => {
@@ -243,16 +241,16 @@ export default function PanneauDevoirs({ enseignant }) {
         titreId="devoirs-titre"
         droite={
           enseignant ? (
-            <Button size="small" variant="contained" sx={boutonPanneauPlein} onClick={() => setDonner(true)}>
+            <Button size="small" variant="contained" onClick={() => setDonner(true)}>
               {t('jeux.devoirs.donner')}
             </Button>
           ) : null
         }
       >
-        {devoirs === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
+        {devoirs === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: 'action.hover' }} />}
         {devoirs?.length === 0 && (
           <LignePanneau premier>
-            <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.devoirs.aucunEnseignant')}</Typography>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>{t('jeux.devoirs.aucunEnseignant')}</Typography>
           </LignePanneau>
         )}
         {(devoirs ?? []).map((d, i) => {
@@ -262,25 +260,25 @@ export default function PanneauDevoirs({ enseignant }) {
               key={d.id}
               premier={i === 0}
               // Orange réservé aux reports : un devoir à rendre s'allume en blanc
-              lampe={aRendre ? ds.board.letter : d.rendu || (enseignant && d.rendus) ? ds.board.live : null}
+              lampe={aRendre ? 'text.primary' : d.rendu || (enseignant && d.rendus) ? 'success.main' : null}
               action={
                 enseignant ? (
                   <Box sx={{ display: 'flex', gap: 1 }}>
-                    <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setNotes(d.id)}>{t('jeux.devoirs.notes')}</Button>
-                    <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => supprimer(d)}>{t('jeux.devoirs.supprimer')}</Button>
+                    <Button size="small" variant="outlined" onClick={() => setNotes(d.id)}>{t('jeux.devoirs.notes')}</Button>
+                    <Button size="small" variant="outlined" onClick={() => supprimer(d)}>{t('jeux.devoirs.supprimer')}</Button>
                   </Box>
                 ) : (
-                  <Button size="small" variant={aRendre ? 'contained' : 'outlined'} sx={aRendre ? boutonPanneauPlein : boutonPanneau} onClick={() => navigate(`/jeux/devoirs/${d.id}`)}>
+                  <Button size="small" variant={aRendre ? 'contained' : 'outlined'} onClick={() => navigate(`/jeux/devoirs/${d.id}`)}>
                     {aRendre ? t('jeux.devoirs.faire') : t('jeux.devoirs.voir')}
                   </Button>
                 )
               }
             >
               <Box sx={{ fontWeight: 600 }}>{d.titre}</Box>
-              <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 {[d.module?.nom, d.ouvert ? t('jeux.devoirs.avant', { date: date(d.date_limite) }) : t('jeux.devoirs.closLe', { date: date(d.date_limite) })].filter(Boolean).join(' · ')}
               </Box>
-              <Capitales sx={{ display: 'block', mt: 0.5, fontSize: '0.875rem', color: ds.board.letter }}>
+              <Intitule sx={{ display: 'block', mt: 0.5, fontSize: '0.875rem', color: 'text.primary' }}>
                 {enseignant
                   ? t('jeux.devoirs.resumeEnseignant', { count: d.rendus, moyenne: d.moyenne === null ? '-' : d.moyenne.toLocaleString(i18n.language) })
                   : d.rendu
@@ -288,7 +286,7 @@ export default function PanneauDevoirs({ enseignant }) {
                     : d.ouvert
                       ? t('jeux.devoirs.aRendre')
                       : t('jeux.devoirs.nonRendu')}
-              </Capitales>
+              </Intitule>
             </LignePanneau>
           );
         })}

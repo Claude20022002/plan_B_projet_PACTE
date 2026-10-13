@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Skeleton, Table, TableBody, TableCell, TableHead, TableRow, Typography } from '@mui/material';
 import { quizAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
-import { Capitales } from './Panneau';
+import { Intitule, Libelle } from './Panneau';
 
 /** Couleurs du nuage : celles des lignes de filière (orange, rouge et vert restent aux statuts) */
 const COULEURS_NUAGE = ds.lines;
@@ -41,9 +41,9 @@ export function NuageMots({ question, mots }) {
 
 const Section = ({ titre, children }) => (
   <Box component="section" sx={{ mt: 3, '&:first-of-type': { mt: 0 } }}>
-    <Capitales component="h3" sx={{ display: 'block', m: 0, mb: 1, fontSize: '0.875rem', letterSpacing: '0.12em', color: ds.colors.text.secondary }}>
+    <Libelle component="h3" sx={{ display: 'block', m: 0, mb: 1, fontSize: '0.875rem', letterSpacing: '0.12em', color: ds.colors.text.secondary }}>
       {titre}
-    </Capitales>
+    </Libelle>
     {children}
   </Box>
 );
@@ -91,7 +91,7 @@ export default function ResultatsQuiz({ idPartie, onClose }) {
             {donnees.moi && (
               <Section titre={t('jeux.resultats.monScore')}>
                 <Box sx={{ display: 'flex', gap: 4, alignItems: 'baseline', flexWrap: 'wrap' }}>
-                  <Capitales sx={{ fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{nombre(donnees.moi.score)} pts</Capitales>
+                  <Intitule sx={{ fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{nombre(donnees.moi.score)} pts</Intitule>
                   <Typography>{t('jeux.resultats.rang', { count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}</Typography>
                   {p.nb_questions ? <Typography color="text.secondary">{t('jeux.resultats.bonnes', { bonnes: donnees.moi.bonnes, total: p.nb_questions })}</Typography> : null}
                 </Box>
@@ -103,8 +103,8 @@ export default function ResultatsQuiz({ idPartie, onClose }) {
                 <Box component="ol" sx={{ listStyle: 'none', m: 0, p: 0, display: 'grid', gap: 1 }}>
                   {donnees.equipes.map((e) => (
                     <Box component="li" key={e.id_groupe} sx={{ display: 'grid', gridTemplateColumns: '2rem minmax(5rem, 9rem) 1fr auto', alignItems: 'center', gap: 1.5 }}>
-                      <Capitales sx={{ fontSize: '1.25rem', fontWeight: 700, color: e.rang === 1 ? ds.brand.navy : ds.colors.text.muted }}>{e.rang}</Capitales>
-                      <Capitales sx={{ fontWeight: 700 }}>{e.nom}</Capitales>
+                      <Intitule sx={{ fontSize: '1.25rem', fontWeight: 700, color: e.rang === 1 ? ds.brand.navy : ds.colors.text.muted }}>{e.rang}</Intitule>
+                      <Intitule sx={{ fontWeight: 700 }}>{e.nom}</Intitule>
                       <Box aria-hidden sx={{ height: 10, borderRadius: 5, bgcolor: ds.colors.bg.subtle, overflow: 'hidden' }}>
                         <Box sx={{ height: '100%', width: `${Math.round((100 * e.moyenne) / meilleureMoyenne)}%`, bgcolor: e.rang === 1 ? ds.brand.navy : ds.lines[1], borderRadius: 5 }} />
                       </Box>

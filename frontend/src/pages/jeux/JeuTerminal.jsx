@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Accordion, AccordionDetails, AccordionSummary, Alert, Box, Button, ButtonBase, Link, Stack, Typography, useMediaQuery } from '@mui/material';
 import { ArrowBack, ExpandMore, Replay } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import Panneau, { Capitales } from '../../components/jeux/Panneau';
+import Panneau, { Intitule, Libelle } from '../../components/jeux/Panneau';
 import TerminalPanneau from '../../components/jeux/TerminalPanneau';
 import { useAuth } from '../../contexts/AuthContext';
 import { jeuxAPI } from '../../services/api';
@@ -117,9 +117,9 @@ export default function JeuTerminal() {
       <Box component="nav" aria-labelledby="parcours-titre" sx={{ maxHeight: large ? 'calc(100vh - 220px)' : 420, overflowY: 'auto' }}>
         {niveaux.map((n) => (
           <Box key={n.niveau}>
-            <Capitales component="h3" sx={{ display: 'block', m: 0, px: 1.5, pt: 1.5, pb: 0.5, fontSize: '0.75rem', letterSpacing: '0.14em', color: ds.board.letterDim }}>
+            <Libelle component="h3" sx={{ display: 'block', m: 0, px: 1.5, pt: 1.5, pb: 0.5, fontSize: '0.75rem', letterSpacing: '0.14em', color: 'text.secondary' }}>
               {t('jeux.terminal.niveau', { n: n.niveau })} · {n.nom}
-            </Capitales>
+            </Libelle>
             {n.defis.map((id) => {
               const d = defis.find((x) => x.id === id);
               const fait = reussis.has(id);
@@ -139,19 +139,19 @@ export default function JeuTerminal() {
                     py: 1,
                     minHeight: 44,
                     textAlign: 'left',
-                    color: ds.board.letter,
-                    bgcolor: actif ? 'rgba(255,255,255,0.09)' : 'transparent',
-                    borderTop: `1px solid ${ds.board.seam}`,
-                    '&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
+                    color: 'text.primary',
+                    bgcolor: actif ? 'action.selected' : 'transparent',
+                    borderTop: '1px solid', borderColor: 'divider',
+                    '&:hover': { bgcolor: 'action.hover' },
                     '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: -2 },
                   }}
                 >
-                  <Box aria-hidden sx={{ width: 8, height: 8, borderRadius: '50%', justifySelf: 'center', bgcolor: fait ? ds.board.live : 'transparent', border: fait ? 'none' : `1px solid ${ds.board.seam}` }} />
+                  <Box aria-hidden sx={{ width: 8, height: 8, borderRadius: '50%', justifySelf: 'center', bgcolor: fait ? 'success.main' : 'transparent', border: fait ? 'none' : '1px solid', borderColor: 'divider' }} />
                   <Box sx={{ fontSize: '0.9375rem', fontWeight: actif ? 600 : 400, minWidth: 0 }}>
                     {d.titre}
                     {fait && <Box component="span" sx={visuallyHiddenSx}> · {t('jeux.terminal.reussi')}</Box>}
                   </Box>
-                  {d.boss && <Capitales sx={{ fontSize: '0.6875rem', color: ds.board.letterDim }}>{t('jeux.terminal.boss')}</Capitales>}
+                  {d.boss && <Intitule sx={{ fontSize: '0.6875rem', color: 'text.secondary' }}>{t('jeux.terminal.boss')}</Intitule>}
                 </ButtonBase>
               );
             })}
@@ -184,7 +184,7 @@ export default function JeuTerminal() {
         ) : (
           <Accordion disableGutters sx={{ border: `1px solid ${ds.colors.border.default}`, '&:before': { display: 'none' } }}>
             <AccordionSummary expandIcon={<ExpandMore />}>
-              <Capitales>{t('jeux.terminal.parcours')} · {nbReussis}/{defis.length}</Capitales>
+              <Intitule>{t('jeux.terminal.parcours')} · {nbReussis}/{defis.length}</Intitule>
             </AccordionSummary>
             <AccordionDetails sx={{ p: 0 }}>{parcours}</AccordionDetails>
           </Accordion>
@@ -192,10 +192,10 @@ export default function JeuTerminal() {
 
         <Box sx={{ minWidth: 0 }}>
           <Box component="article" sx={{ border: `1px solid ${ds.colors.border.default}`, borderRadius: `${ds.radius.md}px`, bgcolor: 'background.paper', px: { xs: 2, sm: 3 }, py: 2.5, mb: 2 }}>
-            <Capitales sx={{ fontSize: '0.75rem', letterSpacing: '0.14em', color: 'text.secondary' }}>
+            <Libelle sx={{ fontSize: '0.75rem', letterSpacing: '0.14em', color: 'text.secondary' }}>
               {t('jeux.terminal.niveau', { n: defi.niveau })} · {defi.niveauNom}
               {defi.boss ? ` · ${t('jeux.terminal.boss')}` : ''}
-            </Capitales>
+            </Libelle>
             <Typography variant="h1" component="h2" sx={{ mt: 0.5, mb: 1 }}>
               {defi.titre}
             </Typography>
@@ -203,7 +203,7 @@ export default function JeuTerminal() {
               {defi.explication}
             </Typography>
             <Box sx={{ mt: 2, pl: 1.5, borderLeft: `3px solid ${ds.brand.navy}` }}>
-              <Capitales sx={{ fontSize: '0.75rem', letterSpacing: '0.14em', color: 'text.secondary' }}>{t('jeux.terminal.objectif')}</Capitales>
+              <Libelle sx={{ fontSize: '0.75rem', letterSpacing: '0.14em', color: 'text.secondary' }}>{t('jeux.terminal.objectif')}</Libelle>
               <Typography variant="body1" sx={{ fontWeight: 600, mt: 0.25 }}>
                 {defi.objectif}
               </Typography>
@@ -221,7 +221,7 @@ export default function JeuTerminal() {
               </Box>
             )}
             {indices >= NIVEAU_REPONSE && (
-              <Box component="pre" sx={{ mt: 2, mb: 0, p: 1.5, bgcolor: ds.board.ground, color: ds.board.letter, borderRadius: `${ds.radius.sm}px`, fontFamily: ds.font.mono, fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
+              <Box component="pre" sx={{ mt: 2, mb: 0, p: 1.5, bgcolor: 'background.paper', color: 'text.primary', borderRadius: `${ds.radius.sm}px`, fontFamily: ds.font.mono, fontSize: '0.875rem', whiteSpace: 'pre-wrap' }}>
                 {defi.solution}
               </Box>
             )}

@@ -2,9 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Typography } from '@mui/material';
 import { quizAPI } from '../../../services/api';
-import { ds } from '../../../design-system/tokens';
-import { Capitales, LignePanneau } from '../../jeux/Panneau';
-import { boutonPanneau } from '../../jeux/styles';
+import { Intitule, LignePanneau, Libelle } from '../../jeux/Panneau';
 import EditerQuizDialog from './EditerQuizDialog';
 
 /**
@@ -34,19 +32,19 @@ export default function ListeMesQuiz() {
   return (
     <>
       <LignePanneau>
-        <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>{t('mesQuiz.dansLeService')}</Capitales>
+        <Libelle sx={{ display: 'block', fontSize: '0.75rem', color: 'text.secondary', letterSpacing: '0.12em' }}>{t('mesQuiz.dansLeService')}</Libelle>
       </LignePanneau>
       {quiz.map((q) => (
         <LignePanneau
           key={q.id}
           action={
-            <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setOuvert(q.id)} aria-label={t('mesQuiz.modifierQuiz', { titre: q.titre })}>
+            <Button size="small" variant="outlined" onClick={() => setOuvert(q.id)} aria-label={t('mesQuiz.modifierQuiz', { titre: q.titre })}>
               {t('mesQuiz.modifier')}
             </Button>
           }
         >
           <Box sx={{ fontWeight: 600 }}>{q.titre}</Box>
-          <Typography variant="body2" sx={{ color: ds.board.letterDim }}>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
             {[t('quizDirect.lancer.questions', { count: q.nb_questions ?? 0 }), q.modifie_le && t('mesQuiz.modifieLe', { date: date(q.modifie_le) })].filter(Boolean).join(' · ')}
           </Typography>
         </LignePanneau>

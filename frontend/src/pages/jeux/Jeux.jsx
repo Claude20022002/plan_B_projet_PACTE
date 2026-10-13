@@ -23,16 +23,16 @@ import {
 } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
-import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau';
+import CatalogueJeux from '../../components/jeux/CatalogueJeux';
+import JeuxDesModules from '../../components/jeux/JeuxDesModules';
+import { HistoriqueEnseignant, HistoriqueEtudiant } from '../../components/jeux/Historiques';
 import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
 import ZoneQuizEtDevoirs from '../../components/jeux/ZoneQuizEtDevoirs';
 import PanneauQuizDirect from '../../components/quiz/PanneauQuizDirect';
-import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { jeuxAPI, quizAPI } from '../../services/api';
-import { ds } from '../../design-system/tokens';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { CONTEXTE_DEVOIRS, DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 
@@ -85,15 +85,6 @@ export default function Jeux() {
     };
   }, [enseignant]);
 
-  const detailHistorique = (e) => {
-    if (e.type === 'quiz') return t('jeux.historiqueProf.quiz', { count: e.nb_joueurs ?? 0, moyenne: e.moyenne ?? 0 });
-    if (e.type === 'devoir') {
-      const rendus = t('jeux.historiqueProf.devoir', { count: e.rendus ?? 0 });
-      return e.moyenne == null ? rendus : `${rendus} · ${t('jeux.historiqueProf.devoirMoyenne', { moyenne: e.moyenne })}`;
-    }
-    return `${t('jeux.historiqueProf.defis', { count: e.nb_defis })} ${t('jeux.historiqueProf.etudiants', { count: e.nb_etudiants })}`;
-  };
-
   // Quiz en direct : configuration une fois, parties en cours toutes les 20 s
   useEffect(() => {
     let actif = true;
@@ -124,9 +115,6 @@ export default function Jeux() {
       toast.error(e?.message || t('jeux.erreurAction'));
     }
   };
-
-  // But et notion déjà choisis pour un jeu dans un module
-  const detailDe = (module, code) => (module.details ?? []).find((d) => d.code === code);
 
   const basculer = async (module, jeu) => {
     if (!module.jeux.includes(jeu.code)) {
@@ -191,175 +179,28 @@ export default function Jeux() {
         {accueil && <ZoneQuizEtDevoirs enseignant={enseignant} />}
 
         {/* ── Étudiant : quiz terminés (résultats, défi par équipes, nuages de mots) ── */}
-        {!enseignant && historique.length > 0 && (
-          <Panneau titre={t('jeux.resultats.historique')} titreId="historique-titre">
-            {historique.slice(0, 8).map((h, i) => (
-              <LignePanneau
-                key={h.id}
-                premier={i === 0}
-                action={
-                  <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(h.id)}>
-                    {t('jeux.resultats.voir')}
-                  </Button>
-                }
-              >
-                <Box sx={{ fontWeight: 600 }}>{h.titre}</Box>
-                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                  {[
-                    h.module?.nom,
-                    h.terminee_le ? new Date(h.terminee_le).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }) : null,
-                    t('jeux.resultats.resumeEtudiant', { score: h.score, count: h.rang, ordinal: true, total: h.nb_joueurs }),
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Box>
-              </LignePanneau>
-            ))}
-          </Panneau>
-        )}
+        {!enseignant && historique.length > 0 && <HistoriqueEtudiant historique={historique} onVoir={setResultats} />}
 
-        {/* ── Jeux de mes modules ─────────────────────────────────────── */}
+        {/* ── Jeux de mes modules ── */}
         {(enseignant || modules.length > 0) && (
-          <Panneau titre={t(enseignant ? 'jeux.modules.titreEnseignant' : 'jeux.modules.titre')} titreId="modules-titre">
-            {!accueil && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
-            {accueil && modules.length === 0 && (
-              <LignePanneau premier>
-                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.modules.aucun')}</Typography>
-              </LignePanneau>
-            )}
-            {modules.map((m, i) =>
-              enseignant ? (
-                (accueil?.jeux ?? []).map((jeu, j) => {
-                  const propose = m.jeux.includes(jeu.code);
-                  return (
-                    <LignePanneau
-                      key={`${m.id_cours}-${jeu.code}`}
-                      premier={i === 0 && j === 0}
-                      lampe={propose ? ds.board.live : null}
-                      action={
-                        <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                          {propose && (
-                            <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => ouvrirSuivi(m, jeu.code)}>
-                              {t('jeux.modules.suivi')}
-                            </Button>
-                          )}
-                          {propose && (
-                            <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setProposition({ module: m, jeu, but: detailDe(m, jeu.code)?.but ?? 'entrainer', notion: detailDe(m, jeu.code)?.notion ?? '' })}>
-                              {t('jeux.modules.modifier')}
-                            </Button>
-                          )}
-                          <Button size="small" variant={propose ? 'outlined' : 'contained'} sx={propose ? boutonPanneau : boutonPanneauPlein} onClick={() => basculer(m, jeu)}>
-                            {propose ? t('jeux.modules.retirer') : t('jeux.modules.proposer')}
-                          </Button>
-                        </Box>
-                      }
-                    >
-                      <Capitales sx={{ display: 'block', fontSize: '1rem' }}>{m.code} · {m.nom}</Capitales>
-                      <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                        {propose
-                          ? [libelle(jeu.titre, i18n.language), t(`jeux.buts.${detailDe(m, jeu.code)?.but ?? 'entrainer'}`), detailDe(m, jeu.code)?.notion].filter(Boolean).join(' · ')
-                          : `${libelle(jeu.titre, i18n.language)} (${t('jeux.modules.nonPropose')})`}
-                      </Box>
-                    </LignePanneau>
-                  );
-                })
-              ) : (
-                m.jeux.map((code, j) => (
-                  <LignePanneau
-                    key={`${m.id_cours}-${code}`}
-                    premier={i === 0 && j === 0}
-                    lampe={ds.board.live}
-                    action={
-                      <Button size="small" variant="contained" sx={boutonPanneauPlein} onClick={() => jouer(code)}>
-                        {t('jeux.jouer')}
-                      </Button>
-                    }
-                  >
-                    <Capitales sx={{ display: 'block', fontSize: '1rem' }}>{titreJeu(code)}</Capitales>
-                    <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>{t('jeux.modules.proposePar', { module: `${m.code} · ${m.nom}` })}</Box>
-                  </LignePanneau>
-                ))
-              )
-            )}
-          </Panneau>
+          <JeuxDesModules
+            enseignant={enseignant}
+            jeux={accueil?.jeux}
+            modules={modules}
+            chargement={!accueil}
+            titreJeu={titreJeu}
+            onJouer={jouer}
+            onSuivi={ouvrirSuivi}
+            onModifier={(module, jeu, detail) => setProposition({ module, jeu, but: detail?.but ?? 'entrainer', notion: detail?.notion ?? '' })}
+            onBasculer={basculer}
+          />
         )}
 
-        {/* ── Tous les jeux ───────────────────────────────────────────── */}
-        <Panneau titre={t('jeux.catalogue')} titreId="catalogue-titre">
-          {!accueil && !erreur && <Skeleton variant="rectangular" height={96} sx={{ bgcolor: ds.board.cell }} />}
-          {(accueil?.jeux ?? []).map((jeu, i) => {
-            const p = jeu.progression;
-            const pourcentage = p.total ? Math.round((100 * p.reussis) / p.total) : 0;
-            return (
-              <LignePanneau
-                key={jeu.code}
-                premier={i === 0}
-                lampe={p.reussis > 0 ? ds.board.live : null}
-                action={
-                  <Button variant="contained" sx={boutonPanneauPlein} onClick={() => jouer(jeu.code)}>
-                    {p.reussis > 0 ? t('jeux.continuer') : t('jeux.jouer')}
-                  </Button>
-                }
-              >
-                <Capitales sx={{ display: 'block', fontSize: '1.125rem' }}>{libelle(jeu.titre, i18n.language)}</Capitales>
-                <Box sx={{ fontSize: '0.9375rem', color: ds.board.letterDim, maxWidth: '72ch', mt: 0.25 }}>{libelle(jeu.resume, i18n.language)}</Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1, maxWidth: 420 }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={pourcentage}
-                    aria-label={t('jeux.progression', { count: p.reussis, total: p.total, points: p.points })}
-                    sx={{ flex: 1, height: 4, borderRadius: '2px', bgcolor: ds.board.seam, '& .MuiLinearProgress-bar': { bgcolor: ds.board.letter } }}
-                  />
-                  <Capitales sx={{ fontSize: '0.8125rem', color: ds.board.letterDim, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-                    {p.reussis}/{p.total} · {t('jeux.points', { count: p.points })}
-                  </Capitales>
-                </Box>
-                <Box sx={{ fontSize: '0.75rem', color: ds.board.letterDim, mt: 0.75 }}>
-                  {t('jeux.source', { nom: jeu.source.nom, auteur: jeu.source.auteur, licence: jeu.source.licence })}{' '}
-                  <Link href={jeu.source.url} target="_blank" rel="noopener noreferrer" sx={{ color: ds.board.letter }}>
-                    {t('jeux.voirSource')}
-                  </Link>
-                </Box>
-              </LignePanneau>
-            );
-          })}
-          <LignePanneau>
-            <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.bientot')}</Typography>
-          </LignePanneau>
-        </Panneau>
+        {/* ── Tous les jeux ── */}
+        <CatalogueJeux jeux={accueil?.jeux} chargement={!accueil && !erreur} onJouer={jouer} />
 
         {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
-        {enseignant && (
-          <Panneau titre={t('jeux.historiqueProf.titre')} titreId="historique-titre">
-            {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
-            {historiqueProf?.length === 0 && (
-              <LignePanneau premier>
-                <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide', { context: CONTEXTE_DEVOIRS })}</Typography>
-              </LignePanneau>
-            )}
-            {(historiqueProf ?? []).map((e, i) => (
-              <LignePanneau
-                key={e.id}
-                premier={i === 0}
-                action={
-                  e.type === 'quiz' ? (
-                    <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(e.id_partie)}>
-                      {t('jeux.resultats.voir')}
-                    </Button>
-                  ) : null
-                }
-              >
-                <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>
-                  {t(`jeux.historiqueProf.types.${e.type}`)} · {new Date(e.date).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' })}
-                </Capitales>
-                <Box sx={{ fontWeight: 600 }}>{e.type === 'defis' ? libelle(e.titre, i18n.language) : e.titre}</Box>
-                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                  {[e.module ? `${e.module.code} · ${e.module.nom}` : null, detailHistorique(e)].filter(Boolean).join(' · ')}
-                </Box>
-              </LignePanneau>
-            ))}
-          </Panneau>
-        )}
+        {enseignant && <HistoriqueEnseignant historique={historiqueProf} onVoir={setResultats} />}
       </Box>
 
       <ResultatsQuiz idPartie={resultats} onClose={() => setResultats(null)} />

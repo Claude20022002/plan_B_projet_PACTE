@@ -1,11 +1,9 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Typography } from '@mui/material';
-import Panneau, { Capitales, LignePanneau } from '../jeux/Panneau';
-import { boutonPanneau, boutonPanneauPlein } from '../jeux/styles';
+import Panneau, { Intitule, LignePanneau, Libelle } from '../jeux/Panneau';
 import LancerQuizDialog from './LancerQuizDialog';
 import { adresseEspace } from '../../../../shared/espaces.js';
-import { ds } from '../../design-system/tokens';
 
 /**
  * Panneau « Quiz en direct » de la page Activités : les parties en cours dans mes séances.
@@ -28,7 +26,7 @@ export default function PanneauQuizDirect({ enseignant, role, config, parties })
         titreId="quiz-titre"
         droite={
           config?.peutLancer ? (
-            <Button size="small" variant="contained" onClick={() => setLancer(true)} sx={boutonPanneauPlein}>
+            <Button size="small" variant="contained" onClick={() => setLancer(true)}>
               {t('board.launchQuiz')}
             </Button>
           ) : null
@@ -39,13 +37,13 @@ export default function PanneauQuizDirect({ enseignant, role, config, parties })
             premier
             action={
               rejoindre ? (
-                <Button size="small" variant="outlined" href={rejoindre} sx={boutonPanneau}>
+                <Button size="small" variant="outlined" href={rejoindre}>
                   {t('jeux.quiz.saisirCode')}
                 </Button>
               ) : null
             }
           >
-            <Typography variant="body2" sx={{ color: ds.board.letterDim }}>
+            <Typography variant="body2" sx={{ color: 'text.secondary' }}>
               {t(enseignant ? 'jeux.quiz.aucuneEnseignant' : 'jeux.quiz.aucune')}
             </Typography>
           </LignePanneau>
@@ -54,18 +52,18 @@ export default function PanneauQuizDirect({ enseignant, role, config, parties })
             <LignePanneau
               key={p.id}
               premier={i === 0}
-              lampe={ds.board.live}
+              lampe="success.main"
               action={
                 enseignant ? null : (
-                  <Button size="small" variant="contained" href={p.url} sx={boutonPanneauPlein}>
+                  <Button size="small" variant="contained" href={p.url}>
                     {t('jeux.quiz.rejoindre')}
                   </Button>
                 )
               }
             >
-              <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.live, letterSpacing: '0.12em' }}>{t('jeux.quiz.enCours')}</Capitales>
+              <Libelle sx={{ display: 'block', fontSize: '0.75rem', color: 'success.main', letterSpacing: '0.12em' }}>{t('jeux.quiz.enCours')}</Libelle>
               <Box sx={{ fontWeight: 600 }}>{p.titre}</Box>
-              <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
+              <Box sx={{ fontSize: '0.875rem', color: 'text.secondary' }}>
                 {[p.module?.nom, t('jeux.quiz.code', { pin: p.pin })].filter(Boolean).join(' · ')}
               </Box>
             </LignePanneau>

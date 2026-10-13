@@ -2,8 +2,6 @@
  * Design tokens — HESTIM Planner, cartes claires (DESIGN.md).
  *
  * Sol clair et cartes blanches ; mode nuit en ardoise (ds.surface.nuit), jamais en noir.
- * `ds.board` (l'ancien panneau des départs) reste le temps de la refonte (lot V-2) : ses
- * variables CSS pointent désormais vers les surfaces claires (design-system/familles.js).
  * Les couleurs de marque sont relevées sur le logo officiel (public/HESTIM.png).
  */
 
@@ -27,8 +25,8 @@ const NAV = {
   boutonActif: 'rgba(255,255,255,0.14)',
 };
 
-// Le panneau et le menu passent par des variables CSS : le thème StudyLib les redéfinit
-// (contexts/ThemeContext.jsx) sans toucher aux écrans. Valeur de repli : celle de Planner.
+// Le menu passe par des variables CSS : le thème StudyLib les redéfinit (design-system/familles.js)
+// sans toucher aux écrans. Valeur de repli : celle de Planner.
 const parVariables = (prefixe, valeurs) => Object.fromEntries(Object.entries(valeurs).map(([cle, valeur]) => [cle, `var(--${prefixe}-${cle}, ${valeur})`]));
 
 export const ds = {
@@ -69,13 +67,7 @@ export const ds = {
   // Salle de jeu des quiz : couleur, encre et forme de chaque réponse, couleurs d'équipe
   jeu: partages.jeu,
 
-  // Commun au web et au mobile (shared/design-tokens.json)
-  // titre : texte posé sur le cadre (en-têtes des panneaux, jour en cours)
-  board: parVariables('board', { ...partages.board, titre: '#FFFFFF' }),
-  // Valeurs brutes, là où une couleur calculée est nécessaire (thème MUI)
-  boardBrut: partages.board,
-
-  // Blanc pur : surfaces sur la marine (cadre du logo, avatar), boutons clairs du panneau
+  // Blanc pur : surfaces sur la marine (plaque du logo, avatar)
   white: '#FFFFFF',
 
   // Menu et en-têtes sur la marine du logo (DashboardLayout, Accueil, Connexion)

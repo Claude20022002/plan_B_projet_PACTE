@@ -4,7 +4,7 @@ import { Box, Button, ButtonBase, Dialog, DialogActions, DialogContent, DialogTi
 import EditIcon from '@mui/icons-material/Edit';
 import { ds } from '../../design-system/tokens';
 import { AVATARS, avatarDe } from '../../../../shared/jeux/avatars.js';
-import { Capitales } from './Panneau';
+import { Intitule } from './Panneau';
 
 /**
  * Personnages et décor des jeux (Kenney, CC0, repris de CatéGO : public/img/jeux). Le décor est
@@ -70,17 +70,17 @@ export default function SceneJoueur({ user, profil, jeux, onChoisir }) {
           sx={{ position: 'relative', borderRadius: `${ds.radius.md}px`, p: 0.5, '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 2 } }}
         >
           <Personnage avatar={avatar} idUser={user?.id_user} taille={72} />
-          <Box aria-hidden sx={{ position: 'absolute', right: 0, bottom: 2, width: 22, height: 22, borderRadius: '50%', bgcolor: ds.board.letter, color: ds.board.ground, display: 'grid', placeItems: 'center', border: `2px solid ${ds.brand.navy}` }}>
+          <Box aria-hidden sx={{ position: 'absolute', right: 0, bottom: 2, width: 22, height: 22, borderRadius: '50%', bgcolor: 'background.paper', color: 'primary.main', display: 'grid', placeItems: 'center', border: `2px solid ${ds.brand.navy}` }}>
             <EditIcon sx={{ fontSize: 12 }} />
           </Box>
         </ButtonBase>
         <Box sx={{ pb: { xs: 3.5, sm: 4.5 }, minWidth: 0, color: '#FFFFFF' }}>
-          <Capitales component="p" sx={{ m: 0, fontSize: { xs: '1.5rem', sm: '1.75rem' }, fontWeight: 700, lineHeight: 1.1 }}>
+          <Intitule component="p" sx={{ m: 0, fontSize: { xs: '1.5rem', sm: '1.75rem' }, fontWeight: 700, lineHeight: 1.1 }}>
             {user?.prenom}
-          </Capitales>
-          <Capitales component="p" sx={{ m: 0, fontSize: '1.0625rem', fontVariantNumeric: 'tabular-nums' }}>
+          </Intitule>
+          <Intitule component="p" sx={{ m: 0, fontSize: '1.0625rem', fontVariantNumeric: 'tabular-nums' }}>
             {t('jeux.points', { count: total.points })}
-          </Capitales>
+          </Intitule>
           <Typography variant="body2" sx={{ color: '#C9D1EC' }}>
             {t('jeux.joueur.defisReussis', { count: total.reussis })}
           </Typography>
@@ -106,9 +106,9 @@ export default function SceneJoueur({ user, profil, jeux, onChoisir }) {
                   sx={{
                     aspectRatio: '1',
                     borderRadius: `${ds.radius.md}px`,
-                    bgcolor: ds.board.ground,
+                    bgcolor: 'background.paper',
                     border: `2px solid ${actif ? ds.brand.orange : 'transparent'}`,
-                    '&:hover': { borderColor: actif ? ds.brand.orange : ds.board.letterDim },
+                    '&:hover': { borderColor: actif ? ds.brand.orange : 'text.secondary' },
                     '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.navy}`, outlineOffset: 2 },
                   }}
                 >

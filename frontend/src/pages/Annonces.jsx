@@ -21,8 +21,7 @@ import { AttachFile } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
 import ConfirmDialog from '../components/common/ConfirmDialog';
-import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
-import { boutonPanneau } from '../components/jeux/styles';
+import Panneau, { Intitule, LignePanneau, Libelle } from '../components/jeux/Panneau';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { annonceAPI } from '../services/api';
@@ -156,10 +155,10 @@ export default function Annonces() {
   };
 
   const meta = (a) => [a.auteur ? `${a.auteur.prenom} ${a.auteur.nom}` : null, a.cible, dateLongue(a.date)].filter(Boolean).join(' · ');
-  const chargement = <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />;
+  const chargement = <Skeleton variant="rectangular" height={64} sx={{ bgcolor: 'action.hover' }} />;
   const vide = (texte) => (
     <LignePanneau premier>
-      <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{texte}</Typography>
+      <Typography variant="body2" sx={{ color: 'text.secondary' }}>{texte}</Typography>
     </LignePanneau>
   );
 
@@ -187,18 +186,18 @@ export default function Annonces() {
                 premier={i === 0}
                 lampe={a.lu_le ? null : ds.brand.orange}
                 action={
-                  <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => ouvrir(a)}>
+                  <Button size="small" variant="outlined" onClick={() => ouvrir(a)}>
                     {t('annonces.lire')}
                   </Button>
                 }
               >
-                <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>{meta(a)}</Capitales>
+                <Libelle sx={{ display: 'block', fontSize: '0.75rem', color: 'text.secondary', letterSpacing: '0.12em' }}>{meta(a)}</Libelle>
                 <Box sx={{ fontWeight: a.lu_le ? 500 : 700 }}>{a.titre}</Box>
-                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim, overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                <Box sx={{ fontSize: '0.875rem', color: 'text.secondary', overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
                   {a.corps}
                 </Box>
                 {a.piece_jointe && (
-                  <Box sx={{ mt: 0.5, fontSize: '0.8125rem', color: ds.board.letterDim, display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                  <Box sx={{ mt: 0.5, fontSize: '0.8125rem', color: 'text.secondary', display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     <AttachFile sx={{ fontSize: 16 }} aria-hidden /> {a.piece_jointe.nom}
                   </Box>
                 )}
@@ -219,21 +218,21 @@ export default function Annonces() {
                   premier={i === 0}
                   action={
                     <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap' }}>
-                      <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => voirLecteurs(a)}>
+                      <Button size="small" variant="outlined" onClick={() => voirLecteurs(a)}>
                         {t('annonces.lecteurs')}
                       </Button>
-                      <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => relancer(a)} disabled={a.lus >= a.destinataires}>
+                      <Button size="small" variant="outlined" onClick={() => relancer(a)} disabled={a.lus >= a.destinataires}>
                         {t('annonces.relancer')}
                       </Button>
-                      <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setASupprimer(a)}>
+                      <Button size="small" variant="outlined" onClick={() => setASupprimer(a)}>
                         {t('annonces.supprimer')}
                       </Button>
                     </Box>
                   }
                 >
-                  <Capitales sx={{ display: 'block', fontSize: '0.75rem', color: ds.board.letterDim, letterSpacing: '0.12em' }}>
+                  <Libelle sx={{ display: 'block', fontSize: '0.75rem', color: 'text.secondary', letterSpacing: '0.12em' }}>
                     {[a.cible, dateLongue(a.date), user?.role === 'admin' && a.auteur ? `${a.auteur.prenom} ${a.auteur.nom}` : null].filter(Boolean).join(' · ')}
-                  </Capitales>
+                  </Libelle>
                   <Box component="button" type="button" onClick={() => ouvrir({ ...a, est_auteur: true })} sx={{ all: 'unset', cursor: 'pointer', fontWeight: 600, '&:focus-visible': { outline: `2px solid ${ds.brand.orange}` } }}>
                     {a.titre}
                   </Box>
@@ -242,13 +241,13 @@ export default function Annonces() {
                       variant="determinate"
                       value={part}
                       aria-label={t('annonces.lus', { lus: a.lus, total: a.destinataires })}
-                      sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: ds.board.seam, '& .MuiLinearProgress-bar': { bgcolor: ds.board.letter } }}
+                      sx={{ flex: 1, height: 6, borderRadius: 3, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: 'text.primary' } }}
                     />
-                    <Box sx={{ fontSize: '0.8125rem', color: ds.board.letterDim, whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
+                    <Box sx={{ fontSize: '0.8125rem', color: 'text.secondary', whiteSpace: 'nowrap', fontVariantNumeric: 'tabular-nums' }}>
                       {t('annonces.lus', { lus: a.lus, total: a.destinataires })}
                     </Box>
                   </Box>
-                  {a.relancee_le && <Box sx={{ fontSize: '0.75rem', color: ds.board.letterDim, mt: 0.5 }}>{t('annonces.relanceeLe', { date: dateLongue(a.relancee_le) })}</Box>}
+                  {a.relancee_le && <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', mt: 0.5 }}>{t('annonces.relanceeLe', { date: dateLongue(a.relancee_le) })}</Box>}
                 </LignePanneau>
               );
             })}

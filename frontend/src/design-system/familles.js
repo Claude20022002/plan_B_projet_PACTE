@@ -3,7 +3,7 @@
  *   - planner  : cartes claires de HESTIM, nuit en ardoise, rail bleu marine ;
  *   - studylib : la bibliothèque StudyLib (mêmes valeurs que l'application : mobile/src/theme.js).
  * Une famille donne la palette du thème MUI (contexts/ThemeContext.jsx) et les variables CSS
- * qui habillent l'ancien panneau (ds.board) et le menu (ds.nav) sans toucher aux écrans.
+ * du menu (ds.nav), qui l'habillent sans toucher aux écrans.
  */
 
 import { ds } from './tokens';
@@ -80,47 +80,16 @@ const studylib = (nuit) => {
 /** Palette MUI d'une famille dans un mode ('light' ou 'dark') : sols, textes, primaire, polices, rayons. */
 export const paletteDe = (famille, mode) => (famille === 'studylib' ? studylib : planner)(mode !== 'light');
 
-// Ancien panneau des départs (ds.board) en cartes claires, le temps que le lot V-2 le remplace :
-// plus de noir, une carte blanche bordée d'un filet, les états en valeur « bureau » sur le clair.
-const panneauPlanner = (nuit) => {
-    const s = nuit ? ds.surface.nuit : ds.surface.clair;
-    const sol = nuit ? 'board' : 'bureau';
-    return {
-        titre: s.encre,
-        ground: s.carte,
-        frame: s.filet,
-        cell: s.doux,
-        cellHinge: s.filet,
-        seam: s.filet,
-        letter: s.encre,
-        letterDim: s.encreEffacee,
-        onTime: s.encre,
-        live: statut('confirme', sol),
-        delayed: statut('reporte', sol),
-        cancelled: statut('annule', sol),
-    };
-};
-
-// StudyLib : panneau et menu sans marine, aux gris ardoise et au bleu de la bibliothèque
-const PANNEAU_STUDYLIB = {
-    clair: {
-        board: { titre: '#0F172A', ground: '#FFFFFF', frame: '#E2E8F0', cell: '#F1F5F9', cellHinge: '#CBD5E1', seam: '#E2E8F0', letter: '#0F172A', letterDim: '#64748B', onTime: '#0F172A', live: '#15803D', delayed: '#B45309', cancelled: '#DC2626' },
-        nav: { fond: '#FFFFFF', letter: '#0F172A', letterSoft: '#334155', letterDim: '#64748B', icon: '#64748B', selection: '#DBEAFE', survol: '#F1F5F9', filet: '#E2E8F0', bordBouton: '#CBD5E1', boutonActif: '#DBEAFE' },
-    },
-    nuit: {
-        board: { titre: '#F1F5F9', ground: '#1E293B', frame: '#334155', cell: '#0F172A', cellHinge: '#162032', seam: '#334155', letter: '#F1F5F9', letterDim: '#94A3B8', onTime: '#F1F5F9', live: '#4ADE80', delayed: '#FB923C', cancelled: '#F87171' },
-        nav: { fond: '#0F172A', letter: '#F1F5F9', letterSoft: '#CBD5E1', letterDim: '#94A3B8', icon: '#94A3B8', selection: 'rgba(96, 165, 250, 0.16)', survol: 'rgba(241, 245, 249, 0.06)', filet: '#1E293B', bordBouton: '#334155', boutonActif: 'rgba(96, 165, 250, 0.16)' },
-    },
+// StudyLib : menu sans marine, aux gris ardoise et au bleu de la bibliothèque
+const MENU_STUDYLIB = {
+    clair: { fond: '#FFFFFF', letter: '#0F172A', letterSoft: '#334155', letterDim: '#64748B', icon: '#64748B', selection: '#DBEAFE', survol: '#F1F5F9', filet: '#E2E8F0', bordBouton: '#CBD5E1', boutonActif: '#DBEAFE' },
+    nuit: { fond: '#0F172A', letter: '#F1F5F9', letterSoft: '#CBD5E1', letterDim: '#94A3B8', icon: '#94A3B8', selection: 'rgba(96, 165, 250, 0.16)', survol: 'rgba(241, 245, 249, 0.06)', filet: '#1E293B', bordBouton: '#334155', boutonActif: 'rgba(96, 165, 250, 0.16)' },
 };
 
 const enVariables = (prefixe, valeurs) => Object.fromEntries(Object.entries(valeurs).map(([cle, valeur]) => [`--${prefixe}-${cle}`, valeur]));
 
-/** Variables CSS `--board-*` et `--nav-*` d'une famille dans un mode ; Planner garde son menu marine. */
+/** Variables CSS `--nav-*` d'une famille dans un mode ; Planner garde son menu marine (aucune variable). */
 export const variablesCss = (famille, mode) => {
-    const nuit = mode !== 'light';
-    if (famille === 'studylib') {
-        const { board, nav } = PANNEAU_STUDYLIB[nuit ? 'nuit' : 'clair'];
-        return { ...enVariables('board', board), ...enVariables('nav', nav) };
-    }
-    return enVariables('board', panneauPlanner(nuit));
+    if (famille !== 'studylib') return {};
+    return enVariables('nav', MENU_STUDYLIB[mode === 'light' ? 'clair' : 'nuit']);
 };
