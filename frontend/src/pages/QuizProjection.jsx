@@ -46,7 +46,7 @@ export default function QuizProjection() {
   if (etat.etape === 'erreur') {
     contenu = <Typography role="alert" sx={{ py: 6, maxWidth: 720, fontSize: 'clamp(1.125rem, 3vh, 1.75rem)' }}>{t(`quizDirect.erreurs.${etat.erreur}`)}</Typography>;
   } else if (etat.etape === 'connexion') {
-    contenu = <CircularProgress aria-label={t('quizDirect.connexion')} sx={{ color: ds.board.letter, my: 6 }} />;
+    contenu = <CircularProgress aria-label={t('quizDirect.connexion')} sx={{ my: 6 }} />;
   } else if (etat.etape === 'attente') {
     contenu = <SalleAttente pin={pin} adresse={adresseRejoindre(urlQuiz, pin)} joueurs={etat.joueurs} onDemarrer={demarrer} />;
   } else if (etat.etape === 'question') {
@@ -70,13 +70,13 @@ export default function QuizProjection() {
   }
 
   return (
-    <Box component="main" sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: ds.board.ground, color: ds.board.letter }}>
+    <Box component="main" sx={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default', color: 'text.primary' }}>
       {/* Bandeau : le quiz, et le plein écran */}
-      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, px: { xs: 2, md: 3 }, py: 1.5, borderBottom: `1px solid ${ds.board.seam}` }}>
-        <Typography component="h1" noWrap sx={{ flexGrow: 1, minWidth: 0, fontFamily: ds.font.board, fontWeight: 700, fontSize: 'clamp(1.25rem, 3vh, 2.25rem)', letterSpacing: '0.06em', textTransform: 'uppercase', lineHeight: 1.15 }}>
+      <Box sx={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 1.5, px: { xs: 2, md: 3 }, py: 1.5, bgcolor: 'background.paper', borderBottom: '1px solid', borderColor: 'divider' }}>
+        <Typography component="h1" noWrap sx={{ flexGrow: 1, minWidth: 0, fontFamily: ds.font.board, fontWeight: 700, fontSize: 'clamp(1.25rem, 3vh, 2.25rem)', letterSpacing: '0.02em', lineHeight: 1.15 }}>
           {partie?.titre ?? t('quizDirect.titre')}
         </Typography>
-        <Button onClick={basculerPleinEcran} startIcon={pleinEcran ? <FullscreenExit /> : <Fullscreen />} sx={{ color: ds.board.letterDim }}>
+        <Button onClick={basculerPleinEcran} startIcon={pleinEcran ? <FullscreenExit /> : <Fullscreen />} sx={{ color: 'text.secondary' }}>
           {t(pleinEcran ? 'appel.projection.quitterPleinEcran' : 'appel.projection.pleinEcran')}
         </Button>
       </Box>
