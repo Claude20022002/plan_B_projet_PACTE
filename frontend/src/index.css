@@ -1,12 +1,11 @@
-/* Surfaces du navigateur thémées depuis la palette HESTIM (panneau à volets). */
+/* Surfaces du navigateur thémées depuis la palette HESTIM (cartes claires, DESIGN.md). */
 
 :root {
   --hp-navy: #001861;
   --hp-orange: #F26322;
   --hp-red: #DB1F26;
   --hp-green: #137D3F;
-  --hp-board: #0B0B0D;
-  --hp-letter: #F2F1EC;
+  --hp-letter: #FFFFFF;
   --hp-focus: #F26322;
 }
 
@@ -56,9 +55,8 @@ a {
 ::-webkit-scrollbar-track {
   background: transparent;
 }
-[data-theme="dark"] *,
-.hp-board * {
-  scrollbar-color: #3A3A40 transparent;
+[data-theme="dark"] * {
+  scrollbar-color: #475569 transparent;
 }
 
 @media (prefers-reduced-motion: reduce) {

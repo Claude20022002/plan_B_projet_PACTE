@@ -22,7 +22,7 @@ const fr = {
     themeDark: 'Mode sombre',
     apparence: {
       titre: 'Apparence',
-      intro: 'Le thème de Planner (panneau des départs) ou celui de la bibliothèque StudyLib, en clair ou en sombre. Retenu sur ce navigateur.',
+      intro: 'Le thème de Planner (cartes claires de HESTIM) ou celui de la bibliothèque StudyLib, en clair ou en sombre. Retenu sur ce navigateur.',
       theme: 'Thème',
       planner: 'Planner',
       studylib: 'StudyLib',
@@ -1621,7 +1621,7 @@ const fr = {
     sessionsToCheckTitle_other: '{{count}} séances du mois sans appel validé',
     sessionsToCheckDetail: 'À confirmer ou écarter avant l’export de la paie',
     review: 'Examiner',
-    campusToday: 'Départs du jour sur le campus',
+    campusToday: 'Séances du jour sur le campus',
     campusEmpty: "Aucune séance aujourd'hui sur le campus.",
     indicators: 'Indicateurs de la période',
     occupancy: 'Occupation des salles',
@@ -1630,7 +1630,7 @@ const fr = {
     conflictRate: 'Taux de conflits',
     allBuildings: 'Tous les bâtiments',
     filterBuilding: 'Filtrer par bâtiment',
-    upcoming: 'Prochains départs · campus',
+    upcoming: 'Prochaines séances · campus',
     conflictType: {
       salle: 'Conflit de salle',
       enseignant: "Conflit d'enseignant",

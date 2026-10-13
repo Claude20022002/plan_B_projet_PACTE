@@ -3,15 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Box, ButtonBase, Skeleton, Typography } from '@mui/material';
 import { ArrowForward } from '@mui/icons-material';
 import { formatDayLabel } from '../../utils/session';
-import { ds } from '../../design-system/tokens';
-
-const sectionTitleSx = {
-  fontFamily: ds.font.board,
-  fontWeight: 700,
-  fontSize: '1rem',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-};
+import { CarteSection } from '../../design-system/cartes';
 
 /** Une ligne de la file : pastille de couleur, titre, détail, et la page où traiter. */
 function Ligne({ tone, title, detail, onClick }) {
@@ -42,29 +34,26 @@ export default function FileATraiter({ conflicts, conflictsTotal, reports, telep
   const empty = !loading && conflicts.length === 0 && reports.length === 0 && telephones.length === 0 && aVerifier === 0;
 
   return (
-    <Box component="section" aria-labelledby="queue-title" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px`, alignSelf: 'start' }}>
-      <Box sx={{ px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography id="queue-title" component="h2" sx={sectionTitleSx}>
-          {t('admin.toHandle')}
-        </Typography>
-        {!loading && !empty && (
-          <Typography sx={{ mt: 0.25, color: 'text.secondary', fontSize: '0.875rem' }}>
-            {[
+    <CarteSection
+      id="queue-title"
+      titre={t('admin.toHandle')}
+      sousTitre={
+        !loading && !empty
+          ? [
               conflictsTotal ? t('admin.openConflicts', { count: conflictsTotal }) : null,
               reports.length ? t('admin.pendingReports', { count: reports.length }) : null,
               telephones.length ? t('admin.pendingPhones', { count: telephones.length }) : null,
               aVerifier ? t('admin.sessionsToCheck', { count: aVerifier }) : null,
             ]
               .filter(Boolean)
-              .join(' · ')}
-          </Typography>
-        )}
-      </Box>
-
+              .join(' · ')
+          : null
+      }
+    >
       {loading && (
         <Box sx={{ p: 2, display: 'grid', gap: 1.5 }}>
           {[0, 1, 2].map((i) => (
-            <Skeleton key={i} variant="rectangular" height={44} sx={{ borderRadius: '3px' }} />
+            <Skeleton key={i} variant="rounded" height={44} />
           ))}
         </Box>
       )}
@@ -76,7 +65,7 @@ export default function FileATraiter({ conflicts, conflictsTotal, reports, telep
           {conflicts.map((c) => (
             <Ligne
               key={`c-${c.id_conflit}`}
-              tone={ds.colors.danger.text}
+              tone="error.main"
               title={t(`admin.conflictType.${c.type_conflit}`, { defaultValue: c.type_conflit })}
               detail={c.description}
               onClick={() => navigate('/gestion/conflits')}
@@ -85,7 +74,7 @@ export default function FileATraiter({ conflicts, conflictsTotal, reports, telep
           {reports.map((r) => (
             <Ligne
               key={`r-${r.id_demande}`}
-              tone={ds.colors.warning.text}
+              tone="warning.main"
               title={t('admin.reportTitle', {
                 teacher: [r.enseignant?.prenom, r.enseignant?.nom].filter(Boolean).join(' ') || '-',
               })}
@@ -101,7 +90,7 @@ export default function FileATraiter({ conflicts, conflictsTotal, reports, telep
           {telephones.map((d) => (
             <Ligne
               key={`t-${d.id}`}
-              tone={ds.colors.warning.text}
+              tone="warning.main"
               title={t('admin.phoneTitle', { student: d.etudiant?.nom ?? '-' })}
               detail={d.motif || t('admin.phoneDetail')}
               onClick={() => navigate('/gestion/signalements-presence')}
@@ -110,7 +99,7 @@ export default function FileATraiter({ conflicts, conflictsTotal, reports, telep
           {aVerifier > 0 && (
             <Ligne
               key="a-verifier"
-              tone={ds.colors.warning.text}
+              tone="warning.main"
               title={t('admin.sessionsToCheckTitle', { count: aVerifier })}
               detail={t('admin.sessionsToCheckDetail')}
               onClick={() => navigate('/gestion/suivi?onglet=heures')}
@@ -118,6 +107,6 @@ export default function FileATraiter({ conflicts, conflictsTotal, reports, telep
           )}
         </Box>
       )}
-    </Box>
+    </CarteSection>
   );
 }

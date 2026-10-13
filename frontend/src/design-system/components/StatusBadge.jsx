@@ -1,5 +1,5 @@
 import { Chip } from '@mui/material';
-import StatusFlap from '../board/StatusFlap';
+import PastilleEtat from '../cartes/PastilleEtat';
 
 const SESSION_STATUSES = new Set(['planifie', 'confirme', 'annule', 'reporte', 'realise']);
 
@@ -9,12 +9,12 @@ const otherTones = {
 };
 
 /**
- * Pastille de statut. Les statuts de séance passent par le volet du panneau
+ * Pastille de statut. Les statuts de séance passent par la pastille d'état des cartes
  * (même vocabulaire, mêmes couleurs et même traduction sur tous les écrans).
  */
 export default function StatusBadge({ status, label }) {
   if (SESSION_STATUSES.has(status) && !label) {
-    return <StatusFlap status={status} variant="bureau" />;
+    return <PastilleEtat status={status} />;
   }
   const meta = otherTones[status] || { label: label || status, color: 'default' };
   return (

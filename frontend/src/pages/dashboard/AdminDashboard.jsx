@@ -7,18 +7,10 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, conflitAPI, demandeReportAPI, presenceAPI, statistiquesAPI, suiviAPI } from '../../services/api';
 import FileATraiter from '../../components/dashboard/FileATraiter';
 import { aujourdhui } from '../../../../shared/dates.js';
-import { DepartureBoard } from '../../design-system/board';
+import { CarteSection, ListeSeancesCarte, MessageVide } from '../../design-system/cartes';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
-
-const sectionTitleSx = {
-  fontFamily: ds.font.board,
-  fontWeight: 700,
-  fontSize: '1rem',
-  letterSpacing: '0.12em',
-  textTransform: 'uppercase',
-};
 
 /** Bande réglée d'indicateurs : quatre chiffres lisibles d'un coup d'œil, qui mènent aux statistiques */
 function IndicatorsStrip({ kpis, loading }) {
@@ -34,15 +26,15 @@ function IndicatorsStrip({ kpis, loading }) {
   ];
 
   return (
-    <Box component="section" aria-labelledby="indicators-title" sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px` }}>
-      <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', px: 2, py: 1.25, borderBottom: '1px solid', borderColor: 'divider' }}>
-        <Typography id="indicators-title" component="h2" sx={sectionTitleSx}>
-          {t('admin.indicators')}
-        </Typography>
+    <CarteSection
+      id="indicators-title"
+      titre={t('admin.indicators')}
+      action={
         <Button size="small" endIcon={<ArrowForward />} onClick={() => navigate('/statistiques')}>
           {t('nav.statistics')}
         </Button>
-      </Box>
+      }
+    >
       {/* Lignes réglées libellé | valeur, comme une ligne de panneau (pas de chiffres géants) */}
       <Box component="table" sx={{ width: '100%', borderCollapse: 'collapse' }}>
         <tbody>
@@ -63,7 +55,7 @@ function IndicatorsStrip({ kpis, loading }) {
           ))}
         </tbody>
       </Box>
-    </Box>
+    </CarteSection>
   );
 }
 
@@ -178,21 +170,21 @@ export default function AdminDashboard() {
 
       <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 2fr) minmax(300px, 1fr)' } }}>
         <Box sx={{ minWidth: 0 }}>
-          <DepartureBoard
+          <ListeSeancesCarte
             title={t('admin.upcoming')}
             sessions={upcoming}
             loading={loading}
             spotlight={spotlight}
             columns={['time', 'course', 'group', 'room', 'status']}
             empty={
-              <Box sx={{ color: ds.board.letter }}>
-                <Typography component="p" sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '1.125rem' }}>
-                  {t('admin.campusEmpty')}
-                </Typography>
-                <Button variant="outlined" sx={{ mt: 2, color: ds.board.letter, borderColor: ds.board.seam }} onClick={() => navigate('/gestion/emplois-du-temps')}>
-                  {t('nav.timetables')}
-                </Button>
-              </Box>
+              <MessageVide
+                titre={t('admin.campusEmpty')}
+                action={
+                  <Button variant="outlined" onClick={() => navigate('/gestion/emplois-du-temps')}>
+                    {t('nav.timetables')}
+                  </Button>
+                }
+              />
             }
           />
         </Box>

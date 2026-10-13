@@ -7,8 +7,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { affectationAPI, demandeReportAPI, notificationAPI, quizAPI } from '../../services/api';
 import { fetchAll } from '../../utils/fetchAll';
-import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
-import ChangesList from '../../design-system/board/ChangesList';
+import { CarteSection, ChangementsCarte, ListeSeancesCarte, MessageVide, ProchaineSeanceCarte } from '../../design-system/cartes';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
@@ -16,58 +15,25 @@ import LancerQuizDialog from '../../components/quiz/LancerQuizDialog';
 
 const HORIZON_DAYS = 14;
 
+/** Carte « À traiter » de l'enseignant : ses demandes de report en attente. */
 function TodoPanel({ pendingReports, onOpenReports }) {
   const { t } = useTranslation();
   // Une séance planifiée est tenue pour confirmée : l'enseignant n'agit que pour demander un report
-  const rows = [{ label: t('teacher.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports }];
   return (
-    <Box
-      component="section"
-      aria-labelledby="todo-title"
-      sx={{ bgcolor: 'background.paper', border: '1px solid', borderColor: 'divider', borderRadius: `${ds.radius.lg}px` }}
-    >
-      <Typography
-        id="todo-title"
-        component="h2"
-        sx={{
-          px: 2,
-          py: 1.5,
-          borderBottom: '1px solid',
-          borderColor: 'divider',
-          fontFamily: ds.font.board,
-          fontWeight: 700,
-          fontSize: '1rem',
-          letterSpacing: '0.12em',
-          textTransform: 'uppercase',
-        }}
-      >
-        {t('admin.toHandle')}
-      </Typography>
-      {rows.map((row) => (
+    <CarteSection id="todo-title" titre={t('admin.toHandle')}>
+      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5 }}>
         <Box
-          key={row.label}
-          sx={{ display: 'flex', alignItems: 'center', gap: 1.5, px: 2, py: 1.5, borderBottom: '1px solid', borderColor: 'divider', '&:last-of-type': { borderBottom: 0 } }}
+          component="span"
+          sx={{ minWidth: 40, fontFamily: ds.font.board, fontWeight: 700, fontSize: '1.75rem', lineHeight: 1, color: pendingReports > 0 ? 'warning.main' : 'text.secondary' }}
         >
-          <Box
-            component="span"
-            sx={{
-              minWidth: 40,
-              fontFamily: ds.font.board,
-              fontWeight: 700,
-              fontSize: '1.75rem',
-              lineHeight: 1,
-              color: row.value > 0 ? 'text.primary' : 'text.secondary',
-            }}
-          >
-            {row.value}
-          </Box>
-          <Typography sx={{ flexGrow: 1, fontSize: '0.9375rem' }}>{row.label}</Typography>
-          <Button size="small" onClick={row.action}>
-            {t('common.seeAll')}
-          </Button>
+          {pendingReports}
         </Box>
-      ))}
-    </Box>
+        <Typography sx={{ flexGrow: 1, fontSize: '0.9375rem' }}>{t('teacher.pendingReports', { count: pendingReports })}</Typography>
+        <Button size="small" onClick={onOpenReports} sx={{ flexShrink: 0, whiteSpace: 'nowrap' }}>
+          {t('common.seeAll')}
+        </Button>
+      </Box>
+    </CarteSection>
   );
 }
 
@@ -151,18 +117,18 @@ export default function EnseignantDashboard() {
     <>
       {/* Appel et gestion de la classe : le jour de la séance */}
       {s.status !== 'annule' && s.date === toLocalISODate() && (
-        <Button variant="outlined" startIcon={<FactCheck />} onClick={() => navigate(`/appel/${s.id}`)} sx={{ color: ds.board.letter, borderColor: ds.board.seam }}>
+        <Button variant="outlined" startIcon={<FactCheck />} onClick={() => navigate(`/appel/${s.id}`)}>
           {t('classes.page.appel.a_faire')}
         </Button>
       )}
       {/* Un autre jour : l'appel reste visible, pour qu'on sache où le faire */}
       {s.status !== 'annule' && s.date !== toLocalISODate() && (
-        <Button variant="outlined" startIcon={<FactCheck />} disabled sx={{ '&.Mui-disabled': { color: ds.board.letterDim, borderColor: ds.board.seam } }}>
+        <Button variant="outlined" startIcon={<FactCheck />} disabled>
           {t('classes.page.appelLeJour')}
         </Button>
       )}
       {s.status !== 'annule' && (
-        <Button variant="outlined" startIcon={<Groups />} onClick={() => navigate('/mes-classes')} sx={{ color: ds.board.letter, borderColor: ds.board.seam }}>
+        <Button variant="outlined" startIcon={<Groups />} onClick={() => navigate('/mes-classes')}>
           {t('nav.myClasses')}
         </Button>
       )}
@@ -173,7 +139,7 @@ export default function EnseignantDashboard() {
           variant="outlined"
           startIcon={<SportsEsports />}
           onClick={() => setQuizPour({ id_affectation: s.id })}
-          sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
+         
         >
           {t('board.launchQuiz')}
         </Button>
@@ -183,7 +149,7 @@ export default function EnseignantDashboard() {
           variant="outlined"
           startIcon={<EventRepeat />}
           onClick={() => navigate('/demandes-report')}
-          sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
+         
         >
           {t('board.requestReport')}
         </Button>
@@ -191,14 +157,15 @@ export default function EnseignantDashboard() {
     </>
   );
 
+  const vide = <MessageVide titre={t('board.noSessionsTitle')} texte={t('board.noSessionsBody')} />;
+
   return (
     <DashboardLayout>
       <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 2fr) minmax(280px, 1fr)' } }}>
-        <Box sx={{ minWidth: 0 }}>
+        <Box sx={{ minWidth: 0, display: 'grid', gap: { xs: 2, md: 3 }, alignContent: 'start' }}>
           {error && (
             <Alert
               severity="error"
-              sx={{ mb: 2 }}
               action={
                 <Button color="inherit" size="small" onClick={() => load()}>
                   {t('common.retry')}
@@ -208,47 +175,29 @@ export default function EnseignantDashboard() {
               {t('common.errorLoad')}
             </Alert>
           )}
-          <DepartureBoard
+          {!loading && spotlight && (
+            <ProchaineSeanceCarte session={spotlight.session} phase={spotlight.phase} actions={spotlightActions(spotlight.session)} />
+          )}
+          {/* Téléphone : les changements juste sous la prochaine séance */}
+          {compact && changes.length > 0 && <ChangementsCarte items={changes} onSeeAll={() => navigate('/notifications')} />}
+          <ListeSeancesCarte
             title={t('board.titleTeacher')}
             sessions={boardSessions}
             loading={loading}
             spotlight={spotlight}
             columns={['time', 'course', 'group', 'room', 'status']}
-            renderSpotlight={(s, phase) => (
-              <>
-                <SessionSpotlight session={s} phase={phase} actions={spotlightActions(s)} />
-                {/* Téléphone : les changements juste sous la prochaine séance */}
-                {compact && changes.length > 0 && (
-                  <ChangesList items={changes} variant="board" onSeeAll={() => navigate('/notifications')} />
-                )}
-              </>
-            )}
-            empty={
-              <Box sx={{ color: ds.board.letter, maxWidth: 520 }}>
-                <Typography component="p" sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '1.125rem' }}>
-                  {t('board.noSessionsTitle')}
-                </Typography>
-                <Typography component="p" sx={{ mt: 1, color: ds.board.letterDim }}>
-                  {t('board.noSessionsBody')}
-                </Typography>
-              </Box>
-            }
+            empty={vide}
           />
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button variant="outlined" startIcon={<ViewWeek />} onClick={() => navigate('/emploi-du-temps/enseignant')}>
               {t('board.openTimetable')}
             </Button>
           </Box>
         </Box>
 
-        <Box sx={{ display: 'grid', gap: 2, alignContent: 'start' }}>
-          <TodoPanel
-            pendingReports={pendingReports}
-            onOpenReports={() => navigate('/demandes-report')}
-          />
-          {!(compact && changes.length > 0 && spotlight) && (
-            <ChangesList items={changes} onSeeAll={() => navigate('/notifications')} />
-          )}
+        <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, alignContent: 'start' }}>
+          <TodoPanel pendingReports={pendingReports} onOpenReports={() => navigate('/demandes-report')} />
+          {!(compact && changes.length > 0) && <ChangementsCarte items={changes} onSeeAll={() => navigate('/notifications')} />}
         </Box>
       </Box>
       <LancerQuizDialog seance={quizPour} onClose={() => setQuizPour(null)} />

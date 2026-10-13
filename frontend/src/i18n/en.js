@@ -22,7 +22,7 @@ const en = {
     themeDark: 'Dark mode',
     apparence: {
       titre: 'Appearance',
-      intro: 'The Planner theme (departure board) or the StudyLib library theme, light or dark. Remembered on this browser.',
+      intro: 'The Planner theme (HESTIM light cards) or the StudyLib library theme, light or dark. Remembered on this browser.',
       theme: 'Theme',
       planner: 'Planner',
       studylib: 'StudyLib',
@@ -1625,7 +1625,7 @@ const en = {
     sessionsToCheckTitle_other: '{{count}} sessions this month without a validated roll call',
     sessionsToCheckDetail: 'Confirm or set aside before the payroll export',
     review: 'Review',
-    campusToday: 'Departures on campus today',
+    campusToday: 'Sessions on campus today',
     campusEmpty: 'No sessions on campus today.',
     indicators: 'Indicators for the period',
     occupancy: 'Room occupancy',
@@ -1634,7 +1634,7 @@ const en = {
     conflictRate: 'Conflict rate',
     allBuildings: 'All buildings',
     filterBuilding: 'Filter by building',
-    upcoming: 'Next departures · campus',
+    upcoming: 'Upcoming sessions · campus',
     conflictType: {
       salle: 'Room conflict',
       enseignant: 'Teacher conflict',

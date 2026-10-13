@@ -2,9 +2,9 @@ import { Box } from '@mui/material';
 import { ds } from '../tokens';
 
 /**
- * Pastille d'état du bureau (hors statuts de séance, qui passent par StatusFlap) :
- * petit volet clair, angles de 2 px, capitales condensées. Les teintes viennent des
- * valeurs « bureau » des états (DESIGN.md, The Two Grounds Rule).
+ * Pastille d'état (hors statuts de séance, qui passent par cartes/PastilleEtat) :
+ * pilule ronde, libellé en capitales condensées. Les teintes viennent des valeurs claires
+ * des états (DESIGN.md, Pastilles d'état).
  *   neutral : état ordinaire · success : confirmé / disponible · warning : à confirmer / modifié
  *   danger : bloquant / indisponible · info : information (marine voilé)
  */
@@ -27,7 +27,7 @@ export default function StateChip({ tone = 'neutral', children, title }) {
         alignItems: 'center',
         minHeight: 24,
         px: 1,
-        borderRadius: `${ds.radius.xs}px`,
+        borderRadius: 999,
         bgcolor: bg,
         color,
         fontFamily: ds.font.board,

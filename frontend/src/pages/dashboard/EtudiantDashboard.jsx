@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Box, Button, Typography, useMediaQuery } from '@mui/material';
+import { Alert, Box, Button, useMediaQuery } from '@mui/material';
 import { ViewWeek } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
 import { etudiantAPI, notificationAPI } from '../../services/api';
-import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
-import ChangesList from '../../design-system/board/ChangesList';
+import { ChangementsCarte, ListeSeancesCarte, MessageVide, ProchaineSeanceCarte } from '../../design-system/cartes';
 import { byStart, findSpotlight, toBoardSession } from '../../utils/session';
 import { chargerMesSeances } from '../../utils/mesSeances';
-import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
 
 const HORIZON_DAYS = 7;
@@ -80,11 +78,10 @@ export default function EtudiantDashboard() {
   return (
     <DashboardLayout>
       <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', lg: 'minmax(0, 2fr) minmax(280px, 1fr)' } }}>
-        <Box sx={{ minWidth: 0 }}>
+        <Box sx={{ minWidth: 0, display: 'grid', gap: { xs: 2, md: 3 }, alignContent: 'start' }}>
           {error && (
             <Alert
               severity="error"
-              sx={{ mb: 2 }}
               action={
                 <Button color="inherit" size="small" onClick={() => load()}>
                   {t('common.retry')}
@@ -94,45 +91,26 @@ export default function EtudiantDashboard() {
               {t('common.errorLoad')}
             </Alert>
           )}
-
-          <DepartureBoard
+          {!loading && spotlight && <ProchaineSeanceCarte session={spotlight.session} phase={spotlight.phase} />}
+          {/* Téléphone : « qu'est-ce qui a changé ? » juste sous la prochaine séance */}
+          {compact && changes.length > 0 && <ChangementsCarte items={changes} onSeeAll={() => navigate('/notifications')} />}
+          <ListeSeancesCarte
             title={boardTitle}
             sessions={boardSessions}
             loading={loading}
             spotlight={spotlight}
             columns={['time', 'course', 'room', 'teacher', 'status']}
-            renderSpotlight={(s, phase) => (
-              <>
-                <SessionSpotlight session={s} phase={phase} />
-                {/* Téléphone : « qu'est-ce qui a changé ? » juste sous la prochaine séance */}
-                {compact && changes.length > 0 && (
-                  <ChangesList items={changes} variant="board" onSeeAll={() => navigate('/notifications')} />
-                )}
-              </>
-            )}
-            empty={
-              <Box sx={{ color: ds.board.letter, maxWidth: 520 }}>
-                <Typography component="p" sx={{ fontFamily: ds.font.board, fontWeight: 600, letterSpacing: '0.08em', textTransform: 'uppercase', fontSize: '1.125rem' }}>
-                  {t('board.noSessionsTitle')}
-                </Typography>
-                <Typography component="p" sx={{ mt: 1, color: ds.board.letterDim }}>
-                  {t('board.noSessionsBody')}
-                </Typography>
-              </Box>
-            }
+            empty={<MessageVide titre={t('board.noSessionsTitle')} texte={t('board.noSessionsBody')} />}
           />
-
-          <Box sx={{ mt: 2, display: 'flex', justifyContent: 'flex-end' }}>
+          <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button variant="outlined" startIcon={<ViewWeek />} onClick={() => navigate('/emploi-du-temps/etudiant')}>
               {t('board.openTimetable')}
             </Button>
           </Box>
         </Box>
 
-        <Box sx={{ display: 'grid', gap: 2, alignContent: 'start', minWidth: 0 }}>
-          {!(compact && changes.length > 0 && spotlight) && (
-            <ChangesList items={changes} onSeeAll={() => navigate('/notifications')} />
-          )}
+        <Box sx={{ display: 'grid', gap: { xs: 2, md: 3 }, alignContent: 'start', minWidth: 0 }}>
+          {!(compact && changes.length > 0) && <ChangementsCarte items={changes} onSeeAll={() => navigate('/notifications')} />}
         </Box>
       </Box>
     </DashboardLayout>

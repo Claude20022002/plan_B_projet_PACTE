@@ -15,7 +15,7 @@ const partage = {
   board: {
     title: 'Mes séances',
     titleTeacher: 'Mes séances',
-    titleCampus: 'Départs du jour',
+    titleCampus: 'Séances du jour',
     time: 'Heure',
     course: 'Cours',
     room: 'Salle',

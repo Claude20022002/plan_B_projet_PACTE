@@ -19,55 +19,33 @@ import { useAuth } from '../contexts/AuthContext';
 import { LANGUAGES } from '../i18n';
 import { ds } from '../design-system/tokens';
 import { cheminSuivantSur } from '../utils/redirection';
-import { FlapTiles } from '../design-system/board';
+import TitreMarque from '../design-system/components/TitreMarque';
+import { carteSx } from '../design-system/cartes';
 
-/**
- * Panneau de présentation : ce que l'outil affiche, en lignes fixes de panneau.
- * Pas de rotation automatique (la bascule signale un vrai changement, jamais une décoration).
- */
+/** Carte de présentation : ce que l'outil affiche, en lignes réglées sous le titre de marque. */
 function LiveBoard() {
   const { t } = useTranslation();
   const lines = t('login.boardLines', { returnObjects: true });
 
   return (
-    <Box sx={{ bgcolor: ds.board.frame, p: '10px', borderRadius: `${ds.radius.lg}px`, width: '100%', maxWidth: 560 }}>
-      <Box sx={{ px: 1, pb: 1.25, display: 'flex', justifyContent: 'space-between', color: ds.board.titre, fontFamily: ds.font.board, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
-        <span>{t('login.boardTitle')}</span>
-        <span>HESTIM</span>
+    <Box sx={{ ...carteSx, width: '100%', maxWidth: 560, px: { md: 4, lg: 5 }, py: 4 }}>
+      <Box sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '0.8125rem', letterSpacing: '0.12em', textTransform: 'uppercase', color: 'text.secondary', mb: 2 }}>
+        {t('login.boardTitle')}
       </Box>
-      <Box sx={{ bgcolor: ds.board.ground, borderRadius: `${ds.radius.md}px`, px: { md: 3, lg: 4 }, py: 4 }}>
-        <FlapTiles value="HESTIM" size="clamp(2.25rem, 4.4vw, 3.75rem)" />
-        <Box sx={{ mt: 1.25 }}>
-          <FlapTiles value="PLANNER" size="clamp(2.25rem, 4.4vw, 3.75rem)" color={ds.brand.orange} />
-        </Box>
-        <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 4, p: 0, borderTop: `1px solid ${ds.board.seam}` }}>
-          {lines.map((line, i) => (
-            <Box
-              component="li"
-              key={line}
-              sx={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: 1.5,
-                py: 1.25,
-                borderBottom: `1px solid ${ds.board.seam}`,
-                fontFamily: ds.font.board,
-                fontWeight: 600,
-                fontSize: { md: '1.125rem', lg: '1.25rem' },
-                letterSpacing: '0.1em',
-                textTransform: 'uppercase',
-                color: ds.board.letter,
-              }}
-            >
-              <Box component="span" aria-hidden="true" sx={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, bgcolor: i === 0 ? ds.board.live : ds.board.letterDim }} />
-              {line}
-            </Box>
-          ))}
-        </Box>
-        <Typography sx={{ mt: 3, color: ds.board.letterDim, fontSize: '0.9375rem' }}>
-          {t('app.school')}
-        </Typography>
+      <TitreMarque taille="clamp(2.25rem, 4.4vw, 3.75rem)" />
+      <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 4, p: 0, borderTop: '1px solid', borderColor: 'divider' }}>
+        {lines.map((line, i) => (
+          <Box
+            component="li"
+            key={line}
+            sx={{ display: 'flex', alignItems: 'center', gap: 1.5, py: 1.25, borderBottom: '1px solid', borderColor: 'divider', fontWeight: 600, fontSize: { md: '1.0625rem', lg: '1.125rem' } }}
+          >
+            <Box component="span" aria-hidden="true" sx={{ width: 8, height: 8, borderRadius: '50%', flexShrink: 0, bgcolor: i === 0 ? 'success.main' : 'primary.main' }} />
+            {line}
+          </Box>
+        ))}
       </Box>
+      <Typography sx={{ mt: 3, color: 'text.secondary', fontSize: '0.9375rem' }}>{t('app.school')}</Typography>
     </Box>
   );
 }
@@ -165,11 +143,10 @@ export default function Connexion() {
           display: { xs: 'none', md: 'flex' },
           alignItems: 'center',
           justifyContent: 'center',
-          bgcolor: ds.board.ground,
-          // Une vraie salle de HESTIM derrière le panneau : voile léger au centre (la salle se voit),
-          // plus dense vers les bords ; le panneau garde son propre fond noir, donc son contraste
+          bgcolor: ds.brand.navy,
+          // Une vraie salle de HESTIM derrière la carte, sous un voile marine plus dense vers les bords
           backgroundImage:
-            'radial-gradient(ellipse at 50% 55%, rgba(11, 11, 13, 0.35) 0%, rgba(11, 11, 13, 0.55) 55%, rgba(11, 11, 13, 0.85) 100%), url(/img/hestim/seance-salle.jpg)',
+            'radial-gradient(ellipse at 50% 55%, rgba(0, 24, 97, 0.30) 0%, rgba(0, 24, 97, 0.55) 55%, rgba(0, 14, 61, 0.85) 100%), url(/img/hestim/seance-salle.jpg)',
           backgroundSize: 'cover',
           backgroundPosition: '50% 60%',
           px: { md: 5, lg: 8 },
@@ -180,15 +157,15 @@ export default function Connexion() {
       </Box>
 
       <Box sx={{ display: 'flex', flexDirection: 'column', minWidth: 0 }}>
-        {/* Téléphone : le panneau en bandeau, première chose que voit un étudiant */}
-        <Box sx={{ display: { xs: 'block', md: 'none' }, bgcolor: ds.board.frame, p: '6px' }}>
-          <Box sx={{ bgcolor: ds.board.ground, borderRadius: `${ds.radius.md}px`, px: 2, py: 1.75, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            <FlapTiles value="HESTIM" size="1.5rem" />
-            <FlapTiles value="PLANNER" size="1.5rem" color={ds.brand.orange} />
-          </Box>
+        {/* Téléphone : le titre de marque en bandeau marine, première chose que voit un étudiant */}
+        <Box sx={{ display: { xs: 'block', md: 'none' }, bgcolor: ds.brand.navy, px: 2, py: 1.75 }}>
+          <TitreMarque taille="1.5rem" couleur={ds.white} enLigne />
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: { xs: 2, sm: 4 }, pt: { xs: 2, sm: 3 } }}>
-          <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: { xs: 32, sm: 38 } }} />
+          {/* Logo sur sa plaque blanche : lisible aussi en mode nuit */}
+          <Box sx={{ bgcolor: ds.white, borderRadius: `${ds.radius.sm}px`, px: 1, py: 0.5, display: 'inline-flex' }}>
+            <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: { xs: 32, sm: 38 } }} />
+          </Box>
           <ToggleButtonGroup
             size="small"
             exclusive

@@ -14,20 +14,21 @@ import {
   Typography,
   useMediaQuery,
 } from '@mui/material';
+import { alpha } from '@mui/material/styles';
 import { ChevronLeft, ChevronRight, Print, TableRows, ViewWeek } from '@mui/icons-material';
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import frLocale from '@fullcalendar/core/locales/fr';
-import { DepartureBoard, SessionSpotlight, StatusFlap } from '../../design-system/board';
+import { DetailSeance, ListeSeancesCarte, PastilleEtat } from '../../design-system/cartes';
 import { ds, lineColor } from '../../design-system/tokens';
 import { byStart, toBoardSession } from '../../utils/session';
 import { visuallyHidden } from '@mui/utils';
 
 /**
- * Emploi du temps hebdomadaire au format « panneau » :
+ * Emploi du temps hebdomadaire :
  * - ordinateur : grille lundi → samedi à échelle horaire fixe (toutes les semaines comparables),
- *   chaque séance dessinée comme un volet du panneau ;
- * - téléphone (ou vue liste) : le panneau des départs, jour par jour.
+ *   chaque séance sur un voile de la couleur de sa filière ;
+ * - téléphone (ou vue liste) : la liste des séances dans une carte, jour par jour.
  * S'ouvre sur la semaine qui contient effectivement des séances.
  */
 
@@ -54,50 +55,47 @@ const initialWeek = (sessions) => {
   return mondayOf(next ? next.start : sessions[sessions.length - 1].start);
 };
 
+/** Une séance dans la grille : voile et filet de la couleur de sa filière, état seulement s'il a changé. */
 function EventCell({ session }) {
   const { t } = useTranslation();
   const changed = session.status === 'reporte' || session.status === 'annule';
+  const couleur = lineColor(session.lineKey);
   return (
     <Box
       sx={{
         height: '100%',
-        p: '4px 6px',
-        bgcolor: ds.board.ground,
-        color: ds.board.letter,
+        p: '4px 6px 4px 8px',
+        bgcolor: (theme) => alpha(couleur, theme.palette.mode === 'dark' ? 0.22 : 0.12),
+        borderLeft: `3px solid ${couleur}`,
+        color: 'text.primary',
         overflow: 'hidden',
         display: 'flex',
         flexDirection: 'column',
         gap: '2px',
       }}
     >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-        <Box component="span" aria-hidden="true" sx={{ width: 8, height: 8, flexShrink: 0, borderRadius: '2px', bgcolor: lineColor(session.lineKey) }} />
-        <Box
-          component="span"
-          sx={{
-            fontFamily: ds.font.board,
-            fontWeight: 600,
-            fontSize: '0.8125rem',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            lineHeight: 1.2,
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            textDecoration: session.status === 'annule' ? 'line-through' : 'none',
-            color: session.status === 'annule' ? ds.board.letterDim : ds.board.letter,
-          }}
-        >
-          {session.course}
-        </Box>
+      <Box
+        component="span"
+        sx={{
+          fontWeight: 600,
+          fontSize: '0.8125rem',
+          lineHeight: 1.25,
+          overflow: 'hidden',
+          display: '-webkit-box',
+          WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical',
+          textDecoration: session.status === 'annule' ? 'line-through' : 'none',
+          color: session.status === 'annule' ? 'text.secondary' : 'text.primary',
+        }}
+      >
+        {session.course}
       </Box>
-      <Box sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '0.8125rem', letterSpacing: '0.04em', color: ds.board.letterDim }}>
+      <Box sx={{ fontSize: '0.75rem', color: 'text.secondary', fontVariantNumeric: 'tabular-nums' }}>
         {session.startLabel} · {session.room}
       </Box>
       {changed && (
-        <Box sx={{ fontSize: '0.75rem', mt: 'auto' }}>
-          <StatusFlap status={session.status} />
+        <Box sx={{ mt: 'auto' }}>
+          <PastilleEtat status={session.status} />
         </Box>
       )}
       <Box component="span" sx={visuallyHidden}>
@@ -200,13 +198,14 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
       </Box>
 
       {showList ? (
-        <DepartureBoard
+        <ListeSeancesCarte
+          id="semaine-seances"
           title={weekLabel}
           showClock={false}
           sessions={weekSessions}
           columns={columns}
           onSessionClick={setSelected}
-          empty={<Typography sx={{ color: ds.board.letterDim }}>{t('timetable.emptyWeek')}</Typography>}
+          empty={<Typography sx={{ color: 'text.secondary' }}>{t('timetable.emptyWeek')}</Typography>}
         />
       ) : (
         <Box
@@ -214,7 +213,8 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
             bgcolor: 'background.paper',
             border: '1px solid',
             borderColor: 'divider',
-            borderRadius: `${ds.radius.lg}px`,
+            borderRadius: `${ds.radius.md}px`,
+            boxShadow: (theme) => (theme.palette.mode === 'dark' ? 'none' : ds.shadow.card),
             p: 1,
             // Grille FullCalendar aux couleurs du système
             '& .fc': {
@@ -238,7 +238,7 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
             '& .fc-timegrid-slot-label-cushion': { fontFamily: ds.font.board, fontWeight: 600, color: 'text.secondary', fontVariantNumeric: 'tabular-nums' },
             '& .fc-timegrid-slot': { height: '1.6rem' },
             '& .fc-v-event': { bgcolor: 'transparent', border: 'none', boxShadow: 'none' },
-            '& .fc-timegrid-event': { borderRadius: '3px', overflow: 'hidden', cursor: 'pointer' },
+            '& .fc-timegrid-event': { borderRadius: `${ds.radius.xs}px`, overflow: 'hidden', cursor: 'pointer' },
             '& .fc-timegrid-event:focus-visible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 1 },
             '& .fc-timegrid-now-indicator-line': { borderColor: ds.brand.orange },
             '& .fc-timegrid-now-indicator-arrow': { borderColor: ds.brand.orange },
@@ -273,16 +273,12 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
       <Dialog open={Boolean(selected)} onClose={() => setSelected(null)} maxWidth="sm" fullWidth>
         {selected && (
           <>
-            <DialogTitle sx={{ fontFamily: ds.font.board, fontWeight: 700 }}>
+            <DialogTitle sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, fontFamily: ds.font.board, fontWeight: 700, '&::first-letter': { textTransform: 'uppercase' } }}>
               {new Intl.DateTimeFormat(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' }).format(selected.start)}
-              {' · '}
-              <StatusFlap status={selected.status} variant="bureau" />
+              <PastilleEtat status={selected.status} />
             </DialogTitle>
-            <DialogContent dividers sx={{ p: 0, bgcolor: ds.board.ground }}>
-              <SessionSpotlight
-                session={selected}
-                phase={selected.start <= new Date() && selected.end > new Date() ? 'live' : 'next'}
-              />
+            <DialogContent dividers>
+              <DetailSeance session={selected} phase={selected.start <= new Date() && selected.end > new Date() ? 'live' : 'next'} />
             </DialogContent>
             <DialogActions>
               <Button onClick={() => setSelected(null)}>{t('common.close')}</Button>
