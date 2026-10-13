@@ -2,8 +2,13 @@ import { useTranslation } from 'react-i18next';
 import { Box, Button, Checkbox, CircularProgress, FormControlLabel, IconButton, Paper, Radio, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { Add, DeleteOutline, Refresh } from '@mui/icons-material';
 import { QUESTION_MAX, REPONSE_MAX, REPONSES_MAX, REPONSES_MIN } from '../../../utils/brouillonQuiz';
+import { styleReponse } from '../../../../../shared/quiz/couleurs.js';
+import { Forme } from '../../../design-system/jeu';
 
-/** Une question du brouillon : énoncé, réponses (une ou plusieurs justes), explication de l'IA. */
+/**
+ * Une question du brouillon : énoncé, réponses (une ou plusieurs justes), explication de l'IA.
+ * Chaque réponse porte la couleur et la forme que les élèves verront en jouant.
+ */
 export default function QuestionBrouillon({ numero, question, changer, supprimer, regenerer, occupe, peutRegenerer }) {
   const { t } = useTranslation();
   const plusieurs = question.type === 'CHECK';
@@ -47,6 +52,9 @@ export default function QuestionBrouillon({ numero, question, changer, supprimer
         </Box>
         {question.reponses.map((r, i) => (
           <Box key={i} sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+            <Box aria-hidden="true" sx={{ width: 32, height: 32, flexShrink: 0, borderRadius: '8px', display: 'grid', placeItems: 'center', bgcolor: styleReponse(i).couleur, color: styleReponse(i).encre }}>
+              <Forme forme={styleReponse(i).forme} taille={18} />
+            </Box>
             {plusieurs ? (
               <Checkbox checked={r.juste} onChange={(e) => cocher(i, e.target.checked)} inputProps={{ 'aria-label': t('jeux.quizIa.bonneReponse', { numero: i + 1 }) }} />
             ) : (
