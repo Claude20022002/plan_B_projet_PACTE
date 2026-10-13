@@ -20,6 +20,8 @@ const en = {
     language: 'Language',
     themeLight: 'Light mode',
     themeDark: 'Dark mode',
+    themeStudylib: 'StudyLib theme',
+    themePlanner: 'Planner theme',
     logout: 'Sign out',
     errorLoad: 'The data could not be loaded. Check your connection and try again.',
     confirmTitle: 'Confirmation',

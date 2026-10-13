@@ -2,7 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Skeleton } from '@mui/material';
-import { Add, Campaign, FactCheck, LocalLibrary, Quiz, SportsEsports } from '@mui/icons-material';
+import { Add, FactCheck, LocalLibrary, Quiz, SportsEsports } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
 import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
@@ -127,9 +127,6 @@ export default function MesClasses() {
             {t('classes.page.quizDirect')}
           </Button>
         )}
-        <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Campaign />} onClick={() => navigate('/annonces', { state: { nouvelle: { id_groupe: c.id_groupe } } })}>
-          {t('classes.page.ecrire')}
-        </Button>
         <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<LocalLibrary />} onClick={() => ouvrirSupports(c)}>
           {t('classes.page.supports')}
         </Button>

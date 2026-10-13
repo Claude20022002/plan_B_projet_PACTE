@@ -20,6 +20,8 @@ const fr = {
     language: 'Langue',
     themeLight: 'Mode clair',
     themeDark: 'Mode sombre',
+    themeStudylib: 'Thème StudyLib',
+    themePlanner: 'Thème Planner',
     logout: 'Se déconnecter',
     errorLoad: 'Impossible de charger les données. Vérifiez votre connexion puis réessayez.',
     confirmTitle: 'Confirmation',

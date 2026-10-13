@@ -24,34 +24,62 @@ const readStoredMode = () => {
     }
 };
 
+const FAMILLES = ['planner', 'studylib'];
+
+const readStoredFamille = () => {
+    try {
+        const famille = localStorage.getItem('themeFamille');
+        return FAMILLES.includes(famille) ? famille : 'planner';
+    } catch {
+        return 'planner';
+    }
+};
+
+// Thème de la bibliothèque StudyLib (mêmes valeurs que l'application : mobile/src/theme.js) :
+// Inter, bleu #1D4ED8, gris ardoise, coins plus arrondis, casse normale.
+const STUDYLIB = {
+    font: '"Inter", "Segoe UI", system-ui, sans-serif',
+    radius: { xs: 6, sm: 10, md: 14, lg: 18 },
+    clair: { ground: '#F8FAFC', surface: '#FFFFFF', line: '#E2E8F0', strong: '#CBD5E1', text: '#0F172A', dim: '#64748B', primary: '#1D4ED8', primaryDark: '#1E3A8A', head: '#F1F5F9', hover: '#EFF6FF', selected: '#DBEAFE' },
+    sombre: { ground: '#0F172A', surface: '#1E293B', line: '#334155', strong: '#475569', text: '#F1F5F9', dim: '#94A3B8', primary: '#60A5FA', primaryDark: '#93C5FD', head: '#0F172A', hover: 'rgba(241, 245, 249, 0.06)', selected: 'rgba(96, 165, 250, 0.16)' },
+};
+
 // Vocabulaire « volet » : capitales condensées espacées (en-têtes, boutons, horaires, codes)
-const flapLabel = {
+const flapLabelPlanner = {
     fontFamily: ds.font.board,
     fontWeight: 600,
     textTransform: 'uppercase',
     letterSpacing: '0.06em',
 };
 
-const buildTheme = (mode, language) => {
+const buildTheme = (mode, language, famille = 'planner') => {
     const isLight = mode === 'light';
+    const sl = famille === 'studylib';
+    const p = sl ? STUDYLIB[isLight ? 'clair' : 'sombre'] : null;
     const c = ds.colors;
     const b = ds.board;
+    const fontTitres = sl ? STUDYLIB.font : fontTitres;
+    const fontCorps = sl ? STUDYLIB.font : fontCorps;
+    const rayon = sl ? STUDYLIB.radius : ds.radius;
+    const flapLabel = sl ? { fontFamily: STUDYLIB.font, fontWeight: 600, textTransform: 'none', letterSpacing: 0 } : flapLabelPlanner;
 
-    const surface = isLight ? c.bg.surface : b.cell;
-    const ground = isLight ? c.bg.app : b.ground;
-    const line = isLight ? c.border.default : b.seam;
-    const textPrimary = isLight ? c.text.primary : b.letter;
-    const textSecondary = isLight ? c.text.secondary : b.letterDim;
+    const surface = sl ? p.surface : isLight ? c.bg.surface : b.cell;
+    const ground = sl ? p.ground : isLight ? c.bg.app : b.ground;
+    const line = sl ? p.line : isLight ? c.border.default : b.seam;
+    const textPrimary = sl ? p.text : isLight ? c.text.primary : b.letter;
+    const textSecondary = sl ? p.dim : isLight ? c.text.secondary : b.letterDim;
+    const strong = sl ? p.strong : isLight ? c.border.strong : b.seam;
+    const enteteTableau = sl ? p.head : isLight ? '#F6F7FA' : b.ground;
 
     return createTheme(
         {
             palette: {
                 mode,
                 primary: {
-                    main: isLight ? ds.brand.navy : '#8FA6F0',
-                    dark: ds.brand.navyDeep,
-                    light: '#3350A8',
-                    contrastText: isLight ? '#FFFFFF' : b.ground,
+                    main: sl ? p.primary : isLight ? ds.brand.navy : '#8FA6F0',
+                    dark: sl ? p.primaryDark : ds.brand.navyDeep,
+                    light: sl ? '#3B82F6' : '#3350A8',
+                    contrastText: sl ? (isLight ? '#FFFFFF' : '#0F172A') : isLight ? '#FFFFFF' : b.ground,
                 },
                 secondary: {
                     main: ds.brand.orange,
@@ -65,18 +93,18 @@ const buildTheme = (mode, language) => {
                 text: { primary: textPrimary, secondary: textSecondary },
                 divider: line,
                 action: {
-                    hover: isLight ? '#EEF0F5' : 'rgba(242, 241, 236, 0.06)',
-                    selected: isLight ? ds.brand.navySoft : 'rgba(143, 166, 240, 0.16)',
+                    hover: sl ? p.hover : isLight ? '#EEF0F5' : 'rgba(242, 241, 236, 0.06)',
+                    selected: sl ? p.selected : isLight ? ds.brand.navySoft : 'rgba(143, 166, 240, 0.16)',
                 },
             },
             typography: {
-                fontFamily: ds.font.body,
-                h1: { fontFamily: ds.font.board, fontSize: '1.75rem', lineHeight: 1.15, fontWeight: 700, letterSpacing: '0.01em' },
-                h2: { fontFamily: ds.font.board, fontSize: '1.375rem', lineHeight: 1.2, fontWeight: 700, letterSpacing: '0.01em' },
-                h3: { fontFamily: ds.font.board, fontSize: '1.125rem', lineHeight: 1.25, fontWeight: 600, letterSpacing: '0.02em' },
-                h4: { fontFamily: ds.font.board, fontSize: '1.0625rem', lineHeight: 1.3, fontWeight: 600 },
-                h5: { fontFamily: ds.font.board, fontSize: '1rem', lineHeight: 1.3, fontWeight: 600 },
-                h6: { fontFamily: ds.font.board, fontSize: '1rem', lineHeight: 1.3, fontWeight: 600 },
+                fontFamily: fontCorps,
+                h1: { fontFamily: fontTitres, fontSize: '1.75rem', lineHeight: 1.15, fontWeight: 700, letterSpacing: '0.01em' },
+                h2: { fontFamily: fontTitres, fontSize: '1.375rem', lineHeight: 1.2, fontWeight: 700, letterSpacing: '0.01em' },
+                h3: { fontFamily: fontTitres, fontSize: '1.125rem', lineHeight: 1.25, fontWeight: 600, letterSpacing: '0.02em' },
+                h4: { fontFamily: fontTitres, fontSize: '1.0625rem', lineHeight: 1.3, fontWeight: 600 },
+                h5: { fontFamily: fontTitres, fontSize: '1rem', lineHeight: 1.3, fontWeight: 600 },
+                h6: { fontFamily: fontTitres, fontSize: '1rem', lineHeight: 1.3, fontWeight: 600 },
                 subtitle1: { fontSize: '0.9375rem', fontWeight: 600 },
                 subtitle2: { fontSize: '0.875rem', fontWeight: 600 },
                 body1: { fontSize: '0.9375rem', lineHeight: 1.55 },
@@ -85,7 +113,7 @@ const buildTheme = (mode, language) => {
                 overline: { ...flapLabel, fontSize: '0.75rem', lineHeight: 1.6, letterSpacing: '0.1em' },
                 button: { ...flapLabel, fontSize: '0.9375rem' },
             },
-            shape: { borderRadius: ds.radius.md },
+            shape: { borderRadius: rayon.md },
             components: {
                 MuiCssBaseline: {
                     styleOverrides: {
@@ -106,7 +134,7 @@ const buildTheme = (mode, language) => {
                     defaultProps: { variant: 'outlined' },
                     styleOverrides: {
                         root: {
-                            borderRadius: ds.radius.md,
+                            borderRadius: rayon.md,
                             borderColor: line,
                             boxShadow: 'none',
                         },
@@ -116,21 +144,21 @@ const buildTheme = (mode, language) => {
                     defaultProps: { disableElevation: true },
                     styleOverrides: {
                         root: {
-                            borderRadius: ds.radius.sm,
+                            borderRadius: rayon.sm,
                             minHeight: 40,
                             paddingLeft: 16,
                             paddingRight: 16,
                         },
                         sizeSmall: { minHeight: 32, fontSize: '0.8125rem', paddingLeft: 10, paddingRight: 10 },
                         containedPrimary: {
-                            '&:hover': { backgroundColor: isLight ? ds.brand.navyDeep : '#A9BBF4' },
+                            '&:hover': { backgroundColor: sl ? p.primaryDark : isLight ? ds.brand.navyDeep : '#A9BBF4' },
                         },
-                        outlined: { borderColor: isLight ? c.border.strong : b.seam },
+                        outlined: { borderColor: strong },
                     },
                 },
                 MuiIconButton: {
                     styleOverrides: {
-                        root: { borderRadius: ds.radius.sm },
+                        root: { borderRadius: rayon.sm },
                     },
                 },
                 MuiChip: {
@@ -138,7 +166,7 @@ const buildTheme = (mode, language) => {
                         // Pastille = petit volet : angles presque droits, capitales condensées
                         root: {
                             ...flapLabel,
-                            borderRadius: ds.radius.xs,
+                            borderRadius: rayon.xs,
                             fontSize: '0.75rem',
                             letterSpacing: '0.08em',
                             height: 26,
@@ -158,14 +186,14 @@ const buildTheme = (mode, language) => {
                 MuiListItemButton: {
                     styleOverrides: {
                         root: {
-                            borderRadius: ds.radius.sm,
+                            borderRadius: rayon.sm,
                             minHeight: 40,
                         },
                     },
                 },
                 MuiTableContainer: {
                     styleOverrides: {
-                        root: { borderRadius: ds.radius.md },
+                        root: { borderRadius: rayon.md },
                     },
                 },
                 MuiTableCell: {
@@ -176,8 +204,8 @@ const buildTheme = (mode, language) => {
                             fontSize: '0.75rem',
                             letterSpacing: '0.1em',
                             color: textSecondary,
-                            backgroundColor: isLight ? '#F6F7FA' : b.ground,
-                            borderBottom: `1px solid ${isLight ? c.border.strong : b.seam}`,
+                            backgroundColor: enteteTableau,
+                            borderBottom: `1px solid ${strong}`,
                             whiteSpace: 'nowrap',
                         },
                         root: {
@@ -190,7 +218,7 @@ const buildTheme = (mode, language) => {
                     styleOverrides: {
                         root: {
                             '&.MuiTableRow-hover:hover': {
-                                backgroundColor: isLight ? '#F6F7FA' : 'rgba(242, 241, 236, 0.04)',
+                                backgroundColor: sl ? p.hover : isLight ? '#F6F7FA' : 'rgba(242, 241, 236, 0.04)',
                             },
                         },
                     },
@@ -206,7 +234,7 @@ const buildTheme = (mode, language) => {
                 },
                 MuiOutlinedInput: {
                     styleOverrides: {
-                        root: { borderRadius: ds.radius.sm },
+                        root: { borderRadius: rayon.sm },
                     },
                 },
                 MuiTooltip: {
@@ -215,18 +243,18 @@ const buildTheme = (mode, language) => {
                             backgroundColor: b.ground,
                             color: b.letter,
                             fontSize: '0.8125rem',
-                            borderRadius: ds.radius.sm,
+                            borderRadius: rayon.sm,
                         },
                     },
                 },
                 MuiDialog: {
                     styleOverrides: {
-                        paper: { borderRadius: ds.radius.lg },
+                        paper: { borderRadius: rayon.lg },
                     },
                 },
                 MuiAlert: {
                     styleOverrides: {
-                        root: { borderRadius: ds.radius.sm },
+                        root: { borderRadius: rayon.sm },
                     },
                 },
                 MuiLinearProgress: {
@@ -247,6 +275,7 @@ const buildTheme = (mode, language) => {
 
 export const ThemeProvider = ({ children }) => {
     const [mode, setMode] = useState(readStoredMode);
+    const [famille, setFamille] = useState(readStoredFamille);
     const { i18n } = useTranslation();
 
     const toggleTheme = () => {
@@ -261,9 +290,22 @@ export const ThemeProvider = ({ children }) => {
         });
     };
 
-    const theme = useMemo(() => buildTheme(mode, i18n.language), [mode, i18n.language]);
+    // Planner (panneau des départs) ou StudyLib (bibliothèque) : même choix que dans l'application
+    const toggleFamille = () => {
+        setFamille((precedente) => {
+            const suivante = precedente === 'planner' ? 'studylib' : 'planner';
+            try {
+                localStorage.setItem('themeFamille', suivante);
+            } catch {
+                // Préférence non mémorisée : sans conséquence
+            }
+            return suivante;
+        });
+    };
 
-    const value = { mode, toggleTheme, theme };
+    const theme = useMemo(() => buildTheme(mode, i18n.language, famille), [mode, i18n.language, famille]);
+
+    const value = { mode, toggleTheme, famille, toggleFamille, theme };
 
     return (
         <ThemeContext.Provider value={value}>
