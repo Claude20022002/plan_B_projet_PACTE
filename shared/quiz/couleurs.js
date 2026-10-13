@@ -25,13 +25,17 @@ export const encrePour = (couleur) => {
   return 0.2126 * r + 0.7152 * g + 0.0722 * b > 0.45 ? ENCRE_SOMBRE : ENCRE_CLAIRE;
 };
 
+// Couleurs par défaut que l'éditeur de ClassQuiz enregistrait dans chaque réponse avant la palette
+// de jeu (anciennes couleurs de ligne) : ce n'étaient pas des choix de l'enseignant
+const ANCIENNES_COULEURS_PAR_DEFAUT = new Set(['#3b63e0', '#0f8a7e', '#7048c9', '#b03a8c']);
+
 /**
  * Style de la réponse de rang `rang` : { couleur, encre, forme }. Une couleur choisie dans l'éditeur
- * du quiz (champ `color` d'une réponse ClassQuiz) l'emporte, comme sur le téléphone ; la forme suit
- * toujours le rang.
+ * du quiz (champ `color` d'une réponse ClassQuiz) l'emporte, comme sur le téléphone, sauf les
+ * anciennes couleurs par défaut ; la forme suit toujours le rang.
  */
 export const styleReponse = (rang, couleurChoisie) => {
   const base = REPONSES[rang % REPONSES.length];
-  if (!couleurChoisie) return base;
+  if (!couleurChoisie || ANCIENNES_COULEURS_PAR_DEFAUT.has(String(couleurChoisie).trim().toLowerCase())) return base;
   return { ...base, couleur: couleurChoisie, encre: encrePour(couleurChoisie) };
 };

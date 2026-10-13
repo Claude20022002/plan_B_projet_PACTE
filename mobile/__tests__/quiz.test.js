@@ -56,3 +56,15 @@ test('sorties : signalées à partir d’une seconde', () => {
   expect(dureeSortie(1000, 1500)).toBeNull();
   expect(dureeSortie(null, 6000)).toBeNull();
 });
+
+describe('palette des réponses', () => {
+  const { styleReponse, REPONSES } = require('../../shared/quiz/couleurs.js');
+  test("une ancienne couleur par défaut de l'éditeur n'est pas un choix : la palette s'applique", () => {
+    expect(styleReponse(0, '#3B63E0')).toEqual(REPONSES[0]);
+    expect(styleReponse(5, null)).toEqual(REPONSES[5]);
+  });
+  test('une couleur choisie l’emporte, avec une encre lisible, et la forme suit le rang', () => {
+    expect(styleReponse(1, '#FFEE00')).toEqual({ couleur: '#FFEE00', encre: '#0D1326', forme: 'losange' });
+    expect(styleReponse(2, '#202020').encre).toBe('#FFFFFF');
+  });
+});
