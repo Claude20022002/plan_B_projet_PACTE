@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { Reservation, ReservationParticipant } from "../models/index.js";
+import { Reservation } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { repondreErreurPlanning } from "../utils/erreursPlanning.js";
 import { pick } from "../utils/validationHelper.js";
@@ -35,11 +35,7 @@ const lireParticipants = (body) =>
 // 409 avec la liste des règles enfreintes, 4xx métier, au format commun (A-5) ; sinon l'erreur remonte
 const repondreErreur = repondreErreurPlanning;
 
-/** Visible par l'administration, le demandeur et les personnes participantes. */
-const peutVoir = (reservation, user) =>
-    user.role === "admin" || reservation.id_demandeur === user.id_user || reservation.participants.some((p) => p.id_user === user.id_user);
-
-// 🔍 Liste : tout pour l'administration ; ses demandes et ses participations pour les autres
+// 🔍 Liste (administration seulement, voir routes/reservationRoutes.js)
 export const getReservations = asyncHandler(async (req, res) => {
     const where = {};
     if (req.query.statut) where.statut = req.query.statut;
@@ -48,17 +44,13 @@ export const getReservations = asyncHandler(async (req, res) => {
     if (req.query.date_from || req.query.date_to) {
         where.date = { ...(req.query.date_from ? { [Op.gte]: req.query.date_from } : {}), ...(req.query.date_to ? { [Op.lte]: req.query.date_to } : {}) };
     }
-    if (req.user.role !== "admin") {
-        const participations = await ReservationParticipant.findAll({ where: { id_user: req.user.id_user }, attributes: ["id_reservation"] });
-        where[Op.or] = [{ id_demandeur: req.user.id_user }, { id_reservation: participations.map((p) => p.id_reservation) }];
-    }
     const reservations = await Reservation.findAll({ where, include: INCLUDES_RESERVATION, order: [["date", "ASC"], ["heure_debut", "ASC"]] });
     res.json(reservations);
 });
 
 export const getReservation = asyncHandler(async (req, res) => {
     const reservation = await Reservation.findByPk(req.params.id, { include: INCLUDES_RESERVATION });
-    if (!reservation || !peutVoir(reservation, req.user)) return res.status(404).json({ message: "Réservation non trouvée", error: "Réservation non trouvée" });
+    if (!reservation) return res.status(404).json({ message: "Réservation non trouvée", error: "Réservation non trouvée" });
     res.json(reservation);
 });
 
@@ -67,7 +59,7 @@ export const verifierReservation = asyncHandler(async (req, res) => {
     res.json(await validerReservation({ ...lire(req.body), participants: lireParticipants(req.body) }));
 });
 
-// ➕ Demander (enseignant) ou réserver (administration)
+// ➕ Réserver (administration)
 export const createReservation = asyncHandler(async (req, res) => {
     const donnees = lire(req.body);
     if (donnees.type === "examen" && req.user.role !== "admin") {

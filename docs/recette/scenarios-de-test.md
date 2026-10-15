@@ -211,7 +211,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 ## 9. Annonces, réservations, examens (non-régression)
 
 - [ ] Annonce ciblée sur un groupe avec pièce jointe : reçue par les étudiants du groupe seulement, accusés de lecture visibles par l'auteur.
-- [ ] Réservation de salle par un enseignant, validée ou refusée par l'admin.
+- [ ] Réservation de salle par l'administration seulement : un enseignant ou un étudiant n'a ni l'entrée « Réservations » dans son menu, ni accès à `/reservations` (redirigé), ni aux routes de l'API (403) ; un enseignant invité à une réunion en est prévenu par notification.
 - [ ] Examen créé par l'admin, surveillants affectés (personnel de l'administration seulement, jamais un enseignant, contrôles compris), publication visible par les étudiants concernés.
 - [ ] Un enseignant n'a plus « Mes surveillances » ni de surveillance dans son agenda.
 - [ ] Notifications : la page affiche les plus récentes (200 au plus) ; le badge compte toutes les non lues.
