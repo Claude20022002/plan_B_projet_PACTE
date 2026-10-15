@@ -3,9 +3,8 @@
  *  - L'administration change la salle de la séance du jour : l'étudiante et l'enseignante en sont
  *    prévenues et voient la nouvelle salle dans leur emploi du temps. La salle d'origine est remise
  *    à la fin, pour les parcours suivants (ils partagent la base).
- *  - L'enseignante partage un support depuis « Mes classes » : la bibliothèque s'ouvre sur le dépôt,
- *    dans le module de la classe. StudyLib ne tourne pas dans les parcours : ses deux adresses sont
- *    simulées, seule l'adresse ouverte par Planner est vérifiée.
+ *  - L'enseignante ouvre les supports d'une classe depuis « Mes classes » : l'espace de la classe
+ *    s'ouvre dans Planner (le dépôt lui-même est vérifié par espaceCours.spec.cjs).
  */
 const { test, expect } = require("@playwright/test");
 const { lireDonnees, seConnecter } = require("./outils.cjs");
@@ -75,17 +74,8 @@ test("séance du jour déplacée dans une autre salle : l'étudiante et l'enseig
   }
 });
 
-test("Mes classes : partager un support ouvre la bibliothèque sur le dépôt, dans le module de la classe", async ({ page }) => {
-  const { enseignante, motDePasse } = lireDonnees();
-  const PAGE_MODULE = "/biblio/documents?filiere=3&module=7";
-
-  // StudyLib simulée : la page du module de chaque cours demandé, puis la page elle-même
-  await page.route("**/biblio/modules/supports**", async (route) => {
-    const codes = new URL(route.request().url()).searchParams.getAll("codes[]");
-    const origine = new URL(route.request().url()).origin;
-    await route.fulfill({ json: { supports: Object.fromEntries(codes.map((code) => [code, { documents: 2, url: `${origine}${PAGE_MODULE}` }])) } });
-  });
-  await page.route("**/biblio/documents**", (route) => route.fulfill({ contentType: "text/html", body: "<title>StudyLib</title><h1>Bibliothèque</h1>" }));
+test("Mes classes : les supports de cours s'ouvrent dans l'espace de la classe", async ({ page }) => {
+  const { enseignante, motDePasse, seance } = lireDonnees();
 
   await seConnecter(page, { email: enseignante.email, motDePasse, role: "enseignant" });
   await page.goto("/mes-classes");
@@ -93,8 +83,9 @@ test("Mes classes : partager un support ouvre la bibliothèque sur le dépôt, d
   await expect(page.getByRole("button", { name: "Écrire à la classe" })).toHaveCount(0);
   await expect(page.getByRole("navigation").getByText("Annonces", { exact: true })).toHaveCount(0);
 
-  await page.getByRole("button", { name: "Partager un support" }).first().click();
-  await expect(page).toHaveURL(/\/biblio\/documents\?filiere=3&module=7&upload=1$/);
+  await page.getByRole("button", { name: "Supports de cours" }).first().click();
+  await expect(page).toHaveURL(/\/mes-classes\/\d+\/\d+$/);
+  await expect(page.getByRole("heading", { name: seance.cours, exact: true })).toBeVisible({ timeout: 15_000 });
 });
 
 test("Paramètres : le thème StudyLib retire les fonds noirs du panneau et la marine du menu", async ({ page }) => {

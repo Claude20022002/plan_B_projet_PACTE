@@ -9,7 +9,6 @@ import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
 import LancerQuizDialog from '../components/quiz/LancerQuizDialog';
 import { boutonPanneau, boutonPanneauPlein } from '../components/jeux/styles';
 import { enseignantAPI, quizAPI, quizIaAPI } from '../services/api';
-import { supportsDuCours } from '../utils/supports';
 import { DEVOIRS_ACTIFS } from '../../../shared/fonctions.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
 import { ds } from '../design-system/tokens';
@@ -80,13 +79,8 @@ export default function MesClasses() {
 
   const genererQuiz = (c) => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } });
 
-  // L'enseignant partage ses supports dans la bibliothèque : la page du module s'ouvre sur le dépôt
-  const partagerSupport = async (classe) => {
-    const supports = await supportsDuCours(classe.code_cours);
-    const page = supports?.url ?? '/biblio/documents';
-    // La bibliothèque (StudyLib) est une autre application sur la même origine : navigation complète
-    window.location.assign(`${page}${page.includes('?') ? '&' : '?'}upload=1`);
-  };
+  // Supports de la classe : son espace de cours (les fichiers restent gardés par la Bibliothèque)
+  const ouvrirEspace = (classe) => navigate(`/mes-classes/${classe.id_cours}/${classe.id_groupe}`);
 
   const libelleSeance = (c) => {
     const s = c.prochaine_seance;
@@ -135,7 +129,7 @@ export default function MesClasses() {
             {t('classes.page.quizDirect')}
           </Button>
         )}
-        <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<LocalLibrary />} onClick={() => partagerSupport(c)}>
+        <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<LocalLibrary />} onClick={() => ouvrirEspace(c)}>
           {t('classes.page.supports')}
         </Button>
       </Box>

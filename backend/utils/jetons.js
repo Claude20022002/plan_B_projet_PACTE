@@ -77,6 +77,21 @@ export const signerJetonAcces = (revendications, dureeSecondes) =>
     });
 
 /**
+ * Jeton de service vers StudyLib (espace de cours) : lien d'un seul document, pour un étudiant dont
+ * Planner a vérifié les droits. Audience distincte de celle des utilisateurs : StudyLib ne l'accepte
+ * pas comme connexion. Une minute ; il ne quitte jamais le serveur.
+ */
+export const AUDIENCE_SERVICE = "studylib-interne";
+export const signerJetonService = ({ scope, doc, sub }) =>
+    jwt.sign({ scope, doc, sub: String(sub), jti: crypto.randomUUID() }, clePrivee, {
+        algorithm: ALGORITHME,
+        keyid: courante.kid,
+        expiresIn: 60,
+        issuer: EMETTEUR,
+        audience: AUDIENCE_SERVICE,
+    });
+
+/**
  * Vérifie un jeton d'accès pour Planner : RS256 uniquement (aucun « none » ni HS256, qui
  * permettrait de signer avec la clé publique), émetteur, audience et clé connue par son kid.
  */

@@ -21,7 +21,7 @@ function getCookie(name) {
 // deux jetons différents, et le cookie ne garderait que le second (→ 403 CSRF).
 let csrfRequest = null;
 
-async function ensureCsrfToken() {
+export async function ensureCsrfToken() {
     let token = getCookie(CSRF_COOKIE);
     if (!token) {
         csrfRequest ??= fetch(`${API_BASE_URL}/auth/csrf-token`, { credentials: 'include' })
@@ -59,9 +59,10 @@ const NO_REFRESH_ENDPOINTS = new Set([
 ]);
 
 /**
- * Fonction utilitaire pour faire des requêtes HTTP
+ * Fonction utilitaire pour faire des requêtes HTTP (exportée pour les services d'un domaine,
+ * comme services/espaceCours.js, afin de ne pas allonger ce fichier)
  */
-async function request(endpoint, options = {}) {
+export async function request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     const method = options.method || 'GET';
     const csrfToken = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())
@@ -744,7 +745,8 @@ export const presenceAPI = {
     code: (id) => request(`/presences/seances/${encodeURIComponent(id)}/code`),
     // { seance, appel, presents, etudiants: [{ id_user, nom, prenom, present, source }] }
     liste: (id) => request(`/presences/seances/${encodeURIComponent(id)}`),
-    marquer: (id, idUser, present) => request(`/presences/seances/${encodeURIComponent(id)}/etudiants/${encodeURIComponent(idUser)}`, { method: 'PUT', body: { present } }),
+    // statut : « present », « retard » ou « absent » (lot E-6)
+    marquer: (id, idUser, statut) => request(`/presences/seances/${encodeURIComponent(id)}/etudiants/${encodeURIComponent(idUser)}`, { method: 'PUT', body: { statut } }),
     fermer: (id) => request(`/presences/seances/${encodeURIComponent(id)}/fermer`, { method: 'POST' }),
     // Vérification surprise facultative : { etudiants: [{ id_user, nom, prenom }], restants }
     tirerVerification: (id, nombre) => request(`/presences/seances/${encodeURIComponent(id)}/verification`, { method: 'POST', body: { nombre } }),
