@@ -121,7 +121,7 @@ export default function Bibliotheque() {
   const cle = normaliser(terme);
   const coursAffiches = useMemo(() => (enRecherche ? cours.filter((c) => contient(cle, c.nom_cours, c.code_cours)) : cours), [enRecherche, cours, cle]);
   const modulesAffiches = useMemo(() => (enRecherche ? modules.filter((m) => contient(cle, m.nom, m.code)) : modules), [enRecherche, modules, cle]);
-  const stagesAffiches = useMemo(() => (enRecherche ? stages.filter((a) => contient(cle, a.company, a.position, a.description, a.city)) : stages.slice(0, 5)), [enRecherche, stages, cle]);
+  const stagesAffiches = useMemo(() => (enRecherche ? stages.filter((a) => contient(cle, a.company, a.position, a.description, a.city)) : stages.slice(0, 3)), [enRecherche, stages, cle]);
   const ideesAffichees = enRecherche ? resultats.idees : idees.liste;
   const rien = enRecherche && !resultats.chargement && !coursAffiches.length && !modulesAffiches.length && !resultats.documents.length && !stagesAffiches.length && !ideesAffichees.length;
 
@@ -226,7 +226,10 @@ export default function Bibliotheque() {
 
         {!enRecherche || stagesAffiches.length ? (
           <View style={styles.entete}>
-            <Text style={[styles.section, styles.sectionLigne]}>{t('app.bibliotheque.stages')}</Text>
+            {/* Le titre ouvre l'écran Stages : tous les avis (filtres) et mes partages */}
+            <Pressable onPress={() => router.push('/stage')} style={styles.sectionLigne} accessibilityRole="button" accessibilityHint={t('app.bibliotheque.voirTousStages')}>
+              <Text style={styles.section}>{t('app.bibliotheque.stages')} ›</Text>
+            </Pressable>
             {!enRecherche ? (
               <Pressable onPress={() => router.push('/stage/partager')} style={styles.action} accessibilityRole="button">
                 <Text style={styles.actionTexte}>{t('app.bibliotheque.partagerStage')}</Text>
@@ -238,6 +241,11 @@ export default function Bibliotheque() {
         {stagesAffiches.map((a) => (
           <CarteStage key={a.id} avis={a} />
         ))}
+        {!enRecherche && stages.length > 0 ? (
+          <Pressable onPress={() => router.push('/stage')} style={styles.plus} accessibilityRole="button">
+            <Text style={styles.actionTexte}>{t('app.bibliotheque.voirTousStages')}</Text>
+          </Pressable>
+        ) : null}
 
         {ideesAffichees.length ? <Text style={styles.section}>{t('app.bibliotheque.projets')}</Text> : null}
         {ideesAffichees.map((idee) => (
