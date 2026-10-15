@@ -13,7 +13,8 @@
 # Option --classquiz : ajoute ClassQuiz (fork ../ClassQuiz, thème HESTIM) : le code Python de l'API
 # et du worker, et le site, construit avant :
 #   cd ../ClassQuiz/frontend && rm -rf build && NODE_ENV=production npx vite build
-# Option --studylib : ajoute StudyLib (../StudyLib : app, routes, database, resources et le CSS/JS
+# Option --studylib : ajoute StudyLib (../StudyLib : app, routes, database, resources, config,
+# bootstrap/app.php et providers.php, et le CSS/JS
 # compilé public/build), construit avant : cd ../StudyLib && npm run build. Sans changement de
 # dépendances Composer ni npm (sinon reconstruire l'image).
 # Option --quiz-seul : un paquet qui ne contient que le code Python du moteur de quiz (API et
@@ -128,7 +129,9 @@ if [ "$AVEC_STUDYLIB" = "--studylib" ]; then
     [ -f "$SL/artisan" ] || { echo "StudyLib introuvable : $SL" >&2; exit 1; }
     [ -f "$SL/public/build/manifest.json" ] || { echo "StudyLib non construit : cd ../StudyLib && npm run build" >&2; exit 1; }
     mkdir -p "$TRAVAIL/studylib"
-    for dossier in app routes database resources public/build; do
+    # config/ et bootstrap/ aussi : réglages (config/planner.php) et intergiciels (bootstrap/app.php)
+    # en font partie ; bootstrap/cache reste celui de l'image
+    for dossier in app routes database resources config bootstrap/app.php bootstrap/providers.php public/build; do
         tar -C "$SL" -cf - "$dossier" | tar -C "$TRAVAIL/studylib" -xf -
     done
     # Nouvelles classes : l'image charge les classes par une carte figée (classmap-authoritative)
@@ -138,6 +141,8 @@ COPY --chown=www-data:www-data studylib/app/ /var/www/html/app/
 COPY --chown=www-data:www-data studylib/routes/ /var/www/html/routes/
 COPY --chown=www-data:www-data studylib/database/ /var/www/html/database/
 COPY --chown=www-data:www-data studylib/resources/ /var/www/html/resources/
+COPY --chown=www-data:www-data studylib/config/ /var/www/html/config/
+COPY --chown=www-data:www-data studylib/bootstrap/app.php studylib/bootstrap/providers.php /var/www/html/bootstrap/
 COPY --chown=www-data:www-data studylib/public/build/ /var/www/html/public/build/
 RUN composer dump-autoload --optimize --no-dev --classmap-authoritative --working-dir=/var/www/html
 EOF

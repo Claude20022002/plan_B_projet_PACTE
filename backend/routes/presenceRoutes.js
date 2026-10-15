@@ -8,7 +8,6 @@ import {
     delierTelephone,
     fermerAppel,
     listeDAppel,
-    marquerPresence,
     mesPresences,
     ouvrirAppel,
     scannerCode,
@@ -18,13 +17,14 @@ import {
     verifierEtudiant,
 } from "../services/presences/appel.js";
 import { deciderDemande, demanderChangement, demandesTelephone, maDemandeTelephone } from "../services/presences/changementTelephone.js";
+import { marquerPresence } from "../services/presences/statuts.js";
 
 /**
  * Appel par QR code (phase I1) :
  *  - POST /api/presences/seances/:id/ouvrir                  ouvrir l'appel (enseignant de la séance, le jour même)
  *  - GET  /api/presences/seances/:id/code                    code à afficher (change toutes les 30 s) et nombre de présents
  *  - GET  /api/presences/seances/:id                         liste d'appel : attendus, présents
- *  - PUT  /api/presences/seances/:id/etudiants/:idUser       { present } : cocher ou décocher à la main
+ *  - PUT  /api/presences/seances/:id/etudiants/:idUser       { statut: present|retard|absent, motif } (ou { present }) : à la main
  *  - POST /api/presences/seances/:id/fermer                  fermer l'appel ; la séance est marquée réalisée
  *  - POST /api/presences/seances/:id/verification            { nombre } : vérification surprise facultative (tirage)
  *  - PUT  /api/presences/seances/:id/verification/:idUser    { present } : vu dans la salle, ou absent (signalé)
@@ -75,7 +75,7 @@ router.get("/seances/:id", planification(async (req, res) => {
 }));
 
 router.put("/seances/:id/etudiants/:idUser", planification(async (req, res) => {
-    res.json(await marquerPresence(req.user, req.params.id, idEtudiant(req), req.body?.present === true));
+    res.json(await marquerPresence(req.user, req.params.id, idEtudiant(req), req.body ?? {}, contexteDe(req)));
 }));
 
 router.post("/seances/:id/fermer", planification(async (req, res) => {

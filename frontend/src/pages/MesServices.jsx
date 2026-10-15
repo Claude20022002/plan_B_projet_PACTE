@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, Paper, Stack, TextField, Typography } from '@mui/material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
+import OngletsMonService from '../components/monService/OngletsMonService';
 import EmptyState from '../design-system/components/EmptyState';
 import StateChip from '../design-system/components/StateChip';
 import { TableSkeleton } from '../design-system/components/PremiumSkeleton';
@@ -59,6 +60,7 @@ export default function MesServices() {
 
     return (
         <DashboardLayout>
+            <OngletsMonService />
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 2, justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
                     <Box sx={{ maxWidth: 640 }}>

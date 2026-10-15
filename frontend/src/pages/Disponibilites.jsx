@@ -25,6 +25,7 @@ import {
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
+import OngletsMonService from '../components/monService/OngletsMonService';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import EmptyState from '../design-system/components/EmptyState';
 import StateChip from '../design-system/components/StateChip';
@@ -166,6 +167,7 @@ export default function Disponibilites() {
 
     return (
         <DashboardLayout>
+            <OngletsMonService />
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'flex-start', justifyContent: 'space-between', mb: 2 }}>
                     <Typography variant="body2" color="text.secondary" sx={{ maxWidth: 720 }}>

@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Alert, Pressable, ScrollView, Text, View } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
-import { chargerDocument, lienTelechargement } from '../../api/donnees';
+import { chargerDocument, lienSupport, lienTelechargement } from '../../api/donnees';
 import { Couverture } from '../../bibliotheque/Etagere';
 import Lecteur from '../../documents/Lecteur';
 import { dejaTelecharge, formatDe, formatTaille, ouvrirAvec, SEUIL_CONFIRMATION_OCTETS, surDonneesMobiles, telecharger } from '../../documents/fichiers';
@@ -23,22 +23,31 @@ export default function Document() {
   const styles = useStyles();
   const { t } = useTranslation();
   const router = useRouter();
-  const { id, titre, ligne } = useLocalSearchParams();
-  const idValide = typeof id === 'string' && ID.test(id);
-  const [doc, setDoc] = useState(null);
-  const [fichier, setFichier] = useState(null);
+  const { id, titre, ligne, support, mime, taille: tailleParam } = useLocalSearchParams();
+  // Support d'une classe (Mes cours) : décrit par l'écran de la classe, ouvert par Planner qui
+  // vérifie que l'étudiant en est ; un document de la Bibliothèque se lit dans StudyLib
+  const idSupport = typeof support === 'string' && /^\d{1,10}$/.test(support) ? support : null;
+  const idValide = Boolean(idSupport) || (typeof id === 'string' && ID.test(id));
+  // Un support se décrit par les paramètres reçus ; un document de la Bibliothèque se charge
+  const docSupport = useMemo(
+    () => (idSupport ? { id: `classe-${idSupport}`, title: typeof titre === 'string' ? titre : '', mime_type: typeof mime === 'string' ? mime : null, file_size: Number(tailleParam) || null } : null),
+    [idSupport, titre, mime, tailleParam]
+  );
+  const [docBiblio, setDocBiblio] = useState(null);
+  const doc = docSupport ?? docBiblio;
+  const [fichier, setFichier] = useState(() => (docSupport ? dejaTelecharge(docSupport) : null));
   const [progression, setProgression] = useState(null); // null, ou 0 à 1 pendant le téléchargement
   const [lecture, setLecture] = useState(false);
   const [erreur, setErreur] = useState(!idValide);
   const annulation = useRef(null);
 
   useEffect(() => {
-    if (!idValide) return undefined;
+    if (!idValide || idSupport) return () => annulation.current?.();
     let actif = true;
     chargerDocument(id).then(
       (d) => {
         if (!actif || !d) return;
-        setDoc(d);
+        setDocBiblio(d);
         setFichier(dejaTelecharge(d));
       },
       () => actif && setErreur(true)
@@ -47,7 +56,7 @@ export default function Document() {
       actif = false;
       annulation.current?.();
     };
-  }, [id, idValide]);
+  }, [id, idValide, idSupport]);
 
   const format = formatDe(doc?.mime_type);
   const taille = formatTaille(doc?.file_size);
@@ -69,7 +78,7 @@ export default function Document() {
     setErreur(false);
     setProgression(0);
     try {
-      const url = await lienTelechargement(doc.id);
+      const url = idSupport ? await lienSupport(idSupport) : await lienTelechargement(doc.id);
       if (typeof url !== 'string' || !url.startsWith('https://')) throw new Error('lien');
       const { promesse, annuler } = telecharger(doc, url, setProgression);
       annulation.current = annuler;

@@ -77,6 +77,17 @@ export const chargerDocuments = async (moduleId) => (await biblio(`/documents?mo
 /** URL signée de 5 minutes, ouverte dans le navigateur du téléphone */
 export const lienTelechargement = async (idDocument) => (await biblio(`/documents/${encodeURIComponent(idDocument)}/download`, { method: 'POST' })).url;
 
+// ── Mes cours : supports déposés par les enseignants pour ma classe (espace de cours) ─────────
+
+/** Mes classes qui ont des supports publiés : [{ id_cours, code_cours, nom_cours, id_groupe, nom_groupe }] */
+export const chargerMesCours = async () => (await planner('/etudiant/cours')) ?? [];
+
+/** Sections et supports publiés d'une classe : { classe, sections: [{ titre, supports }] } */
+export const chargerEspaceCours = async (idCours, idGroupe) => planner(`/classes/${encodeURIComponent(idCours)}/${encodeURIComponent(idGroupe)}/supports`);
+
+/** Adresse d'un support : le lien, ou une URL signée de 5 minutes (Planner vérifie la classe) */
+export const lienSupport = async (idSupport) => (await planner(`/supports-cours/${encodeURIComponent(idSupport)}/ouvrir`)).url;
+
 /** Derniers retours de stage publiés (liste légère : entreprise, poste, note, photo ou non) */
 export const chargerAvisStage = async () => (await biblio('/internship-reviews/recent'))?.data ?? [];
 

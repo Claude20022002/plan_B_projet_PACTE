@@ -30,7 +30,7 @@ Par où commencer, selon ce que vous venez faire. Tout ce qui est listé ici est
 | [remarques-par-profil.md](plans/remarques-par-profil.md) | Remarques des utilisateurs, lots R, revenu, vidéo |
 | [quiz-ia.md](plans/quiz-ia.md) | Quiz générés par l'IA, quiz dans Planner (lots IA et CQ) |
 | [espace-enseignant.md](plans/espace-enseignant.md) | Espace de l'enseignant |
-| [espace-de-cours.md](plans/espace-de-cours.md) | Espace de cours : supports par classe, appel à quatre statuts, banque de quiz (lots E) |
+| [espace-de-cours.md](plans/espace-de-cours.md) | Espace de cours : supports par classe (fichiers gardés par StudyLib), appel à trois statuts, moins de pages (lots E) |
 
 ## Tester et déployer
 

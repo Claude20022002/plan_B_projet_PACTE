@@ -18,6 +18,7 @@ import path from "node:path";
 import { preparerDonnees } from "./donnees.mjs";
 import { demarrerFauxServiceQuiz } from "./fauxServiceQuiz.mjs";
 import { demarrerFausseIa } from "./fausseIa.mjs";
+import { demarrerFausseBibliotheque } from "./fausseBibliotheque.mjs";
 
 const ici = path.dirname(fileURLToPath(import.meta.url));
 const racine = path.resolve(ici, "../../..");
@@ -38,6 +39,9 @@ process.env.IA_FOURNISSEUR = "openai-compatible";
 process.env.IA_URL = `http://127.0.0.1:${portIa}/v1`;
 process.env.IA_CLE = "cle-des-parcours";
 process.env.IA_MODELE = "fausse-ia";
+// La Bibliothèque (StudyLib) aussi, pour l'espace de cours (fausseBibliotheque.mjs)
+const portBibliotheque = process.env.PARCOURS_PORT_BIBLIOTHEQUE || "5197";
+process.env.STUDYLIB_API_URL = `http://127.0.0.1:${portBibliotheque}/api`;
 // Tous les parcours viennent de 127.0.0.1 : la limite globale de l'API (500 requêtes en 15 min)
 // ferait échouer les derniers quand la série est rapide (CI)
 process.env.RATE_LIMIT_API_MAX = "20000";
@@ -52,6 +56,7 @@ await connexion.end();
 const donnees = await preparerDonnees(racine);
 const service = await demarrerFauxServiceQuiz(portQuiz, process.env.QUIZ_WEBHOOK_SECRET);
 await demarrerFausseIa(portIa);
+await demarrerFausseBibliotheque(portBibliotheque);
 const idQuiz = crypto.randomUUID();
 const qcm = (question, reponses, juste) => ({ question, time: "30", type: "ABCD", image: null, answers: reponses.map((answer, i) => ({ answer, right: i === juste, color: null })) });
 service.quiz.set(idQuiz, {

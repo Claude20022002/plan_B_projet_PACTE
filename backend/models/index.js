@@ -39,6 +39,8 @@ import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
 import AppareilEtudiant from "./AppareilEtudiant.js";
 import DemandeTelephone from "./DemandeTelephone.js";
+import SectionCours from "./SectionCours.js";
+import SupportCours from "./SupportCours.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
 import JournalSecurite from "./JournalSecurite.js";
 import GenerationQuiz from "./GenerationQuiz.js";
@@ -550,6 +552,13 @@ Users.hasOne(AppareilEtudiant, { foreignKey: "id_user", as: "appareilAppel", onD
 DemandeTelephone.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
 DemandeTelephone.belongsTo(Users, { foreignKey: "id_user_admin", as: "admin", targetKey: "id_user" });
 
+// Espace de cours d'une classe (docs/plans/espace-de-cours.md)
+SectionCours.hasMany(SupportCours, { foreignKey: "id_section", as: "supports", onDelete: "CASCADE" });
+SupportCours.belongsTo(SectionCours, { foreignKey: "id_section", as: "section" });
+SupportCours.belongsTo(Users, { foreignKey: "id_user_auteur", as: "auteur", targetKey: "id_user" });
+SectionCours.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
+SectionCours.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
+
 // Double authentification
 Users.hasMany(MfaCodeSecours, { foreignKey: "id_user", as: "codesSecours", onDelete: "CASCADE" });
 MfaDefi.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
@@ -634,6 +643,8 @@ export {
     SignalementPresence,
     AppareilEtudiant,
     DemandeTelephone,
+    SectionCours,
+    SupportCours,
     MfaCodeSecours,
     JournalSecurite,
     GenerationQuiz,

@@ -21,6 +21,7 @@ import {
 } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
+import OngletsMonService from '../components/monService/OngletsMonService';
 import { demandeReportAPI, affectationAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useFormik } from 'formik';
@@ -108,11 +109,10 @@ export default function DemandesReport() {
 
     return (
         <DashboardLayout>
+            <OngletsMonService />
             <Box>
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
-                    <Typography variant="h5" fontWeight="bold">
-                        {t('reports.titre')}
-                    </Typography>
+                {/* Le titre est l'onglet de « Mon service » : seule l'action reste ici */}
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                     <Button
                         variant="contained"
                         startIcon={<Add />}

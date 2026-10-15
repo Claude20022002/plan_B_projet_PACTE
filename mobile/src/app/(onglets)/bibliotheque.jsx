@@ -4,7 +4,7 @@ import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
-import { chargerAvisStage, chargerIdeesProjet, chargerSeances, chargerSupports, rechercherDocuments } from '../../api/donnees';
+import { chargerAvisStage, chargerIdeesProjet, chargerMesCours, chargerSeances, chargerSupports, rechercherDocuments } from '../../api/donnees';
 import Etagere, { Couverture, useLargeurCouverture } from '../../bibliotheque/Etagere';
 import CarteStage from '../../bibliotheque/CarteStage';
 import CarteIdee from '../../bibliotheque/CarteIdee';
@@ -23,22 +23,27 @@ const normaliser = (texte) =>
     .toLowerCase();
 const contient = (terme, ...champs) => champs.some((c) => normaliser(c).includes(terme));
 
-/** Modules des six prochaines semaines, leurs supports, retours de stage et premières idées. */
+/**
+ * Mes cours (supports publiés par mes enseignants pour ma classe), modules des six prochaines
+ * semaines et leurs supports, retours de stage et premières idées.
+ */
 const lireBibliotheque = async () => {
   const { seances } = await chargerSeances(new Date(), new Date(Date.now() + JOURS_MODULES * 864e5));
   const parCode = new Map();
   seances.forEach((s) => s.courseCode && !parCode.has(s.courseCode) && parCode.set(s.courseCode, { code: s.courseCode, nom: s.course, ligne: s.lineKey }));
   const liste = [...parCode.values()].sort((a, b) => a.nom.localeCompare(b.nom));
-  const [supports, avis, idees] = await Promise.all([
+  const [cours, supports, avis, idees] = await Promise.all([
+    chargerMesCours().catch(() => []),
     chargerSupports(liste.map((m) => m.code)),
     chargerAvisStage().catch(() => []),
     chargerIdeesProjet().catch(() => ({ idees: [], suite: false })),
   ]);
-  return { liste, supports, avis, idees };
+  return { cours, liste, supports, avis, idees };
 };
 
 /**
- * Bibliothèque (StudyLib) : une recherche en tête (modules, documents, stages, idées), les modules
+ * Bibliothèque : une recherche en tête (cours, modules, documents, stages, idées), mes cours (les
+ * supports de mes classes, déposés dans Planner), puis la Bibliothèque de l'école (StudyLib) : les modules
  * suivis rangés comme des livres sur une étagère, les retours de stage des anciens (avec photo) et
  * les idées de projets, chargées par pages.
  */
@@ -49,6 +54,7 @@ export default function Bibliotheque() {
   const { t } = useTranslation();
   const router = useRouter();
   const largeur = useLargeurCouverture();
+  const [cours, setCours] = useState([]);
   const [modules, setModules] = useState([]);
   const [supports, setSupports] = useState({});
   const [stages, setStages] = useState([]);
@@ -61,7 +67,8 @@ export default function Bibliotheque() {
   const charger = useCallback(
     () =>
       lireBibliotheque().then(
-        ({ liste, supports: sup, avis, idees: premieres }) => {
+        ({ cours: mesCours, liste, supports: sup, avis, idees: premieres }) => {
+          setCours(mesCours);
           setModules(liste);
           setSupports(sup);
           setStages(avis);
@@ -111,10 +118,30 @@ export default function Bibliotheque() {
 
   const enRecherche = Boolean(terme);
   const cle = normaliser(terme);
+  const coursAffiches = useMemo(() => (enRecherche ? cours.filter((c) => contient(cle, c.nom_cours, c.code_cours)) : cours), [enRecherche, cours, cle]);
   const modulesAffiches = useMemo(() => (enRecherche ? modules.filter((m) => contient(cle, m.nom, m.code)) : modules), [enRecherche, modules, cle]);
   const stagesAffiches = useMemo(() => (enRecherche ? stages.filter((a) => contient(cle, a.company, a.position, a.description, a.city)) : stages.slice(0, 5)), [enRecherche, stages, cle]);
   const ideesAffichees = enRecherche ? resultats.idees : idees.liste;
-  const rien = enRecherche && !resultats.chargement && !modulesAffiches.length && !resultats.documents.length && !stagesAffiches.length && !ideesAffichees.length;
+  const rien = enRecherche && !resultats.chargement && !coursAffiches.length && !modulesAffiches.length && !resultats.documents.length && !stagesAffiches.length && !ideesAffichees.length;
+
+  // Mes cours : la couleur de la ligne du module quand il est à l'emploi du temps
+  const ligneDe = (code) => modules.find((m) => m.code === code)?.ligne ?? code;
+  const etagereCours = coursAffiches.length ? (
+    <Etagere accessibilityLabel={t('app.bibliotheque.mesCours')}>
+      {coursAffiches.map((c) => (
+        <Couverture
+          key={`${c.id_cours}-${c.id_groupe}`}
+          titre={c.nom_cours}
+          etiquette={c.code_cours}
+          pied={c.nom_groupe}
+          couleur={lineColor(ligneDe(c.code_cours))}
+          largeur={largeur}
+          onPress={() => router.push({ pathname: '/cours/[classe]', params: { classe: `${c.id_cours}-${c.id_groupe}`, nom: c.nom_cours, ligne: ligneDe(c.code_cours) ?? '' } })}
+          accessibilityLabel={`${c.nom_cours}, ${c.nom_groupe}`}
+        />
+      ))}
+    </Etagere>
+  ) : null;
 
   const etagereModules = modulesAffiches.length ? (
     <Etagere accessibilityLabel={t('app.bibliotheque.etagere')}>
@@ -168,6 +195,9 @@ export default function Bibliotheque() {
 
         {etat.indisponible ? <Message>{t('app.bibliotheque.indisponible')}</Message> : null}
         {rien ? <Message discret>{t('app.bibliotheque.aucunResultat', { terme })}</Message> : null}
+
+        {coursAffiches.length ? <Text style={styles.section}>{t('app.bibliotheque.mesCours')}</Text> : null}
+        {etagereCours}
 
         {!enRecherche || modulesAffiches.length ? <Text style={styles.section}>{t('app.bibliotheque.mesModules')}</Text> : null}
         {!enRecherche && !etat.chargement && modules.length === 0 ? <Message discret>{t('app.bibliotheque.aucunModule')}</Message> : null}
