@@ -577,7 +577,7 @@ Notification.afterCreate((notification, options) => {
     else planifier();
 });
 
-// Studio quiz (migration 0042)
+// Studio quiz (migration 0044)
 relierStudio({ Users });
 
 // Export de tous les modèles

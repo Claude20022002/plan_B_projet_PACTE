@@ -2,7 +2,7 @@ import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
 
 /**
- * Modèles du Studio quiz (migration 0042, docs/plans/studio-quiz.md), réunis ici pour ne pas
+ * Modèles du Studio quiz (migration 0044, docs/plans/studio-quiz.md), réunis ici pour ne pas
  * allonger models/index.js, qui les réexporte avec leurs relations.
  */
 

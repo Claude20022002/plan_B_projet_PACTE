@@ -43,7 +43,7 @@ Chaque fonction absente de la configuration disparaît de l'écran (route en 503
 
 ## 6. Données et API
 
-Migration `0042-studio-quiz.js` : `Questionnaires`, `QuestionsQuestionnaire`, `MediasQuiz`, `SessionsQuiz` (copie figée des questions), `TentativesQuiz`, `UsagesIaQuiz`. Routes : `/api/studio-quiz/*` (enseignant, tout réservé à l'auteur, 404 sinon) et `/api/passations/*` (étudiant). Détail en tête de `routes/studioQuizRoutes.js` et `routes/passationRoutes.js`.
+Migration `0044-studio-quiz.js` : `Questionnaires`, `QuestionsQuestionnaire`, `MediasQuiz`, `SessionsQuiz` (copie figée des questions), `TentativesQuiz`, `UsagesIaQuiz`. Routes : `/api/studio-quiz/*` (enseignant, tout réservé à l'auteur, 404 sinon) et `/api/passations/*` (étudiant). Détail en tête de `routes/studioQuizRoutes.js` et `routes/passationRoutes.js`.
 
 ## 7. Sécurité
 
