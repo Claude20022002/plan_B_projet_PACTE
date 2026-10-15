@@ -7,7 +7,7 @@ Par où commencer, selon ce que vous venez faire. Tout ce qui est listé ici est
 | Document | Pour |
 |---|---|
 | [README du dépôt](../README.md) | Ce que fait la plateforme, son architecture, l'installation en local, les tests |
-| [Dernier compte rendu](sessions/compte-rendu-2026-10-14.md) | L'état du projet, ce qui reste à faire, les décisions attendues. **À lire en début de session** |
+| [Dernier compte rendu](sessions/compte-rendu-2026-10-15.md) | L'état du projet, ce qui reste à faire, les décisions attendues. **À lire en début de session** |
 | [Règles de travail entre les groupes](sessions/compte-rendu-2026-10-11.md#4-règles-communes-aux-deux-équipes) | Dossiers, branches, ports et bases de test de chaque groupe ; règles de code |
 | [Journal du groupe A](sessions/journal-groupe-a.md) · [Journal du groupe B](sessions/journal-groupe-b.md) | Avancement de chaque groupe, demandes à l'autre groupe, questions au chef de projet |
 
