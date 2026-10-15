@@ -31,6 +31,7 @@ Par où commencer, selon ce que vous venez faire. Tout ce qui est listé ici est
 | [quiz-ia.md](plans/quiz-ia.md) | Quiz générés par l'IA, quiz dans Planner (lots IA et CQ) |
 | [espace-enseignant.md](plans/espace-enseignant.md) | Espace de l'enseignant |
 | [espace-de-cours.md](plans/espace-de-cours.md) | Espace de cours : supports par classe (fichiers gardés par StudyLib), appel à trois statuts, moins de pages (lots E) |
+| [studio-quiz.md](plans/studio-quiz.md) | Studio quiz : moteur de quiz natif (10 types, médias, IA, passation par QR code ou code, analyse des résultats) |
 
 ## Tester et déployer
 

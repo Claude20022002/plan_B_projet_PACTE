@@ -7,6 +7,8 @@ import i18n from 'i18next';
 import { initReactI18next } from 'react-i18next';
 import fr from './fr.js';
 import en from './en.js';
+import studioFr from './studio.fr.js';
+import studioEn from './studio.en.js';
 
 export const LANGUAGES = [
   { code: 'fr', label: 'Français', short: 'FR' },
@@ -26,7 +28,8 @@ const readStoredLanguage = () => {
 };
 
 i18n.use(initReactI18next).init({
-  resources: { fr: { translation: fr }, en: { translation: en } },
+  // Studio quiz : textes dans leurs propres fichiers, sous la clé « studio »
+  resources: { fr: { translation: { ...fr, studio: studioFr } }, en: { translation: { ...en, studio: studioEn } } },
   lng: readStoredLanguage(),
   fallbackLng: 'fr',
   interpolation: { escapeValue: false },

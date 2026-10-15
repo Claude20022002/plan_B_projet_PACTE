@@ -62,6 +62,7 @@ import {
   WarningAmber,
   DepartureBoard as BoardIcon,
   Menu as MenuIcon,
+  Quiz as QuizIcon,
 } from '@mui/icons-material';
 import GlobalSearch from '../common/GlobalSearch';
 import SelecteurEspaces from '../espaces/SelecteurEspaces';
@@ -141,6 +142,7 @@ const navigationFor = (user) => {
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
           { key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' },
+          { key: 'nav.myQuizzes', icon: <QuizIcon />, path: '/studio-quiz' },
           // Services, disponibilités et demandes de report : une rubrique à trois onglets (lot E-8)
           { key: 'nav.myService', icon: <AssignmentInd />, path: '/mes-services', aussi: ['/disponibilites', '/demandes-report'] },
           // La Bibliothèque s'ouvre sur ses documents : Planner est déjà le tableau de bord
@@ -174,6 +176,7 @@ const navigationFor = (user) => {
         { key: 'nav.myExams', icon: <FactCheck />, path: '/mes-examens' },
         // Supports de ses classes (Planner), puis documents de toute l'école (Bibliothèque)
         { key: 'nav.myCourses', icon: <MenuBook />, path: '/mes-cours' },
+        { key: 'nav.takeQuiz', icon: <QuizIcon />, path: '/quiz' },
         { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/documents' },
         { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
       ],
@@ -227,6 +230,8 @@ const TITLE_KEYS = {
   '/parametres': 'nav.settings',
   '/mes-affectations': 'nav.mySessions',
   '/mes-classes': 'nav.myClasses',
+  '/studio-quiz': 'nav.myQuizzes',
+  '/quiz': 'nav.takeQuiz',
   '/mes-cours': 'nav.myCourses',
   '/mes-services': 'nav.myService',
   '/reservations': 'nav.bookings',

@@ -995,6 +995,8 @@ const en = {
     myClasses: 'My classes',
     myCourses: 'My courses',
     myService: 'My teaching',
+    myQuizzes: 'My quizzes',
+    takeQuiz: 'Quizzes',
     myAvailability: 'My availability',
     myReports: 'My reschedule requests',
     timetable: 'Timetable',

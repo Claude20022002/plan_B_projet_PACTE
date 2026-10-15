@@ -52,6 +52,8 @@ import devoirRoutes from "./routes/devoirRoutes.js";
 import journalSecuriteRoutes from "./routes/journalSecuriteRoutes.js";
 import quizIaRoutes from "./routes/quizIaRoutes.js";
 import espaceCoursRoutes from "./routes/espaceCoursRoutes.js";
+import studioQuizRoutes from "./routes/studioQuizRoutes.js";
+import passationRoutes from "./routes/passationRoutes.js";
 import { MONTAGE as OIDC_MONTAGE } from "./services/oidc/provider.js";
 
 // Import des middlewares
@@ -176,6 +178,9 @@ app.use("/api/journal-securite", journalSecuriteRoutes);
 app.use("/api/quiz-ia", quizIaRoutes);
 // Espace de cours des classes (docs/plans/espace-de-cours.md) : /classes, /sections-cours, /supports-cours
 app.use("/api", espaceCoursRoutes);
+// Studio quiz : moteur de quiz natif (docs/plans/studio-quiz.md)
+app.use("/api/studio-quiz", studioQuizRoutes);
+app.use("/api/passations", passationRoutes);
 
 app.get("/", (req, res) => {
     res.json({

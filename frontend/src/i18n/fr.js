@@ -995,6 +995,8 @@ const fr = {
     myClasses: 'Mes classes',
     myCourses: 'Mes cours',
     myService: 'Mon service',
+    myQuizzes: 'Mes quiz',
+    takeQuiz: 'Quiz',
     myAvailability: 'Mes disponibilités',
     myReports: 'Mes demandes de report',
     timetable: 'Emploi du temps',
