@@ -68,14 +68,14 @@ const peutFaireAppel = (user, seance) =>
     (user.role === "enseignant" &&
         (seance.id_user_enseignant === user.id_user || (seance.enseignement?.services ?? []).some((s) => s.id_user === user.id_user && s.role === "co_enseignant" && s.statut_service !== "refuse")));
 
-const seanceDeLEnseignant = async (user, id) => {
+export const seanceDeLEnseignant = async (user, id) => {
     const seance = await seanceOuErreur(id);
     if (!peutFaireAppel(user, seance)) throw new ErreurMetier("Réservé aux enseignants de la séance", 403);
     return seance;
 };
 
 /** Étudiants attendus : ceux des groupes de la séance (et des enseignements mutualisés) et de leurs sous-groupes. */
-const etudiantsAttendus = async (seance) => {
+export const etudiantsAttendus = async (seance) => {
     const racines = [seance.id_groupe, ...(seance.enseignement?.groupes ?? []).map((g) => g.id_groupe)].filter(Boolean);
     const groupes = await groupesANotifier([...new Set(racines)]);
     if (!groupes.length) return [];
@@ -147,12 +147,16 @@ export const listeDAppel = async (user, id) => {
     return {
         seance: resume(seance),
         appel: appel ? { ouvert: !appel.ferme_le, ouvert_le: appel.ouvert_le, ferme_le: appel.ferme_le } : null,
+        // « Présents » compte aussi les retards (ils sont dans la salle) ; les retards à part
         presents: presences.length,
+        retards: presences.filter((p) => p.statut === "retard").length,
         etudiants: attendus.map((e) => ({
             id_user: e.id_user,
             nom: e.nom,
             prenom: e.prenom,
             present: parEtudiant.has(e.id_user),
+            statut: parEtudiant.get(e.id_user)?.statut ?? "absent",
+            motif: parEtudiant.get(e.id_user)?.motif ?? null,
             source: parEtudiant.get(e.id_user)?.source ?? null,
             marque_le: parEtudiant.get(e.id_user)?.marque_le ?? null,
             verifie: Boolean(parEtudiant.get(e.id_user)?.verifie_le),
@@ -161,17 +165,7 @@ export const listeDAppel = async (user, id) => {
     };
 };
 
-/** Cocher ou décocher un étudiant attendu (enseignant). */
-export const marquerPresence = async (user, id, idEtudiant, present) => {
-    const seance = await seanceDeLEnseignant(user, id);
-    if (!(await etudiantsAttendus(seance)).some((e) => e.id_user === idEtudiant)) throw new ErreurMetier("Cet étudiant n'est pas attendu à cette séance", 404);
-    if (present) {
-        await Presence.findOrCreate({ where: { id_affectation: seance.id_affectation, id_user: idEtudiant }, defaults: { source: "manuel", marque_le: new Date() } });
-    } else {
-        await Presence.destroy({ where: { id_affectation: seance.id_affectation, id_user: idEtudiant } });
-    }
-    return { present: Boolean(present) };
-};
+// Statut d'un étudiant (présent, en retard, absent) : services/presences/statuts.js
 
 /**
  * Vérification surprise, facultative (l'enseignant la lance s'il le souhaite) : tire au hasard des

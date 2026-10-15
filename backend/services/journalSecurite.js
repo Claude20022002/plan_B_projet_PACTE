@@ -32,6 +32,10 @@ export const EVENEMENTS = [
     "telephone_change_accepte",
     "telephone_change_refuse",
     "quiz_ia_genere",
+    "support_retire",
+    "support_publie_bibliotheque",
+    "presence_corrigee",
+    "presences_exportees",
 ];
 
 const borne = (texte, max) => (texte == null ? null : String(texte).slice(0, max));

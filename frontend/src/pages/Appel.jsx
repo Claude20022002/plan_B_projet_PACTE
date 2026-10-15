@@ -6,24 +6,19 @@ import {
   Alert,
   Box,
   Button,
-  Checkbox,
-  Chip,
   LinearProgress,
   List,
-  ListItem,
-  ListItemButton,
-  ListItemIcon,
-  ListItemText,
   ListSubheader,
   Paper,
   Skeleton,
   Stack,
   Typography,
 } from '@mui/material';
-import { ArrowBack, CastForEducation, ReportProblemOutlined } from '@mui/icons-material';
+import { ArrowBack, CastForEducation } from '@mui/icons-material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import ConfirmDialog from '../components/common/ConfirmDialog';
 import VerificationSurprise from '../components/appel/VerificationSurprise';
+import LigneAppel from '../components/appel/LigneAppel';
 import { presenceAPI } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import { ds } from '../design-system/tokens';
@@ -128,9 +123,9 @@ export default function Appel() {
     return () => clearInterval(tic);
   }, [qr]);
 
-  const basculer = async (etudiant) => {
+  const changerStatut = async (etudiant, statut) => {
     try {
-      await presenceAPI.marquer(id, etudiant.id_user, !etudiant.present);
+      await presenceAPI.marquer(id, etudiant.id_user, statut);
       chargerListe();
     } catch (e) {
       toast.error(e?.message || t('appel.erreur'));
@@ -162,6 +157,7 @@ export default function Appel() {
 
   const attendus = liste?.etudiants.length ?? 0;
   const presents = liste?.presents ?? 0;
+  const retards = liste?.retards ?? 0;
   // Appel terminé : la liste de la classe comparée aux présences, les absents d'abord
   const etudiants = liste?.etudiants ?? [];
   const groupes = ferme
@@ -191,7 +187,9 @@ export default function Appel() {
           {ferme ? (
             <Box sx={{ py: 6 }}>
               <Typography sx={{ fontFamily: ds.font.board, fontSize: '1.5rem', letterSpacing: '0.08em' }}>{t('appel.ferme')}</Typography>
-              <Typography sx={{ mt: 1, color: ds.board.letterDim }}>{t('appel.bilan', { presents, absents: Math.max(0, attendus - presents) })}</Typography>
+              <Typography sx={{ mt: 1, color: ds.board.letterDim }}>
+                {t(retards ? 'appel.bilanRetards' : 'appel.bilan', { presents, retards, absents: Math.max(0, attendus - presents) })}
+              </Typography>
               <Button variant="outlined" onClick={ouvrir} sx={{ mt: 2, color: ds.board.letter, borderColor: ds.board.seam }}>
                 {t('appel.rouvrir')}
               </Button>
@@ -249,24 +247,7 @@ export default function Appel() {
           {groupes.map((groupe) => (
           <List key={groupe.cle} dense subheader={groupe.titre ? <ListSubheader disableSticky sx={{ px: 0, fontWeight: 700, color: 'text.primary' }}>{groupe.titre}</ListSubheader> : undefined}>
             {groupe.lignes.map((e) => (
-              <ListItem key={e.id_user} disablePadding>
-                <ListItemButton onClick={() => basculer(e)} dense>
-                  <ListItemIcon sx={{ minWidth: 40 }}>
-                    <Checkbox edge="start" checked={e.present} tabIndex={-1} disableRipple inputProps={{ 'aria-label': `${e.prenom} ${e.nom}` }} />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={`${e.nom} ${e.prenom}`}
-                    secondary={e.present ? [t(e.source === 'manuel' ? 'appel.coche' : 'appel.scanne'), e.verifie && t('appel.verifie')].filter(Boolean).join(' · ') : null}
-                  />
-                  {e.signalements?.length > 0 && (
-                    <Stack direction="row" spacing={0.5} sx={{ ml: 1, flexWrap: 'wrap', justifyContent: 'flex-end' }} aria-label={t('appel.signalements')}>
-                      {e.signalements.map((s) => (
-                        <Chip key={`${s.motif}-${s.lie}`} size="small" color="warning" variant="outlined" icon={<ReportProblemOutlined />} label={libelleSignalement(s)} />
-                      ))}
-                    </Stack>
-                  )}
-                </ListItemButton>
-              </ListItem>
+              <LigneAppel key={e.id_user} etudiant={e} onStatut={changerStatut} libelleSignalement={libelleSignalement} />
             ))}
           </List>
           ))}
