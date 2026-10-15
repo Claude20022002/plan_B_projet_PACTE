@@ -2,8 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Skeleton, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import { quizAPI, quizIaAPI } from '../../services/api';
-import { adresseEditeurQuiz } from '../../../../shared/espaces.js';
+import { quizIaAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
 import CreerQuizDialog from '../quiz/creation/CreerQuizDialog';
@@ -19,10 +18,15 @@ import { boutonPanneau, boutonPanneauPlein } from './styles';
  * @param {{ preselection?: { id_cours, id_groupe }, donnerEnDevoir?: (generation) => void, ouvrirGeneration?: boolean }} props
  *   ouvrirGeneration : « Créer un quiz » s'ouvre d'emblée (arrivée depuis « Mes classes »)
  */
+// Nouveau quiz dans le Studio : la page s'ouvre sur la fenêtre de création
+const EDITEUR_STUDIO = '/studio-quiz?nouveau=1';
+
 export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouvrirGeneration = false }) {
   const { t, i18n } = useTranslation();
   const [dispo, setDispo] = useState(null);
-  const [editeur, setEditeur] = useState(null);
+  // « Le faire moi-même » : l'éditeur du Studio quiz, dans Planner (10 types de questions), et non
+  // plus celui du service de quiz externe (docs/plans/studio-quiz.md)
+  const editeur = EDITEUR_STUDIO;
   const [generations, setGenerations] = useState(null);
   const [creer, setCreer] = useState(false);
   const [ouverte, setOuverte] = useState(null); // { id, titre } de la génération relue
@@ -36,10 +40,6 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
   useEffect(() => {
     monte.current = true;
     charger();
-    quizAPI
-      .getConfig()
-      .then((c) => monte.current && setEditeur(c?.peutLancer ? adresseEditeurQuiz(c.url) : null))
-      .catch(() => monte.current && setEditeur(null));
     return () => {
       monte.current = false;
     };

@@ -1,8 +1,9 @@
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Autocomplete, Box, Button, ButtonBase, Chip, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField, Typography } from '@mui/material';
 import { AutoAwesome, EditNote, FileUpload } from '@mui/icons-material';
 import { studioAPI } from '../../../services/studioApi';
+import { enseignantAPI } from '../../../services/api';
 
 /**
  * Nouveau quiz : trois départs possibles, présentés comme trois choix d'égale importance
@@ -27,17 +28,61 @@ function Choix({ icone, titre, aide, onClick, desactive }) {
   );
 }
 
+// Une étiquette fait 40 caractères au plus (serveur) : un nom de module plus long est raccourci
+const ETIQUETTE_MAX = 40;
+const etiquetteDuModule = (nom) => (nom.length <= ETIQUETTE_MAX ? nom : `${nom.slice(0, ETIQUETTE_MAX - 1).trimEnd()}…`);
+
+// Modules de l'enseignant (ses services et son emploi du temps, comme « Mes classes »), lus une fois par page
+let mesModules = null;
+const chargerMesModules = () => {
+  mesModules ??= enseignantAPI
+    .mesClasses()
+    .then((classes) => {
+      const parId = new Map((Array.isArray(classes) ? classes : []).map((c) => [c.id_cours, { etiquette: etiquetteDuModule(c.nom_cours), code: c.code_cours, nom: c.nom_cours }]));
+      return [...parId.values()].sort((a, b) => a.nom.localeCompare(b.nom, 'fr'));
+    })
+    .catch(() => {
+      mesModules = null;
+      return [];
+    });
+  return mesModules;
+};
+
+/**
+ * Étiquettes d'un quiz : on choisit l'un de ses modules (en tête de la liste), une étiquette déjà
+ * utilisée sur un autre quiz, ou on en tape une nouvelle (chapitre, thème…).
+ */
 export function ChampEtiquettes({ valeur, onChange, suggestions = [] }) {
   const { t } = useTranslation();
+  const [modules, setModules] = useState([]);
+  useEffect(() => {
+    let actif = true;
+    chargerMesModules().then((m) => actif && setModules(m));
+    return () => {
+      actif = false;
+    };
+  }, []);
+
+  const parEtiquette = new Map(modules.map((m) => [m.etiquette, m]));
+  const autres = suggestions.filter((e) => !parEtiquette.has(e));
   return (
     <Autocomplete
       multiple
       freeSolo
-      options={suggestions}
+      options={[...modules.map((m) => m.etiquette), ...autres]}
+      groupBy={(e) => t(parEtiquette.has(e) ? 'studio.nouveau.mesModules' : 'studio.nouveau.dejaUtilisees')}
+      renderOption={({ key, ...props }, e) => (
+        <li key={key} {...props}>
+          <Box>
+            <Typography variant="body2">{parEtiquette.get(e)?.nom ?? e}</Typography>
+            {parEtiquette.has(e) && <Typography variant="caption" color="text.secondary">{parEtiquette.get(e).code}</Typography>}
+          </Box>
+        </li>
+      )}
       value={valeur}
       onChange={(_, v) => onChange([...new Set(v.map((x) => String(x).trim()).filter(Boolean))].slice(0, 8))}
       renderTags={(liste, props) => liste.map((e, i) => <Chip size="small" label={e} {...props({ index: i })} key={e} />)}
-      renderInput={(params) => <TextField {...params} label={t('studio.nouveau.etiquettes')} helperText={t('studio.nouveau.etiquettesAide')} inputProps={{ ...params.inputProps, maxLength: 40 }} />}
+      renderInput={(params) => <TextField {...params} label={t('studio.nouveau.etiquettes')} helperText={t('studio.nouveau.etiquettesAide')} inputProps={{ ...params.inputProps, maxLength: ETIQUETTE_MAX }} />}
     />
   );
 }

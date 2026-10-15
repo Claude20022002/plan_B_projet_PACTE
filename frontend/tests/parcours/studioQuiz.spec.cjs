@@ -35,21 +35,19 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await nouveau.getByRole("button", { name: "Créer" }).click();
   await expect(page.getByRole("heading", { name: "Réseaux, contrôle 1" })).toBeVisible();
 
-  // Question 1 : choix unique
+  // Question 1 : comme dans Google Forms, « Ajouter une question » ouvre un choix unique, qui s'enregistre seul
   await page.getByRole("button", { name: "Ajouter une question" }).click();
-  await page.getByRole("menuitem", { name: /Choix unique/ }).click();
-  await page.getByRole("textbox", { name: "Énoncé" }).fill("Quel port utilise SSH ?");
+  await page.getByRole("textbox", { name: "Question 1" }).fill("Quel port utilise SSH ?");
   for (const [i, texte] of ["Port 21", "Port 22", "Port 23", "Port 80"].entries()) await page.getByRole("textbox", { name: `Option ${"ABCD"[i]}` }).fill(texte);
   await page.getByRole("radio", { name: "Bonne réponse : B" }).check();
-  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("Question enregistrée")).toBeVisible();
+  await expect(page.getByRole("status").filter({ hasText: "Enregistrée" })).toBeVisible({ timeout: 10_000 });
 
-  // Question 2 : vrai ou faux (vrai par défaut)
+  // Question 2 : ajoutée sous la première, changée en vrai ou faux par le menu de la carte (vrai par défaut)
   await page.getByRole("button", { name: "Ajouter une question" }).click();
-  await page.getByRole("menuitem", { name: /Vrai ou faux/ }).click();
-  await page.getByRole("textbox", { name: "Énoncé" }).fill("BGP relie des systèmes autonomes.");
-  await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
-  await expect(page.getByText("2 questions · 2 points")).toBeVisible();
+  await page.getByRole("combobox", { name: "Type de question" }).click();
+  await page.getByRole("option", { name: "Vrai ou faux" }).click();
+  await page.getByRole("textbox", { name: "Question 2" }).fill("BGP relie des systèmes autonomes.");
+  await expect(page.getByText("2 questions · 2 points")).toBeVisible({ timeout: 10_000 });
 
   // Ouvrir la passation : les deux accès, code et QR code
   await page.getByRole("button", { name: "Ouvrir une passation" }).click();

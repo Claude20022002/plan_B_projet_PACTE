@@ -402,6 +402,8 @@ const fr = {
       aucunPresent: 'Les étudiants apparaissent ici dès qu’ils ont scanné.',
       present: 'Présence enregistrée',
       listeComplete: 'Voir la liste complète (présents et absents)',
+      sansSession: 'Cette fenêtre n’a pas votre session : l’appel continue, mais le QR code ne peut pas s’afficher ici. Reconnectez-vous dans cette fenêtre, ou ouvrez la projection depuis Chrome ou Edge.',
+      reconnecter: 'Se reconnecter dans cette fenêtre',
     },
     rouvrir: 'Rouvrir l’appel',
     bilan: '{{presents}} présents · {{absents}} absents',

@@ -31,6 +31,10 @@ export default function AppelProjection() {
   const [liste, setListe] = useState(null); // { seance, appel, presents, etudiants }
   const [qr, setQr] = useState(null); // { image, expire_le }
   const [erreur, setErreur] = useState('');
+  // Fenêtre ouverte sans la session de l'enseignant (navigateur qui ne partage pas ses cookies avec
+  // les fenêtres qu'il ouvre, comme celui de VS Code) : on le dit, et on propose de se reconnecter
+  const [sansSession, setSansSession] = useState(false);
+  const echec = useCallback((e, defaut) => (e?.status === 401 ? setSansSession(true) : setErreur(e?.message || defaut)), []);
   const [valider, setValider] = useState(false);
   const [verification, setVerification] = useState(false);
   const { pleinEcran, basculerPleinEcran } = useEcranProjete();
@@ -51,10 +55,10 @@ export default function AppelProjection() {
           return l;
         })
         .catch((e) => {
-          setErreur(e?.message || t('appel.projection.erreur'));
+          echec(e, t('appel.projection.erreur'));
           return null;
         }),
-    [id, t]
+    [id, t, echec]
   );
 
   const dessiner = useCallback(async ({ url, expire_dans_ms }) => {
@@ -71,7 +75,9 @@ export default function AppelProjection() {
           const code = await presenceAPI.code(id);
           await dessiner(code);
           programmer(code.expire_dans_ms + 200);
-        } catch {
+        } catch (e) {
+          // Plus de session dans cette fenêtre : inutile de redemander le code toutes les 5 s
+          if (e?.status === 401) return setSansSession(true);
           // Appel terminé depuis une autre fenêtre, ou coupure : la liste dit où on en est, et
           // le code est redemandé tant que l'appel n'est pas terminé
           setQr(null);
@@ -92,9 +98,9 @@ export default function AppelProjection() {
       programmer(r.expire_dans_ms + 200);
       chargerListe();
     } catch (e) {
-      setErreur(e?.message || t('appel.erreur'));
+      echec(e, t('appel.erreur'));
     }
-  }, [id, dessiner, programmer, chargerListe, t]);
+  }, [id, dessiner, programmer, chargerListe, t, echec]);
 
   // À l'arrivée : l'appel est ouvert s'il ne l'a jamais été ; un appel déjà validé n'est pas
   // rouvert par un simple rechargement de la page
@@ -179,7 +185,14 @@ export default function AppelProjection() {
       <Box sx={{ flexGrow: 1, minHeight: 0, display: 'grid', gap: { xs: 2, md: 3 }, p: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', md: 'minmax(0, 1fr) minmax(300px, 34vw)' }, alignItems: 'start' }}>
         {/* Le QR à scanner */}
         <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, textAlign: 'center' }}>
-          {erreur ? (
+          {sansSession ? (
+            <Box role="alert" sx={{ py: 6, maxWidth: 640 }}>
+              <Typography sx={{ fontSize: 'clamp(1.125rem, 3vh, 1.75rem)' }}>{t('appel.projection.sansSession')}</Typography>
+              <Button variant="outlined" onClick={() => navigate(`/connexion?next=${encodeURIComponent(`/appel/${id}/projection`)}`)} sx={{ mt: 2.5, ...boutonSombre }}>
+                {t('appel.projection.reconnecter')}
+              </Button>
+            </Box>
+          ) : erreur ? (
             <Typography role="alert" sx={{ py: 6, maxWidth: 640, fontSize: 'clamp(1.125rem, 3vh, 1.75rem)' }}>{erreur}</Typography>
           ) : termine ? (
             <Box role="status" sx={{ py: 6 }}>

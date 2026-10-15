@@ -91,6 +91,21 @@ export const lienSupport = async (idSupport) => (await planner(`/supports-cours/
 /** Derniers retours de stage publiés (liste légère : entreprise, poste, note, photo ou non) */
 export const chargerAvisStage = async () => (await biblio('/internship-reviews/recent'))?.data ?? [];
 
+// Écran « Stages » : une page de résultats { avis, page, suite, total }
+const versPage = (r) => ({ avis: r?.data ?? [], page: r?.current_page ?? 1, suite: (r?.current_page ?? 1) < (r?.last_page ?? 1), total: r?.total ?? 0 });
+
+/** Tous les retours publiés ; filtres : { q, city, sector, year_done, is_paid } (vides ignorés) */
+export const chargerStages = async (filtres = {}, page = 1) => {
+  const requete = new URLSearchParams(Object.entries({ ...filtres, page }).filter(([, v]) => v !== '' && v !== null && v !== undefined));
+  return versPage(await biblio(`/internship-reviews/mobile?${requete}`));
+};
+
+/** Mes retours de stage, publiés ou en attente (champ « publie ») */
+export const chargerMesStages = async (page = 1) => versPage(await biblio(`/internship-reviews/miens?page=${page}`));
+
+/** Valeurs possibles des filtres : { cities, sectors, years } */
+export const chargerFiltresStages = async () => biblio('/internship-reviews/filtres');
+
 /** Photo d'un retour de stage : servie par l'API, avec le jeton (jamais par un lien public) */
 export const sourcePhotoStage = (id) => ({ uri: `${API_BIBLIO}/internship-reviews/${encodeURIComponent(id)}/photo`, headers: entetesAuthentifies() });
 

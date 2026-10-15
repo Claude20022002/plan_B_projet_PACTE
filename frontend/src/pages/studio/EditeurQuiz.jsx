@@ -1,15 +1,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Box, Button, Chip, CircularProgress, LinearProgress, Stack, Tab, Tabs, Typography, useMediaQuery } from '@mui/material';
+import { Alert, Box, Button, Chip, CircularProgress, LinearProgress, Stack, Tab, Tabs, Typography } from '@mui/material';
 import { ArrowBack, PlayCircleOutline, Send } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-import ListeQuestions from '../../components/studio/editeur/ListeQuestions';
-import EditeurQuestion from '../../components/studio/editeur/EditeurQuestion';
+import FormulaireQuestions from '../../components/studio/formulaire/FormulaireQuestions';
 import GenererIaDialog from '../../components/studio/editeur/GenererIaDialog';
 import OuvrirPassationDialog from '../../components/studio/editeur/OuvrirPassationDialog';
 import { OngletPassations, OngletReglages } from '../../components/studio/editeur/OngletsQuiz';
-import { questionVide } from '../../../../shared/quiz/studio/types.js';
 import { passationAPI, studioAPI } from '../../services/studioApi';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -25,15 +23,12 @@ export default function EditeurQuiz() {
   const toast = useToast();
   const toastRef = useRef(toast);
   toastRef.current = toast;
-  const large = useMediaQuery((theme) => theme.breakpoints.up('md'));
   const [params, setParams] = useSearchParams();
   const onglet = ['questions', 'reglages', 'passations'].includes(params.get('onglet')) ? params.get('onglet') : 'questions';
   const [quiz, setQuiz] = useState(null);
   const [erreur, setErreur] = useState(null);
   const [medias, setMedias] = useState({});
   const [dispo, setDispo] = useState(null);
-  const [selection, setSelection] = useState(null);
-  const [nouvelle, setNouvelle] = useState(null);
   const [generer, setGenerer] = useState(false);
   const [ouvrir, setOuvrir] = useState(false);
   const [rafraichir, setRafraichir] = useState(0);
@@ -42,7 +37,6 @@ export default function EditeurQuiz() {
     try {
       const q = await studioAPI.detail(id);
       setQuiz(q);
-      setSelection((s) => s ?? q.questions[0]?.id_question ?? null);
       setErreur(null);
     } catch (e) {
       setErreur(e.message);
@@ -65,24 +59,6 @@ export default function EditeurQuiz() {
 
   const aRelire = useMemo(() => (quiz ? quiz.questions.filter((q) => q.a_relire).length : 0), [quiz]);
   const points = useMemo(() => (quiz ? Math.round(quiz.questions.reduce((s, q) => s + q.points, 0) * 100) / 100 : 0), [quiz]);
-  const courante = nouvelle ?? quiz?.questions.find((q) => q.id_question === selection) ?? null;
-  const numero = nouvelle ? (quiz?.questions.length ?? 0) + 1 : (quiz?.questions.findIndex((q) => q.id_question === selection) ?? -1) + 1;
-
-  const remplacer = (question) => {
-    setQuiz((q) => ({ ...q, questions: q.questions.some((x) => x.id_question === question.id_question) ? q.questions.map((x) => (x.id_question === question.id_question ? question : x)) : [...q.questions, question] }));
-    setNouvelle(null);
-    setSelection(question.id_question);
-  };
-  const deplacer = async (de, vers) => {
-    if (vers < 0 || vers >= quiz.questions.length) return;
-    const ids = quiz.questions.map((q) => q.id_question);
-    [ids[de], ids[vers]] = [ids[vers], ids[de]];
-    try {
-      setQuiz(await studioAPI.reordonner(id, ids));
-    } catch (e) {
-      toastRef.current.error(e.message);
-    }
-  };
   const apercu = async () => {
     try {
       const session = await studioAPI.ouvrir(id, { essai: true });
@@ -110,8 +86,6 @@ export default function EditeurQuiz() {
     );
   }
 
-  const afficherListe = large || !courante;
-  const afficherEditeur = large || courante;
   return (
     <DashboardLayout>
       <Button startIcon={<ArrowBack />} onClick={() => navigate('/studio-quiz')} sx={{ mb: 1 }}>
@@ -166,53 +140,17 @@ export default function EditeurQuiz() {
         ))}
       </Tabs>
 
+      {/* Questions éditées comme un Google Form : une colonne de cartes qui s'enregistrent seules */}
       {onglet === 'questions' && (
-        <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', md: 'minmax(280px, 340px) 1fr' }, gap: 2, alignItems: 'start' }}>
-          {afficherListe && (
-            <ListeQuestions
-              questions={quiz.questions}
-              selection={nouvelle ? null : selection}
-              onSelection={(idq) => {
-                setNouvelle(null);
-                setSelection(idq);
-              }}
-              onDeplacer={deplacer}
-              onAjouter={(type) => setNouvelle({ ...questionVide(type), id_question: null })}
-              onGenerer={() => setGenerer(true)}
-              iaDisponible={Boolean(dispo?.texte)}
-            />
-          )}
-          {afficherEditeur && (
-            <Box>
-              {!large && (
-                <Button startIcon={<ArrowBack />} onClick={() => { setNouvelle(null); setSelection(null); }} sx={{ mb: 1 }}>
-                  {t('studio.editeur.onglets.questions')}
-                </Button>
-              )}
-              {courante ? (
-                <EditeurQuestion
-                  key={courante.id_question ?? `nouvelle-${courante.type}`}
-                  idQuestionnaire={quiz.id_questionnaire}
-                  question={courante}
-                  numero={numero}
-                  medias={medias}
-                  dispo={dispo}
-                  onMediaMaj={(m) => setMedias((x) => ({ ...x, [m.id_media]: m }))}
-                  onEnregistree={remplacer}
-                  onDupliquee={remplacer}
-                  onSupprimee={(idq) => {
-                    setQuiz((q) => ({ ...q, questions: q.questions.filter((x) => x.id_question !== idq) }));
-                    setSelection(null);
-                  }}
-                />
-              ) : (
-                <Typography color="text.secondary" sx={{ p: 2 }}>
-                  {t('studio.editeur.selectionner')}
-                </Typography>
-              )}
-            </Box>
-          )}
-        </Box>
+        <FormulaireQuestions
+          key={quiz.id_questionnaire}
+          quiz={quiz}
+          setQuiz={setQuiz}
+          medias={medias}
+          dispo={dispo}
+          onMediaMaj={(m) => setMedias((x) => ({ ...x, [m.id_media]: m }))}
+          onGenerer={() => setGenerer(true)}
+        />
       )}
       {onglet === 'reglages' && <OngletReglages key={quiz.modifie_le} quiz={quiz} onModifie={setQuiz} />}
       {onglet === 'passations' && <OngletPassations quiz={quiz} rafraichir={rafraichir} />}

@@ -402,6 +402,8 @@ const en = {
       aucunPresent: 'Students appear here as soon as they have scanned.',
       present: 'Attendance recorded',
       listeComplete: 'View the full list (present and absent)',
+      sansSession: 'This window does not have your session: attendance goes on, but the QR code cannot be shown here. Sign in again in this window, or open the projection from Chrome or Edge.',
+      reconnecter: 'Sign in again in this window',
     },
     rouvrir: 'Reopen roll call',
     bilan: '{{presents}} present · {{absents}} absent',

@@ -201,7 +201,7 @@ const bottomTabsFor = (role) => {
 };
 
 // Rubriques dont les sous-pages gardent le titre et l'entrée de menu active
-const RUBRIQUES_PARENTES = ['/jeux', '/annonces', '/mes-classes', '/mes-cours'];
+const RUBRIQUES_PARENTES = ['/jeux', '/annonces', '/mes-classes', '/mes-cours', '/studio-quiz'];
 
 const TITLE_KEYS = {
   '/dashboard/admin': 'nav.dashboard',
