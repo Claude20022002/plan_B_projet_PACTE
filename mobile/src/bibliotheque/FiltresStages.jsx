@@ -8,30 +8,37 @@ import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
  * Filtres des retours de stage : une rangée de pastilles (ville, secteur, année, rémunération).
  * Une pastille ouvre la liste de ses valeurs ; une pastille active se remet à « Tous » d'un toucher
  * sur sa croix. `valeurs` : { cities, sectors, years } (GET /internship-reviews/filtres).
+ * `liste` remplace les filtres des avis (offres : type et ville) ; `affiche` traduit une valeur.
  */
 const FILTRES = [
   { cle: 'city', libelle: 'ville', valeurs: (v) => v.cities ?? [] },
   { cle: 'sector', libelle: 'secteur', valeurs: (v) => v.sectors ?? [] },
   { cle: 'year_done', libelle: 'annee', valeurs: (v) => (v.years ?? []).map(String) },
-  { cle: 'is_paid', libelle: 'remuneration', valeurs: () => ['1', '0'] },
+  { cle: 'is_paid', libelle: 'remuneration', valeurs: () => ['1', '0'], affiche: (v, t) => t(v === '1' ? 'app.bibliotheque.remunere' : 'app.bibliotheque.nonRemunere') },
 ];
 
-export default function FiltresStages({ valeurs, filtres, onChange }) {
+/** Filtres des offres : type (stage, emploi, alternance) et ville */
+export const FILTRES_OFFRES = [
+  { cle: 'type', libelle: 'type', valeurs: () => ['stage', 'emploi', 'alternance'], affiche: (v, t) => t(`app.offres.types.${v}`) },
+  { cle: 'city', libelle: 'ville', valeurs: (v) => v.villes ?? [] },
+];
+
+export default function FiltresStages({ valeurs, filtres, onChange, liste = FILTRES }) {
   const { couleurs } = useTheme();
   const styles = useStyles();
   const { t } = useTranslation();
   const [ouvert, setOuvert] = useState(null);
-  const libelleValeur = (cle, v) => (cle === 'is_paid' ? t(v === '1' ? 'app.bibliotheque.remunere' : 'app.bibliotheque.nonRemunere') : v);
+  const libelleValeur = (cle, v) => liste.find((f) => f.cle === cle)?.affiche?.(v, t) ?? v;
   const choisir = (cle, v) => {
     setOuvert(null);
     onChange({ ...filtres, [cle]: v });
   };
-  const filtre = FILTRES.find((f) => f.cle === ouvert);
+  const filtre = liste.find((f) => f.cle === ouvert);
 
   return (
     <>
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.rangee}>
-        {FILTRES.map((f) => {
+        {liste.map((f) => {
           const actif = filtres[f.cle] !== undefined && filtres[f.cle] !== '';
           return (
             <Pressable

@@ -8,17 +8,22 @@ import Ecran, { Message } from '../../board/Ecran';
 import { chargerFiltresStages, chargerMesStages, chargerStages } from '../../api/donnees';
 import CarteStage from '../../bibliotheque/CarteStage';
 import FiltresStages from '../../bibliotheque/FiltresStages';
+import ListeOffres from '../../bibliotheque/ListeOffres';
+import MesOffres from '../../bibliotheque/MesOffres';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../../theme';
 
 const DELAI_RECHERCHE_MS = 400;
 const VIDE = { avis: [], page: 0, suite: false, total: 0 };
 
 /**
- * Stages : deux onglets. « Tous les avis » : les retours de stage partagés par les étudiants de
- * l'école, avec une recherche et des filtres (ville, secteur, année, rémunération). « Mes partages » :
- * mes propres retours, publiés ou en attente. « Partager mon stage » reste en tête.
+ * Stages : trois onglets. « Offres » : les offres partagées par un lien (stage, emploi, alternance).
+ * « Tous les avis » : les retours de stage des étudiants de l'école, avec une recherche et des
+ * filtres (ville, secteur, année, rémunération). « Mes partages » : mes offres et mes retours,
+ * publiés ou en attente. Le bouton en tête partage une offre ou un stage selon l'onglet.
  */
-/** Onglet « Tous les avis » ou « Mes partages » */
+const ONGLETS = ['offres', 'tous', 'miens'];
+
+/** Onglet « Offres », « Tous les avis » ou « Mes partages » */
 function Onglet({ actif, libelle, onPress, styles }) {
   return (
     <Pressable onPress={onPress} style={[styles.onglet, actif && styles.ongletActif]} accessibilityRole="tab" accessibilityState={{ selected: actif }}>
@@ -33,7 +38,7 @@ export default function Stages() {
   const { t } = useTranslation();
   const router = useRouter();
   const margeBas = useSafeAreaInsets().bottom;
-  const [onglet, setOnglet] = useState('tous');
+  const [onglet, setOnglet] = useState('offres');
   const [saisie, setSaisie] = useState('');
   const [filtres, setFiltres] = useState({ q: '' });
   const [valeurs, setValeurs] = useState(null);
@@ -56,8 +61,9 @@ export default function Stages() {
 
   const page = useCallback((n) => (onglet === 'tous' ? chargerStages(filtres, n) : chargerMesStages(n)), [onglet, filtres]);
 
-  // Première page à chaque changement d'onglet, de filtre ou au rafraîchissement
+  // Première page à chaque changement d'onglet, de filtre ou au rafraîchissement (les offres ont leur liste)
   useEffect(() => {
+    if (onglet === 'offres') return undefined;
     let actif = true;
     page(1).then(
       (r) => actif && setResultats({ cle, ...r, erreur: false }),
@@ -66,7 +72,7 @@ export default function Stages() {
     return () => {
       actif = false;
     };
-  }, [page, cle]);
+  }, [page, cle, onglet]);
 
   const suivante = async () => {
     setSuiteEnCours(true);
@@ -92,17 +98,23 @@ export default function Stages() {
         refreshControl={<RefreshControl refreshing={false} onRefresh={() => setVersion((v) => v + 1)} tintColor={couleurs.lettre} colors={[couleurs.cadre]} />}
       >
         <View style={styles.onglets} accessibilityRole="tablist">
-          {['tous', 'miens'].map((valeur) => (
+          {ONGLETS.map((valeur) => (
             <Onglet key={valeur} actif={onglet === valeur} libelle={t(`app.stages.${valeur}`)} onPress={() => setOnglet(valeur)} styles={styles} />
           ))}
         </View>
 
-        <Pressable onPress={() => router.push('/stage/partager')} style={styles.partager} accessibilityRole="button">
-          <MaterialCommunityIcons name="plus" size={20} color={couleurs.surAccent} />
-          <Text style={styles.partagerTexte}>{t('app.bibliotheque.partagerStage')}</Text>
+        <Pressable onPress={() => router.push(onglet === 'offres' ? '/stage/offre' : '/stage/partager')} style={styles.partager} accessibilityRole="button">
+          <MaterialCommunityIcons name={onglet === 'offres' ? 'link-variant-plus' : 'plus'} size={20} color={couleurs.surAccent} />
+          <Text style={styles.partagerTexte}>{t(onglet === 'offres' ? 'app.offres.partager' : 'app.bibliotheque.partagerStage')}</Text>
         </Pressable>
 
-        {onglet === 'miens' ? <View style={{ height: 12 }} /> : null}
+        {onglet === 'offres' ? <ListeOffres version={version} /> : null}
+        {onglet === 'miens' ? (
+          <>
+            <View style={{ height: 12 }} />
+            <MesOffres version={version} />
+          </>
+        ) : null}
         {onglet === 'tous' ? (
           <>
             <View style={styles.recherche}>
@@ -114,18 +126,18 @@ export default function Stages() {
           </>
         ) : null}
 
-        {etat.erreur ? <Message>{t('app.bibliotheque.indisponible')}</Message> : null}
-        {!etat.erreur && !etat.chargement && resultats.avis.length === 0 ? (
+        {onglet !== 'offres' && etat.erreur ? <Message>{t('app.bibliotheque.indisponible')}</Message> : null}
+        {onglet !== 'offres' && !etat.erreur && !etat.chargement && resultats.avis.length === 0 ? (
           <Message discret>{t(onglet === 'tous' ? 'app.stages.aucunResultat' : 'app.stages.aucunPartage')}</Message>
         ) : null}
-        {resultats.avis.map((a) => (
+        {(onglet === 'offres' ? [] : resultats.avis).map((a) => (
           <View key={a.id}>
             {onglet === 'miens' && a.publie === false ? <Text style={styles.attente}>{t('app.stages.enAttente')}</Text> : null}
             <CarteStage avis={a} />
           </View>
         ))}
-        {etat.chargement ? <ActivityIndicator style={{ marginTop: 16 }} color={couleurs.lettre} /> : null}
-        {!etat.chargement && resultats.suite ? (
+        {onglet !== 'offres' && etat.chargement ? <ActivityIndicator style={{ marginTop: 16 }} color={couleurs.lettre} /> : null}
+        {onglet !== 'offres' && !etat.chargement && resultats.suite ? (
           <Pressable onPress={suivante} style={styles.plus} accessibilityRole="button">
             <Text style={styles.plusTexte}>{t('app.stages.plus')}</Text>
           </Pressable>

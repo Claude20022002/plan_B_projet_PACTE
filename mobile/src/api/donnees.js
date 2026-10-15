@@ -106,6 +106,34 @@ export const chargerMesStages = async (page = 1) => versPage(await biblio(`/inte
 /** Valeurs possibles des filtres : { cities, sectors, years } */
 export const chargerFiltresStages = async () => biblio('/internship-reviews/filtres');
 
+// Offres de stage partagées par un lien : lecture de la page (ou texte collé), puis publication
+const POST = (body) => ({ method: 'POST', body });
+
+/** Lit la page de l'offre : { source: jobposting | apercu | aucune | refuse, champs, message? } */
+export const analyserOffre = (url) => biblio('/offres/analyser', POST({ url }));
+
+/** Met en forme le texte collé d'une offre (IA) : { source: 'texte', champs } */
+export const analyserTexteOffre = (texte) => biblio('/offres/analyser-texte', POST({ texte }));
+
+/** La mise en forme par l'IA est-elle disponible ? */
+export const iaOffresDisponible = async () => Boolean((await biblio('/offres/disponibilite'))?.ia);
+
+/** Publie l'offre : rend l'offre avec son « statut » (approved : publiée, pending : à vérifier) */
+export const publierOffre = (champs) => biblio('/offres', POST(champs));
+
+/** Offres publiées et en cours ; filtres : { q, type, city } : { offres, page, suite, total, villes } */
+export const chargerOffres = async (filtres = {}, page = 1) => {
+  const requete = new URLSearchParams(Object.entries({ ...filtres, page }).filter(([, v]) => v !== '' && v !== null && v !== undefined));
+  const r = await biblio(`/offres?${requete}`);
+  const { avis, ...reste } = versPage(r);
+  return { ...reste, offres: avis, villes: r?.villes ?? [] };
+};
+
+/** Mes offres partagées, avec leur statut */
+export const chargerMesOffres = async () => (await biblio('/offres/miennes'))?.data ?? [];
+
+export const supprimerOffre = (id) => biblio(`/offres/${encodeURIComponent(id)}`, { method: 'DELETE' });
+
 /** Photo d'un retour de stage : servie par l'API, avec le jeton (jamais par un lien public) */
 export const sourcePhotoStage = (id) => ({ uri: `${API_BIBLIO}/internship-reviews/${encodeURIComponent(id)}/photo`, headers: entetesAuthentifies() });
 
