@@ -1,0 +1,32 @@
+{
+  "name": "jeux-hestim-frontend",
+  "version": "1.0.0",
+  "description": "Frontend for Jeux HESTIM",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "i18next": "^26.3.4",
+    "i18next-browser-languagedetector": "^8.2.1",
+    "lucide-react": "^0.468.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-i18next": "^17.0.8",
+    "react-router-dom": "^6.23.1",
+    "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.0",
+    "@types/react-dom": "^18.2.0",
+    "@vitejs/plugin-react": "^4.0.0",
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17",
+    "typescript": "^5.0.0",
+    "vite": "^4.3.0"
+  }
+}

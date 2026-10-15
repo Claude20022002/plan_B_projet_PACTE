@@ -1,0 +1,31 @@
+@startuml
+left to right direction
+actor "Administrateur" as Admin
+actor "Enseignant" as Prof
+actor "Participant" as Etudiant
+
+rectangle "Plateforme Jeux Pédagogiques" {
+  usecase "Gestion Classes & Matières" as UC1
+  usecase "Gestion Jeux" as UC2
+  usecase "Validation Comptes" as UC3
+  usecase "Planification Sessions" as UC4
+  usecase "Gestion Groupes" as UC5
+  usecase "Lancement/Finalisation Jeu" as UC6
+  usecase "Inscription" as UC7
+  usecase "Récupération MDP" as UC8
+  usecase "Jouer (Progression)" as UC9
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+
+Prof --> UC3
+Prof --> UC5
+Prof --> UC6
+
+Etudiant --> UC7
+Etudiant --> UC8
+Etudiant --> UC9
+@enduml
