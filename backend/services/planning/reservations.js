@@ -253,7 +253,7 @@ export const refuserDemande = async ({ id, user, motif }) => {
 export const annulerReservation = async ({ id, user }) => {
     const reservation = await charger(id);
     if (!reservation) throw new ErreurMetier("Réservation non trouvée", 404);
-    if (user.role !== "admin" && reservation.id_demandeur !== user.id_user) throw new ErreurMetier("Seul le demandeur ou l'administration peut annuler", 403);
+    if (user.role !== "admin") throw new ErreurMetier("Seule l'administration peut annuler une réservation", 403);
     if (["annulee", "refusee"].includes(reservation.statut)) throw new ErreurMetier(`Cette réservation est déjà ${reservation.statut}`, 400);
     const etaitValidee = reservation.statut === "validee";
     await reservation.update({ statut: "annulee" });

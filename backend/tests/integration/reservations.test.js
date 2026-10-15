@@ -142,13 +142,14 @@ describe("Réservations : l'administration réserve, demandes anciennes validée
         expect(indispo.body.violations.find((v) => v.code === "participant_indisponible")?.message).toMatch(/Congrès/);
     });
 
-    test("droits : examen, validation et annulation réservés à l'administration ; le jury voit sa soutenance", async () => {
+    test("droits : la réservation est propre à l'administration (consulter, réserver, valider, annuler)", async () => {
         expect((await clients.profA.send("post", "/api/reservations", reservation({ type: "examen", date: "2027-04-12" }))).status).toBe(403);
         expect((await clients.profA.send("patch", `/api/reservations/${premiere.id_reservation}/valider`)).status).toBe(403);
         expect((await clients.profB.send("patch", `/api/reservations/${premiere.id_reservation}/annuler`)).status).toBe(403);
-        // Le jury voit la soutenance où il siège ; l'étudiant (ni demandeur ni participant) ne la voit pas
-        expect((await clients.profB.get("/api/reservations")).body.map((r) => r.id_reservation)).toContain(premiere.id_reservation);
-        expect((await clients.etudiant.get("/api/reservations")).body).toHaveLength(0);
+        // Même le jury de la soutenance ne consulte plus les réservations (décision du 15 octobre 2026)
+        expect((await clients.profB.get("/api/reservations")).status).toBe(403);
+        expect((await clients.profB.get(`/api/reservations/${premiere.id_reservation}`)).status).toBe(403);
+        expect((await clients.etudiant.get("/api/reservations")).status).toBe(403);
         expect((await clients.profA.send("patch", `/api/reservations/${premiere.id_reservation}/annuler`)).status).toBe(403);
         const annulation = await clients.admin.send("patch", `/api/reservations/${premiere.id_reservation}/annuler`);
         expect(annulation.body.reservation.statut).toBe("annulee");
