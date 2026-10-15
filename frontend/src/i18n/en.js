@@ -903,6 +903,8 @@ const en = {
     dashboard: 'Dashboard',
     mySessions: 'My sessions',
     myClasses: 'My classes',
+    myQuizzes: 'My quizzes',
+    takeQuiz: 'Quizzes',
     myAvailability: 'My availability',
     myReports: 'My reschedule requests',
     timetable: 'Timetable',

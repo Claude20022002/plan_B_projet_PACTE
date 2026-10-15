@@ -90,6 +90,12 @@ const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
 const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
+// Studio quiz : banque, éditeur et résultats (enseignant) ; rejoindre et passer un quiz (étudiant)
+const MesQuiz        = lazy(() => import('./pages/studio/MesQuiz'));
+const EditeurQuiz    = lazy(() => import('./pages/studio/EditeurQuiz'));
+const ResultatsQuiz  = lazy(() => import('./pages/studio/Resultats'));
+const QuizEtudiant   = lazy(() => import('./pages/studio/Quiz'));
+const Epreuve        = lazy(() => import('./pages/studio/Epreuve'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -346,6 +352,39 @@ export default function App() {
           } />
 
           {/* ── Jeux (étudiants et enseignants : l'administration ne gère pas les jeux) ── */}
+          {/* ── Studio quiz ───────────────────────────────────────────── */}
+          <Route path="/studio-quiz" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><MesQuiz /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/studio-quiz/passations/:id" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><ResultatsQuiz /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/studio-quiz/:id" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><EditeurQuiz /></AppPage>
+            </PrivateRoute>
+          } />
+          {/* Deux accès pour l'étudiant, sur téléphone comme sur ordinateur : le code, ou le QR (/quiz/code/…) */}
+          <Route path="/quiz" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><QuizEtudiant /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/quiz/code/:code" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><QuizEtudiant /></AppPage>
+            </PrivateRoute>
+          } />
+          {/* L'enseignant y passe l'aperçu de ses propres quiz */}
+          <Route path="/quiz/tentative/:id" element={
+            <PrivateRoute requiredRole={['etudiant', 'enseignant']}>
+              <AppPage><Epreuve /></AppPage>
+            </PrivateRoute>
+          } />
           <Route path="/jeux" element={
             <PrivateRoute requiredRole={['etudiant', 'enseignant']}>
               <AppPage><Jeux /></AppPage>

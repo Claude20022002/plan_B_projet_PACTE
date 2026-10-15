@@ -7,6 +7,7 @@ import { marquerRealisees } from "./services/planning/suivi.js";
 import { purgerJournal } from "./services/journalSecurite.js";
 import { purgerCompteursDebit } from "./middleware/rateLimiterMiddleware.js";
 import { purgerGenerations } from "./services/ia/quiz.js";
+import { purgerStudio } from "./services/studio/iaGeneration.js";
 import { demarrerRenvoiQuotidien } from "./services/calendrier/envoiEdt.js";
 import { demarrerRappelsAppel } from "./services/presences/rappelAppel.js";
 import { passage } from "./services/taches/periodiques.js";
@@ -67,6 +68,7 @@ const seedIfRequested = async () => {
             passage("purge-limiteurs", purgerCompteursDebit);
             // Quiz par IA : générations interrompues, brouillons et supports de plus de 30 jours
             passage("purge-quiz-ia", purgerGenerations);
+            passage("purge-studio-quiz", purgerStudio);
         };
         purgerSecurite();
         setInterval(purgerSecurite, 24 * 60 * 60 * 1000).unref();

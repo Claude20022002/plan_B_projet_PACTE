@@ -62,6 +62,7 @@ import {
   WarningAmber,
   DepartureBoard as BoardIcon,
   Menu as MenuIcon,
+  Quiz as QuizIcon,
 } from '@mui/icons-material';
 import GlobalSearch from '../common/GlobalSearch';
 import SelecteurEspaces from '../espaces/SelecteurEspaces';
@@ -141,6 +142,7 @@ const navigationFor = (user) => {
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
           { key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' },
+          { key: 'nav.myQuizzes', icon: <QuizIcon />, path: '/studio-quiz' },
           { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
           { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },
           { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
@@ -172,6 +174,7 @@ const navigationFor = (user) => {
         { key: 'nav.announcements', icon: <Campaign />, path: '/annonces' },
         { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/etudiant' },
         { key: 'nav.myExams', icon: <FactCheck />, path: '/mes-examens' },
+        { key: 'nav.takeQuiz', icon: <QuizIcon />, path: '/quiz' },
         { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/dashboard' },
         { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
       ],
@@ -222,6 +225,8 @@ const TITLE_KEYS = {
   '/parametres': 'nav.settings',
   '/mes-affectations': 'nav.mySessions',
   '/mes-classes': 'nav.myClasses',
+  '/studio-quiz': 'nav.myQuizzes',
+  '/quiz': 'nav.takeQuiz',
   '/mes-services': 'nav.myServices',
   '/reservations': 'nav.bookings',
   '/mes-examens': 'nav.myExams',

@@ -61,7 +61,7 @@ const NO_REFRESH_ENDPOINTS = new Set([
 /**
  * Fonction utilitaire pour faire des requêtes HTTP
  */
-async function request(endpoint, options = {}) {
+export async function request(endpoint, options = {}) {
     const url = `${API_BASE_URL}${endpoint}`;
     const method = options.method || 'GET';
     const csrfToken = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())

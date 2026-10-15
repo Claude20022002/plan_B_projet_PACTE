@@ -903,6 +903,8 @@ const fr = {
     dashboard: 'Tableau de bord',
     mySessions: 'Mes séances',
     myClasses: 'Mes classes',
+    myQuizzes: 'Mes quiz',
+    takeQuiz: 'Quiz',
     myAvailability: 'Mes disponibilités',
     myReports: 'Mes demandes de report',
     timetable: 'Emploi du temps',
