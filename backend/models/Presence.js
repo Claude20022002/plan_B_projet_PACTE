@@ -14,6 +14,11 @@ const Presence = sequelize.define(
         appareil: { type: DataTypes.STRING(64), allowNull: true },
         // Vu dans la salle lors d'une vérification surprise
         verifie_le: { type: DataTypes.DATE, allowNull: true },
+        // Présent ou en retard (absent : pas de ligne) ; motif facultatif ; trace d'une correction à la main
+        statut: { type: DataTypes.STRING(10), allowNull: false, defaultValue: "present", validate: { isIn: [["present", "retard"]] } },
+        motif: { type: DataTypes.STRING(200), allowNull: true },
+        modifie_par: { type: DataTypes.INTEGER, allowNull: true },
+        modifie_le: { type: DataTypes.DATE, allowNull: true },
     },
     { tableName: "Presences", freezeTableName: true }
 );

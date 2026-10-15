@@ -69,4 +69,4 @@ Migration `0044-studio-quiz.js` : `Questionnaires`, `QuestionsQuestionnaire`, `M
 | SQ-4 | Lancer une passation depuis la séance en cours et ranger les résultats dans l'onglet Quiz de la classe (E-8) |
 | SQ-5 | Entrée « Quiz » dans le sélecteur d'espaces (`shared/espaces.js`) et fiches d'aide |
 
-**Déploiement** : aucune dépendance nouvelle ; une migration (0042) ; variables d'IA facultatives (§ 5).
+**Déploiement** : aucune dépendance nouvelle ; une migration (0044) ; variables d'IA facultatives (§ 5).

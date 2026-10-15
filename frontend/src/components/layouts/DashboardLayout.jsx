@@ -24,6 +24,7 @@ import {
 } from '@mui/material';
 import {
   LocalLibrary,
+  MenuBook,
   Campaign,
   Apartment,
   Assignment,
@@ -42,7 +43,6 @@ import {
   CalendarMonth,
   Category,
   DarkModeOutlined,
-  EventAvailable,
   EventRepeat,
   Groups,
   Insights,
@@ -143,10 +143,10 @@ const navigationFor = (user) => {
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
           { key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' },
           { key: 'nav.myQuizzes', icon: <QuizIcon />, path: '/studio-quiz' },
-          { key: 'nav.myServices', icon: <AssignmentInd />, path: '/mes-services' },
-          { key: 'nav.myReports', icon: <EventRepeat />, path: '/demandes-report' },
-          { key: 'nav.myAvailability', icon: <EventAvailable />, path: '/disponibilites' },
-          { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/dashboard' },
+          // Services, disponibilités et demandes de report : une rubrique à trois onglets (lot E-8)
+          { key: 'nav.myService', icon: <AssignmentInd />, path: '/mes-services', aussi: ['/disponibilites', '/demandes-report'] },
+          // La Bibliothèque s'ouvre sur ses documents : Planner est déjà le tableau de bord
+          { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/documents' },
           { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
         ],
       },
@@ -174,8 +174,10 @@ const navigationFor = (user) => {
         { key: 'nav.announcements', icon: <Campaign />, path: '/annonces' },
         { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/etudiant' },
         { key: 'nav.myExams', icon: <FactCheck />, path: '/mes-examens' },
+        // Supports de ses classes (Planner), puis documents de toute l'école (Bibliothèque)
+        { key: 'nav.myCourses', icon: <MenuBook />, path: '/mes-cours' },
         { key: 'nav.takeQuiz', icon: <QuizIcon />, path: '/quiz' },
-        { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/dashboard' },
+        { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/documents' },
         { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
       ],
     },
@@ -197,6 +199,9 @@ const bottomTabsFor = (role) => {
   );
   return tabs;
 };
+
+// Rubriques dont les sous-pages gardent le titre et l'entrée de menu active
+const RUBRIQUES_PARENTES = ['/jeux', '/annonces', '/mes-classes', '/mes-cours'];
 
 const TITLE_KEYS = {
   '/dashboard/admin': 'nav.dashboard',
@@ -225,9 +230,9 @@ const TITLE_KEYS = {
   '/parametres': 'nav.settings',
   '/mes-affectations': 'nav.mySessions',
   '/mes-classes': 'nav.myClasses',
-  '/studio-quiz': 'nav.myQuizzes',
-  '/quiz': 'nav.takeQuiz',
-  '/mes-services': 'nav.myServices',
+          { key: 'nav.myQuizzes', icon: <QuizIcon />, path: '/studio-quiz' },
+  '/mes-cours': 'nav.myCourses',
+  '/mes-services': 'nav.myService',
   '/reservations': 'nav.bookings',
   '/mes-examens': 'nav.myExams',
   '/gestion/examens': 'nav.exams',
@@ -237,8 +242,8 @@ const TITLE_KEYS = {
   '/gestion/journal-securite': 'nav.securityLog',
   '/gestion/preparation': 'nav.preparation',
   '/emploi-du-temps/mensuel': 'nav.monthly',
-  '/disponibilites': 'nav.myAvailability',
-  '/demandes-report': 'nav.myReports',
+  '/disponibilites': 'nav.myService',
+  '/demandes-report': 'nav.myService',
   '/emploi-du-temps/enseignant': 'nav.timetable',
   '/emploi-du-temps/etudiant': 'nav.timetable',
   '/jeux': 'nav.games',
@@ -327,8 +332,9 @@ export default function DashboardLayout({ children }) {
     setDrawerOpen(false);
   };
 
-  // Pages des jeux (/jeux/devoirs/12…) : titre de l'espace Jeux
-  const title = t(TITLE_KEYS[location.pathname] || (location.pathname.startsWith('/jeux/') ? 'nav.games' : location.pathname.startsWith('/annonces/') ? 'nav.announcements' : 'app.name'));
+  // Sous-pages (/jeux/devoirs/12, /annonces/3, /mes-classes/4/7…) : titre et rubrique de la page parente
+  const parente = RUBRIQUES_PARENTES.find((p) => location.pathname.startsWith(`${p}/`));
+  const title = t(TITLE_KEYS[location.pathname] || TITLE_KEYS[parente] || 'app.name');
   const initials = `${user?.prenom?.[0] || ''}${user?.nom?.[0] || ''}`.toUpperCase();
 
   const rail = (
@@ -379,7 +385,7 @@ export default function DashboardLayout({ children }) {
               {group.items.map((item) => {
                 // Jeux : la rubrique reste active dans chaque jeu (/jeux/terminal-linux…)
                 // Emplois du temps : aussi active sur ses vues Liste et Mois
-                const selected = location.pathname === item.path || (item.aussi ?? []).includes(location.pathname) || (item.path === '/jeux' && location.pathname.startsWith('/jeux/')) || (item.path === '/annonces' && location.pathname.startsWith('/annonces/'));
+                const selected = location.pathname === item.path || (item.aussi ?? []).includes(location.pathname) || item.path === parente;
                 return (
                   <ListItemButton
                     key={item.path}

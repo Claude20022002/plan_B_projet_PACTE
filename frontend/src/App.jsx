@@ -77,6 +77,8 @@ const DemandesReport = lazy(() => import('./pages/DemandesReport'));
 const Disponibilites = lazy(() => import('./pages/Disponibilites'));
 const MesServices    = lazy(() => import('./pages/MesServices'));
 const MesClasses     = lazy(() => import('./pages/MesClasses'));
+const EspaceClasse   = lazy(() => import('./pages/EspaceClasse'));
+const MesCours       = lazy(() => import('./pages/MesCours'));
 // Phases P4 à P7 : préparation, réservations, examens, imprévus, suivi, EDT mensuel
 const Reservations   = lazy(() => import('./pages/Reservations'));
 const MesExamens     = lazy(() => import('./pages/MesExamens'));
@@ -321,6 +323,22 @@ export default function App() {
           <Route path="/mes-affectations" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><MesAffectations /></AppPage>
+            </PrivateRoute>
+          } />
+          {/* Espace de cours d'une classe : supports en sections (docs/plans/espace-de-cours.md) */}
+          <Route path="/mes-classes/:idCours/:idGroupe" element={
+            <PrivateRoute requiredRole={['enseignant', 'admin']}>
+              <AppPage><EspaceClasse /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/mes-cours" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><MesCours /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/mes-cours/:idCours/:idGroupe" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><EspaceClasse /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/mes-classes" element={

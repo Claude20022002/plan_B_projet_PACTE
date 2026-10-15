@@ -73,6 +73,10 @@ const fr = {
       supports: 'Supports du cours',
     },
     bibliotheque: {
+      mesCours: 'Mes cours',
+      coursIndisponible: 'Ce cours n’est pas disponible pour le moment.',
+      aucunSupport: 'Votre enseignant n’a encore rien partagé ici.',
+      lien: 'Lien',
       mesModules: 'Mes modules',
       documents_one: '{{count}} document',
       documents_other: '{{count}} documents',
@@ -402,7 +406,11 @@ const en = {
       supports: 'Course materials',
     },
     bibliotheque: {
-      mesModules: 'My courses',
+      mesCours: 'My courses',
+      coursIndisponible: 'This course is not available for now.',
+      aucunSupport: 'Your teacher has not shared anything here yet.',
+      lien: 'Link',
+      mesModules: 'My modules',
       documents_one: '{{count}} document',
       documents_other: '{{count}} documents',
       aucunModule: 'Your courses will appear with your timetable.',
