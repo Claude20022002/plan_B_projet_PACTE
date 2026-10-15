@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, CardActionArea, CardContent, Chip, FormControlLabel, IconButton, InputAdornment, Menu, MenuItem, Skeleton, Stack, Switch, TextField, Typography } from '@mui/material';
 import { Add, AutoAwesome, MoreVert, Quiz as IconeQuiz, Search, WarningAmber } from '@mui/icons-material';
@@ -67,7 +67,9 @@ export default function MesQuiz() {
   const [recherche, setRecherche] = useState('');
   const [etiquette, setEtiquette] = useState('');
   const [archives, setArchives] = useState(false);
-  const [nouveau, setNouveau] = useState(false);
+  // ?nouveau=1 (« Le faire moi-même » de « Créer un quiz ») : la fenêtre de création s'ouvre d'emblée
+  const [parametres, setParametres] = useSearchParams();
+  const [nouveau, setNouveau] = useState(() => parametres.get('nouveau') === '1');
   const [generer, setGenerer] = useState(false);
   const [iaDisponible, setIaDisponible] = useState(false);
   const [menu, setMenu] = useState(null);
@@ -196,7 +198,10 @@ export default function MesQuiz() {
       />
       <NouveauQuizDialog
         ouvert={nouveau}
-        onFermer={() => setNouveau(false)}
+        onFermer={() => {
+          setNouveau(false);
+          if (parametres.has('nouveau')) setParametres({}, { replace: true });
+        }}
         iaDisponible={iaDisponible}
         suggestions={toutesEtiquettes}
         onGenerer={() => setGenerer(true)}
