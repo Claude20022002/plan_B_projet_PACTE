@@ -504,6 +504,10 @@ const fr = {
       quizDirect: 'Lancer un quiz',
       ecrire: 'Écrire à la classe',
       supports: 'Supports de cours',
+      // Cartes des classes (lot E-4)
+      cartes: 'Toutes mes classes',
+      ouvrir: 'Ouvrir {{classe}}',
+      appelOuvertCarte: 'Appel du jour encore ouvert',
       appelLeJour: 'Appel le jour de la séance',
       rappelFaire: '{{classe}} se termine à {{fin}} et l’appel n’a pas été fait.',
       rappelTerminer: '{{classe}} se termine à {{fin}} : l’appel est encore ouvert. Terminez-le pour enregistrer les présences.',

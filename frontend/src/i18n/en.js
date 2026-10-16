@@ -504,6 +504,10 @@ const en = {
       quizDirect: 'Start a quiz',
       ecrire: 'Write to the class',
       supports: 'Course materials',
+      // Class cards (lot E-4)
+      cartes: 'All my classes',
+      ouvrir: 'Open {{classe}}',
+      appelOuvertCarte: 'Today’s attendance is still open',
       appelLeJour: 'Attendance on the day of the session',
       rappelFaire: '{{classe}} ends at {{fin}} and attendance has not been taken.',
       rappelTerminer: '{{classe}} ends at {{fin}}: attendance is still open. Close it to record who was present.',
