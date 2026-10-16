@@ -861,9 +861,9 @@ const en = {
       "profQuizDirect": {
         "titre": "Run a live quiz during class",
         "etapes": [
-          "In “My classes”, on the class in progress, click “Live quiz”: you land on your quizzes without signing in again.",
-          "Choose the quiz and start the game: the students of the class receive it in the app, with no code to type.",
-          "The “← Planner” link takes you back to your dashboard."
+          "In “My classes”, on the session in progress, click “Start a quiz”.",
+          "Choose one of your quizzes: Planner starts the game, notifies the students of the class and opens the screen to project.",
+          "Click “Start”: students answer in the app, with no code to type."
         ],
         "note": "Scores are attached to the session: you find them afterwards in “Activities”."
       },
@@ -893,35 +893,28 @@ const en = {
         ],
         "note": "You can only set an assignment for your own classes. Students see the answers only after the deadline."
       },
-      "profEcrire": {
-        "titre": "Write to my class",
-        "etapes": [
-          "In “My classes”, click “Write to the class”: the announcement opens already addressed to the group.",
-          "Write it, attach a PDF or an image if needed, and tick email delivery if it is urgent.",
-          "In “Announcements”, you can see who has read it and remind the others."
-        ]
-      },
       "profSupports": {
-        "titre": "Share course material, an exercise or an article",
+        "titre": "Share course material with a class",
         "etapes": [
-          "Open the “Library”, then upload a document.",
-          "Choose the module (any module, not only yours) and the type: course, tutorial, lab, exam, exercise or article.",
-          "Your document is published immediately. Students find it from their session of that module."
-        ]
+          "In “My classes”, open the class card: the “Materials” tab is shown.",
+          "Drop your files in the upload area, or click “Add a link”. A document already in the Library: “From the Library”, without copying it.",
+          "Arrange them in sections. A material’s menu lets you hide it from students, or publish it in the Library for the whole school."
+        ],
+        "note": "Only the students of this class see its materials. A file is 20 MB at most."
       },
       "profReport": {
         "titre": "I cannot teach a session",
         "etapes": [
-          "Open “My reschedule requests” and click “New request”, or “Request rescheduling” from the board.",
+          "Open “My teaching”, “Rescheduling requests” tab, and click “New request”, or “Request rescheduling” from the board.",
           "Give the reason and the date you would like: the administration receives the request and answers.",
-          "Follow the answer in “My reschedule requests”."
+          "Follow the answer in that same tab."
         ],
         "note": "You have nothing to confirm: a planned session counts as confirmed as long as you do not ask for rescheduling."
       },
       "profAbsence": {
         "titre": "I will be away for several days",
         "etapes": [
-          "Open “My availability” and declare an absence.",
+          "Open “My teaching”, “Availability” tab, and declare an absence.",
           "Give the period: all your slots become unavailable.",
           "The administration is notified and handles your sessions, with a replacement or a make-up session."
         ]
@@ -929,16 +922,16 @@ const en = {
       "profDispos": {
         "titre": "Say when I can teach",
         "etapes": [
-          "Open “My availability” and mark the slots where you are available or unavailable.",
+          "Open “My teaching”, “Availability” tab, and mark the slots where you are available or unavailable.",
           "Do it before the timetable is generated: it will only place you on your free slots."
         ]
       },
       "profServices": {
         "titre": "Accept or refuse a course offered to me",
         "etapes": [
-          "Open “My teaching”: the courses offered by the programme lead are waiting for your answer.",
+          "Open “My teaching”, “My assignments” tab: the courses offered by the programme lead are waiting for your answer.",
           "Accept, or refuse with a reason.",
-          "The same page shows your load for the year against the hours you owe."
+          "The same tab shows your load for the year against the hours you owe."
         ]
       },
       "profResponsable": {
@@ -984,6 +977,15 @@ const en = {
           "A quiz started by your teacher during class also appears there, and in the app.",
           "The answers to an assignment are visible after the deadline."
         ]
+      },
+      "etuCours": {
+        "titre": "Find the materials of my courses",
+        "etapes": [
+          "Open “My courses”: one card per module you follow.",
+          "Open a module: its materials are arranged in sections, and a document opens in a new tab.",
+          "On the phone, they come first in the “Library” tab of the app."
+        ],
+        "note": "You only see what your teachers shared with your classes. Documents for the whole school are in the Library."
       },
       "etuAnnonces": {
         "titre": "Read announcements from the school and my teachers",

@@ -34,8 +34,8 @@ export const FICHES = [
   { id: 'profQuizDirect', roles: ['enseignant'], theme: 'seance', pages: ['/mes-classes', '/jeux', '/dashboard/enseignant'], lien: '/mes-classes' },
   { id: 'profQuizIa', roles: ['enseignant'], theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
   { id: 'profDevoir', roles: ['enseignant'], devoirs: true, theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
-  { id: 'profEcrire', roles: ['enseignant'], theme: 'classe', pages: ['/annonces', '/mes-classes'], lien: '/mes-classes' },
-  { id: 'profSupports', roles: ['enseignant'], theme: 'classe', pages: ['/mes-classes'], lien: '/biblio/' },
+  // Les supports d'une classe se gèrent dans son espace (espace-de-cours.md, lots E-3 et E-9)
+  { id: 'profSupports', roles: ['enseignant'], theme: 'classe', pages: ['/mes-classes'], lien: '/mes-classes' },
   { id: 'profReport', roles: ['enseignant'], theme: 'planning', pages: ['/mes-affectations', '/demandes-report', '/dashboard/enseignant', '/emploi-du-temps/enseignant'], lien: '/demandes-report' },
   { id: 'profAbsence', roles: ['enseignant'], theme: 'planning', pages: ['/disponibilites'], lien: '/disponibilites' },
   { id: 'profDispos', roles: ['enseignant'], theme: 'planning', pages: ['/disponibilites'], lien: '/disponibilites' },
@@ -47,6 +47,7 @@ export const FICHES = [
   { id: 'etuEdt', roles: ['etudiant'], theme: 'etudiant', pages: ['/dashboard/etudiant', '/emploi-du-temps'], lien: '/emploi-du-temps/etudiant' },
   { id: 'etuPresence', roles: ['etudiant'], theme: 'etudiant', pages: ['/presence', '/dashboard/etudiant'], lien: null },
   { id: 'etuDevoirs', roles: ['etudiant'], theme: 'etudiant', pages: ['/jeux'], lien: '/jeux' },
+  { id: 'etuCours', roles: ['etudiant'], theme: 'etudiant', pages: ['/mes-cours', '/dashboard/etudiant'], lien: '/mes-cours' },
   { id: 'etuAnnonces', roles: ['etudiant'], theme: 'etudiant', pages: ['/annonces', '/notifications'], lien: '/annonces' },
 ];
 
