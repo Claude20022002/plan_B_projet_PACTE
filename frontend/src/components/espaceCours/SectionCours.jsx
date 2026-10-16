@@ -1,13 +1,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Chip, IconButton, List, Menu, MenuItem, Divider, Paper, Typography } from '@mui/material';
-import { AddLink, MoreVert } from '@mui/icons-material';
+import { AddLink, LocalLibrary, MoreVert } from '@mui/icons-material';
 import LigneSupport from './LigneSupport';
 import ZoneDepot from './ZoneDepot';
 
 /**
  * Une section de l'espace de cours : son titre, ses supports, et pour l'enseignant la zone de
- * dépôt, l'ajout d'un lien et le menu de la section (renommer, masquer, monter, descendre,
+ * dépôt, l'ajout d'un lien ou d'un document de la Bibliothèque, et le menu de la section (renommer, masquer, monter, descendre,
  * supprimer si elle est vide). L'étudiant ne voit que le titre et les supports.
  */
 export default function SectionCours({ section, sections, gere, premiere, derniere, onOuvrir, onActionSupport, onActionSection, onRecharger }) {
@@ -56,9 +56,14 @@ export default function SectionCours({ section, sections, gere, premiere, dernie
       {gere && (
         <>
           <ZoneDepot idSection={section.id_section} onDepose={onRecharger} />
-          <Button size="small" startIcon={<AddLink />} onClick={() => onActionSection('lien', section)} sx={{ mt: 1, textTransform: 'none' }}>
-            {t('espaceCours.ajouterLien')}
-          </Button>
+          <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 1 }}>
+            <Button size="small" startIcon={<AddLink />} onClick={() => onActionSection('lien', section)} sx={{ textTransform: 'none' }}>
+              {t('espaceCours.ajouterLien')}
+            </Button>
+            <Button size="small" startIcon={<LocalLibrary />} onClick={() => onActionSection('bibliotheque', section)} sx={{ textTransform: 'none' }}>
+              {t('espaceCours.depuisBibliotheque')}
+            </Button>
+          </Box>
         </>
       )}
 

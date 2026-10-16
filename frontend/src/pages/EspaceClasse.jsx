@@ -8,6 +8,7 @@ import PageHeader from '../design-system/components/PageHeader';
 import EmptyState from '../design-system/components/EmptyState';
 import SectionCours from '../components/espaceCours/SectionCours';
 import SaisieDialog from '../components/espaceCours/SaisieDialog';
+import BibliothequeDialog from '../components/espaceCours/BibliothequeDialog';
 import OngletAppel from '../components/espaceCours/OngletAppel';
 import OngletEleves from '../components/espaceCours/OngletEleves';
 import useEspaceCours from '../hooks/useEspaceCours';
@@ -42,6 +43,9 @@ export default function EspaceClasse() {
   };
 
   const { espace, erreur, charger, ouvrir, actionSupport, actionSection, nouvelleSection } = useEspaceCours(idCours, idGroupe, saisir);
+  // Section où épingler un document de la Bibliothèque (lot E-9) ; null : fenêtre fermée
+  const [epinglerDans, setEpinglerDans] = useState(null);
+  const agirSurSection = (nom, section) => (nom === 'bibliotheque' ? setEpinglerDans(section) : actionSection(nom, section));
   const gere = Boolean(espace?.gere);
   const sections = espace?.sections ?? [];
   const onglet = gere && ONGLETS.includes(parametres.get('onglet')) ? parametres.get('onglet') : 'supports';
@@ -76,7 +80,7 @@ export default function EspaceClasse() {
             derniere={i === sections.length - 1}
             onOuvrir={ouvrir}
             onActionSupport={actionSupport}
-            onActionSection={actionSection}
+            onActionSection={agirSurSection}
             onRecharger={charger}
           />
         ))}
@@ -135,6 +139,7 @@ export default function EspaceClasse() {
         onFermer={() => fermerSaisie(null)}
         onValider={async (v) => fermerSaisie(v)}
       />
+      <BibliothequeDialog idCours={idCours} idGroupe={idGroupe} section={epinglerDans} onFermer={() => setEpinglerDans(null)} onEpingle={charger} />
     </DashboardLayout>
   );
 }

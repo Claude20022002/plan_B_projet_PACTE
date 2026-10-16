@@ -3,7 +3,7 @@ import { journaliser } from "../journalSecurite.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { chargerClasse, classeAutorisee, groupesVisiblesPar } from "./droits.js";
 import { ordreSuivant, sectionGeree, sectionGenerale, sectionsPubliees } from "./sections.js";
-import { lienDocument, lireDocument, publierDocument, supprimerDocument, transmettreDepot } from "./studylib.js";
+import { chercherDocuments, lienDocument, lireDocument, publierDocument, supprimerDocument, transmettreDepot } from "./studylib.js";
 
 /**
  * Supports d'une classe : documents de StudyLib (déposés depuis la classe ou épinglés depuis la
@@ -54,6 +54,18 @@ export const ajouterLien = async (user, cible, { titre, url } = {}) => {
     }
     if (!["https:", "http:"].includes(adresse.protocol) || adresse.href.length > 2048) throw new ErreurMetier("Adresse invalide : http ou https seulement", 400);
     return creerSupport(user, section, { type: "lien", titre: titreOuDefaut(titre, adresse.hostname), url: adresse.href });
+};
+
+/**
+ * Documents de la Bibliothèque à épingler dans une classe (lot E-9) : seulement pour qui gère la
+ * classe, et la recherche part vers StudyLib après ce contrôle. 2 à 80 caractères, comme StudyLib.
+ */
+export const chercherBibliotheque = async (user, { idCours, idGroupe, jeton }, q) => {
+    await classeAutorisee(user, idCours, idGroupe, { gerer: true });
+    const texte = String(q ?? "").trim();
+    if (texte.length < 2 || texte.length > 80) throw new ErreurMetier("Tapez de 2 à 80 caractères", 400);
+    const documents = await chercherDocuments(jeton, texte);
+    return documents.map((d) => ({ id: d.id, titre: d.title, type: d.type ?? null, type_mime: d.mime_type ?? null, module: d.module ?? null }));
 };
 
 /** Épingle un document publié de la Bibliothèque, sans copie (StudyLib vérifie que l'enseignant le voit). */

@@ -14,6 +14,9 @@ export const espaceCoursAPI = {
   modifierSection: (id, champs) => request(`/sections-cours/${id}`, { method: 'PUT', body: champs }),
   supprimerSection: (id) => request(`/sections-cours/${id}`, { method: 'DELETE' }),
   ajouterLien: (idSection, lien) => request(`/sections-cours/${idSection}/liens`, { method: 'POST', body: lien }),
+  // Documents publiés de la Bibliothèque à épingler dans la classe, sans copie (lot E-9)
+  chercherBibliotheque: (idCours, idGroupe, q) => request(`${classe(idCours, idGroupe)}/bibliotheque?${new URLSearchParams({ q })}`),
+  epingler: (idSection, idDocument) => request(`/sections-cours/${idSection}/bibliotheque`, { method: 'POST', body: { id_document: idDocument } }),
   modifierSupport: (id, champs) => request(`/supports-cours/${id}`, { method: 'PUT', body: champs }),
   retirerSupport: (id) => request(`/supports-cours/${id}`, { method: 'DELETE' }),
   publierSupport: (id) => request(`/supports-cours/${id}/publier`, { method: 'POST' }),
