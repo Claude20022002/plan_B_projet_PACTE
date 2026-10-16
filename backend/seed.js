@@ -5,8 +5,9 @@ import './models/index.js';
 import {
     Users, Enseignant, Etudiant, Filiere, Groupe, Salle, Cours, Creneau, Disponibilite, Appartenir, Campus,
     CoursComposante, AnneeUniversitaire, Periode, Evenement, Enseignement,
-    CompetenceEnseignant, EnseignementEnseignant, ResponsableFiliere,
+    CompetenceEnseignant, EnseignementEnseignant, ResponsableFiliere, JeuModule,
 } from './models/index.js';
+import { JEUX } from '../shared/jeux/catalogue.js';
 import { hashPassword } from './utils/passwordHelper.js';
 import { runMigrations } from './migrations/migrator.js';
 import { recalculerRangs } from './services/planning/referentiel.js';
@@ -909,6 +910,25 @@ async function seed() {
             await declarer(ens, { id_creneau: creneauxMap['samedi_09:00'].id_creneau, date_debut: debutS1, date_fin: finS1, disponible: true, preference: 'eviter' });
         }
         console.log(`✅ ${nbDispos} disponibilités et vœux déclarés`);
+
+        // ── 15. Jeux pédagogiques proposés dans un module de démonstration ──
+        // Le code des jeux est versionné (shared/) ; proposer un jeu dans un module est une DONNÉE en base,
+        // donc absente d'un simple `git pull`. On la rejoue ici : un `npm run seed` suffit à rendre les
+        // jeux visibles aux étudiants inscrits au module (affectation idempotente, jamais en double).
+        const moduleJeux = coursMap['CPI-1-PY'];
+        if (moduleJeux) {
+            let nbJeuxProposes = 0;
+            for (const jeu of JEUX) {
+                const [, cree] = await JeuModule.findOrCreate({
+                    where: { code_jeu: jeu.code, id_cours: moduleJeux.id_cours },
+                    defaults: { but: 'entrainer', notion: null },
+                });
+                if (cree) nbJeuxProposes++;
+            }
+            console.log(`✅ Jeux : ${JEUX.length} proposés dans ${moduleJeux.code_cours} (${nbJeuxProposes} ajoutés, ${JEUX.length - nbJeuxProposes} déjà présents)`);
+        } else {
+            console.log('⚠️ Module CPI-1-PY introuvable : jeux non proposés');
+        }
 
         // ── Récapitulatif ─────────────────────────────────────────────────────
         const profDemo = proposes[0]?.principal ?? enseignantsList[0];
