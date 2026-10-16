@@ -11,13 +11,14 @@ import Personnage from '../../jeux/Personnage';
 import Scene from '../../jeux/Scene';
 import { ouvrirPartie } from '../../quiz/ouvrir';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
+import { SIMULATIONS } from '../../../../shared/simulations/catalogue.js';
 import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
 import { useMargeOnglets } from '../../verre/Verre';
 
 const RAFRAICHISSEMENT_QUIZ_MS = 20000;
 // Écran de chaque jeu intégré
-const ECRAN_JEU = { 'terminal-linux': '/terminal' };
+const ECRAN_JEU = { 'terminal-linux': '/terminal', ...Object.fromEntries(SIMULATIONS.map((jeu) => [jeu.code, { pathname: '/simulation', params: { code: jeu.code } }])) };
 // Devoirs masqués (lot D-1) : ceux que le serveur renvoie encore ne s'affichent pas
 const devoirsDe = (m) => (DEVOIRS_ACTIFS ? m.devoirs ?? [] : []);
 

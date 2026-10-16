@@ -9,8 +9,6 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  LinearProgress,
-  Link,
   MenuItem,
   Skeleton,
   Table,
@@ -27,6 +25,7 @@ import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau'
 import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
 import ZoneQuizEtDevoirs from '../../components/jeux/ZoneQuizEtDevoirs';
+import CatalogueJeux from '../../components/jeux/CatalogueJeux';
 import PanneauQuizDirect from '../../components/quiz/PanneauQuizDirect';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
@@ -97,13 +96,13 @@ export default function Jeux() {
   // Quiz en direct : configuration une fois, parties en cours toutes les 20 s
   useEffect(() => {
     let actif = true;
-    quizAPI.getConfig().then((config) => actif && setQuiz((q) => ({ ...q, config }))).catch(() => {});
-    quizAPI.getHistorique().then((r) => actif && setHistorique(r?.data ?? [])).catch(() => {});
+    quizAPI.getConfig().then((config) => actif && setQuiz((q) => ({ ...q, config }))).catch(() => { });
+    quizAPI.getHistorique().then((r) => actif && setHistorique(r?.data ?? [])).catch(() => { });
     const lireParties = () =>
       quizAPI
         .getPartiesEnCours()
         .then((r) => actif && setQuiz((q) => ({ ...q, parties: (r?.data ?? []).filter((p) => urlSure(p.url)) })))
-        .catch(() => {});
+        .catch(() => { });
     lireParties();
     const id = setInterval(lireParties, RAFRAICHISSEMENT_QUIZ_MS);
     return () => {
@@ -285,48 +284,7 @@ export default function Jeux() {
         )}
 
         {/* ── Tous les jeux ───────────────────────────────────────────── */}
-        <Panneau titre={t('jeux.catalogue')} titreId="catalogue-titre">
-          {!accueil && !erreur && <Skeleton variant="rectangular" height={96} sx={{ bgcolor: ds.board.cell }} />}
-          {(accueil?.jeux ?? []).map((jeu, i) => {
-            const p = jeu.progression;
-            const pourcentage = p.total ? Math.round((100 * p.reussis) / p.total) : 0;
-            return (
-              <LignePanneau
-                key={jeu.code}
-                premier={i === 0}
-                lampe={p.reussis > 0 ? ds.board.live : null}
-                action={
-                  <Button variant="contained" sx={boutonPanneauPlein} onClick={() => jouer(jeu.code)}>
-                    {p.reussis > 0 ? t('jeux.continuer') : t('jeux.jouer')}
-                  </Button>
-                }
-              >
-                <Capitales sx={{ display: 'block', fontSize: '1.125rem' }}>{libelle(jeu.titre, i18n.language)}</Capitales>
-                <Box sx={{ fontSize: '0.9375rem', color: ds.board.letterDim, maxWidth: '72ch', mt: 0.25 }}>{libelle(jeu.resume, i18n.language)}</Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1, maxWidth: 420 }}>
-                  <LinearProgress
-                    variant="determinate"
-                    value={pourcentage}
-                    aria-label={t('jeux.progression', { count: p.reussis, total: p.total, points: p.points })}
-                    sx={{ flex: 1, height: 4, borderRadius: '2px', bgcolor: ds.board.seam, '& .MuiLinearProgress-bar': { bgcolor: ds.board.letter } }}
-                  />
-                  <Capitales sx={{ fontSize: '0.8125rem', color: ds.board.letterDim, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
-                    {p.reussis}/{p.total} · {t('jeux.points', { count: p.points })}
-                  </Capitales>
-                </Box>
-                <Box sx={{ fontSize: '0.75rem', color: ds.board.letterDim, mt: 0.75 }}>
-                  {t('jeux.source', { nom: jeu.source.nom, auteur: jeu.source.auteur, licence: jeu.source.licence })}{' '}
-                  <Link href={jeu.source.url} target="_blank" rel="noopener noreferrer" sx={{ color: ds.board.letter }}>
-                    {t('jeux.voirSource')}
-                  </Link>
-                </Box>
-              </LignePanneau>
-            );
-          })}
-          <LignePanneau>
-            <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.bientot')}</Typography>
-          </LignePanneau>
-        </Panneau>
+        <CatalogueJeux accueil={accueil} erreur={erreur} jouer={jouer} />
 
         {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
         {enseignant && (

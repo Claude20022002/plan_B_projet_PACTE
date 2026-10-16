@@ -12,6 +12,7 @@ import {
     suiviDuModule,
 } from "../services/jeux/jeux.js";
 import { historiqueEnseignant } from "../services/jeux/historique.js";
+import { essayerSimulation } from "../services/jeux/simulations.js";
 
 /**
  * Jeux intégrés à Planner (terminal Linux…), pour les étudiants et les enseignants : l'administration
@@ -55,6 +56,12 @@ router.get("/:code/progression", planification(async (req, res) => {
 
 router.post("/:code/defis/:idDefi/reussite", planification(async (req, res) => {
     const resultat = await enregistrerReussite(req.user, req.params.code, req.params.idDefi, req.body?.indices, req.body?.commandes);
+    res.status(resultat.cree ? 201 : 200).json(resultat);
+}));
+
+// The server evaluates the submitted inputs; client-supplied scores are never used.
+router.post("/:code/defis/:idDefi/essais", planification(async (req, res) => {
+    const resultat = await essayerSimulation(req.user, req.params.code, req.params.idDefi, req.body?.reponse);
     res.status(resultat.cree ? 201 : 200).json(resultat);
 }));
 

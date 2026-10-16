@@ -111,14 +111,14 @@ export const accueilJeux = async (user) => {
     const catalogue = user.role === "etudiant" ? JEUX.filter((jeu) => proposes.has(jeu.code)) : JEUX;
     return {
         profil,
-        jeux: catalogue.map((jeu) => ({ code: jeu.code, type: jeu.type, discipline: jeu.discipline, titre: jeu.titre, resume: jeu.resume, source: jeu.source, progression: resumeProgression(jeu, lignes) })),
+        jeux: catalogue.map((jeu) => ({ code: jeu.code, type: jeu.type, discipline: jeu.discipline, titre: jeu.titre, resume: jeu.resume, source: jeu.source, curriculum: jeu.curriculum, progression: resumeProgression(jeu, lignes) })),
         modules: [...modules.values()],
     };
 };
 
 /** Défis réussis par l'utilisateur dans un jeu. */
 /** Un étudiant ne joue qu'aux jeux proposés dans l'un de ses modules. */
-const jeuAccessible = async (user, jeu) => {
+export const jeuAccessible = async (user, jeu) => {
     if (user.role !== "etudiant") return;
     const modules = await modulesDuJoueur(user);
     const propose = modules.length ? await JeuModule.count({ where: { code_jeu: jeu.code, id_cours: modules } }) : 0;
@@ -156,6 +156,7 @@ const commandesOuErreur = (commandes) => {
 export const enregistrerReussite = async (user, code, idDefi, indices, commandes) => {
     const jeu = jeuOuErreur(code);
     await jeuAccessible(user, jeu);
+    if (jeu.type !== "terminal") throw new ErreurMetier("Use the simulation attempts endpoint", 400);
     const defi = defiDuJeu(jeu, String(idDefi ?? ""));
     if (!defi) throw new ErreurMetier("Défi inconnu", 404);
     const n = Number(indices ?? 0);
@@ -165,9 +166,14 @@ export const enregistrerReussite = async (user, code, idDefi, indices, commandes
         throw new ErreurMetier("Objectif du défi non atteint", 422);
     }
 
+    return sauvegarderReussite(user, jeu, defi, n);
+};
+
+/** Stores first mastery only; both terminal and simulations use server-owned point values. */
+export const sauvegarderReussite = async (user, jeu, defi, indices = 0) => {
     const [ligne, cree] = await JeuProgression.findOrCreate({
         where: { id_user: user.id_user, code_jeu: jeu.code, id_defi: defi.id },
-        defaults: { indices: n, points: pointsPour(defi.xp, n), reussi_le: new Date() },
+        defaults: { indices, points: pointsPour(defi.xp, indices), reussi_le: new Date() },
     });
     const lignes = await JeuProgression.findAll({ where: { id_user: user.id_user, code_jeu: jeu.code }, attributes: ["code_jeu", "id_defi", "points"] });
     return { cree, points: ligne.points, progression: resumeProgression(jeu, lignes) };

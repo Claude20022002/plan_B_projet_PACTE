@@ -6,7 +6,7 @@
     "start": "expo start",
     "android": "expo start --android",
     "web": "expo start --web",
-    "test": "jest",
+    "test": "node --require ./jest.esm-fix.js node_modules/jest/bin/jest.js",
     "lint": "expo lint",
     "export:android": "expo export --platform android --output-dir dist-verif"
   },
@@ -60,18 +60,5 @@
   },
   "overrides": {
     "postcss": "^8.5.28"
-  },
-  "jest": {
-    "preset": "jest-expo",
-    "roots": [
-      "<rootDir>/__tests__"
-    ],
-    "transformIgnorePatterns": [
-      "node_modules/(?!((jest-)?react-native|@react-native(-community)?)|expo(nent)?|@expo(nent)?/.*|@expo-google-fonts/.*|react-navigation|@react-navigation/.*|react-native-svg)"
-    ],
-    "moduleDirectories": [
-      "node_modules",
-      "<rootDir>/node_modules"
-    ]
   }
 }

@@ -1,4 +1,5 @@
 import { challengeList } from '../terminal/moteur.js';
+import { SIMULATIONS } from '../simulations/catalogue.js';
 
 /**
  * Catalogue des jeux de la plateforme, commun au serveur (validation de la progression), au web
@@ -20,6 +21,7 @@ export const JEUX = [
     source: { nom: 'Terminal Quest', auteur: 'Bruno Zapico', url: 'https://github.com/brunozapico/terminal_quest', licence: 'MIT' },
     defis: challengeList.map((d) => ({ id: d.id, niveau: d.level, xp: d.xp, boss: Boolean(d.boss) })),
   },
+  ...SIMULATIONS,
 ];
 
 export const jeuParCode = (code) => JEUX.find((j) => j.code === code) ?? null;

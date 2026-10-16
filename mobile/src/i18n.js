@@ -3,6 +3,7 @@ import { initReactI18next } from 'react-i18next';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import partageFr from '../../shared/i18n/fr.js';
 import partageEn from '../../shared/i18n/en.js';
+import { fr as simulationsFr, en as simulationsEn } from '../../shared/simulations/i18n.js';
 
 /**
  * Traductions : espaces communs avec le web (status, board : shared/i18n) et espace « app »
@@ -683,7 +684,7 @@ const en = {
 const CLE_LANGUE = 'hestim.langue';
 
 i18n.use(initReactI18next).init({
-  resources: { fr: { translation: fr }, en: { translation: en } },
+  resources: { fr: { translation: { ...fr, simulations: simulationsFr } }, en: { translation: { ...en, simulations: simulationsEn } } },
   lng: 'fr',
   fallbackLng: 'fr',
   interpolation: { escapeValue: false },
@@ -701,7 +702,7 @@ export const restaurerLangue = async () => {
 
 export const changerLangue = async (langue) => {
   await i18n.changeLanguage(langue);
-  await AsyncStorage.setItem(CLE_LANGUE, langue).catch(() => {});
+  await AsyncStorage.setItem(CLE_LANGUE, langue).catch(() => { });
 };
 
 export default i18n;

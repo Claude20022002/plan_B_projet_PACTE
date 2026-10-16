@@ -19,9 +19,9 @@ import VersTableau from './components/espaces/VersTableau';
 import { routesProjection } from './routes/projection';
 
 // ── Composants de layout critique (jamais lazy — trop fréquents) ──────────
-import PageSkeleton    from './components/common/PageSkeleton';
-import AuthSkeleton    from './components/common/AuthSkeleton';
-import ErrorBoundary   from './components/common/ErrorBoundary';
+import PageSkeleton from './components/common/PageSkeleton';
+import AuthSkeleton from './components/common/AuthSkeleton';
+import ErrorBoundary from './components/common/ErrorBoundary';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LAZY IMPORTS — 1 chunk par groupe logique
@@ -29,76 +29,74 @@ import ErrorBoundary   from './components/common/ErrorBoundary';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Auth (chunk léger — affiché non authentifié) ──────────────────────────
-const Connexion      = lazy(() => import('./pages/Connexion'));
+const Connexion = lazy(() => import('./pages/Connexion'));
 const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const ResetPassword  = lazy(() => import('./pages/ResetPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 const ChangerMotDePasse = lazy(() => import('./pages/ChangerMotDePasse'));
-const Accueil        = lazy(() => import('./pages/Accueil'));
-const Annonces       = lazy(() => import('./pages/Annonces'));
-const Appel          = lazy(() => import('./pages/Appel'));
-const Presence       = lazy(() => import('./pages/Presence'));
+const Accueil = lazy(() => import('./pages/Accueil'));
+const Annonces = lazy(() => import('./pages/Annonces'));
+const Appel = lazy(() => import('./pages/Appel'));
+const Presence = lazy(() => import('./pages/Presence'));
 
 // ── Dashboards (chunk par rôle) ───────────────────────────────────────────
-const AdminDashboard      = lazy(() => import('./pages/dashboard/AdminDashboard'));
+const AdminDashboard = lazy(() => import('./pages/dashboard/AdminDashboard'));
 const EnseignantDashboard = lazy(() => import('./pages/dashboard/EnseignantDashboard'));
-const EtudiantDashboard   = lazy(() => import('./pages/dashboard/EtudiantDashboard'));
+const EtudiantDashboard = lazy(() => import('./pages/dashboard/EtudiantDashboard'));
 
 // ── Gestion admin (chunk "admin-gestion") ─────────────────────────────────
 // Vite détecte le dossier commun → regroupe automatiquement
-const Utilisateurs       = lazy(() => import('./pages/gestion/Utilisateurs'));
-const Enseignants        = lazy(() => import('./pages/gestion/Enseignants'));
-const Etudiants          = lazy(() => import('./pages/gestion/Etudiants'));
-const Filieres           = lazy(() => import('./pages/gestion/Filieres'));
-const Groupes            = lazy(() => import('./pages/gestion/Groupes'));
-const Salles             = lazy(() => import('./pages/gestion/Salles'));
-const Cours              = lazy(() => import('./pages/gestion/Cours'));
-const Creneaux           = lazy(() => import('./pages/gestion/Creneaux'));
-const Affectations       = lazy(() => import('./pages/gestion/Affectations'));
-const Conflits           = lazy(() => import('./pages/gestion/Conflits'));
-const DemandesReportAdmin= lazy(() => import('./pages/gestion/DemandesReportAdmin'));
-const GenerationAuto     = lazy(() => import('./pages/gestion/GenerationAutomatique'));
-const Campus             = lazy(() => import('./pages/gestion/Campus'));
-const Calendrier         = lazy(() => import('./pages/gestion/Calendrier'));
+const Utilisateurs = lazy(() => import('./pages/gestion/Utilisateurs'));
+const Enseignants = lazy(() => import('./pages/gestion/Enseignants'));
+const Etudiants = lazy(() => import('./pages/gestion/Etudiants'));
+const Filieres = lazy(() => import('./pages/gestion/Filieres'));
+const Groupes = lazy(() => import('./pages/gestion/Groupes'));
+const Salles = lazy(() => import('./pages/gestion/Salles'));
+const Cours = lazy(() => import('./pages/gestion/Cours'));
+const Creneaux = lazy(() => import('./pages/gestion/Creneaux'));
+const Affectations = lazy(() => import('./pages/gestion/Affectations'));
+const Conflits = lazy(() => import('./pages/gestion/Conflits'));
+const DemandesReportAdmin = lazy(() => import('./pages/gestion/DemandesReportAdmin'));
+const GenerationAuto = lazy(() => import('./pages/gestion/GenerationAutomatique'));
+const Campus = lazy(() => import('./pages/gestion/Campus'));
+const Calendrier = lazy(() => import('./pages/gestion/Calendrier'));
 const ParametresPlanning = lazy(() => import('./pages/gestion/ParametresPlanning'));
-const Enseignements      = lazy(() => import('./pages/gestion/Enseignements'));
+const Enseignements = lazy(() => import('./pages/gestion/Enseignements'));
 
 // ── Emplois du temps (chunk "calendar" — FullCalendar isolé) ─────────────
-const EmploiDuTempsAdmin     = lazy(() => import('./pages/emploi-du-temps/EmploiDuTempsAdmin'));
-const EmploiDuTempsEnseignant= lazy(() => import('./pages/emploi-du-temps/EmploiDuTempsEnseignant'));
-const EmploiDuTempsEtudiant  = lazy(() => import('./pages/emploi-du-temps/EmploiDuTempsEtudiant'));
+const EmploiDuTempsAdmin = lazy(() => import('./pages/emploi-du-temps/EmploiDuTempsAdmin'));
+const EmploiDuTempsEnseignant = lazy(() => import('./pages/emploi-du-temps/EmploiDuTempsEnseignant'));
+const EmploiDuTempsEtudiant = lazy(() => import('./pages/emploi-du-temps/EmploiDuTempsEtudiant'));
 
 // ── Pages partagées ───────────────────────────────────────────────────────
-const Notifications  = lazy(() => import('./pages/Notifications'));
-const Parametres     = lazy(() => import('./pages/Parametres'));
-const Securite       = lazy(() => import('./pages/Securite'));
-const Statistiques   = lazy(() => import('./pages/Statistiques'));
-const MesAffectations= lazy(() => import('./pages/MesAffectations'));
+const Notifications = lazy(() => import('./pages/Notifications'));
+const Parametres = lazy(() => import('./pages/Parametres'));
+const Securite = lazy(() => import('./pages/Securite'));
+const Statistiques = lazy(() => import('./pages/Statistiques'));
+const MesAffectations = lazy(() => import('./pages/MesAffectations'));
 const DemandesReport = lazy(() => import('./pages/DemandesReport'));
 const Disponibilites = lazy(() => import('./pages/Disponibilites'));
-const MesServices    = lazy(() => import('./pages/MesServices'));
-const MesClasses     = lazy(() => import('./pages/MesClasses'));
-const EspaceClasse   = lazy(() => import('./pages/EspaceClasse'));
-const MesCours       = lazy(() => import('./pages/MesCours'));
+const MesServices = lazy(() => import('./pages/MesServices'));
+const MesClasses = lazy(() => import('./pages/MesClasses'));
+const EspaceClasse = lazy(() => import('./pages/EspaceClasse'));
+const MesCours = lazy(() => import('./pages/MesCours'));
 // Phases P4 à P7 : préparation, réservations, examens, imprévus, suivi, EDT mensuel
-const Reservations   = lazy(() => import('./pages/Reservations'));
-const MesExamens     = lazy(() => import('./pages/MesExamens'));
-const EdtMensuel     = lazy(() => import('./pages/EdtMensuel'));
-const Examens        = lazy(() => import('./pages/gestion/Examens'));
-const Imprevus       = lazy(() => import('./pages/gestion/Imprevus'));
-const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
-const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
+const Reservations = lazy(() => import('./pages/Reservations'));
+const MesExamens = lazy(() => import('./pages/MesExamens'));
+const EdtMensuel = lazy(() => import('./pages/EdtMensuel'));
+const Examens = lazy(() => import('./pages/gestion/Examens'));
+const Imprevus = lazy(() => import('./pages/gestion/Imprevus'));
+const Suivi = lazy(() => import('./pages/gestion/Suivi'));
+const Preparation = lazy(() => import('./pages/gestion/Preparation'));
 const SignalementsPresence = lazy(() => import('./pages/gestion/SignalementsPresence'));
 const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
-const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
-const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
-const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
+import { routesJeux } from './routes/jeux';
 // Studio quiz : banque, éditeur et résultats (enseignant) ; rejoindre et passer un quiz (étudiant)
-const MesQuiz        = lazy(() => import('./pages/studio/MesQuiz'));
-const EditeurQuiz    = lazy(() => import('./pages/studio/EditeurQuiz'));
-const ResultatsQuiz  = lazy(() => import('./pages/studio/Resultats'));
-const QuizEtudiant   = lazy(() => import('./pages/studio/Quiz'));
-const Epreuve        = lazy(() => import('./pages/studio/Epreuve'));
-const NotFound       = lazy(() => import('./pages/NotFound'));
+const MesQuiz = lazy(() => import('./pages/studio/MesQuiz'));
+const EditeurQuiz = lazy(() => import('./pages/studio/EditeurQuiz'));
+const ResultatsQuiz = lazy(() => import('./pages/studio/Resultats'));
+const QuizEtudiant = lazy(() => import('./pages/studio/Quiz'));
+const Epreuve = lazy(() => import('./pages/studio/Epreuve'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS — Suspense boundaries avec fallback adapté
@@ -403,21 +401,7 @@ export default function App() {
               <AppPage><Epreuve /></AppPage>
             </PrivateRoute>
           } />
-          <Route path="/jeux" element={
-            <PrivateRoute requiredRole={['etudiant', 'enseignant']}>
-              <AppPage><Jeux /></AppPage>
-            </PrivateRoute>
-          } />
-          <Route path="/jeux/terminal-linux" element={
-            <PrivateRoute requiredRole={['etudiant', 'enseignant']}>
-              <AppPage><JeuTerminal /></AppPage>
-            </PrivateRoute>
-          } />
-          <Route path="/jeux/devoirs/:id" element={
-            <PrivateRoute requiredRole={['etudiant']}>
-              <AppPage><DevoirJouer /></AppPage>
-            </PrivateRoute>
-          } />
+          {routesJeux()}
 
           {/* Ancienne page « Salles disponibles » : la recherche de salle libre se fait dans Réservations */}
           <Route path="/salles-disponibles" element={<Navigate to="/reservations" replace />} />
