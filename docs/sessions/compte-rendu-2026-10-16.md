@@ -43,7 +43,7 @@ Supprimer un dossier dont les `node_modules` sont des jonctions : retirer d'abor
   - Ne projeter le plan 9 (jeux) qu'une fois les simulations en ligne.
   - Il manque encore la capture de l'écran réel du quiz en direct, une piste musicale sous licence, et un plan filmé en salle (facultatif).
 - **Discours** : préparer le quiz en direct la veille et répéter trois fois (`discours-keynote.md`, § 3 et 5).
-- **Inchangé depuis le 15 octobre** : E-4, E-9, E-10 ; SQ-1 à SQ-5 ; constats de l'audit (§ 6 du compte rendu du 15 octobre), sauf les en-têtes du quiz, traités par #42.
+- **Inchangé depuis le 15 octobre** : SQ-1 à SQ-5 (chantier quiz) ; constats de l'audit (§ 6 du compte rendu du 15 octobre), sauf les en-têtes du quiz, traités par #42. E-4, E-9 et E-10 sont faits (§ 5).
 - **PR d'autres chantiers encore ouvertes** : #33 (B-7), #39 (bibliothèque sans StudyLib), #40 (corrections des tests locaux).
 
 ## 4. Questions au chef de projet
@@ -51,3 +51,18 @@ Supprimer un dossier dont les `node_modules` sont des jonctions : retirer d'abor
 - Le pilote proposé dans le discours est-il gratuit ou payant ? Le discours n'en dit rien.
 - Quelle adresse afficher, s'il en faut une ? `planner.hestim.ma` n'existe pas.
 - Voix off ou non sur la vidéo ; plan filmé en salle ou non.
+
+## 5. Fin de l'espace de cours (P6, même soir)
+
+| PR | Lot | Contenu | Vérifié |
+|---|---|---|---|
+| **#45** | E-4 | « Mes classes » : la séance en cours en tête, l'appel en action principale ; une carte par classe qui ouvre son espace (ou son onglet Appel si l'appel du jour est resté ouvert) | Lint, build ; parcours appel, appelClasse, entreRoles, espaceCours ; captures à 1440 et 390 px |
+| **#46** | E-9 (Planner) | « Depuis la Bibliothèque » dans chaque section : recherche des documents publiés, droits contrôlés avant tout appel à StudyLib, épinglage sans copie ; le sélecteur d'espaces mène à `/biblio/documents` | Intégration `espaceCours` 14/14 ; parcours `espaceCours` ; tests de l'application 40/40 |
+| **StudyLib #7** | E-9 (StudyLib) | L'enseignant est renvoyé vers Planner pour le tableau de bord, le profil et les notifications ; ni « Accueil » ni « Profil » dans ses menus ; les réponses JSON ne changent pas | `php artisan test` 179/179, Pint sur les fichiers modifiés |
+| **#47** | E-10 | Recette de l'espace de cours (§ 10 des scénarios) ; fiches d'aide à jour, « Écrire à ma classe » retirée, « Mes cours » ajoutée pour l'étudiant | Tests unitaires du site 19/19 ; **posée sur #46, à fusionner après elle** |
+
+- **Ordre de fusion** : #45, #46 puis #47 ; StudyLib #7 avec #46, puisque le sélecteur d'espaces et les renvois vont ensemble. L'état des lots E-4, E-9 et E-10 dans le tableau du plan (`espace-de-cours.md`, § 10) n'est mis à jour que par #45 (E-4), pour éviter des conflits : le compléter après les fusions.
+- **Déploiement** : un paquet avec `--studylib` (StudyLib #7 change des contrôleurs, des vues et la configuration ; ni migration ni dépendance).
+- **Parcours Playwright** : sur `main` aussi, le premier test d'un lancement échoue à la connexion (plus de 20 s) ; il passe à la reprise. À regarder : la connexion du premier test pendant la compilation du site.
+- **Dossiers de travail ajoutés** : `../planner-e4`, `../planner-e9`, `../planner-e10` (jonctions `node_modules` vers le dépôt principal), `../StudyLib-e9` (copie de `vendor`, `.env` et `public/build` copiés) : à supprimer après fusion.
+- **Restent hors de ce chantier** : SQ-1 à SQ-5 (chantier quiz) ; l'entrée des jeux dans l'application ; les constats de l'audit.
