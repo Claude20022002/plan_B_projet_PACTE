@@ -3,7 +3,7 @@ import { Box, Skeleton, useMediaQuery } from '@mui/material';
 import { visuallyHidden } from '@mui/utils';
 import { useTranslation } from 'react-i18next';
 import { ds, lineColor } from '../tokens';
-import { formatDayLabel, toLocalISODate } from '../../utils/session';
+import { formatDayLabel, phaseDeLaLigne, toLocalISODate } from '../../utils/session';
 import FlapTiles from './FlapTiles';
 import FlapText from './FlapText';
 import StatusFlap from './StatusFlap';
@@ -52,6 +52,7 @@ export default function DepartureBoard({
   const compact = useMediaQuery('(max-width:599.95px)');
   const today = toLocalISODate();
   const tomorrow = toLocalISODate(new Date(Date.now() + 86400000));
+  const maintenant = new Date(); // le parent se rafraîchit avec son horloge : chaque séance qui a lieu est « en cours »
 
   // Sur téléphone : HEURE | COURS | SALLE | STATUT (la salle répond à « où dois-je être ? »),
   // groupe et enseignant passent sous le nom du cours
@@ -205,7 +206,7 @@ export default function DepartureBoard({
             <StatusFlap
               status={s.status}
               variant={variant}
-              phase={spotlight?.session?.id === s.id ? spotlight.phase : undefined}
+              phase={phaseDeLaLigne(s, spotlight, maintenant)}
             />
           </Box>
         );
@@ -368,7 +369,7 @@ export default function DepartureBoard({
                   )}
                   {group.items.map((s) => {
                     const isSpot = spotlight?.session?.id === s.id;
-                    const lamp = isSpot ? LAMP_COLORS[spotlight.phase] : LAMP_COLORS[s.status];
+                    const lamp = LAMP_COLORS[phaseDeLaLigne(s, spotlight, maintenant) ?? s.status];
                     const dimmed = s.status === 'annule';
                     return (
                       <Fragment key={s.id}>
