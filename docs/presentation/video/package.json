@@ -13,6 +13,7 @@
     "render:matinee": "npm run assets && npm run musique && remotion render Matinee out/matinee-ecole.mp4",
     "render:direction": "npm run assets && npm run musique && remotion render Direction out/direction.mp4",
     "render:keynote": "npm run assets && npm run musique && remotion render Keynote out/keynote.mp4",
+    "render:keynote80": "npm run assets && npm run musique && remotion render Keynote80 out/keynote-1m20.mp4",
     "render:matinee-reseaux": "npm run assets && npm run musique && remotion render MatineeReseaux out/matinee-ecole-9x16.mp4",
     "carrousel": "npm run assets && python scripts/carrousel.py"
   },
