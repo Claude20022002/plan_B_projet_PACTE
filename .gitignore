@@ -40,3 +40,6 @@ deploy/vps/paquets/
 # Python
 __pycache__/
 *.pyc
+
+# Projet d'un autre groupe (jeux), gardé hors de ce dépôt (décision du 15 octobre 2026)
+Jeux_HESTIM/
