@@ -15,6 +15,8 @@ import { Carrousel, HAUTEUR, LARGEUR, NB_PAGES } from "./carrousel/Carrousel";
 import { Direction, TEMPS_DIRECTION } from "./Direction";
 import { Keynote, TEMPS_KEYNOTE } from "./Keynote";
 import { Matinee, MatineeReseaux, TEMPS_RESEAUX, TEMPS_SALLE, dureeTotale } from "./Matinee";
+import { PactePromo } from "./promo/PactePromo";
+import { DUREE_TOTALE as DUREE_PROMO, FPS as FPS_PROMO } from "./promo/timing";
 
 // ─── Timings (en temps à 120 BPM ; 1 temps = 15 images = 0,5 s) ─────────────────────────
 // Chaque coupe tombe sur un temps. Modifier une durée décale les scènes suivantes.
@@ -128,6 +130,10 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="Keynote" component={Keynote} durationInFrames={dureeTotale(TEMPS_KEYNOTE)} fps={FPS} width={1920} height={1080} />
     <Composition id="MatineeReseaux" component={MatineeReseaux} durationInFrames={dureeTotale(TEMPS_RESEAUX)} fps={FPS} width={1080} height={1920} />
     {/* Carrousel LinkedIn : une image par page (npm run carrousel) */}
+    {/* Vidéo publicitaire de 60 s avec avatars (src/promo/, STORYBOARD.md), en 16:9, 9:16 et 1:1 */}
+    <Composition id="PactePromo" component={PactePromo} durationInFrames={DUREE_PROMO} fps={FPS_PROMO} width={1920} height={1080} />
+    <Composition id="PactePromoVertical" component={PactePromo} durationInFrames={DUREE_PROMO} fps={FPS_PROMO} width={1080} height={1920} />
+    <Composition id="PactePromoCarre" component={PactePromo} durationInFrames={DUREE_PROMO} fps={FPS_PROMO} width={1080} height={1080} />
     <Composition id="Carrousel" component={Carrousel} durationInFrames={NB_PAGES} fps={FPS} width={LARGEUR} height={HAUTEUR} />
   </>
 );

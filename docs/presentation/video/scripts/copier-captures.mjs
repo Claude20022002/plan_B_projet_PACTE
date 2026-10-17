@@ -39,6 +39,8 @@ const fichiers = [
   "app-07-espaces.png",
   // Le seul jeu de la bibliothèque de jeux aujourd'hui : Terminal Linux
   "mobile-25-terminal-commandes.png",
+  // PactePromo : le rapport de génération (2 620 séances créées)
+  "web-08-generation.png",
 ];
 
 let manquants = 0;
