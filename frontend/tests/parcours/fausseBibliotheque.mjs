@@ -26,6 +26,9 @@ const charge = (req) => {
 export const demarrerFausseBibliotheque = (port) =>
   new Promise((resolve) => {
     const documents = new Map();
+    // Un document publié pour toute l'école, à épingler dans une classe (lot E-9)
+    const osi = crypto.randomUUID();
+    documents.set(osi, { id: osi, title: "Le modèle OSI", visibility: "school", owner: "0", mime_type: "application/pdf", file_size: 2048, module: { code: "RES", name: "Réseaux" } });
     const serveur = http.createServer((req, res) => {
       const morceaux = [];
       req.on("data", (m) => morceaux.push(m));
@@ -41,6 +44,13 @@ export const demarrerFausseBibliotheque = (port) =>
           const id = crypto.randomUUID();
           documents.set(id, { id, title: Buffer.from(titre, "latin1").toString("utf8"), visibility: "class", owner: jeton.sub, mime_type: "application/pdf", file_size: corps.length, module: { code: adresse.searchParams.get("module") } });
           return repondre(res, 201, { data: documents.get(id) });
+        }
+        // Recherche de la Bibliothèque : les documents publiés seulement, comme StudyLib
+        if (req.method === "GET" && adresse.pathname === "/api/documents/search") {
+          if (!jeton.sub) return repondre(res, 401, { message: "Unauthenticated." });
+          const q = (adresse.searchParams.get("q") ?? "").toLowerCase();
+          const trouves = [...documents.values()].filter((d) => d.visibility === "school" && d.title.toLowerCase().includes(q));
+          return repondre(res, 200, { data: trouves.map((d) => ({ id: d.id, title: d.title, type: "cours", mime_type: d.mime_type, file_size: d.file_size, module: d.module })) });
         }
         const [, id, publier] = /^\/api\/classe\/documents\/([0-9a-f-]{36})(\/publier)?$/.exec(adresse.pathname) ?? [];
         if (id) {

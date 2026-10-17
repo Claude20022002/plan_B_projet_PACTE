@@ -70,6 +70,16 @@ export const transmettreDepot = async (req, { filiere, module } = {}) => {
     return corps.data;
 };
 
+/**
+ * Recherche dans la Bibliothèque avec le jeton de l'enseignant : 20 documents publiés au plus
+ * (StudyLib ne rend jamais les documents de classe dans sa recherche).
+ */
+export const chercherDocuments = async (jeton, q) => {
+    const { status, corps } = await appeler(`/documents/search?${new URLSearchParams({ q })}`, { method: "GET", headers: { Authorization: `Bearer ${jeton}` } });
+    if (status !== 200 || !Array.isArray(corps?.data)) throw echec(status, corps);
+    return corps.data;
+};
+
 /** Document vu par l'utilisateur : le sien, ou un document publié de la Bibliothèque. */
 export const lireDocument = async (jeton, id) => {
     const { status, corps } = await appeler(`/classe/documents/${encodeURIComponent(id)}`, { method: "GET", headers: { Authorization: `Bearer ${jeton}` } });
