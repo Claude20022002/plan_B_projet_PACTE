@@ -50,17 +50,17 @@ const Alerte: React.FC<{ image: number; x: number; y: number; largeur: number }>
 export const Scene05Changement: React.FC<{ duree: number }> = ({ duree }) => {
   const f = useCurrentFrame();
   const fmt = useFormat();
-  const cadre = selon(fmt, { x: 600, y: 230, l: 1220 }, { x: 50, y: 400, l: 980 }, { x: 310, y: 210, l: 740 });
-  const tel = selon(fmt, { x: 1080, y: 210, h: 740 }, { x: 470, y: 360, h: 1080 }, { x: 560, y: 180, h: 760 });
+  const cadre = selon(fmt, { x: 600, y: 230, l: 1220 }, { x: 50, y: 400, l: 980 }, { x: 310, y: 240, l: 740 });
+  const tel = selon(fmt, { x: 1080, y: 210, h: 740 }, { x: 470, y: 360, h: 1080 }, { x: 600, y: 250, h: 700 });
   const nadia = selon(fmt, { x: 290, sol: 975, h: 700 }, { x: 250, sol: 1700, h: 640 }, { x: 160, sol: 1010, h: 560 });
   const salma = selon(fmt, { x: 640, sol: 975, h: 700 }, { x: 250, sol: 1700, h: 640 }, { x: 300, sol: 1010, h: 600 });
-  const alerte = selon(fmt, 640, 760, 560);
+  const alerte = selon(fmt, 640, 760, 480);
   const part = interpolate(f, [BASCULE - 12, BASCULE + 12], [0, 1], { ...BORNES, easing: DOUX });
   const vient = interpolate(f, [BASCULE, BASCULE + 24], [0, 1], { ...BORNES, easing: DOUX });
 
   return (
     <Plan duree={duree}>
-      <Titre de={6} taille={selon(fmt, 72, 80, 60)} style={selon(fmt, { left: 600, top: 96 } as React.CSSProperties, { left: 60, right: 60, top: 170, textAlign: "center" }, { left: 310, right: 40, top: 66 })}>
+      <Titre de={6} taille={selon(fmt, 76, 80, 52)} style={selon(fmt, { left: 600, top: 96 } as React.CSSProperties, { left: 60, right: 60, top: 170, textAlign: "center" }, { left: 310, right: 40, top: 66 })}>
         Tout le monde est prévenu.
       </Titre>
       <div style={{ position: "absolute", inset: 0, opacity: 1 - part, transform: `translateX(${-40 * part}px)` }}>
