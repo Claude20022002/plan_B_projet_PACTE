@@ -23,11 +23,16 @@ type Look = {
   graine: number;
 };
 
-const LOOKS: Record<Exclude<Qui, "narrateur">, Look> = {
+const LOOKS: Record<string, Look> = {
   nadia: { nom: "Nadia · Scolarité", peau: "#B07A55", cheveux: "#2B1B17", haut: P.accent, bas: "#2A2F45", coiffure: "hijab", voile: "#8EA3DE", jupe: true, col: "#FFFFFF", graine: 1 },
   youssef: { nom: "Youssef · Enseignant", peau: "#9C6544", cheveux: "#1E1512", haut: "#D9E1F5", bas: P.accent, coiffure: "court", barbe: true, lunettes: true, graine: 2 },
   salma: { nom: "Salma · Étudiante", peau: "#D4A07A", cheveux: "#2B1B17", haut: "#F26322", bas: "#3B4A7A", coiffure: "queue", graine: 3 },
+  // Figurants muets de la vidéo Lancement
+  amine: { nom: "Amine", peau: "#8A5A3C", cheveux: "#17110E", haut: "#137D3F", bas: "#2A2F45", coiffure: "court", graine: 4 },
+  ines: { nom: "Inès", peau: "#C98E66", cheveux: "#3A2318", haut: "#DB1F26", bas: "#2E3A6B", coiffure: "queue", graine: 5 },
 };
+
+export type QuiPersonnage = "nadia" | "youssef" | "salma" | "amine" | "ines";
 
 type Pt = [number, number];
 /** Coude et main de chaque bras, en coordonnées du dessin (tête vers 120, 70 ; pieds vers 570). */
@@ -47,7 +52,9 @@ const POSES: Record<Pose, Bras> = {
 const melange = (a: Pt, b: Pt, t: number): Pt => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t];
 
 type Props = {
-  qui: Exclude<Qui, "narrateur">;
+  qui: QuiPersonnage;
+  /** Ne parle jamais (figurant) : la bouche reste fermée, même si sa voix joue ailleurs. */
+  muet?: boolean;
   /** Abscisse du centre du personnage, en pixels. */
   x: number;
   /** Ordonnée des pieds, en pixels. */
@@ -66,14 +73,14 @@ type Props = {
 };
 
 /** Un avatar en pied, qui parle quand sa voix joue. */
-export const Personnage: React.FC<Props> = ({ qui, x, sol, hauteur, pose = "repos", poseParole, entree = 0, sens = 1, etiquette = true, imageLocale }) => {
+export const Personnage: React.FC<Props> = ({ qui, muet = false, x, sol, hauteur, pose = "repos", poseParole, entree = 0, sens = 1, etiquette = true, imageLocale }) => {
   const g = useImageGlobale();
   const { fps } = useVideoConfig();
   const l = LOOKS[qui];
   const largeur = (hauteur * 300) / 640;
 
-  const parle = enParole(qui, g);
-  const ouv = bouche(qui, g);
+  const parle = muet ? 0 : enParole(qui as Qui, g);
+  const ouv = muet ? 0 : bouche(qui as Qui, g);
   const arrivee = spring({ frame: imageLocale - entree, fps, config: { damping: 200, stiffness: 110 } });
   const respire = Math.sin(g / 19 + l.graine) * 2.2;
   const cycle = (g + l.graine * 41) % 110;

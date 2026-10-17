@@ -3,10 +3,13 @@ import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
 import { useFormat, selon } from "../format";
 import { BORNES, POLICE } from "../theme";
-import { sousTitre } from "../voix";
+import { sousTitre as sousTitrePromo } from "../voix";
 
-/** Le sous-titre de l'image courante (à placer à la racine de la composition). */
-export const SousTitres: React.FC = () => {
+type Trouve = { texte: string; de: number; fin: number } | null;
+
+/** Le sous-titre de l'image courante (à placer à la racine de la composition) ; `sousTitre` lit les
+ * voix d'une autre vidéo que PactePromo. */
+export const SousTitres: React.FC<{ sousTitre?: (image: number) => Trouve }> = ({ sousTitre = sousTitrePromo }) => {
   const f = useCurrentFrame();
   const fmt = useFormat();
   const st = sousTitre(f);

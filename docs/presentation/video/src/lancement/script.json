@@ -1,0 +1,23 @@
+{
+  "fps": 30,
+  "dureeSecondes": "auto",
+  "finSecondes": 3.2,
+  "voix": {
+    "narrateur": { "voix": "fr-FR-HenriNeural", "debit": "+4%", "nom": "Narrateur" }
+  },
+  "repliques": [
+    { "id": "l01", "scene": "accroche", "qui": "narrateur", "debut": 0.6, "dit": "Lundi, huit heures deux. Un cours change de salle.", "texte": "Lundi, 8 h 02. Un cours change de salle." },
+    { "id": "l02", "scene": "accroche", "qui": "narrateur", "debut": "suite", "pause": 0.3, "dit": "Un mail part, le PDF est renvoyé, un message se perd dans un groupe… et une classe attend devant la mauvaise porte.", "texte": "Un mail part, le PDF est renvoyé, un message se perd dans un groupe… et une classe attend devant la mauvaise porte." },
+    { "id": "l03", "scene": "eparpille", "qui": "narrateur", "debut": "suite", "pause": 0.35, "dit": "Emploi du temps, appel, quiz, supports de cours : chaque chose a son outil, et aucun ne parle aux autres.", "texte": "Emploi du temps, appel, quiz, supports de cours : chaque chose a son outil, et aucun ne parle aux autres." },
+    { "id": "l04", "scene": "revelation", "qui": "narrateur", "debut": "suite", "pause": 1.1, "dit": "Voici HESTIM Planner : toute la vie de l'école, dans une seule application.", "texte": "Voici HESTIM Planner : toute la vie de l'école, dans une seule application." },
+    { "id": "l05", "scene": "planification", "qui": "narrateur", "debut": "suite", "pause": 0.4, "dit": "La scolarité prépare le semestre étape par étape, puis Planner place chaque séance.", "texte": "La scolarité prépare le semestre étape par étape, puis Planner place chaque séance." },
+    { "id": "l06", "scene": "planification", "qui": "narrateur", "debut": "suite", "dit": "Jamais une salle, un enseignant ou un groupe en double, et l'emploi du temps sort au format officiel de l'école.", "texte": "Jamais une salle, un enseignant ou un groupe en double, et l'emploi du temps sort au format officiel de l'école." },
+    { "id": "l07", "scene": "changement", "qui": "narrateur", "debut": "suite", "pause": 0.35, "dit": "Un cours bouge ? La scolarité le déplace.", "texte": "Un cours bouge ? La scolarité le déplace." },
+    { "id": "l08", "scene": "changement", "qui": "narrateur", "debut": "suite", "dit": "Seuls les étudiants concernés reçoivent l'alerte, sur leur téléphone, à la seconde.", "texte": "Seuls les étudiants concernés reçoivent l'alerte, sur leur téléphone, à la seconde." },
+    { "id": "l09", "scene": "etudiant", "qui": "narrateur", "debut": "suite", "pause": 0.3, "dit": "Chaque étudiant voit sa salle en grand, sa semaine, son mois. Plus rien à chercher.", "texte": "Chaque étudiant voit sa salle en grand, sa semaine, son mois. Plus rien à chercher." },
+    { "id": "l10", "scene": "appel", "qui": "narrateur", "debut": "suite", "pause": 0.3, "dit": "En classe, l'appel se fait d'un scan, et le code change toutes les trente secondes.", "texte": "En classe, l'appel se fait d'un scan, et le code change toutes les 30 secondes." },
+    { "id": "l11", "scene": "relie", "qui": "narrateur", "debut": "suite", "pause": 0.3, "dit": "Supports de cours, quiz, heures faites par chaque enseignant : tout part de la séance, avec un seul compte.", "texte": "Supports de cours, quiz, heures faites par chaque enseignant : tout part de la séance, avec un seul compte." },
+    { "id": "l12", "scene": "chiffres", "qui": "narrateur", "debut": "suite", "pause": 0.4, "dit": "Sur notre semestre de démonstration : deux mille six cent vingt séances placées, et pas une salle réservée deux fois.", "texte": "Sur notre semestre de démonstration : 2 620 séances placées, et pas une salle réservée deux fois." },
+    { "id": "l13", "scene": "fin", "qui": "narrateur", "debut": "suite", "pause": 0.6, "dit": "HESTIM Planner. Toute l'école à l'heure.", "texte": "HESTIM Planner. Toute l'école à l'heure." }
+  ]
+}

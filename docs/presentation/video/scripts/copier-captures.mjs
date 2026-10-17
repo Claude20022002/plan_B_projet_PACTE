@@ -43,6 +43,9 @@ const fichiers = [
   "web-08-generation.png",
   // Keynote en 1 min 20 : la préparation du semestre
   "admin-02-preparation.png",
+  // Lancement : la semaine de l'étudiante, l'appel sur le téléphone de l'enseignant
+  "app-03b-semaine-grille.png",
+  "prof-09-appel-telephone.png",
 ];
 
 let manquants = 0;
