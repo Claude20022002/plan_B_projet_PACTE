@@ -4,7 +4,7 @@
 import React from "react";
 import { interpolate, useCurrentFrame } from "remotion";
 import { Halo, Navigateur } from "../components/Cadre";
-import { Curseur, Plan, Titre } from "../components/Elements";
+import { Curseur, Pastille, Plan, Titre } from "../components/Elements";
 import { Personnage } from "../components/Personnage";
 import { selon, useFormat } from "../format";
 import { BORNES, DOUX } from "../theme";
@@ -19,6 +19,9 @@ export const Scene04EmploiDuTemps: React.FC<{ duree: number }> = ({ duree }) => 
   const nadia = selon(fmt, { x: 290, sol: 975, h: 700 }, { x: 250, sol: 1700, h: 640 }, { x: 160, sol: 1010, h: 560 });
   const sortie = interpolate(f, [BASCULE - 10, BASCULE + 10], [0, 1], { ...BORNES, easing: DOUX });
   const entree = interpolate(f, [BASCULE, BASCULE + 22], [0, 1], { ...BORNES, easing: DOUX });
+  // Bulle lisible à côté du halo (le chiffre de la capture est trop petit pour un projecteur)
+  const k = cadre.l / 1920;
+  const bulle = { x: cadre.x + 520 * k, y: cadre.y + 34 + 690 * k };
 
   return (
     <Plan duree={duree}>
@@ -31,12 +34,17 @@ export const Scene04EmploiDuTemps: React.FC<{ duree: number }> = ({ duree }) => 
         y={cadre.y}
         largeur={cadre.l}
         zoom={interpolate(f, [0, BASCULE], [1, 1.06], BORNES)}
-        origine={[760, 360]}
+        origine={[430, 730]}
         style={{ opacity: 1 - sortie, transform: `translateX(${-40 * sortie}px)` }}
       >
-        <Halo x={372} y={366} l={400} h={42} image={f} de={78} a={BASCULE - 6} />
+        <Halo x={374} y={702} l={112} h={62} image={f} de={78} a={BASCULE - 6} />
         <Curseur de={[1560, 760]} vers={[1150, 268]} depart={18} arrivee={52} clic={58} taille={52} />
       </Navigateur>
+      <div style={{ opacity: 1 - sortie }}>
+        <Pastille de={86} taille={selon(fmt, 40, 40, 32)} style={{ left: bulle.x, top: bulle.y }}>
+          2 620 séances créées
+        </Pastille>
+      </div>
       <Navigateur
         src="captures/admin-04b-edt-mensuel-classe.png"
         x={cadre.x}

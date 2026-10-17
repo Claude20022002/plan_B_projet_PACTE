@@ -17,7 +17,7 @@ export const Scene06Appel: React.FC<{ duree: number }> = ({ duree }) => {
   const youssef = selon(fmt, { x: 300, sol: 975, h: 720 }, { x: 230, sol: 1700, h: 640 }, { x: 170, sol: 1010, h: 580 });
   const pastilles = selon(
     fmt,
-    { x: 1360, y: 420, pas: 104, taille: 34 },
+    { x: 1210, y: 430, pas: 104, taille: 34 },
     { x: 430, y: 1050, pas: 112, taille: 36 },
     { x: 470, y: 700, pas: 86, taille: 28 },
   );

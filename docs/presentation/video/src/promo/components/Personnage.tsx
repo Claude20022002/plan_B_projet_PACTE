@@ -198,8 +198,8 @@ export const Personnage: React.FC<Props> = ({ qui, x, sol, hauteur, pose = "repo
           style={{
             position: "absolute",
             left: "50%",
-            top: -hauteur * 0.06,
-            transform: `translate(-50%, ${(1 - parle) * 10}px)`,
+            top: hauteur * 0.05,
+            transform: `translate(-50%, calc(-100% + ${(1 - parle) * 10}px))`,
             opacity: parle,
             background: P.accent,
             color: "#FFFFFF",

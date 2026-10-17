@@ -67,7 +67,9 @@ def sous_titres(texte, debut, fin, fps):
     morceaux, courant = [], []
     for mot in mots:
         courant.append(mot)
-        if len(courant) >= MOTS_PAR_SOUS_TITRE or (re.search(r"[.?!:…]$", mot) and len(courant) >= 3):
+        fin_phrase = re.search(r"[.?!:…]$", mot) and len(courant) >= 2
+        virgule = mot.endswith(",") and len(courant) >= 4
+        if len(courant) >= MOTS_PAR_SOUS_TITRE or fin_phrase or virgule:
             morceaux.append(" ".join(courant))
             courant = []
     if courant:
@@ -75,6 +77,8 @@ def sous_titres(texte, debut, fin, fps):
             morceaux[-1] += " " + " ".join(courant)
         else:
             morceaux.append(" ".join(courant))
+    if len(morceaux) >= 2 and len(morceaux[-1].split()) < 3 and len((morceaux[-2] + " " + morceaux[-1]).split()) <= MOTS_PAR_SOUS_TITRE + 2:
+        morceaux[-2:] = [morceaux[-2] + " " + morceaux[-1]]
     total = sum(len(m) for m in morceaux)
     t, rendu = debut, []
     for m in morceaux:

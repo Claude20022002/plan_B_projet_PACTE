@@ -45,14 +45,13 @@ export const Scene01Accroche: React.FC<{ duree: number }> = ({ duree }) => {
       {[0, 1, 2].map((i) => {
         const a = spring({ frame: f - 14 - i * 10, fps, config: { damping: 200, stiffness: 160 } });
         const flotte = Math.sin((f + i * 20) / 12) * 6;
-        const base = perso.h * 0.5;
         return (
           <div
             key={i}
             style={{
               position: "absolute",
-              left: perso.x - base * 0.1 + (i - 1) * perso.h * 0.11,
-              top: perso.sol - perso.h * 1.02 - i * perso.h * 0.04 + flotte,
+              left: perso.x + perso.h * (0.2 + i * 0.09),
+              top: perso.sol - perso.h * (0.9 + i * 0.07) + flotte,
               fontFamily: POLICE,
               fontWeight: 800,
               fontSize: perso.h * (0.1 + i * 0.02),
