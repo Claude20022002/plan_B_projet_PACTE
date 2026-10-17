@@ -13,6 +13,42 @@ Vidéo motion design de **62 s** qui ouvre la présentation (voir `../discours-3
 | `out/carrousel/hestim-planner-carrousel.pdf` | carrousel LinkedIn, 10 pages 1080 × 1350 (`npm run carrousel`) |
 | `out/hestim-planner-9x16.mp4` | teaser 1080 × 1920, 34 s : toute l'histoire (scènes 1 à 5 puis 10), avec sa propre bande-son, pour les réseaux sociaux |
 
+## « Keynote » (16 octobre 2026) : la vidéo de la présentation de 3 minutes
+
+Elle passe entre l'ouverture et la clôture du discours (`../discours-keynote.md`). Ce sont les codes des films de lancement (Apple, NVIDIA, Samsung) avec les images existantes :
+- une ouverture à froid, sans logo, qui reprend l'heure dite par l'orateur ;
+- le chaos, puis le noir et le silence, puis la révélation ;
+- une preuve par plan, avec de la profondeur (`components/Camera.tsx`) ;
+- le grand chiffre, puis la promesse.
+
+Composition `Keynote` (`src/Keynote.tsx`), sans repère ni barre de progression.
+
+| Fichier | Format | Commande |
+| --- | --- | --- |
+| `out/keynote.mp4` | 1920 × 1080, 62 s (124 temps), son `public/audio/keynote.wav` | `npm run render:keynote` |
+
+| # | Début | Plan | À l'écran | Fichier |
+| --- | --- | --- | --- | --- |
+| 1 | 0:00 | Ouverture à froid | **13:29**, puis **SALLE** et une case qui tourne sans trouver | `K1Froid.tsx` |
+| 2 | 0:04 | Douze notifications des six outils s'empilent, puis le noir (1,2 s de silence) | **Six outils. Aucun ne lui dit où aller.** | `K2Chaos.tsx` |
+| 3 | 0:09 | Halo, l'emblème s'assemble, reflet de lumière, le nom en volets | HESTIM PLANNER | `K3Revelation.tsx` |
+| 4 | 0:13 | Le téléphone arrive en perspective, la caméra avance sur G-S05 ; la case du plan 1 se fixe sur **G-S05** | **Elle sait où aller.** | `K4Salle.tsx` (`app-01`, remise à 13:30) |
+| 5 | 0:19 | Cours reporté | Prévenu à la seconde | `S5Alerte.tsx` dans `Camera` |
+| 6 | 0:23 | L'appel projeté et le scanner | **L'appel en une minute.** Le code change toutes les 30 secondes. | `M5Appel.tsx` dans `Camera` |
+| 7 | 0:33 | Le quiz en direct | **Le quiz se joue dans le cours.** | `M6Quiz.tsx` dans `Camera` (**maquette** de l'écran de salle) |
+| 8 | 0:41 | Le classement | **Le classement, aussitôt.** | `D1PlanSite.tsx`, `web-21` (d'avant le 10 octobre) |
+| 9 | 0:45 | Six noms de jeux en volets, avec leur discipline | **Réviser en jouant.** Rangés par module, choisis par l'enseignant. | `K7Jeux.tsx` |
+| 10 | 0:50 | Trois rangées de chiffres | **2620** séances placées · **90 S** pour un semestre entier · **0** conflit ; note : semestre de démonstration | `K8Chiffres.tsx` |
+| 11 | 0:56 | L'emblème, le nom, la promesse | **Toute l'école à l'heure.** · DÉJÀ EN LIGNE | `S9Fin.tsx` (nouvelle option `supports`) |
+
+**À savoir avant de la diffuser.**
+
+- **Plan 9** : cinq des six jeux sont les simulations d'Alexis (branche `jeux-pedagogique`, pas encore fusionnée). Ne pas projeter ce plan tant qu'elles ne sont pas en ligne.
+- **Plan 7** : l'écran de la salle reste la maquette ; le quiz en direct existe, son écran réel n'a pas été capturé.
+- **Plan 10** : les chiffres viennent du jeu de démonstration, la note du bas le dit.
+- **Fin** : ni plateformes ni adresse. L'application n'est pas sur les stores, et `planner.hestim.ma` n'existe pas.
+- **Bande-son** : synthétisée comme les autres (`composer-musique.py` : `section_froid`, `section_chaos`, `section_revelation`). Pour le niveau d'un film de lancement, une vraie piste sous licence (même nom de fichier) ferait la plus grande différence.
+
 ## « Direction » (lot V-2, premier montage du 13 octobre 2026)
 
 La vidéo pour ceux qui décident et paient, d'après `../script-video-vendeur.md` (§ 5) : une promesse, trois preuves, ce que l'école y gagne, une action. Composition `Direction` (`src/Direction.tsx`).
