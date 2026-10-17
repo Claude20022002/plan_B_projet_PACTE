@@ -177,7 +177,7 @@ export const Personnage: React.FC<Props> = ({ qui, x, sol, hauteur, pose = "repo
           {/* Bras, mains et objets */}
           <path d={`M82 134 L${bras.gC[0]} ${bras.gC[1]} L${bras.gM[0]} ${bras.gM[1]}`} stroke={l.haut} strokeWidth={24} fill="none" strokeLinecap="round" strokeLinejoin="round" />
           <path d={`M158 134 L${bras.dC[0]} ${bras.dC[1]} L${bras.dM[0]} ${bras.dM[1]}`} stroke={l.haut} strokeWidth={24} fill="none" strokeLinecap="round" strokeLinejoin="round" />
-          {(pose === "tablette") && (
+          {(pose === "tablette" || pose === "tablettePresente") && (
             <g transform={`rotate(-10 ${bras.gM[0]} ${bras.gM[1]})`}>
               <rect x={bras.gM[0] - 30} y={bras.gM[1] - 40} width={64} height={48} rx={6} fill={P.encre} />
               <rect x={bras.gM[0] - 25} y={bras.gM[1] - 35} width={54} height={38} rx={3} fill="#E3E8F6" />
