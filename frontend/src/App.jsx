@@ -17,6 +17,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './components/common/PrivateRoute';
 import VersTableau from './components/espaces/VersTableau';
 import { routesProjection } from './routes/projection';
+import { routesMotDePasse } from './routes/motDePasse';
 
 // ── Composants de layout critique (jamais lazy — trop fréquents) ──────────
 import PageSkeleton    from './components/common/PageSkeleton';
@@ -30,9 +31,7 @@ import ErrorBoundary   from './components/common/ErrorBoundary';
 
 // ── Auth (chunk léger — affiché non authentifié) ──────────────────────────
 const Connexion      = lazy(() => import('./pages/Connexion'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const ResetPassword  = lazy(() => import('./pages/ResetPassword'));
-const ChangerMotDePasse = lazy(() => import('./pages/ChangerMotDePasse'));
+// Mot de passe oublié, réinitialisation, changement : routes/motDePasse.jsx
 const Accueil        = lazy(() => import('./pages/Accueil'));
 const Annonces       = lazy(() => import('./pages/Annonces'));
 const Appel          = lazy(() => import('./pages/Appel'));
@@ -148,15 +147,7 @@ export default function App() {
           <Route path="/connexion" element={
             <PublicPage><Connexion /></PublicPage>
           } />
-          <Route path="/forgot-password" element={
-            <PublicPage><ForgotPassword /></PublicPage>
-          } />
-          <Route path="/changer-mot-de-passe" element={
-            <PublicPage><ChangerMotDePasse /></PublicPage>
-          } />
-          <Route path="/reset-password" element={
-            <PublicPage><ResetPassword /></PublicPage>
-          } />
+          {routesMotDePasse()}
 
           {/* ── Dashboards ────────────────────────────────────────────── */}
           <Route path="/dashboard/admin" element={

@@ -22,7 +22,7 @@ export const creerLienInvitation = async (user, transaction) => {
     const expiration = new Date(Date.now() + DUREE_INVITATION_JOURS * 24 * 3600 * 1000);
     await PasswordResetToken.destroy({ where: { id_user: user.id_user, used: false }, transaction });
     await PasswordResetToken.create({ id_user: user.id_user, token: sha256(jeton), expires_at: expiration, used: false }, { transaction });
-    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${jeton}&id=${user.id_user}&invitation=1`;
+    return `${process.env.FRONTEND_URL || "http://localhost:5173"}/reinitialiser-mot-de-passe?token=${jeton}&id=${user.id_user}&invitation=1`;
 };
 
 const echapper = (valeur = "") =>

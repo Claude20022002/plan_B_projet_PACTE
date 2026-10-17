@@ -621,7 +621,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     });
 
     // URL de réinitialisation (à adapter selon votre frontend)
-    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${resetToken}&id=${user.id_user}`;
+    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reinitialiser-mot-de-passe?token=${resetToken}&id=${user.id_user}`;
 
     // Envoyer l'email
     try {
