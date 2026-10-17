@@ -177,7 +177,7 @@ describe("Invitations et mot de passe provisoire (phase B)", () => {
         });
         expect(response.status).toBe(201);
         expect(response.body.user.must_change_password).toBe(true);
-        expect(response.body.invitation.lien).toMatch(/reset-password\?token=[0-9a-f]{64}&id=\d+&invitation=1/);
+        expect(response.body.invitation.lien).toMatch(/reinitialiser-mot-de-passe\?token=[0-9a-f]{64}&id=\d+&invitation=1/);
         expect(await Enseignant.findByPk(response.body.user.id_user)).toMatchObject({ departement: "Génie civil", statut: "vacataire" });
         for (const essai of ["password123", PASSWORD]) {
             expect((await anonymous().post("/api/auth/login").send({ email: "omar.lazrak@hestim.test", password: essai })).status).toBe(401);

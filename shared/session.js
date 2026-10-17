@@ -96,6 +96,18 @@ export const findSpotlight = (sessions, now = new Date()) => {
   return next ? { session: next, phase: 'next' } : null;
 };
 
+/**
+ * Phase affichée sur une ligne du panneau : celle de la séance en vedette, ou « En cours » pour
+ * toute autre séance qui a lieu maintenant (plusieurs cours en même temps sur le campus : audit
+ * du 15 octobre). Rend undefined pour une séance qui n'est ni l'une ni l'autre.
+ */
+export const phaseDeLaLigne = (s, spotlight, now = new Date()) => {
+  if (spotlight?.session?.id === s.id) return spotlight.phase;
+  // Une séance reportée garde son statut (orange) même à l'heure prévue
+  const prevue = s.status === 'planifie' || s.status === 'confirme';
+  return prevue && s.start && s.end && s.start <= now && s.end > now ? 'live' : undefined;
+};
+
 /** Repli sans Intl.RelativeTimeFormat (Hermes, le moteur de React Native, ne l'a pas toujours). */
 const UNITES = {
   fr: { minute: ['minute', 'minutes'], hour: ['heure', 'heures'], day: ['jour', 'jours'] },
