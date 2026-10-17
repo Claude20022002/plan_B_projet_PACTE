@@ -9,7 +9,7 @@ import { BEAT, C } from "./theme";
  * « Keynote » en 1 min 20 (17 octobre 2026) : la vidéo Keynote, plan pour plan, avec quatre preuves
  * de plus, prises sur de vraies captures et posées dans la même mise en scène (Camera) :
  * - le tableau de tout le campus, avant l'alerte de l'étudiante ;
- * - le semestre généré (2 620 séances) ;
+ * - la préparation du semestre, en huit étapes par filière (dont « 0 conflit ouvert ») ;
  * - le mois d'une classe au format officiel ;
  * - les heures du mois par enseignant.
  * La Keynote de 62 s (Keynote.tsx, out/keynote.mp4) ne change pas.
@@ -23,7 +23,7 @@ const AJOUTS: Record<string, Scene> = {
   ),
   generation: (duree) => (
     <Camera duree={duree} inclinaison={7}>
-      <D1PlanSite capture="captures/web-08-generation.png" titre="Un semestre, planifié tout seul." zoom={[2.7, 2.95]} origine="13% 68%" duree={duree} />
+      <D1PlanSite capture="captures/admin-02-preparation.png" titre="Le semestre, préparé en huit étapes." zoom={[1.32, 1.4]} origine="76% 32%" duree={duree} />
     </Camera>
   ),
   mois: (duree) => (
@@ -53,7 +53,7 @@ export const TEMPS_KEYNOTE_80 = {
   quiz: 16 * BEAT, //        0:37  le quiz en direct
   classement: 8 * BEAT, //   0:45  le classement de la classe
   jeux: 10 * BEAT, //        0:49  la bibliothèque de jeux
-  generation: 10 * BEAT, //  0:54  le semestre généré, 2 620 séances (ajout)
+  generation: 10 * BEAT, //  0:54  la préparation du semestre en huit étapes (ajout)
   mois: 8 * BEAT, //         0:59  le mois au format officiel (ajout)
   heures: 8 * BEAT, //       1:03  les heures du mois (ajout)
   chiffres: 12 * BEAT, //    1:07  les trois chiffres

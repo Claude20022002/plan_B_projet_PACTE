@@ -41,6 +41,8 @@ const fichiers = [
   "mobile-25-terminal-commandes.png",
   // PactePromo : le rapport de génération (2 620 séances créées)
   "web-08-generation.png",
+  // Keynote en 1 min 20 : la préparation du semestre
+  "admin-02-preparation.png",
 ];
 
 let manquants = 0;
