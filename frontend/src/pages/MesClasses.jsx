@@ -1,29 +1,24 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Alert, Box, Button, Skeleton } from '@mui/material';
-import { Add, FactCheck, LocalLibrary, Quiz, SportsEsports } from '@mui/icons-material';
+import { Alert, Box, Button, Skeleton, Typography } from '@mui/material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
-import Panneau, { Capitales, LignePanneau } from '../components/jeux/Panneau';
 import LancerQuizDialog from '../components/quiz/LancerQuizDialog';
-import { boutonPanneau, boutonPanneauPlein } from '../components/jeux/styles';
+import CarteClasse from '../components/mesClasses/CarteClasse';
+import SeanceEnCours from '../components/mesClasses/SeanceEnCours';
+import { cleClasse, minutesAvantFin, nomClasse } from '../components/mesClasses/classe';
 import { enseignantAPI, quizAPI, quizIaAPI } from '../services/api';
 import { DEVOIRS_ACTIFS } from '../../../shared/fonctions.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
-import { ds } from '../design-system/tokens';
 
 // Le rappel de l'appel s'affiche dans les dernières minutes de la séance (le serveur envoie
 // aussi une notification, même page fermée : RAPPEL_APPEL_MINUTES)
 const RAPPEL_MINUTES = 5;
 
-const cleClasse = (c) => `${c.id_cours}:${c.id_groupe}`;
-const nomClasse = (c) => `${c.nom_cours} · ${c.nom_groupe}`;
-const minutesAvantFin = (seance, maintenant) => Math.ceil((new Date(`${seance.date}T${seance.heure_fin}:00`) - maintenant) / 60000);
-
 /**
- * Mes classes (enseignant) : la classe en cours d'abord, avec tout ce que j'y fais (appel, quiz,
- * message à la classe, supports de cours), puis mes autres classes.
+ * Mes classes (enseignant, lot E-4) : en tête, la séance en cours et son action principale
+ * (l'appel) ; dessous, une carte par classe, qui ouvre l'espace de la classe.
  * Dans les 5 dernières minutes d'une séance sans appel terminé, un rappel s'affiche.
  */
 export default function MesClasses() {
@@ -73,80 +68,14 @@ export default function MesClasses() {
     };
   }, []);
 
-  const enCours = useMemo(() => (classes ?? []).filter((c) => c.en_cours), [classes]);
-  const autres = useMemo(() => (classes ?? []).filter((c) => !c.en_cours), [classes]);
+  const enCours = useMemo(() => (classes ?? []).filter((c) => c.en_cours && c.prochaine_seance), [classes]);
   const aRappeler = enCours.filter((c) => c.prochaine_seance.appel !== 'ferme' && minutesAvantFin(c.prochaine_seance, maintenant) <= RAPPEL_MINUTES);
 
   const genererQuiz = (c) => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } });
-
-  // Supports de la classe : son espace de cours (les fichiers restent gardés par la Bibliothèque)
-  const ouvrirEspace = (classe) => navigate(`/mes-classes/${classe.id_cours}/${classe.id_groupe}`);
-
-  const libelleSeance = (c) => {
-    const s = c.prochaine_seance;
-    if (!s) return t('classes.sansSeance');
-    const jour = new Date(`${s.date}T12:00:00`).toLocaleDateString(locale, { weekday: 'short', day: 'numeric', month: 'short' });
-    return [c.en_cours ? t('classes.enCours', { fin: s.heure_fin }) : t('classes.prochaine', { date: jour, heure: s.heure_debut }), s.salle].filter(Boolean).join(' · ');
-  };
-
-  const actions = (c) => {
-    const seance = c.prochaine_seance;
-    return (
-      <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-        {/* Appel : le jour de la séance seulement (le serveur le refuse un autre jour) */}
-        {seance?.appel && (
-          <Button
-            size="small"
-            variant={c.en_cours && seance.appel !== 'ferme' ? 'contained' : 'outlined'}
-            sx={c.en_cours && seance.appel !== 'ferme' ? boutonPanneauPlein : boutonPanneau}
-            startIcon={<FactCheck />}
-            onClick={() => navigate(`/appel/${seance.id_affectation}`)}
-          >
-            {t(`classes.page.appel.${seance.appel}`)}
-          </Button>
-        )}
-        {/* Un autre jour : le bouton reste visible, pour qu'on sache où se fait l'appel */}
-        {seance && !seance.appel && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<FactCheck />} disabled>
-            {t('classes.page.appelLeJour')}
-          </Button>
-        )}
-        {/* Devoirs masqués (lot D-1) : le bouton revient avec l'interrupteur */}
-        {DEVOIRS_ACTIFS && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Quiz />} onClick={() => navigate('/jeux', { state: { donnerDevoir: { id_cours: c.id_cours, id_groupe: c.id_groupe } } })}>
-            {t('classes.page.devoir')}
-          </Button>
-        )}
-        {/* Créer un quiz : générer, ou le faire soi-même dans l'éditeur du service de quiz */}
-        {(quizIa || quiz) && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<Add />} onClick={() => genererQuiz(c)}>
-            {t('classes.page.quizIa')}
-          </Button>
-        )}
-        {/* Quiz en direct lancé et projeté depuis Planner (CQ-2) */}
-        {quiz && c.en_cours && seance && (
-          <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<SportsEsports />} onClick={() => setLancerPour(c)}>
-            {t('classes.page.quizDirect')}
-          </Button>
-        )}
-        <Button size="small" variant="outlined" sx={boutonPanneau} startIcon={<LocalLibrary />} onClick={() => ouvrirEspace(c)}>
-          {t('classes.page.supports')}
-        </Button>
-      </Box>
-    );
-  };
-
-  const ligne = (c, i) => (
-    <LignePanneau key={cleClasse(c)} premier={i === 0} lampe={c.en_cours ? ds.board.live : null}>
-      <Box sx={{ fontWeight: 600 }}>
-        {c.code_cours} {nomClasse(c)}
-      </Box>
-      <Capitales sx={{ display: 'block', mt: 0.25, mb: 1.25, fontSize: '0.8125rem', color: ds.board.letterDim }}>
-        {[t('classes.effectif', { count: c.effectif }), libelleSeance(c)].join(' · ')}
-      </Capitales>
-      {actions(c)}
-    </LignePanneau>
-  );
+  const ouvrirAppel = (seance) => navigate(`/appel/${seance.id_affectation}`);
+  // L'espace de la classe (supports, appel, élèves) ; `onglet` ouvre directement l'un d'eux
+  const ouvrirEspace = (c, onglet = null) => navigate(`/mes-classes/${c.id_cours}/${c.id_groupe}${onglet ? `?onglet=${onglet}` : ''}`);
+  const options = { quiz: Boolean(quiz), quizIa, devoirs: DEVOIRS_ACTIFS };
 
   return (
     <DashboardLayout>
@@ -163,7 +92,7 @@ export default function MesClasses() {
           role="alert"
           sx={{ mb: 2 }}
           action={
-            <Button color="inherit" size="small" onClick={() => navigate(`/appel/${c.prochaine_seance.id_affectation}`)}>
+            <Button color="inherit" size="small" onClick={() => ouvrirAppel(c.prochaine_seance)}>
               {t(`classes.page.appel.${c.prochaine_seance.appel}`)}
             </Button>
           }
@@ -172,19 +101,36 @@ export default function MesClasses() {
         </Alert>
       ))}
 
-      <Box sx={{ display: 'grid', gap: 2.5 }}>
+      <Box sx={{ display: 'grid', gap: 3 }}>
         {classes === null && !erreur && <Skeleton variant="rectangular" height={160} />}
         {classes?.length === 0 && <Alert severity="info">{t('classes.aucune')}</Alert>}
 
-        {enCours.length > 0 && (
-          <Panneau titre={t('classes.page.enCours')} titreId="classes-en-cours">
-            {enCours.map(ligne)}
-          </Panneau>
-        )}
-        {autres.length > 0 && (
-          <Panneau titre={t(enCours.length ? 'classes.page.autres' : 'classes.page.toutes')} titreId="classes-autres">
-            {autres.map(ligne)}
-          </Panneau>
+        {enCours.map((c) => (
+          <SeanceEnCours
+            key={cleClasse(c)}
+            classe={c}
+            locale={locale}
+            options={options}
+            onAppel={ouvrirAppel}
+            onQuizDirect={setLancerPour}
+            onCreerQuiz={genererQuiz}
+            onDevoir={(cl) => navigate('/jeux', { state: { donnerDevoir: { id_cours: cl.id_cours, id_groupe: cl.id_groupe } } })}
+            onSupports={(cl) => ouvrirEspace(cl)}
+          />
+        ))}
+
+        {classes?.length > 0 && (
+          <Box component="section" aria-labelledby="classes-toutes">
+            <Typography id="classes-toutes" variant="h6" component="h2" sx={{ mb: 1.5, fontWeight: 600 }}>
+              {t('classes.page.cartes')}
+            </Typography>
+            {/* Une carte par classe, la classe en cours comprise : c'est la porte de son espace */}
+            <Box sx={{ display: 'grid', gap: 2, gridTemplateColumns: 'repeat(auto-fill, minmax(min(100%, 280px), 1fr))' }}>
+              {classes.map((c) => (
+                <CarteClasse key={cleClasse(c)} classe={c} locale={locale} onOuvrir={ouvrirEspace} />
+              ))}
+            </Box>
+          </Box>
         )}
       </Box>
 

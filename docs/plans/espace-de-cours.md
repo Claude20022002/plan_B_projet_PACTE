@@ -179,7 +179,8 @@ Un lot = une branche = une PR, fichiers sous 300 lignes, un parcours Playwright 
 | E-8 | Fait : « Mon service » (Mes services, Disponibilités, Demandes de report) en onglets, une seule entrée de menu ; les trois adresses restent | Même parcours |
 | E-5 (application) | Fait : « Mes cours » en tête de l'onglet Bibliothèque (étagère au-dessus de « Mes modules »), écran d'une classe (`app/cours/[classe].jsx`), un document s'ouvre dans la fiche habituelle (lien demandé à Planner), un lien dans le navigateur | Lint, 40 tests de l'application ; **pas encore essayé sur un téléphone** |
 | Paquet de déploiement | `preparer-maj.sh --studylib` copie aussi `config/`, `bootstrap/app.php` et `providers.php` (le lot E-1 y touche) | Syntaxe du script |
-| E-4, E-9, E-10 | À faire ; l'épinglage d'un document de la Bibliothèque existe côté serveur, pas encore à l'écran (E-9) | — |
+| E-4 | Fait (16 octobre) : en tête, la séance en cours et son action principale (l'appel), quiz et supports en boutons secondaires ; dessous, une carte par classe (`components/mesClasses/`) qui ouvre l'espace de la classe, ou son onglet Appel si l'appel du jour est resté ouvert | Lint, build ; parcours appel, appelClasse, entreRoles et espaceCours (l'appel passe à la deuxième reprise : la connexion du premier test est lente, sur `main` aussi) |
+| E-9, E-10 | À faire ; l'épinglage d'un document de la Bibliothèque existe côté serveur, pas encore à l'écran (E-9) | — |
 
 Déploiement : `STUDYLIB_API_URL` (par défaut `http://studylib:8080/api`) est ajouté au service `backend` de `docker-compose.yml` ; **aucune dépendance nouvelle**, pas d'image à reconstruire pour Planner. StudyLib : une migration, à déployer avant Planner.
 
