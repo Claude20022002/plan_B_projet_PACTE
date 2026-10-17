@@ -865,9 +865,9 @@ const fr = {
       "profQuizDirect": {
         "titre": "Lancer un quiz en direct pendant la séance",
         "etapes": [
-          "Dans « Mes classes », sur la classe en cours, cliquez sur « Quiz en direct » : vous arrivez sur vos quiz sans vous reconnecter.",
-          "Choisissez le quiz et lancez la partie : les étudiants de la classe la reçoivent dans l’application, sans code à saisir.",
-          "Le lien « ← Planner » vous ramène à votre tableau de bord."
+          "Dans « Mes classes », sur la séance en cours, cliquez sur « Lancer un quiz ».",
+          "Choisissez l’un de vos quiz : Planner démarre la partie, prévient les étudiants de la classe et ouvre l’écran à projeter.",
+          "Cliquez sur « Démarrer » : les étudiants répondent dans l’application, sans code à saisir."
         ],
         "note": "Les scores sont rattachés à la séance : vous les retrouvez ensuite dans « Activités »."
       },
@@ -897,35 +897,28 @@ const fr = {
         ],
         "note": "Vous ne pouvez donner un devoir qu’à vos classes. La correction n’est montrée aux étudiants qu’après la date limite."
       },
-      "profEcrire": {
-        "titre": "Écrire à ma classe",
-        "etapes": [
-          "Dans « Mes classes », cliquez sur « Écrire à la classe » : l’annonce s’ouvre déjà adressée au groupe.",
-          "Rédigez, joignez au besoin un PDF ou une image, et cochez l’envoi par e-mail si c’est urgent.",
-          "Dans « Annonces », « Lecteurs » montre qui a lu, et « Relancer » rappelle les autres."
-        ]
-      },
       "profSupports": {
-        "titre": "Partager un support, un exercice ou un article",
+        "titre": "Partager un support avec une classe",
         "etapes": [
-          "Ouvrez la « Bibliothèque » puis « Déposer un document ».",
-          "Choisissez le module (n’importe lequel, pas seulement les vôtres) et le type : cours, TD, TP, examen, exercice ou article.",
-          "Votre document est publié tout de suite. Les étudiants le retrouvent depuis leur séance du module."
-        ]
+          "Dans « Mes classes », ouvrez la carte de la classe : l’onglet « Supports » s’affiche.",
+          "Glissez vos fichiers dans la zone de dépôt, ou cliquez sur « Ajouter un lien ». Un document déjà dans la Bibliothèque : « Depuis la Bibliothèque », sans le copier.",
+          "Rangez-les en sections. Le menu d’un support permet de le masquer aux étudiants, ou de le publier dans la Bibliothèque pour toute l’école."
+        ],
+        "note": "Seuls les étudiants de cette classe voient ses supports. Un fichier fait 20 Mo au plus."
       },
       "profReport": {
         "titre": "Je ne peux pas assurer une séance",
         "etapes": [
-          "Ouvrez « Mes demandes de report » et cliquez sur « Nouvelle demande », ou « Demander un report » depuis le tableau.",
+          "Ouvrez « Mon service », onglet « Demandes de report », et cliquez sur « Nouvelle demande », ou « Demander un report » depuis le tableau.",
           "Indiquez le motif et la date souhaitée : l’administration reçoit la demande et vous répond.",
-          "Suivez la réponse dans « Mes demandes de report »."
+          "Suivez la réponse dans ce même onglet."
         ],
         "note": "Vous n’avez rien à confirmer : une séance planifiée est tenue pour confirmée tant que vous ne demandez pas de report."
       },
       "profAbsence": {
         "titre": "Je serai absent plusieurs jours",
         "etapes": [
-          "Ouvrez « Mes disponibilités » et cliquez sur « Déclarer une absence ».",
+          "Ouvrez « Mon service », onglet « Disponibilités », et cliquez sur « Déclarer une absence ».",
           "Indiquez la période : tous vos créneaux deviennent indisponibles.",
           "L’administration est prévenue et traite vos séances, par un remplaçant ou un rattrapage."
         ]
@@ -933,16 +926,16 @@ const fr = {
       "profDispos": {
         "titre": "Indiquer quand je peux enseigner",
         "etapes": [
-          "Ouvrez « Mes disponibilités » et marquez les créneaux où vous êtes disponible ou indisponible.",
+          "Ouvrez « Mon service », onglet « Disponibilités », et marquez les créneaux où vous êtes disponible ou indisponible.",
           "Faites-le avant la génération de l’emploi du temps : elle ne vous placera que sur vos créneaux libres."
         ]
       },
       "profServices": {
         "titre": "Accepter ou refuser un enseignement qu’on me propose",
         "etapes": [
-          "Ouvrez « Mes services » : les enseignements proposés par le responsable de filière attendent votre réponse.",
+          "Ouvrez « Mon service », onglet « Mes services » : les enseignements proposés par le responsable de filière attendent votre réponse.",
           "Acceptez, ou refusez en donnant le motif.",
-          "La même page montre votre charge de l’année face à votre service dû."
+          "Le même onglet montre votre charge de l’année face à votre service dû."
         ]
       },
       "profResponsable": {
@@ -988,6 +981,15 @@ const fr = {
           "Un quiz lancé par votre enseignant pendant la séance y apparaît aussi, et dans l’application.",
           "La correction d’un devoir est visible après la date limite."
         ]
+      },
+      "etuCours": {
+        "titre": "Retrouver les supports de mes cours",
+        "etapes": [
+          "Ouvrez « Mes cours » : une carte par module que vous suivez.",
+          "Ouvrez un module : ses supports sont rangés en sections, et un document s’ouvre dans un nouvel onglet.",
+          "Sur le téléphone, ils sont en tête de l’onglet « Bibliothèque » de l’application."
+        ],
+        "note": "Vous ne voyez que ce que vos enseignants ont partagé avec vos classes. Les documents de toute l’école sont dans la Bibliothèque."
       },
       "etuAnnonces": {
         "titre": "Lire les annonces de l’école et de mes enseignants",
