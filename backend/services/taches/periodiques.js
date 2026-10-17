@@ -30,13 +30,26 @@ export const tacheUnique = (nom, tache) =>
         }
     });
 
+// Une seule tâche périodique à la fois dans ce processus. Chaque passage garde une connexion pour
+// son verrou et sa tâche en demande d'autres : les cinq passages lancés ensemble au démarrage
+// prenaient les cinq connexions du pool, et plus rien n'avançait pendant 60 s, pas même la
+// connexion d'un utilisateur (constaté le 17 octobre 2026). File chaînée : un échec ne l'arrête pas.
+let file = Promise.resolve();
+const aSonTour = (travail) => {
+    const tour = file.then(travail, travail);
+    file = tour.catch(() => {});
+    return tour;
+};
+
 /**
- * Un passage d'une tâche planifiée, sous verrou, sans jamais lever d'erreur.
- * `bilan(resultat)` rend la ligne du journal, ou rien quand le passage n'a rien fait (une tâche
- * lancée chaque minute ne remplit pas le journal de passages vides).
+ * Un passage d'une tâche planifiée, sous verrou, sans jamais lever d'erreur, après les passages
+ * déjà en file. `bilan(resultat)` rend la ligne du journal, ou rien quand le passage n'a rien
+ * fait (une tâche lancée chaque minute ne remplit pas le journal de passages vides).
  * Rend ce que rend `tacheUnique`, ou { faite: false, erreur } en cas d'échec.
  */
-export const passage = async (nom, tache, bilan = () => null) => {
+export const passage = (nom, tache, bilan = () => null) => aSonTour(() => passageImmediat(nom, tache, bilan));
+
+const passageImmediat = async (nom, tache, bilan) => {
     const debut = Date.now();
     try {
         const issue = await tacheUnique(nom, tache);
