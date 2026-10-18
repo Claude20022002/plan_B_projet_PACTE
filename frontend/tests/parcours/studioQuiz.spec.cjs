@@ -92,4 +92,11 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await page.getByRole("tab", { name: "Passations" }).click();
   await page.getByRole("button", { name: "Résultats" }).click();
   await expect(page.getByRole("row").filter({ hasText: "Réussi" })).toHaveCount(2);
+
+  // Diffuser directement depuis « Mes quiz », sans passer par l'éditeur
+  await page.goto("/studio-quiz");
+  await page.getByRole("button", { name: "Diffuser" }).first().click();
+  const depuisListe = page.getByRole("dialog", { name: "Ouvrir une passation" });
+  await depuisListe.getByRole("button", { name: "Ouvrir", exact: true }).click();
+  await expect(page.getByRole("img", { name: /QR code menant au quiz/ })).toBeVisible();
 });

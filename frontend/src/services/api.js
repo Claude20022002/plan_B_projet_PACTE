@@ -101,7 +101,10 @@ export async function request(endpoint, options = {}) {
             data = await response.json();
         } else {
             const text = await response.text();
-            data = { message: text || `Erreur ${response.status}` };
+            // Page d'erreur HTML d'un relais (nginx…) : jamais affichée telle quelle
+            const html = /^\s*</.test(text);
+            const parDefaut = response.status === 413 ? 'Fichier trop lourd pour être envoyé.' : `Erreur ${response.status}`;
+            data = { message: !text || html ? parDefaut : text };
         }
 
         if (!response.ok) {

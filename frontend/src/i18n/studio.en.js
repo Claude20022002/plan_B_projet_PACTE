@@ -27,6 +27,7 @@ const studio = {
     generation: 'AI is writing…',
     erreurGeneration: 'Generation failed',
     pret: 'Ready',
+    diffuser: 'Share',
     vide: 'No questions',
     passationsOuvertes_one: '{{count}} open session',
     passationsOuvertes_other: '{{count}} open sessions',

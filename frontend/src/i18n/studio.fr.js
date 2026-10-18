@@ -27,6 +27,7 @@ const studio = {
     generation: 'L’IA écrit…',
     erreurGeneration: 'Génération échouée',
     pret: 'Prêt',
+    diffuser: 'Diffuser',
     vide: 'Aucune question',
     passationsOuvertes_one: '{{count}} passation ouverte',
     passationsOuvertes_other: '{{count}} passations ouvertes',
