@@ -1,6 +1,6 @@
 # Plan : l'espace de cours de l'enseignant (ses classes comme sur Moodle, en plus simple)
 
-Statut : **en cours**. Rédigé le 15 octobre 2026, révisé le même jour (StudyLib comme réserve unique des fichiers, nombre de pages réduit). Ce plan reprend la partie « classe » de `espace-enseignant.md` (§ 2 et 5 bis) et la remplace pour les supports ; l'appel projeté (P-1) et le quiz en direct (CQ-1 à CQ-3) restent décrits là-bas.
+Statut : **fait** (lots E-0 à E-10, en ligne depuis maj35, 17 octobre 2026) ; reste la recette en ligne (E-10). Rédigé le 15 octobre 2026, révisé le même jour (StudyLib comme réserve unique des fichiers, nombre de pages réduit). Ce plan reprend la partie « classe » de `espace-enseignant.md` (§ 2 et 5 bis) et la remplace pour les supports ; l'appel projeté (P-1) et le quiz en direct (CQ-1 à CQ-3) restent décrits là-bas.
 
 ## 1. Objectif et décisions
 
@@ -180,7 +180,8 @@ Un lot = une branche = une PR, fichiers sous 300 lignes, un parcours Playwright 
 | E-5 (application) | Fait : « Mes cours » en tête de l'onglet Bibliothèque (étagère au-dessus de « Mes modules »), écran d'une classe (`app/cours/[classe].jsx`), un document s'ouvre dans la fiche habituelle (lien demandé à Planner), un lien dans le navigateur | Lint, 40 tests de l'application ; **pas encore essayé sur un téléphone** |
 | Paquet de déploiement | `preparer-maj.sh --studylib` copie aussi `config/`, `bootstrap/app.php` et `providers.php` (le lot E-1 y touche) | Syntaxe du script |
 | E-4 | Fait (16 octobre) : en tête, la séance en cours et son action principale (l'appel), quiz et supports en boutons secondaires ; dessous, une carte par classe (`components/mesClasses/`) qui ouvre l'espace de la classe, ou son onglet Appel si l'appel du jour est resté ouvert | Lint, build ; parcours appel, appelClasse, entreRoles et espaceCours (l'appel passe à la deuxième reprise : la connexion du premier test est lente, sur `main` aussi) |
-| E-9, E-10 | À faire ; l'épinglage d'un document de la Bibliothèque existe côté serveur, pas encore à l'écran (E-9) | — |
+| E-9 | Fait (16 octobre) : Planner, « Depuis la Bibliothèque » dans chaque section (recherche des documents publiés, épinglage sans copie, PR #46) ; StudyLib, tableau de bord, profil et notifications de l'enseignant renvoyés vers Planner (StudyLib PR #7) ; le sélecteur d'espaces ouvre `/biblio/documents` | Intégration `espaceCours` 14/14, parcours `espaceCours` ; StudyLib 179/179 |
+| E-10 | Fait (16 octobre) : recette de l'espace de cours (§ 10 de `docs/recette/scenarios-de-test.md`), fiches d'aide à jour (PR #47) | Tests unitaires du site 19/19 ; **la recette elle-même reste à passer en ligne** |
 
 Déploiement : `STUDYLIB_API_URL` (par défaut `http://studylib:8080/api`) est ajouté au service `backend` de `docker-compose.yml` ; **aucune dépendance nouvelle**, pas d'image à reconstruire pour Planner. StudyLib : une migration, à déployer avant Planner.
 
