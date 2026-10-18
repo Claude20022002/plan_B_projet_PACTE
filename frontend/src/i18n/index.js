@@ -9,6 +9,8 @@ import fr from './fr.js';
 import en from './en.js';
 import studioFr from './studio.fr.js';
 import studioEn from './studio.en.js';
+import sessionsJeuFr from './sessionsJeu.fr.js';
+import sessionsJeuEn from './sessionsJeu.en.js';
 
 export const LANGUAGES = [
   { code: 'fr', label: 'Français', short: 'FR' },
@@ -28,8 +30,11 @@ const readStoredLanguage = () => {
 };
 
 i18n.use(initReactI18next).init({
-  // Studio quiz : textes dans leurs propres fichiers, sous la clé « studio »
-  resources: { fr: { translation: { ...fr, studio: studioFr } }, en: { translation: { ...en, studio: studioEn } } },
+  // Studio quiz et sessions de jeu : textes dans leurs propres fichiers, sous leur clé
+  resources: {
+    fr: { translation: { ...fr, studio: studioFr, sessionsJeu: sessionsJeuFr } },
+    en: { translation: { ...en, studio: studioEn, sessionsJeu: sessionsJeuEn } },
+  },
   lng: readStoredLanguage(),
   fallbackLng: 'fr',
   interpolation: { escapeValue: false },

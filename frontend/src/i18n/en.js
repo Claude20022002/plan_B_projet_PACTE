@@ -1072,7 +1072,7 @@ const en = {
     aide_other: '10 questions are suggested from the document or topic; you review them before the quiz is created. {{count}} generations left today.',
     aideDocument: 'Attach a document to generate the questions, or write the quiz yourself.',
     aideQuota: 'No generation left today: write the quiz yourself, or come back tomorrow.',
-    aideSansIa: 'The quiz is written in the quiz editor, already signed in to your account.',
+    aideSansIa: 'The quiz is written in “My quizzes”, the Planner editor.',
   },
   mesQuiz: {
     dansLeService: 'In the quiz service',

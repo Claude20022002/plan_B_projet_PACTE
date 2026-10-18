@@ -1,14 +1,15 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Box, Card, CardActionArea, CardContent, Chip, FormControlLabel, IconButton, InputAdornment, Menu, MenuItem, Skeleton, Stack, Switch, TextField, Typography } from '@mui/material';
-import { Add, AutoAwesome, MoreVert, Quiz as IconeQuiz, Search, WarningAmber } from '@mui/icons-material';
+import { Box, Button, Card, CardActionArea, CardContent, Chip, FormControlLabel, IconButton, InputAdornment, Menu, MenuItem, Skeleton, Stack, Switch, TextField, Typography } from '@mui/material';
+import { Add, AutoAwesome, MoreVert, Quiz as IconeQuiz, Search, Send, WarningAmber } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
 import EmptyState from '../../design-system/components/EmptyState';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import NouveauQuizDialog from '../../components/studio/editeur/NouveauQuizDialog';
 import GenererIaDialog from '../../components/studio/editeur/GenererIaDialog';
+import OuvrirPassationDialog from '../../components/studio/editeur/OuvrirPassationDialog';
 import { studioAPI } from '../../services/studioApi';
 import { useToast } from '../../contexts/ToastContext';
 
@@ -27,10 +28,13 @@ function EtatQuiz({ quiz }) {
   return <Chip size="small" color="success" variant="outlined" label={t('studio.banque.pret')} />;
 }
 
-function CarteQuiz({ quiz, onOuvrir, onMenu }) {
+/** Prêt à diffuser : des questions, aucune à relire, pas de génération en cours (même règle que l'éditeur) */
+const pretADiffuser = (quiz) => quiz.nb_questions > 0 && !quiz.a_relire && quiz.generation?.statut !== 'en_cours';
+
+function CarteQuiz({ quiz, onOuvrir, onMenu, onDiffuser }) {
   const { t } = useTranslation();
   return (
-    <Card variant="outlined" sx={{ position: 'relative', borderRadius: 3, height: '100%', display: 'flex' }}>
+    <Card variant="outlined" sx={{ position: 'relative', borderRadius: 3, height: '100%', display: 'flex', flexDirection: 'column' }}>
       <CardActionArea onClick={onOuvrir} sx={{ alignItems: 'stretch', display: 'flex', flexDirection: 'column', justifyContent: 'flex-start' }}>
         <CardContent sx={{ width: '100%', pr: 6 }}>
           <Typography variant="subtitle1" component="h3" sx={{ fontWeight: 700, lineHeight: 1.3, mb: 0.5, overflowWrap: 'anywhere' }}>
@@ -52,6 +56,14 @@ function CarteQuiz({ quiz, onOuvrir, onMenu }) {
           )}
         </CardContent>
       </CardActionArea>
+      {/* Diffuser sans passer par l'éditeur : code et QR code pour les étudiants */}
+      {pretADiffuser(quiz) && (
+        <Box sx={{ px: 2, pb: 2 }}>
+          <Button size="small" variant="contained" startIcon={<Send />} onClick={onDiffuser}>
+            {t('studio.banque.diffuser')}
+          </Button>
+        </Box>
+      )}
       <IconButton onClick={onMenu} aria-label={t('studio.banque.actions')} aria-haspopup="menu" sx={{ position: 'absolute', top: 8, right: 8 }}>
         <MoreVert />
       </IconButton>
@@ -62,16 +74,24 @@ function CarteQuiz({ quiz, onOuvrir, onMenu }) {
 export default function MesQuiz() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
   const toast = useToast();
   const [quiz, setQuiz] = useState(null);
   const [recherche, setRecherche] = useState('');
   const [etiquette, setEtiquette] = useState('');
   const [archives, setArchives] = useState(false);
   const [nouveau, setNouveau] = useState(false);
+  // « Le faire moi-même » de « Créer un quiz » (page Activités) arrive ici avec ?nouveau=1
+  useEffect(() => {
+    if (params.get('nouveau') !== '1') return;
+    setNouveau(true);
+    setParams({}, { replace: true });
+  }, [params, setParams]);
   const [generer, setGenerer] = useState(false);
   const [iaDisponible, setIaDisponible] = useState(false);
   const [menu, setMenu] = useState(null);
   const [aSupprimer, setASupprimer] = useState(null);
+  const [aDiffuser, setADiffuser] = useState(null); // quiz dont on ouvre une passation
 
   // Le contexte des messages change à chaque affichage : lu par référence, pour ne pas relancer le chargement
   const toastRef = useRef(toast);
@@ -173,7 +193,7 @@ export default function MesQuiz() {
       ) : (
         <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: 2 }}>
           {visibles.map((q) => (
-            <CarteQuiz key={q.id_questionnaire} quiz={q} onOuvrir={() => navigate(`/studio-quiz/${q.id_questionnaire}`)} onMenu={(e) => setMenu({ ancre: e.currentTarget, quiz: q })} />
+            <CarteQuiz key={q.id_questionnaire} quiz={q} onOuvrir={() => navigate(`/studio-quiz/${q.id_questionnaire}`)} onMenu={(e) => setMenu({ ancre: e.currentTarget, quiz: q })} onDiffuser={() => setADiffuser(q)} />
           ))}
         </Box>
       )}
@@ -205,6 +225,7 @@ export default function MesQuiz() {
           navigate(`/studio-quiz/${id}`);
         }}
       />
+      {aDiffuser && <OuvrirPassationDialog ouvert onFermer={() => setADiffuser(null)} quiz={aDiffuser} onOuverte={charger} />}
       <GenererIaDialog
         ouvert={generer}
         onFermer={() => setGenerer(false)}

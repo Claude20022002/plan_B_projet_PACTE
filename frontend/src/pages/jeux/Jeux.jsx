@@ -28,6 +28,8 @@ import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
 import ZoneQuizEtDevoirs from '../../components/jeux/ZoneQuizEtDevoirs';
 import PanneauQuizDirect from '../../components/quiz/PanneauQuizDirect';
+import PanneauSessions from '../../components/jeux/session/PanneauSessions';
+import LancerJeuDialog from '../../components/jeux/session/LancerJeuDialog';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
@@ -41,8 +43,9 @@ const urlSure = (url) => typeof url === 'string' && /^https?:\/\//.test(url);
 
 /**
  * Espace Jeux : les quiz en direct de la séance (ClassQuiz), les jeux proposés dans mes modules
- * et tous les jeux de la plateforme avec ma progression. L'enseignant y propose un jeu dans
- * ses modules et suit la progression de ses étudiants.
+ * et tous les jeux de la plateforme avec ma progression. Les jeux sont faits pour les étudiants :
+ * l'enseignant ne joue pas pour lui, il propose un jeu dans ses modules, le lance en classe
+ * (QR code projeté, chacun sur son téléphone ou tous ensemble au tableau) et suit ses étudiants.
  */
 export default function Jeux() {
   const { t, i18n } = useTranslation();
@@ -59,6 +62,7 @@ export default function Jeux() {
   const [historique, setHistorique] = useState([]);
   const [historiqueProf, setHistoriqueProf] = useState(null); // enseignant : quiz, devoirs, défis
   const [resultats, setResultats] = useState(null); // id de la partie affichée
+  const [lancement, setLancement] = useState(null); // jeu à lancer en classe (enseignant)
 
   const charger = useCallback(() => {
     jeuxAPI.getAccueil()
@@ -184,6 +188,9 @@ export default function Jeux() {
             seulement, un enseignant ne joue pas ── */}
         {accueil && !enseignant && <SceneJoueur user={user} profil={accueil.profil} jeux={accueil.jeux} onChoisir={choisirAvatar} />}
 
+        {/* ── Sessions de jeu : celles en cours (enseignant), la saisie du code projeté (étudiant) ── */}
+        <PanneauSessions enseignant={enseignant} />
+
         {/* ── Quiz en direct : parties en cours, lancement dans Planner (CQ-3) ── */}
         <PanneauQuizDirect enseignant={enseignant} role={user?.role} config={quiz.config} parties={quiz.parties} />
 
@@ -294,16 +301,23 @@ export default function Jeux() {
               <LignePanneau
                 key={jeu.code}
                 premier={i === 0}
-                lampe={p.reussis > 0 ? ds.board.live : null}
+                lampe={!enseignant && p.reussis > 0 ? ds.board.live : null}
                 action={
-                  <Button variant="contained" sx={boutonPanneauPlein} onClick={() => jouer(jeu.code)}>
-                    {p.reussis > 0 ? t('jeux.continuer') : t('jeux.jouer')}
-                  </Button>
+                  enseignant ? (
+                    <Button variant="contained" sx={boutonPanneauPlein} onClick={() => setLancement(jeu)}>
+                      {t('sessionsJeu.lancer.bouton')}
+                    </Button>
+                  ) : (
+                    <Button variant="contained" sx={boutonPanneauPlein} onClick={() => jouer(jeu.code)}>
+                      {p.reussis > 0 ? t('jeux.continuer') : t('jeux.jouer')}
+                    </Button>
+                  )
                 }
               >
                 <Capitales sx={{ display: 'block', fontSize: '1.125rem' }}>{libelle(jeu.titre, i18n.language)}</Capitales>
                 <Box sx={{ fontSize: '0.9375rem', color: ds.board.letterDim, maxWidth: '72ch', mt: 0.25 }}>{libelle(jeu.resume, i18n.language)}</Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5, mt: 1, maxWidth: 420 }}>
+                {/* La progression est celle de l'étudiant : l'enseignant ne joue pas pour lui */}
+                <Box sx={{ display: enseignant ? 'none' : 'flex', alignItems: 'center', gap: 1.5, mt: 1, maxWidth: 420 }}>
                   <LinearProgress
                     variant="determinate"
                     value={pourcentage}
@@ -363,6 +377,7 @@ export default function Jeux() {
       </Box>
 
       <ResultatsQuiz idPartie={resultats} onClose={() => setResultats(null)} />
+      <LancerJeuDialog jeu={lancement} modules={modules} onFermer={() => setLancement(null)} />
 
       {/* Proposer un jeu dans un module : but et notion visée */}
       <Dialog open={Boolean(proposition)} onClose={() => setProposition(null)} fullWidth maxWidth="xs">

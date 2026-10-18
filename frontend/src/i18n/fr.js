@@ -1072,7 +1072,7 @@ const fr = {
     aide_other: '10 questions sont proposées à partir du document ou du sujet ; vous les relisez avant de créer le quiz. Il vous reste {{count}} générations aujourd’hui.',
     aideDocument: 'Joignez un document pour générer les questions, ou faites le quiz vous-même.',
     aideQuota: 'Plus de génération possible aujourd’hui : faites le quiz vous-même, ou revenez demain.',
-    aideSansIa: 'Le quiz s’écrit dans l’éditeur de quiz, déjà connecté à votre compte.',
+    aideSansIa: 'Le quiz s’écrit dans « Mes quiz », l’éditeur de Planner.',
   },
   mesQuiz: {
     dansLeService: 'Dans le service de quiz',

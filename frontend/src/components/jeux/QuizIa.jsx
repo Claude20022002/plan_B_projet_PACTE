@@ -2,8 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Skeleton, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import { quizAPI, quizIaAPI } from '../../services/api';
-import { adresseEditeurQuiz } from '../../../../shared/espaces.js';
+import { quizIaAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
 import CreerQuizDialog from '../quiz/creation/CreerQuizDialog';
@@ -13,16 +12,14 @@ import { boutonPanneau, boutonPanneauPlein } from './styles';
 
 /**
  * « Mes quiz » de l'enseignant (page Activités) : « Créer un quiz » en un geste (générer, ou le
- * faire soi-même dans l'éditeur du service de quiz), puis les quiz générés, à relire avant leur
- * création, puis tous les quiz du service de quiz, modifiables depuis Planner (IA-5). Le panneau
- * n'apparaît que si l'une des deux façons de créer est installée.
+ * faire soi-même dans le Studio quiz de Planner), puis les quiz générés, à relire avant leur
+ * création, puis tous les quiz du service de quiz, modifiables depuis Planner (IA-5).
  * @param {{ preselection?: { id_cours, id_groupe }, donnerEnDevoir?: (generation) => void, ouvrirGeneration?: boolean }} props
  *   ouvrirGeneration : « Créer un quiz » s'ouvre d'emblée (arrivée depuis « Mes classes »)
  */
 export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouvrirGeneration = false }) {
   const { t, i18n } = useTranslation();
   const [dispo, setDispo] = useState(null);
-  const [editeur, setEditeur] = useState(null);
   const [generations, setGenerations] = useState(null);
   const [creer, setCreer] = useState(false);
   const [ouverte, setOuverte] = useState(null); // { id, titre } de la génération relue
@@ -36,10 +33,6 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
   useEffect(() => {
     monte.current = true;
     charger();
-    quizAPI
-      .getConfig()
-      .then((c) => monte.current && setEditeur(c?.peutLancer ? adresseEditeurQuiz(c.url) : null))
-      .catch(() => monte.current && setEditeur(null));
     return () => {
       monte.current = false;
     };
@@ -49,7 +42,6 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
     if (ouvrirGeneration) setCreer(true);
   }, [ouvrirGeneration]);
 
-  if (!dispo?.disponible && !editeur) return null;
   const date = (iso) => new Date(iso).toLocaleString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const lampe = { pret: ds.board.letter, cree: ds.board.live, erreur: ds.brand.orange };
 
@@ -97,7 +89,6 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
         fermer={() => setCreer(false)}
         preselection={preselection}
         generation={dispo?.disponible ? dispo : null}
-        editeur={editeur}
         lancee={(id, sujet) => {
           setCreer(false);
           setOuverte({ id, titre: sujet });

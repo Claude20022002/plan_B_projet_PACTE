@@ -44,6 +44,7 @@ import pushTokenRoutes from "./routes/pushTokenRoutes.js";
 import oidcRoutes from "./routes/oidcRoutes.js";
 import quizRoutes, { webhookQuiz } from "./routes/quizRoutes.js";
 import jeuxRoutes from "./routes/jeuxRoutes.js";
+import sessionJeuRoutes from "./routes/sessionJeuRoutes.js";
 import activiteRoutes from "./routes/activiteRoutes.js";
 import annonceRoutes from "./routes/annonceRoutes.js";
 import agendaRoutes from "./routes/agendaRoutes.js";
@@ -114,8 +115,9 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(parseCookies);
 
-// Rate limiting global
-app.use(apiRateLimiter);
+// Rate limiting global, par adresse IP. Sauf les sessions de jeu : une classe derrière le Wi-Fi de
+// l'école partage la même adresse et chaque téléphone relit le tableau ; leur routeur limite par compte
+app.use((req, res, next) => (req.path.startsWith("/api/sessions-jeu") ? next() : apiRateLimiter(req, res, next)));
 app.use(optionalAuth);
 
 // Logging
@@ -169,6 +171,7 @@ app.use("/api/preparation", preparationRoutes);
 app.use("/api/push-tokens", pushTokenRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/jeux", jeuxRoutes);
+app.use("/api/sessions-jeu", sessionJeuRoutes);
 app.use("/api/activites", activiteRoutes);
 app.use("/api/annonces", annonceRoutes);
 app.use("/api/agenda", agendaRoutes);
