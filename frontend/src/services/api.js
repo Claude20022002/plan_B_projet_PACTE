@@ -708,6 +708,24 @@ export const jeuxAPI = {
     getHistorique: () => request('/jeux/historique'),
 };
 
+// ==================== SESSIONS DE JEU (lancées en classe, QR code et code) ====================
+export const sessionsJeuAPI = {
+    // Enseignant. mode : individuel (chacun sur son téléphone) | collectif (au tableau avec la classe)
+    lancer: (codeJeu, idCours, mode) => request('/sessions-jeu', { method: 'POST', body: { code_jeu: codeJeu, id_cours: idCours, mode } }),
+    ouvertes: () => request('/sessions-jeu'),
+    // { …session, participants: [{ id_user, prenom, nom, avatar, defis, points }], propositions: [{ id_proposition, texte, prenom, nom }] }
+    suivi: (id) => request(`/sessions-jeu/${encodeURIComponent(id)}`),
+    terminer: (id) => request(`/sessions-jeu/${encodeURIComponent(id)}/terminer`, { method: 'POST' }),
+    changerDefi: (id, idDefi) => request(`/sessions-jeu/${encodeURIComponent(id)}/defi`, { method: 'PUT', body: { id_defi: idDefi } }),
+    // { id_proposition } : la réponse d'un étudiant ; { texte } : la commande tapée par l'enseignant
+    jouer: (id, corps) => request(`/sessions-jeu/${encodeURIComponent(id)}/commandes`, { method: 'POST', body: corps }),
+    ecarter: (id, idProposition) => request(`/sessions-jeu/${encodeURIComponent(id)}/propositions/${encodeURIComponent(idProposition)}`, { method: 'DELETE' }),
+    // Étudiant
+    rejoindre: (code) => request('/sessions-jeu/rejoindre', { method: 'POST', body: { code } }),
+    tableau: (id) => request(`/sessions-jeu/${encodeURIComponent(id)}/tableau`),
+    proposer: (id, texte) => request(`/sessions-jeu/${encodeURIComponent(id)}/propositions`, { method: 'POST', body: { texte } }),
+};
+
 // ==================== ANNONCES CIBLÉES (R1) ====================
 export const annonceAPI = {
     // { annonces: [{ id, titre, corps, cible, auteur, date, lu_le, piece_jointe }], non_lues }

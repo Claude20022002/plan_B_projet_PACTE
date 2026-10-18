@@ -69,6 +69,7 @@ import CompetenceEnseignant from "./CompetenceEnseignant.js";
 import EnseignementEnseignant from "./EnseignementEnseignant.js";
 import ResponsableFiliere from "./ResponsableFiliere.js";
 import { MediaQuiz, Questionnaire, QuestionQuiz, SessionQuiz, TentativeQuiz, UsageIaQuiz, relierStudio } from "./studio.js";
+import { ParticipationJeu, PropositionJeu, SessionJeu, relierSessionsJeu } from "./sessionsJeu.js";
 
 // ==================== RELATIONS USER ====================
 
@@ -589,6 +590,9 @@ Notification.afterCreate((notification, options) => {
 // Studio quiz (migration 0044)
 relierStudio({ Users });
 
+// Sessions de jeu lancées en classe (migration 0045)
+relierSessionsJeu({ Users, Cours });
+
 // Export de tous les modèles
 export {
     Users,
@@ -666,4 +670,7 @@ export {
     SessionQuiz,
     TentativeQuiz,
     UsageIaQuiz,
+    SessionJeu,
+    ParticipationJeu,
+    PropositionJeu,
 };

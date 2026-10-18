@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Chip, Dialog, DialogActions, DialogContent, DialogTitle, IconButton, Stack, TextField, Tooltip, Typography } from '@mui/material';
 import { AttachFile, AutoAwesome, Edit } from '@mui/icons-material';
@@ -21,10 +22,10 @@ const REGLAGES = { nombre: 10, type: 'ABCD', difficulte: 'decouverte', temps: 30
  *
  * `generation` : { disponible, restantes, sujet } (GET /api/quiz-ia/disponibilite) ou null si la
  * génération n'est pas installée. Générer à partir d'un sujet seul attend que le serveur l'annonce
- * (`sujet: true`) ; d'ici là, il faut un document. `editeur` : adresse de l'éditeur du service de
- * quiz pour « Le faire moi-même », ou null.
+ * (`sujet: true`) ; d'ici là, il faut un document. « Le faire moi-même » ouvre la création d'un quiz
+ * dans le Studio quiz de Planner (« Mes quiz ») : l'enseignant ne quitte plus Planner.
  */
-export default function CreerQuizDialog({ ouvert, fermer, preselection, generation, editeur, lancee }) {
+export default function CreerQuizDialog({ ouvert, fermer, preselection, generation, lancee }) {
   const { t, i18n } = useTranslation();
   const [classe, setClasse] = useState(null);
   const [sujet, setSujet] = useState('');
@@ -101,11 +102,9 @@ export default function CreerQuizDialog({ ouvert, fermer, preselection, generati
       </DialogContent>
       <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
         <Button onClick={fermer} disabled={envoi} sx={{ mr: 'auto' }}>{t('common.cancel')}</Button>
-        {editeur && (
-          <Button startIcon={<Edit />} href={editeur} disabled={envoi}>
-            {t('quizCreation.moiMeme')}
-          </Button>
-        )}
+        <Button startIcon={<Edit />} component={Link} to="/studio-quiz?nouveau=1" disabled={envoi}>
+          {t('quizCreation.moiMeme')}
+        </Button>
         {iaDisponible && (
           <Button variant="contained" startIcon={<AutoAwesome />} onClick={generer} disabled={envoi || !peutGenerer}>
             {t(envoi ? 'quizCreation.envoi' : 'quizCreation.generer')}

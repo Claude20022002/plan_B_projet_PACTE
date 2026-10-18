@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Box, Card, CardActionArea, CardContent, Chip, FormControlLabel, IconButton, InputAdornment, Menu, MenuItem, Skeleton, Stack, Switch, TextField, Typography } from '@mui/material';
 import { Add, AutoAwesome, MoreVert, Quiz as IconeQuiz, Search, WarningAmber } from '@mui/icons-material';
@@ -62,12 +62,19 @@ function CarteQuiz({ quiz, onOuvrir, onMenu }) {
 export default function MesQuiz() {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const [params, setParams] = useSearchParams();
   const toast = useToast();
   const [quiz, setQuiz] = useState(null);
   const [recherche, setRecherche] = useState('');
   const [etiquette, setEtiquette] = useState('');
   const [archives, setArchives] = useState(false);
   const [nouveau, setNouveau] = useState(false);
+  // « Le faire moi-même » de « Créer un quiz » (page Activités) arrive ici avec ?nouveau=1
+  useEffect(() => {
+    if (params.get('nouveau') !== '1') return;
+    setNouveau(true);
+    setParams({}, { replace: true });
+  }, [params, setParams]);
   const [generer, setGenerer] = useState(false);
   const [iaDisponible, setIaDisponible] = useState(false);
   const [menu, setMenu] = useState(null);

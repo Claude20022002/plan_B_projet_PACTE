@@ -91,6 +91,9 @@ const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
 const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
+const SessionJeu     = lazy(() => import('./pages/jeux/SessionJeu'));
+const RejoindreJeu   = lazy(() => import('./pages/jeux/RejoindreJeu'));
+const JeuEnDirect    = lazy(() => import('./pages/jeux/JeuEnDirect'));
 // Studio quiz : banque, éditeur et résultats (enseignant) ; rejoindre et passer un quiz (étudiant)
 const MesQuiz        = lazy(() => import('./pages/studio/MesQuiz'));
 const EditeurQuiz    = lazy(() => import('./pages/studio/EditeurQuiz'));
@@ -402,6 +405,23 @@ export default function App() {
           <Route path="/jeux/terminal-linux" element={
             <PrivateRoute requiredRole={['etudiant', 'enseignant']}>
               <AppPage><JeuTerminal /></AppPage>
+            </PrivateRoute>
+          } />
+          {/* Sessions de jeu : l'enseignant projette le QR code (/jeux/sessions/:id) ; l'étudiant le
+              scanne (/jeux/session/<code>) et joue, seul ou avec la classe (/jeux/direct/:id) */}
+          <Route path="/jeux/sessions/:id" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><SessionJeu /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/jeux/session/:code" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><RejoindreJeu /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/jeux/direct/:id" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><JeuEnDirect /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/jeux/devoirs/:id" element={

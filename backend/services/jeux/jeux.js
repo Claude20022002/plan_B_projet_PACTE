@@ -3,7 +3,7 @@ import { ancetres } from "../planning/groupes.js";
 import { peutGererFiliere } from "../planning/droits.js";
 import { butEtNotion } from "../activites/but.js";
 import { ErreurMetier } from "../planning/enseignements.js";
-import { JEUX, defiDuJeu, jeuParCode, pointsMax } from "../../../shared/jeux/catalogue.js";
+import { JEUX, defiDuJeu, jeuParCode, modesDuJeu, pointsMax } from "../../../shared/jeux/catalogue.js";
 import { AVATARS, avatarDe, avatarValide } from "../../../shared/jeux/avatars.js";
 import { COMMANDES_MAX, LONGUEUR_COMMANDE_MAX, NIVEAU_REPONSE, pointsPour, rejouerDefi } from "../../../shared/terminal/jeu.js";
 
@@ -111,7 +111,7 @@ export const accueilJeux = async (user) => {
     const catalogue = user.role === "etudiant" ? JEUX.filter((jeu) => proposes.has(jeu.code)) : JEUX;
     return {
         profil,
-        jeux: catalogue.map((jeu) => ({ code: jeu.code, type: jeu.type, discipline: jeu.discipline, titre: jeu.titre, resume: jeu.resume, source: jeu.source, progression: resumeProgression(jeu, lignes) })),
+        jeux: catalogue.map((jeu) => ({ code: jeu.code, type: jeu.type, modes: modesDuJeu(jeu), discipline: jeu.discipline, titre: jeu.titre, resume: jeu.resume, source: jeu.source, progression: resumeProgression(jeu, lignes) })),
         modules: [...modules.values()],
     };
 };

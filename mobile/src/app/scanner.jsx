@@ -6,8 +6,9 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../board/Ecran';
 import { planner } from '../api/client';
-import { chargerConfigQuiz, chargerPartiesQuiz } from '../api/donnees';
+import { chargerConfigQuiz, chargerPartiesQuiz, rejoindreSessionJeu } from '../api/donnees';
 import { origineDe, partieDuPin, pinScanne } from '../quiz/scan';
+import { codeSessionScanne, ecranDeSession } from '../jeux/session';
 import { ouvrirPartie as ouvrirLaPartie } from '../quiz/ouvrir';
 import { proposerChangement } from '../telephone/etat';
 import { QUIZ_DANS_L_APPLICATION } from '../../../shared/fonctions.js';
@@ -55,6 +56,15 @@ export default function Scanner() {
     if (enCours.current || resultat || partieOuverte.current) return;
     enCours.current = true;
     try {
+      // Session de jeu lancée par l'enseignant : rejoindre, puis le jeu ou le tableau de la classe
+      const codeSession = codeSessionScanne(data);
+      if (codeSession) {
+        const ecranJeu = ecranDeSession(await rejoindreSessionJeu(codeSession));
+        if (!ecranJeu) throw new Error(t('app.sessionJeu.erreur'));
+        partieOuverte.current = true;
+        router.replace(ecranJeu);
+        return;
+      }
       const origine = await origineQuiz.current;
       const pin = pinScanne(data, origine);
       if (pin) {

@@ -10,21 +10,22 @@ import { lienQuiz } from '../outils';
  * Les deux accès d'une passation : le code (saisi dans « Quiz », sur ordinateur comme sur
  * téléphone) et le QR code (scanné avec l'appareil photo du téléphone, il ouvre directement le
  * quiz : /quiz/code/<code>, avec retour au quiz après la connexion). « Afficher en grand » les
- * projette en classe.
+ * projette en classe. Les sessions de jeu s'en servent aussi : `lien` (adresse du QR), `page`
+ * (adresse courte affichée en grand) et `aide` remplacent alors ceux du quiz.
  */
 
 // Le QR reste noir sur blanc dans les deux thèmes : c'est ce que les appareils photo lisent le mieux
-const useQr = (code, largeur) => {
+const useQr = (lien, largeur) => {
   const [image, setImage] = useState(null);
   useEffect(() => {
     let actif = true;
-    QRCode.toDataURL(lienQuiz(code), { errorCorrectionLevel: 'M', margin: 2, width: largeur, color: { dark: '#000000', light: '#FFFFFF' } })
+    QRCode.toDataURL(lien, { errorCorrectionLevel: 'M', margin: 2, width: largeur, color: { dark: '#000000', light: '#FFFFFF' } })
       .then((url) => actif && setImage(url))
       .catch(() => actif && setImage(null));
     return () => {
       actif = false;
     };
-  }, [code, largeur]);
+  }, [lien, largeur]);
   return image;
 };
 
@@ -36,12 +37,14 @@ function CodeEnGrand({ code, taille }) {
   );
 }
 
-export default function CodeAcces({ code, titre }) {
+export default function CodeAcces({ code, titre, lien: lienDonne, page = '/quiz', aide: aideDonnee, libelle }) {
   const { t } = useTranslation();
   const toast = useToast();
   const [grand, setGrand] = useState(false);
-  const qr = useQr(code, 512);
-  const qrGrand = useQr(code, 1024);
+  const lien = lienDonne ?? lienQuiz(code);
+  const aide = aideDonnee ?? t('studio.passation.codeAide');
+  const qr = useQr(lien, 512);
+  const qrGrand = useQr(lien, 1024);
 
   const copier = async (texte, message) => {
     try {
@@ -55,22 +58,22 @@ export default function CodeAcces({ code, titre }) {
   return (
     <Box>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={3} alignItems="center">
-        {qr && <Box component="img" src={qr} alt={t('studio.passation.qrAlt', { lien: lienQuiz(code) })} sx={{ width: 168, height: 168, borderRadius: 2, border: 1, borderColor: 'divider' }} />}
+        {qr && <Box component="img" src={qr} alt={t('studio.passation.qrAlt', { lien })} sx={{ width: 168, height: 168, borderRadius: 2, border: 1, borderColor: 'divider' }} />}
         <Box sx={{ flex: 1, textAlign: { xs: 'center', sm: 'left' } }}>
           <Typography variant="overline" color="text.secondary">
-            {t('studio.passation.code')}
+            {libelle ?? t('studio.passation.code')}
           </Typography>
           <Typography component="p" sx={{ fontSize: 44, fontWeight: 800, letterSpacing: '0.18em', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>
             {code}
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 1.5 }}>
-            {t('studio.passation.codeAide')}
+            {aide}
           </Typography>
           <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap justifyContent={{ xs: 'center', sm: 'flex-start' }}>
             <Button size="small" startIcon={<ContentCopy />} onClick={() => copier(code, t('studio.passation.copie'))}>
               {t('studio.passation.copier')}
             </Button>
-            <Button size="small" startIcon={<IconeLien />} onClick={() => copier(lienQuiz(code), t('studio.passation.lienCopie'))}>
+            <Button size="small" startIcon={<IconeLien />} onClick={() => copier(lien, t('studio.passation.lienCopie'))}>
               {t('studio.passation.copierLien')}
             </Button>
             <Button size="small" variant="outlined" startIcon={<Fullscreen />} onClick={() => setGrand(true)}>
@@ -94,13 +97,13 @@ export default function CodeAcces({ code, titre }) {
             {qrGrand && <Box component="img" src={qrGrand} alt="" sx={{ width: { xs: 260, md: 'min(42vh, 440px)' }, height: 'auto', borderRadius: 3 }} />}
             <Box>
               <Typography variant="h5" color="text.secondary" sx={{ textAlign: 'center', mb: 1 }}>
-                {window.location.host}/quiz
+                {window.location.host}{page}
               </Typography>
               <CodeEnGrand code={code} taille={{ xs: 56, md: 120 }} />
             </Box>
           </Stack>
           <Typography variant="h6" color="text.secondary" sx={{ textAlign: 'center' }}>
-            {t('studio.passation.codeAide')}
+            {aide}
           </Typography>
         </Box>
       </Dialog>

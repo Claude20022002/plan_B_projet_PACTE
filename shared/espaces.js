@@ -54,13 +54,3 @@ export const adresseEspace = (code, { role, urlQuiz } = {}) => {
   }
   return ESPACES.find((e) => e.code === code)?.chemin ?? null;
 };
-
-/**
- * Éditeur de quiz du service de quiz, l'enseignant connecté par son compte Planner (« Le faire
- * moi-même » dans « Créer un quiz »).
- * @param {string|null} urlQuiz
- * @returns {string|null} null si le service de quiz n'est pas installé
- */
-export const adresseEditeurQuiz = (urlQuiz) =>
-  typeof urlQuiz === 'string' && /^https?:\/\//.test(urlQuiz) ? `${urlQuiz.replace(/\/$/, '')}/account/login?sso=1&returnTo=%2Fcreate` : null;
-
