@@ -1075,6 +1075,10 @@ const fr = {
     aideSansIa: 'Le quiz s’écrit dans « Mes quiz », l’éditeur de Planner.',
   },
   mesQuiz: {
+    dansPlanner: 'Dans Mes quiz (code et QR code)',
+    diffuserQuiz: 'Diffuser le quiz {{titre}}',
+    ouvrir: 'Ouvrir',
+    tous: 'Voir les {{count}} quiz',
     dansLeService: 'Dans le service de quiz',
     modifier: 'Modifier',
     modifierQuiz: 'Modifier le quiz {{titre}}',
@@ -1119,7 +1123,9 @@ const fr = {
     lancer: {
       titre: 'Lancer un quiz · {{classe}}',
       liste: 'Mes quiz',
-      aucun: 'Vous n’avez encore aucun quiz. Créez-en un avec l’IA ou dans l’espace Quiz.',
+      aucun: 'Aucun quiz prêt à lancer. Créez-en un, ou terminez-en un dans « Mes quiz ».',
+      studio: 'Mes quiz · chacun à son rythme (code et QR code)',
+      direct: 'Quiz en direct',
       questions_one: '{{count}} question',
       questions_other: '{{count}} questions',
       enCours: 'Lancement…',

@@ -1075,6 +1075,10 @@ const en = {
     aideSansIa: 'The quiz is written in “My quizzes”, the Planner editor.',
   },
   mesQuiz: {
+    dansPlanner: 'In My quizzes (code and QR code)',
+    diffuserQuiz: 'Share the quiz {{titre}}',
+    ouvrir: 'Open',
+    tous: 'See all {{count}} quizzes',
     dansLeService: 'In the quiz service',
     modifier: 'Edit',
     modifierQuiz: 'Edit the quiz {{titre}}',
@@ -1119,7 +1123,9 @@ const en = {
     lancer: {
       titre: 'Start a quiz · {{classe}}',
       liste: 'My quizzes',
-      aucun: 'You have no quiz yet. Create one with AI or in the Quiz space.',
+      aucun: 'No quiz ready to start. Create one, or finish one in “My quizzes”.',
+      studio: 'My quizzes · at each student’s pace (code and QR code)',
+      direct: 'Live quizzes',
       questions_one: '{{count}} question',
       questions_other: '{{count}} questions',
       enCours: 'Starting…',
