@@ -1,6 +1,8 @@
 # Plan : se passer de ClassQuiz
 
-Statut : **proposé** (20 octobre 2026), à valider par le chef de projet avant le premier lot. Décision du 20 octobre : Planner ne doit plus dépendre de ClassQuiz, puis le supprimer ; les quiz déjà créés dans ClassQuiz sont importés dans le Studio quiz.
+Statut : **validé** (20 octobre 2026, réponses du chef de projet au § 5). Décision du 20 octobre : Planner ne doit plus dépendre de ClassQuiz, puis le supprimer ; les quiz déjà créés dans ClassQuiz sont importés dans le Studio quiz.
+
+**Objectif** : ne plus rien utiliser de ClassQuiz, ni le service ni son code. Tout est fait avec les éléments propres de Planner (Studio quiz, sessions de jeu, moteur partagé dans `shared/`). **Aucun code n'est repris du fork** : on s'inspire des mécaniques (chrono, podium, équipes), pas du code.
 
 Ce plan complète `studio-quiz.md` (le Studio, ses 10 types de questions, ses diffusions) et `quiz-ia.md` (génération, parties en direct CQ-1 et CQ-2). Les quiz sont aujourd'hui **des jeux en classe** ; ils deviendront plus tard de petites épreuves : le Studio sait déjà faire les deux.
 
@@ -26,7 +28,7 @@ Une **diffusion en direct** à côté de la diffusion « chacun à son rythme »
 
 - **Enseignant** (écran projeté) : lancer depuis Mes classes ou « Diffuser ce quiz » → QR code et code → les étudiants arrivent → « Commencer » → pour chaque question : énoncé et chrono à l'écran, nombre de réponses reçues, « Voir les réponses » (répartition, bonne réponse), « Question suivante » → classement après chaque question, podium à la fin.
 - **Étudiant** (téléphone ou ordinateur) : scanne, attend, répond pendant le chrono, voit s'il a juste et ses points, puis son rang.
-- **Points** calculés par le serveur : justesse, puis rapidité mesurée **à l'heure du serveur** (ouverture de la question, réception de la réponse). Le client n'envoie jamais de score.
+- **Points** (décision du 20 octobre : **justesse et rapidité**, comme Kahoot) calculés par le serveur : une réponse fausse ne rapporte rien ; une réponse juste rapporte d'autant plus qu'elle arrive tôt, la rapidité étant mesurée **à l'heure du serveur** (ouverture de la question, réception de la réponse). Le client n'envoie jamais de score.
 - **Types de questions** en direct : ceux qui se répondent en quelques secondes (choix unique, choix multiple, vrai ou faux, nombre, réponse courte, remise en ordre). Les autres (réponse rédigée, zone sur image, association, texte à trous) restent pour la diffusion « chacun à son rythme » ; l'éditeur le signale.
 - **Repris de ClassQuiz** : défi par groupes de TP (classement par moyenne), nuage de mots pour les réponses courtes, résultats rattachés à la séance et au module, notification aux étudiants du groupe.
 - **Technique** : même principe que les sessions de jeu (relecture de l'état par les téléphones, une version qui change à chaque étape pour ne renvoyer que ce qui a changé). Relire toutes les secondes pendant 15 minutes fait 900 requêtes : ces routes ont **leur propre limite par compte**, hors limite globale, comme `/api/sessions-jeu`. Pas de WebSocket : pas de nouveau service, ni de configuration de nginx.
@@ -50,7 +52,8 @@ Découpage : SC-1a serveur (modèle, routes, rejeu des points, tests) ; SC-1b é
 
 - **Images** : copiées dans les médias du Studio.
 - **Pas de doublon** : l'identifiant ClassQuiz est gardé ; relancer l'import ne recrée rien.
-- **Forme** : une commande d'administration qui importe les quiz de tous les enseignants et rend un bilan (quiz importés, questions ignorées et pourquoi), plus un bouton « Importer mes quiz » dans « Mes quiz » pour l'enseignant qui en crée encore pendant la transition.
+- **Qui** (décision du 20 octobre) : **seulement les enseignants actifs**, c'est-à-dire ceux qui ont un compte Planner actif (`Users.actif`), reconnus par leur adresse e-mail. Les quiz des autres restent dans la sauvegarde de la base du quiz (SC-5).
+- **Forme** : une commande d'administration qui importe les quiz de ces enseignants et rend un bilan (quiz importés, questions ignorées et pourquoi), plus un bouton « Importer mes quiz » dans « Mes quiz » pour l'enseignant qui en crée encore pendant la transition.
 - Un quiz importé arrive **en brouillon** : l'enseignant le relit avant de le diffuser.
 
 ### SC-3 · Rebrancher les écrans sur le Studio (groupe B)
@@ -62,13 +65,16 @@ Découpage : SC-1a serveur (modèle, routes, rejeu des points, tests) ; SC-1b é
 
 ### SC-4 · Historique et devoirs (groupe A)
 
-- Les résultats des parties passées (`QuizParties`, `QuizResultats`) restent **lisibles** dans Planner (résultats d'une séance passée), sans plus rien écrire ; un export CSV par module avant tout nettoyage.
+- Les résultats des parties passées (`QuizParties`, `QuizResultats`) restent **lisibles dans Planner** (décision du 20 octobre), dans les résultats d'une séance passée, sans plus rien écrire ; ces tables ne sont pas supprimées.
 - Devoirs ClassQuiz (déjà masqués, D-2) : retirés. Un « devoir » devient une diffusion du Studio avec date de fermeture, réservée à une classe.
 
 ### SC-5 · Retirer ClassQuiz (groupe A, avec le chef de projet pour le serveur)
 
+Quand : **dès que SC-1 à SC-4 sont en ligne et vérifiés** (une séance d'essai du direct en classe, l'import fait et son bilan relu). Pas de période de cohabitation au-delà.
+
 1. **Sauvegarde** de la base Postgres du quiz (`pg_dump`), gardée hors du serveur.
-2. Code : `clientClassQuiz.js`, `mesQuiz.js`, `lancement.js`, `parties.js` (sauf la lecture de l'historique), webhook, `devoirs.js`, OIDC (`services/oidc/`, `routes/oidcRoutes.js`), variables `QUIZ_*` et `CLASSQUIZ_*`, tests correspondants ; une migration qui retire les tables devenues inutiles (`Devoirs`, sessions OIDC), après l'export de SC-4.
+2. Code : `clientClassQuiz.js`, `mesQuiz.js`, `lancement.js`, `parties.js` (sauf la lecture de l'historique), webhook, `devoirs.js`, OIDC (`services/oidc/`, `routes/oidcRoutes.js`), variables `QUIZ_*` et `CLASSQUIZ_*`, tests correspondants ; une migration qui retire les tables devenues inutiles (`Devoirs`, sessions OIDC). Les tables de l'historique restent.
+   À la fin, une recherche de `classquiz`, `quiz.finadmintech` et `QUIZ_` dans le dépôt ne doit plus rien trouver hors de l'historique et des comptes rendus.
 3. Serveur : conteneurs du quiz retirés de `docker-compose.yml` et de `docker-compose.vps.yml`, `appliquer-quiz.sh`, domaine `quiz.finadmintech.fr` (Caddy, nginx, DNS).
 4. Dépôt `ClassQuiz` (fork) : archivé sur GitHub, pas supprimé.
 
@@ -82,14 +88,16 @@ Découpage : SC-1a serveur (modèle, routes, rejeu des points, tests) ; SC-1b é
 
 | Risque | Parade |
 |---|---|
-| Le direct du Studio arrive moins abouti que ClassQuiz | SC-5 n'est lancé qu'après une vraie séance en classe avec SC-1 |
+| Le direct du Studio arrive moins abouti que ClassQuiz | SC-5 n'est lancé qu'après une séance d'essai en classe avec SC-1 |
 | Charge : 30 téléphones qui relisent toutes les secondes | Réponse courte grâce à la version ; limite propre par compte ; mesurer avec `tests/banc` avant la séance d'essai |
 | Questions perdues à l'import (sondages, diapositives) | Bilan d'import par enseignant ; le fork reste lisible jusqu'à SC-5 |
-| Résultats passés perdus | Export avant toute suppression ; base Postgres sauvegardée |
+| Résultats passés perdus | Ils restent dans la base de Planner ; la base Postgres du quiz est sauvegardée avant le retrait |
 
-## 5. Questions au chef de projet
+## 5. Décisions du chef de projet (20 octobre 2026)
 
-1. **Points en direct** : comme Kahoot (justesse et rapidité) ou justesse seule ?
-2. **Import** : tous les quiz, ou seulement ceux des enseignants encore actifs ?
-3. **Historique** : garder les résultats des anciennes parties dans Planner, ou un export suffit-il ?
-4. **Calendrier** : SC-5 (retrait du serveur) après combien de séances réussies avec le direct du Studio ?
+| Question | Décision |
+|---|---|
+| Points en direct | **Justesse et rapidité**, comme Kahoot |
+| Quiz à importer | **Seulement ceux des enseignants actifs** |
+| Résultats des anciennes parties | **Gardés lisibles** dans Planner |
+| Retrait de ClassQuiz | **Dès que le remplaçant est en ligne et vérifié** : l'objectif est de ne plus dépendre de ClassQuiz ni de son code, et d'utiliser uniquement les éléments propres de Planner |
