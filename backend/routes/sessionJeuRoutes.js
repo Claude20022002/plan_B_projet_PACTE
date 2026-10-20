@@ -20,9 +20,9 @@ import { proposer, rejoindreSession, vueEtudiant } from "../services/jeux/sessio
  *  - GET    /api/sessions-jeu/:id/tableau             le tableau et ma réponse
  *  - POST   /api/sessions-jeu/:id/propositions        { texte } : ma réponse (remplace la précédente)
  *
- * Le limiteur global de l'API, qui compte par adresse IP, laisse passer ces routes (app.js) : une
- * classe derrière le Wi-Fi de l'école partage la même adresse, et chaque téléphone relit le
- * tableau toutes les quelques secondes. Elles ont leur propre limite, par compte.
+ * Le limiteur global de l'API laisse passer ces routes (app.js) : chaque téléphone relit le
+ * tableau toutes les quelques secondes, ce qui épuiserait la limite générale du compte. Elles
+ * ont leur propre limite, par compte.
  */
 const router = express.Router();
 router.use(authenticateToken);
