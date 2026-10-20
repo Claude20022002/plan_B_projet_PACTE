@@ -502,8 +502,6 @@ const en = {
       },
       ouvrirAppel: 'Open attendance',
       devoir: 'Set a quiz as homework',
-      quizIa: 'Create a quiz',
-      quizDirect: 'Start a quiz',
       ecrire: 'Write to the class',
       supports: 'Course materials',
       // Class cards (lot E-4)
@@ -868,23 +866,23 @@ const en = {
       "profQuizDirect": {
         "titre": "Run a live quiz during class",
         "etapes": [
-          "In “My classes”, on the session in progress, click “Start a quiz”.",
-          "Choose one of your quizzes: Planner starts the game, notifies the students of the class and opens the screen to project.",
-          "Click “Start”: students answer in the app, with no code to type."
+          "In “Activities”, click “Start a quiz”.",
+          "Choose one of your quizzes: Planner starts the game and opens the screen to project.",
+          "Students join with the projected code or QR code, then click “Start”."
         ],
-        "note": "Scores are attached to the session: you find them afterwards in “Activities”."
+        "note": "A quiz is not tied to a class: start it whenever you want, and find the scores in “Activities”."
       },
       "profQuizIa": {
         "titre": "Create a quiz in one step",
         "etapes": [
-          "In “My classes” or “Activities”, click “Create a quiz”.",
+          "In “Activities”, click “Create a quiz”.",
           "Type the topic or attach a document from your course, then “Generate”. To write the questions yourself: “Do it myself”.",
           "Review: correct a question or an answer, delete a question, or ask for another one.",
           "Click “Create the quiz”: it joins your quizzes, ready to be set as an assignment or run live."
         ],
         // Assignments hidden (lot D-1, CONTEXTE_DEVOIRS)
         "etapes_sansDevoirs": [
-          "In “My classes” or “Activities”, click “Create a quiz”.",
+          "In “Activities”, click “Create a quiz”.",
           "Type the topic or attach a document from your course, then “Generate”. To write the questions yourself: “Do it myself”.",
           "Review: correct a question or an answer, delete a question, or ask for another one.",
           "Click “Create the quiz”: it joins your quizzes, ready to be run live."
@@ -1118,10 +1116,10 @@ const en = {
     points_other: '{{count}} points',
     terminer: 'Finish',
     erreurs: {
-      absente: 'No game to host: start a quiz from My classes.',
+      absente: 'No game to host: start a quiz from Activities.',
       dejaAnimee: 'This game is already being hosted in another window.',
-      connexion: 'The quiz service cannot be reached. Check the connection, then start the quiz again from My classes.',
-      serveur: 'The quiz service refused the game. Start the quiz again from My classes.',
+      connexion: 'The quiz service cannot be reached. Check the connection, then start the quiz again from Activities.',
+      serveur: 'The quiz service refused the game. Start the quiz again from Activities.',
     },
     lancer: {
       titre: 'Start a quiz · {{classe}}',

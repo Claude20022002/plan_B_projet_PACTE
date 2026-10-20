@@ -502,8 +502,6 @@ const fr = {
       },
       ouvrirAppel: 'Ouvrir l’appel',
       devoir: 'Donner un quiz en devoir',
-      quizIa: 'Créer un quiz',
-      quizDirect: 'Lancer un quiz',
       ecrire: 'Écrire à la classe',
       supports: 'Supports de cours',
       // Cartes des classes (lot E-4)
@@ -868,23 +866,23 @@ const fr = {
       "profQuizDirect": {
         "titre": "Lancer un quiz en direct pendant la séance",
         "etapes": [
-          "Dans « Mes classes », sur la séance en cours, cliquez sur « Lancer un quiz ».",
-          "Choisissez l’un de vos quiz : Planner démarre la partie, prévient les étudiants de la classe et ouvre l’écran à projeter.",
-          "Cliquez sur « Démarrer » : les étudiants répondent dans l’application, sans code à saisir."
+          "Dans « Activités », cliquez sur « Lancer un quiz ».",
+          "Choisissez l’un de vos quiz : Planner démarre la partie et ouvre l’écran à projeter.",
+          "Les étudiants rejoignent avec le code ou le QR code projeté, puis cliquez sur « Démarrer »."
         ],
-        "note": "Les scores sont rattachés à la séance : vous les retrouvez ensuite dans « Activités »."
+        "note": "Un quiz n’est pas attaché à une classe : vous le lancez quand vous voulez, et retrouvez les scores dans « Activités »."
       },
       "profQuizIa": {
         "titre": "Créer un quiz en un geste",
         "etapes": [
-          "Dans « Mes classes » ou « Activités », cliquez sur « Créer un quiz ».",
+          "Dans « Activités », cliquez sur « Créer un quiz ».",
           "Écrivez le sujet ou joignez un document de votre cours, puis « Générer ». Pour écrire les questions vous-même : « Le faire moi-même ».",
           "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
           "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être donné en devoir ou lancé en direct."
         ],
         // Devoirs masqués (lot D-1, CONTEXTE_DEVOIRS)
         "etapes_sansDevoirs": [
-          "Dans « Mes classes » ou « Activités », cliquez sur « Créer un quiz ».",
+          "Dans « Activités », cliquez sur « Créer un quiz ».",
           "Écrivez le sujet ou joignez un document de votre cours, puis « Générer ». Pour écrire les questions vous-même : « Le faire moi-même ».",
           "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
           "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être lancé en direct."
@@ -1118,10 +1116,10 @@ const fr = {
     points_other: '{{count}} points',
     terminer: 'Terminer',
     erreurs: {
-      absente: 'Aucune partie en cours : lancez un quiz depuis Mes classes.',
+      absente: 'Aucune partie en cours : lancez un quiz depuis Activités.',
       dejaAnimee: 'Cette partie est déjà animée dans une autre fenêtre.',
-      connexion: 'Le quiz ne répond pas. Vérifiez votre connexion Internet, puis relancez-le depuis Mes classes.',
-      serveur: 'La partie n’a pas pu démarrer. Relancez le quiz depuis Mes classes.',
+      connexion: 'Le quiz ne répond pas. Vérifiez votre connexion Internet, puis relancez-le depuis Activités.',
+      serveur: 'La partie n’a pas pu démarrer. Relancez le quiz depuis Activités.',
     },
     lancer: {
       titre: 'Lancer un quiz · {{classe}}',
