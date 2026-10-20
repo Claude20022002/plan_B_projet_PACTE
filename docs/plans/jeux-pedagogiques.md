@@ -1,9 +1,10 @@
 # Plan : la bibliothèque de jeux pédagogiques
 
-Statut : **contrat en vigueur** (16 octobre 2026). Alexis (branche `jeux-pedagogique`) construit les jeux ; ce document fixe ce qu'un jeu doit respecter pour entrer dans Planner, et garde la relecture de chaque livraison.
+Statut : **contrat en vigueur** (16 octobre 2026 ; règle des modes ajoutée le 20 octobre, § 1.1). Alexis (branche `jeux-pedagogique`) construit les jeux ; ce document fixe ce qu'un jeu doit respecter pour entrer dans Planner, et garde la relecture de chaque livraison.
 
 Décisions déjà prises, rappelées ici :
 
+- **20 octobre** : chaque jeu **déclare ses modes** : comment il se lance en classe (§ 1.1). Plus tard : un mode créateur de jeux et une bibliothèque des jeux plus attrayante.
 - **12 octobre** : Planner propose une bibliothèque de jeux pédagogiques **classés par module** ; un jeu repris d'ailleurs garde son auteur et sa licence (comme Terminal Linux, MIT).
 - **11 octobre** : plus d'onglet Jeux dans la barre du bas de l'application ; l'étudiant ouvre un jeu **par un scan**, comme Wooclap, ou depuis son module.
 - **15 octobre** : `Jeux_HESTIM/` est le projet d'un autre groupe ; il ne revient pas dans ce dépôt (PR #41).
@@ -16,11 +17,30 @@ Un jeu = **une entrée de catalogue + un moteur partagé + un écran web + un é
 |---|---|---|
 | Entrée de catalogue | `shared/jeux/catalogue.js` (terminal) ou `shared/simulations/catalogue/<code>.js` (simulations) | `code` stable (il est enregistré en base, ne jamais le renommer), `type`, `discipline`, `titre` et `resume` en **fr et en**, `source` (jeu repris : nom, auteur, url, licence) **ou** `curriculum` (jeu original : page HESTIM du programme) |
 | Défis | dans l'entrée | `id` stable, `niveau`, `xp` ; l'XP n'est lue que côté serveur |
+| Modes | dans l'entrée | `modes` : `['individuel']`, ou `['individuel', 'collectif']` si le jeu fournit son rejeu au tableau (§ 1.1) |
 | Moteur | `shared/<famille>/` | Fonctions pures, sans réseau ni DOM : même code pour le serveur, le site et l'application |
 | Évaluation | `backend/services/jeux/` | Le client envoie **sa réponse**, jamais un score ; toute propriété en trop est refusée (400) |
 | Accès | `jeuAccessible` | Un étudiant ne joue qu'à un jeu **proposé dans un de ses modules** ; revérifié à chaque essai |
 | Écrans | `frontend/src/pages/jeux/`, `mobile/src/app/` | 360 px de large au minimum, cibles tactiles de 44 px, thème Planner (clair et sombre) |
 | Textes | `shared/<famille>/i18n.js` | Aucune chaîne en dur, français par défaut |
+
+### 1.1 Jouer en classe : les modes
+
+L'enseignant ne joue pas : il **lance un jeu en classe** pour un module et projette un QR code (sessions de jeu, `backend/services/jeux/sessions.js`). Chaque jeu dit, dans son entrée de catalogue, de quelles façons il peut être lancé :
+
+| Mode | Ce qui se passe | Ce que le jeu doit fournir |
+|---|---|---|
+| `individuel` | Chaque étudiant scanne le QR code et joue **sur son téléphone** ; l'enseignant voit qui a rejoint, les défis réussis et les points depuis le lancement | Rien de plus que le § 1 : la progression habituelle du jeu, évaluée par le serveur |
+| `collectif` | Le jeu est **projeté au tableau** ; les étudiants envoient leurs réponses depuis leur téléphone, l'enseignant choisit celle qui est jouée ; le serveur rejoue la partie et annonce « Objectif atteint » | Un **rejeu au tableau** dans `shared/<famille>/` : fonction pure qui, à partir du défi et de la liste des réponses jouées, rend l'écran commun et dit si l'objectif est atteint. Une réponse d'étudiant tient en un texte court (longueur bornée), sans score. Modèle : `shared/terminal/tableau.js` |
+
+Règles :
+
+1. **Déclarer `modes`** dans chaque entrée de catalogue. Un jeu qui ne le déclare pas ne se lance qu'en `individuel` (`modesDuJeu`, `shared/jeux/catalogue.js`) : c'est voulu, pas un oubli à corriger plus tard.
+2. **Ne déclarer `collectif` que si le rejeu au tableau existe et est testé.** Le serveur refuse de lancer un jeu dans un mode qu'il ne déclare pas (400).
+3. Les **mêmes protections** valent dans les deux modes : seuls les étudiants du module rejoignent ; le serveur calcule les points ; aucun score n'est accepté du client.
+4. Les codes `individuel` et `collectif` sont les seuls admis (`MODES_JEU`). Un nouveau mode (par équipes, par exemple) se décide avec le chef de projet avant d'être codé.
+
+**État au 20 octobre** : les sessions de jeu ne connaissent que le catalogue `shared/jeux/catalogue.js`, et seul le Terminal Linux déclare les deux modes. Les simulations de `shared/simulations/` devront être branchées sur les sessions (un lot côté Planner, à faire après la fusion de `jeux-pedagogique`) ; d'ici là, elles déclarent `modes: ['individuel']` pour être prêtes.
 
 ## 2. Ce qu'un jeu n'a pas le droit de faire
 
@@ -41,9 +61,10 @@ Un jeu = **une entrée de catalogue + un moteur partagé + un écran web + un é
 2. Les tests, tous verts avant la PR :
    - moteur : `backend/tests/utils/` (cas réussi, cas raté, réponse mal formée) ;
    - serveur : `backend/tests/integration/` (401 sans compte, 403 hors module, aucun score accepté du client, première réussite seule enregistrée) ;
+   - modes : lancement accepté dans chaque mode déclaré, refusé (400) dans un mode non déclaré ; pour `collectif`, le rejeu au tableau (`backend/tests/utils/`) et une réponse trop longue refusée ;
    - application : `mobile/__tests__/` ;
    - `npm run lint` sans erreur dans `backend/` et `frontend/`.
-3. Une PR vers `main` qui dit : les jeux ajoutés, leur source ou leur programme, les fichiers communs touchés et pourquoi.
+3. Une PR vers `main` qui dit : les jeux ajoutés, leur source ou leur programme, **leurs modes**, les fichiers communs touchés et pourquoi.
 4. Relecture par le chef de projet (ou Claude, modèle Opus) avant fusion ; aucune fusion directe.
 
 ## 5. Relecture de `jeux-pedagogique` (16 octobre 2026, commits `5ddd791` et `aa485f1`)
