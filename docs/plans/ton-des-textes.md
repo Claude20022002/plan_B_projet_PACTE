@@ -24,6 +24,6 @@ Les parcours Playwright cherchent certains textes à l'écran (`frontend/tests/p
 
 | Lot | Contenu | État |
 |---|---|---|
-| Étudiant | Application mobile ; site : connexion, mot de passe oublié, notifications, annonces, activités, joueur du Studio quiz, sessions de jeu | Branche `b/textes-etudiant` |
-| Enseignant | Tableau de bord, Mes classes, Mon service, Studio quiz (éditeur), sessions de jeu (côté enseignant), appel | À faire |
+| Étudiant | Application mobile ; site : connexion, mot de passe oublié, notifications, annonces, activités, joueur du Studio quiz, sessions de jeu | Branche `b/textes-etudiant` (commit 3c4a045) |
+| Enseignant | Appel, Mes classes, demandes de report, Mes séances, Studio quiz (éditeur, diffusion : « Diffuser ce quiz », « Diffusions » au lieu de « passation »), jeux en classe (« jeu » au lieu de « session ») | Branche `b/textes-enseignant` |
 | Administration | Gestion, génération, préparation, suivi, messages du serveur | À faire |

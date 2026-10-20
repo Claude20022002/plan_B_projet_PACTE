@@ -52,8 +52,8 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await expect(page.getByText("2 questions · 2 points")).toBeVisible();
 
   // Ouvrir la passation : les deux accès, code et QR code
-  await page.getByRole("button", { name: "Ouvrir une passation" }).click();
-  const ouverture = page.getByRole("dialog", { name: "Ouvrir une passation" });
+  await page.getByRole("button", { name: "Diffuser ce quiz" }).click();
+  const ouverture = page.getByRole("dialog", { name: "Diffuser ce quiz" });
   await ouverture.getByRole("button", { name: "Ouvrir", exact: true }).click();
   const acces = page.getByRole("dialog", { name: "Réseaux, contrôle 1" });
   const qr = acces.getByRole("img", { name: /QR code menant au quiz/ });
@@ -90,14 +90,14 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
 
   // Résultats : deux copies, toutes deux réussies
   await acces.getByRole("button", { name: "Fermer" }).click();
-  await page.getByRole("tab", { name: "Passations" }).click();
+  await page.getByRole("tab", { name: "Diffusions" }).click();
   await page.getByRole("button", { name: "Résultats" }).click();
   await expect(page.getByRole("row").filter({ hasText: "Réussi" })).toHaveCount(2);
 
   // Diffuser directement depuis « Mes quiz », sans passer par l'éditeur
   await page.goto("/studio-quiz");
   await page.getByRole("button", { name: "Diffuser" }).first().click();
-  const depuisListe = page.getByRole("dialog", { name: "Ouvrir une passation" });
+  const depuisListe = page.getByRole("dialog", { name: "Diffuser ce quiz" });
   await depuisListe.getByRole("button", { name: "Ouvrir", exact: true }).click();
   await expect(page.getByRole("img", { name: /QR code menant au quiz/ })).toBeVisible();
 
@@ -108,7 +108,7 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   const lancement = page.getByRole("dialog", { name: "Lancer un quiz" });
   await expect(lancement.getByText("Mes quiz · chacun à son rythme (code et QR code)")).toBeVisible();
   await lancement.getByRole("button", { name: /Réseaux, contrôle 1/ }).click();
-  const depuisActivites = page.getByRole("dialog", { name: "Ouvrir une passation" });
+  const depuisActivites = page.getByRole("dialog", { name: "Diffuser ce quiz" });
   await depuisActivites.getByRole("button", { name: "Ouvrir", exact: true }).click();
   await expect(page.getByRole("img", { name: /QR code menant au quiz/ })).toBeVisible();
 });

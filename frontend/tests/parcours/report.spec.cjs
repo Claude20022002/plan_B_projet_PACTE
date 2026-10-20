@@ -20,7 +20,7 @@ test("demande de report : envoyée par l'enseignante, approuvée par l'administr
   await prof.goto("/demandes-report");
   await prof.getByRole("button", { name: "Nouvelle demande" }).click();
   const formulaire = prof.getByRole("dialog");
-  const seance = formulaire.getByRole("combobox", { name: "Affectation" });
+  const seance = formulaire.getByRole("combobox", { name: "Séance" });
   await seance.selectOption({ label: (await seance.locator("option", { hasText: "04/01/2027" }).innerText()).trim() });
   await formulaire.getByLabel("Nouvelle date").fill("2027-01-11");
   await formulaire.getByRole("textbox", { name: "Motif" }).fill(MOTIF);

@@ -75,9 +75,9 @@ test("sessions de jeu : au tableau avec la classe par QR code, puis chacun sur s
   await capturer(mobile, "telephone-reponse-jouee");
   await telephone.close();
 
-  await page.getByRole("button", { name: "Terminer la session" }).click();
-  await page.getByRole("dialog", { name: "Terminer la session ?" }).getByRole("button", { name: "Terminer la session" }).click();
-  await expect(page.getByText("Session terminée").first()).toBeVisible();
+  await page.getByRole("button", { name: "Terminer le jeu" }).click();
+  await page.getByRole("dialog", { name: "Terminer le jeu ?" }).getByRole("button", { name: "Terminer le jeu" }).click();
+  await expect(page.getByText("Jeu terminé").first()).toBeVisible();
 
   // ── Chacun sur son téléphone ──
   const codeSeul = await lancer(page, "Chacun sur son téléphone");
