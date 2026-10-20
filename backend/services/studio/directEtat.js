@@ -1,5 +1,5 @@
 import { col, fn, literal } from "sequelize";
-import { Affectation, Appartenir, Groupe, JoueurDirect, ReponseDirect, SessionQuiz, Users } from "../../models/index.js";
+import { Affectation, Appartenir, Groupe, JoueurDirect, MediaQuiz, ReponseDirect, SessionQuiz, Users } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { MARGE_MS, classer, classerEquipes, dureeQuestion } from "../../../shared/quiz/studio/direct.js";
 
@@ -56,6 +56,13 @@ export const actualiser = async (session) => {
     }
     if (fini) await changerEtape(session, { direct_etape: "correction" });
     return session;
+};
+
+/** Ce qu'il faut à l'écran pour afficher le média d'une question (son contenu passe par sa route). */
+export const infosMedia = async (question) => {
+    if (!question?.id_media) return null;
+    const media = await MediaQuiz.findByPk(question.id_media, { attributes: ["id_media", "type", "type_mime", "description", "duree"] });
+    return media ? { id_media: media.id_media, type: media.type, type_mime: media.type_mime, description: media.description, duree: media.duree } : null;
 };
 
 /** Joueurs avec leurs points et leurs bonnes réponses, classés (égalité : même rang). */

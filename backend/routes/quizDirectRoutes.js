@@ -3,7 +3,8 @@ import { authenticateToken } from "../middleware/index.js";
 import { createRateLimiter } from "../middleware/rateLimiterMiddleware.js";
 import { planification } from "../utils/erreursPlanning.js";
 import { agirDirect, lancerDirect, vueEnseignant } from "../services/studio/direct.js";
-import { rejoindreDirect, repondreDirect, vueJoueur } from "../services/studio/directJoueur.js";
+import { mediaDuDirect, rejoindreDirect, repondreDirect, vueJoueur } from "../services/studio/directJoueur.js";
+import { diffuserMedia } from "../services/studio/medias.js";
 
 /**
  * Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1a).
@@ -18,6 +19,7 @@ import { rejoindreDirect, repondreDirect, vueJoueur } from "../services/studio/d
  *  - POST /api/quiz-direct/:id/rejoindre
  *  - GET  /api/quiz-direct/:id/joueur?depuis=<version>
  *  - POST /api/quiz-direct/:id/reponses    { index, reponse }
+ * Les deux : GET /api/quiz-direct/:id/medias/:idMedia (Range accepté), jusqu'à la question projetée pour un joueur
  *
  * Le limiteur global de l'API laisse passer ces routes (app.js) : chaque téléphone relit l'écran
  * toutes les secondes, ce qui épuiserait la limite générale du compte. Elles ont la leur.
@@ -45,5 +47,6 @@ for (const action of ["suivante", "fermer", "classement", "terminer"]) {
 router.post("/:id/rejoindre", route((req) => rejoindreDirect(req.user, req.params.id)));
 router.get("/:id/joueur", route((req) => vueJoueur(req.user, req.params.id, { depuis: req.query.depuis })));
 router.post("/:id/reponses", route((req) => repondreDirect(req.user, req.params.id, req.body ?? {})));
+router.get("/:id/medias/:idMedia", planification(async (req, res) => diffuserMedia(req, res, await mediaDuDirect(req.user, req.params.id, req.params.idMedia))));
 
 export default router;

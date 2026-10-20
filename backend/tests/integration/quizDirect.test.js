@@ -173,7 +173,7 @@ describe("Une partie, de bout en bout", () => {
         expect(fin.etape).toBe("termine");
         expect(fin.podium.map((j) => j.prenom)).toEqual(["Mintsa", "Yasmine"]);
         expect((await agir(direct, "suivante")).status).toBe(409);
-        expect((await (await loginAs(etudiant)).send("post", `/api/quiz-direct/${direct.id_session}/rejoindre`)).body.code).toBe("DIRECT_TERMINE");
+        expect((await e.send("post", `/api/quiz-direct/${direct.id_session}/rejoindre`)).body.code).toBe("DIRECT_TERMINE");
     });
 
     test("l'écran de l'enseignant reste à son auteur", async () => {
@@ -184,10 +184,31 @@ describe("Une partie, de bout en bout", () => {
 
 test("terminer pendant l'attente ; le limiteur global ne compte pas ces routes", async () => {
     const direct = await lancer();
-    const avant = await e.get("/api/auth/csrf-token");
+    // Une lecture comptée par le limiteur global (pas /auth/csrf-token, qui changerait le jeton CSRF du client)
+    const avant = await e.get("/api/passations/mes-tentatives");
     await e.send("post", `/api/quiz-direct/${direct.id_session}/rejoindre`);
     for (let i = 0; i < 3; i += 1) await ecran(e, direct);
-    const apres = await e.get("/api/auth/csrf-token");
+    const apres = await e.get("/api/passations/mes-tentatives");
     expect(Number(apres.headers["x-ratelimit-remaining"])).toBe(Number(avant.headers["x-ratelimit-remaining"]) - 1);
     expect((await agir(direct, "terminer")).body.etape).toBe("termine");
+});
+
+test("média d'une question : l'enseignant le voit, un joueur seulement une fois la question projetée", async () => {
+    const PNG = Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.alloc(200, 7)]);
+    const image = (await p.agent.post("/api/studio-quiz/medias?nom=topologie.png&description=Topologie").set("X-CSRF-Token", p.csrf).set("Content-Type", "image/png").send(PNG)).body;
+    const quiz = (await p.send("post", "/api/studio-quiz/questionnaires", { titre: "Topologie" })).body;
+    await p.send("post", `/api/studio-quiz/questionnaires/${quiz.id_questionnaire}/questions`, QUESTIONS[0]);
+    await p.send("post", `/api/studio-quiz/questionnaires/${quiz.id_questionnaire}/questions`, { ...QUESTIONS[1], id_media: image.id_media });
+    const direct = (await p.send("post", "/api/quiz-direct", { id_questionnaire: quiz.id_questionnaire })).body;
+    const url = `/api/quiz-direct/${direct.id_session}/medias/${image.id_media}`;
+    expect((await e.send("post", `/api/quiz-direct/${direct.id_session}/rejoindre`)).status).toBe(200);
+
+    expect((await p.agent.get(url)).status).toBe(200);
+    await agir(direct, "suivante");
+    expect((await e.get(url)).status).toBe(404);
+    await agir(direct, "fermer");
+    await agir(direct, "suivante");
+    expect((await ecran(e, direct)).body.media).toMatchObject({ id_media: image.id_media, type: "image", description: "Topologie" });
+    expect((await e.get(url)).status).toBe(200);
+    expect((await c.get(url)).status).toBe(403);
 });

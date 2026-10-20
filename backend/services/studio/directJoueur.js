@@ -1,8 +1,8 @@
 import { UniqueConstraintError } from "sequelize";
-import { JoueurDirect, ReponseDirect } from "../../models/index.js";
+import { JoueurDirect, MediaQuiz, ReponseDirect } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesDeLEtudiant } from "../jeux/jeux.js";
-import { actualiser, diffusionDirect, dureeDe, finQuestionMs, maintenantMs, scores } from "./directEtat.js";
+import { actualiser, diffusionDirect, dureeDe, finQuestionMs, infosMedia, maintenantMs, scores } from "./directEtat.js";
 import { MARGE_MS, pointsDirect } from "../../../shared/quiz/studio/direct.js";
 import { bonneReponse, corriger } from "../../../shared/quiz/studio/correction.js";
 import { vueEtudiant } from "../../../shared/quiz/studio/vueEtudiant.js";
@@ -101,6 +101,7 @@ export const vueJoueur = async (user, id, { depuis } = {}) => {
     };
     if (!question) return vue;
     vue.question = vueEtudiant(question);
+    vue.media = await infosMedia(question);
     const mienne = await ReponseDirect.findOne({ where: { id_session: session.id_session, id_user: user.id_user, index_question: session.direct_index } });
     if (etape === "question") return { ...vue, repondu: Boolean(mienne) };
     const classement = await scores(session);
@@ -115,4 +116,20 @@ export const vueJoueur = async (user, id, { depuis } = {}) => {
         joueurs: classement.length,
         ...(etape === "termine" ? { podium: classement.filter((j) => j.rang <= 3).map(({ prenom, nom, points, rang }) => ({ prenom, nom, points, rang })) } : {}),
     };
+};
+
+/**
+ * Image, son ou vidéo d'une question de ce quiz en direct : pour l'enseignant qui l'anime, et pour
+ * ses joueurs jusqu'à la question projetée (jamais celui d'une question à venir).
+ */
+export const mediaDuDirect = async (user, id, idMedia) => {
+    const session = await diffusionDirect(id);
+    const animateur = session.id_user === user?.id_user;
+    if (!animateur) await joueurDe(user, session);
+    const derniere = animateur ? session.questions.length - 1 : session.direct_index ?? -1;
+    const idm = Number(idMedia);
+    if (!session.questions.slice(0, derniere + 1).some((q) => q.id_media === idm)) throw new ErreurMetier("Média introuvable", 404);
+    const media = await MediaQuiz.findByPk(idm);
+    if (!media) throw new ErreurMetier("Média introuvable", 404);
+    return media;
 };

@@ -6,7 +6,7 @@ import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 import { exigerEnseignant, questionnaireDe } from "./questionnaires.js";
 import { lireReglages, lireTitre } from "./reglages.js";
 import { tirerCode, verifierGroupe, verifierSeance } from "./sessions.js";
-import { actualiser, changerEtape, diffusionDirect, dureeDe, equipes, maintenantMs, scores } from "./directEtat.js";
+import { actualiser, changerEtape, diffusionDirect, dureeDe, equipes, infosMedia, maintenantMs, scores } from "./directEtat.js";
 import { dureeQuestion, nuageDeMots, questionsHorsDirect, repartition } from "../../../shared/quiz/studio/direct.js";
 import { bonneReponse } from "../../../shared/quiz/studio/correction.js";
 import { vueEtudiant } from "../../../shared/quiz/studio/vueEtudiant.js";
@@ -150,7 +150,10 @@ export const vueEnseignant = async (user, id) => {
         const joueurs = await JoueurDirect.findAll({ where: { id_session: session.id_session }, include: [{ model: Users, as: "etudiant", attributes: ["prenom", "nom"] }], order: [["createdAt", "ASC"]] });
         vue.arrivees = joueurs.map((j) => `${j.etudiant?.prenom ?? ""} ${j.etudiant?.nom ?? ""}`.trim());
     }
-    if (question) vue.question = vueEtudiant(question);
+    if (question) {
+        vue.question = vueEtudiant(question);
+        vue.media = await infosMedia(question);
+    }
     if (question && etape !== "question") vue.correction = await correctionDe(session, question);
     if (etape === "classement" || etape === "termine") {
         vue.classement = await scores(session);

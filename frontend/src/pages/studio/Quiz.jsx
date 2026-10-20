@@ -68,14 +68,20 @@ export default function Quiz() {
     setEnvoi(true);
     setErreur(null);
     try {
-      setSession(await passationAPI.rejoindre(valeur));
+      const s = await passationAPI.rejoindre(valeur);
+      // Quiz en direct : on rejoint la partie de la classe
+      if (s.mode === 'direct') {
+        navigate(`/quiz/direct/${s.id_session}`, { replace: Boolean(codeLien) });
+        return;
+      }
+      setSession(s);
     } catch (err) {
       setSession(null);
       setErreur(err.message);
     } finally {
       setEnvoi(false);
     }
-  }, []);
+  }, [navigate, codeLien]);
 
   useEffect(() => {
     if (codeLien) rejoindre(codeLien);
