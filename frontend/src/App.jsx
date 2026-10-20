@@ -89,7 +89,7 @@ const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
 const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
 const SignalementsPresence = lazy(() => import('./pages/gestion/SignalementsPresence'));
 const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
-const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
+const Jeux           = lazy(() => import('./pages/jeux/AccueilJeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
 const SessionJeu     = lazy(() => import('./pages/jeux/SessionJeu'));

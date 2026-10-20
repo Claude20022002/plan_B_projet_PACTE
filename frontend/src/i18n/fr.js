@@ -972,10 +972,11 @@ const fr = {
       },
       "etuDevoirs": {
         "titre": "Faire un devoir ou rejoindre un quiz",
-        "titre_sansDevoirs": "Rejoindre un quiz",
+        "titre_sansDevoirs": "Rejoindre un quiz ou un jeu",
         "etapes_sansDevoirs": [
-          "Un quiz lancé par votre enseignant pendant la séance apparaît dans « Activités » et dans l’application.",
-          "Rejoignez-le d’un clic, sans code à saisir."
+          "Votre enseignant affiche un code et un QR code au tableau.",
+          "Ouvrez « Quiz », saisissez le code puis « Rejoindre » : vous arrivez dans le quiz ou dans le jeu.",
+          "Sur le téléphone, scannez le QR code avec l’application."
         ],
         "etapes": [
           "Ouvrez « Activités » : vos quiz à faire en devoir y figurent avec leur date limite.",

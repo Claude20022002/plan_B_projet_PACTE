@@ -46,7 +46,7 @@ export const FICHES = [
   // ── Étudiant ─────────────────────────────────────────────────────────────
   { id: 'etuEdt', roles: ['etudiant'], theme: 'etudiant', pages: ['/dashboard/etudiant', '/emploi-du-temps'], lien: '/emploi-du-temps/etudiant' },
   { id: 'etuPresence', roles: ['etudiant'], theme: 'etudiant', pages: ['/presence', '/dashboard/etudiant'], lien: null },
-  { id: 'etuDevoirs', roles: ['etudiant'], theme: 'etudiant', pages: ['/jeux'], lien: '/jeux' },
+  { id: 'etuDevoirs', roles: ['etudiant'], theme: 'etudiant', pages: ['/quiz'], lien: '/quiz' },
   { id: 'etuCours', roles: ['etudiant'], theme: 'etudiant', pages: ['/mes-cours', '/dashboard/etudiant'], lien: '/mes-cours' },
   { id: 'etuAnnonces', roles: ['etudiant'], theme: 'etudiant', pages: ['/annonces', '/notifications'], lien: '/annonces' },
 ];

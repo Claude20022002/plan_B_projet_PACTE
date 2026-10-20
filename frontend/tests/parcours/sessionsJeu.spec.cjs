@@ -3,8 +3,9 @@
  *  - Ensemble, au tableau : une étudiante rejoint **sur téléphone par le QR code**
  *    (/jeux/session/<code>, connexion puis retour), envoie une commande ; l'enseignante la joue
  *    au tableau ; l'étudiante voit sa réponse jouée.
- *  - Chacun sur son téléphone : une autre étudiante saisit le code dans « Activités » et arrive
- *    dans le jeu ; l'enseignante la voit dans la liste.
+ *  - Chacun sur son téléphone : une autre étudiante saisit le code dans « Quiz » (l'étudiant n'a
+ *    plus d'« Activités » : /jeux le mène à « Quiz ») et arrive dans le jeu ; l'enseignante la voit
+ *    dans la liste.
  * PARCOURS_CAPTURES=<dossier> enregistre les écrans.
  */
 const path = require("path");
@@ -85,7 +86,8 @@ test("sessions de jeu : au tableau avec la classe par QR code, puis chacun sur s
   const poste = await ordinateur.newPage();
   await seConnecter(poste, { email: etudiants[2].email, motDePasse, role: "etudiant" });
   await poste.goto("/jeux");
-  await poste.getByRole("textbox", { name: "Code affiché par l’enseignant" }).fill(codeSeul.toLowerCase());
+  await expect(poste).toHaveURL(/\/quiz$/);
+  await poste.getByRole("textbox", { name: "Code" }).fill(codeSeul.toLowerCase());
   await poste.getByRole("button", { name: "Rejoindre" }).click();
   await expect(poste).toHaveURL(/\/jeux\/terminal-linux$/, { timeout: 20_000 });
   await ordinateur.close();

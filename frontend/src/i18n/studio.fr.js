@@ -290,8 +290,10 @@ const studio = {
     actualiser: 'Actualiser',
   },
   joueur: {
-    rejoindreTitre: 'Rejoindre un quiz',
-    rejoindreAide: 'Saisissez le code que votre enseignant affiche ou vous donne.',
+    rejoindreTitre: 'Rejoindre un quiz ou un jeu',
+    rejoindreAide: 'Saisissez le code que votre enseignant affiche au tableau, ou scannez son QR code.',
+    codeInconnu: 'Aucun quiz ni jeu ne porte ce code. Vérifiez-le auprès de votre enseignant.',
+    autreCode: 'Saisir un autre code',
     code: 'Code',
     rejoindre: 'Rejoindre',
     consignes: 'Avant de commencer',

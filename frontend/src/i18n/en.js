@@ -972,10 +972,11 @@ const en = {
       },
       "etuDevoirs": {
         "titre": "Do an assignment or join a quiz",
-        "titre_sansDevoirs": "Join a quiz",
+        "titre_sansDevoirs": "Join a quiz or a game",
         "etapes_sansDevoirs": [
-          "A quiz started by your teacher during class appears in “Activities” and in the app.",
-          "Join it in one click, with no code to type."
+          "Your teacher shows a code and a QR code on the board.",
+          "Open “Quiz”, type the code then “Join”: you land in the quiz or in the game.",
+          "On the phone, scan the QR code with the app."
         ],
         "etapes": [
           "Open “Activities”: your quiz homework is listed with its deadline.",

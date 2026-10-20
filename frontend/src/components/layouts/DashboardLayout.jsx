@@ -179,7 +179,7 @@ const navigationFor = (user) => {
         { key: 'nav.myCourses', icon: <MenuBook />, path: '/mes-cours' },
         { key: 'nav.takeQuiz', icon: <QuizIcon />, path: '/quiz' },
         { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/documents' },
-        { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
+        // Pas d'« Activités » pour l'étudiant : quiz et jeux se rejoignent par leur code, dans « Quiz »
       ],
     },
   ];
