@@ -21,6 +21,9 @@ export const idLibre = (liste, prefixe) => {
 /** Adresse qu'ouvre le QR code d'une passation (le téléphone de l'étudiant arrive sur le quiz). */
 export const lienQuiz = (code) => `${window.location.origin}/quiz/code/${code}`;
 
+/** Quiz de la banque prêt à diffuser : des questions, aucune à relire, pas de génération en cours (même règle que l'éditeur). */
+export const pretADiffuser = (quiz) => quiz.nb_questions > 0 && !quiz.a_relire && quiz.generation?.statut !== 'en_cours';
+
 /** La question a-t-elle une réponse (vide, liste vide ou objet vide : non) ? */
 export const aUneReponse = (valeur) => valeur !== undefined && valeur !== null && valeur !== '' && !(Array.isArray(valeur) && !valeur.length) && !(typeof valeur === 'object' && !Array.isArray(valeur) && !Object.keys(valeur).length);
 

@@ -11,6 +11,7 @@ import NouveauQuizDialog from '../../components/studio/editeur/NouveauQuizDialog
 import GenererIaDialog from '../../components/studio/editeur/GenererIaDialog';
 import OuvrirPassationDialog from '../../components/studio/editeur/OuvrirPassationDialog';
 import { studioAPI } from '../../services/studioApi';
+import { pretADiffuser } from '../../components/studio/outils';
 import { useToast } from '../../contexts/ToastContext';
 
 /**
@@ -28,8 +29,6 @@ function EtatQuiz({ quiz }) {
   return <Chip size="small" color="success" variant="outlined" label={t('studio.banque.pret')} />;
 }
 
-/** Prêt à diffuser : des questions, aucune à relire, pas de génération en cours (même règle que l'éditeur) */
-const pretADiffuser = (quiz) => quiz.nb_questions > 0 && !quiz.a_relire && quiz.generation?.statut !== 'en_cours';
 
 function CarteQuiz({ quiz, onOuvrir, onMenu, onDiffuser }) {
   const { t } = useTranslation();

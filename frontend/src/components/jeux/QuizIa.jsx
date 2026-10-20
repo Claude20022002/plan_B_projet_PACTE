@@ -8,12 +8,14 @@ import Panneau, { Capitales, LignePanneau } from './Panneau';
 import CreerQuizDialog from '../quiz/creation/CreerQuizDialog';
 import RelireQuiz from '../quiz/creation/RelireQuiz';
 import ListeMesQuiz from '../quiz/mesQuiz/ListeMesQuiz';
+import ListeQuizStudio from '../quiz/mesQuiz/ListeQuizStudio';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
 
 /**
  * « Mes quiz » de l'enseignant (page Activités) : « Créer un quiz » en un geste (générer, ou le
  * faire soi-même dans le Studio quiz de Planner), puis les quiz générés, à relire avant leur
- * création, puis tous les quiz du service de quiz, modifiables depuis Planner (IA-5).
+ * création, les quiz du Studio (à diffuser d'ici, code et QR code), puis tous les quiz du service
+ * de quiz, modifiables depuis Planner (IA-5).
  * @param {{ preselection?: { id_cours, id_groupe }, donnerEnDevoir?: (generation) => void, ouvrirGeneration?: boolean }} props
  *   ouvrirGeneration : « Créer un quiz » s'ouvre d'emblée (arrivée depuis « Mes classes »)
  */
@@ -23,6 +25,7 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
   const [generations, setGenerations] = useState(null);
   const [creer, setCreer] = useState(false);
   const [ouverte, setOuverte] = useState(null); // { id, titre } de la génération relue
+  const [nbStudio, setNbStudio] = useState(null); // quiz du Studio (null : pas encore chargés)
   const monte = useRef(true);
 
   const charger = useCallback(() => {
@@ -57,7 +60,7 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
         }
       >
         {generations === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
-        {generations?.length === 0 && (
+        {generations?.length === 0 && nbStudio === 0 && (
           <LignePanneau premier>
             <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.quizIa.aucune')}</Typography>
           </LignePanneau>
@@ -82,6 +85,7 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
             </Capitales>
           </LignePanneau>
         ))}
+        <ListeQuizStudio onNombre={setNbStudio} />
         <ListeMesQuiz />
       </Panneau>
       <CreerQuizDialog
