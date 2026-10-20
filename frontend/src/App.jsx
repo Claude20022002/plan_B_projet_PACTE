@@ -23,6 +23,7 @@ import { routesMotDePasse } from './routes/motDePasse';
 import PageSkeleton    from './components/common/PageSkeleton';
 import AuthSkeleton    from './components/common/AuthSkeleton';
 import ErrorBoundary   from './components/common/ErrorBoundary';
+import { SURVEILLANCES_ACTIVES } from '../../shared/fonctions.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LAZY IMPORTS — 1 chunk par groupe logique
@@ -446,7 +447,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/mes-examens" element={
-            <PrivateRoute requiredRole={['etudiant', 'admin']}>
+            <PrivateRoute requiredRole={SURVEILLANCES_ACTIVES ? ['etudiant', 'admin'] : 'etudiant'}>
               <AppPage><MesExamens /></AppPage>
             </PrivateRoute>
           } />
