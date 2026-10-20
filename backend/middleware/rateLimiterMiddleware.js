@@ -187,12 +187,21 @@ export const loginCompteRateLimiter = createRateLimiter({
 });
 
 /**
- * Rate limiter standard pour l'API
+ * Clé du limiteur global : le compte connecté (posé par optionalAuth), sinon l'adresse IP.
+ * Une classe derrière le Wi-Fi de l'école partage la même adresse : comptée par adresse, elle
+ * serait bloquée (429) en plein quiz. Les requêtes sans compte (connexion, renouvellement du
+ * jeton, pages publiques) restent comptées par adresse.
+ */
+export const cleCompteOuAdresse = (req) => (req.user ? `user:${req.user.id_user}` : req.ip || req.socket?.remoteAddress);
+
+/**
+ * Rate limiter standard pour l'API : par compte connecté, par adresse sinon
  */
 export const apiRateLimiter = createRateLimiter({
     windowMs: 15 * 60 * 1000, // 15 minutes
     // 500 requêtes ; RATE_LIMIT_API_MAX le relève pour les parcours, qui viennent tous de 127.0.0.1
     max: Number(process.env.RATE_LIMIT_API_MAX) || 500,
+    keyGenerator: cleCompteOuAdresse,
     message: "Trop de requêtes, veuillez réessayer plus tard.",
 });
 

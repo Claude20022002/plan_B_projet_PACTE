@@ -653,8 +653,9 @@ Authorization: Bearer <votre_token_jwt>
 
 ### Rate Limiting
 
--   **API globale :** 100 requêtes / 15 minutes par IP
--   **Authentification :** 5 tentatives / 15 minutes par IP
+-   **API globale :** 500 requêtes / 15 minutes par compte connecté, par adresse IP sans compte (une classe sur le Wi-Fi de l'école partage la même adresse)
+-   **Connexion :** échecs seulement, 30 / 15 minutes par adresse IP et 10 / 15 minutes par compte
+-   **Sessions de jeu :** 900 requêtes / 15 minutes par compte (hors limite globale)
 
 ### Headers de sécurité
 

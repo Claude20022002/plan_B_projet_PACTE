@@ -115,10 +115,11 @@ app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 app.use(parseCookies);
 
-// Rate limiting global, par adresse IP. Sauf les sessions de jeu : une classe derrière le Wi-Fi de
-// l'école partage la même adresse et chaque téléphone relit le tableau ; leur routeur limite par compte
-app.use((req, res, next) => (req.path.startsWith("/api/sessions-jeu") ? next() : apiRateLimiter(req, res, next)));
+// Le compte d'abord : le limiteur global compte par compte connecté, par adresse IP sinon
 app.use(optionalAuth);
+// Rate limiting global. Sauf les sessions de jeu : chaque téléphone y relit le tableau toutes les
+// 3 s, ce qui épuiserait la limite du compte ; leur routeur a sa propre limite, par compte
+app.use((req, res, next) => (req.path.startsWith("/api/sessions-jeu") ? next() : apiRateLimiter(req, res, next)));
 
 // Logging
 app.use(logger);
