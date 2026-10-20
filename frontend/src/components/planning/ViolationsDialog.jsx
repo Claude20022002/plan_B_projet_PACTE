@@ -6,9 +6,10 @@ import StateChip from '../../design-system/components/StateChip';
 /**
  * Réponse 409 d'une séance : les règles enfreintes (bloquantes d'abord, puis avertissements).
  * L'administration peut forcer l'enregistrement en le justifiant (`onForcer(justification)`),
- * ce que le serveur trace dans l'historique ; sinon on revient corriger.
+ * ce que le serveur trace dans l'historique ; sinon on revient corriger. `onCorriger` (facultatif)
+ * mène à la correction elle-même, par exemple un autre créneau, au lieu de seulement fermer.
  */
-export default function ViolationsDialog({ violations, onClose, onForcer }) {
+export default function ViolationsDialog({ violations, onClose, onForcer, onCorriger, libelleCorriger }) {
     const { t } = useTranslation();
     const [justification, setJustification] = useState('');
     const [envoi, setEnvoi] = useState(false);
@@ -55,7 +56,22 @@ export default function ViolationsDialog({ violations, onClose, onForcer }) {
                 )}
             </DialogContent>
             <DialogActions>
-                <Button onClick={fermer}>{t('rules.fix')}</Button>
+                {onCorriger ? (
+                    <>
+                        <Button onClick={fermer}>{t('common.cancel')}</Button>
+                        <Button
+                            variant="contained"
+                            onClick={() => {
+                                fermer();
+                                onCorriger();
+                            }}
+                        >
+                            {libelleCorriger}
+                        </Button>
+                    </>
+                ) : (
+                    <Button onClick={fermer}>{t('rules.fix')}</Button>
+                )}
                 {onForcer && bloquantes.length > 0 && (
                     <Button variant="contained" color="warning" onClick={forcer} disabled={!justification.trim() || envoi}>
                         {t('rules.force')}
