@@ -1,7 +1,8 @@
 import { Op } from "sequelize";
 import sequelize from "../../../config/db.js";
 import { Affectation, Creneau, Groupe, PlanningSnapshot, Salle, Users } from "../../../models/index.js";
-import { STATUTS_ACTIFS, minutes, retenirDansCache, validerAffectation } from "../../planning/affectationRules.js";
+import { STATUTS_ACTIFS, retenirDansCache, validerAffectation } from "../../planning/affectationRules.js";
+import { ajouterJours, creneauxDansLeVolume, debutDeploiement, heuresDe } from "./volume.js";
 
 /**
  * Déploiement de la semaine type sur le semestre (phase E) : chaque leçon placée par le solveur
@@ -10,13 +11,9 @@ import { STATUTS_ACTIFS, minutes, retenirDansCache, validerAffectation } from ".
  * (férié, indisponibilité ponctuelle, examen, réservation…) est sautée et la séance continue la
  * semaine suivante. Tout est écrit dans une transaction, rattaché à une nouvelle version
  * (PlanningSnapshot) ; les séances générées précédemment pour ces enseignements sont annulées.
+ * Le volume prévu n'est jamais dépassé : la dernière séance est raccourcie (volume.js).
  */
 
-const ajouterJours = (iso, n) => {
-    const d = new Date(`${iso}T12:00:00Z`);
-    d.setUTCDate(d.getUTCDate() + n);
-    return d.toISOString().slice(0, 10);
-};
 const lundiDe = (iso) => {
     const d = new Date(`${iso}T12:00:00Z`);
     return ajouterJours(iso, -((d.getUTCDay() + 6) % 7));
@@ -33,8 +30,8 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
         [...creneaux.values()].find((x) => x.jour_semaine === c.jour_semaine && x.regime === c.regime && x.variante === c.variante && x.rang === c.rang + 1);
     const nbSemaines = periode.nb_semaines || Math.ceil((new Date(periode.date_fin) - new Date(periode.date_debut)) / (7 * 864e5));
     const premierLundi = lundiDe(periode.date_debut);
-    // Pas de séance dans le passé : une régénération en cours de semestre ne touche que la suite
-    const debutEffectif = periode.date_debut > aujourdhui() ? periode.date_debut : aujourdhui();
+    // Pas de séance dans le passé, ni aujourd'hui : une régénération en cours de semestre ne touche que la suite
+    const debutEffectif = debutDeploiement(periode.date_debut, aujourdhui());
 
     return sequelize.transaction(async (transaction) => {
         const idsEnseignements = [...new Set(Object.values(index).map((i) => i.id_enseignement))];
@@ -98,17 +95,23 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
             const semaineDebut = Math.max(1, info.semaine_debut || 1);
             const semaineFin = Math.min(nbSemaines, info.semaine_fin || nbSemaines);
             let heures = 0;
+            // Le reste du volume est plus court que le premier créneau : plus rien à placer
+            let volumeAtteint = false;
 
-            for (let semaine = semaineDebut; semaine <= semaineFin && heures < info.heures_prevues; semaine += 1) {
+            semaines: for (let semaine = semaineDebut; semaine <= semaineFin && heures < info.heures_prevues; semaine += 1) {
                 const lundi = ajouterJours(premierLundi, (semaine - 1) * 7);
                 for (const lecon of lecons) {
-                    if (heures >= info.heures_prevues) break;
+                    if (heures >= info.heures_prevues - 1e-6) break;
                     const premier = creneaux.get(lecon.creneauId);
                     const jour = { lundi: 0, mardi: 1, mercredi: 2, jeudi: 3, vendredi: 4, samedi: 5, dimanche: 6 }[premier.jour_semaine];
                     const date = ajouterJours(lundi, jour);
                     if (date < debutEffectif || date > periode.date_fin) continue;
                     const suite = info.longueur === 2 ? suivantDe(premier) : null;
-                    const aPlacer = [premier, ...(suite ? [suite] : [])];
+                    const aPlacer = creneauxDansLeVolume([premier, ...(suite ? [suite] : [])], info.heures_prevues - heures);
+                    if (!aPlacer.length) {
+                        volumeAtteint = true;
+                        break semaines;
+                    }
                     const seances = aPlacer.map((c) => ({
                         date_seance: date,
                         id_creneau: c.id_creneau,
@@ -133,13 +136,14 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
                         aEcrire.push({ ...s, statut: "planifie", id_user_admin: user.id_user, id_snapshot: snapshot.id_snapshot, id_generation_session: session?.id_generation_session ?? null, is_generated: true });
                     }
                     creees += seances.length;
-                    const dureeHeures = aPlacer.reduce((t, c) => t + (minutes(c.heure_fin) - minutes(c.heure_debut)), 0) / 60;
-                    heures += dureeHeures;
+                    heures += heuresDe(aPlacer);
                     ligne.seances += 1;
                 }
             }
             ligne.heures_planifiees = Math.round(heures * 10) / 10;
-            ligne.complet = heures >= info.heures_prevues;
+            ligne.complet = volumeAtteint || heures >= info.heures_prevues - 1e-6;
+            // Heures non placées parce qu'un créneau entier aurait dépassé le volume
+            ligne.heures_restantes = Math.round(Math.max(0, info.heures_prevues - heures) * 10) / 10;
             rapportParEnseignement.set(idEnseignement, ligne);
         }
 
