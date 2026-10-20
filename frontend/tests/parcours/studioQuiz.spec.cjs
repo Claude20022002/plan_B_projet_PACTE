@@ -15,10 +15,10 @@ const repondreEtRendre = async (page) => {
   await page.getByRole("button", { name: "Suivant" }).click();
   await page.getByRole("radio", { name: /Vrai/ }).click();
   await page.getByRole("button", { name: "Terminer" }).click();
-  const rendre = page.getByRole("dialog", { name: "Rendre votre copie ?" });
+  const rendre = page.getByRole("dialog", { name: "Envoyer vos réponses ?" });
   await expect(rendre).toContainText("Vous avez répondu à toutes les questions.");
-  await rendre.getByRole("button", { name: "Rendre la copie" }).click();
-  await expect(page.getByRole("heading", { name: "Copie rendue" })).toBeVisible();
+  await rendre.getByRole("button", { name: "Envoyer mes réponses" }).click();
+  await expect(page.getByRole("heading", { name: "Réponses envoyées" })).toBeVisible();
   await expect(page.getByText("100 %")).toBeVisible();
 };
 

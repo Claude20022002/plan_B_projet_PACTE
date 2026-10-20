@@ -53,7 +53,7 @@ const sessionsJeu = {
     code: 'Code affiché par l’enseignant',
     action: 'Rejoindre',
     aide: 'Scannez le QR code projeté, ou saisissez ici son code à 6 caractères.',
-    enCours: 'Entrée dans la session…',
+    enCours: 'On vous fait entrer dans le jeu…',
   },
   direct: {
     votreReponse: 'Votre réponse (une commande)',
