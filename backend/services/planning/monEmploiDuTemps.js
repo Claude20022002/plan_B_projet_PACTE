@@ -1,16 +1,9 @@
 import { Op } from "sequelize";
-<<<<<<< HEAD
-import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, Evenement, Filiere, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
-import { ErreurMetier } from "./enseignements.js";
-import { ancetres } from "./groupes.js";
-import { appliquerVersionPubliee, lignesDesClasses } from "../calendrier/versionPubliee.js";
-=======
-import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementGroupe, EnvoiEdt, Evenement, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
+import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, Evenement, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { ancetres } from "./groupes.js";
 import { campusDesGroupes } from "./campusDesSeances.js";
-import { appliquerRamadan } from "./ramadan.js";
->>>>>>> 77429e7a169fc076cf6ed68af0deba28ca1a4eaf
+import { appliquerVersionPubliee, lignesDesClasses } from "../calendrier/versionPubliee.js";
 
 /**
  * Emploi du temps de l'étudiant connecté (application mobile, phase D2) : les séances de ses
