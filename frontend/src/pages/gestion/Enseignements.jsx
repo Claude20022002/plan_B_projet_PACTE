@@ -187,7 +187,7 @@ export default function Enseignements() {
         <DashboardLayout>
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' }, minWidth: 0 }}>
                         <TextField select size="small" label={t('ref.teaching.period')} value={idPeriode} onChange={(e) => setIdPeriode(e.target.value)} sx={{ minWidth: 200 }}>
                             {periodes.map((p) => (
                                 <MenuItem key={p.id_periode} value={p.id_periode}>

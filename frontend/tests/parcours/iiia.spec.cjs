@@ -43,8 +43,8 @@ test("IIIA : 3A et 4A placées ensemble sans conflit, chaque étudiant voit sa p
   await expect(chiffre(page, "règles dures enfreintes")).toHaveText("0");
   await testInfo.attach("rapport de génération", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
 
-  // Première semaine de cours : la semaine type complète
-  const semaine = ["2026-10-19", "2026-10-24"];
+  // Première semaine de cours (du lundi au samedi) : la semaine type complète
+  const semaine = [iiia.periode.debut, new Date(Date.parse(`${iiia.periode.debut}T00:00:00Z`) + 5 * 86400000).toISOString().slice(0, 10)];
   const groupes3a = [iiia.groupes.promo3, iiia.groupes.g1, iiia.groupes.g2];
   const brut3a = (await Promise.all(groupes3a.map((g) => seancesDu(page, g, ...semaine)))).flat();
   // Une séance de promotion revient dans la liste de chaque groupe : une seule fois chacune

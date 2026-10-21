@@ -12,6 +12,7 @@ import MediaQuestion from '../../components/studio/MediaQuestion';
 import ReponseQuestion from '../../components/studio/reponses/ReponseQuestion';
 import { passationAPI } from '../../services/studioApi';
 import { useToast } from '../../contexts/ToastContext';
+import useTitreOnglet from '../../hooks/useTitreOnglet';
 
 /**
  * Épreuve du Studio quiz, sur le modèle de l'examen Cisco : une question par écran, l'énoncé et
@@ -34,6 +35,7 @@ export default function Epreuve() {
   const premierAffichage = useRef(true);
 
   const copie = e.copie;
+  useTitreOnglet(copie?.session.titre);
   const question = copie?.questions[e.index];
   const lineaire = copie?.session.navigation === 'lineaire';
   const immediate = copie?.session.correction === 'immediate';
