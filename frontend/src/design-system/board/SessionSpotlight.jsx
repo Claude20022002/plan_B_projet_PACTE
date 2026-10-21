@@ -1,31 +1,10 @@
 import { useEffect, useState } from 'react';
-import { Box, Link } from '@mui/material';
-import { MenuBook } from '@mui/icons-material';
+import { Box } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { ds } from '../tokens';
 import { relativeTo } from '../../utils/session';
 import FlapTiles from './FlapTiles';
-import { supportsDuCours } from '../../utils/supports';
-
-/** « Supports du cours (n) » : documents publiés pour ce module dans la bibliothèque. */
-function SupportsCours({ code, color }) {
-  const { t } = useTranslation();
-  const [supports, setSupports] = useState(null);
-  useEffect(() => {
-    let actif = true;
-    supportsDuCours(code).then((s) => actif && setSupports(s));
-    return () => {
-      actif = false;
-    };
-  }, [code]);
-  if (!supports?.documents) return null;
-  return (
-    <Link href={supports.url} underline="hover" sx={{ display: 'inline-flex', alignItems: 'center', gap: 0.75, mt: 1.5, color, fontWeight: 600 }}>
-      <MenuBook fontSize="small" aria-hidden />
-      {t('board.supports', { count: supports.documents })}
-    </Link>
-  );
-}
+import SupportsCours from './SupportsCours';
 
 /**
  * La séance en vedette (en cours ou prochaine), dépliée sous sa ligne du panneau :
