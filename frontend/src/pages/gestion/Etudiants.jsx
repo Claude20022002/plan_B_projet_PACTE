@@ -16,7 +16,6 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    Typography,
     FormControl,
     InputLabel,
     Select,
@@ -24,12 +23,11 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { etudiantAPI, userAPI, groupeAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_ETUDIANTS } from '../../utils/exportColumns';
@@ -67,7 +65,6 @@ export default function Etudiants() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [importOuvert, setImportOuvert] = useState(false);
-    const navigate = useNavigate();
 
     useEffect(() => {
         loadEtudiants();
@@ -209,20 +206,8 @@ export default function Etudiants() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined"
-                            size="small"
-                        >
-                            {t('common.back')}
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            {t('etudiants.titre')}
-                        </Typography>
-                    </Box>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'flex-end', mb: 3 }}>
+                    {/* Le titre est celui de la mise en page, et le menu y ramène : plus de « Retour » ni de « Gestion des… » (recette, m-1 et m-2) */}
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         <Button
                             variant="outlined"
