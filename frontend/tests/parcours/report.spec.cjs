@@ -3,8 +3,8 @@
  * B-2) : l'enseignante ne tape plus de date, elle choisit un créneau libre de sa séance du lundi
  * 4 janvier 2027 ; l'administration l'approuve. Puis une seconde demande : l'administration
  * renonce à un refus (confirmation), et approuve sur un autre créneau libre, sans attendre une
- * nouvelle demande. Les créneaux proposés ont déjà passé les règles de planification, qui ont
- * leurs propres tests.
+ * nouvelle demande. Enfin, un refus avec sa raison, que l'enseignante lit dans sa liste.
+ * Les créneaux proposés ont déjà passé les règles de planification, qui ont leurs propres tests.
  */
 const { test, expect } = require("@playwright/test");
 const { lireDonnees, seConnecter } = require("./outils.cjs");
@@ -13,16 +13,20 @@ const { lireDonnees, seConnecter } = require("./outils.cjs");
 test.setTimeout(120_000);
 test.describe.configure({ mode: "serial" });
 
-/** Envoie une demande de report : la séance, un créneau libre du jour donné, le motif. */
-const demander = async (prof, { seance, jour, motif }) => {
+/**
+ * Envoie une demande de report : la séance (sa date, ou la première de la liste sans `seance`),
+ * un créneau libre entre `jour` et `jusquau` (le même jour par défaut), le motif.
+ */
+const demander = async (prof, { seance, jour, jusquau = jour, motif }) => {
   await prof.goto("/demandes-report");
   await prof.getByRole("button", { name: "Nouvelle demande" }).click();
   const formulaire = prof.getByRole("dialog");
   const liste = formulaire.getByRole("combobox", { name: "Séance" });
-  await liste.selectOption({ label: (await liste.locator("option", { hasText: seance }).first().innerText()).trim() });
-  // Les créneaux libres de la séance, sur le jour voulu
+  const option = seance ? liste.locator("option", { hasText: seance }) : liste.locator("option:not([value=''])");
+  await liste.selectOption({ label: (await option.first().innerText()).trim() });
+  // Les créneaux libres de la séance, sur les jours voulus
   await formulaire.getByLabel("Du", { exact: true }).fill(jour);
-  await formulaire.getByLabel("Au", { exact: true }).fill(jour);
+  await formulaire.getByLabel("Au", { exact: true }).fill(jusquau);
   await formulaire.getByRole("button", { name: "Chercher" }).click();
   const creneaux = formulaire.getByRole("list", { name: "Créneaux libres" });
   await creneaux.getByRole("button", { name: /^Choisir/ }).first().click();
@@ -87,4 +91,27 @@ test("l'administration renonce à refuser, puis approuve sur un autre créneau l
 
   await prof.reload();
   await expect(prof.getByRole("row").filter({ hasText: "Approuvée" })).toHaveCount(2);
+});
+
+test("un refus avec sa raison, lue par l'enseignante", async ({ browser }) => {
+  const { admin, enseignante, motDePasse } = lireDonnees();
+
+  // Les séances de janvier ont été déplacées par les deux parcours précédents : la première venue suffit
+  const prof = await (await browser.newContext()).newPage();
+  await seConnecter(prof, { email: enseignante.email, motDePasse, role: "enseignant" });
+  await demander(prof, { jour: "2027-02-01", jusquau: "2027-02-05", motif: "Formation hors de l'école" });
+
+  const adm = await (await browser.newContext()).newPage();
+  await seConnecter(adm, { email: admin.email, motDePasse, role: "admin" });
+  await adm.goto("/gestion/demandes-report");
+  const demande = adm.getByRole("row").filter({ hasText: "En attente" });
+  await demande.getByRole("button", { name: "Refuser" }).click();
+  const refus = adm.getByRole("dialog");
+  await refus.getByRole("textbox", { name: "Raison (facultatif)" }).fill("Semaine des examens");
+  await refus.getByRole("button", { name: "Refuser" }).click();
+  await expect(refus).toBeHidden();
+  await expect(adm.getByRole("row").filter({ hasText: "Refusée" })).toHaveCount(1);
+
+  await prof.reload();
+  await expect(prof.getByRole("row").filter({ hasText: "Refusée" })).toContainText("Raison du refus : Semaine des examens");
 });

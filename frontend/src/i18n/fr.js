@@ -1484,7 +1484,7 @@ const fr = {
     choisirSeanceDabord: 'Choisissez d’abord la séance : ses créneaux libres s’afficheront ici.',
     nouveauCreneau: 'Nouveau créneau : {{jour}}, {{debut}}–{{fin}}, {{salle}}',
     aideMotif: 'Par exemple : jury de soutenance le même jour',
-    colonnes: { seance: 'Séance', origine: 'Date d’origine', nouvelleDate: 'Nouvelle date', motif: 'Motif', statut: 'Statut', dateDemande: 'Demandée le' },
+    colonnes: { seance: 'Séance', origine: 'Date d’origine', nouvelleDate: 'Nouvelle date', motif: 'Motif', statut: 'Statut', dateDemande: 'Demandée le', raisonRefus: 'Raison du refus' },
     champs: { seance: 'Séance', choisir: 'Choisir une séance', creneau: 'Nouveau créneau', motif: 'Motif' },
     statuts: { approuve: 'Approuvée', refuse: 'Refusée', en_attente: 'En attente' },
     erreurs: { affectation: 'Choisissez la séance à reporter.', creneau: 'Choisissez le nouveau créneau dans la liste.', motif: 'Indiquez le motif.' },
@@ -1504,6 +1504,8 @@ const fr = {
     erreurTraitement: 'La décision n’a pas pu être enregistrée. Réessayez dans un instant.',
     refusTitre: 'Refuser cette demande ?',
     refusMessage: '{{enseignant}} demandait de reporter « {{seance}} » au {{date}}. Il sera prévenu tout de suite, et la décision ne pourra pas être annulée. Si seule la date pose problème, choisissez plutôt un autre créneau.',
+    refusRaison: 'Raison (facultatif)',
+    refusRaisonAide: 'L’enseignant la lira dans la notification du refus.',
   },
   mesSeances: {
     titre: 'Mes séances',

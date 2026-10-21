@@ -1488,7 +1488,7 @@ const en = {
     choisirSeanceDabord: 'Choose the session first: its free slots will show here.',
     nouveauCreneau: 'New slot: {{jour}}, {{debut}}–{{fin}}, {{salle}}',
     aideMotif: 'For example: thesis jury on the same day',
-    colonnes: { seance: 'Session', origine: 'Original date', nouvelleDate: 'New date', motif: 'Reason', statut: 'Status', dateDemande: 'Requested on' },
+    colonnes: { seance: 'Session', origine: 'Original date', nouvelleDate: 'New date', motif: 'Reason', statut: 'Status', dateDemande: 'Requested on', raisonRefus: 'Reason for refusal' },
     champs: { seance: 'Session', choisir: 'Choose a session', creneau: 'New slot', motif: 'Reason' },
     statuts: { approuve: 'Approved', refuse: 'Refused', en_attente: 'Pending' },
     erreurs: { affectation: 'Choose the session to reschedule.', creneau: 'Choose the new slot in the list.', motif: 'Enter the reason.' },
@@ -1508,6 +1508,8 @@ const en = {
     erreurTraitement: 'The decision could not be saved. Try again in a moment.',
     refusTitre: 'Refuse this request?',
     refusMessage: '{{enseignant}} asked to move “{{seance}}” to {{date}}. They will be notified at once, and the decision cannot be undone. If only the date is a problem, choose another slot instead.',
+    refusRaison: 'Reason (optional)',
+    refusRaisonAide: 'The teacher will read it in the refusal notification.',
   },
   mesSeances: {
     titre: 'My sessions',

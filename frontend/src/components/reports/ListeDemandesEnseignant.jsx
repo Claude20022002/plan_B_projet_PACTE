@@ -8,12 +8,19 @@ import { dateCourte, dateEtHeure, demandeeDe, origineDe } from './format';
  * Demandes de report d'un enseignant : un tableau sur ordinateur, des cartes empilées sur
  * téléphone, où un tableau coupait le statut et cachait la date d'origine (recette, M-8).
  * `creneaux` : Map id_creneau → créneau (useCreneauxParId), pour les heures.
+ * Une demande refusée montre sous son statut la raison donnée par l'administration, s'il y en a une.
  */
 export default function ListeDemandesEnseignant({ demandes, creneaux }) {
     const { t, i18n } = useTranslation();
     const theme = useTheme();
     const telephone = useMediaQuery(theme.breakpoints.down('sm'));
     const seanceDe = (d) => [d.affectation?.cours?.nom_cours, d.affectation?.groupe?.nom_groupe].filter(Boolean).join(' · ') || '—';
+    const raisonDe = (d) =>
+        d.statut_demande === 'refuse' && d.motif_decision ? (
+            <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
+                {t('reports.colonnes.raisonRefus')} : {d.motif_decision}
+            </Typography>
+        ) : null;
 
     if (telephone) {
         return (
@@ -35,6 +42,7 @@ export default function ListeDemandesEnseignant({ demandes, creneaux }) {
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                             {d.motif}
                         </Typography>
+                        {raisonDe(d)}
                     </Paper>
                 ))}
             </Stack>
@@ -63,6 +71,7 @@ export default function ListeDemandesEnseignant({ demandes, creneaux }) {
                             <TableCell>{d.motif}</TableCell>
                             <TableCell>
                                 <StatutDemande statut={d.statut_demande} />
+                                {raisonDe(d)}
                             </TableCell>
                             <TableCell sx={{ whiteSpace: 'nowrap' }}>{dateCourte(d.date_demande, i18n.language)}</TableCell>
                         </TableRow>
