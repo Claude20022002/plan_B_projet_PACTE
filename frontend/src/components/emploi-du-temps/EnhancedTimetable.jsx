@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Button,
@@ -112,8 +113,11 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
   const compact = useMediaQuery('(max-width:899.95px)');
   const calendarRef = useRef(null);
   const sessions = useMemo(() => affectations.map(toBoardSession).filter((s) => s.start).sort(byStart), [affectations]);
-  const [weekStart, setWeekStart] = useState(() => mondayOf(new Date()));
-  const [weekResolved, setWeekResolved] = useState(false);
+  // Une alerte de report ouvre la semaine de la nouvelle date : « ?date=AAAA-MM-JJ » (recette du 20 octobre, M-7)
+  const [params] = useSearchParams();
+  const dateDemandee = /^\d{4}-\d{2}-\d{2}$/.test(params.get('date') ?? '') ? new Date(`${params.get('date')}T12:00:00`) : null;
+  const [weekStart, setWeekStart] = useState(() => mondayOf(dateDemandee ?? new Date()));
+  const [weekResolved, setWeekResolved] = useState(Boolean(dateDemandee));
   const [mode, setMode] = useState('grid');
   const [selected, setSelected] = useState(null);
 

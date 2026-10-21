@@ -32,6 +32,10 @@ const DemandeReport = sequelize.define(
         },
         // Créneau visé ; sans lui, le créneau de même rang le jour de la nouvelle date
         id_creneau_nouveau: DataTypes.INTEGER,
+        // Salle retenue avec le créneau (le serveur la choisit, l'administration peut la changer)
+        id_salle_nouvelle: DataTypes.INTEGER,
+        // Raison donnée par l'administration quand elle refuse
+        motif_decision: DataTypes.TEXT,
         id_affectation: {
             type: DataTypes.INTEGER,
             allowNull: false,

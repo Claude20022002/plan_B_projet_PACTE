@@ -14,6 +14,8 @@ import {
     getDemandesReportByEnseignant,
     getDemandesReportByStatut,
     traiterDemandeReport,
+    propositionsPourSeance,
+    propositionsPourDemande,
 } from "../controllers/demandeReportController.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
@@ -33,6 +35,10 @@ router.get(
 
 // 🔍 Récupérer les demandes de report par statut (admin)
 router.get("/statut/:statut", requireAdmin, asyncHandler(getDemandesReportByStatut));
+
+// 🔎 Créneaux et salles libres pour reporter une séance à une date (enseignant), ou pour une demande (admin)
+router.post("/propositions", requireEnseignant, asyncHandler(propositionsPourSeance));
+router.get("/:id/propositions", requireAdmin, asyncHandler(propositionsPourDemande));
 
 // 🔍 Récupérer une demande de report par ID (propriétaire ou admin, contrôlé dans le contrôleur)
 router.get("/:id", asyncHandler(getDemandeReportById));
