@@ -101,6 +101,8 @@ const EditeurQuiz    = lazy(() => import('./pages/studio/EditeurQuiz'));
 const ResultatsQuiz  = lazy(() => import('./pages/studio/Resultats'));
 const QuizEtudiant   = lazy(() => import('./pages/studio/Quiz'));
 const Epreuve        = lazy(() => import('./pages/studio/Epreuve'));
+const DirectProjection = lazy(() => import('./pages/studio/DirectProjection'));
+const DirectJoueur   = lazy(() => import('./pages/studio/DirectJoueur'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -374,6 +376,17 @@ export default function App() {
           <Route path="/studio-quiz/passations/:id" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><ResultatsQuiz /></AppPage>
+            </PrivateRoute>
+          } />
+          {/* Quiz en direct : l'enseignant projette, l'étudiant joue (lot SC-1b) */}
+          <Route path="/studio-quiz/direct/:id" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><DirectProjection /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/quiz/direct/:id" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><DirectJoueur /></AppPage>
             </PrivateRoute>
           } />
           <Route path="/studio-quiz/:id" element={

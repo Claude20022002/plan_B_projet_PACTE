@@ -26,7 +26,7 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, ArrowBack, SupervisedUserCircle, PhonelinkErase } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, SupervisedUserCircle, PhonelinkErase } from '@mui/icons-material';
 import { TableSortLabel } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { userAPI } from '../../services/api';
@@ -36,7 +36,7 @@ import EmptyState from '../../components/common/EmptyState';
 import { useSortableTable } from '../../hooks/useSortableTable';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { Link as RouterLink, useNavigate } from 'react-router-dom';
+import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 
 const validationSchema = yup.object({
@@ -59,7 +59,6 @@ const validationSchema = yup.object({
 /** Comptes (administration) : liste de tous les comptes, création des comptes administrateurs. */
 export default function Utilisateurs() {
     const { t } = useTranslation();
-    const navigate = useNavigate();
     const [utilisateurs, setUtilisateurs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
@@ -183,20 +182,8 @@ export default function Utilisateurs() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined"
-                            size="small"
-                        >
-                            {t('common.back')}
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            {t('utilisateurs.titre')}
-                        </Typography>
-                    </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mb: 3 }}>
+                    {/* Le titre est celui de la mise en page, et le menu y ramène : plus de « Retour » ni de « Gestion des… » (recette, m-1 et m-2) */}
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         <Button
                             variant="contained"

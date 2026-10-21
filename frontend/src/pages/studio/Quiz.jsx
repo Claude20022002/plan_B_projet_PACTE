@@ -71,7 +71,13 @@ export default function Quiz() {
     setEnvoi(true);
     setErreur(null);
     try {
-      setSession(await passationAPI.rejoindre(valeur));
+      const s = await passationAPI.rejoindre(valeur);
+      // Quiz en direct : on rejoint la partie de la classe
+      if (s.mode === 'direct') {
+        navigate(`/quiz/direct/${s.id_session}`, { replace: Boolean(codeLien) });
+        return;
+      }
+      setSession(s);
     } catch (err) {
       setSession(null);
       if (err.status !== 404) {
@@ -89,7 +95,7 @@ export default function Quiz() {
     } finally {
       setEnvoi(false);
     }
-  }, [navigate, t]);
+  }, [navigate, codeLien, t]);
 
   useEffect(() => {
     if (codeLien) rejoindre(codeLien);
