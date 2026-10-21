@@ -14,7 +14,8 @@ const Affectation = sequelize.define(
             allowNull: false,
         },
         statut: {
-            type: DataTypes.ENUM("planifie", "confirme", "annule", "reporte", "realise"),
+            // a_reprogrammer : reportée à une date encore inconnue (R-1), hors de l'emploi du temps
+            type: DataTypes.ENUM("planifie", "confirme", "annule", "reporte", "realise", "a_reprogrammer"),
             defaultValue: "planifie",
         },
         commentaire: DataTypes.TEXT,

@@ -561,7 +561,7 @@ export const validateDemandeReportCreation = [
         .withMessage("Format de date invalide (ISO 8601)"),
     body("statut_demande")
         .optional()
-        .isIn(["en_attente", "a_confirmer", "approuve", "refuse"])
+        .isIn(["en_attente", "a_confirmer", "approuve", "refuse", "a_reprogrammer"])
         .withMessage("Statut de demande invalide"),
     // Ignoré : l'enseignant est celui de la séance (décidé par le serveur)
     body("id_user_enseignant").optional().isInt({ min: 1 }).withMessage("ID enseignant invalide"),

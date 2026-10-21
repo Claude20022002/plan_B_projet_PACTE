@@ -21,9 +21,10 @@ const DemandeReport = sequelize.define(
             type: DataTypes.DATEONLY,
             allowNull: false,
         },
-        // en_attente → (administration) a_confirmer → (enseignant) approuve ; refuse par l'administration
+        // en_attente → (administration) a_confirmer → (enseignant) approuve ; refuse par l'administration ;
+        // a_reprogrammer : acceptée sans date (R-1), puis a_confirmer quand l'administration la fixe
         statut_demande: {
-            type: DataTypes.ENUM("en_attente", "a_confirmer", "approuve", "refuse"),
+            type: DataTypes.ENUM("en_attente", "a_confirmer", "approuve", "refuse", "a_reprogrammer"),
             defaultValue: "en_attente",
         },
         id_user_enseignant: {

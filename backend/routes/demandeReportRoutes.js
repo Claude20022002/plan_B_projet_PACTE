@@ -18,6 +18,7 @@ import {
     propositionsPourDemande,
 } from "../controllers/demandeReportController.js";
 import { confirmerReport } from "../controllers/reportConfirmationController.js";
+import { accepterPlusTard, fixerDate } from "../controllers/reportPlusTardController.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
@@ -56,5 +57,9 @@ router.patch("/:id/traiter", requireAdmin, asyncHandler(traiterDemandeReport));
 
 // ✅ Confirmer un report validé, ou proposer un autre créneau (l'enseignant de la séance)
 router.patch("/:id/confirmer", requireEnseignant, asyncHandler(confirmerReport));
+
+// 📅 Report à une date ultérieure (R-1) : accepter sans date, puis fixer la date - Admin seulement
+router.patch("/:id/plus-tard", requireAdmin, asyncHandler(accepterPlusTard));
+router.patch("/:id/reprogrammer", requireAdmin, asyncHandler(fixerDate));
 
 export default router;
