@@ -11,7 +11,8 @@
     "test": "playwright test --config=playwright.parcours.config.cjs",
     "test:unit": "node --test \"src/**/*.test.js\"",
     "test:parcours": "playwright test --config=playwright.parcours.config.cjs",
-    "test:report": "playwright show-report playwright-report-parcours"
+    "test:report": "playwright show-report playwright-report-parcours",
+    "demo": "node scripts/demo-locale.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",

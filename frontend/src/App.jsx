@@ -23,6 +23,7 @@ import { routesMotDePasse } from './routes/motDePasse';
 import PageSkeleton    from './components/common/PageSkeleton';
 import AuthSkeleton    from './components/common/AuthSkeleton';
 import ErrorBoundary   from './components/common/ErrorBoundary';
+import { SURVEILLANCES_ACTIVES } from '../../shared/fonctions.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LAZY IMPORTS — 1 chunk par groupe logique
@@ -88,7 +89,7 @@ const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
 const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
 const SignalementsPresence = lazy(() => import('./pages/gestion/SignalementsPresence'));
 const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
-const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
+const Jeux           = lazy(() => import('./pages/jeux/AccueilJeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
 const SessionJeu     = lazy(() => import('./pages/jeux/SessionJeu'));
@@ -446,7 +447,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/mes-examens" element={
-            <PrivateRoute requiredRole={['etudiant', 'admin']}>
+            <PrivateRoute requiredRole={SURVEILLANCES_ACTIVES ? ['etudiant', 'admin'] : 'etudiant'}>
               <AppPage><MesExamens /></AppPage>
             </PrivateRoute>
           } />

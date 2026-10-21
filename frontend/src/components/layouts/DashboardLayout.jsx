@@ -73,6 +73,7 @@ import { notificationAPI } from '../../services/api';
 import { LANGUAGES } from '../../i18n';
 import { ds } from '../../design-system/tokens';
 import { estResponsable } from '../../utils/droits';
+import { SURVEILLANCES_ACTIVES } from '../../../../shared/fonctions.js';
 
 const RAIL_WIDTH = 248;
 
@@ -99,7 +100,7 @@ const navigationFor = (user) => {
           { key: 'nav.incidents', icon: <Healing />, path: '/gestion/imprevus' },
           { key: 'nav.bookings', icon: <BookOnline />, path: '/reservations' },
           { key: 'nav.exams', icon: <FactCheck />, path: '/gestion/examens' },
-          { key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' },
+          ...(SURVEILLANCES_ACTIVES ? [{ key: 'nav.myInvigilations', icon: <FactCheck />, path: '/mes-examens' }] : []),
           { key: 'nav.tracking', icon: <Timeline />, path: '/gestion/suivi' },
           { key: 'nav.attendanceReports', icon: <PhonelinkLock />, path: '/gestion/signalements-presence' },
           { key: 'nav.statistics', icon: <Insights />, path: '/statistiques' },
@@ -178,7 +179,7 @@ const navigationFor = (user) => {
         { key: 'nav.myCourses', icon: <MenuBook />, path: '/mes-cours' },
         { key: 'nav.takeQuiz', icon: <QuizIcon />, path: '/quiz' },
         { key: 'nav.library', icon: <LocalLibrary />, path: '/biblio/documents' },
-        { key: 'nav.games', icon: <SportsEsports />, path: '/jeux' },
+        // Pas d'« Activités » pour l'étudiant : quiz et jeux se rejoignent par leur code, dans « Quiz »
       ],
     },
   ];
