@@ -117,6 +117,9 @@ export const createDemandeReport = planification(async (req, res) => {
         id_salle_nouvelle: retenue.id_salle,
         id_user_enseignant: affectation.id_user_enseignant,
         statut_demande: "en_attente",
+        // La séance telle qu'elle est à la demande : elle reste la « date d'origine » après le report
+        date_seance_origine: affectation.date_seance,
+        id_creneau_origine: affectation.id_creneau,
     });
 
     const complete = await demandeComplete(demande.id_demande);

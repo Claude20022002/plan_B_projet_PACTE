@@ -68,7 +68,10 @@ test("à confirmer : une seule demande par séance, l'enseignant de la séance s
     expect((await confirmer({ action: "accepter" }, clients.profB)).status).toBe(404);
     expect((await confirmer({ action: "oublier" })).status).toBe(400);
     expect((await clients.admin.send("patch", `/api/demandes-report/${demande.id_demande}/traiter`, { action: "approuver" })).status).toBe(400);
-    expect((await confirmer({ action: "accepter" })).status).toBe(200);
+    const acceptee = await confirmer({ action: "accepter" });
+    expect(acceptee.status).toBe(200);
+    // La date d'origine reste celle du moment de la demande, même une fois la séance déplacée (M-6)
+    expect(acceptee.body.demande).toMatchObject({ date_seance_origine: "2027-05-03", creneauOrigine: { heure_debut: "09:00:00" } });
     expect((await confirmer({ action: "accepter" })).body.code).toBe("PAS_A_CONFIRMER");
 });
 
