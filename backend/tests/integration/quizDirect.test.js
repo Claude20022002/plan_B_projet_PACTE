@@ -95,6 +95,18 @@ describe("Lancer un quiz en direct", () => {
     });
 });
 
+describe("Durée par question", () => {
+    test("une question qui a sa durée la garde ; les autres prennent celle de la diffusion", async () => {
+        const direct = await lancer({ duree_question_s: 30 });
+        // Comme une question reprise de ClassQuiz avec son temps (« time ») : la copie de la diffusion la porte
+        const session = await SessionQuiz.findByPk(direct.id_session);
+        await session.update({ questions: session.questions.map((q, i) => (i === 0 ? { ...q, duree_s: 12 } : q)) });
+        expect((await agir(direct, "suivante")).body).toMatchObject({ index: 0, duree_s: 12 });
+        await agir(direct, "fermer");
+        expect((await agir(direct, "suivante")).body).toMatchObject({ index: 1, duree_s: 30 });
+    });
+});
+
 describe("Une partie, de bout en bout", () => {
     let direct;
 

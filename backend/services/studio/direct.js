@@ -61,7 +61,7 @@ export const lancerDirect = async (user, idQuestionnaire, { titre, id_groupe, id
         id_questionnaire: quiz.id_questionnaire,
         id_user: user.id_user,
         titre: lireTitre(titre, { requis: false }) || quiz.titre,
-        questions: questions.map((q) => ({ id_question: q.id_question, type: q.type, enonce: q.enonce, points: q.points, explication: q.explication, id_media: q.id_media, extrait: q.extrait, donnees: q.donnees })),
+        questions: questions.map((q) => ({ id_question: q.id_question, type: q.type, enonce: q.enonce, points: q.points, explication: q.explication, id_media: q.id_media, extrait: q.extrait, duree_s: q.duree_s ?? null, donnees: q.donnees })),
         reglages: { ...lireReglages({}, quiz.reglages), duree_question_s: dureeQuestion(duree_question_s) },
         id_groupe: groupe,
         id_affectation: await verifierSeance(user, id_affectation),

@@ -1,6 +1,6 @@
 import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Annonce, AnneeUniversitaire, Appartenir, CoursComposante, Enseignement, EnseignementEnseignant, Groupe, Notification, Periode, ResponsableFiliere } from "../../models/index.js";
+import { Affectation, Annonce, AnneeUniversitaire, Appartenir, CoursComposante, Enseignement, EnseignementEnseignant, Groupe, Notification, Periode, ResponsableFiliere } from "../../models/index.js";
 
 /**
  * Annonces ciblées (R1) : l'administration écrit à n'importe quelle portée, un responsable à sa
@@ -84,6 +84,16 @@ describe("Publier", () => {
         const ids = (await Notification.findAll({ where: { lien: `/annonces/${res.body.id}` } })).map((n) => n.id_user);
         expect(ids).toEqual(expect.arrayContaining([etudiant.id_user, etudiantTp.id_user, enseignant.id_user]));
         expect(ids).not.toContain(responsable.id_user);
+    });
+
+    test("un campus : les classes qui y ont cours dans les 30 jours (une filière n'a pas de campus)", async () => {
+        // Le groupe a cours dans une semaine dans une salle du campus ; l'autre groupe n'y a pas cours
+        const dans7Jours = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+        await Affectation.create({ ...fixture.affectation.get({ plain: true }), id_affectation: undefined, date_seance: dans7Jours });
+        const res = await (await loginAs(admin)).send("post", "/api/annonces", { titre: "Travaux", corps: "Ascenseur en panne.", portee: "campus", id_cible: fixture.salle.id_campus });
+        expect(res.status).toBe(201);
+        const ids = (await Notification.findAll({ where: { lien: `/annonces/${res.body.id}` } })).map((n) => n.id_user).sort();
+        expect(ids).toEqual([etudiant.id_user, etudiantTp.id_user].sort());
     });
 
     test("refusé à un étudiant ; titre requis ; cible vide → 422", async () => {
