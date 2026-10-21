@@ -182,7 +182,7 @@ export default function EnseignantDashboard() {
         <Button
           variant="outlined"
           startIcon={<EventRepeat />}
-          onClick={() => navigate('/demandes-report')}
+          onClick={() => navigate(`/demandes-report?seance=${s.id}`)}
           sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
         >
           {t('board.requestReport')}
