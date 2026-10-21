@@ -49,8 +49,8 @@ test("quiz en direct : lancé par l'enseignante, joué sur un téléphone et un 
   await creerQuiz(page, "Réseaux, en direct");
 
   // Diffuser en direct : l'écran à projeter s'ouvre sur le QR code
-  await page.getByRole("button", { name: "Ouvrir une passation" }).click();
-  const fenetre = page.getByRole("dialog", { name: "Ouvrir une passation" });
+  await page.getByRole("button", { name: "Diffuser ce quiz" }).click();
+  const fenetre = page.getByRole("dialog", { name: "Diffuser ce quiz" });
   await fenetre.getByRole("button", { name: "En direct" }).click();
   await fenetre.getByRole("combobox", { name: "Temps par question" }).click();
   await page.getByRole("option", { name: "30 secondes" }).click();
