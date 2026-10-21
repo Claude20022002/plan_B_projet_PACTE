@@ -170,7 +170,7 @@ export const validateEtudiantCreation = [
 
 // ==================== VALIDATIONS FILIERE ====================
 
-// Champs de filière ajoutés en phase P2 (école, cycle, campus préféré, double diplôme)
+// Champs de filière ajoutés en phase P2 (école, cycle, double diplôme) ; une filière n'a pas de campus (21 octobre 2026)
 const champsFiliereP2 = () => [
     body("description").optional({ nullable: true }).trim(),
     body("regime").optional().isIn(REGIMES).withMessage("Régime invalide"),
@@ -178,7 +178,6 @@ const champsFiliereP2 = () => [
     body("cycle").optional({ nullable: true }).isIn(CYCLES).withMessage(`Cycle invalide (${CYCLES.join(", ")})`),
     body("intitule_cycle").optional({ nullable: true }).isString().trim(),
     body("premiere_annee_cycle").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Première année du cycle : 1 à 6"),
-    body("id_campus_prefere").optional({ nullable: true }).isInt({ min: 1 }),
     body("partenaire").optional({ nullable: true }).isString().trim(),
     body("annees_a_hestim").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Années à HESTIM : 1 à 6"),
 ];
@@ -209,7 +208,6 @@ const champsGroupeP2 = () => [
     body("type_groupe").optional().isIn(TYPES_GROUPE).withMessage("Type de groupe : promotion, td ou tp"),
     body("id_groupe_parent").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Groupe parent invalide"),
     body("annee").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Année d'études : 1 à 6"),
-    body("id_campus_prefere").optional({ nullable: true }).isInt({ min: 1 }).withMessage("Campus préféré invalide"),
 ];
 
 export const validateGroupeCreation = [

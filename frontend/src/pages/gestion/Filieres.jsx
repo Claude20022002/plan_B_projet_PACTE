@@ -12,8 +12,6 @@ import {
     TableContainer,
     TableHead,
     TableRow,
-    ToggleButton,
-    ToggleButtonGroup,
     Typography,
 } from '@mui/material';
 import { Add, Delete, Edit, ManageAccounts, UploadFile } from '@mui/icons-material';
@@ -25,7 +23,7 @@ import ResponsablesDialog from '../../components/filieres/ResponsablesDialog';
 import DataToolbar from '../../design-system/components/DataToolbar';
 import EmptyState from '../../design-system/components/EmptyState';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
-import { campusAPI, filiereAPI } from '../../services/api';
+import { filiereAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { fetchAll } from '../../utils/fetchAll';
 import { lineColor } from '../../design-system/tokens';
@@ -40,36 +38,27 @@ const FILIERE_VIDE = {
     intitule_cycle: '',
     premiere_annee_cycle: '',
     regime: 'initiale',
-    id_campus_prefere: '',
     partenaire: '',
     annees_a_hestim: '',
 };
 
 const MODELE_CSV = [
-    'code_filiere;nom_filiere;campus;cycle;intitule_cycle;premiere_annee_cycle;regime;partenaire',
-    "IIIA;Informatique & IA;G;ingenieur;cycle Ingénieur d'Etat;3;initiale;",
+    'code_filiere;nom_filiere;cycle;intitule_cycle;premiere_annee_cycle;regime;partenaire',
+    "IIIA;Informatique & IA;ingenieur;cycle Ingénieur d'Etat;3;initiale;",
 ].join('\n');
 
 const entierOuNull = (valeur) => (valeur === '' || valeur === null || valeur === undefined ? null : Number(valeur));
 
-/** Identifiant du campus écrit dans un fichier d'import (code « G », « ST » ou nom), ou null */
-const campusDuFichier = (campus, valeur) => {
-    const texte = String(valeur || '').trim().toLowerCase();
-    if (!texte) return null;
-    return campus.find((c) => c.code?.toLowerCase() === texte || c.nom?.toLowerCase() === texte)?.id_campus ?? null;
-};
-
 /**
- * Filières de HESTIM, rangées par campus (deux campus, pas deux écoles : retour du 21 octobre,
- * R-3) : cycle et année où il commence, régime, responsables, double diplôme.
+ * Filières de HESTIM : cycle et année où il commence, régime, responsables, double diplôme.
+ * Ni école (retour du 21 octobre, R-3) ni campus : une filière a cours dans n'importe quel
+ * bâtiment, selon les salles libres (décision du 21 octobre 2026).
  */
 export default function Filieres() {
     const { t } = useTranslation();
     const toast = useToast();
     const [filieres, setFilieres] = useState([]);
-    const [campus, setCampus] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [campusFiltre, setCampusFiltre] = useState('tous');
     const [search, setSearch] = useState('');
     const [dialog, setDialog] = useState({ open: false, editing: null, form: FILIERE_VIDE });
     const [aSupprimer, setASupprimer] = useState(null);
@@ -79,9 +68,7 @@ export default function Filieres() {
     const charger = useCallback(async () => {
         setLoading(true);
         try {
-            const [liste, listeCampus] = await Promise.all([fetchAll(filiereAPI.getAll), campusAPI.getAll()]);
-            setFilieres(liste);
-            setCampus(listeCampus || []);
+            setFilieres(await fetchAll(filiereAPI.getAll));
         } catch {
             toast.error(t('common.errorLoad'));
         } finally {
@@ -96,10 +83,8 @@ export default function Filieres() {
 
     const affichees = useMemo(() => {
         const terme = search.trim().toLowerCase();
-        return filieres
-            .filter((f) => campusFiltre === 'tous' || f.id_campus_prefere === campusFiltre)
-            .filter((f) => !terme || [f.code_filiere, f.nom_filiere, f.partenaire].some((v) => v?.toLowerCase().includes(terme)));
-    }, [filieres, campusFiltre, search]);
+        return filieres.filter((f) => !terme || [f.code_filiere, f.nom_filiere, f.partenaire].some((v) => v?.toLowerCase().includes(terme)));
+    }, [filieres, search]);
 
     const erreur = (error) => toast.error(error.response?.data?.error || error.response?.data?.errors?.[0]?.message || error.message);
 
@@ -126,7 +111,6 @@ export default function Filieres() {
             intitule_cycle: f.intitule_cycle?.trim() || null,
             premiere_annee_cycle: entierOuNull(f.premiere_annee_cycle),
             regime: f.regime,
-            id_campus_prefere: entierOuNull(f.id_campus_prefere),
             partenaire: f.partenaire?.trim() || null,
             annees_a_hestim: entierOuNull(f.annees_a_hestim),
         };
@@ -163,7 +147,6 @@ export default function Filieres() {
                     nom_filiere: String(ligne.nom_filiere || '').trim(),
                     description: ligne.description || null,
                     ecole: ligne.ecole || 'engineering',
-                    id_campus_prefere: campusDuFichier(campus, ligne.campus),
                     cycle: ligne.cycle || null,
                     intitule_cycle: ligne.intitule_cycle || null,
                     premiere_annee_cycle: entierOuNull(ligne.premiere_annee_cycle),
@@ -186,15 +169,7 @@ export default function Filieres() {
     return (
         <DashboardLayout>
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                    <ToggleButtonGroup size="small" exclusive value={campusFiltre} onChange={(_, v) => v && setCampusFiltre(v)} aria-label={t('ref.programs.cols.campus')}>
-                        <ToggleButton value="tous">{t(campus.length === 2 ? 'ref.programs.bothCampuses' : 'ref.rooms.allCampuses')}</ToggleButton>
-                        {campus.map((c) => (
-                            <ToggleButton key={c.id_campus} value={c.id_campus}>
-                                {c.nom}
-                            </ToggleButton>
-                        ))}
-                    </ToggleButtonGroup>
+                <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 2 }}>
                     <Typography variant="body2" color="text.secondary">
                         {t('ref.programs.count', { count: affichees.length })}
                     </Typography>
@@ -219,7 +194,6 @@ export default function Filieres() {
                             <TableHead>
                                 <TableRow>
                                     <TableCell>{t('ref.programs.cols.program')}</TableCell>
-                                    <TableCell>{t('ref.programs.cols.campus')}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.programs.cols.cycle')}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.programs.cols.regime')}</TableCell>
                                     <TableCell sx={{ display: { xs: 'none', lg: 'table-cell' } }}>{t('ref.programs.cols.partner')}</TableCell>
@@ -243,7 +217,6 @@ export default function Filieres() {
                                                 </Box>
                                             </Stack>
                                         </TableCell>
-                                        <TableCell>{f.campus_prefere?.nom || '-'}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>
                                             {f.intitule_cycle || (f.cycle ? t(`ref.cycles.${f.cycle}`) : '-')}
                                             {f.premiere_annee_cycle && (
@@ -287,7 +260,6 @@ export default function Filieres() {
                 ouvert={dialog.open}
                 modification={Boolean(dialog.editing)}
                 form={dialog.form}
-                campus={campus}
                 onChamp={champ}
                 onFermer={() => setDialog({ open: false, editing: null, form: FILIERE_VIDE })}
                 onEnregistrer={enregistrer}

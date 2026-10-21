@@ -19,6 +19,8 @@ import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
 import { filieresDuResponsable } from "../planning/droits.js";
 import { ancetres } from "../planning/groupes.js";
+import { groupesAuCampus } from "../planning/campusDesSeances.js";
+import { aujourdhui } from "../planning/affectationRules.js";
 import { sendEmail } from "../../utils/sendEmail.js";
 import { TYPES_IMAGES_PDF, verifierFichier } from "../../utils/fichiers.js";
 
@@ -104,10 +106,10 @@ const groupesDeLaCible = async ({ portee, id_cible, niveau }) => {
     if (portee === "etablissement") return null;
     let racines;
     if (portee === "groupe") racines = [id_cible];
+    // Un campus : les groupes qui y ont cours dans les 30 prochains jours (une filière n'a pas de campus)
+    else if (portee === "campus") racines = await groupesAuCampus(id_cible, aujourdhui());
     else {
-        const where = {};
-        if (portee === "campus") where.id_filiere = (await Filiere.findAll({ where: { id_campus_prefere: id_cible }, attributes: ["id_filiere"] })).map((f) => f.id_filiere);
-        else where.id_filiere = id_cible;
+        const where = { id_filiere: id_cible };
         if (portee === "niveau") where.niveau = niveau;
         racines = (await Groupe.findAll({ where, attributes: ["id_groupe"] })).map((g) => g.id_groupe);
     }

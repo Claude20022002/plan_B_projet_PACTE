@@ -104,7 +104,7 @@ beforeAll(async () => {
     clients = { admin: await loginAs(admin), prof: await loginAs(prof) };
 
     const gandhi = await Campus.findOne({ where: { code: "G" } });
-    const filiere = await Filiere.create({ code_filiere: "GEN", nom_filiere: "Génération", id_campus_prefere: gandhi.id_campus });
+    const filiere = await Filiere.create({ code_filiere: "GEN", nom_filiere: "Génération" });
     const promo = await Groupe.create({ nom_groupe: "4A GEN", niveau: "4ème année", annee: 4, effectif: 40, annee_scolaire: "2026-2027", type_groupe: "promotion", id_filiere: filiere.id_filiere });
     const td1 = await Groupe.create({ nom_groupe: "GEN-4A", niveau: "4ème année", annee: 4, effectif: 20, annee_scolaire: "2026-2027", type_groupe: "td", id_groupe_parent: promo.id_groupe, id_filiere: filiere.id_filiere });
     await Salle.create({ nom_salle: "G-GEN1", type_salle: "Salle de cours", capacite: 50, id_campus: gandhi.id_campus });
@@ -176,26 +176,9 @@ describe("Problème envoyé au solveur", () => {
         expect(probleme.parametres).toMatchObject({ maxMinutesJourGroupe: 480, samediApresMidi: false });
     });
 
-    test("campus préféré : celui de la promotion l'emporte sur celui de la filière, et ses TD en héritent", async () => {
-        const campus = await Campus.findAll({ order: [["id_campus", "ASC"]] });
-        expect(campus.length).toBeGreaterThanOrEqual(2);
-        const filiereA = ref.filiere.id_campus_prefere;
-        const promoA = campus.find((c) => c.id_campus !== filiereA).id_campus;
-        const prefere = async () => {
-            const { probleme } = await construireProbleme({ id_periode: ref.periode.id_periode, id_filieres: [ref.filiere.id_filiere] });
-            const lecons = probleme.lecons.filter((l) => !l.epinglee);
-            return { cm: lecons.find((l) => l.type === "CM").campusPrefere, tp: lecons.find((l) => l.type === "TP").campusPrefere };
-        };
-        // Sans campus sur les groupes : celui de la filière, comme avant
-        expect(await prefere()).toEqual({ cm: filiereA, tp: filiereA });
-        // La promotion a le sien : son CM le suit, et le TP du TD (qui n'en a pas) aussi
-        await ref.promo.update({ id_campus_prefere: promoA });
-        expect(await prefere()).toEqual({ cm: promoA, tp: promoA });
-        // Un TD peut avoir le sien, sans changer celui de la promotion
-        await ref.td1.update({ id_campus_prefere: filiereA });
-        expect(await prefere()).toEqual({ cm: promoA, tp: filiereA });
-        await ref.td1.update({ id_campus_prefere: null });
-        await ref.promo.update({ id_campus_prefere: null });
+    test("pas de campus préféré (21 octobre 2026) : aucune leçon n'en porte au solveur", async () => {
+        const { probleme } = await construireProbleme({ id_periode: ref.periode.id_periode, id_filieres: [ref.filiere.id_filiere] });
+        expect(probleme.lecons.every((l) => !("campusPrefere" in l))).toBe(true);
     });
 });
 
