@@ -299,8 +299,10 @@ const studio = {
     actualiser: 'Refresh',
   },
   joueur: {
-    rejoindreTitre: 'Join a quiz',
-    rejoindreAide: 'Enter the code given by your teacher.',
+    rejoindreTitre: 'Join a quiz or a game',
+    rejoindreAide: 'Enter the code your teacher shows on the board, or scan its QR code.',
+    codeInconnu: 'No quiz or game has this code. Check it with your teacher.',
+    autreCode: 'Enter another code',
     code: 'Code',
     rejoindre: 'Join',
     consignes: 'Before you start',

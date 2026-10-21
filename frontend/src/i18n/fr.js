@@ -111,6 +111,10 @@ const fr = {
       voeu_eviter: 'Vœu',
       max_heures_semaine: 'Plafond hebdo',
       hors_equipe: 'Équipe',
+      jury_incomplet: 'Jury',
+      horaires: 'Horaires',
+      conflit_participant: 'Participant pris',
+      participant_indisponible: 'Participant indisponible',
       creneau_introuvable: 'Créneau',
     },
   },
@@ -122,6 +126,8 @@ const fr = {
     none: 'Aucun créneau libre sur cette période : élargissez les dates.',
     remote: 'Sans salle',
     choose: 'Choisir',
+    chosen: 'Choisi',
+    list: 'Créneaux libres',
     excluded: 'Écartés :',
     reasons: {
       enseignant_pris: 'enseignant déjà pris',
@@ -131,15 +137,14 @@ const fr = {
     },
   },
   resa: {
-    intro: 'Demandez une salle pour une soutenance, une réunion, un rattrapage, un événement ou un club. L’administration valide ; une réunion dans une salle ouverte aux enseignants est acceptée d’office.',
-    introAdmin: 'Demandes à valider, et toutes les réservations. Chaque validation revérifie la salle et les participants (cours, examens, autres réservations).',
-    status: 'Statut',
-    allStatuses: 'Tous les statuts',
+    introAdmin: 'Réservez une salle pour un événement, une réunion ou une soutenance. Chaque réservation vérifie la salle et les participants (cours, examens, autres réservations).',
+    periode: 'Période',
+    periodes: { avenir: 'À venir', passee: 'Passées', toutes: 'Toutes' },
+    impossible: 'Réservation impossible en l’état',
+    forceHelp: 'La réservation est enregistrée quand même, et le forçage est tracé dans l’historique.',
     add: 'Nouvelle réservation',
     book: 'Réserver',
-    request: 'Envoyer la demande',
     saved: 'Réservation enregistrée',
-    requested: 'Demande envoyée à l’administration',
     validated: 'Réservation validée',
     refused: 'Réservation refusée',
     cancelled: 'Réservation annulée',
@@ -153,14 +158,13 @@ const fr = {
     findSlot: 'Trouver un créneau',
     findSlotHelp: 'Plages de {{minutes}} minutes où tous les participants sont libres, avec une salle',
     emptyTitle: 'Aucune réservation',
-    emptyBody: 'Les soutenances, réunions et rattrapages réservés apparaîtront ici.',
+    emptyBody: 'Aucune réservation sur cette période. Réservez une salle pour votre prochain événement.',
     statuses: { demandee: 'À valider', validee: 'Validée', refusee: 'Refusée', annulee: 'Annulée' },
     types: { soutenance: 'Soutenance', reunion: 'Réunion', rattrapage: 'Rattrapage', evenement: 'Événement', club: 'Club', examen: 'Examen' },
     cols: { when: 'Quand', what: 'Objet', room: 'Salle', participants: 'Participants' },
     fields: {
       type: 'Type',
       title: 'Intitulé',
-      origin: 'Séance à rattraper',
       jury: 'Jury',
       people: 'Participants',
       groups: 'Groupes',
@@ -168,7 +172,6 @@ const fr = {
       start: 'Début',
       end: 'Fin',
       room: 'Salle',
-      roomOptional: 'Facultative pour une réunion à distance',
       description: 'Description',
     },
   },
@@ -396,7 +399,7 @@ const fr = {
       consigne: 'Scannez ce code avec l’application HESTIM, puis vérifiez que votre nom apparaît',
       pleinEcran: 'Plein écran',
       quitterPleinEcran: 'Quitter le plein écran',
-      erreur: 'Écran d’appel indisponible',
+      erreur: 'L’écran d’appel n’a pas pu s’ouvrir. Réessayez dans un instant.',
       valider: 'Valider l’appel',
       validerTitre: 'Valider l’appel ?',
       aucunPresent: 'Les étudiants apparaissent ici dès qu’ils ont scanné.',
@@ -418,7 +421,7 @@ const fr = {
     scanne: 'QR scanné',
     terminer: 'Terminer l’appel',
     terminerTitre: 'Terminer l’appel ?',
-    terminerMessage: '{{presents}} présent(s) sur {{attendus}}. Le QR ne sera plus accepté et la séance sera marquée réalisée.',
+    terminerMessage: 'Présents : {{presents}} sur {{attendus}}. Le QR code ne sera plus accepté et la séance sera marquée comme faite.',
     termine_one: 'Appel terminé : {{count}} présent.',
     termine_other: 'Appel terminé : {{count}} présents.',
     ferme: 'APPEL TERMINÉ',
@@ -480,7 +483,7 @@ const fr = {
   classes: {
     label: 'Classe',
     aide: 'Vos classes, d’après vos services et votre emploi du temps. La séance en cours ou la prochaine est proposée d’abord.',
-    aucune: 'Aucune classe trouvée : ni service accepté, ni séance à votre emploi du temps. Contactez l’administration si c’est une erreur.',
+    aucune: 'Vous n’avez pas encore de classe : aucun service accepté ni aucune séance à votre emploi du temps. Si c’est une erreur, prévenez l’administration.',
     enCours: 'En cours jusqu’à {{fin}}',
     enCoursCourt: 'En cours',
     prochaine: 'Prochaine séance : {{date}} à {{heure}}',
@@ -500,8 +503,6 @@ const fr = {
       },
       ouvrirAppel: 'Ouvrir l’appel',
       devoir: 'Donner un quiz en devoir',
-      quizIa: 'Créer un quiz',
-      quizDirect: 'Lancer un quiz',
       ecrire: 'Écrire à la classe',
       supports: 'Supports de cours',
       // Cartes des classes (lot E-4)
@@ -779,7 +780,8 @@ const fr = {
         "titre": "Traiter une demande de report d’un enseignant",
         "etapes": [
           "Ouvrez « Demandes de report » : les demandes en attente sont en tête.",
-          "Approuvez pour déplacer la séance à la date demandée, ou refusez.",
+          "Approuvez pour déplacer la séance sur le créneau demandé. S’il ne convient plus, « Voir le détail » puis « Choisir un autre créneau » : vous approuvez sur un créneau libre, sans attendre une nouvelle demande.",
+          "Un refus se confirme : l’enseignant est prévenu tout de suite, et la décision ne s’annule pas.",
           "Si le déplacement enfreint une règle (salle prise, groupe occupé), la liste des règles s’affiche : choisissez un autre créneau ou forcez en connaissance de cause."
         ],
         "note": "Une séance planifiée est tenue pour confirmée : un enseignant n’a rien à confirmer, il demande un report s’il ne peut pas l’assurer."
@@ -797,7 +799,7 @@ const fr = {
         "etapes": [
           "Examen : ouvrez « Examens », créez l’épreuve avec ses groupes et ses salles. Les places sont vérifiées, et les surveillants peuvent être désignés d’office.",
           "Publiez l’épreuve : les étudiants et les surveillants sont prévenus.",
-          "Soutenance, réunion, rattrapage, événement : ouvrez « Réservations ». La salle et les participants sont vérifiés comme pour une séance."
+          "Événement, réunion ou soutenance : ouvrez « Réservations », puis « Nouvelle réservation », et choisissez la salle. La salle et les participants sont vérifiés comme pour une séance."
         ],
         "note": "Les réservations se font par l’administration : les enseignants n’en créent pas, ils voient celles où ils participent."
       },
@@ -865,23 +867,23 @@ const fr = {
       "profQuizDirect": {
         "titre": "Lancer un quiz en direct pendant la séance",
         "etapes": [
-          "Dans « Mes classes », sur la séance en cours, cliquez sur « Lancer un quiz ».",
-          "Choisissez l’un de vos quiz : Planner démarre la partie, prévient les étudiants de la classe et ouvre l’écran à projeter.",
-          "Cliquez sur « Démarrer » : les étudiants répondent dans l’application, sans code à saisir."
+          "Dans « Activités », cliquez sur « Lancer un quiz ».",
+          "Choisissez l’un de vos quiz : Planner démarre la partie et ouvre l’écran à projeter.",
+          "Les étudiants rejoignent avec le code ou le QR code projeté, puis cliquez sur « Démarrer »."
         ],
-        "note": "Les scores sont rattachés à la séance : vous les retrouvez ensuite dans « Activités »."
+        "note": "Un quiz n’est pas attaché à une classe : vous le lancez quand vous voulez, et retrouvez les scores dans « Activités »."
       },
       "profQuizIa": {
         "titre": "Créer un quiz en un geste",
         "etapes": [
-          "Dans « Mes classes » ou « Activités », cliquez sur « Créer un quiz ».",
+          "Dans « Activités », cliquez sur « Créer un quiz ».",
           "Écrivez le sujet ou joignez un document de votre cours, puis « Générer ». Pour écrire les questions vous-même : « Le faire moi-même ».",
           "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
           "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être donné en devoir ou lancé en direct."
         ],
         // Devoirs masqués (lot D-1, CONTEXTE_DEVOIRS)
         "etapes_sansDevoirs": [
-          "Dans « Mes classes » ou « Activités », cliquez sur « Créer un quiz ».",
+          "Dans « Activités », cliquez sur « Créer un quiz ».",
           "Écrivez le sujet ou joignez un document de votre cours, puis « Générer ». Pour écrire les questions vous-même : « Le faire moi-même ».",
           "Relisez : corrigez un énoncé ou une réponse, supprimez une question, ou demandez-en une autre.",
           "Cliquez sur « Créer le quiz » : il rejoint vos quiz, prêt à être lancé en direct."
@@ -910,7 +912,7 @@ const fr = {
         "titre": "Je ne peux pas assurer une séance",
         "etapes": [
           "Ouvrez « Mon service », onglet « Demandes de report », et cliquez sur « Nouvelle demande », ou « Demander un report » depuis le tableau.",
-          "Indiquez le motif et la date souhaitée : l’administration reçoit la demande et vous répond.",
+          "Choisissez la séance, puis un créneau libre dans la liste (la classe, vous et la salle y êtes libres), et indiquez le motif : l’administration reçoit la demande et vous répond.",
           "Suivez la réponse dans ce même onglet."
         ],
         "note": "Vous n’avez rien à confirmer : une séance planifiée est tenue pour confirmée tant que vous ne demandez pas de report."
@@ -971,10 +973,11 @@ const fr = {
       },
       "etuDevoirs": {
         "titre": "Faire un devoir ou rejoindre un quiz",
-        "titre_sansDevoirs": "Rejoindre un quiz",
+        "titre_sansDevoirs": "Rejoindre un quiz ou un jeu",
         "etapes_sansDevoirs": [
-          "Un quiz lancé par votre enseignant pendant la séance apparaît dans « Activités » et dans l’application.",
-          "Rejoignez-le d’un clic, sans code à saisir."
+          "Votre enseignant affiche un code et un QR code au tableau.",
+          "Ouvrez « Quiz », saisissez le code puis « Rejoindre » : vous arrivez dans le quiz ou dans le jeu.",
+          "Sur le téléphone, scannez le QR code avec l’application."
         ],
         "etapes": [
           "Ouvrez « Activités » : vos quiz à faire en devoir y figurent avec leur date limite.",
@@ -1115,10 +1118,10 @@ const fr = {
     points_other: '{{count}} points',
     terminer: 'Terminer',
     erreurs: {
-      absente: 'Aucune partie à animer : lancez un quiz depuis Mes classes.',
+      absente: 'Aucune partie en cours : lancez un quiz depuis Activités.',
       dejaAnimee: 'Cette partie est déjà animée dans une autre fenêtre.',
-      connexion: 'Impossible de joindre le service de quiz. Vérifiez la connexion, puis relancez le quiz depuis Mes classes.',
-      serveur: 'Le service de quiz a refusé la partie. Relancez le quiz depuis Mes classes.',
+      connexion: 'Le quiz ne répond pas. Vérifiez votre connexion Internet, puis relancez-le depuis Activités.',
+      serveur: 'La partie n’a pas pu démarrer. Relancez le quiz depuis Activités.',
     },
     lancer: {
       titre: 'Lancer un quiz · {{classe}}',
@@ -1130,7 +1133,7 @@ const fr = {
       questions_other: '{{count}} questions',
       enCours: 'Lancement…',
       erreur: 'Le quiz n’a pas pu être lancé.',
-      erreurListe: 'Impossible de charger vos quiz.',
+      erreurListe: 'Vos quiz n’ont pas pu s’afficher. Réessayez dans un instant.',
       creerIa: 'Créer un quiz',
     },
   },
@@ -1313,7 +1316,7 @@ const fr = {
       dateLimite: 'Date limite',
       aide: 'Les questions sont copiées au moment du devoir ; Planner corrige et note sur 20. Une copie par étudiant, correction visible après la date limite.',
       notes: 'Notes',
-      bilan: '{{rendus}} copie(s) sur {{vises}}',
+      bilan: 'Copies rendues : {{rendus}} sur {{vises}}',
       moyenne: 'moyenne {{moyenne}}/20',
       supprimer: 'Supprimer',
       confirmerSuppression: 'Supprimer le devoir « {{titre}} » et ses copies ?',
@@ -1324,7 +1327,7 @@ const fr = {
       titre: 'Mes quiz',
       generationEnCours: 'L’IA lit votre support et écrit les questions. Cela prend en général moins d’une minute.',
       creationEnCours: 'Création du quiz en cours…',
-      echec: 'La génération a échoué. Relancez-la.',
+      echec: 'Les questions n’ont pas pu être écrites. Relancez la génération.',
       relire: 'Relire le quiz proposé',
       aideRelecture: 'Relisez chaque question : corrigez, supprimez ou faites régénérer. Rien n’est créé tant que vous n’avez pas validé.',
       titreQuiz: 'Titre du quiz',
@@ -1472,15 +1475,35 @@ const fr = {
     titre: 'Demandes de report',
     nouvelle: 'Nouvelle demande',
     titreFormulaire: 'Nouvelle demande de report',
-    aucune: 'Aucune demande de report',
-    creer: 'Créer',
-    creee: 'Demande de report envoyée.',
-    erreurChargement: 'Impossible de charger les demandes.',
-    erreurCreation: 'La demande n’a pas pu être créée.',
-    colonnes: { seance: 'Séance', nouvelleDate: 'Nouvelle date', motif: 'Motif', statut: 'Statut', dateDemande: 'Demandée le' },
-    champs: { seance: 'Affectation', choisir: 'Choisir une séance', nouvelleDate: 'Nouvelle date', motif: 'Motif' },
+    aucune: 'Aucune demande de report pour le moment',
+    envoyer: 'Envoyer la demande',
+    creee: 'Demande de report envoyée : elle attend la décision de l’administration.',
+    erreurChargement: 'Les demandes n’ont pas pu s’afficher. Réessayez dans un instant.',
+    erreurCreation: 'La demande n’a pas pu être envoyée. Réessayez dans un instant.',
+    dateActuelle: 'Prévue le {{jour}} à {{heure}}',
+    choisirSeanceDabord: 'Choisissez d’abord la séance : ses créneaux libres s’afficheront ici.',
+    nouveauCreneau: 'Nouveau créneau : {{jour}}, {{debut}}–{{fin}}, {{salle}}',
+    aideMotif: 'Par exemple : jury de soutenance le même jour',
+    colonnes: { seance: 'Séance', origine: 'Date d’origine', nouvelleDate: 'Nouvelle date', motif: 'Motif', statut: 'Statut', dateDemande: 'Demandée le' },
+    champs: { seance: 'Séance', choisir: 'Choisir une séance', creneau: 'Nouveau créneau', motif: 'Motif' },
     statuts: { approuve: 'Approuvée', refuse: 'Refusée', en_attente: 'En attente' },
-    erreurs: { affectation: 'Choisissez la séance à reporter.', date: 'Indiquez la nouvelle date.', motif: 'Indiquez le motif.' },
+    erreurs: { affectation: 'Choisissez la séance à reporter.', creneau: 'Choisissez le nouveau créneau dans la liste.', motif: 'Indiquez le motif.' },
+  },
+  reportsAdmin: {
+    aucune: 'Aucune demande de report pour le moment.',
+    exporter: 'Exporter en Excel',
+    colonnes: { enseignant: 'Enseignant', actions: 'Actions' },
+    titreDetail: 'Demande de report',
+    voir: 'Voir le détail',
+    approuver: 'Approuver',
+    refuser: 'Refuser',
+    autreCreneau: 'Choisir un autre créneau',
+    approuverIci: 'Approuver ici',
+    approuvee: 'Demande approuvée : l’enseignant et ses étudiants sont prévenus.',
+    refusee: 'Demande refusée : l’enseignant est prévenu.',
+    erreurTraitement: 'La décision n’a pas pu être enregistrée. Réessayez dans un instant.',
+    refusTitre: 'Refuser cette demande ?',
+    refusMessage: '{{enseignant}} demandait de reporter « {{seance}} » au {{date}}. Il sera prévenu tout de suite, et la décision ne pourra pas être annulée. Si seule la date pose problème, choisissez plutôt un autre créneau.',
   },
   mesSeances: {
     titre: 'Mes séances',
@@ -1488,19 +1511,10 @@ const fr = {
     aucune: 'Aucune séance pour le moment.',
     colonnes: { cours: 'Cours', groupe: 'Groupe', salle: 'Salle', date: 'Date', creneau: 'Créneau', statut: 'Statut', actions: 'Actions' },
     statuts: { confirme: 'Confirmée', annule: 'Annulée', reporte: 'Reportée', realise: 'Réalisée' },
-    appel: 'Faire l’appel (QR code)',
+    appel: 'Faire l’appel avec le QR code',
     demanderReport: 'Demander un report',
-    titreReport: 'Demander le report d’une séance',
-    dateActuelle: 'Date actuelle',
-    nouvelleDate: 'Nouvelle date souhaitée',
-    motif: 'Motif du report',
-    motifAide: 'Expliquez pourquoi vous demandez un report (10 caractères au moins)…',
-    envoyer: 'Envoyer la demande',
-    envoi: 'Envoi…',
     reportEnvoye: 'Demande de report envoyée : elle attend la décision de l’administration.',
-    erreurChargement: 'Impossible de charger vos séances.',
-    erreurReport: 'La demande de report a échoué.',
-    erreurs: { date: 'Indiquez la nouvelle date.', motif: 'Indiquez le motif.', motifCourt: '10 caractères au moins.' },
+    erreurChargement: 'Vos séances n’ont pas pu s’afficher. Réessayez dans un instant.',
   },
   conflits: {
     titre: 'Gestion des conflits',

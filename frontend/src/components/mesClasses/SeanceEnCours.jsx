@@ -1,14 +1,15 @@
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Card, CardContent, Typography } from '@mui/material';
-import { Add, FactCheck, LocalLibrary, Quiz, SportsEsports } from '@mui/icons-material';
+import { FactCheck, LocalLibrary, Quiz } from '@mui/icons-material';
 import { libelleSeance, nomClasse } from './classe';
 
 /**
  * La séance en cours, en tête de « Mes classes » (lot E-4) : une action principale, l'appel ;
- * le reste en boutons secondaires (lancer un quiz, créer un quiz, supports de cours).
- * `options` : { quiz, quizIa, devoirs } disent quelles actions la plateforme propose.
+ * les supports de cours en action secondaire. Les quiz se créent et se lancent depuis Activités :
+ * ils ne sont pas attachés à une classe (retours du 21 octobre).
+ * `options` : { devoirs } dit si les devoirs sont proposés.
  */
-export default function SeanceEnCours({ classe, locale, options, onAppel, onQuizDirect, onCreerQuiz, onDevoir, onSupports }) {
+export default function SeanceEnCours({ classe, locale, options, onAppel, onDevoir, onSupports }) {
   const { t } = useTranslation();
   const seance = classe.prochaine_seance;
   const appelPrincipal = seance?.appel && seance.appel !== 'ferme';
@@ -32,17 +33,6 @@ export default function SeanceEnCours({ classe, locale, options, onAppel, onQuiz
           {seance?.appel && (
             <Button size="large" variant={appelPrincipal ? 'contained' : 'outlined'} startIcon={<FactCheck />} onClick={() => onAppel(seance)}>
               {t(`classes.page.appel.${seance.appel}`)}
-            </Button>
-          )}
-          {/* Quiz en direct lancé et projeté depuis Planner (CQ-2) */}
-          {options.quiz && (
-            <Button variant="outlined" startIcon={<SportsEsports />} onClick={() => onQuizDirect(classe)}>
-              {t('classes.page.quizDirect')}
-            </Button>
-          )}
-          {(options.quizIa || options.quiz) && (
-            <Button variant="outlined" startIcon={<Add />} onClick={() => onCreerQuiz(classe)}>
-              {t('classes.page.quizIa')}
             </Button>
           )}
           {/* Devoirs masqués (lot D-1) : le bouton revient avec l'interrupteur */}

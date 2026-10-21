@@ -4,11 +4,10 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Skeleton, Typography } from '@mui/material';
 import DashboardLayout from '../components/layouts/DashboardLayout';
 import PageHeader from '../design-system/components/PageHeader';
-import LancerQuizDialog from '../components/quiz/LancerQuizDialog';
 import CarteClasse from '../components/mesClasses/CarteClasse';
 import SeanceEnCours from '../components/mesClasses/SeanceEnCours';
 import { cleClasse, minutesAvantFin, nomClasse } from '../components/mesClasses/classe';
-import { enseignantAPI, quizAPI, quizIaAPI } from '../services/api';
+import { enseignantAPI } from '../services/api';
 import { DEVOIRS_ACTIFS } from '../../../shared/fonctions.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
 
@@ -27,12 +26,6 @@ export default function MesClasses() {
   const [classes, setClasses] = useState(null);
   const [erreur, setErreur] = useState(false);
   const [maintenant, setMaintenant] = useState(() => new Date());
-  // Quiz en direct (ClassQuiz) : proposé seulement si la plateforme en a un
-  const [quiz, setQuiz] = useState(null);
-  // Génération de quiz : proposée seulement si le serveur est configuré (sinon, l'éditeur du service de quiz)
-  const [quizIa, setQuizIa] = useState(false);
-  // Classe pour laquelle l'enseignant choisit le quiz à lancer en direct
-  const [lancerPour, setLancerPour] = useState(null);
   const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
 
   const charger = useCallback(
@@ -53,29 +46,13 @@ export default function MesClasses() {
   }, [charger]);
   useLiveRefresh(charger);
 
-  useEffect(() => {
-    let actif = true;
-    quizAPI
-      .getConfig()
-      .then((c) => actif && setQuiz(c?.peutLancer && /^https?:\/\//.test(c.url ?? '') ? c : null))
-      .catch(() => actif && setQuiz(null));
-    quizIaAPI
-      .disponibilite()
-      .then((d) => actif && setQuizIa(Boolean(d?.disponible)))
-      .catch(() => actif && setQuizIa(false));
-    return () => {
-      actif = false;
-    };
-  }, []);
-
   const enCours = useMemo(() => (classes ?? []).filter((c) => c.en_cours && c.prochaine_seance), [classes]);
   const aRappeler = enCours.filter((c) => c.prochaine_seance.appel !== 'ferme' && minutesAvantFin(c.prochaine_seance, maintenant) <= RAPPEL_MINUTES);
 
-  const genererQuiz = (c) => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } });
   const ouvrirAppel = (seance) => navigate(`/appel/${seance.id_affectation}`);
   // L'espace de la classe (supports, appel, élèves) ; `onglet` ouvre directement l'un d'eux
   const ouvrirEspace = (c, onglet = null) => navigate(`/mes-classes/${c.id_cours}/${c.id_groupe}${onglet ? `?onglet=${onglet}` : ''}`);
-  const options = { quiz: Boolean(quiz), quizIa, devoirs: DEVOIRS_ACTIFS };
+  const options = { devoirs: DEVOIRS_ACTIFS };
 
   return (
     <DashboardLayout>
@@ -112,8 +89,6 @@ export default function MesClasses() {
             locale={locale}
             options={options}
             onAppel={ouvrirAppel}
-            onQuizDirect={setLancerPour}
-            onCreerQuiz={genererQuiz}
             onDevoir={(cl) => navigate('/jeux', { state: { donnerDevoir: { id_cours: cl.id_cours, id_groupe: cl.id_groupe } } })}
             onSupports={(cl) => ouvrirEspace(cl)}
           />
@@ -133,13 +108,6 @@ export default function MesClasses() {
           </Box>
         )}
       </Box>
-
-      <LancerQuizDialog
-        seance={lancerPour?.prochaine_seance ?? null}
-        classe={lancerPour ? nomClasse(lancerPour) : ''}
-        onClose={() => setLancerPour(null)}
-        onCreer={lancerPour ? () => genererQuiz(lancerPour) : null}
-      />
     </DashboardLayout>
   );
 }

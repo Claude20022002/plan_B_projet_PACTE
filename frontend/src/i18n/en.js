@@ -111,6 +111,10 @@ const en = {
       voeu_eviter: 'Wish',
       max_heures_semaine: 'Weekly cap',
       hors_equipe: 'Team',
+      jury_incomplet: 'Jury',
+      horaires: 'Times',
+      conflit_participant: 'Participant busy',
+      participant_indisponible: 'Participant unavailable',
       creneau_introuvable: 'Slot',
     },
   },
@@ -122,6 +126,8 @@ const en = {
     none: 'No free slot in this range: widen the dates.',
     remote: 'No room',
     choose: 'Choose',
+    chosen: 'Chosen',
+    list: 'Free slots',
     excluded: 'Excluded:',
     reasons: {
       enseignant_pris: 'teacher busy',
@@ -131,15 +137,14 @@ const en = {
     },
   },
   resa: {
-    intro: 'Request a room for a defence, a meeting, a make-up session, an event or a club. The administration approves; a meeting in a room open to teachers is accepted straight away.',
-    introAdmin: 'Requests to approve, and all bookings. Each approval re-checks the room and participants (classes, exams, other bookings).',
-    status: 'Status',
-    allStatuses: 'All statuses',
+    introAdmin: 'Book a room for an event, a meeting or a thesis defence. Each booking checks the room and the participants (classes, exams, other bookings).',
+    periode: 'Period',
+    periodes: { avenir: 'Upcoming', passee: 'Past', toutes: 'All' },
+    impossible: 'This booking is not possible as it is',
+    forceHelp: 'The booking is saved anyway, and the override is recorded in the history.',
     add: 'New booking',
     book: 'Book',
-    request: 'Send request',
     saved: 'Booking saved',
-    requested: 'Request sent to the administration',
     validated: 'Booking approved',
     refused: 'Booking declined',
     cancelled: 'Booking cancelled',
@@ -153,14 +158,13 @@ const en = {
     findSlot: 'Find a slot',
     findSlotHelp: '{{minutes}}-minute slots when all participants are free, with a room',
     emptyTitle: 'No bookings',
-    emptyBody: 'Booked defences, meetings and make-up sessions will appear here.',
+    emptyBody: 'No booking in this period. Book a room for your next event.',
     statuses: { demandee: 'To approve', validee: 'Approved', refusee: 'Declined', annulee: 'Cancelled' },
     types: { soutenance: 'Defence', reunion: 'Meeting', rattrapage: 'Make-up', evenement: 'Event', club: 'Club', examen: 'Exam' },
     cols: { when: 'When', what: 'Subject', room: 'Room', participants: 'Participants' },
     fields: {
       type: 'Type',
       title: 'Title',
-      origin: 'Session to make up',
       jury: 'Jury',
       people: 'Participants',
       groups: 'Groups',
@@ -168,7 +172,6 @@ const en = {
       start: 'Start',
       end: 'End',
       room: 'Room',
-      roomOptional: 'Optional for a remote meeting',
       description: 'Description',
     },
   },
@@ -500,8 +503,6 @@ const en = {
       },
       ouvrirAppel: 'Open attendance',
       devoir: 'Set a quiz as homework',
-      quizIa: 'Create a quiz',
-      quizDirect: 'Start a quiz',
       ecrire: 'Write to the class',
       supports: 'Course materials',
       // Class cards (lot E-4)
@@ -779,7 +780,8 @@ const en = {
         "titre": "Handle a teacher’s rescheduling request",
         "etapes": [
           "Open “Reschedule requests”: pending requests come first.",
-          "Approve to move the session to the requested date, or refuse.",
+          "Approve to move the session to the requested slot. If it no longer works, “See the details” then “Choose another slot”: you approve on a free slot, without waiting for a new request.",
+          "Refusing asks for confirmation: the teacher is notified at once, and the decision cannot be undone.",
           "If the move breaks a rule (room taken, group busy), the list of rules is shown: pick another slot, or force it knowingly."
         ],
         "note": "A planned session counts as confirmed: a teacher has nothing to confirm, and asks for rescheduling when unable to teach it."
@@ -797,7 +799,7 @@ const en = {
         "etapes": [
           "Exam: open “Exams”, create the paper with its groups and rooms. Seats are checked, and invigilators can be assigned automatically.",
           "Publish the paper: students and invigilators are notified.",
-          "Defence, meeting, make-up session, event: open “Bookings”. The room and the participants are checked as for a session."
+          "Event, meeting or defence: open “Bookings”, then “New booking”, and choose the room. The room and the participants are checked as for a session."
         ],
         "note": "Bookings are made by the administration: teachers do not create any, they see the ones they take part in."
       },
@@ -865,23 +867,23 @@ const en = {
       "profQuizDirect": {
         "titre": "Run a live quiz during class",
         "etapes": [
-          "In “My classes”, on the session in progress, click “Start a quiz”.",
-          "Choose one of your quizzes: Planner starts the game, notifies the students of the class and opens the screen to project.",
-          "Click “Start”: students answer in the app, with no code to type."
+          "In “Activities”, click “Start a quiz”.",
+          "Choose one of your quizzes: Planner starts the game and opens the screen to project.",
+          "Students join with the projected code or QR code, then click “Start”."
         ],
-        "note": "Scores are attached to the session: you find them afterwards in “Activities”."
+        "note": "A quiz is not tied to a class: start it whenever you want, and find the scores in “Activities”."
       },
       "profQuizIa": {
         "titre": "Create a quiz in one step",
         "etapes": [
-          "In “My classes” or “Activities”, click “Create a quiz”.",
+          "In “Activities”, click “Create a quiz”.",
           "Type the topic or attach a document from your course, then “Generate”. To write the questions yourself: “Do it myself”.",
           "Review: correct a question or an answer, delete a question, or ask for another one.",
           "Click “Create the quiz”: it joins your quizzes, ready to be set as an assignment or run live."
         ],
         // Assignments hidden (lot D-1, CONTEXTE_DEVOIRS)
         "etapes_sansDevoirs": [
-          "In “My classes” or “Activities”, click “Create a quiz”.",
+          "In “Activities”, click “Create a quiz”.",
           "Type the topic or attach a document from your course, then “Generate”. To write the questions yourself: “Do it myself”.",
           "Review: correct a question or an answer, delete a question, or ask for another one.",
           "Click “Create the quiz”: it joins your quizzes, ready to be run live."
@@ -910,7 +912,7 @@ const en = {
         "titre": "I cannot teach a session",
         "etapes": [
           "Open “My teaching”, “Rescheduling requests” tab, and click “New request”, or “Request rescheduling” from the board.",
-          "Give the reason and the date you would like: the administration receives the request and answers.",
+          "Choose the session, then a free slot in the list (the class, you and the room are all free), and give the reason: the administration receives the request and answers.",
           "Follow the answer in that same tab."
         ],
         "note": "You have nothing to confirm: a planned session counts as confirmed as long as you do not ask for rescheduling."
@@ -971,10 +973,11 @@ const en = {
       },
       "etuDevoirs": {
         "titre": "Do an assignment or join a quiz",
-        "titre_sansDevoirs": "Join a quiz",
+        "titre_sansDevoirs": "Join a quiz or a game",
         "etapes_sansDevoirs": [
-          "A quiz started by your teacher during class appears in “Activities” and in the app.",
-          "Join it in one click, with no code to type."
+          "Your teacher shows a code and a QR code on the board.",
+          "Open “Quiz”, type the code then “Join”: you land in the quiz or in the game.",
+          "On the phone, scan the QR code with the app."
         ],
         "etapes": [
           "Open “Activities”: your quiz homework is listed with its deadline.",
@@ -1115,10 +1118,10 @@ const en = {
     points_other: '{{count}} points',
     terminer: 'Finish',
     erreurs: {
-      absente: 'No game to host: start a quiz from My classes.',
+      absente: 'No game to host: start a quiz from Activities.',
       dejaAnimee: 'This game is already being hosted in another window.',
-      connexion: 'The quiz service cannot be reached. Check the connection, then start the quiz again from My classes.',
-      serveur: 'The quiz service refused the game. Start the quiz again from My classes.',
+      connexion: 'The quiz service cannot be reached. Check the connection, then start the quiz again from Activities.',
+      serveur: 'The quiz service refused the game. Start the quiz again from Activities.',
     },
     lancer: {
       titre: 'Start a quiz · {{classe}}',
@@ -1476,15 +1479,35 @@ const en = {
     titre: 'Rescheduling requests',
     nouvelle: 'New request',
     titreFormulaire: 'New rescheduling request',
-    aucune: 'No rescheduling request',
-    creer: 'Create',
-    creee: 'Rescheduling request sent.',
-    erreurChargement: 'Requests could not be loaded.',
-    erreurCreation: 'The request could not be created.',
-    colonnes: { seance: 'Session', nouvelleDate: 'New date', motif: 'Reason', statut: 'Status', dateDemande: 'Requested on' },
-    champs: { seance: 'Session', choisir: 'Choose a session', nouvelleDate: 'New date', motif: 'Reason' },
+    aucune: 'No rescheduling request yet',
+    envoyer: 'Send the request',
+    creee: 'Rescheduling request sent: it awaits the administration’s decision.',
+    erreurChargement: 'Requests could not be shown. Try again in a moment.',
+    erreurCreation: 'The request could not be sent. Try again in a moment.',
+    dateActuelle: 'Scheduled on {{jour}} at {{heure}}',
+    choisirSeanceDabord: 'Choose the session first: its free slots will show here.',
+    nouveauCreneau: 'New slot: {{jour}}, {{debut}}–{{fin}}, {{salle}}',
+    aideMotif: 'For example: thesis jury on the same day',
+    colonnes: { seance: 'Session', origine: 'Original date', nouvelleDate: 'New date', motif: 'Reason', statut: 'Status', dateDemande: 'Requested on' },
+    champs: { seance: 'Session', choisir: 'Choose a session', creneau: 'New slot', motif: 'Reason' },
     statuts: { approuve: 'Approved', refuse: 'Refused', en_attente: 'Pending' },
-    erreurs: { affectation: 'Choose the session to reschedule.', date: 'Enter the new date.', motif: 'Enter the reason.' },
+    erreurs: { affectation: 'Choose the session to reschedule.', creneau: 'Choose the new slot in the list.', motif: 'Enter the reason.' },
+  },
+  reportsAdmin: {
+    aucune: 'No rescheduling request yet.',
+    exporter: 'Export to Excel',
+    colonnes: { enseignant: 'Teacher', actions: 'Actions' },
+    titreDetail: 'Rescheduling request',
+    voir: 'See the details',
+    approuver: 'Approve',
+    refuser: 'Refuse',
+    autreCreneau: 'Choose another slot',
+    approuverIci: 'Approve here',
+    approuvee: 'Request approved: the teacher and their students are notified.',
+    refusee: 'Request refused: the teacher is notified.',
+    erreurTraitement: 'The decision could not be saved. Try again in a moment.',
+    refusTitre: 'Refuse this request?',
+    refusMessage: '{{enseignant}} asked to move “{{seance}}” to {{date}}. They will be notified at once, and the decision cannot be undone. If only the date is a problem, choose another slot instead.',
   },
   mesSeances: {
     titre: 'My sessions',
@@ -1494,17 +1517,8 @@ const en = {
     statuts: { confirme: 'Confirmed', annule: 'Cancelled', reporte: 'Rescheduled', realise: 'Held' },
     appel: 'Take the roll call (QR code)',
     demanderReport: 'Request a rescheduling',
-    titreReport: 'Request the rescheduling of a session',
-    dateActuelle: 'Current date',
-    nouvelleDate: 'Requested new date',
-    motif: 'Reason for rescheduling',
-    motifAide: 'Explain why you are requesting a rescheduling (at least 10 characters)…',
-    envoyer: 'Send the request',
-    envoi: 'Sending…',
     reportEnvoye: 'Rescheduling request sent: it awaits the administration’s decision.',
     erreurChargement: 'Your sessions could not be loaded.',
-    erreurReport: 'The rescheduling request failed.',
-    erreurs: { date: 'Enter the new date.', motif: 'Enter the reason.', motifCourt: 'At least 10 characters.' },
   },
   conflits: {
     titre: 'Conflict management',
