@@ -177,6 +177,13 @@ const fr = {
       aide: 'Toucher un espace l’ouvre dans l’application ; « Site web » ouvre son interface complète, sans vous reconnecter.',
     },
     alertes: { titre: 'Alertes', vide: 'Aucune alerte pour le moment.' },
+    propositionAlertes: {
+      titre: 'Être prévenu des changements ?',
+      texte: 'Quand un cours est reporté, annulé ou change de salle, HESTIM Planner vous envoie une alerte sur ce téléphone.',
+      activer: 'Activer les alertes',
+      plusTard: 'Plus tard',
+      aide: 'Vous pourrez changer d’avis dans Compte.',
+    },
     appel: {
       titre: 'Scanner',
       consigne: 'Visez le QR code affiché par votre enseignant : appel, quiz ou jeu.',
@@ -523,6 +530,13 @@ const en = {
       aide: 'Tap a space to open it in the app; “Website” opens its full interface without signing in again.',
     },
     alertes: { titre: 'Alerts', vide: 'No alerts.' },
+    propositionAlertes: {
+      titre: 'Get notified of changes?',
+      texte: 'When a class is postponed, cancelled or moved to another room, HESTIM Planner sends an alert to this phone.',
+      activer: 'Turn on alerts',
+      plusTard: 'Not now',
+      aide: 'You can change your mind in Account.',
+    },
     appel: {
       titre: 'Scan',
       consigne: 'Point at the QR code shown by your teacher: roll call, quiz or game.',
