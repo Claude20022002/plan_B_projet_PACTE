@@ -95,7 +95,7 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
             const semaineDebut = Math.max(1, info.semaine_debut || 1);
             const semaineFin = Math.min(nbSemaines, info.semaine_fin || nbSemaines);
             let heures = 0;
-            // Le reste du volume est plus court que le premier créneau : plus rien à placer
+            // Plus aucun créneau à placer : le volume est atteint (garde-fou, la boucle s'arrête déjà avant)
             let volumeAtteint = false;
 
             semaines: for (let semaine = semaineDebut; semaine <= semaineFin && heures < info.heures_prevues; semaine += 1) {
@@ -142,7 +142,8 @@ export const deployerSemaineType = async ({ periode, placements, index, user, se
             }
             ligne.heures_planifiees = Math.round(heures * 10) / 10;
             ligne.complet = volumeAtteint || heures >= info.heures_prevues - 1e-6;
-            // Heures non placées parce qu'un créneau entier aurait dépassé le volume
+            // Heures non placées (périodes trop courtes, séances refusées) ; un dépassement de moins
+            // d'un créneau est accepté, il se lit dans heures_planifiees > heures_prevues
             ligne.heures_restantes = Math.round(Math.max(0, info.heures_prevues - heures) * 10) / 10;
             rapportParEnseignement.set(idEnseignement, ligne);
         }

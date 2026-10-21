@@ -29,20 +29,27 @@ describe("creneauxDansLeVolume", () => {
         expect(creneauxDansLeVolume(matin, 3.25)).toHaveLength(2);
     });
 
-    test("la dernière séance est raccourcie au lieu de dépasser le volume", () => {
-        const retenus = creneauxDansLeVolume(matin, 2.25);
-        expect(retenus).toEqual([matin[0]]);
-        expect(heuresDe(retenus)).toBeLessThanOrEqual(2.25);
+    test("la dernière séance s'arrête au premier créneau quand il couvre le reste", () => {
+        expect(creneauxDansLeVolume(matin, 1.75)).toEqual([matin[0]]);
+        expect(creneauxDansLeVolume(matin, 1)).toEqual([matin[0]]);
     });
 
-    test("rien quand le reste est plus court que le premier créneau", () => {
-        expect(creneauxDansLeVolume(matin, 1.5)).toEqual([]);
+    test("un reste plus court qu'un créneau est placé quand même (dépassement accepté)", () => {
+        expect(creneauxDansLeVolume(matin, 1.5)).toEqual([matin[0]]);
+        expect(creneauxDansLeVolume(matin, 2.25)).toEqual(matin);
+    });
+
+    test("rien quand le volume est atteint", () => {
         expect(creneauxDansLeVolume(matin, 0)).toEqual([]);
+        expect(creneauxDansLeVolume(matin, -0.5)).toEqual([]);
     });
 
-    test("jamais plus que le volume, quel que soit le reste", () => {
-        for (let reste = 0; reste <= 8; reste += 0.25) {
-            expect(heuresDe(creneauxDansLeVolume(matin, reste))).toBeLessThanOrEqual(reste + 1e-6);
+    test("le volume est couvert, avec moins d'un créneau de dépassement", () => {
+        for (let reste = 0.25; reste <= 3.25; reste += 0.25) {
+            const retenus = creneauxDansLeVolume(matin, reste);
+            const heures = heuresDe(retenus);
+            expect(heures).toBeGreaterThanOrEqual(reste - 1e-6);
+            expect(heures - heuresDe(retenus.slice(0, -1))).toBeGreaterThan(heures - reste);
         }
     });
 });

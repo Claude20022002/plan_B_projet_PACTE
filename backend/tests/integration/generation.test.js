@@ -234,25 +234,25 @@ describe("Génération complète", () => {
         // Le vacataire a déclaré assez de créneaux pour son TP : rien à signaler
         expect(rapport.avertissements).toEqual([]);
 
-        // Jamais au-dessus du volume prévu (recette du 20 octobre, M-1)
-        for (const e of rapport.enseignements) expect(e.heures_planifiees).toBeLessThanOrEqual(e.heures_prevues);
+        // Jamais plus d'un créneau au-dessus du volume prévu (M-1, dépassement accepté le 21 octobre)
+        for (const e of rapport.enseignements) expect(e.heures_planifiees).toBeLessThan(e.heures_prevues + 1.75);
 
         // CM : 21 h en demi-journées de 3 h 15 → 6 séances (12 créneaux, 19 h 30), le lundi 15 mars sauté ;
-        // la septième dépasserait le volume et le reste (1 h 30) est plus court qu'un créneau
+        // le reste (1 h 30) est plus court qu'un créneau : une septième séance d'un créneau (1 h 45), 21 h 15
         const cm = rapport.enseignements.find((e) => e.id_enseignement === ref.ensCm.id_enseignement);
-        expect(cm).toMatchObject({ seances: 6, complet: true, heures_planifiees: 19.5, heures_restantes: 1.5 });
+        expect(cm).toMatchObject({ seances: 7, complet: true, heures_planifiees: 21.3, heures_restantes: 0 });
         expect(cm.sautees).toEqual([expect.objectContaining({ date: "2027-03-15", raisons: ["evenement"] })]);
-        expect(await Affectation.count({ where: { id_enseignement: ref.ensCm.id_enseignement, statut: "planifie" } })).toBe(12);
+        expect(await Affectation.count({ where: { id_enseignement: ref.ensCm.id_enseignement, statut: "planifie" } })).toBe(13);
 
         // TP du vacataire : uniquement sur ses créneaux déclarés (mardi matin), 12 h → 4 séances ;
         // le mardi 2 mars est sauté (séance manuelle de la promotion à 9 h)
         const tp = rapport.enseignements.find((e) => e.id_enseignement === ref.ensTp.id_enseignement);
-        // 3 demi-journées entières (9 h 45) puis une dernière raccourcie à un créneau (1 h 45) : 11 h 30, sans dépasser
-        expect(tp).toMatchObject({ seances: 4, complet: true, heures_planifiees: 11.5, heures_restantes: 0.5 });
+        // 3 demi-journées entières (9 h 45) ; reste 2 h 15 : la quatrième, entière (3 h 15), couvre le reste → 13 h
+        expect(tp).toMatchObject({ seances: 4, complet: true, heures_planifiees: 13, heures_restantes: 0 });
         expect(tp.sautees).toEqual([expect.objectContaining({ date: "2027-03-02" })]);
         const tpSeances = await Affectation.findAll({ where: { id_enseignement: ref.ensTp.id_enseignement, statut: "planifie" }, include: ["creneau", "salle"] });
         expect(tpSeances.every((s) => s.creneau.jour_semaine === "mardi" && s.salle.type_salle === "Labo informatique")).toBe(true);
-        expect(tpSeances).toHaveLength(7);
+        expect(tpSeances).toHaveLength(8);
         expect(tpSeances.some((s) => s.date_seance === "2027-03-02")).toBe(false);
 
         expect(await PlanningSnapshot.count({ where: { id_snapshot: rapport.id_snapshot, is_active: true } })).toBe(1);
@@ -265,12 +265,12 @@ describe("Génération complète", () => {
         await attendreGeneration(reponse.body.session.id_generation_session);
         const anciennes = await Affectation.findAll({ where: { id_affectation: avant.map((a) => a.id_affectation) } });
         expect(anciennes.every((a) => a.statut === "annule")).toBe(true);
-        expect(await Affectation.count({ where: { id_enseignement: ref.ensCm.id_enseignement, statut: "planifie" } })).toBe(12);
+        expect(await Affectation.count({ where: { id_enseignement: ref.ensCm.id_enseignement, statut: "planifie" } })).toBe(13);
 
         const ancienneVersion = anciennes[0].id_snapshot;
         expect((await clients.admin.send("post", `/api/generation-automatique/snapshots/${ancienneVersion}/rollback`)).status).toBe(200);
         expect(await Affectation.count({ where: { id_snapshot: ancienneVersion, id_enseignement: ref.ensCm.id_enseignement, statut: "planifie" } })).toBe(avant.length);
-        expect(await Affectation.count({ where: { id_enseignement: ref.ensCm.id_enseignement, statut: "planifie" } })).toBe(12);
+        expect(await Affectation.count({ where: { id_enseignement: ref.ensCm.id_enseignement, statut: "planifie" } })).toBe(13);
     });
 
     test("solveur injoignable : la génération échoue proprement avec un message clair", async () => {
