@@ -6,7 +6,8 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../board/Ecran';
 import { planner } from '../api/client';
-import { chargerConfigQuiz, chargerPartiesQuiz, rejoindreSessionJeu } from '../api/donnees';
+import { chargerConfigQuiz, chargerPartiesQuiz, rejoindreQuizStudio, rejoindreSessionJeu } from '../api/donnees';
+import { ecranDuQuiz } from '../quiz/direct';
 import { origineDe, partieDuPin, pinScanne } from '../quiz/scan';
 import { codeSessionScanne, ecranDeSession } from '../jeux/session';
 import { cheminQuiz, codeQuizScanne } from '../quiz/studio';
@@ -18,7 +19,8 @@ import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
 
 /**
  * Scan du QR affiché par l'enseignant. Appel (I1) : la présence est enregistrée aussitôt. Quiz du
- * Studio : il s'ouvre sur le site, déjà connecté (quiz/studio.js). Partie ClassQuiz : elle s'ouvre si
+ * Studio : en direct, l'écran natif du joueur (quiz-direct/[id].jsx, SC-1c) ; sinon il s'ouvre sur
+ * le site, déjà connecté (quiz/studio.js). Partie ClassQuiz : elle s'ouvre si
  * elle est lancée dans l'une de mes séances (quiz/scan.js, quiz/ouvrir.js). Jeu lancé en classe :
  * jeux/session.js. C'est la seule porte de l'étudiant vers les quiz et les jeux (R-10). Un seul
  * envoi par code lu ; en cas d'erreur (code expiré, autre groupe), l'étudiant peut scanner de nouveau.
@@ -70,10 +72,16 @@ export default function Scanner() {
         router.replace(ecranJeu);
         return;
       }
-      // Quiz du Studio : le site l'ouvre (code inconnu ou expiré, il le dit lui-même)
+      // Quiz du Studio : en direct, l'écran de l'application (SC-1c) ; sinon le site l'ouvre (code
+      // inconnu ou expiré, il le dit lui-même)
       const codeQuiz = codeQuizScanne(data);
       if (codeQuiz) {
         partieOuverte.current = true;
+        const ecranDirect = ecranDuQuiz(await rejoindreQuizStudio(codeQuiz).catch(() => null));
+        if (ecranDirect) {
+          router.replace(ecranDirect);
+          return;
+        }
         await ouvrirSurLeWeb(cheminQuiz(codeQuiz), couleurs);
         fermerDerriere();
         return;

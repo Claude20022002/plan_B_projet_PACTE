@@ -15,8 +15,10 @@ import { LIBELLE_REFUS, demandeComplete, inclusionsDemande, repondreSansCreneau 
  * (controllers/reportConfirmationController.js).
  */
 
-// Une demande en cours bloque une nouvelle demande sur la même séance
-const STATUTS_EN_COURS = ["en_attente", "a_confirmer"];
+// Une demande en cours bloque une nouvelle demande sur la même séance ; seules les deux premières se refusent
+// (une séance à reprogrammer a déjà quitté l'emploi du temps : elle se reprogramme, controllers/reportPlusTardController.js)
+const STATUTS_EN_COURS = ["en_attente", "a_confirmer", "a_reprogrammer"];
+const STATUTS_REFUSABLES = ["en_attente", "a_confirmer"];
 
 // 🔍 Récupérer toutes les demandes de report
 export const getAllDemandesReport = asyncHandler(async (req, res) => {
@@ -181,7 +183,7 @@ export const traiterDemandeReport = planification(async (req, res) => {
     const demande = await DemandeReport.findByPk(req.params.id);
     if (!demande) return res.status(404).json({ message: "Demande de report non trouvée" });
     // Une proposition encore à confirmer peut être retirée (refusée), pas revalidée
-    const traitable = action === "refuser" ? STATUTS_EN_COURS : ["en_attente"];
+    const traitable = action === "refuser" ? STATUTS_REFUSABLES : ["en_attente"];
     if (!traitable.includes(demande.statut_demande)) {
         return res.status(400).json({ message: "Demande déjà traitée", error: "Cette demande n'attend plus de décision de l'administration" });
     }

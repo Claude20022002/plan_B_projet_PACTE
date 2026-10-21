@@ -389,7 +389,6 @@ Evenement.belongsTo(Users, { foreignKey: "id_user_createur", as: "createur", tar
 
 // ==================== OFFRE DE FORMATION (phase P2) ====================
 
-Filiere.belongsTo(Campus, { foreignKey: "id_campus_prefere", as: "campus_prefere" });
 Cours.belongsTo(Users, { foreignKey: "id_responsable", as: "responsable", targetKey: "id_user" });
 
 // Cours (module) -> CoursComposante (CM, TD, TP, Projet)

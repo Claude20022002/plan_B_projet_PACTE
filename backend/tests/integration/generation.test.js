@@ -104,7 +104,7 @@ beforeAll(async () => {
     clients = { admin: await loginAs(admin), prof: await loginAs(prof) };
 
     const gandhi = await Campus.findOne({ where: { code: "G" } });
-    const filiere = await Filiere.create({ code_filiere: "GEN", nom_filiere: "Génération", id_campus_prefere: gandhi.id_campus });
+    const filiere = await Filiere.create({ code_filiere: "GEN", nom_filiere: "Génération" });
     const promo = await Groupe.create({ nom_groupe: "4A GEN", niveau: "4ème année", annee: 4, effectif: 40, annee_scolaire: "2026-2027", type_groupe: "promotion", id_filiere: filiere.id_filiere });
     const td1 = await Groupe.create({ nom_groupe: "GEN-4A", niveau: "4ème année", annee: 4, effectif: 20, annee_scolaire: "2026-2027", type_groupe: "td", id_groupe_parent: promo.id_groupe, id_filiere: filiere.id_filiere });
     await Salle.create({ nom_salle: "G-GEN1", type_salle: "Salle de cours", capacite: 50, id_campus: gandhi.id_campus });
@@ -176,26 +176,9 @@ describe("Problème envoyé au solveur", () => {
         expect(probleme.parametres).toMatchObject({ maxMinutesJourGroupe: 480, samediApresMidi: false });
     });
 
-    test("campus préféré : celui de la promotion l'emporte sur celui de la filière, et ses TD en héritent", async () => {
-        const campus = await Campus.findAll({ order: [["id_campus", "ASC"]] });
-        expect(campus.length).toBeGreaterThanOrEqual(2);
-        const filiereA = ref.filiere.id_campus_prefere;
-        const promoA = campus.find((c) => c.id_campus !== filiereA).id_campus;
-        const prefere = async () => {
-            const { probleme } = await construireProbleme({ id_periode: ref.periode.id_periode, id_filieres: [ref.filiere.id_filiere] });
-            const lecons = probleme.lecons.filter((l) => !l.epinglee);
-            return { cm: lecons.find((l) => l.type === "CM").campusPrefere, tp: lecons.find((l) => l.type === "TP").campusPrefere };
-        };
-        // Sans campus sur les groupes : celui de la filière, comme avant
-        expect(await prefere()).toEqual({ cm: filiereA, tp: filiereA });
-        // La promotion a le sien : son CM le suit, et le TP du TD (qui n'en a pas) aussi
-        await ref.promo.update({ id_campus_prefere: promoA });
-        expect(await prefere()).toEqual({ cm: promoA, tp: promoA });
-        // Un TD peut avoir le sien, sans changer celui de la promotion
-        await ref.td1.update({ id_campus_prefere: filiereA });
-        expect(await prefere()).toEqual({ cm: promoA, tp: filiereA });
-        await ref.td1.update({ id_campus_prefere: null });
-        await ref.promo.update({ id_campus_prefere: null });
+    test("pas de campus préféré (21 octobre 2026) : aucune leçon n'en porte au solveur", async () => {
+        const { probleme } = await construireProbleme({ id_periode: ref.periode.id_periode, id_filieres: [ref.filiere.id_filiere] });
+        expect(probleme.lecons.every((l) => !("campusPrefere" in l))).toBe(true);
     });
 });
 
@@ -233,6 +216,11 @@ describe("Génération complète", () => {
         expect(rapport.exclus.map((e) => e.raison)).toEqual(["sans_enseignant"]);
         // Le vacataire a déclaré assez de créneaux pour son TP : rien à signaler
         expect(rapport.avertissements).toEqual([]);
+        // Rapport lisible (M-3) : un résumé positif, quoi corriger et où, plus de score interne affiché
+        expect(rapport.resume).toMatchObject({ conflits: 0, enseignements_exclus: 1 });
+        expect(rapport.a_corriger).toContainEqual(expect.objectContaining({ type: "sans_enseignant", lien: expect.stringMatching(/^\/gestion\/enseignements\?enseignement=\d+$/) }));
+        expect(rapport.regles_dures_enfreintes).toBe(0);
+        expect(session.config.etape).toBe("placement");
 
         // Jamais plus d'un créneau au-dessus du volume prévu (M-1, dépassement accepté le 21 octobre)
         for (const e of rapport.enseignements) expect(e.heures_planifiees).toBeLessThan(e.heures_prevues + 1.75);

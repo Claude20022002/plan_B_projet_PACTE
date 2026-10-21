@@ -1,8 +1,16 @@
 import { Op } from "sequelize";
+<<<<<<< HEAD
 import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, Evenement, Filiere, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { ancetres } from "./groupes.js";
 import { appliquerVersionPubliee, lignesDesClasses } from "../calendrier/versionPubliee.js";
+=======
+import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementGroupe, EnvoiEdt, Evenement, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
+import { ErreurMetier } from "./enseignements.js";
+import { ancetres } from "./groupes.js";
+import { campusDesGroupes } from "./campusDesSeances.js";
+import { appliquerRamadan } from "./ramadan.js";
+>>>>>>> 77429e7a169fc076cf6ed68af0deba28ca1a4eaf
 
 /**
  * Emploi du temps de l'étudiant connecté (application mobile, phase D2) : les séances de ses
@@ -33,11 +41,12 @@ const TYPES_EVENEMENT_ETUDIANT = ["vacances", "examen", "ferie", "ramadan", "sta
 
 /**
  * Événements du calendrier qui concernent l'étudiant (vacances, jours fériés, examens, stage…) :
- * ceux de l'établissement, du campus de sa filière, de sa filière, de son niveau ou de ses groupes.
+ * ceux de l'établissement, des campus où il a cours sur la période, de sa filière, de son niveau ou
+ * de ses groupes.
  */
 const evenementsDeLEtudiant = async (groupes, debut, fin) => {
     const filieres = [...new Set(groupes.map((g) => g.id_filiere))];
-    const campus = (await Filiere.findAll({ where: { id_filiere: filieres }, attributes: ["id_campus_prefere"] })).map((f) => f.id_campus_prefere).filter(Boolean);
+    const campus = await campusDesGroupes(groupes.map((g) => g.id_groupe), debut, fin);
     const niveaux = [...new Set(groupes.map((g) => g.niveau).filter(Boolean))];
     const evenements = await Evenement.findAll({
         where: {

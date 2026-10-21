@@ -125,6 +125,7 @@ describe("GET /api/emplois-du-temps/moi", () => {
     test("agenda : les événements qui le concernent et ses examens publiés", async () => {
         const { admin, promo, td1, td2, autre, cours, salle } = ref;
         const ev = (extra) => ({ date_debut: "2027-03-01", date_fin: "2027-03-01", id_user_createur: admin.id_user, bloque_affectations: false, ...extra });
+        const stendhal = await Campus.findOne({ where: { code: "ST" } });
         await Evenement.bulkCreate([
             ev({ titre: "Fête du Trône", type_evenement: "ferie", portee: "etablissement" }),
             ev({ titre: "Vacances de printemps", type_evenement: "vacances", portee: "filiere", id_cible: promo.id_filiere, date_debut: "2027-03-04", date_fin: "2027-03-12" }),
@@ -133,6 +134,9 @@ describe("GET /api/emplois-du-temps/moi", () => {
             ev({ titre: "Vacances autre filière", type_evenement: "vacances", portee: "filiere", id_cible: autre.id_filiere }),
             ev({ titre: "Réunion pédagogique", type_evenement: "reunion", portee: "etablissement" }),
             ev({ titre: "Hors période", type_evenement: "ferie", portee: "etablissement", date_debut: "2027-05-01", date_fin: "2027-05-01" }),
+            // Une filière n'a pas de campus : l'étudiant voit ceux des campus où il a cours sur la période
+            ev({ titre: "Fermeture du campus où il a cours", type_evenement: "autre", portee: "campus", id_cible: salle.id_campus }),
+            ev({ titre: "Fermeture de l'autre campus", type_evenement: "autre", portee: "campus", id_cible: stendhal.id_campus }),
         ]);
         const base = { id_cours: cours.id_cours, heure_debut: "09:00", heure_fin: "11:00", id_createur: admin.id_user };
         const [publie, brouillon, voisin] = await SessionExamen.bulkCreate([
@@ -148,7 +152,7 @@ describe("GET /api/emplois-du-temps/moi", () => {
         await SessionExamenSalle.create({ id_session: publie.id_session, id_salle: salle.id_salle });
 
         const { body } = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-01&au=2027-03-07");
-        expect(body.evenements.map((e) => e.titre).sort()).toEqual(["Fête du Trône", "Journée 4e année", "Vacances de printemps"]);
+        expect(body.evenements.map((e) => e.titre).sort()).toEqual(["Fermeture du campus où il a cours", "Fête du Trône", "Journée 4e année", "Vacances de printemps"]);
         expect(body.evenements.find((e) => e.type === "vacances")).toEqual(expect.objectContaining({ date_debut: "2027-03-04", date_fin: "2027-03-12" }));
         expect(body.examens).toEqual([expect.objectContaining({ titre: "Examen d'anglais", date: "2027-03-02", cours: { code: "MOB-ANG", nom: "Anglais" }, salles: ["G-MOB1"] })]);
     });

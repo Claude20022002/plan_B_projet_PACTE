@@ -68,12 +68,13 @@ const intitules = (groupe, periode) => {
 };
 
 /** Un événement bloquant concerne-t-il la classe (et quelles heures) ? */
-const evenementDeLaClasse = (e, { groupe, idsGroupes }) => {
+const evenementDeLaClasse = (e, { groupe, idsGroupes, campusDuMois }) => {
     switch (e.portee) {
         case "etablissement":
             return true;
         case "campus":
-            return groupe.filiere?.id_campus_prefere === e.id_cible;
+            // La classe n'a pas de campus : elle est concernée si elle a cours dans ce campus ce mois-ci
+            return campusDuMois.has(e.id_cible);
         case "filiere":
             return groupe.id_filiere === e.id_cible;
         case "niveau":
@@ -161,7 +162,7 @@ export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
 
     const evenements = (
         await Evenement.findAll({ where: { bloque_affectations: true, date_debut: { [Op.lte]: dernier }, date_fin: { [Op.gte]: premier } } })
-    ).filter((e) => evenementDeLaClasse(e, { groupe, idsGroupes }));
+    ).filter((e) => evenementDeLaClasse(e, { groupe, idsGroupes, campusDuMois: new Set(seances.map((s) => s.salle?.id_campus).filter(Boolean)) }));
 
     const cellulesDuJour = (date) => {
         const jour = jourDe(date);

@@ -13,8 +13,11 @@ import { MARGE_MS, classer, classerEquipes, dureeQuestion } from "../../../share
 /** Heure du serveur, en millisecondes. */
 export const maintenantMs = () => Date.now();
 
-/** Durée de réponse d'une question de cette diffusion, en secondes. */
-export const dureeDe = (session) => dureeQuestion(session.reglages?.duree_question_s);
+/**
+ * Durée de réponse de la question projetée, en secondes : la sienne si elle en a une (reprise de
+ * ClassQuiz, ou réglée dans l'éditeur), sinon celle choisie pour la diffusion.
+ */
+export const dureeDe = (session) => dureeQuestion(session.questions?.[session.direct_index]?.duree_s ?? session.reglages?.duree_question_s);
 
 /** Fin du chrono de la question projetée, en millisecondes. */
 export const finQuestionMs = (session) => Number(session.direct_debut_ms) + dureeDe(session) * 1000;
