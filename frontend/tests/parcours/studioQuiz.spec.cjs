@@ -101,9 +101,9 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await depuisListe.getByRole("button", { name: "Ouvrir", exact: true }).click();
   await expect(page.getByRole("img", { name: /QR code menant au quiz/ })).toBeVisible();
 
-  // Page Activités : le quiz du Studio est proposé par « Lancer un quiz » et dans « Mes quiz »
+  // Page Activités : « Mes quiz » n'y est pas répété (il est dans le menu) ; « Lancer un quiz » propose le quiz du Studio
   await page.goto("/jeux");
-  await expect(page.getByRole("button", { name: "Diffuser le quiz Réseaux, contrôle 1" })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Mes quiz" })).toHaveCount(0);
   await page.getByRole("button", { name: "Lancer un quiz" }).click();
   const lancement = page.getByRole("dialog", { name: "Lancer un quiz" });
   await expect(lancement.getByText("Mes quiz · chacun à son rythme (code et QR code)")).toBeVisible();
