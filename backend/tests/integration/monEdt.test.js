@@ -1,6 +1,6 @@
 import { resetDatabase, closeDatabase, createUser, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Affectation, AnneeUniversitaire, Appartenir, Campus, Cours, CoursComposante, Creneau, Enseignement, Evenement, Filiere, Groupe, Periode, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle } from "../../models/index.js";
+import { Affectation, AnneeUniversitaire, Appartenir, Campus, Cours, CoursComposante, Creneau, Enseignement, EnvoiEdt, Evenement, Filiere, Groupe, Periode, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle } from "../../models/index.js";
 
 /**
  * Phase D2 : emploi du temps de l'étudiant connecté pour l'application mobile.
@@ -52,11 +52,21 @@ beforeAll(async () => {
         seance({ ...base, id_groupe: autre.id_groupe, date_seance: "2027-03-05" }), // autre filière : non
         seance({ ...base, id_groupe: td1.id_groupe, date_seance: "2027-05-10" }), // hors période demandée
     ]);
+    // Les mois de mars et de mai sont publiés pour le TD de l'étudiant ; pas avril (voir le test de publication)
+    await EnvoiEdt.bulkCreate(["2027-03", "2027-05"].map((mois) => ({ id_groupe: td1.id_groupe, mois, seances: [], envoye_le: new Date(), nb_destinataires: 1 })));
 });
 afterAll(closeDatabase);
 beforeEach(resetRateLimiters);
 
 describe("GET /api/emplois-du-temps/moi", () => {
+    test("un mois n'est vu qu'une fois publié (décision du 21 octobre 2026), et tout de suite après", async () => {
+        await Affectation.create(seance({ id_user_admin: ref.admin.id_user, id_groupe: ref.td1.id_groupe, date_seance: "2027-04-12" }));
+        const lire = async () => (await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-04-01&au=2027-04-30")).body.seances;
+        expect(await lire()).toHaveLength(0);
+        await EnvoiEdt.create({ id_groupe: ref.td1.id_groupe, mois: "2027-04", seances: [], envoye_le: new Date(), nb_destinataires: 1 });
+        expect(await lire()).toHaveLength(1);
+    });
+
     test("ses groupes, leurs parents et les mutualisations ; annulées visibles ; voisins exclus", async () => {
         const reponse = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-01&au=2027-03-07");
         expect(reponse.status).toBe(200);

@@ -25,6 +25,9 @@ export const studioAPI = {
   dupliquer: (id) => request(`/studio-quiz/questionnaires/${id}/dupliquer`, { method: 'POST' }),
   exporter: (id, titre) => telecharger(`/studio-quiz/questionnaires/${id}/export`, `${titre || 'quiz'}.json`),
   importer: (donnees) => request('/studio-quiz/import', { method: 'POST', body: donnees }),
+  // Quiz du service de quiz (ClassQuiz) : ceux qui restent à importer, puis l'import (en brouillon)
+  classquizAImporter: () => request('/studio-quiz/classquiz'),
+  classquizImporter: () => request('/studio-quiz/classquiz/importer', { method: 'POST' }),
 
   // Questions
   ajouterQuestion: (id, question) => request(`/studio-quiz/questionnaires/${id}/questions`, { method: 'POST', body: question }),

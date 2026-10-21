@@ -7,6 +7,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
 import EmptyState from '../../design-system/components/EmptyState';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
+import ImporterClassQuiz from '../../components/studio/ImporterClassQuiz';
 import NouveauQuizDialog from '../../components/studio/editeur/NouveauQuizDialog';
 import GenererIaDialog from '../../components/studio/editeur/GenererIaDialog';
 import OuvrirPassationDialog from '../../components/studio/editeur/OuvrirPassationDialog';
@@ -156,6 +157,7 @@ export default function MesQuiz() {
   return (
     <DashboardLayout>
       <PageHeader title={t('studio.banque.titre')} subtitle={t('studio.banque.sousTitre')} actions={[{ label: t('studio.banque.creer'), variant: 'contained', startIcon: <Add />, onClick: () => setNouveau(true) }]} />
+      <ImporterClassQuiz onImporte={charger} />
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 3 }} alignItems={{ sm: 'center' }}>
         <TextField
           size="small"

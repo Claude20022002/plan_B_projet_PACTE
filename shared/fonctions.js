@@ -24,3 +24,11 @@ export const CONTEXTE_DEVOIRS = DEVOIRS_ACTIFS ? undefined : 'sansDevoirs';
  * pour le rallumer.
  */
 export const QUIZ_DANS_L_APPLICATION = false;
+
+/**
+ * « Mes surveillances » de l'administration (examens qu'un membre du personnel surveille). Décision
+ * du chef de projet, le 21 octobre : masqué pour le moment. La page reste (c'est aussi « Mes
+ * examens » de l'étudiant), et l'administration désigne toujours les surveillants dans Examens.
+ * Passer à true pour rendre l'entrée du menu.
+ */
+export const SURVEILLANCES_ACTIVES = false;

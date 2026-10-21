@@ -14,7 +14,10 @@ import {
     getDemandesReportByEnseignant,
     getDemandesReportByStatut,
     traiterDemandeReport,
+    propositionsPourSeance,
+    propositionsPourDemande,
 } from "../controllers/demandeReportController.js";
+import { confirmerReport } from "../controllers/reportConfirmationController.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
@@ -34,6 +37,10 @@ router.get(
 // 🔍 Récupérer les demandes de report par statut (admin)
 router.get("/statut/:statut", requireAdmin, asyncHandler(getDemandesReportByStatut));
 
+// 🔎 Créneaux et salles libres pour reporter une séance à une date (enseignant), ou pour une demande (admin)
+router.post("/propositions", requireEnseignant, asyncHandler(propositionsPourSeance));
+router.get("/:id/propositions", requireAdmin, asyncHandler(propositionsPourDemande));
+
 // 🔍 Récupérer une demande de report par ID (propriétaire ou admin, contrôlé dans le contrôleur)
 router.get("/:id", asyncHandler(getDemandeReportById));
 
@@ -44,7 +51,10 @@ router.post("/", requireEnseignant, asyncHandler(createDemandeReport));
 router.put("/:id", requireEnseignant, asyncHandler(updateDemandeReport));
 router.delete("/:id", requireEnseignant, asyncHandler(deleteDemandeReport));
 
-// ✅ Traiter une demande de report (approuver ou refuser) - Admin seulement
+// ✅ Traiter une demande de report (valider ou refuser) - Admin seulement ; valider la met « à confirmer »
 router.patch("/:id/traiter", requireAdmin, asyncHandler(traiterDemandeReport));
+
+// ✅ Confirmer un report validé, ou proposer un autre créneau (l'enseignant de la séance)
+router.patch("/:id/confirmer", requireEnseignant, asyncHandler(confirmerReport));
 
 export default router;

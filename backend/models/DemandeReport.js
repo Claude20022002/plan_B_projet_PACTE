@@ -21,8 +21,9 @@ const DemandeReport = sequelize.define(
             type: DataTypes.DATEONLY,
             allowNull: false,
         },
+        // en_attente → (administration) a_confirmer → (enseignant) approuve ; refuse par l'administration
         statut_demande: {
-            type: DataTypes.ENUM("en_attente", "approuve", "refuse"),
+            type: DataTypes.ENUM("en_attente", "a_confirmer", "approuve", "refuse"),
             defaultValue: "en_attente",
         },
         id_user_enseignant: {
@@ -32,6 +33,13 @@ const DemandeReport = sequelize.define(
         },
         // Créneau visé ; sans lui, le créneau de même rang le jour de la nouvelle date
         id_creneau_nouveau: DataTypes.INTEGER,
+        // Salle retenue avec le créneau (le serveur la choisit, l'administration peut la changer)
+        id_salle_nouvelle: DataTypes.INTEGER,
+        // Raison donnée par l'administration quand elle refuse
+        motif_decision: DataTypes.TEXT,
+        // Administrateur qui a validé la proposition, et justification s'il a forcé une règle
+        id_user_decision: DataTypes.INTEGER,
+        justification_forcage: DataTypes.TEXT,
         id_affectation: {
             type: DataTypes.INTEGER,
             allowNull: false,

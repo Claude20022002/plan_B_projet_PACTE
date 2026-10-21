@@ -5,6 +5,7 @@ import { Alert, Box, Button, Container, Paper, Stack, TextField, Typography } fr
 import { authAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { ds } from '../design-system/tokens';
+import useTitreOnglet from '../hooks/useTitreOnglet';
 
 /**
  * Première connexion d'un compte créé par l'administration avec un mot de passe provisoire
@@ -14,6 +15,7 @@ export default function ChangerMotDePasse() {
     const { t } = useTranslation();
     const navigate = useNavigate();
     const { user, loading, checkAuth, logout } = useAuth();
+    useTitreOnglet(t('password.title'));
     const [form, setForm] = useState({ actuel: '', nouveau: '', confirmation: '' });
     const [erreur, setErreur] = useState('');
     const [envoi, setEnvoi] = useState(false);
