@@ -11,6 +11,8 @@ import { dateCourte, dateEtHeure, demandeeDe, origineDe } from './format';
 export default function DetailDemandeDialog({ demande, creneaux, onClose, onApprouver, onAutreCreneau, onRefuser }) {
     const { t, i18n } = useTranslation();
     const enAttente = demande?.statut_demande === 'en_attente';
+    // Validée, elle attend l'enseignant : l'administration peut encore la retirer, pas la revalider
+    const aConfirmer = demande?.statut_demande === 'a_confirmer';
 
     const lignes = demande
         ? [
@@ -53,11 +55,13 @@ export default function DetailDemandeDialog({ demande, creneaux, onClose, onAppr
                     </DialogContent>
                     <DialogActions sx={{ flexWrap: 'wrap', gap: 1 }}>
                         <Button onClick={onClose}>{t('common.close')}</Button>
+                        {(enAttente || aConfirmer) && (
+                            <Button color="error" onClick={() => onRefuser(demande)}>
+                                {t('reportsAdmin.refuser')}
+                            </Button>
+                        )}
                         {enAttente && (
                             <>
-                                <Button color="error" onClick={() => onRefuser(demande)}>
-                                    {t('reportsAdmin.refuser')}
-                                </Button>
                                 <Button variant="outlined" onClick={() => onAutreCreneau(demande)}>
                                     {t('reportsAdmin.autreCreneau')}
                                 </Button>
