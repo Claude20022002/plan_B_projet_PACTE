@@ -255,11 +255,21 @@ describe("Reports soumis aux règles", () => {
         seanceReportee = (await creer({ date_seance: "2027-03-15", id_groupe: ref.promo.id_groupe, id_salle: ref.salles.labo.id_salle })).body.affectation;
     });
 
-    test("approuvé : la séance passe au créneau de même rang le nouveau jour, l'origine est gardée", async () => {
+    test("validé par l'administration : à confirmer, la séance ne bouge pas, seul l'enseignant est prévenu", async () => {
         const demande = await clients.profA.send("post", "/api/demandes-report", { id_affectation: seanceReportee.id_affectation, motif: "Jury externe", nouvelle_date: "2027-03-16" });
         expect(demande.status).toBe(201);
         const response = await clients.admin.send("patch", `/api/demandes-report/${demande.body.id_demande}/traiter`, { action: "approuver" });
         expect(response.status).toBe(200);
+        expect(response.body.demande).toMatchObject({ statut_demande: "a_confirmer", id_creneau_nouveau: ref.creneaux.mar1.id_creneau, id_user_decision: admin.id_user });
+        expect((await Affectation.findByPk(seanceReportee.id_affectation)).date_seance).toBe("2027-03-15");
+        expect((await Notification.findOne({ where: { id_user: profA.id_user, titre: "Report à confirmer" } })).message).toContain("mardi 16 mars 2027 à 09:00");
+        expect(await Notification.count({ where: { id_user: etudiant.id_user, titre: "Séance reportée" } })).toBe(0);
+    });
+
+    test("confirmé par l'enseignant : la séance passe au créneau de même rang le nouveau jour, l'origine est gardée", async () => {
+        const demande = await DemandeReport.findOne({ where: { id_affectation: seanceReportee.id_affectation } });
+        const response = await clients.profA.send("patch", `/api/demandes-report/${demande.id_demande}/confirmer`, { action: "accepter" });
+        expect([response.status, response.body.demande?.statut_demande]).toEqual([200, "approuve"]);
         const apres = await Affectation.findByPk(seanceReportee.id_affectation);
         expect(apres).toMatchObject({
             date_seance: "2027-03-16",
@@ -269,8 +279,9 @@ describe("Reports soumis aux règles", () => {
             id_creneau_initial: ref.creneaux.lun1.id_creneau,
         });
         expect(await HistoriqueAffectation.count({ where: { id_affectation: seanceReportee.id_affectation, action: "report" } })).toBe(1);
-        // L'étudiant d'un TD de la promotion est prévenu
+        // L'étudiant d'un TD de la promotion est prévenu, l'administration aussi
         expect(await Notification.count({ where: { id_user: etudiant.id_user, titre: "Séance reportée" } })).toBe(1);
+        expect(await Notification.count({ where: { id_user: admin.id_user, titre: "Report confirmé par l'enseignant" } })).toBe(1);
     });
 
     test("une date dont le créneau est pris : le serveur retient un autre créneau libre, et un créneau pris reste refusé", async () => {
@@ -288,9 +299,10 @@ describe("Reports soumis aux règles", () => {
         expect(codes(response)).toContain("conflit_groupe");
         expect((await DemandeReport.findByPk(demande.body.id_demande)).statut_demande).toBe("en_attente");
         expect((await Affectation.findByPk(autre.id_affectation)).date_seance).toBe("2027-03-29");
-        // Sans imposer rien, la demande est approuvée au créneau retenu
+        // Sans imposer rien, la demande est validée au créneau retenu, puis confirmée
         const approuvee = await clients.admin.send("patch", `/api/demandes-report/${demande.body.id_demande}/traiter`, { action: "approuver" });
         expect(approuvee.status).toBe(200);
+        expect((await clients.profA.send("patch", `/api/demandes-report/${demande.body.id_demande}/confirmer`, { action: "accepter" })).status).toBe(200);
         expect(await Affectation.findByPk(autre.id_affectation)).toMatchObject({ date_seance: "2027-03-22", id_creneau: demande.body.id_creneau_nouveau, statut: "reporte" });
     });
 

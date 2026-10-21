@@ -498,6 +498,8 @@ export const demandeReportAPI = {
     delete: (id) => request(`/demandes-report/${id}`, { method: 'DELETE' }),
     // extra : { forcer, justification } pour approuver un report malgré les règles (admin)
     traiter: (id, action, extra = {}) => request(`/demandes-report/${id}/traiter`, { method: 'PATCH', body: { action, ...extra } }),
+    // Réponse de l'enseignant à un report validé : { action: 'accepter' } ou { action: 'proposer', nouvelle_date, id_creneau }
+    confirmer: (id, corps) => request(`/demandes-report/${id}/confirmer`, { method: 'PATCH', body: corps }),
 };
 
 // ==================== DISPONIBILITÉS ====================

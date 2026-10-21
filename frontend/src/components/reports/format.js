@@ -17,15 +17,15 @@ export const dateLongue = (date, langue) =>
 export const heureCourte = (heure) => (heure ? String(heure).slice(0, 5) : '');
 
 /**
- * Date et heure de la séance avant le report demandé : { date, heure }. Une demande en attente
- * lit la séance telle qu'elle est ; une demande traitée lit la date d'origine gardée par le
+ * Date et heure de la séance avant le report demandé : { date, heure }. Une demande en attente ou
+ * à confirmer lit la séance telle qu'elle est (elle n'a pas encore bougé) ; une demande traitée lit la date d'origine gardée par le
  * serveur, car la séance a pu être déplacée depuis (recette du 20 octobre, M-6).
  * `creneaux` : Map id_creneau → créneau, pour l'heure d'origine.
  */
 export const origineDe = (demande, creneaux) => {
     const seance = demande.affectation;
     if (!seance) return { date: null, heure: '' };
-    if (demande.statut_demande === 'en_attente' || !seance.date_seance_initiale) {
+    if (['en_attente', 'a_confirmer'].includes(demande.statut_demande) || !seance.date_seance_initiale) {
         return { date: seance.date_seance, heure: heureCourte(seance.creneau?.heure_debut) };
     }
     return { date: seance.date_seance_initiale, heure: heureCourte(creneaux.get(seance.id_creneau_initial)?.heure_debut) };

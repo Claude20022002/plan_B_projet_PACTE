@@ -89,6 +89,13 @@ export const SessionQuiz = sequelize.define(
         essai: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
         id_groupe: { type: DataTypes.INTEGER, allowNull: true },
         id_affectation: { type: DataTypes.INTEGER, allowNull: true },
+        // « rythme » : chacun à son rythme ; « direct » : question par question au signal de l'enseignant (migration 0046)
+        mode: { type: DataTypes.STRING(10), allowNull: false, defaultValue: "rythme" },
+        // En direct : étape (shared/quiz/studio/direct.js), question projetée, ouverture (ms), version de l'état
+        direct_etape: { type: DataTypes.STRING(12), allowNull: true },
+        direct_index: { type: DataTypes.INTEGER, allowNull: true },
+        direct_debut_ms: { type: DataTypes.BIGINT, allowNull: true },
+        direct_version: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
     },
     options("SessionsQuiz")
 );

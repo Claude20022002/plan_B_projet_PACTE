@@ -15,10 +15,14 @@ import useLiveRefresh from '../../hooks/useLiveRefresh';
 
 const HORIZON_DAYS = 14;
 
-function TodoPanel({ pendingReports, onOpenReports }) {
+function TodoPanel({ pendingReports, reportsAConfirmer, onOpenReports }) {
   const { t } = useTranslation();
-  // Une séance planifiée est tenue pour confirmée : l'enseignant n'agit que pour demander un report
-  const rows = [{ label: t('teacher.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports }];
+  // Une séance planifiée est tenue pour confirmée : l'enseignant n'agit que pour un report. Un report
+  // validé par l'administration attend sa réponse : il passe en tête (décision du 21 octobre).
+  const rows = [
+    { label: t('teacher.reportsAConfirmer', { count: reportsAConfirmer }), value: reportsAConfirmer, action: onOpenReports },
+    { label: t('teacher.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports },
+  ];
   return (
     <Box
       component="section"
@@ -130,6 +134,7 @@ export default function EnseignantDashboard() {
   }, [upcoming]);
   const spotlight = useMemo(() => findSpotlight(boardSessions, now), [boardSessions, now]);
   const pendingReports = reports.filter((r) => r.statut_demande === 'en_attente').length;
+  const reportsAConfirmer = reports.filter((r) => r.statut_demande === 'a_confirmer').length;
 
   // Une seule ligne d'actions sous la séance (retours du 21 octobre) : l'appel, le jour même, en
   // action principale, puis le report. Les classes et les quiz ont leur entrée dans le menu
@@ -212,6 +217,7 @@ export default function EnseignantDashboard() {
         <Box sx={{ display: 'grid', gap: 2, alignContent: 'start' }}>
           <TodoPanel
             pendingReports={pendingReports}
+            reportsAConfirmer={reportsAConfirmer}
             onOpenReports={() => navigate('/demandes-report')}
           />
           {!(compact && changes.length > 0 && spotlight) && (

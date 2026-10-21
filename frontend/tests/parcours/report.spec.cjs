@@ -1,9 +1,10 @@
 /**
  * Parcours « demande de report puis décision » (lot B-8, repris après la recette du 20 octobre,
- * B-2) : l'enseignante ne tape plus de date, elle choisit un créneau libre de sa séance du lundi
- * 4 janvier 2027 ; l'administration l'approuve. Puis une seconde demande : l'administration
- * renonce à un refus (confirmation), et approuve sur un autre créneau libre, sans attendre une
- * nouvelle demande. Enfin, un refus avec sa raison, que l'enseignante lit dans sa liste.
+ * B-2, puis la décision du 21 octobre : l'enseignant confirme) : l'enseignante choisit un créneau
+ * libre de sa séance du lundi 4 janvier 2027 ; l'administration le valide, l'enseignante
+ * l'accepte. Puis une seconde demande : l'administration renonce à un refus (confirmation) et
+ * valide un autre créneau libre ; l'enseignante en propose un troisième, retenu aussitôt.
+ * Enfin, un refus avec sa raison, que l'enseignante lit dans sa liste.
  * Les créneaux proposés ont déjà passé les règles de planification, qui ont leurs propres tests.
  */
 const { test, expect } = require("@playwright/test");
@@ -54,12 +55,19 @@ test("demande de report : un créneau libre choisi par l'enseignante, approuvé 
   await adm.goto("/gestion/demandes-report");
   const demande = adm.getByRole("row").filter({ hasText: enseignante.nom });
   await demande.getByRole("button", { name: "Approuver" }).click();
+  // Validée, la demande attend l'enseignante : la séance n'a pas encore bougé
+  await expect(demande.getByText("À confirmer")).toBeVisible();
+
+  await prof.reload();
+  await expect(prof.getByRole("row").filter({ hasText: "À confirmer" })).toHaveCount(1);
+  await expect(prof.getByText(/^L’administration propose le lundi 11 janvier/)).toBeVisible();
+  await prof.getByRole("button", { name: "Accepter" }).click();
+  await expect(prof.getByRole("row").filter({ hasText: "Approuvée" })).toHaveCount(1);
+
+  await adm.reload();
   await expect(demande.getByText("Approuvée")).toBeVisible();
   // La date d'origine reste le 4 janvier, même si la séance a changé de date
   await expect(demande).toContainText("04/01/2027");
-
-  await prof.reload();
-  await expect(prof.getByRole("row").filter({ hasText: "Approuvée" })).toHaveCount(1);
 });
 
 test("l'administration renonce à refuser, puis approuve sur un autre créneau libre", async ({ browser }) => {
@@ -87,10 +95,19 @@ test("l'administration renonce à refuser, puis approuve sur un autre créneau l
   const assistant = adm.getByRole("dialog");
   await assistant.getByRole("list", { name: "Créneaux libres" }).getByRole("button", { name: /^Approuver ici/ }).first().click();
   await expect(assistant).toBeHidden();
-  await expect(adm.getByRole("row").filter({ hasText: "Approuvée" })).toHaveCount(2);
+  await expect(adm.getByRole("row").filter({ hasText: "À confirmer" })).toHaveCount(1);
 
+  // L'enseignante ne garde pas cette place : elle propose un autre créneau libre, retenu aussitôt
   await prof.reload();
+  await prof.getByRole("button", { name: "Proposer un autre créneau" }).click();
+  const proposition = prof.getByRole("dialog");
+  await proposition.getByRole("list", { name: "Créneaux libres" }).getByRole("button", { name: /^Choisir/ }).first().click();
+  await proposition.getByRole("button", { name: "Proposer ce créneau" }).click();
+  await expect(proposition).toBeHidden();
   await expect(prof.getByRole("row").filter({ hasText: "Approuvée" })).toHaveCount(2);
+
+  await adm.reload();
+  await expect(adm.getByRole("row").filter({ hasText: "Approuvée" })).toHaveCount(2);
 });
 
 test("un refus avec sa raison, lue par l'enseignante", async ({ browser }) => {

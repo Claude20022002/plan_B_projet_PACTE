@@ -34,11 +34,12 @@ const lireBibliotheque = async () => {
   const liste = [...parCode.values()].sort((a, b) => a.nom.localeCompare(b.nom));
   const [cours, supports, avis, idees] = await Promise.all([
     chargerMesCours().catch(() => []),
-    chargerSupports(liste.map((m) => m.code)),
+    // StudyLib injoignable : les modules restent affichés sans leurs documents, et Mes cours (Planner) aussi
+    chargerSupports(liste.map((m) => m.code)).catch(() => null),
     chargerAvisStage().catch(() => []),
     chargerIdeesProjet().catch(() => ({ idees: [], suite: false })),
   ]);
-  return { cours, liste, supports, avis, idees };
+  return { cours, liste, supports: supports ?? {}, avis, idees, sansStudyLib: supports === null };
 };
 
 /**
@@ -67,13 +68,13 @@ export default function Bibliotheque() {
   const charger = useCallback(
     () =>
       lireBibliotheque().then(
-        ({ cours: mesCours, liste, supports: sup, avis, idees: premieres }) => {
+        ({ cours: mesCours, liste, supports: sup, avis, idees: premieres, sansStudyLib }) => {
           setCours(mesCours);
           setModules(liste);
           setSupports(sup);
           setStages(avis);
           setIdees({ liste: premieres.idees, page: 1, suite: premieres.suite, chargement: false });
-          setEtat({ chargement: false, indisponible: false, rafraichit: false });
+          setEtat({ chargement: false, indisponible: sansStudyLib, rafraichit: false });
         },
         () => setEtat({ chargement: false, indisponible: true, rafraichit: false })
       ),

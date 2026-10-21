@@ -7,6 +7,8 @@ import DashboardLayout from '../components/layouts/DashboardLayout';
 import OngletsMonService from '../components/monService/OngletsMonService';
 import DemandeReportDialog from '../components/reports/DemandeReportDialog';
 import ListeDemandesEnseignant from '../components/reports/ListeDemandesEnseignant';
+import ProposerCreneauDialog from '../components/reports/ProposerCreneauDialog';
+import useConfirmerReport from '../components/reports/useConfirmerReport';
 import { demandeReportAPI, affectationAPI } from '../services/api';
 import { fetchAll } from '../utils/fetchAll';
 import { useAuth } from '../contexts/AuthContext';
@@ -19,6 +21,9 @@ const reportable = (s) => s.statut !== 'annule' && new Date(`${String(s.date_sea
 /**
  * Mes demandes de report (enseignant) : la liste et le formulaire d'une nouvelle demande.
  * `?seance=<id>` (bouton « Demander un report » du tableau) ouvre le formulaire sur cette séance.
+ * Un report validé par l'administration attend ici la réponse de l'enseignant : accepter, ou
+ * proposer un autre créneau. `?demande=<id>` (notification « Report à confirmer ») met cette
+ * demande en évidence et y fait défiler la page.
  */
 export default function DemandesReport() {
     const { t } = useTranslation();
@@ -30,6 +35,7 @@ export default function DemandesReport() {
     const [seances, setSeances] = useState([]);
     const [loading, setLoading] = useState(true);
     const [formulaire, setFormulaire] = useState({ open: false, idSeance: '' });
+    const [enEvidence, setEnEvidence] = useState(null);
 
     const chargerDemandes = useCallback(async () => {
         try {
@@ -41,6 +47,7 @@ export default function DemandesReport() {
             setLoading(false);
         }
     }, [user?.id_user, t, toast]);
+    const confirmation = useConfirmerReport(chargerDemandes);
 
     useEffect(() => {
         if (!user?.id_user) return;
@@ -51,13 +58,21 @@ export default function DemandesReport() {
             .catch(() => toast.error(t('reports.erreurChargement')));
     }, [user?.id_user, chargerDemandes, t, toast]);
 
-    // Arrivée depuis une séance précise : le formulaire s'ouvre dessus, une seule fois
+    // Arrivée depuis une séance précise : le formulaire s'ouvre dessus, une seule fois.
+    // Arrivée depuis la notification d'un report à confirmer : cette demande est mise en évidence.
     useEffect(() => {
         const idSeance = params.get('seance');
-        if (!idSeance) return;
-        setFormulaire({ open: true, idSeance });
+        const idDemande = params.get('demande');
+        if (!idSeance && !idDemande) return;
+        if (idSeance) setFormulaire({ open: true, idSeance });
+        if (idDemande) setEnEvidence(Number(idDemande));
         setParams({}, { replace: true });
     }, [params, setParams]);
+
+    // La demande mise en évidence peut être loin dans la liste : la page défile jusqu'à elle
+    useEffect(() => {
+        if (enEvidence && !loading) document.getElementById(`demande-${enEvidence}`)?.scrollIntoView({ block: 'center' });
+    }, [enEvidence, loading]);
 
     const fermer = () => setFormulaire({ open: false, idSeance: '' });
 
@@ -81,8 +96,22 @@ export default function DemandesReport() {
                         </Typography>
                     </Paper>
                 ) : (
-                    <ListeDemandesEnseignant demandes={demandes} creneaux={creneaux} />
+                    <ListeDemandesEnseignant
+                        demandes={demandes}
+                        creneaux={creneaux}
+                        enCours={confirmation.enCours}
+                        enEvidence={enEvidence}
+                        onAccepter={confirmation.accepter}
+                        onProposer={confirmation.proposer}
+                    />
                 )}
+
+                <ProposerCreneauDialog
+                    demande={confirmation.aProposer}
+                    avertissement={confirmation.avertissement}
+                    onClose={confirmation.fermerProposition}
+                    onProposee={confirmation.proposee}
+                />
 
                 <DemandeReportDialog
                     open={formulaire.open}
