@@ -216,6 +216,11 @@ describe("Génération complète", () => {
         expect(rapport.exclus.map((e) => e.raison)).toEqual(["sans_enseignant"]);
         // Le vacataire a déclaré assez de créneaux pour son TP : rien à signaler
         expect(rapport.avertissements).toEqual([]);
+        // Rapport lisible (M-3) : un résumé positif, quoi corriger et où, plus de score interne affiché
+        expect(rapport.resume).toMatchObject({ conflits: 0, enseignements_exclus: 1 });
+        expect(rapport.a_corriger).toContainEqual(expect.objectContaining({ type: "sans_enseignant", lien: expect.stringMatching(/^\/gestion\/enseignements\?enseignement=\d+$/) }));
+        expect(rapport.regles_dures_enfreintes).toBe(0);
+        expect(session.config.etape).toBe("placement");
 
         // Jamais plus d'un créneau au-dessus du volume prévu (M-1, dépassement accepté le 21 octobre)
         for (const e of rapport.enseignements) expect(e.heures_planifiees).toBeLessThan(e.heures_prevues + 1.75);
