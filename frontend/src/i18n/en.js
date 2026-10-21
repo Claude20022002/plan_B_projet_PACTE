@@ -1216,6 +1216,7 @@ const en = {
     erreur: 'Activities could not be loaded. Check your connection and try again.',
     erreurAction: 'The operation failed. Try again.',
     horsLigne: 'Your progress could not be loaded: you can still play, successes will be saved once you are back online.',
+    nonPropose: 'Your teachers do not offer this game in your modules yet. You can practise, but your successes will not be saved.',
     catalogue: 'All games',
     jouer: 'Play',
     continuer: 'Continue',

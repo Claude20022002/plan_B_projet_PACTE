@@ -1216,6 +1216,7 @@ const fr = {
     erreur: 'Les activités n’ont pas pu s’afficher. Vérifiez votre connexion Internet, puis réessayez.',
     erreurAction: 'L’opération n’a pas abouti. Réessayez.',
     horsLigne: 'Votre progression n’a pas pu être chargée : vous pouvez jouer, les réussites seront enregistrées au retour de la connexion.',
+    nonPropose: 'Vos enseignants ne proposent pas encore ce jeu dans vos modules. Vous pouvez vous entraîner, mais vos réussites ne seront pas enregistrées.',
     catalogue: 'Tous les jeux',
     jouer: 'Jouer',
     continuer: 'Continuer',
