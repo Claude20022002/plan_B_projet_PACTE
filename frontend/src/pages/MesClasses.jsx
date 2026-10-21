@@ -71,8 +71,7 @@ export default function MesClasses() {
   const enCours = useMemo(() => (classes ?? []).filter((c) => c.en_cours && c.prochaine_seance), [classes]);
   const aRappeler = enCours.filter((c) => c.prochaine_seance.appel !== 'ferme' && minutesAvantFin(c.prochaine_seance, maintenant) <= RAPPEL_MINUTES);
 
-  // Un quiz n'est pas lié à une classe : la création s'ouvre dans « Mes quiz »
-  const genererQuiz = () => navigate('/studio-quiz?nouveau=1');
+  const genererQuiz = (c) => navigate('/jeux', { state: { genererQuiz: { id_cours: c.id_cours, id_groupe: c.id_groupe } } });
   const ouvrirAppel = (seance) => navigate(`/appel/${seance.id_affectation}`);
   // L'espace de la classe (supports, appel, élèves) ; `onglet` ouvre directement l'un d'eux
   const ouvrirEspace = (c, onglet = null) => navigate(`/mes-classes/${c.id_cours}/${c.id_groupe}${onglet ? `?onglet=${onglet}` : ''}`);
