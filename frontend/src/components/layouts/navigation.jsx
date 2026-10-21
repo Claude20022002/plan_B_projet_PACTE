@@ -192,6 +192,7 @@ const TITLE_KEYS = {
   '/gestion/enseignements': 'nav.teaching',
   '/statistiques': 'nav.statistics',
   '/notifications': 'nav.notifications',
+  '/presence': 'nav.presence',
   '/annonces': 'nav.announcements',
   '/parametres': 'nav.settings',
   '/mes-affectations': 'nav.mySessions',

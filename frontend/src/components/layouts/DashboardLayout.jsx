@@ -8,6 +8,7 @@ import {
   Drawer,
   IconButton,
   List,
+  ListItem,
   ListItemButton,
   ListItemIcon,
   ListItemText,
@@ -20,12 +21,14 @@ import { Notifications, Search, Menu as MenuIcon } from '@mui/icons-material';
 import GlobalSearch from '../common/GlobalSearch';
 import SelecteurEspaces from '../espaces/SelecteurEspaces';
 import Aide from '../aide/Aide';
+import LienEvitement, { ID_CONTENU } from './LienEvitement';
 import OngletsDuBas from './OngletsDuBas';
 import PiedDuMenu from './PiedDuMenu';
 import { RUBRIQUES_PARENTES, bottomTabsFor, cleDuTitre, navigationFor } from './navigation';
 import { useAuth } from '../../contexts/AuthContext';
 import { notificationAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
+import useTitreOnglet from '../../hooks/useTitreOnglet';
 
 const RAIL_WIDTH = 248;
 
@@ -78,6 +81,7 @@ export default function DashboardLayout({ children }) {
   // Sous-pages (/jeux/devoirs/12, /annonces/3, /mes-classes/4/7…) : titre et rubrique de la page parente
   const parente = RUBRIQUES_PARENTES.find((p) => location.pathname.startsWith(`${p}/`));
   const title = t(cleDuTitre(location.pathname));
+  useTitreOnglet(title);
 
   const rail = (
     <Box
@@ -128,28 +132,30 @@ export default function DashboardLayout({ children }) {
                 // Jeux : la rubrique reste active dans chaque jeu (/jeux/terminal-linux…)
                 // Emplois du temps : aussi active sur ses vues Liste et Mois
                 const selected = location.pathname === item.path || (item.aussi ?? []).includes(location.pathname) || item.path === parente;
+                // Un <li> autour de chaque bouton : une liste ne contient que des éléments de liste (M-13)
                 return (
-                  <ListItemButton
-                    key={item.path}
-                    selected={selected}
-                    aria-current={selected ? 'page' : undefined}
-                    onClick={() => go(item.path)}
-                    sx={{
-                      my: 0.25,
-                      px: 1.25,
-                      color: selected ? ds.nav.letter : ds.nav.letterSoft,
-                      '& .MuiListItemIcon-root': { color: selected ? ds.brand.orange : ds.nav.icon, minWidth: 34 },
-                      '&.Mui-selected, &.Mui-selected:hover': { bgcolor: ds.nav.selection },
-                      '&:hover': { bgcolor: ds.nav.survol },
-                      '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: -2 },
-                    }}
-                  >
-                    <ListItemIcon>{item.icon}</ListItemIcon>
-                    <ListItemText
-                      primary={t(item.key)}
-                      primaryTypographyProps={{ fontSize: '0.9375rem', fontWeight: selected ? 600 : 500 }}
-                    />
-                  </ListItemButton>
+                  <ListItem key={item.path} disablePadding>
+                    <ListItemButton
+                      selected={selected}
+                      aria-current={selected ? 'page' : undefined}
+                      onClick={() => go(item.path)}
+                      sx={{
+                        my: 0.25,
+                        px: 1.25,
+                        color: selected ? ds.nav.letter : ds.nav.letterSoft,
+                        '& .MuiListItemIcon-root': { color: selected ? ds.brand.orange : ds.nav.icon, minWidth: 34 },
+                        '&.Mui-selected, &.Mui-selected:hover': { bgcolor: ds.nav.selection },
+                        '&:hover': { bgcolor: ds.nav.survol },
+                        '&.Mui-focusVisible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: -2 },
+                      }}
+                    >
+                      <ListItemIcon>{item.icon}</ListItemIcon>
+                      <ListItemText
+                        primary={t(item.key)}
+                        primaryTypographyProps={{ fontSize: '0.9375rem', fontWeight: selected ? 600 : 500 }}
+                      />
+                    </ListItemButton>
+                  </ListItem>
                 );
               })}
             </List>
@@ -163,6 +169,7 @@ export default function DashboardLayout({ children }) {
 
   return (
     <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: 'background.default' }}>
+      <LienEvitement />
       {isDesktop ? (
         <Box sx={{ width: RAIL_WIDTH, flexShrink: 0 }}>
           <Box sx={{ position: 'fixed', top: 0, bottom: 0, left: 0, width: RAIL_WIDTH }}>{rail}</Box>
@@ -233,7 +240,10 @@ export default function DashboardLayout({ children }) {
 
         <Box
           component="main"
+          id={ID_CONTENU}
+          tabIndex={-1}
           sx={{
+            outline: 'none',
             flexGrow: 1,
             px: { xs: 1.5, sm: 2, md: 3 },
             pt: { xs: 1.5, md: 3 },

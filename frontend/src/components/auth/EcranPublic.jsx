@@ -4,6 +4,7 @@ import { LANGUAGES } from '../../i18n';
 import { ds } from '../../design-system/tokens';
 import { FlapTiles } from '../../design-system/board';
 import PanneauAccueil from './PanneauAccueil';
+import useTitreOnglet from '../../hooks/useTitreOnglet';
 
 /**
  * Mise en page des écrans publics (connexion, mot de passe oublié, réinitialisation) : le panneau
@@ -69,8 +70,9 @@ export default function EcranPublic({ children }) {
   );
 }
 
-/** Titre et phrase d'introduction d'un écran public, au style de la connexion. */
+/** Titre et phrase d'introduction d'un écran public, au style de la connexion ; c'est aussi le titre de l'onglet. */
 export function TitreEcran({ titre, sousTitre }) {
+  useTitreOnglet(titre);
   return (
     <>
       <Typography component="h1" sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: { xs: '2rem', sm: '2.25rem' }, lineHeight: 1.1 }}>

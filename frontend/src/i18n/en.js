@@ -7,6 +7,7 @@ const en = {
   },
   vuesEdt: { grille: 'Grid', liste: 'Session list', mois: 'Month (print)' },
   common: {
+    changerPhoto: 'Change the profile photo',
     aucun: 'None',
     loading: 'Loading…',
     retry: 'Try again',
@@ -248,6 +249,7 @@ const en = {
     makeUp: 'Make up',
   },
   tracking: {
+    barreAria: '{{module}} {{type}}: {{faites}} h done out of {{prevues}} h',
     tabs: { progress: 'Module progress', hours: 'Monthly hours', usage: 'Monthly usage' },
     usage: {
       intro: 'Basis for billing per active account. An account is active if it signed in at least once during the month, on the website or in the app.',
@@ -356,6 +358,7 @@ const en = {
     },
   },
   prep: {
+    barreAria: 'Preparation progress: {{filiere}}',
     intro: 'The 8 preparation steps, computed from the data. The head of program handles curriculum, groups, assignments, availability and review; the administration the calendar, generation and publication.',
     emptyTitle: 'No program to prepare',
     emptyBody: 'Choose a term, or ask the administration to appoint you head of a program.',
@@ -1004,6 +1007,8 @@ const en = {
     }
   },
   nav: {
+    allerAuContenu: 'Skip to content',
+    presence: 'Attendance',
     board: 'Board',
     week: 'Week',
     alerts: 'Alerts',
