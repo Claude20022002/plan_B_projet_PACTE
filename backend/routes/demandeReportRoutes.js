@@ -17,6 +17,7 @@ import {
     propositionsPourSeance,
     propositionsPourDemande,
 } from "../controllers/demandeReportController.js";
+import { confirmerReport } from "../controllers/reportConfirmationController.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 
 const router = express.Router();
@@ -50,7 +51,10 @@ router.post("/", requireEnseignant, asyncHandler(createDemandeReport));
 router.put("/:id", requireEnseignant, asyncHandler(updateDemandeReport));
 router.delete("/:id", requireEnseignant, asyncHandler(deleteDemandeReport));
 
-// ✅ Traiter une demande de report (approuver ou refuser) - Admin seulement
+// ✅ Traiter une demande de report (valider ou refuser) - Admin seulement ; valider la met « à confirmer »
 router.patch("/:id/traiter", requireAdmin, asyncHandler(traiterDemandeReport));
+
+// ✅ Confirmer un report validé, ou proposer un autre créneau (l'enseignant de la séance)
+router.patch("/:id/confirmer", requireEnseignant, asyncHandler(confirmerReport));
 
 export default router;

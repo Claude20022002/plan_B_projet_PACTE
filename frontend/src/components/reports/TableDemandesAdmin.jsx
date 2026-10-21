@@ -7,7 +7,7 @@ import { dateCourte, dateEtHeure, demandeeDe, origineDe } from './format';
 /**
  * Demandes de report vues par l'administration : une ligne par demande, avec la date d'origine
  * de la séance (et non sa date actuelle, réécrite par un report approuvé) et le créneau demandé.
- * Les actions d'une demande en attente : voir, approuver, refuser. `enCours` : la demande en
+ * Les actions d'une demande en attente : voir, approuver, refuser ; à confirmer : voir, refuser. `enCours` : la demande en
  * cours de traitement, dont les boutons attendent.
  */
 export default function TableDemandesAdmin({ demandes, creneaux, enCours, onVoir, onApprouver, onRefuser }) {
@@ -57,22 +57,23 @@ export default function TableDemandesAdmin({ demandes, creneaux, enCours, onVoir
                                             </IconButton>
                                         </Tooltip>
                                         {d.statut_demande === 'en_attente' && (
-                                            <>
-                                                <Tooltip title={t('reportsAdmin.approuver')}>
-                                                    <span>
-                                                        <IconButton size="small" color="success" onClick={() => onApprouver(d)} disabled={attente} aria-label={t('reportsAdmin.approuver')}>
-                                                            {attente ? <CircularProgress size={20} /> : <Check />}
-                                                        </IconButton>
-                                                    </span>
-                                                </Tooltip>
-                                                <Tooltip title={t('reportsAdmin.refuser')}>
-                                                    <span>
-                                                        <IconButton size="small" color="error" onClick={() => onRefuser(d)} disabled={attente} aria-label={t('reportsAdmin.refuser')}>
-                                                            {attente ? <CircularProgress size={20} /> : <Close />}
-                                                        </IconButton>
-                                                    </span>
-                                                </Tooltip>
-                                            </>
+                                            <Tooltip title={t('reportsAdmin.approuver')}>
+                                                <span>
+                                                    <IconButton size="small" color="success" onClick={() => onApprouver(d)} disabled={attente} aria-label={t('reportsAdmin.approuver')}>
+                                                        {attente ? <CircularProgress size={20} /> : <Check />}
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                        )}
+                                        {/* Une proposition à confirmer ne se revalide pas, mais peut se retirer */}
+                                        {['en_attente', 'a_confirmer'].includes(d.statut_demande) && (
+                                            <Tooltip title={t('reportsAdmin.refuser')}>
+                                                <span>
+                                                    <IconButton size="small" color="error" onClick={() => onRefuser(d)} disabled={attente} aria-label={t('reportsAdmin.refuser')}>
+                                                        {attente ? <CircularProgress size={20} /> : <Close />}
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
                                         )}
                                     </Box>
                                 </TableCell>
