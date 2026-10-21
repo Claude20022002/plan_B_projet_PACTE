@@ -67,6 +67,7 @@ const fr = {
     },
     fiche: {
       reporteeTexte: 'Cette séance a été déplacée. Voici le nouveau créneau.',
+      aReprogrammerTexte: 'Cette séance n’aura pas lieu à cette date. Sa nouvelle date vous sera communiquée.',
       annuleeTexte: 'Cette séance n’aura pas lieu.',
       initialement: 'Prévue au départ',
       nouvelleDate: 'Nouveau créneau',
@@ -420,6 +421,7 @@ const en = {
     },
     fiche: {
       reporteeTexte: 'This session has been moved. Here is the new slot.',
+      aReprogrammerTexte: 'This session will not take place on this date. You will be told its new date.',
       annuleeTexte: 'This session will not take place.',
       initialement: 'Originally',
       nouvelleDate: 'New slot',

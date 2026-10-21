@@ -8,6 +8,7 @@ import AssistantCreneauxDialog from '../../components/planning/AssistantCreneaux
 import TableDemandesAdmin from '../../components/reports/TableDemandesAdmin';
 import DetailDemandeDialog from '../../components/reports/DetailDemandeDialog';
 import RefusDemandeDialog from '../../components/reports/RefusDemandeDialog';
+import SeancesAReprogrammer from '../../components/reports/SeancesAReprogrammer';
 import useDemandesAdmin from '../../components/reports/useDemandesAdmin';
 import useCreneauxParId from '../../hooks/useCreneauxParId';
 import { imprevuAPI } from '../../services/api';
@@ -15,19 +16,34 @@ import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_DEMANDES_REPORT } from '../../utils/exportColumns';
 import { dansJours } from '../../../../shared/dates.js';
 
+// Trois semaines de créneaux à partir de `debut` (AAAA-MM-JJ)
+const troisSemaines = (debut) => ({ debut, fin: dansJours(20, new Date(`${debut}T12:00:00Z`)) });
+
+/** Plage d'une date ultérieure (R-1) : à partir du lendemain de la séance, jamais dans le passé. */
+const plageApres = (seance) => {
+    const demain = dansJours(1);
+    const origine = String(seance?.date_seance ?? '').slice(0, 10);
+    const lendemain = origine ? dansJours(1, new Date(`${origine}T12:00:00Z`)) : demain;
+    return troisSemaines(lendemain > demain ? lendemain : demain);
+};
+
 /**
  * Demandes de report (administration) : la liste, le détail d'une demande, et sa décision.
  * Quand le créneau demandé est pris, l'administration choisit un autre créneau libre et approuve
  * en une fois (recette du 20 octobre, B-2) ; un refus se confirme dans sa fenêtre, avec une raison
- * facultative transmise à l'enseignant (M-5).
+ * facultative transmise à l'enseignant (M-5). Une demande peut aussi s'approuver sans date (R-1) :
+ * la séance rejoint « Séances à reprogrammer », où l'administration fixe plus tard sa nouvelle date
+ * avec le même assistant de créneaux.
  */
 export default function DemandesReportAdmin() {
     const { t } = useTranslation();
     const creneaux = useCreneauxParId();
-    const { demandes, chargement, enCours, violations, fermerViolations, approuver, refuser, approuverSur } = useDemandesAdmin();
+    const { demandes, chargement, enCours, violations, fermerViolations, approuver, refuser, approuverSur, plusTard, fixerDate } = useDemandesAdmin();
     const [detail, setDetail] = useState(null);
+    // La demande dont on cherche un créneau : approuvée ailleurs (en attente) ou datée (à reprogrammer)
     const [aDeplacer, setADeplacer] = useState(null);
     const [aRefuser, setARefuser] = useState(null);
+    const fixer = aDeplacer?.statut_demande === 'a_reprogrammer';
 
     const ouvrirRefus = (demande) => {
         setDetail(null);
@@ -60,7 +76,18 @@ export default function DemandesReportAdmin() {
                         </Typography>
                     </Paper>
                 ) : (
-                    <TableDemandesAdmin demandes={demandes} creneaux={creneaux} enCours={enCours} onVoir={setDetail} onApprouver={approuver} onRefuser={ouvrirRefus} />
+                    <>
+                        <SeancesAReprogrammer demandes={demandes} creneaux={creneaux} enCours={enCours} onFixerDate={ouvrirAssistant} />
+                        <TableDemandesAdmin
+                            demandes={demandes}
+                            creneaux={creneaux}
+                            enCours={enCours}
+                            onVoir={setDetail}
+                            onApprouver={approuver}
+                            onRefuser={ouvrirRefus}
+                            onFixerDate={ouvrirAssistant}
+                        />
+                    </>
                 )}
             </Box>
 
@@ -74,6 +101,11 @@ export default function DemandesReportAdmin() {
                 }}
                 onAutreCreneau={ouvrirAssistant}
                 onRefuser={ouvrirRefus}
+                onPlusTard={(demande) => {
+                    setDetail(null);
+                    plusTard(demande);
+                }}
+                onFixerDate={ouvrirAssistant}
             />
             <RefusDemandeDialog
                 demande={aRefuser}
@@ -89,20 +121,21 @@ export default function DemandesReportAdmin() {
                 onClose={fermerViolations}
                 onForcer={violations?.forcer}
                 onCorriger={violations ? () => ouvrirAssistant(violations.demande) : undefined}
-                libelleCorriger={t('reportsAdmin.autreCreneau')}
+                libelleCorriger={t(violations?.demande?.statut_demande === 'a_reprogrammer' ? 'reportsAdmin.autreDate' : 'reportsAdmin.autreCreneau')}
             />
             <AssistantCreneauxDialog
                 open={Boolean(aDeplacer)}
-                titre={t('reportsAdmin.autreCreneau')}
+                titre={t(fixer ? 'reportsAdmin.fixerDate' : 'reportsAdmin.autreCreneau')}
                 sousTitre={aDeplacer ? [aDeplacer.affectation?.cours?.nom_cours, aDeplacer.affectation?.groupe?.nom_groupe, aDeplacer.affectation?.salle?.nom_salle].filter(Boolean).join(' · ') : ''}
                 onClose={() => setADeplacer(null)}
-                // Salle gardée : une demande de report ne change que la date et l'heure
-                chercher={(date_debut, date_fin) => imprevuAPI.creneauxSeance({ id_affectation: aDeplacer.id_affectation, date_debut, date_fin, garder_salle: true })}
-                plageInitiale={{ debut: dansJours(1), fin: dansJours(21) }}
+                // Salle gardée pour une demande : elle ne change que la date et l'heure. Une séance à
+                // reprogrammer a rendu sa salle : toute salle assez grande convient (décision du 21 octobre)
+                chercher={(date_debut, date_fin) => imprevuAPI.creneauxSeance({ id_affectation: aDeplacer.id_affectation, date_debut, date_fin, garder_salle: !fixer })}
+                plageInitiale={fixer ? plageApres(aDeplacer.affectation) : troisSemaines(dansJours(1))}
                 onChoisir={async (p) => {
-                    if (await approuverSur(aDeplacer, p)) setADeplacer(null);
+                    if (await (fixer ? fixerDate(aDeplacer, p) : approuverSur(aDeplacer, p))) setADeplacer(null);
                 }}
-                libelleChoix={t('reportsAdmin.approuverIci')}
+                libelleChoix={t(fixer ? 'reportsAdmin.retenirDate' : 'reportsAdmin.approuverIci')}
             />
         </DashboardLayout>
     );

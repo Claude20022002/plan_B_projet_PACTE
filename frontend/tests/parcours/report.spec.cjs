@@ -4,7 +4,9 @@
  * libre de sa séance du lundi 4 janvier 2027 ; l'administration le valide, l'enseignante
  * l'accepte. Puis une seconde demande : l'administration renonce à un refus (confirmation) et
  * valide un autre créneau libre ; l'enseignante en propose un troisième, retenu aussitôt.
- * Enfin, un refus avec sa raison, que l'enseignante lit dans sa liste.
+ * Puis un refus avec sa raison, que l'enseignante lit dans sa liste. Enfin (R-1), un report
+ * approuvé sans date : la séance attend dans « Séances à reprogrammer », l'administration fixe
+ * la date plus tard et l'enseignante l'accepte.
  * Les créneaux proposés ont déjà passé les règles de planification, qui ont leurs propres tests.
  */
 const { test, expect } = require("@playwright/test");
@@ -131,4 +133,39 @@ test("un refus avec sa raison, lue par l'enseignante", async ({ browser }) => {
 
   await prof.reload();
   await expect(prof.getByRole("row").filter({ hasText: "Refusée" })).toContainText("Raison du refus : Semaine des examens");
+});
+
+test("un report approuvé sans date, puis la date fixée par l'administration et acceptée (R-1)", async ({ browser }) => {
+  const { admin, enseignante, motDePasse } = lireDonnees();
+
+  const prof = await (await browser.newContext()).newPage();
+  await seConnecter(prof, { email: enseignante.email, motDePasse, role: "enseignant" });
+  await demander(prof, { jour: "2027-02-08", jusquau: "2027-02-12", motif: "Date du jury pas encore connue" });
+
+  const adm = await (await browser.newContext()).newPage();
+  await seConnecter(adm, { email: admin.email, motDePasse, role: "admin" });
+  await adm.goto("/gestion/demandes-report");
+  await adm.getByRole("row").filter({ hasText: "En attente" }).getByRole("button", { name: "Voir le détail" }).click();
+  const detail = adm.getByRole("dialog");
+  await detail.getByRole("button", { name: "Approuver, date ultérieure" }).click();
+  await expect(detail).toBeHidden();
+  // La date demandée ne vaut plus : la demande attend la sienne
+  await expect(adm.getByRole("row").filter({ hasText: "Date à venir" })).toContainText("À venir");
+  const aReprogrammer = adm.getByRole("region", { name: "Séances à reprogrammer" });
+  await expect(aReprogrammer.getByRole("listitem")).toHaveCount(1);
+
+  await prof.reload();
+  await expect(prof.getByRole("row").filter({ hasText: "Date à venir" })).toContainText("l’administration fixera la nouvelle date");
+
+  // La date fixée plus tard, dans l'assistant de créneaux libres
+  await aReprogrammer.getByRole("button", { name: "Fixer la date" }).click();
+  const assistant = adm.getByRole("dialog");
+  await assistant.getByRole("list", { name: "Créneaux libres" }).getByRole("button", { name: /^Retenir/ }).first().click();
+  await expect(assistant).toBeHidden();
+  await expect(aReprogrammer).toBeHidden();
+  await expect(adm.getByRole("row").filter({ hasText: "À confirmer" })).toHaveCount(1);
+
+  await prof.reload();
+  await prof.getByRole("button", { name: "Accepter" }).click();
+  await expect(prof.getByRole("row").filter({ hasText: "Approuvée" })).toHaveCount(3);
 });

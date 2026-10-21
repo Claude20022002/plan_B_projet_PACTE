@@ -500,6 +500,10 @@ export const demandeReportAPI = {
     traiter: (id, action, extra = {}) => request(`/demandes-report/${id}/traiter`, { method: 'PATCH', body: { action, ...extra } }),
     // Réponse de l'enseignant à un report validé : { action: 'accepter' } ou { action: 'proposer', nouvelle_date, id_creneau }
     confirmer: (id, corps) => request(`/demandes-report/${id}/confirmer`, { method: 'PATCH', body: corps }),
+    // Report à une date ultérieure (R-1, admin) : accepter sans date, puis fixer la date
+    // (corps : { date, id_creneau?, id_salle?, forcer?, justification? }) ; l'enseignant confirme ensuite
+    plusTard: (id) => request(`/demandes-report/${id}/plus-tard`, { method: 'PATCH' }),
+    reprogrammer: (id, corps) => request(`/demandes-report/${id}/reprogrammer`, { method: 'PATCH', body: corps }),
 };
 
 // ==================== DISPONIBILITÉS ====================

@@ -20,6 +20,7 @@ const LAMP_COLORS = {
   live: ds.board.live,
   next: ds.board.live,
   reporte: ds.board.delayed,
+  a_reprogrammer: ds.board.delayed,
   annule: ds.board.cancelled,
 };
 

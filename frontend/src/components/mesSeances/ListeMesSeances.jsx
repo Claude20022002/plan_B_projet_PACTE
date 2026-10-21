@@ -32,6 +32,8 @@ const STATUT_CONFIG = {
     confirme: { label: 'confirme', color: 'success' },
     annule: { label: 'annule', color: 'error' },
     reporte: { label: 'reporte', color: 'warning' },
+    // Report accepté sans date (R-1) : la séance attend sa nouvelle date
+    a_reprogrammer: { label: 'a_reprogrammer', color: 'warning' },
     realise: { label: 'realise', color: 'default' },
 };
 

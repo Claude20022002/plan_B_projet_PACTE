@@ -17,25 +17,30 @@ export const dateLongue = (date, langue) =>
 export const heureCourte = (heure) => (heure ? String(heure).slice(0, 5) : '');
 
 /**
- * Date et heure de la séance avant le report demandé : { date, heure }. Une demande en attente ou
- * à confirmer lit la séance telle qu'elle est (elle n'a pas encore bougé) ; une demande traitée lit la date d'origine gardée par le
+ * Date et heure de la séance avant le report demandé : { date, heure }. Une demande en attente, à
+ * confirmer ou à reprogrammer lit la séance telle qu'elle est (elle n'a pas encore bougé) ; une demande traitée lit la date d'origine gardée par le
  * serveur, car la séance a pu être déplacée depuis (recette du 20 octobre, M-6).
  * `creneaux` : Map id_creneau → créneau, pour l'heure d'origine.
  */
 export const origineDe = (demande, creneaux) => {
     const seance = demande.affectation;
     if (!seance) return { date: null, heure: '' };
-    if (['en_attente', 'a_confirmer'].includes(demande.statut_demande) || !seance.date_seance_initiale) {
+    if (['en_attente', 'a_confirmer', 'a_reprogrammer'].includes(demande.statut_demande) || !seance.date_seance_initiale) {
         return { date: seance.date_seance, heure: heureCourte(seance.creneau?.heure_debut) };
     }
     return { date: seance.date_seance_initiale, heure: heureCourte(creneaux.get(seance.id_creneau_initial)?.heure_debut) };
 };
 
-/** Date et heure demandées : { date, heure } (l'heure vient du créneau visé, s'il est connu). */
-export const demandeeDe = (demande, creneaux) => ({ date: demande.nouvelle_date, heure: heureCourte(creneaux.get(demande.id_creneau_nouveau)?.heure_debut) });
+/**
+ * Date et heure demandées : { date, heure } (l'heure vient du créneau visé, s'il est connu).
+ * Une demande acceptée sans date (R-1) n'en a pas encore : celle que l'enseignant avait demandée
+ * ne vaut plus, l'administration fixera la nouvelle.
+ */
+export const demandeeDe = (demande, creneaux) =>
+    demande.statut_demande === 'a_reprogrammer' ? { date: null, heure: '' } : { date: demande.nouvelle_date, heure: heureCourte(creneaux.get(demande.id_creneau_nouveau)?.heure_debut) };
 
-/** « lun. 26/10/2026 · 13:30 » : une date et son heure, l'heure seulement si elle est connue. */
-export const dateEtHeure = ({ date, heure }, langue) => (date ? [dateCourte(date, langue), heure].filter(Boolean).join(' · ') : '—');
+/** « lun. 26/10/2026 · 13:30 » : une date et son heure, l'heure seulement si elle est connue ; `vide` sans date. */
+export const dateEtHeure = ({ date, heure }, langue, vide = '—') => (date ? [dateCourte(date, langue), heure].filter(Boolean).join(' · ') : vide);
 
 /** « Python · CPI-1A · lun. 26/10/2026 · 13:30 » : une séance reconnaissable parmi celles du même jour. */
 export const libelleSeance = (seance, langue) =>

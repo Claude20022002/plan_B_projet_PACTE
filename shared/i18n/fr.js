@@ -7,6 +7,8 @@ const partage = {
     planifie: 'Planifiée',
     confirme: 'Confirmée',
     reporte: 'Reportée',
+    // Report accepté sans date (R-1) : la séance reste à sa date d'origine, signalée
+    a_reprogrammer: 'Reportée · date à venir',
     annule: 'Annulée',
     realise: 'Réalisée',
     live: 'En cours',
