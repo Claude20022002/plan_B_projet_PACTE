@@ -5,11 +5,10 @@ import {
     Chip, Dialog, DialogTitle, DialogContent, DialogActions,
     Typography, Alert, Card, CardContent, Grid,
 } from '@mui/material';
-import { CheckCircle, Visibility, ArrowBack, Warning, CheckCircleOutline } from '@mui/icons-material';
+import { CheckCircle, Visibility, Warning, CheckCircleOutline } from '@mui/icons-material';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { conflitAPI, affectationAPI } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ds } from '../../design-system/tokens';
 
@@ -35,7 +34,6 @@ function CustomTooltip({ active, payload }) {
 /** Conflits de planification (administration) : répartition, liste, détail et résolution. */
 export default function Conflits() {
     const { t, i18n } = useTranslation();
-    const navigate = useNavigate();
 
     // ── Tableau ───────────────────────────────────────────────────────────────
     const [conflits,       setConflits]       = useState([]);
@@ -121,17 +119,8 @@ export default function Conflits() {
             <Box>
 
                 {/* ── En-tête ──────────────────────────────────────────── */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined" size="small">
-                            {t('common.back')}
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            {t('conflits.titre')}
-                        </Typography>
-                    </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mb: 3 }}>
+                    {/* Le titre est celui de la mise en page, et le menu y ramène : plus de « Retour » ni de « Gestion des… » (recette, m-1 et m-2) */}
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         {[
                             { key: 'all',         label: t('conflits.filtres.tous'),       color: 'primary' },
