@@ -13,6 +13,15 @@ const studio = {
     zone_image: { nom: 'Zone sur image', aide: "Cliquer au bon endroit d'une image (schéma, topologie)." },
     reponse_libre: { nom: 'Réponse rédigée', aide: "Une réponse développée, corrigée par l'enseignant." },
   },
+  classquiz: {
+    texte_one: 'Vous avez encore {{count}} quiz dans l’ancien service de quiz. Importez-le ici : il arrive en brouillon, à relire avant de le diffuser.',
+    texte_other: 'Vous avez encore {{count}} quiz dans l’ancien service de quiz. Importez-les ici : ils arrivent en brouillon, à relire avant de les diffuser.',
+    importer: 'Importer',
+    fait_one: '{{count}} quiz importé, à relire.',
+    fait_other: '{{count}} quiz importés, à relire.',
+    ignorees_one: '{{count}} question n’a pas pu être reprise (sondage ou diapositive).',
+    ignorees_other: '{{count}} questions n’ont pas pu être reprises (sondages ou diapositives).',
+  },
   banque: {
     titre: 'Mes quiz',
     sousTitre: 'Votre banque de quiz : créez-les à la main ou avec l’IA, puis ouvrez une passation par code pour vos étudiants.',
