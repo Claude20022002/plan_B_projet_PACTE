@@ -45,6 +45,7 @@ import oidcRoutes from "./routes/oidcRoutes.js";
 import quizRoutes, { webhookQuiz } from "./routes/quizRoutes.js";
 import jeuxRoutes from "./routes/jeuxRoutes.js";
 import sessionJeuRoutes from "./routes/sessionJeuRoutes.js";
+import quizDirectRoutes from "./routes/quizDirectRoutes.js";
 import activiteRoutes from "./routes/activiteRoutes.js";
 import annonceRoutes from "./routes/annonceRoutes.js";
 import agendaRoutes from "./routes/agendaRoutes.js";
@@ -117,9 +118,11 @@ app.use(parseCookies);
 
 // Le compte d'abord : le limiteur global compte par compte connecté, par adresse IP sinon
 app.use(optionalAuth);
-// Rate limiting global. Sauf les sessions de jeu : chaque téléphone y relit le tableau toutes les
-// 3 s, ce qui épuiserait la limite du compte ; leur routeur a sa propre limite, par compte
-app.use((req, res, next) => (req.path.startsWith("/api/sessions-jeu") ? next() : apiRateLimiter(req, res, next)));
+// Rate limiting global. Sauf les sessions de jeu et le quiz en direct : chaque téléphone y relit
+// l'écran toutes les quelques secondes, ce qui épuiserait la limite du compte ; leurs routeurs ont
+// leur propre limite, par compte
+const RELUS_EN_CLASSE = ["/api/sessions-jeu", "/api/quiz-direct"];
+app.use((req, res, next) => (RELUS_EN_CLASSE.some((p) => req.path.startsWith(p)) ? next() : apiRateLimiter(req, res, next)));
 
 // Logging
 app.use(logger);
@@ -173,6 +176,7 @@ app.use("/api/push-tokens", pushTokenRoutes);
 app.use("/api/quiz", quizRoutes);
 app.use("/api/jeux", jeuxRoutes);
 app.use("/api/sessions-jeu", sessionJeuRoutes);
+app.use("/api/quiz-direct", quizDirectRoutes);
 app.use("/api/activites", activiteRoutes);
 app.use("/api/annonces", annonceRoutes);
 app.use("/api/agenda", agendaRoutes);

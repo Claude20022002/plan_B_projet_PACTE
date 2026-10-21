@@ -11,6 +11,8 @@ import studioFr from './studio.fr.js';
 import studioEn from './studio.en.js';
 import sessionsJeuFr from './sessionsJeu.fr.js';
 import sessionsJeuEn from './sessionsJeu.en.js';
+import directFr from './direct.fr.js';
+import directEn from './direct.en.js';
 
 export const LANGUAGES = [
   { code: 'fr', label: 'Français', short: 'FR' },
@@ -32,8 +34,8 @@ const readStoredLanguage = () => {
 i18n.use(initReactI18next).init({
   // Studio quiz et sessions de jeu : textes dans leurs propres fichiers, sous leur clé
   resources: {
-    fr: { translation: { ...fr, studio: studioFr, sessionsJeu: sessionsJeuFr } },
-    en: { translation: { ...en, studio: studioEn, sessionsJeu: sessionsJeuEn } },
+    fr: { translation: { ...fr, studio: studioFr, sessionsJeu: sessionsJeuFr, direct: directFr } },
+    en: { translation: { ...en, studio: studioEn, sessionsJeu: sessionsJeuEn, direct: directEn } },
   },
   lng: readStoredLanguage(),
   fallbackLng: 'fr',

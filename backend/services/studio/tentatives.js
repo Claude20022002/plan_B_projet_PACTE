@@ -46,6 +46,8 @@ const restantes = (session, copies) => (session.reglages.tentatives_max ? Math.m
 
 const resumeSession = (session, copies) => ({
     id_session: session.id_session,
+    // « direct » : l'écran rejoint le quiz en direct (services/studio/directJoueur.js)
+    mode: session.mode ?? "rythme",
     titre: session.titre,
     essai: session.essai,
     nb_questions: session.questions.length,
@@ -73,6 +75,7 @@ export const rejoindre = async (user, code) => {
 export const commencer = async (user, idSession) => {
     const session = await SessionQuiz.findByPk(Number(idSession) || 0);
     if (!session) throw new ErreurMetier("Quiz introuvable", 404);
+    if (session.mode === "direct") throw new ErreurMetier("Ce quiz se joue en direct : rejoignez-le avec son code", 409, "QUIZ_EN_DIRECT");
     await verifierAcces(user, session, { pourCommencer: true });
     let copies = await mesCopies(user, session);
     const enCours = copies.find((c) => c.statut === "en_cours");
