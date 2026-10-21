@@ -8,6 +8,7 @@ import QuestionDirect from '../../components/studio/direct/QuestionDirect';
 import { Podium } from '../../components/studio/direct/Classement';
 import { correctionDe, useRelecture, useRestant } from '../../components/studio/direct/outilsDirect';
 import { directAPI } from '../../services/studioApi';
+import { ordreDeDepart } from '../../../../shared/quiz/studio/direct.js';
 
 /**
  * Quiz en direct, écran de l'étudiant (lot SC-1b), sur téléphone comme sur ordinateur : attendre
@@ -62,8 +63,9 @@ export default function DirectJoueur() {
     setHeure(v.maintenant_ms);
     if (v.inchange) return;
     version.current = v.version;
-    // Nouvelle question : on repart d'une réponse vide
-    if (index.current !== v.index) setValeur(null);
+    // Nouvelle question : on repart d'une réponse vide ; une remise en ordre, d'un ordre mélangé
+    // (le serveur envoie l'ordre juste : l'afficher tel quel donnerait la réponse)
+    if (index.current !== v.index) setValeur(v.question?.type === 'ordre' ? ordreDeDepart(v.question.elements) : null);
     index.current = v.index;
     setVue(v);
   };

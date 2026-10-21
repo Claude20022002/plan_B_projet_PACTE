@@ -1,4 +1,5 @@
 import { normaliser } from './correction.js';
+import { melanger } from './vueEtudiant.js';
 
 /**
  * Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1) : règles communes au serveur,
@@ -105,4 +106,19 @@ export const repartition = (question, reponses) => {
     return [true, false].map((v) => ({ id: String(v), nombre: reponses.filter((r) => r === v).length }));
   }
   return null;
+};
+
+/**
+ * Ordre de départ d'une remise en ordre chez le joueur : mélangé, et jamais celui reçu. Le serveur
+ * du direct envoie les éléments dans l'ordre juste (vueEtudiant sans ordre tiré) : les afficher
+ * tels quels donnerait la réponse. Correction côté serveur demandée au groupe A ; en attendant,
+ * le site et l'application partent d'ici.
+ * @returns {string[]} identifiants des éléments
+ */
+export const ordreDeDepart = (elements, aleatoire = Math.random) => {
+  const recus = (Array.isArray(elements) ? elements : []).map((e) => e.id);
+  if (recus.length < 2) return recus;
+  let tire = melanger(recus, aleatoire);
+  for (let essai = 0; essai < 5 && tire.every((id, i) => id === recus[i]); essai += 1) tire = melanger(recus, aleatoire);
+  return tire;
 };
