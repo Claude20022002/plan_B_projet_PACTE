@@ -11,8 +11,8 @@ import { HAUTEUR_ONGLETS, Verre } from '../../verre/Verre';
  * Cinq onglets : Tableau · Semaine · Scanner · Bibliothèque · Compte. Le scan est au milieu, sous
  * le pouce : c'est par lui que l'étudiant pointe et qu'il rejoint un quiz, comme sur Wooclap
  * (décision du 11 octobre 2026). L'onglet pose l'écran /scanner par-dessus les onglets.
- * La page Activités (jeux.jsx) reste dans le code mais n'a plus d'onglet : les jeux des modules
- * sont masqués pour l'instant, en attendant l'onglet « Menu ».
+ * Pas d'onglet Activités (décision du 21 octobre 2026, R-10) : un quiz ou un jeu se rejoint par le
+ * scanner. La page jeux.jsx reste joignable par une notification de quiz.
  * Une icône par onglet ; onglet actif avec une barre de 2 px (Planner) ou en bleu StudyLib, les
  * autres atténués. La barre est en verre dépoli : le contenu défile dessous (chaque onglet garde
  * une marge, useMargeOnglets).

@@ -525,7 +525,7 @@ const en = {
     alertes: { titre: 'Alerts', vide: 'No alerts.' },
     appel: {
       titre: 'Scan',
-      consigne: 'Point at the QR code shown by your teacher: roll call or quiz',
+      consigne: 'Point at the QR code shown by your teacher: roll call, quiz or game.',
       ok: 'Attendance recorded',
       deja: 'You are already marked present',
       erreur: 'Attendance not recorded.',
