@@ -22,7 +22,7 @@ const studio = {
     toutes: 'All tags',
     questions_one: '{{count}} question',
     questions_other: '{{count}} questions',
-    points: '{{count}} pts',
+    points: '{{count}} points',
     aRelire: '{{count}} to review',
     generation: 'AI is writing…',
     erreurGeneration: 'Generation failed',
