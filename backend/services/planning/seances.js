@@ -189,16 +189,16 @@ export const groupesANotifier = (idsGroupes) => avecDescendants(idsGroupes);
  * Prévient l'enseignant et les étudiants d'un changement de séance (modification, report,
  * annulation, suppression). Ne bloque jamais l'enregistrement.
  */
-export const notifierChangementSeance = async ({ affectation, titre, message, idGroupes = null, notifierEnseignant = true }) => {
+export const notifierChangementSeance = async ({ affectation, titre, message, idGroupes = null, notifierEnseignant = true, lien = null }) => {
     try {
         if (notifierEnseignant) {
-            await creerNotificationsMultiples({ id_users: [affectation.id_user_enseignant], titre, message, type_notification: "warning", lien: "/mes-affectations" });
+            await creerNotificationsMultiples({ id_users: [affectation.id_user_enseignant], titre, message, type_notification: "warning", lien: lien ? lien.replace("/etudiant", "/enseignant") : "/mes-affectations" });
         }
         const groupes = await groupesANotifier(idGroupes ?? [affectation.id_groupe]);
         const appartenances = await Appartenir.findAll({ where: { id_groupe: groupes }, attributes: ["id_user_etudiant"] });
         const etudiants = [...new Set(appartenances.map((a) => a.id_user_etudiant))];
         if (etudiants.length) {
-            await creerNotificationsMultiples({ id_users: etudiants, titre, message, type_notification: "warning", lien: "/emploi-du-temps/etudiant" });
+            await creerNotificationsMultiples({ id_users: etudiants, titre, message, type_notification: "warning", lien: lien ?? "/emploi-du-temps/etudiant" });
         }
     } catch (error) {
         console.error("Notification de changement de séance impossible :", error.message);
