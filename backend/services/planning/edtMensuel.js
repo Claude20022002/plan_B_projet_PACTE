@@ -18,6 +18,7 @@ import {
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, jourDe, minutes, seChevauchent } from "./affectationRules.js";
 import { ancetres } from "./groupes.js";
+import { appliquerVersionPubliee } from "../calendrier/versionPubliee.js";
 import { appliquerRamadan } from "./ramadan.js";
 
 /**
@@ -84,7 +85,7 @@ const evenementDeLaClasse = (e, { groupe, idsGroupes }) => {
     }
 };
 
-export const edtMensuel = async ({ id_groupe, mois }) => {
+export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
     if (!/^\d{4}-\d{2}$/.test(String(mois || ""))) throw new ErreurMetier("Mois attendu au format AAAA-MM", 400);
     const groupe = await Groupe.findByPk(id_groupe, { include: [{ model: Filiere, as: "filiere" }] });
     if (!groupe) throw new ErreurMetier("Groupe introuvable", 404);
@@ -115,8 +116,10 @@ export const edtMensuel = async ({ id_groupe, mois }) => {
 
     // Séances du mois de la classe : directes, ou d'un enseignement qui réunit la classe
     const enseignementsDeLaClasse = (await EnseignementGroupe.findAll({ where: { id_groupe: idsGroupes }, attributes: ["id_enseignement"] })).map((l) => l.id_enseignement);
-    const seances = await Affectation.findAll({
-        where: {
+    // Pour un étudiant (`publication` : les lignes publiées de sa classe), les séances publiées telles que publiées
+    const parPublication = publication ? { id_affectation: [...publication.keys()] } : null;
+    const chargees = await Affectation.findAll({
+        where: parPublication ?? {
             date_seance: { [Op.between]: [premier, dernier] },
             statut: STATUTS_ACTIFS,
             [Op.or]: [{ id_groupe: idsGroupes }, ...(enseignementsDeLaClasse.length ? [{ id_enseignement: enseignementsDeLaClasse }] : [])],
@@ -136,7 +139,9 @@ export const edtMensuel = async ({ id_groupe, mois }) => {
             },
         ],
     });
-    await appliquerRamadan(seances);
+    const seances = publication
+        ? (await appliquerVersionPubliee(chargees, publication)).filter((x) => x.statut !== "annule" && x.date_seance >= premier && x.date_seance <= dernier)
+        : await appliquerRamadan(chargees);
 
     // (P.S) / (D.S) : première et dernière séance de chaque enseignement, toutes dates confondues
     const cleEnseignement = (s) => (s.id_enseignement ? `e${s.id_enseignement}` : `c${s.id_cours}|g${s.id_groupe}`);

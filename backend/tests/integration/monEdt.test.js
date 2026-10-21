@@ -1,5 +1,6 @@
 import { resetDatabase, closeDatabase, createUser, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
+import { lignesDuMois } from "../../services/calendrier/envoiEdt.js";
 import { Affectation, AnneeUniversitaire, Appartenir, Campus, Cours, CoursComposante, Creneau, Enseignement, EnvoiEdt, Evenement, Filiere, Groupe, Periode, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle } from "../../models/index.js";
 
 /**
@@ -12,6 +13,13 @@ let clients;
 let ref;
 
 const JOUR = "2027-03-02";
+/** Publie (ou republie) un mois pour une classe, comme « Publier et envoyer », sans notification. */
+const publier = async (groupe, mois) => {
+    const seances = await lignesDuMois(groupe, mois);
+    const envoi = await EnvoiEdt.findOne({ where: { id_groupe: groupe.id_groupe, mois } });
+    if (envoi) await envoi.update({ seances });
+    else await EnvoiEdt.create({ id_groupe: groupe.id_groupe, mois, seances, envoye_le: new Date(), nb_destinataires: 1 });
+};
 const seance = (extra) => ({ date_seance: JOUR, statut: "planifie", id_user_enseignant: enseignant.id_user, id_creneau: ref.creneau.id_creneau, id_cours: ref.cours.id_cours, id_salle: ref.salle.id_salle, ...extra });
 
 beforeAll(async () => {
@@ -53,7 +61,8 @@ beforeAll(async () => {
         seance({ ...base, id_groupe: td1.id_groupe, date_seance: "2027-05-10" }), // hors période demandée
     ]);
     // Les mois de mars et de mai sont publiés pour le TD de l'étudiant ; pas avril (voir le test de publication)
-    await EnvoiEdt.bulkCreate(["2027-03", "2027-05"].map((mois) => ({ id_groupe: td1.id_groupe, mois, seances: [], envoye_le: new Date(), nb_destinataires: 1 })));
+    await publier(td1, "2027-03");
+    await publier(td1, "2027-05");
 });
 afterAll(closeDatabase);
 beforeEach(resetRateLimiters);
@@ -63,8 +72,30 @@ describe("GET /api/emplois-du-temps/moi", () => {
         await Affectation.create(seance({ id_user_admin: ref.admin.id_user, id_groupe: ref.td1.id_groupe, date_seance: "2027-04-12" }));
         const lire = async () => (await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-04-01&au=2027-04-30")).body.seances;
         expect(await lire()).toHaveLength(0);
-        await EnvoiEdt.create({ id_groupe: ref.td1.id_groupe, mois: "2027-04", seances: [], envoye_le: new Date(), nb_destinataires: 1 });
+        await publier(ref.td1, "2027-04");
         expect(await lire()).toHaveLength(1);
+    });
+
+    test("un changement en masse ne se voit qu'à la publication suivante (21 octobre 2026)", async () => {
+        const salleNeuve = await Salle.create({ nom_salle: "G-MOB2", type_salle: "Salle de cours", capacite: 60, id_campus: ref.salle.id_campus });
+        const cible = await Affectation.findOne({ where: { id_groupe: ref.td1.id_groupe, date_seance: "2027-04-12" } });
+        // Comme une régénération : la séance bouge en base, sans notification
+        await cible.update({ id_salle: salleNeuve.id_salle, date_seance: "2027-04-13" });
+        const lire = async () => (await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-04-01&au=2027-04-30")).body.seances.find((s) => s.id_affectation === cible.id_affectation);
+        expect(await lire()).toMatchObject({ date_seance: "2027-04-12", salle: { nom_salle: "G-MOB1" } });
+        await publier(ref.td1, "2027-04");
+        expect(await lire()).toMatchObject({ date_seance: "2027-04-13", salle: { nom_salle: "G-MOB2" } });
+    });
+
+    test("un changement ponctuel, dont l'étudiant est prévenu, se voit aussitôt", async () => {
+        const cible = await Affectation.findOne({ where: { id_groupe: ref.td1.id_groupe, date_seance: "2027-04-13" } });
+        const admin = await loginAs(ref.admin);
+        expect((await admin.send("put", `/api/affectations/${cible.id_affectation}`, { date_seance: "2027-04-20" })).status).toBe(200);
+        const lire = async () => (await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-04-01&au=2027-04-30")).body.seances.find((s) => s.id_affectation === cible.id_affectation);
+        expect((await lire())?.date_seance).toBe("2027-04-20");
+        // Annulée à la main : visible tout de suite, barrée
+        expect((await admin.send("put", `/api/affectations/${cible.id_affectation}`, { statut: "annule" })).status).toBe(200);
+        expect((await lire())?.statut).toBe("annule");
     });
 
     test("ses groupes, leurs parents et les mutualisations ; annulées visibles ; voisins exclus", async () => {
@@ -85,6 +116,7 @@ describe("GET /api/emplois-du-temps/moi", () => {
     test("séance reportée : date et créneau d'origine fournis pour le détail", async () => {
         const avant = await Creneau.create({ jour_semaine: "lundi", heure_debut: "14:00", heure_fin: "15:45", duree_minutes: 105, rang: 3 });
         await Affectation.create(seance({ id_user_admin: ref.admin.id_user, id_groupe: ref.td1.id_groupe, date_seance: "2027-03-06", statut: "reporte", date_seance_initiale: "2027-03-01", id_creneau_initial: avant.id_creneau }));
+        await publier(ref.td1, "2027-03");
         const { body } = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-06&au=2027-03-06");
         expect(body.seances).toHaveLength(1);
         expect(body.seances[0]).toMatchObject({ statut: "reporte", date_seance: "2027-03-06", date_seance_initiale: "2027-03-01", creneauInitial: { heure_debut: "14:00:00", heure_fin: "15:45:00" } });

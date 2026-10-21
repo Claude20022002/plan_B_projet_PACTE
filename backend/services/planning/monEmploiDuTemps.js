@@ -1,8 +1,8 @@
 import { Op } from "sequelize";
-import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementGroupe, EnvoiEdt, Evenement, Filiere, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
+import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, Evenement, Filiere, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { ancetres } from "./groupes.js";
-import { appliquerRamadan } from "./ramadan.js";
+import { appliquerVersionPubliee, lignesDesClasses } from "../calendrier/versionPubliee.js";
 
 /**
  * Emploi du temps de l'étudiant connecté (application mobile, phase D2) : les séances de ses
@@ -10,9 +10,10 @@ import { appliquerRamadan } from "./ramadan.js";
  * celles mutualisées avec d'autres groupes. Les séances annulées restent visibles : le panneau
  * les affiche comme telles. Rien d'autre que ce que l'étudiant voit sur le web.
  *
- * Un mois n'est visible qu'une fois publié par l'administration (« Publier et envoyer » de l'EDT du
- * mois, qui garde un EnvoiEdt par classe) : un planning en préparation ne se voit pas côté
- * étudiants (décision du chef de projet, 21 octobre 2026). Les événements et examens publiés restent visibles.
+ * L'étudiant voit la version publiée par l'administration (« Publier et envoyer » de l'EDT du mois,
+ * qui garde un EnvoiEdt par classe) : rien d'un mois jamais publié, et les changements en masse
+ * seulement après la publication suivante (décisions du chef de projet, 21 octobre 2026). Les
+ * événements et examens publiés restent visibles.
  */
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -106,23 +107,11 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
     const parId = new Map(tous.map((g) => [g.id_groupe, g]));
     const ids = [...new Set(directs.flatMap((g) => [g.id_groupe, ...ancetres(g, parId).map((a) => a.id_groupe)]))];
 
-    // Enseignements mutualisés qui réunissent l'un de ces groupes
-    const mutualises = (await EnseignementGroupe.findAll({ where: { id_groupe: ids }, attributes: ["id_enseignement"] })).map((e) => e.id_enseignement);
-
-    // Deux lectures dans les index (groupe + date, enseignement + date) plutôt qu'un OR, qui fait
-    // parcourir à MySQL toutes les séances de l'école sur la période ; puis les séances par clé
-    const plage = { date_seance: { [Op.between]: [debut, fin] } };
-    const [parGroupe, parMutualisation, envois] = await Promise.all([
-        Affectation.findAll({ where: { ...plage, id_groupe: ids }, attributes: ["id_affectation", "date_seance"], raw: true }),
-        mutualises.length ? Affectation.findAll({ where: { ...plage, id_enseignement: mutualises }, attributes: ["id_affectation", "date_seance"], raw: true }) : [],
-        EnvoiEdt.findAll({ where: { id_groupe: directs.map((g) => g.id_groupe) }, attributes: ["mois"], raw: true }),
-    ]);
-    // Seuls les mois publiés pour la classe de l'étudiant
-    const moisPublies = new Set(envois.map((e) => e.mois));
-    const idsSeances = [...new Set([...parGroupe, ...parMutualisation].filter((s) => moisPublies.has(String(s.date_seance).slice(0, 7))).map((s) => s.id_affectation))];
-
-    const seances = !idsSeances.length ? [] : await Affectation.findAll({
-        where: { id_affectation: idsSeances },
+    // Ce que l'administration a publié pour ses classes (versionPubliee.js) : un mois jamais publié
+    // ne montre rien, et un changement en masse non publié ne se voit pas encore
+    const lignes = await lignesDesClasses(directs.map((g) => g.id_groupe), debut, fin);
+    const chargees = !lignes.size ? [] : await Affectation.findAll({
+        where: { id_affectation: [...lignes.keys()] },
         include: [
             { model: Cours, as: "cours", attributes: ["id_cours", "code_cours", "nom_cours", "type_cours", "id_filiere"] },
             { model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe", "id_filiere"] },
@@ -133,14 +122,9 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
             { model: Creneau, as: "creneauInitial", attributes: ["heure_debut", "heure_fin"], required: false },
             { model: Enseignement, as: "enseignement", attributes: ["id_enseignement"], include: [{ model: CoursComposante, as: "composante", attributes: ["type", "modalite", "mention"] }] },
         ],
-        order: [
-            ["date_seance", "ASC"],
-            [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
-            // Séances simultanées (groupes différents) : ordre stable
-            ["id_affectation", "ASC"],
-        ],
     });
-    await appliquerRamadan(seances);
+    // Date, heure, salle et enseignant publiés ; triées par date puis heure (horaires du Ramadan compris)
+    const seances = await appliquerVersionPubliee(chargees, lignes);
     const [evenements, examens] = await Promise.all([evenementsDeLEtudiant(ids.map((id) => parId.get(id)).filter(Boolean), debut, fin), examensDeLEtudiant(ids, debut, fin)]);
 
     return {
