@@ -26,4 +26,5 @@ Les parcours Playwright cherchent certains textes à l'écran (`frontend/tests/p
 |---|---|---|
 | Étudiant | Application mobile ; site : connexion, mot de passe oublié, notifications, annonces, activités, joueur du Studio quiz, sessions de jeu | Branche `b/textes-etudiant` (commit 3c4a045) |
 | Enseignant | Appel, Mes classes, demandes de report, Mes séances, Studio quiz (éditeur, diffusion : « Diffuser ce quiz », « Diffusions » au lieu de « passation »), jeux en classe (« jeu » au lieu de « session ») | Branche `b/textes-enseignant` |
-| Administration | Gestion, génération, préparation, suivi, messages du serveur | À faire |
+| Administration (site) | Préparation, génération, conflits, statistiques, imports, journal de sécurité, envoi de l'EDT du mois : plus de « (s) » (forme « libellé : nombre », ou singulier et pluriel), erreurs qui disent quoi faire, plus de « session » ; « Retour » et « Gestion des… » retirés de Conflits, Étudiants, Utilisateurs (recette m-1, m-2) | Branche `b/textes-admin` |
+| Administration (serveur) | Messages renvoyés par le serveur et affichés tels quels (environ 135 « (s) », une vingtaine d'« Erreur lors de… ») | À faire, avec le groupe A (code du serveur) |

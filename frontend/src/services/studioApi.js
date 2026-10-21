@@ -77,3 +77,14 @@ export const passationAPI = {
   rendre: (id) => request(`/passations/tentatives/${id}/rendre`, { method: 'POST' }),
   urlMedia: (idTentative, idMedia) => `${API_BASE_URL}/passations/tentatives/${idTentative}/medias/${idMedia}`,
 };
+
+/** Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1) : l'enseignant anime, l'étudiant joue. */
+export const directAPI = {
+  lancer: (data) => request('/quiz-direct', { method: 'POST', body: data }),
+  vue: (id) => request(`/quiz-direct/${id}`),
+  agir: (id, action) => request(`/quiz-direct/${id}/${action}`, { method: 'POST' }),
+  rejoindre: (id) => request(`/quiz-direct/${id}/rejoindre`, { method: 'POST' }),
+  joueur: (id, depuis) => request(avecQuery(`/quiz-direct/${id}/joueur`, { depuis })),
+  repondre: (id, index, reponse) => request(`/quiz-direct/${id}/reponses`, { method: 'POST', body: { index, reponse } }),
+  urlMedia: (id, idMedia) => `${API_BASE_URL}/quiz-direct/${id}/medias/${idMedia}`,
+};
