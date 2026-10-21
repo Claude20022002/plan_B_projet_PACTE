@@ -209,7 +209,7 @@ export default function Etudiants() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                         <Button
                             startIcon={<ArrowBack />}
@@ -223,7 +223,7 @@ export default function Etudiants() {
                             {t('etudiants.titre')}
                         </Typography>
                     </Box>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         <Button
                             variant="outlined"
                             startIcon={<UploadFile />}

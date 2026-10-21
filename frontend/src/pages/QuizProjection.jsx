@@ -12,6 +12,7 @@ import useEcranProjete from '../hooks/useEcranProjete';
 import { quizAPI } from '../services/api';
 import { adresseRejoindre } from '../utils/animationQuiz';
 import { ds } from '../design-system/tokens';
+import useTitreOnglet from '../hooks/useTitreOnglet';
 
 /**
  * Quiz en direct, écran à projeter en classe (quiz-ia.md, lot CQ-2), sans le menu de Planner.
@@ -22,6 +23,7 @@ import { ds } from '../design-system/tokens';
  */
 export default function QuizProjection() {
   const { t } = useTranslation();
+  useTitreOnglet(t('quizDirect.titre'));
   const navigate = useNavigate();
   const partie = useLocation().state?.partie ?? null;
   const [urlQuiz, setUrlQuiz] = useState(null);

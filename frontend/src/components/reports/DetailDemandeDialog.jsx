@@ -20,6 +20,7 @@ export default function DetailDemandeDialog({ demande, creneaux, onClose, onAppr
               [t('reports.colonnes.nouvelleDate'), dateEtHeure(demandeeDe(demande, creneaux), i18n.language)],
               [t('reports.colonnes.motif'), demande.motif],
               [t('reports.colonnes.dateDemande'), dateCourte(demande.date_demande, i18n.language)],
+              ...(demande.motif_decision ? [[t('reports.colonnes.raisonRefus'), demande.motif_decision]] : []),
           ]
         : [];
 

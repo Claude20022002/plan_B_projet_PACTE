@@ -7,6 +7,7 @@ const fr = {
   },
   vuesEdt: { grille: 'Grille', liste: 'Liste des séances', mois: 'Mois (impression)' },
   common: {
+    changerPhoto: 'Changer la photo de profil',
     aucun: 'Aucun',
     loading: 'Chargement…',
     retry: 'Réessayer',
@@ -248,6 +249,7 @@ const fr = {
     makeUp: 'Rattraper',
   },
   tracking: {
+    barreAria: '{{module}} {{type}} : {{faites}} h faites sur {{prevues}} h',
     tabs: { progress: 'Avancement des modules', hours: 'Heures du mois', usage: 'Usage du mois' },
     usage: {
       intro: 'Base du relevé de la facturation par compte actif. Un compte est actif s’il s’est connecté au moins une fois dans le mois, sur le site ou dans l’application.',
@@ -356,6 +358,7 @@ const fr = {
     },
   },
   prep: {
+    barreAria: 'Avancement de la préparation : {{filiere}}',
     intro: 'Les 8 étapes de la préparation, calculées à partir des données. Le responsable de filière mène la maquette, les groupes, les services, les disponibilités et la revue ; l’administration le calendrier, la génération et la publication.',
     emptyTitle: 'Aucune filière à préparer',
     emptyBody: 'Choisissez une période, ou demandez à l’administration de vous nommer responsable d’une filière.',
@@ -1004,6 +1007,8 @@ const fr = {
     }
   },
   nav: {
+    allerAuContenu: 'Aller au contenu',
+    presence: 'Présence',
     board: 'Tableau',
     week: 'Semaine',
     alerts: 'Alertes',
@@ -1211,6 +1216,7 @@ const fr = {
     erreur: 'Les activités n’ont pas pu s’afficher. Vérifiez votre connexion Internet, puis réessayez.',
     erreurAction: 'L’opération n’a pas abouti. Réessayez.',
     horsLigne: 'Votre progression n’a pas pu être chargée : vous pouvez jouer, les réussites seront enregistrées au retour de la connexion.',
+    nonPropose: 'Vos enseignants ne proposent pas encore ce jeu dans vos modules. Vous pouvez vous entraîner, mais vos réussites ne seront pas enregistrées.',
     catalogue: 'Tous les jeux',
     jouer: 'Jouer',
     continuer: 'Continuer',
@@ -1484,7 +1490,7 @@ const fr = {
     choisirSeanceDabord: 'Choisissez d’abord la séance : ses créneaux libres s’afficheront ici.',
     nouveauCreneau: 'Nouveau créneau : {{jour}}, {{debut}}–{{fin}}, {{salle}}',
     aideMotif: 'Par exemple : jury de soutenance le même jour',
-    colonnes: { seance: 'Séance', origine: 'Date d’origine', nouvelleDate: 'Nouvelle date', motif: 'Motif', statut: 'Statut', dateDemande: 'Demandée le' },
+    colonnes: { seance: 'Séance', origine: 'Date d’origine', nouvelleDate: 'Nouvelle date', motif: 'Motif', statut: 'Statut', dateDemande: 'Demandée le', raisonRefus: 'Raison du refus' },
     champs: { seance: 'Séance', choisir: 'Choisir une séance', creneau: 'Nouveau créneau', motif: 'Motif' },
     statuts: { approuve: 'Approuvée', refuse: 'Refusée', en_attente: 'En attente' },
     erreurs: { affectation: 'Choisissez la séance à reporter.', creneau: 'Choisissez le nouveau créneau dans la liste.', motif: 'Indiquez le motif.' },
@@ -1504,6 +1510,8 @@ const fr = {
     erreurTraitement: 'La décision n’a pas pu être enregistrée. Réessayez dans un instant.',
     refusTitre: 'Refuser cette demande ?',
     refusMessage: '{{enseignant}} demandait de reporter « {{seance}} » au {{date}}. Il sera prévenu tout de suite, et la décision ne pourra pas être annulée. Si seule la date pose problème, choisissez plutôt un autre créneau.',
+    refusRaison: 'Raison (facultatif)',
+    refusRaisonAide: 'L’enseignant la lira dans la notification du refus.',
   },
   mesSeances: {
     titre: 'Mes séances',
@@ -2038,10 +2046,6 @@ const fr = {
       distanciel: 'Distanciel',
       hybride: 'Hybride',
     },
-    schools: {
-      engineering: 'Engineering School',
-      business: 'Business School',
-    },
     cycles: {
       prepa: 'Cycle préparatoire',
       licence: 'Licence',
@@ -2052,13 +2056,12 @@ const fr = {
     programs: {
       add: 'Ajouter une filière',
       edit: 'Modifier la filière',
-      allSchools: 'Les deux écoles',
+      bothCampuses: 'Les deux campus',
       count_one: '{{count}} filière',
       count_other: '{{count}} filières',
       startsYear: 'dès la {{year}}e année',
       cols: {
         program: 'Filière',
-        school: 'École',
         cycle: 'Cycle',
         regime: 'Régime',
         campus: 'Campus',
@@ -2067,13 +2070,12 @@ const fr = {
       fields: {
         code: 'Code',
         name: 'Intitulé',
-        school: 'École',
         regime: 'Régime',
         cycle: 'Cycle',
         firstYear: 'Première année du cycle',
         cycleTitle: 'Intitulé du cycle',
         cycleTitleHelp: "Sert à écrire « 2ème année du cycle Ingénieur d'Etat en … » sur l'emploi du temps",
-        campus: 'Campus préféré',
+        campus: 'Campus',
         partner: 'Partenaire (double diplôme)',
         yearsHere: 'Années à HESTIM',
         description: 'Description',
@@ -2081,9 +2083,9 @@ const fr = {
       saved: 'Filière enregistrée',
       deleted: 'Filière supprimée',
       emptyTitle: 'Aucune filière',
-      emptyBody: 'Ajoutez les filières des deux écoles, ou importez-les depuis un fichier.',
+      emptyBody: 'Ajoutez les filières des deux campus, ou importez-les depuis un fichier.',
       importTitle: 'Importer des filières',
-      importIntro: 'Une ligne par filière. Colonnes : code_filiere, nom_filiere, ecole (engineering ou business), cycle, intitule_cycle, premiere_annee_cycle, regime, partenaire.',
+      importIntro: 'Une ligne par filière. Colonnes : code_filiere, nom_filiere, campus (G, ST ou le nom du campus), cycle, intitule_cycle, premiere_annee_cycle, regime, partenaire.',
       deleteTitle: 'Supprimer la filière',
       deleteBody: 'La filière {{name}} sera supprimée.',
       heads: 'Responsables',

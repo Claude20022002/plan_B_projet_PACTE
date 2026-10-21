@@ -5,7 +5,7 @@ import { useToast } from '../../contexts/ToastContext';
 
 /**
  * Demandes de report de l'administration : la liste et leur traitement.
- * Rend { demandes, chargement, enCours, violations, fermerViolations, approuver, refuser, approuverSur }.
+ * Rend { demandes, chargement, enCours, violations, fermerViolations, approuver, refuser(demande, raison), approuverSur }.
  * Approuver déplace la séance : une règle enfreinte renvoie 409 et ses règles, gardées dans
  * `violations` ({ liste, demande, forcer(justification) }) pour la fenêtre qui les explique.
  */
@@ -71,7 +71,8 @@ export default function useDemandesAdmin() {
         violations,
         fermerViolations: () => setViolations(null),
         approuver: (demande) => traiter(demande, 'approuver'),
-        refuser: (demande) => traiter(demande, 'refuser'),
+        // La raison est facultative : sans elle, la notification de l'enseignant n'en cite pas
+        refuser: (demande, raison = '') => traiter(demande, 'refuser', raison ? { motif: raison } : {}),
         approuverSur,
     };
 }

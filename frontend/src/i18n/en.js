@@ -7,6 +7,7 @@ const en = {
   },
   vuesEdt: { grille: 'Grid', liste: 'Session list', mois: 'Month (print)' },
   common: {
+    changerPhoto: 'Change the profile photo',
     aucun: 'None',
     loading: 'Loading…',
     retry: 'Try again',
@@ -248,6 +249,7 @@ const en = {
     makeUp: 'Make up',
   },
   tracking: {
+    barreAria: '{{module}} {{type}}: {{faites}} h done out of {{prevues}} h',
     tabs: { progress: 'Module progress', hours: 'Monthly hours', usage: 'Monthly usage' },
     usage: {
       intro: 'Basis for billing per active account. An account is active if it signed in at least once during the month, on the website or in the app.',
@@ -356,6 +358,7 @@ const en = {
     },
   },
   prep: {
+    barreAria: 'Preparation progress: {{filiere}}',
     intro: 'The 8 preparation steps, computed from the data. The head of program handles curriculum, groups, assignments, availability and review; the administration the calendar, generation and publication.',
     emptyTitle: 'No program to prepare',
     emptyBody: 'Choose a term, or ask the administration to appoint you head of a program.',
@@ -1004,6 +1007,8 @@ const en = {
     }
   },
   nav: {
+    allerAuContenu: 'Skip to content',
+    presence: 'Attendance',
     board: 'Board',
     week: 'Week',
     alerts: 'Alerts',
@@ -1211,6 +1216,7 @@ const en = {
     erreur: 'Activities could not be loaded. Check your connection and try again.',
     erreurAction: 'The operation failed. Try again.',
     horsLigne: 'Your progress could not be loaded: you can still play, successes will be saved once you are back online.',
+    nonPropose: 'Your teachers do not offer this game in your modules yet. You can practise, but your successes will not be saved.',
     catalogue: 'All games',
     jouer: 'Play',
     continuer: 'Continue',
@@ -1488,7 +1494,7 @@ const en = {
     choisirSeanceDabord: 'Choose the session first: its free slots will show here.',
     nouveauCreneau: 'New slot: {{jour}}, {{debut}}–{{fin}}, {{salle}}',
     aideMotif: 'For example: thesis jury on the same day',
-    colonnes: { seance: 'Session', origine: 'Original date', nouvelleDate: 'New date', motif: 'Reason', statut: 'Status', dateDemande: 'Requested on' },
+    colonnes: { seance: 'Session', origine: 'Original date', nouvelleDate: 'New date', motif: 'Reason', statut: 'Status', dateDemande: 'Requested on', raisonRefus: 'Reason for refusal' },
     champs: { seance: 'Session', choisir: 'Choose a session', creneau: 'New slot', motif: 'Reason' },
     statuts: { approuve: 'Approved', refuse: 'Refused', en_attente: 'Pending' },
     erreurs: { affectation: 'Choose the session to reschedule.', creneau: 'Choose the new slot in the list.', motif: 'Enter the reason.' },
@@ -1508,6 +1514,8 @@ const en = {
     erreurTraitement: 'The decision could not be saved. Try again in a moment.',
     refusTitre: 'Refuse this request?',
     refusMessage: '{{enseignant}} asked to move “{{seance}}” to {{date}}. They will be notified at once, and the decision cannot be undone. If only the date is a problem, choose another slot instead.',
+    refusRaison: 'Reason (optional)',
+    refusRaisonAide: 'The teacher will read it in the refusal notification.',
   },
   mesSeances: {
     titre: 'My sessions',
@@ -2042,10 +2050,6 @@ const en = {
       distanciel: 'Remote',
       hybride: 'Hybrid',
     },
-    schools: {
-      engineering: 'Engineering School',
-      business: 'Business School',
-    },
     cycles: {
       prepa: 'Preparatory cycle',
       licence: "Bachelor's",
@@ -2056,13 +2060,12 @@ const en = {
     programs: {
       add: 'Add a program',
       edit: 'Edit program',
-      allSchools: 'Both schools',
+      bothCampuses: 'Both campuses',
       count_one: '{{count}} program',
       count_other: '{{count}} programs',
       startsYear: 'from year {{year}}',
       cols: {
         program: 'Program',
-        school: 'School',
         cycle: 'Cycle',
         regime: 'Study mode',
         campus: 'Campus',
@@ -2071,13 +2074,12 @@ const en = {
       fields: {
         code: 'Code',
         name: 'Title',
-        school: 'School',
         regime: 'Study mode',
         cycle: 'Cycle',
         firstYear: 'First year of the cycle',
         cycleTitle: 'Cycle title',
         cycleTitleHelp: '“2nd year of the State Engineering cycle in …” on the timetable',
-        campus: 'Preferred campus',
+        campus: 'Campus',
         partner: 'Partner (double degree)',
         yearsHere: 'Years at HESTIM',
         description: 'Description',
@@ -2085,9 +2087,9 @@ const en = {
       saved: 'Program saved',
       deleted: 'Program deleted',
       emptyTitle: 'No programs',
-      emptyBody: 'Add the programs of both schools, or import them from a file.',
+      emptyBody: 'Add the programs of both campuses, or import them from a file.',
       importTitle: 'Import programs',
-      importIntro: 'One line per program. Columns: code_filiere, nom_filiere, ecole (engineering or business), cycle, intitule_cycle, premiere_annee_cycle, regime, partenaire.',
+      importIntro: 'One line per program. Columns: code_filiere, nom_filiere, campus (G, ST or the campus name), cycle, intitule_cycle, premiere_annee_cycle, regime, partenaire.',
       deleteTitle: 'Delete program',
       deleteBody: 'Program {{name}} will be deleted.',
       heads: 'Heads',

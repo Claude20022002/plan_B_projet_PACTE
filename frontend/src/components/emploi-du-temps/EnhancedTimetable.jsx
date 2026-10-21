@@ -4,10 +4,6 @@ import { useSearchParams } from 'react-router-dom';
 import {
   Box,
   Button,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
   IconButton,
   ToggleButton,
   ToggleButtonGroup,
@@ -19,16 +15,17 @@ import { ChevronLeft, ChevronRight, Print, TableRows, ViewWeek } from '@mui/icon
 import FullCalendar from '@fullcalendar/react';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import frLocale from '@fullcalendar/core/locales/fr';
-import { DepartureBoard, SessionSpotlight, StatusFlap } from '../../design-system/board';
-import { ds, lineColor } from '../../design-system/tokens';
+import { ds } from '../../design-system/tokens';
 import { byStart, toBoardSession } from '../../utils/session';
-import { visuallyHidden } from '@mui/utils';
+import CarteSeance from './CarteSeance';
+import FicheSeance from './FicheSeance';
+import ListeSemaine from './ListeSemaine';
 
 /**
- * Emploi du temps hebdomadaire au format « panneau » :
+ * Emploi du temps hebdomadaire, séances en cartes claires (R-7) :
  * - ordinateur : grille lundi → samedi à échelle horaire fixe (toutes les semaines comparables),
- *   chaque séance dessinée comme un volet du panneau ;
- * - téléphone (ou vue liste) : le panneau des départs, jour par jour.
+ *   chaque séance en carte haute de sa durée, liseré de la couleur du module ;
+ * - téléphone (ou vue liste) : les mêmes cartes, jour par jour.
  * S'ouvre sur la semaine qui contient effectivement des séances.
  */
 
@@ -54,59 +51,6 @@ const initialWeek = (sessions) => {
   const next = sessions.find((s) => s.start >= new Date());
   return mondayOf(next ? next.start : sessions[sessions.length - 1].start);
 };
-
-function EventCell({ session }) {
-  const { t } = useTranslation();
-  const changed = session.status === 'reporte' || session.status === 'annule';
-  return (
-    <Box
-      sx={{
-        height: '100%',
-        p: '4px 6px',
-        bgcolor: ds.board.ground,
-        color: ds.board.letter,
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        gap: '2px',
-      }}
-    >
-      <Box sx={{ display: 'flex', alignItems: 'center', gap: '6px', minWidth: 0 }}>
-        <Box component="span" aria-hidden="true" sx={{ width: 8, height: 8, flexShrink: 0, borderRadius: '2px', bgcolor: lineColor(session.lineKey) }} />
-        <Box
-          component="span"
-          sx={{
-            fontFamily: ds.font.board,
-            fontWeight: 600,
-            fontSize: '0.8125rem',
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            lineHeight: 1.2,
-            overflow: 'hidden',
-            display: '-webkit-box',
-            WebkitLineClamp: 2,
-            WebkitBoxOrient: 'vertical',
-            textDecoration: session.status === 'annule' ? 'line-through' : 'none',
-            color: session.status === 'annule' ? ds.board.letterDim : ds.board.letter,
-          }}
-        >
-          {session.course}
-        </Box>
-      </Box>
-      <Box sx={{ fontFamily: ds.font.board, fontWeight: 600, fontSize: '0.8125rem', letterSpacing: '0.04em', color: ds.board.letterDim }}>
-        {session.startLabel} · {session.room}
-      </Box>
-      {changed && (
-        <Box sx={{ fontSize: '0.75rem', mt: 'auto' }}>
-          <StatusFlap status={session.status} />
-        </Box>
-      )}
-      <Box component="span" sx={visuallyHidden}>
-        {[session.teacher, session.group, t(`status.${session.status}`)].filter(Boolean).join(', ')}
-      </Box>
-    </Box>
-  );
-}
 
 export default function EnhancedTimetable({ affectations = [], actions, columns = ['time', 'course', 'room', 'teacher', 'status'] }) {
   const { t, i18n } = useTranslation();
@@ -184,6 +128,8 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
             value={mode}
             onChange={(_, value) => value && setMode(value)}
             aria-label={t('timetable.display')}
+            // Gris par défaut de MUI : 4,49:1 sur le fond de l'application, sous le seuil AA
+            sx={{ '& .MuiToggleButton-root:not(.Mui-selected)': { color: 'text.secondary' } }}
           >
             <ToggleButton value="grid" aria-label={t('timetable.grid')}>
               <ViewWeek fontSize="small" sx={{ mr: 0.75 }} />
@@ -204,17 +150,15 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
       </Box>
 
       {showList ? (
-        <DepartureBoard
-          title={weekLabel}
-          showClock={false}
+        <ListeSemaine
           sessions={weekSessions}
           columns={columns}
           onSessionClick={setSelected}
-          empty={<Typography sx={{ color: ds.board.letterDim }}>{t('timetable.emptyWeek')}</Typography>}
+          empty={<Typography sx={{ color: 'text.secondary' }}>{t('timetable.emptyWeek')}</Typography>}
         />
       ) : (
         <Box
-          sx={{
+          sx={(theme) => ({
             bgcolor: 'background.paper',
             border: '1px solid',
             borderColor: 'divider',
@@ -226,6 +170,8 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
               '--fc-today-bg-color': 'rgba(0, 24, 97, 0.05)',
               '--fc-border-color': ds.colors.border.default,
               '--fc-now-indicator-color': ds.brand.orange,
+              // Fond des en-têtes de jours : blanc par défaut, illisible en sombre
+              '--fc-page-bg-color': theme.palette.background.paper,
             },
             '& .fc-theme-standard td, & .fc-theme-standard th, & .fc-theme-standard .fc-scrollgrid': { borderColor: 'divider' },
             '& .fc-col-header-cell-cushion': {
@@ -246,7 +192,7 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
             '& .fc-timegrid-event:focus-visible': { outline: `2px solid ${ds.brand.orange}`, outlineOffset: 1 },
             '& .fc-timegrid-now-indicator-line': { borderColor: ds.brand.orange },
             '& .fc-timegrid-now-indicator-arrow': { borderColor: ds.brand.orange },
-          }}
+          })}
         >
           <FullCalendar
             ref={calendarRef}
@@ -269,31 +215,12 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
             expandRows
             events={events}
             eventClick={(info) => setSelected(info.event.extendedProps.session)}
-            eventContent={(info) => <EventCell session={info.event.extendedProps.session} />}
+            eventContent={(info) => <CarteSeance session={info.event.extendedProps.session} />}
           />
         </Box>
       )}
 
-      <Dialog open={Boolean(selected)} onClose={() => setSelected(null)} maxWidth="sm" fullWidth>
-        {selected && (
-          <>
-            <DialogTitle sx={{ fontFamily: ds.font.board, fontWeight: 700 }}>
-              {new Intl.DateTimeFormat(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' }).format(selected.start)}
-              {' · '}
-              <StatusFlap status={selected.status} variant="bureau" />
-            </DialogTitle>
-            <DialogContent dividers sx={{ p: 0, bgcolor: ds.board.ground }}>
-              <SessionSpotlight
-                session={selected}
-                phase={selected.start <= new Date() && selected.end > new Date() ? 'live' : 'next'}
-              />
-            </DialogContent>
-            <DialogActions>
-              <Button onClick={() => setSelected(null)}>{t('common.close')}</Button>
-            </DialogActions>
-          </>
-        )}
-      </Dialog>
+      <FicheSeance session={selected} onClose={() => setSelected(null)} />
     </Box>
   );
 }

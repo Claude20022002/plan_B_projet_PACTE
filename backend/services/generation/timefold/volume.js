@@ -21,17 +21,18 @@ export const debutDeploiement = (dateDebutPeriode, aujourdhui) =>
 const dureeHeures = (creneau) => (minutes(creneau.heure_fin) - minutes(creneau.heure_debut)) / 60;
 
 /**
- * Les créneaux d'une séance qui tiennent dans ce qui reste du volume, dans l'ordre : la dernière
- * séance est raccourcie plutôt que de dépasser le volume prévu (un vacataire est payé à l'heure).
- * Vide si même le premier créneau dépasse le reste.
+ * Les créneaux d'une séance nécessaires pour atteindre ce qui reste du volume, dans l'ordre : on
+ * s'arrête dès que le reste est couvert. Un reste plus court qu'un créneau est placé quand même
+ * (décision du 21 octobre : le dépassement est accepté), il ne dépasse donc jamais d'un créneau
+ * entier. Vide si le volume est déjà atteint.
  */
 export const creneauxDansLeVolume = (creneaux, resteHeures) => {
     const retenus = [];
     let total = 0;
     for (const creneau of creneaux) {
-        total += dureeHeures(creneau);
-        if (total > resteHeures + 1e-6) break;
+        if (total >= resteHeures - 1e-6) break;
         retenus.push(creneau);
+        total += dureeHeures(creneau);
     }
     return retenus;
 };
