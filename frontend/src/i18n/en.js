@@ -381,7 +381,7 @@ const en = {
       availabilityOk: '{{count}} visiting teacher(s), all declared',
       generation: '{{planned}} unit(s) scheduled, {{sessions}} session(s)',
       review: '{{count}} open conflict(s)',
-      publication: '{{count}} confirmed session(s)',
+      publication: '{{publies}} of {{mois}} months published to students',
     },
   },
   appel: {

@@ -1,6 +1,6 @@
 import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs, anonymous } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Affectation, Notification, ResponsableFiliere, Salle, Users } from "../../models/index.js";
+import { Affectation, EnvoiEdt, Notification, ResponsableFiliere, Salle, Users } from "../../models/index.js";
 import { calendrierIcs, instantLocal } from "../../services/calendrier/ics.js";
 import { changementsEntre, renvoyerChangements } from "../../services/calendrier/envoiEdt.js";
 
@@ -63,20 +63,27 @@ describe("Abonnement calendrier", () => {
     let chemin;
 
     test("l'étudiant obtient une adresse stable ; son flux contient ses séances, l'annulée marquée annulée", async () => {
-        const session = await loginAs(etudiant);
-        const premiere = (await session.get("/api/agenda/abonnement")).body;
-        expect(premiere.chemin).toMatch(/^\/api\/agenda\/[A-Za-z0-9_-]{43}\.ics$/);
-        expect((await session.get("/api/agenda/abonnement")).body.chemin).toBe(premiere.chemin);
-        chemin = premiere.chemin;
+        // L'étudiant ne voit que les mois publiés pour sa classe (retirés ensuite : les tests d'envoi repartent de zéro)
+        const mois = [...new Set([dansJours(10), dansJours(11)].map((d) => d.slice(0, 7)))];
+        await EnvoiEdt.bulkCreate(mois.map((m) => ({ id_groupe: fixture.groupe.id_groupe, mois: m, seances: [], envoye_le: new Date(), nb_destinataires: 1 })));
+        try {
+            const session = await loginAs(etudiant);
+            const premiere = (await session.get("/api/agenda/abonnement")).body;
+            expect(premiere.chemin).toMatch(/^\/api\/agenda\/[A-Za-z0-9_-]{43}\.ics$/);
+            expect((await session.get("/api/agenda/abonnement")).body.chemin).toBe(premiere.chemin);
+            chemin = premiere.chemin;
 
-        const flux = await anonymous().get(chemin);
-        expect(flux.status).toBe(200);
-        expect(flux.headers["content-type"]).toContain("text/calendar");
-        expect(flux.text).toContain(`UID:seance-${seance.id_affectation}@hestim-planner`);
-        expect(flux.text).toContain("SUMMARY:Algorithmique (CM)");
-        const blocAnnule = flux.text.split("BEGIN:VEVENT").find((b) => b.includes(`seance-${annulee.id_affectation}@`));
-        expect(blocAnnule).toContain("STATUS:CANCELLED");
-        expect(blocAnnule).toContain("SUMMARY:Annulé : Algorithmique");
+            const flux = await anonymous().get(chemin);
+            expect(flux.status).toBe(200);
+            expect(flux.headers["content-type"]).toContain("text/calendar");
+            expect(flux.text).toContain(`UID:seance-${seance.id_affectation}@hestim-planner`);
+            expect(flux.text).toContain("SUMMARY:Algorithmique (CM)");
+            const blocAnnule = flux.text.split("BEGIN:VEVENT").find((b) => b.includes(`seance-${annulee.id_affectation}@`));
+            expect(blocAnnule).toContain("STATUS:CANCELLED");
+            expect(blocAnnule).toContain("SUMMARY:Annulé : Algorithmique");
+        } finally {
+            await EnvoiEdt.destroy({ where: { id_groupe: fixture.groupe.id_groupe, mois } });
+        }
     });
 
     test("l'enseignant voit ses séances avec le groupe", async () => {
@@ -109,9 +116,16 @@ describe("Envoi de l'emploi du temps du mois", () => {
 
     test("publication : la classe est prévenue ; republier sans changement n'envoie rien", async () => {
         const adm = await loginAs(admin);
+        // Avant la publication, l'étudiant ne voit pas le mois ; après, il le voit
+        const vue = await loginAs(etudiant);
+        const mensuel = `/api/emplois-du-temps/groupe/${fixture.groupe.id_groupe}/mensuel?mois=${mois}`;
+        const avant = await vue.get(mensuel);
+        expect(avant.status).toBe(404);
+        expect(avant.body.code).toBe("EDT_NON_PUBLIE");
         const premier = await adm.send("post", "/api/agenda/edt-mensuel/publier", { mois, id_filiere: fixture.filiere.id_filiere });
         expect(premier.status).toBe(200);
         expect(premier.body.envoye).toBe(1);
+        expect((await vue.get(mensuel)).status).toBe(200);
         const notes = await Notification.findAll({ where: { id_user: etudiant.id_user, lien: `/emploi-du-temps/mensuel?groupe=${fixture.groupe.id_groupe}&mois=${mois}` } });
         expect(notes).toHaveLength(1);
         expect(notes[0].titre).toMatch(/^Emploi du temps de /);

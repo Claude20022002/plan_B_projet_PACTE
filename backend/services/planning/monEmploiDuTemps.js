@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementGroupe, Evenement, Filiere, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
+import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementGroupe, EnvoiEdt, Evenement, Filiere, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { ancetres } from "./groupes.js";
 import { appliquerRamadan } from "./ramadan.js";
@@ -9,6 +9,10 @@ import { appliquerRamadan } from "./ramadan.js";
  * groupes ET de leurs groupes parents (le CM de la promotion d'un étudiant de TD), y compris
  * celles mutualisées avec d'autres groupes. Les séances annulées restent visibles : le panneau
  * les affiche comme telles. Rien d'autre que ce que l'étudiant voit sur le web.
+ *
+ * Un mois n'est visible qu'une fois publié par l'administration (« Publier et envoyer » de l'EDT du
+ * mois, qui garde un EnvoiEdt par classe) : un planning en préparation ne se voit pas côté
+ * étudiants (décision du chef de projet, 21 octobre 2026). Les événements et examens publiés restent visibles.
  */
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -108,11 +112,14 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
     // Deux lectures dans les index (groupe + date, enseignement + date) plutôt qu'un OR, qui fait
     // parcourir à MySQL toutes les séances de l'école sur la période ; puis les séances par clé
     const plage = { date_seance: { [Op.between]: [debut, fin] } };
-    const [parGroupe, parMutualisation] = await Promise.all([
-        Affectation.findAll({ where: { ...plage, id_groupe: ids }, attributes: ["id_affectation"], raw: true }),
-        mutualises.length ? Affectation.findAll({ where: { ...plage, id_enseignement: mutualises }, attributes: ["id_affectation"], raw: true }) : [],
+    const [parGroupe, parMutualisation, envois] = await Promise.all([
+        Affectation.findAll({ where: { ...plage, id_groupe: ids }, attributes: ["id_affectation", "date_seance"], raw: true }),
+        mutualises.length ? Affectation.findAll({ where: { ...plage, id_enseignement: mutualises }, attributes: ["id_affectation", "date_seance"], raw: true }) : [],
+        EnvoiEdt.findAll({ where: { id_groupe: directs.map((g) => g.id_groupe) }, attributes: ["mois"], raw: true }),
     ]);
-    const idsSeances = [...new Set([...parGroupe, ...parMutualisation].map((s) => s.id_affectation))];
+    // Seuls les mois publiés pour la classe de l'étudiant
+    const moisPublies = new Set(envois.map((e) => e.mois));
+    const idsSeances = [...new Set([...parGroupe, ...parMutualisation].filter((s) => moisPublies.has(String(s.date_seance).slice(0, 7))).map((s) => s.id_affectation))];
 
     const seances = !idsSeances.length ? [] : await Affectation.findAll({
         where: { id_affectation: idsSeances },
