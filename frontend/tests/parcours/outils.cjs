@@ -37,4 +37,15 @@ const scannerCommeMobile = async (request, { email, motDePasse, code, appareil }
   return scan.status();
 };
 
-module.exports = { lireDonnees, seConnecter, scannerCommeMobile };
+/**
+ * Publie le mois d'une filière aux étudiants, comme le bouton « Publier » de l'EDT du mois : sans
+ * cela, les étudiants ne voient aucune séance (décision du 21 octobre 2026). `page` est celle de l'administration.
+ */
+const publierMois = async (page, { mois, idFiliere }) => {
+  const jeton = await page.request.get("/api/auth/csrf-token");
+  const csrf = (await page.context().cookies()).find((c) => c.name === "csrf_token")?.value ?? (await jeton.json()).csrfToken;
+  const reponse = await page.request.post("/api/agenda/edt-mensuel/publier", { headers: { "X-CSRF-Token": decodeURIComponent(csrf) }, data: { mois, id_filiere: idFiliere } });
+  expect(reponse.ok(), `publication de ${mois} : ${await reponse.text()}`).toBeTruthy();
+};
+
+module.exports = { lireDonnees, seConnecter, scannerCommeMobile, publierMois };

@@ -381,7 +381,7 @@ const fr = {
       availabilityOk: '{{count}} vacataire(s), tous ont déclaré',
       generation: '{{planned}} enseignement(s) planifiés, {{sessions}} séance(s)',
       review: '{{count}} conflit(s) ouvert(s)',
-      publication: '{{count}} séance(s) confirmée(s)',
+      publication: '{{publies}} mois publiés aux étudiants sur {{mois}}',
     },
   },
   appel: {

@@ -7,7 +7,7 @@
  * Puis chaque profil d'étudiant ne voit que les modules de sa promotion.
  */
 const { test, expect } = require("@playwright/test");
-const { lireDonnees, seConnecter } = require("./outils.cjs");
+const { lireDonnees, seConnecter, publierMois } = require("./outils.cjs");
 
 test.setTimeout(300_000);
 
@@ -78,6 +78,9 @@ test("IIIA : 3A et 4A placées ensemble sans conflit, chaque étudiant voit sa p
     const effectif = s.id_groupe === iiia.groupes.promo3 ? 40 : s.id_groupe === iiia.groupes.promo4 ? 30 : 20;
     expect(s.salle.capacite, `${code} du ${s.date_seance} : salle assez grande`).toBeGreaterThanOrEqual(effectif);
   }
+
+  // Les étudiants ne voient rien avant la publication du mois par l'administration
+  await publierMois(page, { mois: semaine[0].slice(0, 7), idFiliere: iiia.filiere });
 
   // Chaque profil d'étudiant ne voit que sa promotion (emploi du temps du mois)
   const profils = [

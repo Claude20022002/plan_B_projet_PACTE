@@ -93,7 +93,7 @@ export default function Preparation() {
             case 'revue':
                 return t('prep.details.review', { count: d.conflits });
             case 'publication':
-                return t('prep.details.publication', { count: d.confirmees });
+                return t('prep.details.publication', { publies: d.publies, mois: d.mois });
             default:
                 return '';
         }
