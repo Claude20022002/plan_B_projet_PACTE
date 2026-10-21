@@ -1,7 +1,8 @@
 import { Questionnaire, QuestionQuiz, Users } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { appelerClassQuiz, cheminSigne } from "../quiz/clientClassQuiz.js";
-import { validerQuestion } from "../../../shared/quiz/studio/types.js";
+import { LIMITES, validerQuestion } from "../../../shared/quiz/studio/types.js";
+import { copierMediaClassQuiz } from "./mediasClassQuiz.js";
 import { creerQuestionnaire, exigerEnseignant, insererQuestions, questionnaireDe, QUESTIONS_MAX } from "./questionnaires.js";
 
 /**
@@ -16,9 +17,14 @@ import { creerQuestionnaire, exigerEnseignant, insererQuestions, questionnaireDe
  *   RANGE       → nombre (valeur centrale des bornes justes, tolérance = demi-écart)
  *   VOTING, SLIDE (sondage, diapositive), questions illisibles : ignorées, et dites dans le bilan
  *
+ * Tout est repris chez nous (décision du 21 octobre 2026) : la durée de chaque question (`time`,
+ * bornée aux limites du Studio) et son image ou sa vidéo, copiée dans les médias de l'enseignant
+ * (mediasClassQuiz.js). Une image impossible à copier n'empêche pas la question : le bilan le dit.
+ * ClassQuiz n'a pas de points par question : chaque question vaut 1 point, comme dans le fork.
+ *
  * Un quiz importé arrive en brouillon (questions « à relire ») : l'enseignant le relit avant de le
  * diffuser. L'identifiant ClassQuiz est gardé dans `source` de chaque question : relancer l'import
- * ne recrée rien. Les images ne sont pas reprises (le fork n'offre pas de route pour les lire).
+ * ne recrée rien.
  */
 
 const PREFIXE = "classquiz:";
@@ -27,8 +33,20 @@ const ETIQUETTE = "ClassQuiz";
 
 const options = (reponses) => (Array.isArray(reponses) ? reponses : []).map((r, i) => ({ id: `o${i + 1}`, texte: String(r?.answer ?? "") }));
 
+/** Durée du fork (`time`, en secondes, souvent une chaîne) bornée aux limites du Studio ; null si illisible. */
+export const dureeDuFork = (time) => {
+    const n = Math.round(Number(time));
+    return Number.isFinite(n) && n > 0 ? Math.min(LIMITES.duree.max, Math.max(LIMITES.duree.min, n)) : null;
+};
+
 /** Traduit une question du fork ; rend { question } ou { ignoree: raison }. La validation du Studio vient ensuite. */
 export const convertirQuestion = (q) => {
+    const traduite = convertirContenu(q);
+    return traduite.question ? { question: { ...traduite.question, duree_s: dureeDuFork(q?.time) } } : traduite;
+};
+
+/** Le type, l'énoncé et les réponses ; la durée est ajoutée par convertirQuestion. */
+const convertirContenu = (q) => {
     const enonce = String(q?.question ?? "");
     switch (q?.type) {
         case "ABCD":
@@ -97,20 +115,32 @@ export const importerQuiz = async (user, idClassQuiz) => {
 
     const valides = [];
     const ignorees = [];
+    const images = [];
     for (const [i, q] of brutes.entries()) {
         const traduite = convertirQuestion(q);
         const verifiee = traduite.question ? validerQuestion(traduite.question) : { ok: false, raison: traduite.ignoree };
-        if (verifiee.ok) valides.push({ ...verifiee.question, source: `${PREFIXE}${id}` });
-        else ignorees.push({ numero: i + 1, type: q?.type ?? null, raison: verifiee.raison });
+        if (verifiee.ok) {
+            valides.push({ ...verifiee.question, source: `${PREFIXE}${id}` });
+            images.push({ numero: i + 1, nom: q?.image || null });
+        } else ignorees.push({ numero: i + 1, type: q?.type ?? null, raison: verifiee.raison });
     }
     if (valides.length > QUESTIONS_MAX) {
         for (const q of valides.splice(QUESTIONS_MAX)) ignorees.push({ numero: null, type: q.type, raison: `plus de ${QUESTIONS_MAX} questions` });
     }
     if (!valides.length) return { id, titre: quiz.titre, resultat: "vide", id_questionnaire: null, importees: 0, ignorees };
 
+    // Images et vidéos copiées chez nous ; une copie impossible laisse la question sans son image
+    const avertissements = [];
+    for (const [i, image] of images.entries()) {
+        if (!image.nom || i >= valides.length) continue;
+        const copie = await copierMediaClassQuiz(user, image.nom);
+        if (copie.id_media) valides[i].id_media = copie.id_media;
+        else avertissements.push({ numero: image.numero, raison: copie.raison });
+    }
+
     const cree = await creerQuestionnaire(user, { titre: String(quiz.titre || "Quiz importé").slice(0, 200), description: quiz.description ?? "", etiquettes: [ETIQUETTE] });
     await insererQuestions(user, await questionnaireDe(user, cree.id_questionnaire), valides, { origine: "import", aRelire: true });
-    return { id, titre: quiz.titre, resultat: "importe", id_questionnaire: cree.id_questionnaire, importees: valides.length, ignorees };
+    return { id, titre: quiz.titre, resultat: "importe", id_questionnaire: cree.id_questionnaire, importees: valides.length, ignorees, avertissements };
 };
 
 /** Importe tous les quiz du fork de l'enseignant qui ne le sont pas encore ; rend { quiz: [bilans], importes, deja_importes, erreurs }. */

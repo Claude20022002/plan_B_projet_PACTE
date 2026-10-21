@@ -28,7 +28,7 @@ const nettoyer = (q) => {
   if (d.acceptees) d.acceptees = vide(d.acceptees);
   if (d.distracteurs) d.distracteurs = vide(d.distracteurs);
   if (d.trous) d.trous = d.trous.map((tr) => ({ ...tr, acceptees: vide(tr.acceptees), ...(vide(tr.options).length ? { options: vide(tr.options) } : { options: undefined }) }));
-  return { type: q.type, enonce: q.enonce, points: q.points, explication: q.explication || null, id_media: q.id_media ?? null, extrait: q.extrait ?? null, donnees: d };
+  return { type: q.type, enonce: q.enonce, points: q.points, explication: q.explication || null, id_media: q.id_media ?? null, extrait: q.extrait ?? null, duree_s: q.duree_s ?? null, donnees: d };
 };
 
 export default function EditeurQuestion({ idQuestionnaire, question, numero, medias, onMediaMaj, onEnregistree, onSupprimee, onDupliquee, dispo }) {
