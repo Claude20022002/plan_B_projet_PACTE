@@ -1,4 +1,4 @@
-import { Affectation, Appartenir, Campus, Filiere, Groupe } from "../models/index.js";
+import { Affectation, Appartenir, Filiere, Groupe } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { pick } from "../utils/validationHelper.js";
@@ -9,10 +9,7 @@ import { construireArbre, verifierParent } from "../services/planning/groupes.js
  * Contrôleur pour les groupes, emboîtés : promotion ⊃ groupes de TD ⊃ demi-groupes de TP.
  */
 
-const GROUPE_FIELDS = ["nom_groupe", "niveau", "effectif", "annee_scolaire", "id_filiere", "type_groupe", "id_groupe_parent", "annee", "id_campus_prefere"];
-
-/** Vrai si le campus préféré demandé n'existe pas (vide ou absent : rien à vérifier). */
-const campusInconnu = async (data) => data.id_campus_prefere !== undefined && data.id_campus_prefere !== null && !(await Campus.findByPk(data.id_campus_prefere));
+const GROUPE_FIELDS = ["nom_groupe", "niveau", "effectif", "annee_scolaire", "id_filiere", "type_groupe", "id_groupe_parent", "annee"];
 
 const INCLUDES = [
     { model: Filiere, as: "filiere" },
@@ -78,7 +75,6 @@ export const createGroupe = asyncHandler(async (req, res) => {
     }
     const probleme = await verifierParent(data, data.id_groupe_parent);
     if (probleme) return res.status(400).json({ message: "Erreur de validation", error: probleme });
-    if (await campusInconnu(data)) return res.status(400).json({ message: "Erreur de validation", error: "Campus préféré introuvable" });
 
     const { id_groupe } = await Groupe.create(data);
     const groupe = await Groupe.findByPk(id_groupe, { include: INCLUDES });
@@ -107,8 +103,6 @@ export const updateGroupe = asyncHandler(async (req, res) => {
         const probleme = await verifierParent(apres, apres.id_groupe_parent);
         if (probleme) return res.status(400).json({ message: "Erreur de validation", error: probleme });
     }
-
-    if (await campusInconnu(data)) return res.status(400).json({ message: "Erreur de validation", error: "Campus préféré introuvable" });
 
     await groupe.update(data);
     const groupeAJour = await Groupe.findByPk(groupe.id_groupe, { include: INCLUDES });

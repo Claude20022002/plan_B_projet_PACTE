@@ -25,7 +25,7 @@ import GroupeDialog from '../../components/groupes/GroupeDialog';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
-import { campusAPI, filiereAPI, groupeAPI } from '../../services/api';
+import { filiereAPI, groupeAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import { filieresGerables } from '../../utils/droits';
@@ -43,7 +43,7 @@ const anneeScolaireCourante = () => {
     return `${debut}-${debut + 1}`;
 };
 
-const GROUPE_VIDE = { nom_groupe: '', niveau: '', effectif: 0, annee_scolaire: anneeScolaireCourante(), id_filiere: '', type_groupe: 'promotion', id_groupe_parent: null, annee: '', id_campus_prefere: '' };
+const GROUPE_VIDE = { nom_groupe: '', niveau: '', effectif: 0, annee_scolaire: anneeScolaireCourante(), id_filiere: '', type_groupe: 'promotion', id_groupe_parent: null, annee: '' };
 
 const MODELE_CSV = [
     'nom_groupe;code_filiere;niveau;annee;effectif;annee_scolaire;type_groupe;parent',
@@ -72,14 +72,12 @@ export default function Groupes() {
     const [dialog, setDialog] = useState({ open: false, editing: null, form: GROUPE_VIDE });
     const [aSupprimer, setASupprimer] = useState(null);
     const [importOuvert, setImportOuvert] = useState(false);
-    const [campus, setCampus] = useState([]);
 
     // Filières et années scolaires disponibles
     useEffect(() => {
         (async () => {
             try {
-                const [toutes, groupes, listeCampus] = await Promise.all([fetchAll(filiereAPI.getAll), fetchAll(groupeAPI.getAll), campusAPI.getAll()]);
-                setCampus(listeCampus || []);
+                const [toutes, groupes] = await Promise.all([fetchAll(filiereAPI.getAll), fetchAll(groupeAPI.getAll)]);
                 const listeFilieres = filieresGerables(toutes, user);
                 setFilieres(listeFilieres);
                 setFiliere((f) => f || listeFilieres[0]?.id_filiere || '');
@@ -116,7 +114,7 @@ export default function Groupes() {
 
     const ouvrir = ({ groupe = null, parent = null } = {}) => {
         if (groupe) {
-            setDialog({ open: true, editing: groupe, form: { ...GROUPE_VIDE, ...groupe, annee: groupe.annee ?? '', id_campus_prefere: groupe.id_campus_prefere ?? '' } });
+            setDialog({ open: true, editing: groupe, form: { ...GROUPE_VIDE, ...groupe, annee: groupe.annee ?? '' } });
             return;
         }
         setDialog({
@@ -149,7 +147,6 @@ export default function Groupes() {
             type_groupe: f.type_groupe,
             id_groupe_parent: f.id_groupe_parent || null,
             annee: f.annee === '' ? null : Number(f.annee),
-            id_campus_prefere: f.id_campus_prefere === '' || f.id_campus_prefere == null ? null : Number(f.id_campus_prefere),
         };
         try {
             if (dialog.editing) await groupeAPI.update(dialog.editing.id_groupe, data);
@@ -337,7 +334,6 @@ export default function Groupes() {
 
             <GroupeDialog
                 dialog={dialog}
-                campus={campus}
                 onChange={(nom, valeur) => setDialog((d) => ({ ...d, form: { ...d.form, [nom]: valeur } }))}
                 onClose={() => setDialog({ open: false, editing: null, form: GROUPE_VIDE })}
                 onSubmit={enregistrer}

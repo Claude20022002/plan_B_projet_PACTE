@@ -68,18 +68,18 @@ const HESTIM_CONFIG = {
 
     // ── Filières ──────────────────────────────────────────────────────────
     // niveaux : { label, semestre (semestre impair, période S1), effectif par groupe, nb_groupes }
-    // campus : rattachement supposé (Engineering à Gandhi, Business à Stendhal) ; dept : département du responsable
+    // dept : département du responsable ; pas de campus : une filière a cours dans n'importe quel bâtiment (21 octobre 2026)
     filieres: [
         // ── Engineering School ───────────────────────────────────────────
         {
-            code:'CPI', nom:'Cycle préparatoire intégré', abrege:'CPI', cycle:'Préparatoire', campus:'G', dept:'Mathématiques',
+            code:'CPI', nom:'Cycle préparatoire intégré', abrege:'CPI', cycle:'Préparatoire', dept:'Mathématiques',
             niveaux:[
                 { label:'1ère année', semestre:'S1', effectif:30, nb_groupes:2 },
                 { label:'2ème année', semestre:'S3', effectif:25, nb_groupes:2 },
             ],
         },
         {
-            code:'IIIA', nom:'Ingénierie Informatique et Intelligence Artificielle', abrege:'IIIA', cycle:'Ingénieur', campus:'G', dept:'Informatique',
+            code:'IIIA', nom:'Ingénierie Informatique et Intelligence Artificielle', abrege:'IIIA', cycle:'Ingénieur', dept:'Informatique',
             niveaux:[
                 { label:'3ème année', semestre:'S5', effectif:18, nb_groupes:2 },
                 { label:'4ème année', semestre:'S7', effectif:28, nb_groupes:1 },
@@ -87,19 +87,19 @@ const HESTIM_CONFIG = {
         },
         // Spécialités de dernière année de l'ingénierie informatique
         {
-            code:'IIIA-IABD', nom:'Ingénierie Informatique (IA & Big Data)', abrege:'IABD', cycle:'Ingénieur', campus:'G', dept:'IA & Data',
+            code:'IIIA-IABD', nom:'Ingénierie Informatique (IA & Big Data)', abrege:'IABD', cycle:'Ingénieur', dept:'IA & Data',
             niveaux:[ { label:'5ème année', semestre:'S9', effectif:18, nb_groupes:1 } ],
         },
         {
-            code:'IIIA-CYB', nom:'Ingénierie Informatique (Cybersécurité)', abrege:'CYB', cycle:'Ingénieur', campus:'G', dept:'Cybersécurité',
+            code:'IIIA-CYB', nom:'Ingénierie Informatique (Cybersécurité)', abrege:'CYB', cycle:'Ingénieur', dept:'Cybersécurité',
             niveaux:[ { label:'5ème année', semestre:'S9', effectif:16, nb_groupes:1 } ],
         },
         {
-            code:'IIIA-GL', nom:'Ingénierie Informatique (Génie Logiciel)', abrege:'GL', cycle:'Ingénieur', campus:'G', dept:'Informatique',
+            code:'IIIA-GL', nom:'Ingénierie Informatique (Génie Logiciel)', abrege:'GL', cycle:'Ingénieur', dept:'Informatique',
             niveaux:[ { label:'5ème année', semestre:'S9', effectif:16, nb_groupes:1 } ],
         },
         {
-            code:'GIL', nom:'Génie Industriel et Logistique', abrege:'GIL', cycle:'Ingénieur', campus:'G', dept:'Génie industriel',
+            code:'GIL', nom:'Génie Industriel et Logistique', abrege:'GIL', cycle:'Ingénieur', dept:'Génie industriel',
             partenaire:'ESTIA',
             niveaux:[
                 { label:'3ème année', semestre:'S5', effectif:30, nb_groupes:1 },
@@ -108,7 +108,7 @@ const HESTIM_CONFIG = {
             ],
         },
         {
-            code:'GCAU', nom:'Génie Civil, Architecture et Urbanisme', abrege:'GCAU', cycle:'Ingénieur', campus:'G', dept:'Génie civil',
+            code:'GCAU', nom:'Génie Civil, Architecture et Urbanisme', abrege:'GCAU', cycle:'Ingénieur', dept:'Génie civil',
             niveaux:[
                 { label:'3ème année', semestre:'S5', effectif:30, nb_groupes:1 },
                 { label:'4ème année', semestre:'S7', effectif:25, nb_groupes:1 },
@@ -117,7 +117,7 @@ const HESTIM_CONFIG = {
         },
         // ── Business School ──────────────────────────────────────────────
         {
-            code:'LMEO', nom:'Licence Management des Entreprises et des Organisations', abrege:'LMEO', cycle:'Licence', campus:'ST', dept:'Management',
+            code:'LMEO', nom:'Licence Management des Entreprises et des Organisations', abrege:'LMEO', cycle:'Licence', dept:'Management',
             niveaux:[
                 { label:'1ère année', semestre:'S1', effectif:35, nb_groupes:2 },
                 { label:'2ème année', semestre:'S3', effectif:30, nb_groupes:2 },
@@ -125,21 +125,21 @@ const HESTIM_CONFIG = {
             ],
         },
         {
-            code:'PGE-MDI', nom:'Programme Grande École (Marketing Digital et Innovation)', abrege:'MDI', cycle:'PGE', campus:'ST', dept:'Marketing',
+            code:'PGE-MDI', nom:'Programme Grande École (Marketing Digital et Innovation)', abrege:'MDI', cycle:'PGE', dept:'Marketing',
             niveaux:[
                 { label:'4ème année', semestre:'S7', effectif:25, nb_groupes:1 },
                 { label:'5ème année', semestre:'S9', effectif:22, nb_groupes:1 },
             ],
         },
         {
-            code:'MASC', nom:'Master Achats et Supply Chain', abrege:'MASC', cycle:'Master', campus:'ST', dept:'Management',
+            code:'MASC', nom:'Master Achats et Supply Chain', abrege:'MASC', cycle:'Master', dept:'Management',
             niveaux:[
                 { label:'4ème année', semestre:'S7', effectif:20, nb_groupes:1 },
                 { label:'5ème année', semestre:'S9', effectif:18, nb_groupes:1 },
             ],
         },
         {
-            code:'MFAC', nom:'Master Finance, Audit et Contrôle', abrege:'MFAC', cycle:'Master', campus:'ST', dept:'Finance & Comptabilité',
+            code:'MFAC', nom:'Master Finance, Audit et Contrôle', abrege:'MFAC', cycle:'Master', dept:'Finance & Comptabilité',
             niveaux:[
                 { label:'4ème année', semestre:'S7', effectif:22, nb_groupes:1 },
                 { label:'5ème année', semestre:'S9', effectif:20, nb_groupes:1 },
@@ -602,7 +602,6 @@ async function seed() {
                     nom_filiere: f.nom,
                     description: `${f.cycle} : ${f.nom}`,
                     ...(CYCLES_SEED[f.cycle] || {}),
-                    id_campus_prefere: campusParCode[f.campus] ?? null,
                     partenaire: f.partenaire ?? null,
                 },
             });

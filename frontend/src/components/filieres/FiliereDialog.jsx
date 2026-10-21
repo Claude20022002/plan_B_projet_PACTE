@@ -2,17 +2,17 @@ import { useTranslation } from 'react-i18next';
 import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
 
 /**
- * Création et modification d'une filière : code, intitulé, campus, régime, cycle et année où il
- * commence (pour écrire « 2ème année du cycle Ingénieur d'Etat »), double diplôme.
- * Pas de champ « École » : HESTIM, ce sont deux campus (retour du 21 octobre, R-3). Le champ
- * reste en base et garde sa valeur.
+ * Création et modification d'une filière : code, intitulé, régime, cycle et année où il commence
+ * (pour écrire « 2ème année du cycle Ingénieur d'Etat »), double diplôme.
+ * Pas de champ « École » (retour du 21 octobre, R-3 ; le champ reste en base et garde sa valeur),
+ * ni de campus : une filière a cours dans n'importe quel bâtiment (décision du 21 octobre 2026).
  */
 
 const CYCLES = ['prepa', 'licence', 'ingenieur', 'master', 'executive'];
 const REGIMES = ['initiale', 'continue', 'executive'];
 
 /** Rend le dialogue ; onChamp(nom) rend le gestionnaire de saisie de ce champ. */
-export default function FiliereDialog({ ouvert, modification, form, campus, onChamp, onFermer, onEnregistrer }) {
+export default function FiliereDialog({ ouvert, modification, form, onChamp, onFermer, onEnregistrer }) {
     const { t } = useTranslation();
     return (
         <Dialog open={ouvert} onClose={onFermer} maxWidth="sm" fullWidth>
@@ -24,23 +24,13 @@ export default function FiliereDialog({ ouvert, modification, form, campus, onCh
                             <TextField label={t('ref.programs.fields.code')} value={form.code_filiere} onChange={onChamp('code_filiere')} required autoFocus sx={{ minWidth: 140 }} />
                             <TextField fullWidth label={t('ref.programs.fields.name')} value={form.nom_filiere} onChange={onChamp('nom_filiere')} required />
                         </Stack>
-                        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
-                            <TextField select fullWidth label={t('ref.programs.fields.campus')} value={form.id_campus_prefere} onChange={onChamp('id_campus_prefere')}>
-                                <MenuItem value="">{t('common.aucun')}</MenuItem>
-                                {campus.map((c) => (
-                                    <MenuItem key={c.id_campus} value={c.id_campus}>
-                                        {c.nom}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                            <TextField select fullWidth label={t('ref.programs.fields.regime')} value={form.regime} onChange={onChamp('regime')}>
-                                {REGIMES.map((r) => (
-                                    <MenuItem key={r} value={r}>
-                                        {t(`ref.regimes.${r}`)}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </Stack>
+                        <TextField select fullWidth label={t('ref.programs.fields.regime')} value={form.regime} onChange={onChamp('regime')}>
+                            {REGIMES.map((r) => (
+                                <MenuItem key={r} value={r}>
+                                    {t(`ref.regimes.${r}`)}
+                                </MenuItem>
+                            ))}
+                        </TextField>
                         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
                             <TextField select fullWidth label={t('ref.programs.fields.cycle')} value={form.cycle} onChange={onChamp('cycle')}>
                                 <MenuItem value="">{t('common.aucun')}</MenuItem>

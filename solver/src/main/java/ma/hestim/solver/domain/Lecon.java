@@ -41,7 +41,6 @@ public class Lecon {
     private String typeSalleRequis;
     private Set<String> equipementsRequis = new HashSet<>();
     private boolean distanciel;
-    private Long campusPrefere;
 
     @PlanningPin
     private boolean epinglee;
@@ -279,8 +278,6 @@ public class Lecon {
     public void setEquipementsRequis(Set<String> equipementsRequis) { this.equipementsRequis = equipementsRequis == null ? new HashSet<>() : equipementsRequis; }
     public boolean isDistanciel() { return distanciel; }
     public void setDistanciel(boolean distanciel) { this.distanciel = distanciel; }
-    public Long getCampusPrefere() { return campusPrefere; }
-    public void setCampusPrefere(Long campusPrefere) { this.campusPrefere = campusPrefere; }
     public boolean isEpinglee() { return epinglee; }
     public void setEpinglee(boolean epinglee) { this.epinglee = epinglee; }
     public Creneau getCreneau() { return creneau; }

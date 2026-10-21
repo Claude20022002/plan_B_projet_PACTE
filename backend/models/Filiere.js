@@ -36,7 +36,6 @@ const Filiere = sequelize.define(
         intitule_cycle: DataTypes.STRING,
         // Année d'études où commence le cycle (3 pour le cycle ingénieur après deux ans de prépa)
         premiere_annee_cycle: DataTypes.INTEGER,
-        id_campus_prefere: DataTypes.INTEGER,
         // École partenaire d'un double diplôme (ESTIA, INSA Rennes…)
         partenaire: DataTypes.STRING,
         // Dernière année suivie à HESTIM (les années suivantes se font chez le partenaire)
