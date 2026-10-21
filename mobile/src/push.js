@@ -45,3 +45,21 @@ export const desinscrireDesNotifications = async () => {
 };
 
 export const notificationsActives = async () => Boolean(await lirePushToken().catch(() => null));
+
+/**
+ * Où en est l'autorisation des alertes sur ce téléphone : 'accordee', 'a_demander', 'refusee',
+ * ou null là où le push n'existe pas (Expo Go sur Android, émulateur).
+ */
+export const etatAutorisation = async () => {
+  if (!pushDisponible || !Device.isDevice) return null;
+  const { status, canAskAgain } = await Notifications.getPermissionsAsync();
+  if (status === 'granted') return 'accordee';
+  return canAskAgain === false ? 'refusee' : 'a_demander';
+};
+
+/**
+ * Après la connexion : réinscrit le téléphone sans rien demander si les alertes sont déjà
+ * autorisées. La première demande passe par la proposition du premier lancement (R-11), qui
+ * explique à quoi servent les alertes avant la fenêtre du système.
+ */
+export const inscrireSiAutorise = async () => ((await etatAutorisation()) === 'accordee' ? inscrireAuxNotifications() : null);

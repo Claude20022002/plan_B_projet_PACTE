@@ -9,6 +9,7 @@ import * as banque from "../services/studio/questionnaires.js";
 import * as medias from "../services/studio/medias.js";
 import * as sessions from "../services/studio/sessions.js";
 import * as ia from "../services/studio/iaGeneration.js";
+import * as classquiz from "../services/studio/importClassQuiz.js";
 
 /**
  * Studio quiz, côté enseignant (docs/plans/studio-quiz.md). Tout est réservé à l'auteur : un quiz,
@@ -23,6 +24,7 @@ import * as ia from "../services/studio/iaGeneration.js";
  *  IA           GET /ia · POST /ia/generations (corps brut facultatif : support PDF, DOCX, PPTX)
  *               POST /questions/:id/regenerer · POST /questions/:id/illustrer · POST /medias/voix
  *               POST /medias/:id/transcrire
+ *  ClassQuiz    GET /classquiz (quiz du service de quiz pas encore importés) · POST /classquiz/importer (les importer, en brouillon)
  *  Passations   GET /sessions?id_questionnaire= · POST /questionnaires/:id/sessions · PUT/DELETE /sessions/:id
  *               GET /sessions/:id/resultats (.csv) · GET /copies/:id · PUT /copies/:id/questions/:idq/note
  */
@@ -64,6 +66,10 @@ router.get(
         res.json(donnees);
     })
 );
+
+// ── Import des quiz de ClassQuiz (sortie de ClassQuiz, lot SC-2) ──
+router.get("/classquiz", route((req) => classquiz.quizAImporter(req.user)));
+router.post("/classquiz/importer", route((req) => classquiz.importerMesQuiz(req.user)));
 
 // ── Questions ──
 router.post("/questionnaires/:id/questions", route((req) => banque.ajouterQuestion(req.user, req.params.id, req.body), 201));

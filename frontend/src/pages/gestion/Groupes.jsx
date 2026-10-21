@@ -224,7 +224,7 @@ export default function Groupes() {
         <DashboardLayout>
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 2 }}>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' }, minWidth: 0 }}>
                         <TextField select size="small" label={t('ref.curriculum.program')} value={filiere} onChange={(e) => setFiliere(e.target.value)} sx={{ minWidth: 240 }}>
                             {filieres.map((f) => (
                                 <MenuItem key={f.id_filiere} value={f.id_filiere}>

@@ -2,24 +2,27 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, Typography, useMediaQuery } from '@mui/material';
-import { EventRepeat, FactCheck, Groups, SportsEsports, ViewWeek } from '@mui/icons-material';
+import { EventRepeat, FactCheck, ViewWeek } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { useAuth } from '../../contexts/AuthContext';
-import { affectationAPI, demandeReportAPI, notificationAPI, quizAPI } from '../../services/api';
+import { affectationAPI, demandeReportAPI, notificationAPI } from '../../services/api';
 import { fetchAll } from '../../utils/fetchAll';
 import { DepartureBoard, SessionSpotlight } from '../../design-system/board';
 import ChangesList from '../../design-system/board/ChangesList';
 import { byStart, findSpotlight, toBoardSession, toLocalISODate } from '../../utils/session';
 import { ds } from '../../design-system/tokens';
 import useLiveRefresh from '../../hooks/useLiveRefresh';
-import LancerQuizDialog from '../../components/quiz/LancerQuizDialog';
 
 const HORIZON_DAYS = 14;
 
-function TodoPanel({ pendingReports, onOpenReports }) {
+function TodoPanel({ pendingReports, reportsAConfirmer, onOpenReports }) {
   const { t } = useTranslation();
-  // Une séance planifiée est tenue pour confirmée : l'enseignant n'agit que pour demander un report
-  const rows = [{ label: t('teacher.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports }];
+  // Une séance planifiée est tenue pour confirmée : l'enseignant n'agit que pour un report. Un report
+  // validé par l'administration attend sa réponse : il passe en tête (décision du 21 octobre).
+  const rows = [
+    { label: t('teacher.reportsAConfirmer', { count: reportsAConfirmer }), value: reportsAConfirmer, action: onOpenReports },
+    { label: t('teacher.pendingReports', { count: pendingReports }), value: pendingReports, action: onOpenReports },
+  ];
   return (
     <Box
       component="section"
@@ -80,21 +83,6 @@ export default function EnseignantDashboard() {
   const [changes, setChanges] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
-  // Jeux (ClassQuiz) : bouton proposé seulement si la plateforme en a un
-  const [quiz, setQuiz] = useState(null);
-  // Séance pour laquelle l'enseignant lance un quiz en direct (CQ-3 : dans Planner)
-  const [quizPour, setQuizPour] = useState(null);
-
-  useEffect(() => {
-    let actif = true;
-    quizAPI
-      .getConfig()
-      .then((c) => actif && setQuiz(c?.peutLancer && /^https?:\/\//.test(c.url ?? '') ? c : null))
-      .catch(() => actif && setQuiz(null));
-    return () => {
-      actif = false;
-    };
-  }, []);
   const [now, setNow] = useState(() => new Date());
   const compact = useMediaQuery('(max-width:599.95px)');
 
@@ -146,50 +134,35 @@ export default function EnseignantDashboard() {
   }, [upcoming]);
   const spotlight = useMemo(() => findSpotlight(boardSessions, now), [boardSessions, now]);
   const pendingReports = reports.filter((r) => r.statut_demande === 'en_attente').length;
+  const reportsAConfirmer = reports.filter((r) => r.statut_demande === 'a_confirmer').length;
 
-  const spotlightActions = (s) => (
-    <>
-      {/* Appel et gestion de la classe : le jour de la séance */}
-      {s.status !== 'annule' && s.date === toLocalISODate() && (
-        <Button variant="outlined" startIcon={<FactCheck />} onClick={() => navigate(`/appel/${s.id}`)} sx={{ color: ds.board.letter, borderColor: ds.board.seam }}>
-          {t('classes.page.appel.a_faire')}
-        </Button>
-      )}
-      {/* Un autre jour : l'appel reste visible, pour qu'on sache où le faire */}
-      {s.status !== 'annule' && s.date !== toLocalISODate() && (
-        <Button variant="outlined" startIcon={<FactCheck />} disabled sx={{ '&.Mui-disabled': { color: ds.board.letterDim, borderColor: ds.board.seam } }}>
-          {t('classes.page.appelLeJour')}
-        </Button>
-      )}
-      {s.status !== 'annule' && (
-        <Button variant="outlined" startIcon={<Groups />} onClick={() => navigate('/mes-classes')} sx={{ color: ds.board.letter, borderColor: ds.board.seam }}>
-          {t('nav.myClasses')}
-        </Button>
-      )}
-      {/* Quiz en direct, lancé et projeté dans Planner : le jour de la séance seulement (le serveur
-          refuse un autre jour) ; la partie est rattachée à la séance et ses étudiants sont prévenus */}
-      {quiz?.peutLancer && s.status !== 'annule' && s.date === toLocalISODate() && (
-        <Button
-          variant="outlined"
-          startIcon={<SportsEsports />}
-          onClick={() => setQuizPour({ id_affectation: s.id })}
-          sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
-        >
-          {t('board.launchQuiz')}
-        </Button>
-      )}
-      {s.status !== 'annule' && (
+  // Une seule ligne d'actions sous la séance (retours du 21 octobre) : l'appel, le jour même, en
+  // action principale, puis le report. Les classes et les quiz ont leur entrée dans le menu
+  // (Mes classes, Activités) : un quiz ne dépend pas d'une séance.
+  const spotlightActions = (s) =>
+    s.status === 'annule' ? null : (
+      <>
+        {s.date === toLocalISODate() && (
+          <Button
+            variant="contained"
+            disableElevation
+            startIcon={<FactCheck />}
+            onClick={() => navigate(`/appel/${s.id}`)}
+            sx={{ bgcolor: ds.board.letter, color: ds.board.ground, '&:hover': { bgcolor: ds.board.letterDim } }}
+          >
+            {t('classes.page.appel.a_faire')}
+          </Button>
+        )}
         <Button
           variant="outlined"
           startIcon={<EventRepeat />}
-          onClick={() => navigate('/demandes-report')}
+          onClick={() => navigate(`/demandes-report?seance=${s.id}`)}
           sx={{ color: ds.board.letter, borderColor: ds.board.seam }}
         >
           {t('board.requestReport')}
         </Button>
-      )}
-    </>
-  );
+      </>
+    );
 
   return (
     <DashboardLayout>
@@ -244,6 +217,7 @@ export default function EnseignantDashboard() {
         <Box sx={{ display: 'grid', gap: 2, alignContent: 'start' }}>
           <TodoPanel
             pendingReports={pendingReports}
+            reportsAConfirmer={reportsAConfirmer}
             onOpenReports={() => navigate('/demandes-report')}
           />
           {!(compact && changes.length > 0 && spotlight) && (
@@ -251,7 +225,6 @@ export default function EnseignantDashboard() {
           )}
         </Box>
       </Box>
-      <LancerQuizDialog seance={quizPour} onClose={() => setQuizPour(null)} />
     </DashboardLayout>
   );
 }

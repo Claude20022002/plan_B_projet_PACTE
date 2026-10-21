@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { LANGUAGES } from '../i18n';
 import { ds } from '../design-system/tokens';
 import { FlapTiles } from '../design-system/board';
+import useTitreOnglet from '../hooks/useTitreOnglet';
 
 /**
  * Photo réelle de l'école (hestim.ma) encadrée comme le panneau, légendée par une étiquette
@@ -62,6 +63,7 @@ export default function Accueil() {
   const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   const { isAuthenticated, user } = useAuth();
+  useTitreOnglet();
   const features = t('landing.features', { returnObjects: true });
 
   const enter = () => navigate(isAuthenticated && user?.role ? `/dashboard/${user.role}` : '/connexion');

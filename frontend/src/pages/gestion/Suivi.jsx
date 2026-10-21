@@ -146,7 +146,7 @@ function Avancement({ nombre, user }) {
                                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{l.groupes.join(', ')}</TableCell>
                                     <TableCell>
                                         <Box sx={{ position: 'relative' }}>
-                                            <LinearProgress variant="determinate" value={Math.min(100, (100 * l.heures_realisees) / (l.heures_prevues || 1))} sx={{ height: 6, borderRadius: 1, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }} />
+                                            <LinearProgress variant="determinate" value={Math.min(100, (100 * l.heures_realisees) / (l.heures_prevues || 1))} aria-label={t('tracking.barreAria', { module: l.module.nom_cours, type: l.type, faites: nombre.format(l.heures_realisees), prevues: nombre.format(l.heures_prevues) })} sx={{ height: 6, borderRadius: 1, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }} />
                                             {/* Repère du rythme attendu à ce jour */}
                                             <Box aria-hidden sx={{ position: 'absolute', top: -3, bottom: -3, width: 2, bgcolor: 'text.primary', left: `${Math.min(100, (100 * l.heures_attendues) / (l.heures_prevues || 1))}%` }} />
                                         </Box>

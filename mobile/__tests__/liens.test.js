@@ -14,6 +14,10 @@ test('quiz : la partie en cours ou ses résultats, sinon la page Activités', ()
 test('annonce, emploi du temps, liens externes', () => {
   expect(ecranDeLien('/annonces/7')).toBe('/annonce/7');
   expect(ecranDeLien('/emploi-du-temps/etudiant')).toBe('/semaine');
+  // Report de séance : la semaine de la nouvelle date
+  expect(ecranDeLien('/emploi-du-temps/etudiant?date=2026-11-30')).toBe('/semaine?date=2026-11-30');
+  expect(ecranDeLien('/emploi-du-temps/enseignant?date=2026-11-30')).toBe('/semaine?date=2026-11-30');
+  expect(ecranDeLien('/emploi-du-temps/etudiant?date=demain')).toBe('/semaine');
   expect(ecranDeLien('https://pirate.test')).toBe('/alertes');
   expect(ecranDeLien(undefined)).toBe('/alertes');
 });

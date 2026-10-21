@@ -10,6 +10,7 @@ import useEcranProjete from '../hooks/useEcranProjete';
 import { presenceAPI } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import { ds } from '../design-system/tokens';
+import useTitreOnglet from '../hooks/useTitreOnglet';
 
 const RAFRAICHIR_LISTE_MS = 3000;
 // Un étudiant qui vient de scanner reste mis en avant quelques secondes
@@ -25,6 +26,7 @@ const NOUVEAU_MS = 8000;
  */
 export default function AppelProjection() {
   const { t } = useTranslation();
+  useTitreOnglet(t('appel.titre'));
   const { id } = useParams();
   const navigate = useNavigate();
   const toast = useToast();

@@ -256,15 +256,15 @@ export default function Statistiques() {
                                     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5 }}>
                                         {filiereData.map((f) => (
                                             <Box key={f.nom}>
-                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 0.5 }}>
-                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                                                        <Box sx={{ width: 10, height: 10, borderRadius: '2px',
+                                                <Box sx={{ display: 'flex', justifyContent: 'space-between', gap: 1, mb: 0.5 }}>
+                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, minWidth: 0 }}>
+                                                        <Box sx={{ width: 10, height: 10, flexShrink: 0, borderRadius: '2px',
                                                             bgcolor: lineColor(f.id_filiere) }} />
                                                         <Typography variant="body2" noWrap sx={{ maxWidth: 220 }}>
                                                             {f.nom}
                                                         </Typography>
                                                     </Box>
-                                                    <Box sx={{ display: 'flex', gap: 0.5 }}>
+                                                    <Box sx={{ display: 'flex', gap: 0.5, flexShrink: 0 }}>
                                                         <Chip label={t('stats.seances', { count: f.nombre_seances })} size="small" variant="outlined" />
                                                         <Chip label={`${numberFr.format(f.nombre_heures)} h`} size="small" variant="outlined" />
                                                     </Box>

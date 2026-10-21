@@ -9,15 +9,19 @@ import { planner } from '../api/client';
 import { chargerConfigQuiz, chargerPartiesQuiz, rejoindreSessionJeu } from '../api/donnees';
 import { origineDe, partieDuPin, pinScanne } from '../quiz/scan';
 import { codeSessionScanne, ecranDeSession } from '../jeux/session';
+import { cheminQuiz, codeQuizScanne } from '../quiz/studio';
+import { ouvrirSurLeWeb } from '../espaces/ouvrir';
 import { ouvrirPartie as ouvrirLaPartie } from '../quiz/ouvrir';
 import { proposerChangement } from '../telephone/etat';
 import { QUIZ_DANS_L_APPLICATION } from '../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
 
 /**
- * Scan du QR affiché par l'enseignant. Appel (I1) : la présence est enregistrée aussitôt. Quiz :
- * la partie s'ouvre si elle est lancée dans l'une de mes séances (quiz/scan.js, quiz/ouvrir.js). Un seul envoi par
- * code lu ; en cas d'erreur (code expiré, autre groupe), l'étudiant peut scanner de nouveau.
+ * Scan du QR affiché par l'enseignant. Appel (I1) : la présence est enregistrée aussitôt. Quiz du
+ * Studio : il s'ouvre sur le site, déjà connecté (quiz/studio.js). Partie ClassQuiz : elle s'ouvre si
+ * elle est lancée dans l'une de mes séances (quiz/scan.js, quiz/ouvrir.js). Jeu lancé en classe :
+ * jeux/session.js. C'est la seule porte de l'étudiant vers les quiz et les jeux (R-10). Un seul
+ * envoi par code lu ; en cas d'erreur (code expiré, autre groupe), l'étudiant peut scanner de nouveau.
  */
 export default function Scanner() {
   const { couleurs } = useTheme();
@@ -38,6 +42,9 @@ export default function Scanner() {
       .catch(() => null);
   }, []);
 
+  // Vue navigateur ouverte : le scanner se ferme derrière elle (au retour, l'étudiant retrouve l'application)
+  const fermerDerriere = () => (router.canGoBack() ? router.back() : router.replace('/'));
+
   const ouvrirPartie = async (pin, origine) => {
     const partie = partieDuPin(await chargerPartiesQuiz(), pin, origine);
     if (!partie) {
@@ -46,10 +53,8 @@ export default function Scanner() {
     }
     partieOuverte.current = true;
     await ouvrirLaPartie({ router, partie, couleurs, remplacer: true });
-    // Vue navigateur : le scanner se ferme derrière elle (au retour, l'étudiant retrouve l'application)
     if (QUIZ_DANS_L_APPLICATION) return;
-    if (router.canGoBack()) router.back();
-    else router.replace('/');
+    fermerDerriere();
   };
 
   const lu = async ({ data }) => {
@@ -63,6 +68,14 @@ export default function Scanner() {
         if (!ecranJeu) throw new Error(t('app.sessionJeu.erreur'));
         partieOuverte.current = true;
         router.replace(ecranJeu);
+        return;
+      }
+      // Quiz du Studio : le site l'ouvre (code inconnu ou expiré, il le dit lui-même)
+      const codeQuiz = codeQuizScanne(data);
+      if (codeQuiz) {
+        partieOuverte.current = true;
+        await ouvrirSurLeWeb(cheminQuiz(codeQuiz), couleurs);
+        fermerDerriere();
         return;
       }
       const origine = await origineQuiz.current;

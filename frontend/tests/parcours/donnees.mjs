@@ -27,7 +27,7 @@ const ETUDIANTS = [["Salma", "Bennani"], ["Yassine", "Alami"], ["Imane", "Tazi"]
 export const preparerDonnees = async (racine) => {
   const serveur = (chemin) => import(pathToFileURL(path.join(racine, "backend", chemin)).href);
   const { resetDatabase, createUser, createPlanningFixture, PASSWORD } = await serveur("tests/integration/helpers/testApp.js");
-  const { Affectation, AnneeUniversitaire, AppareilEtudiant, Appartenir, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, Periode } = await serveur("models/index.js");
+  const { Affectation, AnneeUniversitaire, AppareilEtudiant, Appartenir, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, EnvoiEdt, Periode } = await serveur("models/index.js");
   const { empreinteAppareil } = await serveur("services/presences/appareil.js");
 
   await resetDatabase();
@@ -56,6 +56,10 @@ export const preparerDonnees = async (racine) => {
     id_creneau: creneau.id_creneau,
     id_user_admin: admin.id_user,
   });
+
+  // Les étudiants ne voient un mois qu'une fois publié : ceux de la séance du jour et de la séance fixe de la classe le sont
+  const moisPublies = [...new Set([aujourdhui, String(fixture.affectation.date_seance).slice(0, 10)].map((d) => d.slice(0, 7)))];
+  await EnvoiEdt.bulkCreate(moisPublies.map((mois) => ({ id_groupe: fixture.groupe.id_groupe, mois, seances: [], envoye_le: new Date(), nb_destinataires: etudiants.length })));
 
   const grille = await creerGrille(Creneau);
   const generation = await preparerGeneration(racine, admin, grille);

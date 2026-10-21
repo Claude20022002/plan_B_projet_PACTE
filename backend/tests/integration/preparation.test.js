@@ -12,6 +12,7 @@ import {
     Enseignant,
     Enseignement,
     EnseignementEnseignant,
+    EnvoiEdt,
     Evenement,
     Filiere,
     Groupe,
@@ -76,6 +77,8 @@ beforeAll(async () => {
     // Activités d'intégration : lundi 11 après-midi
     await Evenement.create({ titre: "Activités d'intégration : Accueil & Découverte", date_debut: "2027-01-11", date_fin: "2027-01-11", heure_debut: "13:30", heure_fin: "17:00", type_evenement: "autre", portee: "groupe", id_cible: promo.id_groupe, bloque_affectations: true, id_user_createur: admin.id_user });
     ref = { filiere, promo, periode };
+    // Les étudiants ne voient un mois qu'une fois publié : janvier est publié pour la classe de l'étudiant
+    await EnvoiEdt.create({ id_groupe: promo.id_groupe, mois: "2027-01", seances: [], envoye_le: new Date(), nb_destinataires: 1 });
 });
 afterAll(closeDatabase);
 beforeEach(resetRateLimiters);
