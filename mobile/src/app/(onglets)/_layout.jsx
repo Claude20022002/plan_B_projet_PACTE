@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useAuth } from '../../auth/AuthContext';
+import PropositionAlertes from '../../alertes/PropositionAlertes';
 import { espace, useTheme } from '../../theme';
 import { HAUTEUR_ONGLETS, Verre } from '../../verre/Verre';
 
@@ -43,43 +44,47 @@ export default function Onglets() {
   });
 
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        tabBarActiveTintColor: actif,
-        tabBarInactiveTintColor: couleurs.lettreAttenuee,
-        tabBarStyle: {
-          position: 'absolute',
-          backgroundColor: 'transparent',
-          borderTopColor: theme.verre.bord,
-          borderTopWidth: StyleSheet.hairlineWidth,
-          elevation: 0,
-          height: HAUTEUR_ONGLETS + marges.bottom,
-          paddingBottom: marges.bottom,
-        },
-        tabBarBackground: () => <Verre style={StyleSheet.absoluteFill} opacite={0.62} />,
-        tabBarLabelStyle: { fontFamily: polices.panneau, fontSize: theme.famille === 'planner' ? 12 : 11, textTransform: theme.capitales, letterSpacing: espace(theme, 0.8) },
-        tabBarItemStyle: { minHeight: 48 },
-      }}
-    >
-      <Tabs.Screen name="index" options={options('index', t('app.onglets.tableau'))} />
-      <Tabs.Screen name="semaine" options={options('semaine', t('app.onglets.semaine'))} />
-      {/* L'onglet n'affiche pas d'écran à lui : le toucher pose le scanner par-dessus les onglets, sans
-          changer d'onglet. Le bouton Fermer et le retour d'Android ramènent ainsi à l'onglet d'où l'on vient. */}
-      <Tabs.Screen
-        name="scan"
-        options={options('scan', t('app.onglets.scanner'))}
-        listeners={{
-          tabPress: (evenement) => {
-            evenement.preventDefault();
-            router.push('/scanner');
+    <>
+      <Tabs
+        screenOptions={{
+          headerShown: false,
+          tabBarActiveTintColor: actif,
+          tabBarInactiveTintColor: couleurs.lettreAttenuee,
+          tabBarStyle: {
+            position: 'absolute',
+            backgroundColor: 'transparent',
+            borderTopColor: theme.verre.bord,
+            borderTopWidth: StyleSheet.hairlineWidth,
+            elevation: 0,
+            height: HAUTEUR_ONGLETS + marges.bottom,
+            paddingBottom: marges.bottom,
           },
+          tabBarBackground: () => <Verre style={StyleSheet.absoluteFill} opacite={0.62} />,
+          tabBarLabelStyle: { fontFamily: polices.panneau, fontSize: theme.famille === 'planner' ? 12 : 11, textTransform: theme.capitales, letterSpacing: espace(theme, 0.8) },
+          tabBarItemStyle: { minHeight: 48 },
         }}
-      />
-      {/* Sans onglet (href nul) : la page reste joignable par une notification de quiz */}
-      <Tabs.Screen name="jeux" options={{ href: null }} />
-      <Tabs.Screen name="bibliotheque" options={options('bibliotheque', t('app.onglets.bibliotheque'))} />
-      <Tabs.Screen name="compte" options={options('compte', t('app.onglets.compte'))} />
-    </Tabs>
+      >
+        <Tabs.Screen name="index" options={options('index', t('app.onglets.tableau'))} />
+        <Tabs.Screen name="semaine" options={options('semaine', t('app.onglets.semaine'))} />
+        {/* L'onglet n'affiche pas d'écran à lui : le toucher pose le scanner par-dessus les onglets, sans
+            changer d'onglet. Le bouton Fermer et le retour d'Android ramènent ainsi à l'onglet d'où l'on vient. */}
+        <Tabs.Screen
+          name="scan"
+          options={options('scan', t('app.onglets.scanner'))}
+          listeners={{
+            tabPress: (evenement) => {
+              evenement.preventDefault();
+              router.push('/scanner');
+            },
+          }}
+        />
+        {/* Sans onglet (href nul) : la page reste joignable par une notification de quiz */}
+        <Tabs.Screen name="jeux" options={{ href: null }} />
+        <Tabs.Screen name="bibliotheque" options={options('bibliotheque', t('app.onglets.bibliotheque'))} />
+        <Tabs.Screen name="compte" options={options('compte', t('app.onglets.compte'))} />
+      </Tabs>
+      {/* Premier lancement : proposer les alertes des changements (R-11) */}
+      <PropositionAlertes />
+    </>
   );
 }
