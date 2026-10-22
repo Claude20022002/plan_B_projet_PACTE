@@ -32,7 +32,9 @@ function Chiffre({ libelle, valeur, alerte = false }) {
  * Rapport d'une génération terminée (recette du 20 octobre, M-3 ; R-4) : un résumé en chiffres
  * positifs, puis ce qu'il reste à corriger, chaque point avec le lien de l'écran qui le corrige.
  * Le détail des enseignements incomplets reste replié : la page ne fait plus des milliers de pixels.
- * Le score interne du solveur et ses contraintes ne s'affichent plus.
+ * Le score interne du solveur et ses contraintes ne s'affichent plus. Les séances générées ne
+ * parviennent aux étudiants qu'une fois le mois publié (décision du 21 octobre 2026) : le rapport
+ * le dit et mène à l'EDT du mois.
  */
 export default function RapportGeneration({ rapport }) {
     const { t, i18n } = useTranslation();
@@ -50,6 +52,19 @@ export default function RapportGeneration({ rapport }) {
                 <Chiffre libelle={t('gen.report.excluded')} valeur={resume.enseignements_exclus} alerte={resume.enseignements_exclus > 0} />
                 <Chiffre libelle={t('gen.report.conflicts')} valeur={resume.conflits} />
             </Stack>
+
+            {resume.seances_creees > 0 && (
+                <Alert
+                    severity="info"
+                    action={
+                        <Button component={RouterLink} to="/emploi-du-temps/mensuel" size="small" color="inherit" endIcon={<ArrowForward />}>
+                            {t('gen.report.publishLink')}
+                        </Button>
+                    }
+                >
+                    {t('gen.report.publish')}
+                </Alert>
+            )}
 
             {rapport.a_corriger ? (
                 <Box component="section" aria-labelledby="titre-a-corriger">
