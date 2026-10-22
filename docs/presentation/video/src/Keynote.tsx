@@ -23,10 +23,10 @@ import { BEAT, C } from "./theme";
  * Les autres compositions ne changent pas.
  */
 
-const PROMESSE = "Toute l'école à l'heure.";
+export const PROMESSE = "Toute l'école à l'heure.";
 
-type Scene = (duree: number) => React.ReactNode;
-const SCENES: Record<string, Scene> = {
+export type Scene = (duree: number) => React.ReactNode;
+export const SCENES: Record<string, Scene> = {
   froid: () => <K1Froid />,
   chaos: () => <K2Chaos />,
   revelation: () => <K3Revelation />,
