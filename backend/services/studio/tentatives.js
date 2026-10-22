@@ -40,7 +40,7 @@ const verifierAcces = async (user, session, { pourCommencer = false } = {}) => {
     if (session.fermeture && new Date(session.fermeture) <= t) throw new ErreurMetier("Ce quiz est fermé", 409, "QUIZ_FERME");
 };
 
-const mesCopies = (user, session) => TentativeQuiz.findAll({ where: { id_session: session.id_session, id_user: user.id_user }, order: [["numero", "ASC"]] });
+const mesCopies = (user, session, transaction) => TentativeQuiz.findAll({ where: { id_session: session.id_session, id_user: user.id_user }, order: [["numero", "ASC"]], transaction });
 
 const restantes = (session, copies) => (session.reglages.tentatives_max ? Math.max(0, session.reglages.tentatives_max - copies.length) : null);
 
@@ -71,31 +71,41 @@ export const rejoindre = async (user, code) => {
     return resumeSession(session, await mesCopies(user, session));
 };
 
-/** Commence une tentative, ou reprend celle qui est en cours (même ordre, mêmes réponses). */
+/**
+ * Commence une tentative, ou reprend celle qui est en cours (même ordre, mêmes réponses). Les débuts
+ * d'une même session passent l'un après l'autre (verrou sur sa ligne) : des requêtes simultanées ne
+ * créent ni deux copies en cours ni plus de tentatives que tentatives_max.
+ */
 export const commencer = async (user, idSession) => {
-    const session = await SessionQuiz.findByPk(Number(idSession) || 0);
-    if (!session) throw new ErreurMetier("Quiz introuvable", 404);
-    if (session.mode === "direct") throw new ErreurMetier("Ce quiz se joue en direct : rejoignez-le avec son code", 409, "QUIZ_EN_DIRECT");
-    await verifierAcces(user, session, { pourCommencer: true });
-    let copies = await mesCopies(user, session);
-    const enCours = copies.find((c) => c.statut === "en_cours");
-    if (enCours && !estExpiree(enCours)) return { id_tentative: enCours.id_tentative, reprise: true };
-    if (enCours) {
-        await rendreCopie(session, enCours);
-        copies = await mesCopies(user, session);
-    }
-    if (restantes(session, copies) === 0) throw new ErreurMetier("Vous avez utilisé toutes vos tentatives", 409, "TENTATIVES_EPUISEES");
-    const debut = maintenant();
-    const finDuTemps = session.reglages.duree_min ? new Date(debut.getTime() + session.reglages.duree_min * 60000) : null;
-    const fermeture = session.fermeture ? new Date(session.fermeture) : null;
-    const echeance = finDuTemps && fermeture ? new Date(Math.min(finDuTemps, fermeture)) : finDuTemps ?? fermeture;
-    const ids = session.questions.map((q) => q.id_question);
-    const ordre = {
-        questions: session.reglages.melanger_questions ? melanger(ids) : ids,
-        options: Object.fromEntries(session.questions.map((q) => [q.id_question, tirerOrdre(q, { melangerOptions: session.reglages.melanger_options })])),
-    };
-    const tentative = await TentativeQuiz.create({ id_session: session.id_session, id_user: user.id_user, numero: copies.length + 1, debut, echeance, ordre, reponses: {}, marquees: [], verrouillees: [] });
-    return { id_tentative: tentative.id_tentative, reprise: false };
+    const trouvee = await SessionQuiz.findByPk(Number(idSession) || 0);
+    if (!trouvee) throw new ErreurMetier("Quiz introuvable", 404);
+    if (trouvee.mode === "direct") throw new ErreurMetier("Ce quiz se joue en direct : rejoignez-le avec son code", 409, "QUIZ_EN_DIRECT");
+    await verifierAcces(user, trouvee, { pourCommencer: true });
+    return sequelize.transaction(async (transaction) => {
+        const session = await SessionQuiz.findByPk(trouvee.id_session, { transaction, lock: transaction.LOCK.UPDATE });
+        let copies = await mesCopies(user, session, transaction);
+        const enCours = copies.find((c) => c.statut === "en_cours");
+        if (enCours && !estExpiree(enCours)) return { id_tentative: enCours.id_tentative, reprise: true };
+        if (enCours) {
+            await rendreCopie(session, enCours, maintenant(), { transaction });
+            copies = await mesCopies(user, session, transaction);
+        }
+        if (restantes(session, copies) === 0) throw new ErreurMetier("Vous avez utilisé toutes vos tentatives", 409, "TENTATIVES_EPUISEES");
+        const debut = maintenant();
+        const finDuTemps = session.reglages.duree_min ? new Date(debut.getTime() + session.reglages.duree_min * 60000) : null;
+        const fermeture = session.fermeture ? new Date(session.fermeture) : null;
+        const echeance = finDuTemps && fermeture ? new Date(Math.min(finDuTemps, fermeture)) : finDuTemps ?? fermeture;
+        const ids = session.questions.map((q) => q.id_question);
+        const ordre = {
+            questions: session.reglages.melanger_questions ? melanger(ids) : ids,
+            options: Object.fromEntries(session.questions.map((q) => [q.id_question, tirerOrdre(q, { melangerOptions: session.reglages.melanger_options })])),
+        };
+        const tentative = await TentativeQuiz.create(
+            { id_session: session.id_session, id_user: user.id_user, numero: copies.length + 1, debut, echeance, ordre, reponses: {}, marquees: [], verrouillees: [] },
+            { transaction }
+        );
+        return { id_tentative: tentative.id_tentative, reprise: false };
+    });
 };
 
 const tentativeDe = async (user, id, options = {}) => {

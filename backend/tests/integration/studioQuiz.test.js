@@ -179,6 +179,17 @@ describe("Passation", () => {
         expect((await e.get("/api/passations/mes-tentatives")).body[0]).toMatchObject({ id_tentative: copie.id_tentative, pourcentage: 85.7, reussi: true });
     });
 
+    test("des débuts simultanés ne créent qu'une copie (tentatives_max respecté)", async () => {
+        const quiz = await creerQuiz({ tentatives_max: 1 });
+        const session = await ouvrir(quiz.id_questionnaire);
+        expect((await e2.send("post", "/api/passations/rejoindre", { code: session.code })).status).toBe(200);
+        const reponses = await Promise.all(Array.from({ length: 5 }, () => e2.send("post", `/api/passations/sessions/${session.id_session}/tentatives`)));
+        expect(reponses.map((r) => r.status)).toEqual([201, 201, 201, 201, 201]);
+        expect(reponses.filter((r) => !r.body.reprise)).toHaveLength(1);
+        expect(new Set(reponses.map((r) => r.body.id_tentative)).size).toBe(1);
+        expect(await TentativeQuiz.count({ where: { id_session: session.id_session, id_user: autreEtudiant.id_user } })).toBe(1);
+    });
+
     test("temps écoulé : la copie est rendue d'office avec les réponses enregistrées", async () => {
         const quiz = await creerQuiz({ duree_min: 10, tentatives_max: 0 });
         const session = await ouvrir(quiz.id_questionnaire);

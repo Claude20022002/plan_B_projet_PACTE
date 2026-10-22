@@ -1,24 +1,28 @@
 import express from "express";
 import { Appartenir, Etudiant, Groupe, Users } from "../models/index.js";
-import { authenticateToken, requireAdmin, requireEnseignant } from "../middleware/index.js";
+import { authenticateToken, requireAdmin } from "../middleware/index.js";
 import { requireSelfOrStaff } from "../middleware/accessMiddleware.js";
 import { detailErreur } from "../middleware/errorHandler.js";
 import { pick } from "../utils/validationHelper.js";
 
 const router = express.Router();
 
-// Lecture : personnel (enseignant/admin). Écriture : admin. Un étudiant ne voit que son propre groupe.
+// Listes : administration seulement (elles couvrent tous les étudiants ; un enseignant voit ses
+// élèves par l'espace de cours). Écriture : admin. Un étudiant ne voit que son propre groupe.
 router.use(authenticateToken);
 
+// Identité de l'étudiant, sans téléphone ni avatar
+const UTILISATEUR = { model: Users, as: "user", attributes: ["id_user", "nom", "prenom", "email", "actif"] };
+
 // 🔍 Récupérer toutes les appartenances
-router.get("/", requireEnseignant, async (req, res) => {
+router.get("/", requireAdmin, async (req, res) => {
     try {
         const appartenances = await Appartenir.findAll({
             include: [
                 {
                     model: Etudiant,
                     as: "etudiant",
-                    include: [{ model: Users, as: "user" }],
+                    include: [UTILISATEUR],
                 },
                 { model: Groupe, as: "groupe" },
             ],
@@ -45,7 +49,7 @@ router.post("/", requireAdmin, async (req, res) => {
                 {
                     model: Etudiant,
                     as: "etudiant",
-                    include: [{ model: Users, as: "user" }],
+                    include: [UTILISATEUR],
                 },
                 { model: Groupe, as: "groupe" },
             ],
@@ -105,7 +109,7 @@ router.get("/etudiant/:id_etudiant", requireSelfOrStaff("id_etudiant"), async (r
 });
 
 // 🔍 Récupérer tous les étudiants d'un groupe
-router.get("/groupe/:id_groupe", requireEnseignant, async (req, res) => {
+router.get("/groupe/:id_groupe", requireAdmin, async (req, res) => {
     try {
         const appartenances = await Appartenir.findAll({
             where: { id_groupe: req.params.id_groupe },
@@ -113,7 +117,7 @@ router.get("/groupe/:id_groupe", requireEnseignant, async (req, res) => {
                 {
                     model: Etudiant,
                     as: "etudiant",
-                    include: [{ model: Users, as: "user" }],
+                    include: [UTILISATEUR],
                 },
             ],
         });

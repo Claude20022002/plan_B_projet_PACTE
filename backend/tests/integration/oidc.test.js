@@ -136,6 +136,15 @@ describe("Fournisseur OpenID Connect pour ClassQuiz", () => {
         expect(url.searchParams.get("code")).toBeNull();
     });
 
+    test("un mot de passe provisoire à changer : access_denied, comme sur le reste de Planner", async () => {
+        const nouveau = await createUser("enseignant");
+        const client = await loginAs(nouveau);
+        await nouveau.update({ must_change_password: true });
+        const url = new URL((await parcourir(client.agent, demande())).headers.location);
+        expect(url.searchParams.get("error")).toBe("access_denied");
+        expect(url.searchParams.get("code")).toBeNull();
+    });
+
     test("adresse de retour inconnue ou mauvais secret : refus sans redirection", async () => {
         const client = await loginAs(enseignant);
         const detourne = await client.agent.get(demande({ redirect_uri: "https://pirate.test/vol" }));

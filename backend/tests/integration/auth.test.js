@@ -166,6 +166,24 @@ describe("Sessions", () => {
         expect((await client.get("/api/auth/me")).status).toBe(401);
     });
 
+    test("un lien de réinitialisation ne sert qu'une fois, même en requêtes simultanées", async () => {
+        const etudiant = await createUser("etudiant");
+        const token = crypto.randomBytes(32).toString("hex");
+        await PasswordResetToken.create({
+            id_user: etudiant.id_user,
+            token: crypto.createHash("sha256").update(token).digest("hex"),
+            expires_at: new Date(Date.now() + 60 * 60 * 1000),
+            used: false,
+        });
+
+        const essais = await Promise.all(
+            ["Premier@choix2026", "Second@choix2026", "Troisieme@choix2026"].map((password) =>
+                anonymous().post("/api/auth/reset-password").send({ token, id_user: etudiant.id_user, password })
+            )
+        );
+        expect(essais.map((r) => r.status).sort()).toEqual([200, 400, 400]);
+    });
+
     test("mot de passe oublié : même réponse pour un compte inconnu ou désactivé", async () => {
         const inactif = await createUser("etudiant", { actif: false });
         const unknown = await anonymous().post("/api/auth/forgot-password").send({ email: "personne@x.test" });

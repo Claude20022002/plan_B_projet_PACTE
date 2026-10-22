@@ -65,6 +65,27 @@ const lirePdf = async (contenu) => {
 };
 
 // ── Archives Office (DOCX, PPTX) ──
+/**
+ * Taille réelle d'une entrée, décompressée morceau par morceau sans rien garder : arrêt dès que
+ * `plafond` est dépassé. La taille déclarée dans l'archive ne suffit pas (elle peut mentir, et JSZip
+ * ne s'en aperçoit qu'après avoir tout décompressé en mémoire).
+ */
+const tailleReelle = (entree, plafond) =>
+    new Promise((resoudre, rejeter) => {
+        let total = 0;
+        const flux = entree.internalStream("uint8array");
+        flux.on("data", (morceau) => {
+            total += morceau.length;
+            if (total > plafond) {
+                flux.pause();
+                resoudre(total);
+            }
+        })
+            .on("error", rejeter)
+            .on("end", () => resoudre(total))
+            .resume();
+    });
+
 const ouvrirArchive = async (contenu) => {
     let archive;
     try {
@@ -72,8 +93,20 @@ const ouvrirArchive = async (contenu) => {
     } catch {
         throw new ErreurMetier("Ce document est illisible ou endommagé", 422);
     }
-    const total = Object.values(archive.files).reduce((t, f) => t + (f._data?.uncompressedSize ?? 0), 0);
-    if (total > DECOMPRESSE_MAX) throw new ErreurMetier("Ce document est trop volumineux une fois décompressé", 413);
+    const trop = () => new ErreurMetier("Ce document est trop volumineux une fois décompressé", 413);
+    const declare = Object.values(archive.files).reduce((t, f) => t + (f._data?.uncompressedSize ?? 0), 0);
+    if (declare > DECOMPRESSE_MAX) throw trop();
+    let total = 0;
+    for (const entree of Object.values(archive.files)) {
+        if (entree.dir) continue;
+        try {
+            total += await tailleReelle(entree, DECOMPRESSE_MAX - total);
+        } catch {
+            // Taille annoncée fausse ou données corrompues : JSZip le signale en fin d'entrée
+            throw new ErreurMetier("Ce document est illisible ou endommagé", 422);
+        }
+        if (total > DECOMPRESSE_MAX) throw trop();
+    }
     return archive;
 };
 

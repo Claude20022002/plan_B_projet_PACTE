@@ -34,8 +34,11 @@ export const noterCopie = (session, tentative) => {
     return { corrections, ...totaliser(Object.values(corrections)) };
 };
 
-/** Rend la copie : correction, score, date. Sans effet sur une copie déjà rendue. */
-export const rendreCopie = async (session, tentative, maintenant = new Date()) => {
+/**
+ * Rend la copie : correction, score, date. Sans effet sur une copie déjà rendue. `transaction` : celle
+ * de l'appelant qui relit ensuite les copies (début d'une tentative).
+ */
+export const rendreCopie = async (session, tentative, maintenant = new Date(), { transaction } = {}) => {
     if (tentative.statut !== "en_cours") return tentative;
     const note = noterCopie(session, tentative);
     // Rendue d'office : datée de la fin du temps, pas du moment où quelqu'un l'a remarqué
@@ -43,9 +46,9 @@ export const rendreCopie = async (session, tentative, maintenant = new Date()) =
     // Deux rendus simultanés (bouton et fin du temps) : le premier gagne, le second relit sa copie
     await TentativeQuiz.update(
         { statut: "rendue", rendue_le: rendue, corrections: note.corrections, points: note.points, max: note.max, pourcentage: note.pourcentage, complet: note.complet },
-        { where: { id_tentative: tentative.id_tentative, statut: "en_cours" } }
+        { where: { id_tentative: tentative.id_tentative, statut: "en_cours" }, transaction }
     );
-    return tentative.reload();
+    return tentative.reload({ transaction });
 };
 
 /** Rend d'office les copies d'une session dont le temps est écoulé (lu par les résultats). */

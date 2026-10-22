@@ -2,6 +2,7 @@ import express from "express";
 import { parseCookies } from "../middleware/cookieMiddleware.js";
 import { optionalAuth } from "../middleware/authMiddleware.js";
 import { fournisseur, idCompte, MONTAGE, ROLES_AUTORISES } from "../services/oidc/provider.js";
+import { mfaAConfigurer } from "../services/mfa.js";
 
 /**
  * Fournisseur OpenID Connect sous /api/oidc (phase Q, connexion des enseignants à ClassQuiz).
@@ -32,6 +33,14 @@ router.get("/interaction/:uid", parseCookies, optionalAuth, async (req, res, nex
             return await provider.interactionFinished(req, res, {
                 error: "access_denied",
                 error_description: "L'espace Quiz est réservé aux enseignants : les étudiants rejoignent les parties par code PIN.",
+            }, { mergeWithLastSubmission: false });
+        }
+        // Monté avant les gardes d'app.js : un mot de passe provisoire ou une double authentification
+        // à configurer bloquent ici aussi, comme sur le reste de Planner
+        if (req.user.must_change_password || mfaAConfigurer(req.user)) {
+            return await provider.interactionFinished(req, res, {
+                error: "access_denied",
+                error_description: "Terminez d'abord la sécurisation de votre compte sur Planner (mot de passe, double authentification).",
             }, { mergeWithLastSubmission: false });
         }
 

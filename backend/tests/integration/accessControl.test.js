@@ -114,10 +114,14 @@ describe("Appartenances", () => {
         expect(move.status).toBe(403);
     });
 
-    test("le personnel lit les appartenances sans hash", async () => {
-        const response = await clients.enseignant.get(`/api/appartenances/groupe/${fixture.groupe.id_groupe}`);
+    test("seule l'administration liste les appartenances, sans hash ni téléphone", async () => {
+        expect((await clients.enseignant.get("/api/appartenances")).status).toBe(403);
+        expect((await clients.enseignant.get(`/api/appartenances/groupe/${fixture.groupe.id_groupe}`)).status).toBe(403);
+        const response = await clients.admin.get(`/api/appartenances/groupe/${fixture.groupe.id_groupe}`);
         expect(response.status).toBe(200);
         expect(containsPasswordHash(response.body)).toBe(false);
+        expect(response.body[0].etudiant.user).not.toHaveProperty("telephone");
+        expect(response.body[0].etudiant.user).not.toHaveProperty("avatar_url");
     });
 });
 
