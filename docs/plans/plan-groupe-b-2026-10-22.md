@@ -62,18 +62,21 @@ Une demande `a_confirmer` bloque une nouvelle demande sur la même séance (409)
 
 Contrôles attendus avant la PR : lint du site sans erreur, unitaires du site, construction, parcours complets (`report` compris). Le serveur de #86 est déjà testé (intégration 433/433).
 
-## 3. Ensuite, dans cet ordre
+## 3. Ensuite, dans cet ordre (mis à jour le 21 octobre au soir)
 
-| Ordre | Lot | Contenu | Dépend de |
+Fait depuis : B-R1 (#93), SC-1b (#95, avec le serveur de #90), textes de l'administration (#96, PR ouverte). Le groupe A a livré ou ouvert la partie serveur de tous les lots ci-dessous : chaque ligne dit ce que le serveur rend.
+
+| Ordre | Lot | Ce qu'il faut faire à l'écran | Serveur (groupe A) |
 |---|---|---|---|
-| 2 | **SC-1b puis SC-1c** | Ouvrir la PR de `b/sc1b-quiz-direct-ecrans` (écrans web du quiz en direct) **après** la fusion de #90 (SC-1a, serveur), en la remettant à jour de `main` ; puis SC-1c : le joueur du direct dans l'application (scanner d'une diffusion en direct, écran natif) | #90 |
-| 3 | **R-9** | « Créer un quiz » sans classe ni module : le sujet ou le document suffit | Groupe A : la génération par l'IA accepte une demande sans `id_groupe` ni `id_cours` |
-| 4 | **Textes de l'administration** | Gestion, génération, préparation, suivi, réservations, messages du serveur, selon la charte | Rien |
-| 5 | **R-1** | Report « à une date ultérieure » : troisième choix de l'administration, liste « Séances à reprogrammer », « Reportée · date à venir » | Groupe A : état « à reprogrammer » |
-| 6 | **R-4** | Génération sans réglage de durée, écran d'attente, résumé court, exploration des classes une à une (format de l'école ou tableau, PDF) | Groupe A : durée choisie par le serveur, étapes lisibles |
-| 7 | **Publication des changements** | Dans « EDT du mois », montrer qu'un mois publié a des changements non publiés et les republier | Groupe A : serveur de la publication des changements |
-| 8 | **M-13 (2e partie)**, **M-3** (affichage du rapport), mineurs m-1 à m-18 | Voir `docs/recette/recette-2026-10-20.md` | M-3 : rapport côté serveur (A) |
-| — | **R-3 (données)** | La liste réelle des filières (hestim.ma), noms d'usage, **sans campus** ; à faire valider par le chef de projet avant tout changement | Validation |
+| 2 | **SC-1c** | Le joueur du quiz en direct dans l'application : le scanner reconnaît une diffusion en direct, écran natif (attente, question, chrono, résultat, classement) | Fait (`/api/quiz-direct`, #95). Le chrono suit `duree_s` de la vue, qui est maintenant la durée de **la question** si elle en a une (branche `a/direct-duree-question`) |
+| 3 | **R-1** | Dans la demande, un troisième choix « Approuver, date ultérieure » ; une liste « Séances à reprogrammer » avec l'assistant de créneaux libres ; « Reportée · date à venir » chez l'étudiant et le prof (séance au statut `a_reprogrammer`) | PR #97 : `PATCH /api/demandes-report/:id/plus-tard`, puis `PATCH /:id/reprogrammer { date, id_creneau? }` → la demande passe `a_confirmer` et l'enseignant confirme comme d'habitude. Liste : `GET /api/demandes-report/statut/a_reprogrammer`, créneaux libres : `GET /:id/propositions?date=` |
+| 4 | **R-4 et M-3** | Plus de réglage « Durée de calcul » ; un écran d'attente qui montre l'étape (préparation, calcul, placement) ; le rapport : le résumé (`rapport.resume`) puis la liste « À corriger » (`rapport.a_corriger`, chaque point avec son `lien`) ; retirer les cases « règles dures » et « violations » ; l'exploration des classes une à une (format de l'école ou tableau, PDF) | PR #98 : sans `duree_secondes`, la durée suit la taille du problème ; `config.etape` pendant le calcul ; `rapport.resume`, `rapport.a_corriger`, `rapport.duree_calcul_s`. Les anciens champs restent le temps de changer l'écran (`regles_dures_enfreintes` vaut 0) |
+| 5 | **Publication des changements** | Dans « EDT du mois », les classes qui ont des changements non publiés (`classes_a_republier` de l'état des envois) et le bouton pour les republier ; dire à l'administration qu'une régénération ne se voit qu'après publication | Branche `a/publication-changements` : les étudiants lisent la version publiée ; changement ponctuel = publié aussitôt ; rappel du soir à l'administration |
+| 6 | **M-6** | Date d'origine d'une demande : lire `date_seance_origine` et l'heure de `creneauOrigine` (format.js, `origineDe`), à la place de la date de la séance ou de `date_seance_initiale` | Branche `a/report-date-origine` (migration 0050) |
+| 7 | **Durée par question** | Dans l'éditeur du Studio, un champ facultatif « Temps en direct (secondes) », 5 à 120 (`duree_s`) ; vide : la durée de la diffusion | Branche `a/import-classquiz-complet` (migration 0051), qui reprend aussi les durées et les images des quiz de ClassQuiz |
+| 8 | **R-9** | « Créer un quiz » passe par le générateur du Studio (sujet ou document, sans classe ni module) au lieu de l'ancien dialogue ClassQuiz | **Rien à faire** : `/api/studio-quiz/ia/generations` génère déjà sans classe |
+| 9 | **M-13 (2e partie)**, mineurs m-3 à m-18 (m-8 : plus d'étiquettes « CLIQUABLE » dans les notifications) | Voir `docs/recette/recette-2026-10-20.md` | m-7 (notifications en anglais) : plus tard, côté serveur |
+| — | **R-3 (données)** | La liste réelle des filières (hestim.ma), noms d'usage, **sans campus** ; à faire valider par le chef de projet avant tout changement | La page Filières n'a plus de campus (#94) |
 
 ## 4. Règles de travail (rappel)
 
