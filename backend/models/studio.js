@@ -40,6 +40,8 @@ export const QuestionQuiz = sequelize.define(
         explication: { type: DataTypes.TEXT, allowNull: true },
         id_media: { type: DataTypes.INTEGER, allowNull: true },
         extrait: { type: DataTypes.JSON, allowNull: true },
+        // Secondes pour répondre en direct ; vide : la durée de la diffusion
+        duree_s: { type: DataTypes.INTEGER, allowNull: true },
         donnees: { type: DataTypes.JSON, allowNull: false },
         // Proposée par l'IA et pas encore relue : le quiz ne s'ouvre pas aux étudiants
         a_relire: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },

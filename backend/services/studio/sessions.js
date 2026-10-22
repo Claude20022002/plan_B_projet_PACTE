@@ -88,7 +88,7 @@ export const ouvrirSession = async (user, idQuestionnaire, { titre, reglages, ou
         id_questionnaire: quiz.id_questionnaire,
         id_user: user.id_user,
         titre: essai ? `Aperçu : ${quiz.titre}`.slice(0, 200) : lireTitre(titre, { requis: false }) || quiz.titre,
-        questions: questions.map((q) => ({ id_question: q.id_question, type: q.type, enonce: q.enonce, points: q.points, explication: q.explication, id_media: q.id_media, extrait: q.extrait, donnees: q.donnees })),
+        questions: questions.map((q) => ({ id_question: q.id_question, type: q.type, enonce: q.enonce, points: q.points, explication: q.explication, id_media: q.id_media, extrait: q.extrait, duree_s: q.duree_s ?? null, donnees: q.donnees })),
         reglages: essai ? { ...lireReglages(reglages, quiz.reglages), tentatives_max: 0 } : lireReglages(reglages, quiz.reglages),
         ouverture: essai ? null : debut,
         fermeture: essai ? null : fin,
