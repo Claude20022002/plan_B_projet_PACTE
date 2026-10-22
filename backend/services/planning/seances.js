@@ -15,6 +15,7 @@ import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, minutes, validerAffectation } from "./affectationRules.js";
 import { avecDescendants, groupesLies } from "./groupes.js";
 import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
+import { publierSeance } from "../calendrier/versionPubliee.js";
 
 /**
  * Enregistrement d'une séance sous les règles de la phase B : validation sous verrou dans la
@@ -187,9 +188,12 @@ export const groupesANotifier = (idsGroupes) => avecDescendants(idsGroupes);
 
 /**
  * Prévient l'enseignant et les étudiants d'un changement de séance (modification, report,
- * annulation, suppression). Ne bloque jamais l'enregistrement.
+ * annulation, suppression). Ne bloque jamais l'enregistrement. Un changement dont les étudiants
+ * sont prévenus est publié aussitôt dans leur emploi du temps (décision du 21 octobre 2026) :
+ * sans cela, ils liraient l'alerte sans voir le changement.
  */
 export const notifierChangementSeance = async ({ affectation, titre, message, idGroupes = null, notifierEnseignant = true, lien = null }) => {
+    if (affectation?.id_affectation) await publierSeance(affectation.id_affectation).catch((error) => console.error("Publication de la séance impossible :", error.message));
     try {
         if (notifierEnseignant) {
             await creerNotificationsMultiples({ id_users: [affectation.id_user_enseignant], titre, message, type_notification: "warning", lien: lien ? lien.replace("/etudiant", "/enseignant") : "/mes-affectations" });
