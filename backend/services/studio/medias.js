@@ -37,6 +37,13 @@ const TYPES = {
 };
 export const TYPES_MEDIAS_ACCEPTES = Object.keys(TYPES);
 
+/** Type d'un contenu d'après sa signature (un fichier reçu sans type sûr, comme « image/* ») ; null s'il n'est pas accepté. */
+export const typeDuContenu = (contenu) => {
+    // Une vidéo MP4 et un son M4A ont la même signature : la vidéo d'abord
+    const ordre = ["image/png", "image/jpeg", "image/webp", "image/gif", "video/mp4", "video/webm", "audio/mpeg", "audio/ogg", "audio/wav"];
+    return ordre.find((type) => TYPES[type].signature(contenu)) ?? null;
+};
+
 // nginx accepte 25 Mo : une vidéo plus longue se coupe avant d'être déposée
 export const TAILLES_MAX = { image: 5 * 1024 * 1024, audio: 10 * 1024 * 1024, video: 20 * 1024 * 1024 };
 export const TAILLE_MAX_DEPOT = TAILLES_MAX.video;
@@ -71,7 +78,8 @@ const lireDuree = (brut) => {
 };
 
 /**
- * Enregistre un média vérifié. `origine` : « depot » (l'enseignant), « ia_image » ou « ia_voix ».
+ * Enregistre un média vérifié. `origine` : « depot » (l'enseignant), « ia_image », « ia_voix » ou
+ * « import » (repris d'un quiz de ClassQuiz).
  * @param {{ contenu: Buffer, type: string, nom?: string, description?: string, duree?: number, transcription?: object }} fichier
  */
 export const enregistrerMedia = async (user, fichier, { origine = "depot" } = {}) => {

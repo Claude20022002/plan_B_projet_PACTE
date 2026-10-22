@@ -125,6 +125,8 @@ const studio = {
     enonce: 'Énoncé',
     enonceAide: 'La question posée. Pour une question à choix multiple, annoncez le nombre de réponses attendues.',
     points: 'Points',
+    duree: 'Temps en direct (secondes)',
+    dureeAide: 'De 5 à 120. Vide : celui de la diffusion.',
     explication: 'Explication (montrée à la correction)',
     enregistrer: 'Enregistrer',
     enregistrerRelire: 'Enregistrer et valider',

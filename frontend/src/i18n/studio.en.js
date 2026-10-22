@@ -125,6 +125,8 @@ const studio = {
     enonce: 'Question',
     enonceAide: 'The question asked. For multiple choice, state how many answers are expected.',
     points: 'Points',
+    duree: 'Live time (seconds)',
+    dureeAide: '5 to 120. Empty: the broadcast’s time.',
     explication: 'Explanation (shown with the answers)',
     enregistrer: 'Save',
     enregistrerRelire: 'Save and approve',
