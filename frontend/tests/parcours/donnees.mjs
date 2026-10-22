@@ -59,7 +59,11 @@ export const preparerDonnees = async (racine) => {
 
   // Les étudiants ne voient un mois qu'une fois publié : ceux de la séance du jour et de la séance fixe de la classe le sont
   const moisPublies = [...new Set([aujourdhui, String(fixture.affectation.date_seance).slice(0, 10)].map((d) => d.slice(0, 7)))];
-  await EnvoiEdt.bulkCreate(moisPublies.map((mois) => ({ id_groupe: fixture.groupe.id_groupe, mois, seances: [], envoye_le: new Date(), nb_destinataires: etudiants.length })));
+  // Avec les séances telles que publiées : c'est cette version que lisent les étudiants
+  const { lignesDuMois } = await serveur("services/calendrier/envoiEdt.js");
+  for (const mois of moisPublies) {
+    await EnvoiEdt.create({ id_groupe: fixture.groupe.id_groupe, mois, seances: await lignesDuMois(fixture.groupe, mois), envoye_le: new Date(), nb_destinataires: etudiants.length });
+  }
 
   const grille = await creerGrille(Creneau);
   const generation = await preparerGeneration(racine, admin, grille);

@@ -2,7 +2,7 @@ import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginA
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import { Affectation, EnvoiEdt, Notification, ResponsableFiliere, Salle, Users } from "../../models/index.js";
 import { calendrierIcs, instantLocal } from "../../services/calendrier/ics.js";
-import { changementsEntre, renvoyerChangements } from "../../services/calendrier/envoiEdt.js";
+import { changementsEntre, lignesDuMois, rappelerChangementsNonPublies } from "../../services/calendrier/envoiEdt.js";
 
 /**
  * R4 — agenda et emploi du temps : abonnement ICS personnel (adresse secrète, renouvelable) et
@@ -65,7 +65,7 @@ describe("Abonnement calendrier", () => {
     test("l'étudiant obtient une adresse stable ; son flux contient ses séances, l'annulée marquée annulée", async () => {
         // L'étudiant ne voit que les mois publiés pour sa classe (retirés ensuite : les tests d'envoi repartent de zéro)
         const mois = [...new Set([dansJours(10), dansJours(11)].map((d) => d.slice(0, 7)))];
-        await EnvoiEdt.bulkCreate(mois.map((m) => ({ id_groupe: fixture.groupe.id_groupe, mois: m, seances: [], envoye_le: new Date(), nb_destinataires: 1 })));
+        for (const m of mois) await EnvoiEdt.create({ id_groupe: fixture.groupe.id_groupe, mois: m, seances: await lignesDuMois(fixture.groupe, m), envoye_le: new Date(), nb_destinataires: 1 });
         try {
             const session = await loginAs(etudiant);
             const premiere = (await session.get("/api/agenda/abonnement")).body;
@@ -135,21 +135,37 @@ describe("Envoi de l'emploi du temps du mois", () => {
         expect((await adm.get(`/api/agenda/edt-mensuel/etat?mois=${mois}&id_filiere=${fixture.filiere.id_filiere}`)).body).toMatchObject({ publie: true, destinataires: 1 });
     });
 
-    test("le soir, un mois publié qui a changé est renvoyé avec les changements", async () => {
+    test("le soir, l'administration est rappelée des changements non publiés ; republier les envoie aux étudiants", async () => {
         const autreSalle = await Salle.create({ nom_salle: "G-RENVOI", type_salle: "Salle de cours", capacite: 40, id_campus: fixture.salle.id_campus });
         await seance.update({ id_salle: autreSalle.id_salle });
-        const bilan = await renvoyerChangements();
-        expect(bilan.modifie).toBe(1);
+        const adm = await loginAs(admin);
+        const etat = (await adm.get(`/api/agenda/edt-mensuel/etat?mois=${mois}&id_filiere=${fixture.filiere.id_filiere}`)).body;
+        expect(etat.classes_a_republier).toEqual([expect.objectContaining({ id_groupe: fixture.groupe.id_groupe, changements: 1 })]);
+
+        expect((await rappelerChangementsNonPublies()).a_republier).toBe(1);
+        expect(await Notification.count({ where: { id_user: admin.id_user, titre: "Changements à publier" } })).toBe(1);
+        // Les étudiants n'ont rien reçu : ils le verront à la publication
+        expect((await Notification.findAll({ where: { id_user: etudiant.id_user } })).some((n) => n.titre.endsWith("modifié"))).toBe(false);
+
+        const republie = await adm.send("post", "/api/agenda/edt-mensuel/publier", { mois, id_filiere: fixture.filiere.id_filiere });
+        expect(republie.body.modifie).toBe(1);
         const modifie = (await Notification.findAll({ where: { id_user: etudiant.id_user } })).find((n) => n.titre.endsWith("modifié"));
-        expect(modifie.message).toContain("salle");
         expect(modifie.message).toContain("G-RENVOI");
-        expect((await renvoyerChangements()).modifie).toBe(0);
+        expect((await rappelerChangementsNonPublies()).a_republier).toBe(0);
     });
 
     test("le responsable de la filière peut publier", async () => {
         const responsable = await createUser("enseignant");
         await ResponsableFiliere.create({ id_user: responsable.id_user, id_filiere: fixture.filiere.id_filiere });
         expect((await (await loginAs(responsable)).send("post", "/api/agenda/edt-mensuel/publier", { mois, id_filiere: fixture.filiere.id_filiere })).status).toBe(200);
+    });
+
+    test("une annulation se dit une fois ; une séance annulée jamais publiée ne se dit pas", () => {
+        const base = { cours: "Big Data", type: "TD", salle: "S01", enseignant: "Adil Benkirane", debut: "09:00", fin: "10:45", date: "2026-10-12" };
+        expect(changementsEntre([{ ...base, id: 1, statut: "planifie" }], [{ ...base, id: 1, statut: "annule" }])).toEqual([expect.stringMatching(/^Annulé : /)]);
+        expect(changementsEntre([{ ...base, id: 1, statut: "annule" }], [{ ...base, id: 1, statut: "annule" }])).toEqual([]);
+        expect(changementsEntre([], [{ ...base, id: 2, statut: "annule" }])).toEqual([]);
+        expect(changementsEntre([{ ...base, id: 3, statut: "annule" }], [])).toEqual([]);
     });
 
     test("changements décrits : ajout, déplacement, retrait", () => {
