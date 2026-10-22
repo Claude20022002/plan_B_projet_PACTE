@@ -131,19 +131,21 @@ const typeDe = (s) => s.enseignement?.composante?.type ?? s.cours?.type_cours ??
 
 const depuisSeance = (s, { avecGroupe = false } = {}) => {
     const type = typeDe(s);
-    const annule = s.statut === "annule";
+    // Une séance à reprogrammer (R-1) n'aura pas lieu à cette date : annulée dans l'agenda, avec sa raison
+    const aReprogrammer = s.statut === "a_reprogrammer";
+    const annule = s.statut === "annule" || aReprogrammer;
     const nomCours = s.cours?.nom_cours ?? "Séance";
     return {
         uid: `seance-${s.id_affectation}`,
         debut: instantLocal(s.date_seance, s.creneau.heure_debut),
         fin: instantLocal(s.date_seance, s.creneau.heure_fin),
-        titre: `${annule ? "Annulé : " : s.statut === "reporte" ? "Reporté : " : ""}${nomCours}${type ? ` (${type})` : ""}`,
+        titre: `${aReprogrammer ? "Reporté, date à venir : " : annule ? "Annulé : " : s.statut === "reporte" ? "Reporté : " : ""}${nomCours}${type ? ` (${type})` : ""}`,
         lieu: lieuDe(s),
         description: [
             s.enseignant ? `Enseignant : ${s.enseignant.prenom} ${s.enseignant.nom}` : null,
             avecGroupe && s.groupe ? `Groupe : ${s.groupe.nom_groupe}` : null,
             s.statut === "reporte" ? "Séance reportée : nouvel horaire." : null,
-            annule ? "Séance annulée." : null,
+            aReprogrammer ? "Séance reportée : la nouvelle date vous sera communiquée." : annule ? "Séance annulée." : null,
         ]
             .filter(Boolean)
             .join("\n"),

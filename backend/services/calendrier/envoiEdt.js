@@ -20,9 +20,13 @@ import { INCLUDES_LIGNE, ligneDe } from "./versionPubliee.js";
  */
 
 const FUSEAU = process.env.APP_TIMEZONE || "Africa/Casablanca";
-// Les séances annulées sont publiées aussi : l'étudiant les voit barrées
-const STATUTS_PUBLIES = ["planifie", "confirme", "reporte", "realise", "annule"];
+// Les séances annulées sont publiées aussi : l'étudiant les voit barrées ; de même celles à
+// reprogrammer (R-1), « reportées · date à venir » à leur date d'origine
+const STATUTS_PUBLIES = ["planifie", "confirme", "reporte", "realise", "annule", "a_reprogrammer"];
 const annulee = (l) => l.statut === "annule";
+const aReprogrammer = (l) => l.statut === "a_reprogrammer";
+// Une séance qui n'aura pas lieu à cette date
+const horsCours = (l) => annulee(l) || aReprogrammer(l);
 const MOIS = /^\d{4}-(0[1-9]|1[0-2])$/;
 const CHANGEMENTS_MAX_MESSAGE = 12;
 
@@ -67,6 +71,11 @@ export const changementsEntre = (avant, apres) => {
             if (ancien && !annulee(ancien)) changements.push({ date: l.date, texte: `Annulé : ${quand(l)} · ${nomSeance(l)}` });
             continue;
         }
+        // De même pour un report sans date : dit une fois, et pas s'il n'a jamais été publié
+        if (aReprogrammer(l)) {
+            if (ancien && !horsCours(ancien)) changements.push({ date: l.date, texte: `Reporté, date à venir : ${quand(l)} · ${nomSeance(l)}` });
+            continue;
+        }
         if (!ancien || annulee(ancien)) {
             changements.push({ date: l.date, texte: `Ajout : ${quand(l)}–${l.fin} · ${nomSeance(l)}${l.salle ? ` · ${l.salle}` : ""}` });
             continue;
@@ -77,7 +86,7 @@ export const changementsEntre = (avant, apres) => {
         if (ancien.enseignant !== l.enseignant) details.push(`enseignant ${ancien.enseignant ?? "non attribué"} → ${l.enseignant ?? "non attribué"}`);
         if (details.length) changements.push({ date: l.date, texte: `Modifié : ${nomSeance(l)} (${details.join(" ; ")})` });
     }
-    for (const l of avant.filter((x) => !restants.has(x.id) && !annulee(x))) changements.push({ date: l.date, texte: `Annulé ou retiré : ${quand(l)} · ${nomSeance(l)}` });
+    for (const l of avant.filter((x) => !restants.has(x.id) && !horsCours(x))) changements.push({ date: l.date, texte: `Annulé ou retiré : ${quand(l)} · ${nomSeance(l)}` });
     return changements.sort((x, y) => x.date.localeCompare(y.date)).map((c) => c.texte);
 };
 
@@ -116,7 +125,7 @@ const prevenir = async (etudiants, { titre, message, texteEmail, lien }) => {
 const envoyerClasse = async (groupe, mois, { idUser = null }) => {
     const [lignes, precedent] = await Promise.all([lignesDuMois(groupe, mois), EnvoiEdt.findOne({ where: { id_groupe: groupe.id_groupe, mois } })]);
     const etudiants = await etudiantsDe(groupe.id_groupe);
-    const nombre = lignes.filter((l) => !annulee(l)).length;
+    const nombre = lignes.filter((l) => !horsCours(l)).length;
     if (!precedent && (!nombre || !etudiants.length)) return "vide";
     const nomMois = libelleMois(mois);
     const lien = lienEdt(groupe.id_groupe, mois);
