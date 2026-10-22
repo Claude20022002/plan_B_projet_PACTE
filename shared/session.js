@@ -85,11 +85,18 @@ export const toBoardSession = (a) => {
 export const byStart = (x, y) => (x.start?.getTime() ?? 0) - (y.start?.getTime() ?? 0);
 
 /**
- * Séance « en vedette » : celle en cours, sinon la prochaine non annulée.
+ * Vrai pour une séance qui ne se tient pas comme prévu : reportée, reportée à une date encore
+ * inconnue (R-1 : elle reste affichée à sa date d'origine) ou annulée. Elle est alors signalée.
+ */
+export const estChangee = (status) => ['reporte', 'a_reprogrammer', 'annule'].includes(status);
+
+/**
+ * Séance « en vedette » : celle en cours, sinon la prochaine qui a bien lieu
+ * (ni annulée, ni en attente de sa nouvelle date).
  * Une seule à la fois (la couleur réservée ne s'applique qu'à elle).
  */
 export const findSpotlight = (sessions, now = new Date()) => {
-  const active = sessions.filter((s) => s.status !== 'annule' && s.end && s.end > now);
+  const active = sessions.filter((s) => !['annule', 'a_reprogrammer'].includes(s.status) && s.end && s.end > now);
   const live = active.find((s) => s.start <= now && s.end > now);
   if (live) return { session: live, phase: 'live' };
   const next = active.filter((s) => s.start > now).sort(byStart)[0];

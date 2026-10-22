@@ -2,8 +2,12 @@ import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { estChangee } from '../../../shared/session.js';
 import { CIBLE_TACTILE, couleurStatut, creerStyles, espace, lineColor, useTheme } from '../theme';
 import Feuille from '../verre/Feuille';
+
+// Ce que dit le bandeau d'une séance qui ne se tient pas comme prévu
+const TEXTE_STATUT = { reporte: 'app.fiche.reporteeTexte', a_reprogrammer: 'app.fiche.aReprogrammerTexte', annule: 'app.fiche.annuleeTexte' };
 
 const dateLongue = (iso, langue) =>
   new Date(`${iso}T12:00:00`).toLocaleDateString(langue === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' });
@@ -31,7 +35,7 @@ export default function FicheSeance({ seance: s, fermer }) {
   const styles = useStyles();
   if (!s) return null;
 
-  const statut = ['reporte', 'annule'].includes(s.status) ? s.status : null;
+  const statut = estChangee(s.status) ? s.status : null;
   const couleur = statut ? couleurStatut(theme, statut) : null;
   const salle = s.distanciel
     ? [t('app.distanciel'), s.mention].filter(Boolean).join(' · ')
@@ -55,7 +59,7 @@ export default function FicheSeance({ seance: s, fermer }) {
         {statut ? (
           <View style={[styles.bandeau, { borderColor: couleur }]}>
             <Text style={[styles.bandeauTitre, { color: couleur }]}>{t(`status.${statut}`)}</Text>
-            <Text style={styles.bandeauTexte}>{t(statut === 'annule' ? 'app.fiche.annuleeTexte' : 'app.fiche.reporteeTexte')}</Text>
+            <Text style={styles.bandeauTexte}>{t(TEXTE_STATUT[statut])}</Text>
           </View>
         ) : null}
 

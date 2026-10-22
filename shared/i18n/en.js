@@ -7,6 +7,7 @@ const partage = {
     planifie: 'Scheduled',
     confirme: 'Confirmed',
     reporte: 'Rescheduled',
+    a_reprogrammer: 'Postponed · date to come',
     annule: 'Cancelled',
     realise: 'Done',
     live: 'Now',

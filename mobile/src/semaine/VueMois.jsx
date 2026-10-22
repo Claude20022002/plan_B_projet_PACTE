@@ -1,7 +1,7 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { toLocalISODate } from '../../../shared/session.js';
+import { estChangee, toLocalISODate } from '../../../shared/session.js';
 import { couleurStatut, creerStyles, lineColor, useTheme } from '../theme';
 import CarteSeance from './CarteSeance';
 
@@ -31,7 +31,7 @@ const coursDuJour = (liste) => {
   for (const s of liste) {
     const cle = s.courseCode || s.course;
     const deja = parCours.get(cle);
-    if (!deja || (['reporte', 'annule'].includes(s.status) && !['reporte', 'annule'].includes(deja.status))) parCours.set(cle, s);
+    if (!deja || (estChangee(s.status) && !estChangee(deja.status))) parCours.set(cle, s);
   }
   return [...parCours.values()];
 };
@@ -63,13 +63,13 @@ export default function VueMois({ mois, chargement = false, seances, evenements 
 
   // Bilan du mois affiché (jours du mois seulement)
   const duMois = (iso) => iso.slice(0, 7) === toLocalISODate(mois).slice(0, 7);
-  const nbSeances = seances.filter((s) => s.start && duMois(toLocalISODate(s.start)) && s.status !== 'annule').length;
+  const nbSeances = seances.filter((s) => s.start && duMois(toLocalISODate(s.start)) && !['annule', 'a_reprogrammer'].includes(s.status)).length;
   const nbExamens = examens.filter((x) => duMois(x.date)).length;
   const joursLibres = jours.filter((j) => duMois(toLocalISODate(j)) && evenementsDuJour(toLocalISODate(j)).some((e) => TYPES_LIBRES.has(e.type))).length;
 
   const duJour = (parJour.get(jourChoisi) ?? []).sort((a, b) => a.start - b.start);
   const nomsJours = Array.from({ length: 7 }, (_, i) => decaler(debut, i).toLocaleDateString(langue, { weekday: 'narrow' }));
-  const couleurSeance = (s) => (['reporte', 'annule'].includes(s.status) ? couleurStatut(theme, s.status) : lineColor(s.courseCode));
+  const couleurSeance = (s) => (estChangee(s.status) ? couleurStatut(theme, s.status) : lineColor(s.courseCode));
 
   return (
     <View>
