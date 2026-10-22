@@ -7,19 +7,22 @@ import { dateCourte, dateEtHeure, demandeeDe, origineDe } from './format';
  * Détail d'une demande de report (administration). Une demande en attente se refuse, s'approuve
  * telle quelle, ou s'approuve sur un autre créneau libre (`onAutreCreneau`) quand celui demandé
  * ne convient pas : l'administration n'a plus à refuser puis attendre une nouvelle demande.
+ * Troisième choix (R-1) : l'approuver sans date (`onPlusTard`) ; la séance attend alors sa nouvelle
+ * date, que l'administration fixe plus tard (`onFixerDate`).
  */
-export default function DetailDemandeDialog({ demande, creneaux, onClose, onApprouver, onAutreCreneau, onRefuser }) {
+export default function DetailDemandeDialog({ demande, creneaux, onClose, onApprouver, onAutreCreneau, onRefuser, onPlusTard, onFixerDate }) {
     const { t, i18n } = useTranslation();
     const enAttente = demande?.statut_demande === 'en_attente';
     // Validée, elle attend l'enseignant : l'administration peut encore la retirer, pas la revalider
     const aConfirmer = demande?.statut_demande === 'a_confirmer';
+    const aReprogrammer = demande?.statut_demande === 'a_reprogrammer';
 
     const lignes = demande
         ? [
               [t('reportsAdmin.colonnes.enseignant'), [demande.enseignant?.prenom, demande.enseignant?.nom].filter(Boolean).join(' ') || '—'],
               [t('reports.colonnes.seance'), [demande.affectation?.cours?.nom_cours, demande.affectation?.groupe?.nom_groupe, demande.affectation?.salle?.nom_salle].filter(Boolean).join(' · ') || '—'],
               [t('reports.colonnes.origine'), dateEtHeure(origineDe(demande, creneaux), i18n.language)],
-              [t('reports.colonnes.nouvelleDate'), dateEtHeure(demandeeDe(demande, creneaux), i18n.language)],
+              [t('reports.colonnes.nouvelleDate'), dateEtHeure(demandeeDe(demande, creneaux), i18n.language, t('reports.dateAVenir'))],
               [t('reports.colonnes.motif'), demande.motif],
               [t('reports.colonnes.dateDemande'), dateCourte(demande.date_demande, i18n.language)],
               ...(demande.motif_decision ? [[t('reports.colonnes.raisonRefus'), demande.motif_decision]] : []),
@@ -65,10 +68,18 @@ export default function DetailDemandeDialog({ demande, creneaux, onClose, onAppr
                                 <Button variant="outlined" onClick={() => onAutreCreneau(demande)}>
                                     {t('reportsAdmin.autreCreneau')}
                                 </Button>
+                                <Button variant="outlined" onClick={() => onPlusTard(demande)}>
+                                    {t('reportsAdmin.plusTard')}
+                                </Button>
                                 <Button color="success" variant="contained" onClick={() => onApprouver(demande)}>
                                     {t('reportsAdmin.approuver')}
                                 </Button>
                             </>
+                        )}
+                        {aReprogrammer && (
+                            <Button variant="contained" onClick={() => onFixerDate(demande)}>
+                                {t('reportsAdmin.fixerDate')}
+                            </Button>
                         )}
                     </DialogActions>
                 </>

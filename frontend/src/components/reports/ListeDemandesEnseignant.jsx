@@ -10,7 +10,8 @@ import { dateCourte, dateEtHeure, demandeeDe, origineDe } from './format';
  * Demandes de report d'un enseignant : un tableau sur ordinateur, des cartes empilées sur
  * téléphone, où un tableau coupait le statut et cachait la date d'origine (recette, M-8).
  * `creneaux` : Map id_creneau → créneau (useCreneauxParId), pour les heures.
- * Une demande refusée montre sous son statut la raison donnée par l'administration, s'il y en a une.
+ * Une demande refusée montre sous son statut la raison donnée par l'administration, s'il y en a une ;
+ * une demande acceptée sans date (R-1), ce qui va suivre.
  * Une demande à confirmer montre la place proposée et la réponse attendue (ConfirmationReport) :
  * `onAccepter`, `onProposer`, `enCours` (id de la demande dont la réponse part).
  * `enEvidence` : id de la demande ouverte depuis la notification, mise en avant.
@@ -20,12 +21,20 @@ export default function ListeDemandesEnseignant({ demandes, creneaux, enCours = 
     const theme = useTheme();
     const telephone = useMediaQuery(theme.breakpoints.down('sm'));
     const seanceDe = (d) => [d.affectation?.cours?.nom_cours, d.affectation?.groupe?.nom_groupe].filter(Boolean).join(' · ') || '—';
-    const raisonDe = (d) =>
-        d.statut_demande === 'refuse' && d.motif_decision ? (
+    const raisonDe = (d) => {
+        const note =
+            d.statut_demande === 'refuse' && d.motif_decision
+                ? `${t('reports.colonnes.raisonRefus')} : ${d.motif_decision}`
+                : d.statut_demande === 'a_reprogrammer'
+                  ? t('reports.aReprogrammer')
+                  : null;
+        return note ? (
             <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
-                {t('reports.colonnes.raisonRefus')} : {d.motif_decision}
+                {note}
             </Typography>
         ) : null;
+    };
+    const nouvelleDateDe = (d) => dateEtHeure(demandeeDe(d, creneaux), i18n.language, t('reports.dateAVenir'));
     const reponseDe = (d) =>
         d.statut_demande === 'a_confirmer' ? (
             <ConfirmationReport demande={d} enCours={enCours === d.id_demande} onAccepter={onAccepter} onProposer={onProposer} />
@@ -54,7 +63,7 @@ export default function ListeDemandesEnseignant({ demandes, creneaux, enCours = 
                             {t('reports.colonnes.origine')} : {dateEtHeure(origineDe(d, creneaux), i18n.language)}
                         </Typography>
                         <Typography variant="body2">
-                            {t('reports.colonnes.nouvelleDate')} : {dateEtHeure(demandeeDe(d, creneaux), i18n.language)}
+                            {t('reports.colonnes.nouvelleDate')} : {nouvelleDateDe(d)}
                         </Typography>
                         <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5 }}>
                             {d.motif}
@@ -90,7 +99,7 @@ export default function ListeDemandesEnseignant({ demandes, creneaux, enCours = 
                                 <TableRow id={ancre(d)} selected={enEvidence === d.id_demande} sx={sansBordure}>
                                     <TableCell>{seanceDe(d)}</TableCell>
                                     <TableCell sx={{ whiteSpace: 'nowrap' }}>{dateEtHeure(origineDe(d, creneaux), i18n.language)}</TableCell>
-                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{dateEtHeure(demandeeDe(d, creneaux), i18n.language)}</TableCell>
+                                    <TableCell sx={{ whiteSpace: 'nowrap' }}>{nouvelleDateDe(d)}</TableCell>
                                     <TableCell>{d.motif}</TableCell>
                                     <TableCell>
                                         <StatutDemande statut={d.statut_demande} />

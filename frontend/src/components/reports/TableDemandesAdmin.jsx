@@ -1,16 +1,17 @@
 import { useTranslation } from 'react-i18next';
 import { Box, CircularProgress, IconButton, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Tooltip, Typography } from '@mui/material';
-import { Check, Close, Visibility } from '@mui/icons-material';
+import { Check, Close, EventRepeat, Visibility } from '@mui/icons-material';
 import StatutDemande from './StatutDemande';
 import { dateCourte, dateEtHeure, demandeeDe, origineDe } from './format';
 
 /**
  * Demandes de report vues par l'administration : une ligne par demande, avec la date d'origine
  * de la séance (et non sa date actuelle, réécrite par un report approuvé) et le créneau demandé.
- * Les actions d'une demande en attente : voir, approuver, refuser ; à confirmer : voir, refuser. `enCours` : la demande en
+ * Les actions d'une demande en attente : voir, approuver, refuser ; à confirmer : voir, refuser ;
+ * acceptée sans date (R-1) : voir, fixer la date. `enCours` : la demande en
  * cours de traitement, dont les boutons attendent.
  */
-export default function TableDemandesAdmin({ demandes, creneaux, enCours, onVoir, onApprouver, onRefuser }) {
+export default function TableDemandesAdmin({ demandes, creneaux, enCours, onVoir, onApprouver, onRefuser, onFixerDate }) {
     const { t, i18n } = useTranslation();
 
     return (
@@ -37,7 +38,7 @@ export default function TableDemandesAdmin({ demandes, creneaux, enCours, onVoir
                                 <TableCell>{[d.enseignant?.prenom, d.enseignant?.nom].filter(Boolean).join(' ') || '—'}</TableCell>
                                 <TableCell>{[d.affectation?.cours?.nom_cours, d.affectation?.groupe?.nom_groupe].filter(Boolean).join(' · ') || '—'}</TableCell>
                                 <TableCell sx={{ whiteSpace: 'nowrap' }}>{dateEtHeure(origineDe(d, creneaux), i18n.language)}</TableCell>
-                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{dateEtHeure(demandeeDe(d, creneaux), i18n.language)}</TableCell>
+                                <TableCell sx={{ whiteSpace: 'nowrap' }}>{dateEtHeure(demandeeDe(d, creneaux), i18n.language, t('reports.dateAVenir'))}</TableCell>
                                 <TableCell>
                                     <Tooltip title={d.motif}>
                                         <Typography variant="body2" sx={{ maxWidth: 200, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -71,6 +72,15 @@ export default function TableDemandesAdmin({ demandes, creneaux, enCours, onVoir
                                                 <span>
                                                     <IconButton size="small" color="error" onClick={() => onRefuser(d)} disabled={attente} aria-label={t('reportsAdmin.refuser')}>
                                                         {attente ? <CircularProgress size={20} /> : <Close />}
+                                                    </IconButton>
+                                                </span>
+                                            </Tooltip>
+                                        )}
+                                        {d.statut_demande === 'a_reprogrammer' && (
+                                            <Tooltip title={t('reportsAdmin.fixerDate')}>
+                                                <span>
+                                                    <IconButton size="small" color="primary" onClick={() => onFixerDate(d)} disabled={attente} aria-label={t('reportsAdmin.fixerDate')}>
+                                                        {attente ? <CircularProgress size={20} /> : <EventRepeat />}
                                                     </IconButton>
                                                 </span>
                                             </Tooltip>

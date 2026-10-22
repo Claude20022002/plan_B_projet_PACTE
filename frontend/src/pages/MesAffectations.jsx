@@ -42,7 +42,8 @@ export default function MesAffectations() {
         const fin = new Date(`${String(aff.date_seance).slice(0, 10)}T${aff.creneau?.heure_fin ?? '23:59'}`);
         return fin <= new Date();
     };
-    const peutFaireAppel = (aff) => aff.statut !== 'annule' && String(aff.date_seance).slice(0, 10) === aujourdhui;
+    // Une séance annulée, ou reportée à une date encore inconnue, n'a pas lieu ce jour-là
+    const peutFaireAppel = (aff) => !['annule', 'a_reprogrammer'].includes(aff.statut) && String(aff.date_seance).slice(0, 10) === aujourdhui;
     const peutReporter = (aff) => ['planifie', 'confirme'].includes(aff.statut) && !estPassee(aff);
 
     return (

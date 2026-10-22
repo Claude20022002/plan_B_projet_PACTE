@@ -15,8 +15,8 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import useCreneauxParId from '../hooks/useCreneauxParId';
 
-// Une séance se reporte tant qu'elle n'a pas commencé et n'est pas annulée
-const reportable = (s) => s.statut !== 'annule' && new Date(`${String(s.date_seance).slice(0, 10)}T${s.creneau?.heure_debut ?? '00:00'}`) > new Date();
+// Une séance se reporte tant qu'elle n'a pas commencé, n'est pas annulée ni déjà en attente d'une nouvelle date
+const reportable = (s) => !['annule', 'a_reprogrammer'].includes(s.statut) && new Date(`${String(s.date_seance).slice(0, 10)}T${s.creneau?.heure_debut ?? '00:00'}`) > new Date();
 
 /**
  * Mes demandes de report (enseignant) : la liste et le formulaire d'une nouvelle demande.
