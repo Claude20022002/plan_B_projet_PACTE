@@ -17,12 +17,17 @@ export const dateLongue = (date, langue) =>
 export const heureCourte = (heure) => (heure ? String(heure).slice(0, 5) : '');
 
 /**
- * Date et heure de la séance avant le report demandé : { date, heure }. Une demande en attente, à
- * confirmer ou à reprogrammer lit la séance telle qu'elle est (elle n'a pas encore bougé) ; une demande traitée lit la date d'origine gardée par le
- * serveur, car la séance a pu être déplacée depuis (recette du 20 octobre, M-6).
- * `creneaux` : Map id_creneau → créneau, pour l'heure d'origine.
+ * Date et heure de la séance avant le report demandé : { date, heure } (recette du 20 octobre, M-6).
+ * Le serveur garde la séance telle qu'elle était à la demande (`date_seance_origine`,
+ * `creneauOrigine`) : juste même après plusieurs reports de la même séance. Une demande plus
+ * ancienne, sans ces champs, lit la séance telle qu'elle est si elle n'a pas encore bougé (en
+ * attente, à confirmer, à reprogrammer), sinon sa toute première date (`date_seance_initiale`).
+ * `creneaux` : Map id_creneau → créneau, pour l'heure.
  */
 export const origineDe = (demande, creneaux) => {
+    if (demande.date_seance_origine) {
+        return { date: demande.date_seance_origine, heure: heureCourte(demande.creneauOrigine?.heure_debut ?? creneaux.get(demande.id_creneau_origine)?.heure_debut) };
+    }
     const seance = demande.affectation;
     if (!seance) return { date: null, heure: '' };
     if (['en_attente', 'a_confirmer', 'a_reprogrammer'].includes(demande.statut_demande) || !seance.date_seance_initiale) {

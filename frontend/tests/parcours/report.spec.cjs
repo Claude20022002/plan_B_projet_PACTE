@@ -110,6 +110,11 @@ test("l'administration renonce à refuser, puis approuve sur un autre créneau l
 
   await adm.reload();
   await expect(adm.getByRole("row").filter({ hasText: "Approuvée" })).toHaveCount(2);
+  // M-6 : la séance venait d'être reportée du 4 au 11 janvier ; la date d'origine de cette seconde
+  // demande est le 11, et non sa toute première date
+  const seconde = adm.getByRole("row").filter({ hasText: "Conférence à l'étranger" });
+  await expect(seconde).toContainText("11/01/2027 ·");
+  await expect(seconde).not.toContainText("04/01/2027");
 });
 
 test("un refus avec sa raison, lue par l'enseignante", async ({ browser }) => {
