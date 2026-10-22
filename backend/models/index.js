@@ -452,6 +452,7 @@ DemandeReport.belongsTo(Affectation, {
 });
 // Créneau et salle retenus pour le report
 DemandeReport.belongsTo(Creneau, { foreignKey: "id_creneau_nouveau", as: "creneauNouveau", constraints: false });
+DemandeReport.belongsTo(Creneau, { foreignKey: "id_creneau_origine", as: "creneauOrigine", constraints: false });
 DemandeReport.belongsTo(Salle, { foreignKey: "id_salle_nouvelle", as: "salleNouvelle", constraints: false });
 
 // Affectation -> HistoriqueAffectation (1:n)
