@@ -12,6 +12,7 @@ const SANS_MOT_DE_PASSE = { exclude: ["password_hash"] };
 // Créneau et salle retenus pour le report, joints aux demandes renvoyées
 const PLACE_RETENUE = [
     { model: Creneau, as: "creneauNouveau" },
+    { model: Creneau, as: "creneauOrigine", attributes: ["id_creneau", "heure_debut", "heure_fin"] },
     { model: Salle, as: "salleNouvelle", attributes: ["id_salle", "nom_salle"] },
 ];
 

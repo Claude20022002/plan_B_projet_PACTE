@@ -56,6 +56,7 @@ export const vueQuestion = (q) => ({
     explication: q.explication,
     id_media: q.id_media,
     extrait: q.extrait,
+    duree_s: q.duree_s ?? null,
     donnees: q.donnees,
     a_relire: q.a_relire,
     origine: q.origine,

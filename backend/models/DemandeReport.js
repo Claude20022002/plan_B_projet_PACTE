@@ -40,6 +40,9 @@ const DemandeReport = sequelize.define(
         motif_decision: DataTypes.TEXT,
         // Administrateur qui a validé la proposition, et justification s'il a forcé une règle
         id_user_decision: DataTypes.INTEGER,
+        // La séance au moment de la demande (M-6) : la date « d'origine » qu'affichent les écrans
+        date_seance_origine: DataTypes.DATEONLY,
+        id_creneau_origine: DataTypes.INTEGER,
         justification_forcage: DataTypes.TEXT,
         id_affectation: {
             type: DataTypes.INTEGER,

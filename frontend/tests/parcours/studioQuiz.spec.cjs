@@ -41,8 +41,16 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await page.getByRole("textbox", { name: "Énoncé" }).fill("Quel port utilise SSH ?");
   for (const [i, texte] of ["Port 21", "Port 22", "Port 23", "Port 80"].entries()) await page.getByRole("textbox", { name: `Option ${"ABCD"[i]}` }).fill(texte);
   await page.getByRole("radio", { name: "Bonne réponse : B" }).check();
+  // Son temps en direct : borné comme le direct, puis gardé par le serveur
+  const temps = page.getByRole("spinbutton", { name: "Temps en direct (secondes)" });
+  await temps.fill("200");
+  await expect(page.getByRole("status").filter({ hasText: "Durée : de 5 à 120 secondes" })).toBeVisible();
+  await temps.fill("20");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page.getByText("Question enregistrée")).toBeVisible();
+  const idQuiz = page.url().match(/\/studio-quiz\/(\d+)/)[1];
+  const quiz = await (await page.request.get(`/api/studio-quiz/questionnaires/${idQuiz}`)).json();
+  expect(quiz.questions.map((q) => q.duree_s)).toEqual([20]);
 
   // Question 2 : vrai ou faux (vrai par défaut)
   await page.getByRole("button", { name: "Ajouter une question" }).click();
