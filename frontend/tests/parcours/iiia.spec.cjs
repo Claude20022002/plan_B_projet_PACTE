@@ -40,7 +40,7 @@ test("IIIA : 3A et 4A placées ensemble sans conflit, chaque étudiant voit sa p
   await expect(arreter).toBeVisible();
   await expect(arreter).toBeHidden({ timeout: 240_000 });
   await expect(chiffre(page, "séances créées")).toHaveText(/^[1-9]\d*$/, { timeout: 240_000 });
-  await expect(chiffre(page, "règles dures enfreintes")).toHaveText("0");
+  await expect(chiffre(page, "conflits")).toHaveText("0");
   await testInfo.attach("rapport de génération", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
 
   // Première semaine de cours (du lundi au samedi) : la semaine type complète
