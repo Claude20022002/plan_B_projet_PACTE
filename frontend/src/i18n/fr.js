@@ -734,6 +734,7 @@ const fr = {
     teacher: 'Enseignant',
     room: 'Salle',
     remote: 'En distanciel',
+    postponed: 'Reportée · date à venir',
   },
   roles: {
     admin: 'Administration',

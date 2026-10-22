@@ -68,6 +68,8 @@ export default function DocumentEdtMois({ edt }) {
                         {c.premiere_seance && <span style={{ color: DOC.rouge }}> (P.S)</span>}
                         {c.derniere_seance && <span style={{ color: DOC.rouge }}> (D.S)</span>}
                         {c.horaire_rappel && <div style={{ fontWeight: 400 }}>{c.horaire_rappel}</div>}
+                        {/* Report accepté sans nouvelle date (R-1) : la séance reste à sa place, marquée */}
+                        {c.statut === 'a_reprogrammer' && <div style={{ color: DOC.rouge }}>{t('monthly.postponed')}</div>}
                     </td>
                 );
             } else if (ligne === 1) {
