@@ -743,6 +743,7 @@ const en = {
     teacher: 'Teacher',
     room: 'Room',
     remote: 'Remote',
+    postponed: 'Postponed · new date to come',
   },
   roles: {
     admin: 'Administration',

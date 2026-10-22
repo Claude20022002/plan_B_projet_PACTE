@@ -122,7 +122,8 @@ export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
     const chargees = await Affectation.findAll({
         where: parPublication ?? {
             date_seance: { [Op.between]: [premier, dernier] },
-            statut: STATUTS_ACTIFS,
+            // Les séances à reprogrammer (R-1) restent à leur date d'origine, avec la mention « Reportée »
+            statut: [...STATUTS_ACTIFS, "a_reprogrammer"],
             [Op.or]: [{ id_groupe: idsGroupes }, ...(enseignementsDeLaClasse.length ? [{ id_enseignement: enseignementsDeLaClasse }] : [])],
         },
         include: [
@@ -152,7 +153,7 @@ export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
     const toutes = ids.length
         ? await Affectation.findAll({ where: { id_enseignement: ids, statut: STATUTS_ACTIFS }, attributes: ["id_affectation", "id_enseignement", "id_cours", "id_groupe", "date_seance"], include: [{ model: Creneau, as: "creneau", attributes: ["rang"] }] })
         : [];
-    for (const s of [...toutes, ...seances.filter((x) => !x.id_enseignement)]) {
+    for (const s of [...toutes, ...seances.filter((x) => !x.id_enseignement && x.statut !== "a_reprogrammer")]) {
         const cle = cleEnseignement(s);
         const b = bornes.get(cle) || { premiere: s, derniere: s };
         if (ordre(s) < ordre(b.premiere)) b.premiere = s;
@@ -175,7 +176,9 @@ export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
             let courante = null;
             for (const c of colonnes) {
                 const evt = evts.find((e) => !e.heure_debut || seChevauchent(c, e));
-                const seance = duJour.find((s) => s.creneau.rang === c.rang || (s.creneau.jour_semaine === jour && seChevauchent(c, s.creneau)));
+                const surLeRang = (s) => s.creneau.rang === c.rang || (s.creneau.jour_semaine === jour && seChevauchent(c, s.creneau));
+                // Une séance à reprogrammer a libéré sa place : celle qui l'a prise passe avant
+                const seance = duJour.find((s) => surLeRang(s) && s.statut !== "a_reprogrammer") ?? duJour.find(surLeRang);
                 let cellule;
                 if (evt) {
                     cellule = { type: "evenement", cle: `ev${evt.id_evenement}`, titre: evt.titre, type_evenement: evt.type_evenement };
@@ -185,7 +188,8 @@ export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
                     const distanciel = seance.enseignement?.composante?.modalite === "distanciel" || !seance.salle;
                     cellule = {
                         type: "seance",
-                        cle: `${cleEnseignement(seance)}|${seance.id_user_enseignant}|${seance.id_salle ?? "dist"}`,
+                        // Une séance reportée ne fusionne pas avec une séance voisine qui a lieu
+                        cle: `${cleEnseignement(seance)}|${seance.id_user_enseignant}|${seance.id_salle ?? "dist"}${seance.statut === "a_reprogrammer" ? "|r" : ""}`,
                         id_affectations: [seance.id_affectation],
                         matiere: seance.enseignement?.libelle || seance.cours?.nom_cours,
                         type_composante: seance.enseignement?.composante?.type ?? null,

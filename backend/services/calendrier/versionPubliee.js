@@ -13,7 +13,10 @@ import { appliquerRamadan } from "../planning/ramadan.js";
  * publierSeance() met à jour la ligne de cette séance dans les mois publiés.
  */
 
-const STATUTS_PUBLIABLES = ["planifie", "confirme", "reporte", "realise", "annule"];
+// « à reprogrammer » (R-1) : publiée à sa date d'origine, l'étudiant la voit « reportée · date à venir »
+const STATUTS_PUBLIABLES = ["planifie", "confirme", "reporte", "realise", "annule", "a_reprogrammer"];
+// Statuts annoncés aux étudiants : entre la séance et sa ligne, c'est la version publiée qui l'emporte
+const STATUTS_ANNONCES = ["annule", "a_reprogrammer"];
 const hhmm = (h) => String(h ?? "").slice(0, 5);
 const moisDe = (date) => String(date).slice(0, 7);
 
@@ -87,8 +90,8 @@ export const lignesPubliees = (envois) => {
 
 /**
  * Rétablit sur des séances chargées en direct ce qui a été publié : date, créneau, salle,
- * enseignant, et l'annulation si elle a été publiée. Ne garde que les séances publiées. Une
- * annulation non publiée (régénération) laisse la séance telle qu'elle était publiée. Les
+ * enseignant, et l'annulation ou le report sans date s'ils ont été publiés. Ne garde que les séances
+ * publiées. Une annulation non publiée (régénération) laisse la séance telle qu'elle était publiée. Les
  * horaires du Ramadan sont appliqués après.
  */
 export const appliquerVersionPubliee = async (seances, lignesParId) => {
@@ -117,7 +120,7 @@ export const appliquerVersionPubliee = async (seances, lignesParId) => {
             s.setDataValue("id_user_enseignant", l.id_user_enseignant);
             s.setDataValue("enseignant", enseignants.get(l.id_user_enseignant));
         }
-        if (l.statut && (s.statut === "annule" || l.statut === "annule") && l.statut !== s.statut) s.setDataValue("statut", l.statut);
+        if (l.statut && (STATUTS_ANNONCES.includes(s.statut) || STATUTS_ANNONCES.includes(l.statut)) && l.statut !== s.statut) s.setDataValue("statut", l.statut);
     }
     await appliquerRamadan(gardees);
     return gardees.sort((a, b) => `${a.date_seance}${hhmm(a.creneau?.heure_debut)}${a.id_affectation}`.localeCompare(`${b.date_seance}${hhmm(b.creneau?.heure_debut)}${b.id_affectation}`));
