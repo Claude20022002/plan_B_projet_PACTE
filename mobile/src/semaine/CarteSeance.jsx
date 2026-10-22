@@ -1,5 +1,6 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { estChangee } from '../../../shared/session.js';
 import { couleurStatut, creerStyles, lineColor, useTheme } from '../theme';
 
 /**
@@ -12,7 +13,7 @@ export default function CarteSeance({ seance: s, onPress }) {
   const theme = useTheme();
   const styles = useStyles();
   const annule = s.status === 'annule';
-  const special = ['reporte', 'annule'].includes(s.status);
+  const special = estChangee(s.status);
   const lieu = s.distanciel ? [t('app.distanciel'), s.mention].filter(Boolean).join(' · ') : [s.room, s.building].filter(Boolean).join(' · ');
   return (
     <Pressable

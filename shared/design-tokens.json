@@ -40,6 +40,12 @@
       "bureau": "#B4410C",
       "bureauBg": "#FDEFE7"
     },
+    "a_reprogrammer": {
+      "key": "a_reprogrammer",
+      "board": "#F26322",
+      "bureau": "#B4410C",
+      "bureauBg": "#FDEFE7"
+    },
     "annule": {
       "key": "annule",
       "board": "#FF5A5F",
