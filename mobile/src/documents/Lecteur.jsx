@@ -13,6 +13,11 @@ import { creerStyles, useTheme } from '../theme';
  */
 
 const PDFJS = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174';
+// Empreintes publiées par cdnjs (vérifiées sur les fichiers) : un fichier modifié sur le CDN n'est pas exécuté
+const SRI = {
+  lib: 'sha512-q+4liFwdPC/bNdhUpZx6aXDx/h77yEQtn4I1slHydcbZK34nLaR3cAeYSJshoxIOq3mjEf7xJE8YWIUHMn+oCQ==',
+  worker: 'sha512-BbrZ76UNZq5BhH7LL7pn9A4TKQpQeNCHOo65/akfelcIBbcVvYWOFQKPXIrykE3qZxYjmDX573oa4Ywsc7rpTw==',
+};
 
 const pagePdfJs = (fond, filet) => `<!doctype html><html><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=5, user-scalable=yes">
@@ -22,17 +27,27 @@ const pagePdfJs = (fond, filet) => `<!doctype html><html><head><meta charset="ut
   .page { position: relative; margin: 0 auto 12px; background: #fff; box-shadow: 0 1px 4px ${filet}; }
   .page canvas { display: block; width: 100%; height: 100%; }
 </style>
-<script src="${PDFJS}/pdf.min.js"></script></head>
+<script src="${PDFJS}/pdf.min.js" integrity="${SRI.lib}" crossorigin="anonymous"></script></head>
 <body><div id="pages"></div>
 <script>
   const envoyer = (message) => window.ReactNativeWebView.postMessage(JSON.stringify(message));
-  pdfjsLib.GlobalWorkerOptions.workerSrc = '${PDFJS}/pdf.worker.min.js';
+  // Le worker est vérifié lui aussi (fetch avec empreinte), puis servi depuis une adresse blob
+  const travailleur = window.pdfjsLib && fetch('${PDFJS}/pdf.worker.min.js', { integrity: '${SRI.worker}' })
+    .then((reponse) => {
+      if (!reponse.ok) throw new Error('pdf.js indisponible');
+      return reponse.blob();
+    })
+    .then((blob) => {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = URL.createObjectURL(blob);
+    });
   const ouvrir = async (base64) => {
     try {
+      await travailleur;
       const binaire = atob(base64);
       const octets = new Uint8Array(binaire.length);
       for (let i = 0; i < binaire.length; i += 1) octets[i] = binaire.charCodeAt(i);
-      const pdf = await pdfjsLib.getDocument({ data: octets }).promise;
+      // isEvalSupported : jamais d'évaluation de code venu du fichier (CVE-2024-4367)
+      const pdf = await pdfjsLib.getDocument({ data: octets, isEvalSupported: false }).promise;
       const conteneur = document.getElementById('pages');
       const largeur = conteneur.clientWidth - 16;
       const ratio = Math.min(window.devicePixelRatio || 1, 2.5);
@@ -68,7 +83,8 @@ const pagePdfJs = (fond, filet) => `<!doctype html><html><head><meta charset="ut
   const recevoir = (evenement) => ouvrir(evenement.data);
   document.addEventListener('message', recevoir);
   window.addEventListener('message', recevoir);
-  envoyer({ charge: true });
+  // pdf.js absent (hors ligne, ou empreinte refusée) : l'écran le dit au lieu d'attendre sans fin
+  envoyer(window.pdfjsLib ? { charge: true } : { erreur: 'pdf.js indisponible' });
 </script></body></html>`;
 
 const pageImage = (fond, mime, base64) => `<!doctype html><html><head><meta charset="utf-8">
