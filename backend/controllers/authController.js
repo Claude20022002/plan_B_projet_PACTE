@@ -729,13 +729,20 @@ export const resetPassword = asyncHandler(async (req, res) => {
         return res.status(400).json({ message: verification.errors[0], error: verification.errors[0], errors: verification.errors });
     }
 
+    // Usage unique : le lien est marqué utilisé avant le changement, par une mise à jour
+    // conditionnelle ; de deux requêtes simultanées, une seule passe
+    const [consomme] = await PasswordResetToken.update({ used: true }, { where: { id_token: resetToken.id_token, used: false } });
+    if (consomme !== 1) {
+        return res.status(400).json({
+            message: "Token invalide",
+            error: "Le lien de réinitialisation est invalide ou a déjà été utilisé",
+        });
+    }
+
     // Mettre à jour le mot de passe
     const user = resetToken.user;
     const password_hash = await hashPassword(password);
     await user.update({ password_hash, must_change_password: false });
-
-    // Marquer le token comme utilisé
-    await resetToken.update({ used: true });
 
     // Un mot de passe réinitialisé invalide toutes les sessions ouvertes
     // (cas typique : compte compromis dont le propriétaire reprend le contrôle).
