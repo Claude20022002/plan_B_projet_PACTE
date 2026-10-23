@@ -272,6 +272,7 @@ export default function Statistiques() {
                                                 <LinearProgress variant="determinate"
                                                     value={filiereData[0]?.nombre_seances > 0
                                                         ? (f.nombre_seances / filiereData[0].nombre_seances) * 100 : 0}
+                                                    aria-label={t('stats.barreFiliereAria', { filiere: f.nom })}
                                                     sx={{ bgcolor: ds.colors.bg.subtle,
                                                           '& .MuiLinearProgress-bar': { bgcolor: lineColor(f.id_filiere) } }} />
                                             </Box>
@@ -359,7 +360,7 @@ export default function Statistiques() {
                             {charge.length === 0 ? (
                                 <Typography color="text.secondary" align="center" sx={{ py: 3 }}>{t('stats.vide.aucune')}</Typography>
                             ) : (
-                                <TableContainer sx={{ maxHeight: 380 }}>
+                                <TableContainer sx={{ maxHeight: 380 }} tabIndex={0} aria-label={t('stats.charge')}>
                                     <Table size="small" stickyHeader>
                                         <TableHead>
                                             <TableRow>
@@ -421,7 +422,7 @@ export default function Statistiques() {
                             {groupes.length === 0 ? (
                                 <Typography color="text.secondary" align="center" sx={{ py: 3 }}>{t('stats.vide.aucune')}</Typography>
                             ) : (
-                                <TableContainer sx={{ maxHeight: 380 }}>
+                                <TableContainer sx={{ maxHeight: 380 }} tabIndex={0} aria-label={t('stats.volumeGroupes')}>
                                     <Table size="small" stickyHeader>
                                         <TableHead>
                                             <TableRow>
@@ -449,6 +450,7 @@ export default function Statistiques() {
                                                         <TableCell align="right">
                                                             <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, justifyContent: 'flex-end' }}>
                                                                 <LinearProgress variant="determinate" value={pct}
+                                                                    aria-label={t('stats.barreGroupeAria', { groupe: g.nom_groupe })}
                                                                     sx={{ width: 50, bgcolor: ds.colors.bg.subtle,
                                                                           '& .MuiLinearProgress-bar': { bgcolor: ds.brand.navy } }} />
                                                                 <Typography variant="body2" fontWeight="bold">

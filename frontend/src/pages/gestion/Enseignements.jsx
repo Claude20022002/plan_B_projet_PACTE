@@ -268,7 +268,8 @@ export default function Enseignements() {
                                     const mutualise = e.groupes.length > 1;
                                     return (
                                         <TableRow key={e.id_enseignement} hover selected={selection.has(e.id_enseignement)}>
-                                            <TableCell padding="checkbox">
+                                            {/* Un tableau « small » retire la marge de la case (20 px) : 2 px la portent à 24 px (WCAG 2.5.8) */}
+                                            <TableCell padding="checkbox" sx={{ '&& > *': { p: '2px' } }}>
                                                 <Checkbox
                                                     size="small"
                                                     checked={selection.has(e.id_enseignement)}
@@ -379,7 +380,7 @@ function Equipe({ services = [], onOuvrir }) {
             component="button"
             type="button"
             onClick={onOuvrir}
-            sx={{ all: 'unset', cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center', '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 } }}
+            sx={{ all: 'unset', cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center', minHeight: 24, '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 } }}
         >
             {!principalActif(services) && <StateChip tone="warning">{t('ref.teaching.team.none')}</StateChip>}
             {visibles.map((s) => (
