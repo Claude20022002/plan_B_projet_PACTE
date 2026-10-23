@@ -3,6 +3,7 @@
  * Enseignant : /api/studio-quiz ; étudiant (et aperçu de l'enseignant) : /api/passations.
  */
 import { request, telecharger } from './api';
+import { typeDuFichier } from '../utils/fichiers';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -13,7 +14,8 @@ const avecQuery = (chemin, params) => {
   return `${chemin}${query ? `?${query}` : ''}`;
 };
 
-const typeDe = (fichier) => fichier.type || 'application/octet-stream';
+// Un .docx ou un .pptx arrive parfois sans type (navigateur sans Office) : le serveur le refuserait
+const typeDe = (fichier) => typeDuFichier(fichier) || 'application/octet-stream';
 
 export const studioAPI = {
   // Banque
