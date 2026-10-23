@@ -184,6 +184,12 @@ const buildTheme = (mode, language, famille = 'planner') => {
                         root: { borderRadius: rayon.sm },
                     },
                 },
+                MuiToggleButton: {
+                    styleOverrides: {
+                        // Par défaut, noir à 54 % : 4,49:1 sur le fond de page, sous le seuil de 4,5 (WCAG 1.4.3)
+                        root: { color: textSecondary },
+                    },
+                },
                 MuiChip: {
                     styleOverrides: {
                         // Pastille = petit volet : angles presque droits, capitales condensées

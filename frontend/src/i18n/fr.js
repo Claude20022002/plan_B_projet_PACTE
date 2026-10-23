@@ -1624,6 +1624,8 @@ const fr = {
     niveaux: { faible: 'Faible (< 40 %)', moyen: 'Moyen (40–70 %)', eleve: 'Élevé (> 70 %)' },
     charge: 'Charge par enseignant',
     volumeGroupes: 'Volume horaire par groupe',
+    barreFiliereAria: 'Séances de {{filiere}}, par rapport à la filière qui en a le plus',
+    barreGroupeAria: 'Heures de {{groupe}}, par rapport au groupe qui en a le plus',
     surcharge: 'Surchargé',
     colonnes: { enseignant: 'Enseignant', seances: 'Séances', heures: 'Heures', cours: 'Cours', groupe: 'Groupe', niveau: 'Niveau' },
   },

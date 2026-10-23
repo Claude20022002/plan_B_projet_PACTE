@@ -1628,6 +1628,8 @@ const en = {
     niveaux: { faible: 'Low (< 40 %)', moyen: 'Medium (40–70 %)', eleve: 'High (> 70 %)' },
     charge: 'Workload per teacher',
     volumeGroupes: 'Hours per group',
+    barreFiliereAria: 'Sessions of {{filiere}}, compared with the busiest programme',
+    barreGroupeAria: 'Hours of {{groupe}}, compared with the busiest group',
     surcharge: 'Overloaded',
     colonnes: { enseignant: 'Teacher', seances: 'Sessions', heures: 'Hours', cours: 'Courses', groupe: 'Group', niveau: 'Level' },
   },
