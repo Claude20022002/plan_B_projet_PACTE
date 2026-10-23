@@ -6,6 +6,7 @@ import { ArrowForward, ExpandLess, ExpandMore } from '@mui/icons-material';
 import AvertissementsGeneration from '../planning/AvertissementsGeneration';
 import DetailEnseignements from './DetailEnseignements';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 /** Le résumé d'un rapport ; recalculé pour un rapport d'avant le résumé du serveur (M-3). */
 const resumeDe = (rapport) =>
@@ -38,7 +39,7 @@ function Chiffre({ libelle, valeur, alerte = false }) {
  */
 export default function RapportGeneration({ rapport }) {
     const { t, i18n } = useTranslation();
-    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const nombre = useMemo(() => new Intl.NumberFormat(localeEcran(i18n.language), { maximumFractionDigits: 1 }), [i18n.language]);
     const [detail, setDetail] = useState(false);
     const resume = resumeDe(rapport);
     const incomplets = rapport.enseignements.filter((e) => !e.complet);

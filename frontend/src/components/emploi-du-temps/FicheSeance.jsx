@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { StatusFlap, SupportsCours } from '../../design-system/board';
 import { ds } from '../../design-system/tokens';
 import { couleurDuModule } from './couleurs';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Fiche d'une séance de l'emploi du temps, ouverte depuis la grille ou la liste : la salle en
@@ -33,7 +34,7 @@ export default function FicheSeance({ session: s, onClose }) {
       {s && (
         <>
           <DialogTitle sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 1.5, fontFamily: ds.font.board, fontWeight: 700, '&::first-letter': { textTransform: 'uppercase' } }}>
-            {new Intl.DateTimeFormat(i18n.language, { weekday: 'long', day: 'numeric', month: 'long' }).format(s.start)}
+            {new Intl.DateTimeFormat(localeEcran(i18n.language), { weekday: 'long', day: 'numeric', month: 'long' }).format(s.start)}
             <StatusFlap status={s.status} variant="bureau" />
           </DialogTitle>
           <DialogContent dividers sx={{ borderLeft: `4px solid ${couleurDuModule(s)}` }}>

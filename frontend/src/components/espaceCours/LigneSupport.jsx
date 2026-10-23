@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Box, Chip, IconButton, ListItem, ListItemButton, ListItemIcon, ListItemText, Menu, MenuItem, Divider, Tooltip } from '@mui/material';
 import { MoreVert } from '@mui/icons-material';
 import { domaineDe, familleDuSupport, tailleCourte } from './iconeSupport';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Un support dans sa section. Toute la ligne ouvre le support ; le menu « ⋮ » (auteur ou
@@ -11,7 +12,7 @@ import { domaineDe, familleDuSupport, tailleCourte } from './iconeSupport';
 export default function LigneSupport({ support, gere, sections, idSection, premier, dernier, onOuvrir, onAction }) {
   const { t, i18n } = useTranslation();
   const [ancre, setAncre] = useState(null);
-  const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
+  const locale = localeEcran(i18n.language);
   const { Icone, libelle } = familleDuSupport(support);
   const date = support.createdAt ? new Date(support.createdAt).toLocaleDateString(locale, { day: 'numeric', month: 'short' }) : null;
   const auteur = support.auteur ? `${support.auteur.prenom ?? ''} ${support.auteur.nom ?? ''}`.trim() : null;
