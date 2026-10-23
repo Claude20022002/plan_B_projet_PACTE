@@ -109,14 +109,10 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await depuisListe.getByRole("button", { name: "Ouvrir", exact: true }).click();
   await expect(page.getByRole("img", { name: /QR code menant au quiz/ })).toBeVisible();
 
-  // Page Activités : « Mes quiz » n'y est pas répété (il est dans le menu) ; « Lancer un quiz » propose le quiz du Studio
+  // Page Activités : plus de quiz (SC-3) ; « Mes quiz » est dans le menu et diffuse en direct ou au rythme de chacun
   await page.goto("/jeux");
+  await expect(page.getByRole("heading", { name: "Activités", level: 2 })).toBeVisible();
   await expect(page.getByRole("region", { name: "Mes quiz" })).toHaveCount(0);
-  await page.getByRole("button", { name: "Lancer un quiz" }).click();
-  const lancement = page.getByRole("dialog", { name: "Lancer un quiz" });
-  await expect(lancement.getByText("Mes quiz · chacun à son rythme (code et QR code)")).toBeVisible();
-  await lancement.getByRole("button", { name: /Réseaux, contrôle 1/ }).click();
-  const depuisActivites = page.getByRole("dialog", { name: "Diffuser ce quiz" });
-  await depuisActivites.getByRole("button", { name: "Ouvrir", exact: true }).click();
-  await expect(page.getByRole("img", { name: /QR code menant au quiz/ })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Quiz en direct" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Lancer un quiz" })).toHaveCount(0);
 });

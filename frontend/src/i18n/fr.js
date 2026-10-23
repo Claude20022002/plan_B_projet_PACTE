@@ -906,11 +906,11 @@ const fr = {
       "profQuizDirect": {
         "titre": "Lancer un quiz en direct pendant la séance",
         "etapes": [
-          "Dans « Activités », cliquez sur « Lancer un quiz ».",
-          "Choisissez l’un de vos quiz : Planner démarre la partie et ouvre l’écran à projeter.",
-          "Les étudiants rejoignent avec le code ou le QR code projeté, puis cliquez sur « Démarrer »."
+          "Dans « Mes quiz », cliquez sur « Diffuser » à côté du quiz.",
+          "Choisissez « En direct », la classe si vous voulez prévenir ses étudiants, puis « Lancer en direct » : l’écran à projeter s’ouvre.",
+          "Les étudiants scannent le QR code ou saisissent le code dans « Quiz », puis cliquez sur « Commencer »."
         ],
-        "note": "Un quiz n’est pas attaché à une classe : vous le lancez quand vous voulez, et retrouvez les scores dans « Activités »."
+        "note": "Un quiz n’est attaché à aucune classe : vous le lancez quand vous voulez. Les résultats restent dans le quiz, onglet « Diffusions »."
       },
       "profQuizIa": {
         "titre": "Créer un quiz en un geste",
@@ -1137,45 +1137,11 @@ const fr = {
     erreurChargement: 'Le quiz n’a pas pu être chargé.',
     erreurEnregistrement: 'Le quiz n’a pas pu être enregistré.',
   },
+  // Seul reste le nombre de questions, repris par les listes de « Mes quiz » (ancien quiz en direct retiré, SC-3)
   quizDirect: {
-    titre: 'Quiz en direct',
-    connexion: 'Connexion à la partie…',
-    qrAlt: 'QR code de la partie, à scanner avec l’application HESTIM Planner',
-    consigne: 'Scannez le QR code avec l’application HESTIM Planner',
-    code: 'Code {{pin}}',
-    joueurs_one: '{{count}} joueur',
-    joueurs_other: '{{count}} joueurs',
-    demarrer: 'Démarrer',
-    numero: 'Question {{numero}} sur {{total}}',
-    reponsesRecues: '{{recues}} réponses sur {{joueurs}}',
-    voirReponses: 'Voir les réponses',
-    suivant: 'Question suivante',
-    bonneReponse: 'Bonne réponse',
-    reponses_one: '{{count}} réponse',
-    reponses_other: '{{count}} réponses',
-    classementFinal: 'Classement final',
-    aucunScore: 'Aucun joueur n’a marqué de point.',
-    points_one: '{{count}} point',
-    points_other: '{{count}} points',
-    terminer: 'Terminer',
-    erreurs: {
-      absente: 'Aucune partie en cours : lancez un quiz depuis Activités.',
-      dejaAnimee: 'Cette partie est déjà animée dans une autre fenêtre.',
-      connexion: 'Le quiz ne répond pas. Vérifiez votre connexion Internet, puis relancez-le depuis Activités.',
-      serveur: 'La partie n’a pas pu démarrer. Relancez le quiz depuis Activités.',
-    },
     lancer: {
-      titre: 'Lancer un quiz · {{classe}}',
-      liste: 'Mes quiz',
-      aucun: 'Aucun quiz prêt à lancer. Créez-en un, ou terminez-en un dans « Mes quiz ».',
-      studio: 'Mes quiz · chacun à son rythme (code et QR code)',
-      direct: 'Quiz en direct',
       questions_one: '{{count}} question',
       questions_other: '{{count}} questions',
-      enCours: 'Lancement…',
-      erreur: 'Le quiz n’a pas pu être lancé.',
-      erreurListe: 'Vos quiz n’ont pas pu s’afficher. Réessayez dans un instant.',
-      creerIa: 'Créer un quiz',
     },
   },
   espaces: {
@@ -1317,10 +1283,7 @@ const fr = {
       nuages: 'Nuages de mots',
       reponses_one: '{{count}} réponse',
       reponses_other: '{{count}} réponses',
-      historique: 'Mes derniers quiz',
       voir: 'Résultats',
-      resumeEtudiant_ordinal_one: '{{score}} points · {{count}}er sur {{total}}',
-      resumeEtudiant_ordinal_other: '{{score}} points · {{count}}e sur {{total}}',
     },
     devoirs: {
       titre: 'Devoirs',
@@ -1416,15 +1379,6 @@ const fr = {
         toutesJustes: 'Question {{numero}} : il faut au moins une mauvaise réponse.',
         uneSeule: 'Question {{numero}} : une seule bonne réponse, ou cochez « Plusieurs bonnes réponses ».',
       },
-    },
-    quiz: {
-      titre: 'Quiz en direct',
-      enCours: 'En cours',
-      code: 'Code {{pin}}',
-      rejoindre: 'Rejoindre',
-      saisirCode: 'Saisir un code',
-      aucune: 'Aucun quiz en cours dans vos séances. Quand votre enseignant en lance un, il apparaît ici.',
-      aucuneEnseignant: 'Aucun quiz lancé depuis deux heures. Lancez-en un pendant votre séance : vos étudiants sont prévenus.',
     },
     modules: {
       but: 'But',
