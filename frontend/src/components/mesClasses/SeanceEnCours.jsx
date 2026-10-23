@@ -5,7 +5,7 @@ import { libelleSeance, nomClasse } from './classe';
 
 /**
  * La séance en cours, en tête de « Mes classes » (lot E-4) : une action principale, l'appel ;
- * les supports de cours en action secondaire. Les quiz se créent et se lancent depuis Activités :
+ * les supports de cours en action secondaire. Les quiz se créent et se lancent depuis « Mes quiz » :
  * ils ne sont pas attachés à une classe (retours du 21 octobre).
  * `options` : { devoirs } dit si les devoirs sont proposés.
  */
