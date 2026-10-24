@@ -7,6 +7,8 @@
  * statut, filière, et position dans le temps (passée, en cours, prochaine).
  */
 
+import { localeEcran } from './dates.js';
+
 const pad = (n) => String(n).padStart(2, '0');
 
 /** "09:00:00" → "09:00" */
@@ -146,10 +148,10 @@ export const relativeTo = (target, language, now = new Date()) => {
   return relatifSimple(valeur, unite, language);
 };
 
-/** « lundi 5 octobre » / « Monday, October 5 » */
+/** « lundi 5 octobre » / « Monday 5 October » */
 export const formatDayLabel = (isoDate, language, options = {}) => {
   const [y, m, d] = String(isoDate).split('-').map(Number);
-  return new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long', ...options }).format(
+  return new Intl.DateTimeFormat(localeEcran(language), { weekday: 'long', day: 'numeric', month: 'long', ...options }).format(
     new Date(y, m - 1, d)
   );
 };

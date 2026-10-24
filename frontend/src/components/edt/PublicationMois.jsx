@@ -4,6 +4,7 @@ import { Alert, AlertTitle, Box, Button, Chip, Stack, Typography } from '@mui/ma
 import { Send } from '@mui/icons-material';
 import ConfirmDialog from '../common/ConfirmDialog';
 import usePublicationMois from './usePublicationMois';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Publication du mois d'une filière, sur la page « EDT du mois » (administration et responsable).
@@ -22,7 +23,7 @@ export default function PublicationMois({ mois, groupe, onChoisirClasse }) {
     const aRepublier = etat.classes_a_republier ?? [];
     const cas = !etat.publie ? 'premiere' : aRepublier.length ? 'changements' : 'aJour';
     const filiere = groupe.filiere?.code_filiere ?? groupe.nom_groupe;
-    const date = etat.dernier_envoi ? new Date(etat.dernier_envoi).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { dateStyle: 'medium', timeStyle: 'short' }) : '';
+    const date = etat.dernier_envoi ? new Date(etat.dernier_envoi).toLocaleString(localeEcran(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }) : '';
     const bouton = (libelle) => (
         <Button variant="contained" size="small" startIcon={<Send />} onClick={() => setConfirmer(true)} disabled={envoi} sx={{ mt: 1.5 }}>
             {libelle}

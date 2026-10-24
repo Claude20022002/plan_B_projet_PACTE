@@ -36,6 +36,7 @@ import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { ds, lineColor } from '../../design-system/tokens';
 import { aujourdhui } from '../../../../shared/dates.js';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Enseignements d'une période : ce qui sera réellement planifié (une composante de module,
@@ -58,7 +59,7 @@ export default function Enseignements() {
     const [aSupprimer, setASupprimer] = useState(null);
     const [idEquipe, setIdEquipe] = useState(null);
 
-    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const nombre = useMemo(() => new Intl.NumberFormat(localeEcran(i18n.language), { maximumFractionDigits: 1 }), [i18n.language]);
 
     useEffect(() => {
         (async () => {

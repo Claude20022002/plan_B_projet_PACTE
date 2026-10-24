@@ -25,6 +25,7 @@ import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { calendrierAPI, campusAPI, evenementAPI, filiereAPI, groupeAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import { localeEcran } from '../../utils/dates';
 
 export default function Calendrier() {
     const { t, i18n } = useTranslation();
@@ -45,7 +46,7 @@ export default function Calendrier() {
 
     const formatDate = useCallback(
         (date) =>
-            new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }).format(
+            new Intl.DateTimeFormat(localeEcran(i18n.language), { day: '2-digit', month: 'short', year: 'numeric' }).format(
                 new Date(`${date}T12:00:00`)
             ),
         [i18n.language]

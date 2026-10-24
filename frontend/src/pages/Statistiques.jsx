@@ -18,6 +18,7 @@ import DashboardLayout from '../components/layouts/DashboardLayout';
 import { ds, lineColor } from '../design-system/tokens';
 import { calendrierAPI, statistiquesAPI } from '../services/api';
 import { exportMultiSheet, COLS_CHARGE_ENSEIGNANTS, COLS_OCCUPATION_GROUPES } from '../utils/exportExcel';
+import { localeEcran } from '../utils/dates';
 
 
 const RADIAN = Math.PI / 180;
@@ -201,7 +202,7 @@ export default function Statistiques() {
 
                 <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                     {periode
-                        ? `${periode.annee ? `${t('stats.annee', { annee: periode.annee })} · ` : ''}${t('stats.du', { debut: new Date(`${periode.date_debut}T12:00:00`).toLocaleDateString(i18n.language), fin: new Date(`${periode.date_fin}T12:00:00`).toLocaleDateString(i18n.language) })}`
+                        ? `${periode.annee ? `${t('stats.annee', { annee: periode.annee })} · ` : ''}${t('stats.du', { debut: new Date(`${periode.date_debut}T12:00:00`).toLocaleDateString(localeEcran(i18n.language)), fin: new Date(`${periode.date_fin}T12:00:00`).toLocaleDateString(localeEcran(i18n.language)) })}`
                         : t('stats.toutes')}
                 </Typography>
 

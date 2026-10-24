@@ -14,6 +14,7 @@ import { fetchAll } from '../../utils/fetchAll';
 import { filieresGerables } from '../../utils/droits';
 import { ds } from '../../design-system/tokens';
 import { aujourdhui } from '../../../../shared/dates.js';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Suivi du réalisé (phase P7) : avancement de chaque enseignement face à son rythme (alerte de
@@ -26,7 +27,7 @@ export default function Suivi() {
     const admin = user?.role === 'admin';
     // « ?onglet=heures » ouvre les heures du mois (lien « séances à vérifier » du tableau de bord, R-9)
     const [onglet, setOnglet] = useState(() => (admin && new URLSearchParams(window.location.search).get('onglet') === 'heures' ? 1 : 0));
-    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const nombre = useMemo(() => new Intl.NumberFormat(localeEcran(i18n.language), { maximumFractionDigits: 1 }), [i18n.language]);
 
     return (
         <DashboardLayout>

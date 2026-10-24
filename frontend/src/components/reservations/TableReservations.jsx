@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Button, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Typography } from '@mui/material';
 import StateChip from '../../design-system/components/StateChip';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 // Seules les exceptions portent une pastille : à valider (attente), refusée, annulée
 const TON_STATUT = { demandee: 'warning', refusee: 'neutral', annulee: 'neutral' };
@@ -16,7 +17,7 @@ const nom = (u) => (u ? `${u.prenom ?? ''} ${u.nom ?? ''}`.trim() : '');
  */
 export default function TableReservations({ reservations, onValider, onRefuser, onAnnuler }) {
     const { t, i18n } = useTranslation();
-    const formatDate = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }), [i18n.language]);
+    const formatDate = useMemo(() => new Intl.DateTimeFormat(localeEcran(i18n.language), { weekday: 'short', day: 'numeric', month: 'short' }), [i18n.language]);
 
     return (
         <TableContainer tabIndex={0} aria-label={t('nav.bookings')}>

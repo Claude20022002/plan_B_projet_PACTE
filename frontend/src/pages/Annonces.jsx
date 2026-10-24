@@ -27,6 +27,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { annonceAPI } from '../services/api';
 import { ds } from '../design-system/tokens';
+import { localeEcran } from '../utils/dates';
 
 const TYPES_PIECE = ['application/pdf', 'image/png', 'image/jpeg', 'image/webp'];
 const TAILLE_MAX = 5 * 1024 * 1024;
@@ -73,7 +74,7 @@ export default function Annonces() {
     setModele(null);
   };
 
-  const dateLongue = (d) => new Date(d).toLocaleString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const dateLongue = (d) => new Date(d).toLocaleString(localeEcran(i18n.language), { weekday: 'short', day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   const charger = useCallback(() => {
     setErreur(false);

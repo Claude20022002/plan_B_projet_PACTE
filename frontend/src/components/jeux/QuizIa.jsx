@@ -10,6 +10,7 @@ import RelireQuiz from '../quiz/creation/RelireQuiz';
 import ListeMesQuiz from '../quiz/mesQuiz/ListeMesQuiz';
 import ListeQuizStudio from '../quiz/mesQuiz/ListeQuizStudio';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * « Mes quiz » de l'enseignant (page Activités, avec les devoirs) : « Créer un quiz » ouvre la
@@ -37,7 +38,7 @@ export default function PanneauQuizIa({ donnerEnDevoir }) {
     };
   }, [charger]);
 
-  const date = (iso) => new Date(iso).toLocaleString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const date = (iso) => new Date(iso).toLocaleString(localeEcran(i18n.language), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const lampe = { pret: ds.board.letter, cree: ds.board.live, erreur: ds.brand.orange };
 
   return (

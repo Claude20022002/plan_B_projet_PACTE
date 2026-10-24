@@ -28,6 +28,7 @@ import Panneau, { Capitales, LignePanneau } from './Panneau';
 import SelecteurClasse from '../planning/SelecteurClasse';
 import PanneauQuizIa from './QuizIa';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
+import { localeEcran } from '../../utils/dates';
 
 /** Date limite par défaut : dans une semaine, à 23 h 59 (champ datetime-local) */
 const dansUneSemaine = () => {
@@ -142,7 +143,7 @@ function NotesDevoir({ idDevoir, fermer }) {
     setDonnees(null);
     return charger();
   }, [charger]);
-  const note = (n) => (n === null ? null : n.toLocaleString(i18n.language));
+  const note = (n) => (n === null ? null : n.toLocaleString(localeEcran(i18n.language)));
   return (
     <Dialog open={Boolean(idDevoir)} onClose={fermer} fullWidth maxWidth="sm">
       <DialogTitle>
@@ -232,7 +233,7 @@ export default function PanneauDevoirs({ enseignant }) {
 
   // Rien à montrer à un étudiant sans devoir
   if (!enseignant && devoirs?.length === 0) return null;
-  const date = (iso) => new Date(iso).toLocaleString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const date = (iso) => new Date(iso).toLocaleString(localeEcran(i18n.language), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   return (
     <>
@@ -280,9 +281,9 @@ export default function PanneauDevoirs({ enseignant }) {
               </Box>
               <Capitales sx={{ display: 'block', mt: 0.5, fontSize: '0.875rem', color: ds.board.letter }}>
                 {enseignant
-                  ? t('jeux.devoirs.resumeEnseignant', { count: d.rendus, moyenne: d.moyenne === null ? '-' : d.moyenne.toLocaleString(i18n.language) })
+                  ? t('jeux.devoirs.resumeEnseignant', { count: d.rendus, moyenne: d.moyenne === null ? '-' : d.moyenne.toLocaleString(localeEcran(i18n.language)) })
                   : d.rendu
-                    ? t('jeux.devoirs.note', { note: d.rendu.note.toLocaleString(i18n.language) })
+                    ? t('jeux.devoirs.note', { note: d.rendu.note.toLocaleString(localeEcran(i18n.language)) })
                     : d.ouvert
                       ? t('jeux.devoirs.aRendre')
                       : t('jeux.devoirs.nonRendu')}

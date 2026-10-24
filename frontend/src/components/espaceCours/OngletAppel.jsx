@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Box, Chip, List, ListItem, ListItemButton, ListItemText, Paper, Skeleton } from '@mui/material';
 import EmptyState from '../../design-system/components/EmptyState';
 import { espaceCoursAPI } from '../../services/espaceCours';
+import { localeEcran } from '../../utils/dates';
 
 const COULEUR = { a_faire: 'default', ouvert: 'info', ferme: 'success' };
 const aujourdhui = () => new Date().toLocaleDateString('en-CA');
@@ -18,7 +19,7 @@ export default function OngletAppel({ idCours, idGroupe }) {
   const navigate = useNavigate();
   const [seances, setSeances] = useState(null);
   const [erreur, setErreur] = useState(false);
-  const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
+  const locale = localeEcran(i18n.language);
 
   useEffect(() => {
     espaceCoursAPI.appels(idCours, idGroupe).then(setSeances).catch(() => setErreur(true));

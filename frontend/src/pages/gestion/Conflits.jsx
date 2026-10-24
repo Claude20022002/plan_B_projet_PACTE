@@ -11,6 +11,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { conflitAPI, affectationAPI } from '../../services/api';
 import { useTranslation } from 'react-i18next';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 // ── Palette, par code de segment (libellés : conflits.segments.<code>) ─────────
 const COLORS = {
@@ -281,7 +282,7 @@ export default function Conflits() {
                                     </TableCell>
                                     <TableCell>{c.description}</TableCell>
                                     <TableCell>
-                                        {new Date(c.date_detection).toLocaleDateString(i18n.language)}
+                                        {new Date(c.date_detection).toLocaleDateString(localeEcran(i18n.language))}
                                     </TableCell>
                                     <TableCell>
                                         <Chip
@@ -330,7 +331,7 @@ export default function Conflits() {
                                 <Typography><strong>{t('conflits.colonnes.description')} :</strong> {selected.description}</Typography>
                                 <Typography>
                                     <strong>{t('conflits.colonnes.detection')} :</strong>{' '}
-                                    {new Date(selected.date_detection).toLocaleString(i18n.language)}
+                                    {new Date(selected.date_detection).toLocaleString(localeEcran(i18n.language))}
                                 </Typography>
                                 <Typography>
                                     <strong>{t('conflits.colonnes.statut')} :</strong>{' '}
@@ -341,7 +342,7 @@ export default function Conflits() {
                                 {selected.resolu && selected.date_resolution && (
                                     <Typography>
                                         <strong>{t('conflits.resoluLe')} :</strong>{' '}
-                                        {new Date(selected.date_resolution).toLocaleString(i18n.language)}
+                                        {new Date(selected.date_resolution).toLocaleString(localeEcran(i18n.language))}
                                     </Typography>
                                 )}
                             </Box>
