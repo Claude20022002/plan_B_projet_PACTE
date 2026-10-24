@@ -19,6 +19,7 @@ Ce fichier sert à relire le plan, et plus tard chaque lot. Il dit ce qui couvre
 | EX-11 Jeux en microservice | D-12, D-14, D-17 | JC-1 | Planner fonctionne service des jeux arrêté |
 | EX-12 Désactivation des comptes | D-18 | ME-17 (puis ME-8, ME-9) | invariants I-A1 à I-A3 (fichier 11) |
 | EX-13 Archivage des années | D-19 | ME-18, ME-19, ME-20 | invariants I-A4 à I-A8 (fichier 11) |
+| Sites indépendants (Q-4, 24 octobre) | D-20 | ME-25 | invariant I-15 |
 | EX-Q1 Isolation | D-01, D-03 | ME-6 | toutes les routes, générées depuis le routeur |
 | EX-Q2 Continuité de HESTIM | D-16 | tous | retour arrière écrit par lot ; base de HESTIM jamais déplacée |
 | EX-Q3 Montée en charge | D-09 | ME-5, ME-14 | université de 20 000 étudiants |
@@ -46,6 +47,7 @@ Aucune exigence sans lot ; aucun lot sans exigence (ME-0d sert EX-Q2 : on ne cha
 | I-11 | Aucun état en mémoire du processus n'est partagé entre écoles : toute clé commence par l'`uid` de l'établissement, tout travail différé emporte son contexte | revue ; inventaire des `Map` et files au niveau des modules | test de deux écoles avec des identifiants égaux (session de génération, compte du limiteur) |
 | I-12 | Une école n'apprend jamais qu'une personne a un compte dans une autre école | invitation identique pour toute adresse ; `OccupationExterne` sans source lisible | test de l'import et de l'invitation |
 | I-14 | Une connexion par l'annuaire d'une école n'ouvre que cette école, et seulement pour les domaines d'adresse qu'elle a prouvé posséder | règle de la Plateforme (D-05) | test : un annuaire de A qui affirme l'adresse d'un enseignant de B n'ouvre rien chez B |
+| I-15 | Un étudiant ne reçoit jamais l'emploi du temps, l'annonce ou la notification d'un autre site ; aucune séance d'un groupe n'a lieu hors de son site | règle dure du solveur, envois filtrés par site (D-20) | test sur un établissement de deux sites |
 | I-13 | Les identifiants techniques figés ne changent pas | liste écrite (D-11), exclue du contrôle de neutralité | test : un secret de double authentification chiffré avant la mise à jour se déchiffre après |
 
 ## 10.3 Analyse des défaillances
@@ -170,4 +172,5 @@ Points relus et **confirmés** sans changement : le choix de la base par école 
 | Q-9 | Les créateurs voient-ils le pays des écoles qui utilisent leurs jeux (jamais leur nom) ? | oui |
 | Q-10 | Un prix négocié par établissement est-il permis (grandes écoles) ? | oui, le modèle le prévoit (`Abonnement.prix_compte_mois`) |
 | Q-11 | Établissement d'essai gratuit, effacé après 60 jours sans activité ? | oui |
+| Q-1 à Q-11 | Réponses du 24 octobre (Q-3, Q-4, Q-5, Q-8, Q-10, Q-11) | voir fichier 13, § 13.15 ; Q-2, Q-6, Q-7, Q-9 attendent l'ouverture du volet créateurs |
 | Q-12 à Q-14 | Durée de conservation des années closes, accès des diplômés à leurs archives, préavis avant une désactivation programmée | **tranchées le 24 octobre** : 5 ans ; 30 jours de grâce, téléchargement des fichiers désactivé ; préavis 5 jours avant (fichier 11, § 11.6) |

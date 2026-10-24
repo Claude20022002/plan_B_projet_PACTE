@@ -125,3 +125,10 @@ Format inspiré des « Architecture Decision Records » : contexte, options rée
 - **Options** : (a) effacer les inscriptions de l'année passée ; (b) filtrer par année partout, avec une année close en lecture seule.
 - **Décision** : (b). `Groupe.id_annee` devient une vraie clé ; une seule fonction `groupesDeLAnnee(personne, année)` ; année en cours par défaut, années closes dans une rubrique à part ; clôture et préparation de l'année suivante par « aperçu puis appliquer ». Détail : fichier 11.
 - **Pourquoi pas (a)** : on perdrait l'historique de l'étudiant (présences, résultats) et l'enseignant ses classes passées ; et la règle resterait écrite deux fois.
+
+## D-20 Des sites indépendants dans un même établissement
+
+- **Contexte** : décision du 24 octobre (Q-4) : une école de plusieurs villes (EMSI) est **un** établissement, mais ses campus sont **indépendants** : un emploi du temps ne doit jamais partir vers les étudiants d'un autre campus, et un étudiant ne doit jamais être placé dans un campus où il n'est pas inscrit. La décision du 21 octobre (« plus aucun campus préféré ; une filière va dans n'importe quel bâtiment ») reste vraie **pour HESTIM**, dont les deux campus partagent les mêmes étudiants.
+- **Options** : (a) un établissement par ville (casse le partage des enseignants, de la maquette et de l'administration) ; (b) rendre chaque `Campus` indépendant (casse HESTIM, dont Gandhi et Stendhal accueillent les mêmes classes) ; (c) **un niveau de plus, le site** : un site regroupe un ou plusieurs campus qui partagent leurs étudiants et leurs salles ; deux sites sont étanches.
+- **Décision** : (c). HESTIM a un seul site (« Casablanca ») avec ses deux campus : rien ne change pour elle, et la notion de site reste invisible à l'écran tant qu'un établissement n'en a qu'un. L'EMSI a un site par ville (ou par campus indépendant). Détail : fichier 06, § 6.7.
+- **Pourquoi** : (c) est la seule option qui tient à la fois la règle de HESTIM et celle de l'EMSI, sans deuxième établissement.

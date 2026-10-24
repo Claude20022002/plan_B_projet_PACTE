@@ -79,7 +79,10 @@ erDiagram
     ABONNEMENT {
         uuid uid PK
         uuid etablissement_uid FK
-        decimal prix_compte_mois "4.99"
+        decimal prix_compte_mois "part nette de Planner, 4.99 au catalogue"
+        decimal enveloppe_ia_compte_mois "0.41"
+        json remises "motif et taux de chaque remise (§ 13.16)"
+        uuid approuve_par "compte qui a accordé une remise"
         string devise "MAD"
         date debut
         date fin
@@ -276,6 +279,7 @@ erDiagram
 | `ParametresPlanning` (valeurs modifiées) | `VersionParametres` + `ValeurParametre` | une version initiale datée du jour de la migration |
 | `pause_vendredi`, `samedi_apres_midi_initiale` | `PlageRestreinte` | deux plages pour le rythme initiale : vendredi midi « interdite », samedi après-midi « à éviter » (poids 50 gardé) |
 | `Groupe.annee_scolaire` (texte), `AnneeUniversitaire.active`, `Users.actif` seul | `Groupe.id_annee`, `AnneeUniversitaire.statut`, désactivation datée et journalisée | détail et migration : fichier 11, § 11.4 |
+| (nouveau) | `Site` (id, uid, code, nom, ville) ; `Campus.id_site` ; `Groupe.id_site` (D-20) | un site « Casablanca » pour HESTIM, ses deux campus rattachés |
 | `ResponsableFiliere` | `Habilitation` (portée filière) | une ligne par responsable ; l'ancienne table reste lue le temps d'une version |
 | variable `APP_TIMEZONE` (10 fichiers) | fuseau de l'établissement, lu dans le contexte | valeur actuelle |
 | `utils/feriesMaroc.js` | fournisseur de calendrier « Maroc » (fichier 06) | inchangé dans le fond |

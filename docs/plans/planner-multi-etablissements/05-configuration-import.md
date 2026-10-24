@@ -138,6 +138,7 @@ Les nomenclatures (types de salle, équipements, pôles, cycles, rythmes) se cr�
 | V-12 | base | disponibilité sur un créneau qui n'existe pas dans la grille | bloquant |
 | V-13 | base | étudiant dont l'adresse et le numéro désignent deux personnes différentes déjà en base | bloquant (le numéro d'étudiant prime pour rapprocher, mais un désaccord n'est jamais tranché en silence) |
 | V-14 | fichier | service sur un groupe qui ne suit pas cette composante pendant cette période | bloquant |
+| V-15 | fichier | étudiant inscrit dans des groupes de deux sites différents (D-20) | bloquant |
 
 Chaque contrôle est une fonction pure (ligne, contexte) → anomalies, testée seule : le catalogue s'agrandit sans toucher au moteur d'import (motif « Spécification »).
 

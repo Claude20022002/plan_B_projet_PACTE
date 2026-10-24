@@ -123,3 +123,21 @@ EMSI a des campus dans plusieurs villes : une scolarité par campus. Le rôle «
 | Lecture | établissement, campus | consulter, exporter |
 
 Le rôle du compte (`admin`, `enseignant`, `etudiant`) reste ; l'habilitation ajoute une portée. Les contrôles de droits actuels (`services/planning/droits.js`, `filieresDuResponsable`) se généralisent en une fonction `portees(user)`, testée sur chaque route d'administration.
+
+## 6.7 Sites indépendants (D-20, décision du 24 octobre)
+
+| Règle | Détail |
+|---|---|
+| Ce qu'est un site | un ensemble de campus d'un même établissement qui partagent leurs étudiants et leurs salles (une ville, ou un campus seul). Chaque campus appartient à un site |
+| Groupes | chaque groupe appartient à **un** site (`Groupe.id_site`, obligatoire dès que l'établissement a plus d'un site) |
+| Étudiants | un étudiant n'est inscrit que dans des groupes d'un même site ; une inscription dans deux sites est refusée (contrôle d'import V-15) |
+| Solveur | règle **dure** nouvelle : une séance d'un groupe n'a lieu que dans une salle d'un campus de **son** site ; à l'intérieur du site, toute salle convient (décision du 21 octobre) |
+| Enseignants | ils peuvent enseigner sur plusieurs sites ; entre deux sites de villes différentes, pas deux séances le même jour par défaut (temps de trajet, § 6.3) |
+| Publication et messages | EDT du mois, agenda, notifications et annonces partent **par site** : un étudiant ne reçoit que ce qui concerne son site ; une annonce « à tout l'établissement » reste possible, explicitement |
+| Calendrier | commun à l'établissement ; un événement peut viser un site (férié local, fermeture d'un campus) |
+| Administration | une scolarité peut avoir la portée « site » (habilitations, § 6.6) |
+| Import | colonne `site` dans les feuilles Campus et Groupes ; les étudiants héritent du site de leurs groupes |
+| Écrans | un sélecteur de site apparaît dès qu'il y a deux sites ; avec un seul site, rien ne change |
+| HESTIM | un site « Casablanca » créé par la migration, avec Gandhi et Stendhal : aucune différence visible |
+
+Invariant I-15 (fichier 10) : un étudiant ne reçoit jamais l'emploi du temps, l'annonce ou la notification d'un autre site, et aucune séance d'un groupe n'a lieu hors de son site.

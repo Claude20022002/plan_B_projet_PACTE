@@ -1,6 +1,6 @@
 # Plan : de HESTIM Planner à Planner, pour tout établissement
 
-Statut : **proposé** (23 octobre 2026), à valider par le chef de projet. Rien n'est commencé dans le code. Les plans ne changent que sur sa demande.
+Statut : **validé par le chef de projet le 24 octobre 2026.** Les plans ne changent que sur sa demande ; les questions encore ouvertes sont au fichier 13, § 13.15.
 
 Ce dossier décrit deux transformations :
 
@@ -12,7 +12,7 @@ Ce dossier décrit deux transformations :
 | Fichier | Contenu | Pour qui |
 |---|---|---|
 | [01-exigences.md](01-exigences.md) | Ce que le produit doit faire, avec un critère vérifiable pour chaque exigence | Tous |
-| [02-decisions.md](02-decisions.md) | Les 19 décisions d'architecture, chacune avec les options écartées et ce qui la ferait changer | Chef de projet, groupe A |
+| [02-decisions.md](02-decisions.md) | Les 20 décisions d'architecture, chacune avec les options écartées et ce qui la ferait changer | Chef de projet, groupe A |
 | [03-architecture.md](03-architecture.md) | Services, frontières, résolution de l'établissement, échanges entre services, déploiement | Groupes A et B |
 | [04-modele-donnees.md](04-modele-donnees.md) | Bases de la plateforme et des établissements, identifiants partagés, invariants | Groupe A |
 | [05-configuration-import.md](05-configuration-import.md) | Assistant de démarrage, paramètres datés « aperçu puis appliquer », import Excel sans conflit | Groupes A et B |

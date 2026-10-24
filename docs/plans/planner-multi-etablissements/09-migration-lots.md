@@ -46,6 +46,8 @@ flowchart LR
         ME22["ME-22 Intrusion et charge"]
         ME23["ME-23 Contrats"]
         ME24["ME-24 Offre d'IA"]
+        ME25["ME-25 Sites indépendants"]
+        ME26["ME-26 Vidéos par lien"]
         ME15["ME-15 Facturation"]
         ME16["ME-16 Export et effacement"]
     end
@@ -113,11 +115,14 @@ flowchart LR
     ME6 --> ME22
     ME8 --> ME22
     ME24 --> ME15
+    ME2a --> ME25
+    ME25 --> ME12
+    ME25 --> ME14
 ```
 
 Ce qui peut avancer en parallèle dès la validation du plan : ME-0a à ME-0d (A et B), ME-1 (A et B), ME-2a et ME-2d (A), JC-0 (J), et dès ME-0a, **ME-17 et ME-18**, utiles à HESTIM tout de suite (désactiver les comptes des partants ; ne plus mélanger 2025-2026 et 2026-2027). Le premier jalon qui compte est **ME-7** : un second établissement réel, non marocain, configuré sans changer de code.
 
-**Condition d'ouverture à une première école cliente** (corrigée à la vérification : ME-7 seul ne suffit pas) : ME-0a, ME-6, ME-7, **ME-8** (sinon les comptes de même adresse dans deux écoles auraient deux mots de passe à réconcilier, D-05), ME-9 et ME-10 (sinon la mise en place n'est pas simple, EX-03), ME-11, ME-15 (sinon on ne peut pas facturer), ME-16 (la réversibilité se promet au contrat, EX-Q4), ME-17 et ME-18 (désactivation et année : nécessaires dès le premier mois), ME-0e, ME-21, ME-22, ME-23 et ME-24 (base suivie, supervision, test d'intrusion, contrats, offre d'IA : ajoutés par la contre-expertise et les décisions du 24 octobre, fichiers 12 et 13). Une **école pilote sur instance dédiée** pourrait ouvrir plus tôt : proposition de la contre-expertise (§ 12.11), en attente de la décision Q-19. ME-12 s'y ajoute si l'école a plusieurs campus avec chacun sa scolarité. ME-19 et ME-20 doivent être en ligne avant la fin de la première année de l'école.
+**Condition d'ouverture à une première école cliente** (corrigée à la vérification : ME-7 seul ne suffit pas) : ME-0a, ME-6, ME-7, **ME-8** (sinon les comptes de même adresse dans deux écoles auraient deux mots de passe à réconcilier, D-05), ME-9 et ME-10 (sinon la mise en place n'est pas simple, EX-03), ME-11, ME-15 (sinon on ne peut pas facturer), ME-16 (la réversibilité se promet au contrat, EX-Q4), ME-17 et ME-18 (désactivation et année : nécessaires dès le premier mois), ME-0e, ME-21, ME-22, ME-23 et ME-24, et ME-25 si l'école a plusieurs sites (base suivie, supervision, test d'intrusion, contrats, offre d'IA : ajoutés par la contre-expertise et les décisions du 24 octobre, fichiers 12 et 13). Une **école pilote sur instance dédiée** pourrait ouvrir plus tôt : proposition de la contre-expertise (§ 12.11), en attente de la décision Q-19. ME-12 s'y ajoute si l'école a plusieurs campus avec chacun sa scolarité. ME-19 et ME-20 doivent être en ligne avant la fin de la première année de l'école.
 
 ## 9.2 Préalables
 
@@ -172,6 +177,8 @@ Ce qui peut avancer en parallèle dès la validation du plan : ME-0a à ME-0d (A
 | ME-22 | Test d'intrusion (isolation entre écoles, Plateforme, jeux) et test de charge (50 écoles actives) | A, B | aucun défaut grave ouvert ; tenue mesurée et écrite | M |
 | ME-23 | Documents contractuels (hors code) : conditions générales, contrat de sous-traitance (loi 09-08), engagement de service (disponibilité, délais, objectifs de reprise), lieu d'hébergement et dossier de transfert à la CNDP, conditions des créateurs | chef de projet, juriste | relus et signables | — |
 | ME-24 | Offre d'IA (fichier 13, § 13.4) : jetons enregistrés pour le Studio, enveloppe mensuelle par école et plafonds mensuels par personne, alertes à 80 %, médias arrêtés à 100 %, dépassement compté, page « Consommation d'IA », essai puis bascule vers Claude Haiku 5.5 (Planner et StudyLib), vérification du modèle de StudyLib en production | A, B | coût d'IA par compte mesuré chaque mois ; aucun mois où l'école dépasse son enveloppe sans alerte | M |
+| ME-25 | Sites indépendants (D-20, § 6.7) : table `Site`, `Campus.id_site`, `Groupe.id_site` ; règle dure « salle du site du groupe » dans le solveur et à la saisie ; EDT, agenda, notifications et annonces filtrés par site ; portée « site » des habilitations ; colonne `site` à l'import et contrôle V-15 ; sélecteur de site à partir de deux sites ; HESTIM migrée sur un seul site, sans changement visible | A, B | établissement de démonstration à deux villes : aucun envoi ni aucune séance hors du site (I-15) ; HESTIM inchangée | L |
+| ME-26 | Vidéos par lien dans le Studio quiz (fichier 13, § 13.17) : un média « lien » vers une plateforme autorisée, lu par son lecteur officiel, avec l'extrait (début, fin) qui existe déjà pour les vidéos téléversées ; aucune vidéo téléchargée ni découpée | B, A | un quiz d'anglais joue un extrait d'une vidéo en ligne, sur le site et dans l'application ; une vidéo retirée par son auteur s'affiche « vidéo indisponible » sans casser le quiz | M |
 | ME-16 | Export complet d'une école (base, fichiers StudyLib, jeux privés) ; effacement des bases et des fichiers sous 30 jours, puis des sauvegardes à l'expiration de leur rétention (30 jours, ME-0a) | A, StudyLib, J | export lisible restauré dans un établissement vide ; plus aucune trace 60 jours après la résiliation | M |
 
 ## 9.5 bis Comptes et années (fichier 11)
