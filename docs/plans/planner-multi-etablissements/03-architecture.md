@@ -59,7 +59,7 @@ flowchart TB
 
     subgraph DONNEES["Données"]
         DBP[("planner_plateforme")]
-        DBE[("une base par établissement<br/>et_hestim, et_emsi, ...")]
+        DBE[("une base par établissement<br/>hestim_planner (existante), et_emsi, ...")]
         DBS[("studylib")]
         DBJ[("planner_jeux")]
         OBJ[("Stockage objet (MinIO)<br/>un préfixe par établissement")]
@@ -91,10 +91,12 @@ flowchart TB
 | Planner API | Planner | une par établissement | le contexte (D-03) |
 | Plateforme | Planner (`plateforme/`) | `planner_plateforme` | sa table `Etablissement` (propriétaire) |
 | Solveur | Planner (`solver/`) | aucune | rien : il reçoit un problème, rend une solution |
-| Bibliothèque (StudyLib) | StudyLib | `studylib` | `etablissement_uid` sur chaque document privé ; le catalogue public reste commun |
-| Jeux | `planner-jeux` | `planner_jeux` | `etablissement_uid` sur sessions, usages, revenus |
+| Bibliothèque (StudyLib) | StudyLib | `studylib` | `etablissement_uid` sur chaque document, filière, module et utilisateur |
+| Jeux | `planner-jeux` | `planner_jeux` | `etablissement_uid` sur sessions, usages, revenus, jeux de visibilité « établissement » |
 
-**Pourquoi StudyLib et les jeux gardent une base commune** (et pas une par école) : leur valeur est justement le catalogue partagé entre écoles. Seuls les éléments privés d'une école y portent son `etablissement_uid`, filtré par le jeton (revendication `tid`). Ce sont des données moins sensibles que la vie scolaire (aucune note, aucune présence).
+**Pourquoi StudyLib et les jeux gardent une base commune** (et pas une par école) : pour les jeux, la valeur est justement le catalogue partagé entre écoles ; chaque élément propre à une école y porte son `etablissement_uid`, filtré par le jeton (revendication `tid`). Ce sont des données moins sensibles que la vie scolaire (aucune note, aucune présence).
+
+**StudyLib, point vérifié** : elle n'a aujourd'hui que deux visibilités, `school` (toute l'école) et `class` (`app/Enums/DocumentVisibility.php`), et ses documents viennent en partie du Drive de HESTIM (`ImportDriveDocuments`). Il n'y a donc **pas** de catalogue public : `school` veut dire « HESTIM ». Tous les documents existants reçoivent l'`etablissement_uid` de HESTIM et restent invisibles des autres écoles. Une future visibilité « toutes les écoles » demandera une revue des droits d'auteur, comme les jeux publics ; elle n'est pas dans ce plan. Lot ME-2e.
 
 ## 3.3 Les contextes métier de Planner (monolithe modulaire, D-17)
 
@@ -159,7 +161,9 @@ sequenceDiagram
     A-->>N: 200
 ```
 
-Cas refusés, chacun couvert par un test d'isolation : jeton sans `tid` (401) ; `tid` différent de l'hôte (401) ; établissement suspendu (403, message à la marque de l'école) ; schéma en retard ou en migration (503, page de maintenance de cet établissement seulement).
+Ce schéma est celui du site (adresse d'école). L'application passe par l'adresse neutre `api.<domaine>` : l'étape 7 n'a alors pas d'hôte à comparer, l'établissement est le `tid` du jeton (D-02).
+
+Cas refusés, chacun couvert par un test d'isolation : jeton sans `tid` (401 ; seule exception, l'adresse de HESTIM pendant la transition décrite au § 9.4) ; `tid` différent de l'hôte (401) ; établissement suspendu (403, message à la marque de l'école) ; schéma hors de la plage acceptée par la version de Planner, ou migration en cours (503, page de maintenance de cet établissement seulement ; D-16).
 
 ## 3.5 Propriétaire de chaque donnée (D-15)
 
@@ -167,7 +171,7 @@ Cas refusés, chacun couvert par un test d'isolation : jeton sans `tid` (401) ; 
 |---|---|---|---|
 | Établissement, domaines, statut, marque | Plateforme | Planner (cache), StudyLib, jeux | événement `etablissement.modifie` |
 | Compte, appartenances | Plateforme | Planner (`Users.uid_compte`) | événement `appartenance.*` |
-| Filières, modules, groupes | Planner (base de l'école) | StudyLib, jeux | événement `referentiel.*` (remplace le `planner:sync` par code) |
+| Filières, modules, groupes | Planner (base de l'école) | StudyLib (le service des jeux n'en a pas besoin : il n'en reçoit pas, par minimisation des données) | événement `referentiel.*` (remplace le `planner:sync` par code) |
 | Séances, appel, reports | Planner | aucune | — |
 | Plages occupées d'un enseignant partagé | Planner de l'école où il enseigne | Planner des autres écoles du compte | événement `occupation.modifiee` relayé par la Plateforme |
 | Documents | StudyLib | Planner (liens seulement) | appel synchrone |
@@ -183,7 +187,7 @@ Cas refusés, chacun couvert par un test d'isolation : jeton sans `tid` (401) ; 
 | Service vers service | chaque service, sa propre clé | le service appelé | `iss`, `aud`, `tid` si l'appel concerne une école | 60 s |
 | Joueur de jeu | Planner | `jeux` | pseudonyme du joueur, `tid`, session de jeu | durée de la session |
 
-Toutes les clés publiques sont publiées en JWKS ; chaque service garde sa clé privée. Aucun secret partagé, sauf pendant la transition du webhook ClassQuiz, retiré avec lui.
+Toutes les clés publiques sont publiées en JWKS ; chaque service garde sa clé privée. Deux secrets partagés existent aujourd'hui et disparaissent : celui du webhook ClassQuiz (retiré avec lui) et le jeton d'intégration que StudyLib envoie pour lire le référentiel (`X-Integration-Token`, `PLANNER_INTEGRATION_TOKEN`), remplacé par les événements `referentiel.*` au lot ME-2d.
 
 ## 3.7 Déploiement visé (deux serveurs, extensible)
 
@@ -224,4 +228,6 @@ Aujourd'hui tout tient sur un seul VPS : la séparation données / application e
 
 ## 3.8 Pools de connexions
 
-MySQL accepte 151 connexions par défaut. Règle : un pool par établissement, **3 connexions au plus**, créé à la première requête et fermé après 10 minutes sans activité ; une limite globale (sémaphore) garde 20 connexions pour la Plateforme et les migrations. Au-delà de 40 établissements actifs en même temps : augmenter `max_connections` ou passer par ProxySQL. Le verrou des tâches périodiques (`GET_LOCK`, préfixé par le nom de la base) fonctionne déjà par établissement.
+MySQL accepte 151 connexions par défaut. Règle : un pool par établissement **et par instance de l'API**, 3 connexions au plus, créé à la première requête et fermé après 10 minutes sans activité.
+
+Le calcul, refait à la vérification : avec deux instances de l'API, une école active occupe jusqu'à 6 connexions ; il faut aussi compter la Plateforme, les migrations, StudyLib, le service des jeux et les tâches (environ 30). Avec 151 connexions, on sert donc environ **20 écoles actives en même temps**, et les écoles travaillent toutes aux mêmes heures. Pour tenir l'objectif de 50 établissements (EX-Q3), il faut **`max_connections` à 500** (une connexion MySQL inactive coûte peu de mémoire ; à mesurer au lot ME-5), puis ProxySQL au-delà. Le verrou des tâches périodiques (`GET_LOCK`, préfixé par le nom de la base) fonctionne déjà par établissement.

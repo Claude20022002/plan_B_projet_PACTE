@@ -6,17 +6,19 @@ Chaque exigence a un numéro, repris dans la matrice de traçabilité (`10-verif
 
 | N° | Exigence | Fait quand |
 |---|---|---|
-| EX-01 | **Un produit neutre** : « Planner » ; chaque école y voit son nom, son logo et ses couleurs (« EMSI Planner ») | Aucun texte « HESTIM » dans le code hors migrations et tests (contrôle automatique en CI) ; un second établissement affiche son nom sur la page de connexion, les courriels, les PDF et l'agenda |
+| EX-01 | **Un produit neutre** : « Planner » ; chaque école y voit son nom, son logo et ses couleurs (« EMSI Planner ») | Aucun texte « HESTIM » dans le code hors migrations, tests et identifiants techniques figés (D-11 ; contrôle automatique en CI) ; un second établissement affiche son nom sur la page de connexion, les courriels, les PDF et l'agenda |
 | EX-02 | **S'adapter à tout contexte** : nombre de campus (dans une ou plusieurs villes), d'enseignants, de salles, de ressources, jours fériés du pays, grilles horaires, semestres ou trimestres, week-end, langue, fuseau | Un établissement de démonstration non marocain (France, trimestres, week-end samedi-dimanche, grille d'une heure) se configure sans changer de code |
 | EX-03 | **Mise en place simple et rapide** | Un établissement type (2 campus, 60 salles, 150 enseignants, 3 000 étudiants, 40 filières-niveaux) passe de « créé » à « prêt à générer » en **moins d'une journée de travail d'un administrateur**, dont **moins de 30 minutes** pour la configuration sans données. Mesuré sur deux essais avec des personnes qui ne connaissent pas Planner |
 | EX-04 | **Import Excel** des données de l'école | Un classeur modèle unique couvre toutes les données ; un fichier de l'école avec ses propres en-têtes s'importe après correspondance des colonnes, mémorisée pour la fois suivante |
 | EX-05 | **Zéro conflit interne** à l'import | Aucune donnée incohérente n'entre en base : un import est tout ou rien, et chaque refus dit la feuille, la ligne, la colonne et quoi corriger |
 | EX-06 | **Zéro conflit entre écoles** | (a) Aucune donnée d'une école n'est lisible ni modifiable par une autre, même par un appel forgé ; (b) un enseignant présent dans deux écoles n'est jamais placé à la même heure dans les deux (ni sans le temps de trajet entre elles) |
-| EX-07 | **Modifier un réglage en quelques clics**, sans casser l'existant | Un réglage se change en 3 clics au plus depuis sa page ; s'il touche des séances, l'aperçu dit combien et lesquelles avant d'appliquer ; tout changement appliqué s'annule en un clic |
+| EX-07 | **Modifier un réglage en quelques clics**, sans casser l'existant | Un réglage s'atteint en 3 clics au plus ; s'il touche des séances, l'aperçu dit combien et lesquelles avant d'appliquer ; tout changement appliqué s'annule par un bouton, avec son propre aperçu (des séances ont pu changer entre-temps) |
 | EX-08 | **Cohésion des bases de données** | Tous les établissements ont le même schéma, à la même version (contrôlé au démarrage) ; aucun service ne référence une donnée d'un autre par un code modifiable |
 | EX-09 | **Créateurs tiers de jeux pédagogiques**, avec une bibliothèque de jeux | Une personne extérieure crée un jeu sans écrire de code, le soumet, il est relu, publié, puis proposé par un enseignant d'une autre école dans un module |
-| EX-10 | **Rémunération selon l'usage**, comme les places de marché de contenus (Kahoot) | Chaque mois, chaque créateur reçoit un relevé : jeux, usages qualifiés, montant ; la somme versée ne dépasse jamais le fonds du mois |
+| EX-10 | **Rémunération selon l'usage** (Kahoot et les places de marché de contenus vendent à l'unité ; ici, l'école ne paie rien de plus et le créateur est payé selon l'usage, D-13) | Chaque mois, chaque créateur reçoit un relevé : jeux, usages qualifiés, montant ; la somme versée ne dépasse jamais le fonds du mois |
 | EX-11 | **Bibliothèque de jeux en microservice**, dans un dépôt séparé | Le service des jeux se déploie seul, a sa propre base, et Planner continue de fonctionner (sans jeux tiers) s'il est arrêté |
+| EX-12 | **Désactivation des comptes** par l'administration (ajout du 23 octobre) | Un compte se désactive en un geste, seul ou en lot, avec motif et date ; il ne fait plus aucune requête et ne reçoit plus rien ; son historique reste ; il se réactive en un geste |
+| EX-13 | **Archivage des années terminées** (ajout du 23 octobre) | Un étudiant inscrit sur deux années ne voit par défaut que les modules et cours de l'année en cours ; l'année close reste consultable en lecture seule ; rien ne s'y écrit |
 
 ## 1.2 Exigences de qualité déduites
 
@@ -25,7 +27,7 @@ Chaque exigence a un numéro, repris dans la matrice de traçabilité (`10-verif
 | EX-Q1 | **Sécurité de l'isolation** | Suite de tests d'isolation en CI : deux établissements aux données identiques, chaque route appelée avec le jeton de l'un sur l'adresse de l'autre rend 401 ou 404, jamais 200 |
 | EX-Q2 | **Continuité de HESTIM** | Aucune coupure de plus de 15 minutes pendant toute la transformation ; aucune donnée déplacée de sa base actuelle ; chaque lot a son retour arrière écrit |
 | EX-Q3 | **Montée en charge** | 50 établissements sur un serveur d'application, une université de 20 000 étudiants générée en moins de 30 minutes par découpage, sans ralentir les autres établissements |
-| EX-Q4 | **Réversibilité** | Une école obtient l'export complet de ses données (base, fichiers, jeux privés) en un geste, et sa suppression effacée partout sous 30 jours |
+| EX-Q4 | **Réversibilité** | Une école obtient l'export complet de ses données (base, fichiers, jeux privés) en un geste ; à la résiliation, ses données sont effacées des bases et des fichiers sous 30 jours, puis des sauvegardes à l'expiration de leur rétention de 30 jours |
 | EX-Q5 | **Conformité** | Planner est sous-traitant de chaque école au sens de la loi 09-08 ; un contrat de sous-traitance type existe ; les créateurs ne voient jamais l'identité d'un élève |
 | EX-Q6 | **Sauvegardes** | Une sauvegarde par établissement, chaque nuit, **hors du serveur** ; restauration d'un seul établissement testée chaque mois |
 | EX-Q7 | **Exploitation** | Une mise à jour s'applique à tous les établissements par vagues, sans commande par école ; un établissement en échec de migration est mis en maintenance seul |

@@ -32,6 +32,8 @@ Un gabarit = un moteur programmé et relu par Planner + un **schéma JSON** du c
 | Terminal guidé | défis, commandes attendues | individuel, collectif | Terminal Linux (catalogue actuel) |
 | Simulations | paramètres et défis d'une simulation existante | individuel | les neuf simulations d'Alexis (Robot Route, Ordonnanceur CPU…) |
 
+**Le moteur du quiz ne se copie pas.** Le Studio quiz de Planner (quiz privés des enseignants, notés) et le gabarit « Quiz chronométré » (jeux publics) utilisent les mêmes types et la même correction (`shared/quiz/studio/types.js`, `correction.js`). Ce code devient un paquet commun, versionné, que les deux dépôts installent ; deux copies divergeraient à la première correction (« une règle, une définition »).
+
 Chaque nouveau gabarit est un lot de l'équipe jeux, avec sa revue de sécurité. La décision « mode créateur façon Kahoot » du 20 octobre est exactement cela : créer en remplissant, pas en programmant.
 
 ## 7.3 Vie d'un jeu
@@ -82,11 +84,13 @@ sequenceDiagram
     P-->>E: tableau de la session mis à jour
 ```
 
+**Mode collectif** (la classe joue au tableau, les élèves proposent depuis leur téléphone, comme `PropositionJeu` aujourd'hui) : chaque élève qui a rejoint reçoit son jeton joueur ; c'est sa proposition envoyée qui compte comme interaction, puisque le défi est terminé par la classe.
+
 Si le service des jeux est arrêté, Planner affiche « Les jeux sont momentanément indisponibles » ; le reste de Planner fonctionne (EX-11). Les résultats perdus ne le sont pas : `partie.terminee` est dans la boîte d'envoi du service des jeux et sera livré.
 
 ## 7.5 Confidentialité
 
-- **Pseudonyme** : `HMAC-SHA256(clé propre à l'école, uid du compte)`. La clé ne sort jamais de Planner ; le service des jeux ne peut pas retrouver une personne, ni rapprocher un même élève entre deux écoles.
+- **Pseudonyme** : `HMAC-SHA256(clé propre à l'école, uid du compte)`. La clé ne sort jamais de Planner ; le service des jeux ne peut pas retrouver une personne, ni rapprocher un même élève entre deux écoles. La clé est créée avec l'établissement, rangée chiffrée dans sa base, donc sauvegardée avec elle, et **jamais changée** : une nouvelle clé rendrait orphelins tous les résultats déjà reçus. En cas de fuite, la rotation se fait avec une table de correspondance ancien → nouveau pseudonyme.
 - **Les créateurs** ne voient que des chiffres agrégés, et seulement à partir de **10 joueurs** distincts par ligne (sinon « moins de 10 ») : nombre de parties, taux de réussite par défi, durée médiane, écoles par pays (jamais leur nom).
 - **Les contenus** ne contiennent aucune donnée d'élève ; un champ libre de réponse (texte à trous) est évalué puis jeté, pas conservé.
 
@@ -170,7 +174,8 @@ erDiagram
         uuid uid PK
         uuid etablissement_uid
         uuid version_uid FK
-        string mode
+        string mode "individuel, collectif, direct"
+        boolean lancee_par_createur "fourni par Planner, exclut la session du fonds"
         datetime ouverte_le
     }
     PARTIE {

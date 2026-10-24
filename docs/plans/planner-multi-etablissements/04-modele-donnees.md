@@ -115,7 +115,7 @@ erDiagram
 
 Points vérifiés :
 
-- **Un compte actif** = un compte qui s'est connecté au moins une fois dans le mois dans cet établissement (décision du 11 octobre). Une ligne par (établissement, mois, compte) : le compte se fait par `COUNT`, sans double compte, et une personne présente dans deux écoles est comptée dans chacune, ce qui est juste puisque chaque école a ouvert l'accès.
+- **Un compte actif** = un compte qui a **utilisé** Planner au moins une fois dans le mois dans cet établissement (décision du 11 octobre), c'est-à-dire fait au moins une requête authentifiée. « S'est connecté » ne suffirait pas : l'application mobile garde la session ouverte des semaines, un étudiant qui l'utilise tous les jours peut ne jamais ressaisir son mot de passe dans le mois. La première requête du mois de chaque compte écrit la ligne (une fois, grâce à un cache) ; le renouvellement automatique du jeton, sans action de la personne, ne compte pas. Une ligne par (établissement, mois, compte) : le compte se fait par `COUNT`, sans double compte, et une personne présente dans deux écoles est comptée dans chacune, ce qui est juste puisque chaque école a ouvert l'accès.
 - **Le slug n'est jamais réutilisé**, même après résiliation : un ancien lien ou un ancien jeton ne peut pas tomber sur une autre école.
 - **Les secrets des bases** sont chiffrés par une clé maîtresse lue dans l'environnement (chiffrement d'enveloppe) ; la Plateforme ne les rend qu'à Planner, par jeton de service.
 
@@ -175,7 +175,7 @@ erDiagram
         int id_type_salle PK
         string code UK
         string libelle
-        string role "cours, pratique, amphi, reunion"
+        boolean pour_cours "faux pour une salle de réunion : jamais proposée par le solveur"
     }
     EQUIPEMENT {
         int id_equipement PK
@@ -252,7 +252,8 @@ erDiagram
         int id_user_enseignant FK
         datetime debut
         datetime fin
-        uuid source_etablissement_uid "jamais affiché"
+        string ville "pour le temps de trajet"
+        string source_opaque "HMAC calculé par la Plateforme, ne désigne aucune école"
         datetime recu_le
     }
 ```
@@ -271,8 +272,10 @@ erDiagram
 | `Creneau.variante` (normale, ramadan) | `Creneau.id_variante` | deux variantes |
 | `Evenement` de type `ramadan` | `PeriodeVariante` de la variante ramadan | dates recopiées, type gardé en lecture le temps de la transition |
 | `Periode.code` (S1, S2) | code libre + `ordre` + `nature` (semestre, trimestre, année) | S1 et S2 gardés |
+| `Cours.semestre` (« S7 ») rattaché à S1 ou S2 **par la parité** du numéro (`periodeDuSemestre`) | `Cours.rang_periode` : le rang de la période dans l'année (1, 2, 3…) | calculé une fois par la parité actuelle ; la parité ne vaut plus pour une école en trimestres, d'où un champ explicite |
 | `ParametresPlanning` (valeurs modifiées) | `VersionParametres` + `ValeurParametre` | une version initiale datée du jour de la migration |
 | `pause_vendredi`, `samedi_apres_midi_initiale` | `PlageRestreinte` | deux plages pour le rythme initiale : vendredi midi « interdite », samedi après-midi « à éviter » (poids 50 gardé) |
+| `Groupe.annee_scolaire` (texte), `AnneeUniversitaire.active`, `Users.actif` seul | `Groupe.id_annee`, `AnneeUniversitaire.statut`, désactivation datée et journalisée | détail et migration : fichier 11, § 11.4 |
 | `ResponsableFiliere` | `Habilitation` (portée filière) | une ligne par responsable ; l'ancienne table reste lue le temps d'une version |
 | variable `APP_TIMEZONE` (10 fichiers) | fuseau de l'établissement, lu dans le contexte | valeur actuelle |
 | `utils/feriesMaroc.js` | fournisseur de calendrier « Maroc » (fichier 06) | inchangé dans le fond |
@@ -287,11 +290,11 @@ Tous ces changements suivent « étendre puis contracter » (D-16) : la nouvelle
 
 | N° | Invariant | Garanti par |
 |---|---|---|
-| I-D1 | Toutes les bases d'établissement ont la même dernière migration que la version de Planner qui les sert | contrôle à l'ouverture du contexte ; sinon 503 pour cette école seule |
+| I-D1 | Le schéma de chaque base est dans la plage acceptée par la version de Planner qui la sert (D-16) ; hors des vagues de migration, toutes les bases sont à la même dernière migration | contrôle à l'ouverture du contexte, 503 pour cette école seule hors de la plage ; tâche de nuit qui signale toute base en retard |
 | I-D2 | Un code (salle, filière, module, groupe) est unique **dans un établissement** ; deux écoles peuvent avoir les mêmes codes | unicité en base, base par école |
 | I-D3 | Aucune clé étrangère vers une autre base | revue de migration ; un test lit `information_schema` |
 | I-D4 | Un `uid` n'apparaît que dans un établissement | génération aléatoire ; contrôle à l'import |
 | I-D5 | Une version de paramètres appliquée n'est jamais modifiée ; on en crée une autre | pas de route de modification ; test |
 | I-D6 | Une salle ne peut être retirée tant qu'une séance future l'occupe, sauf par une version structurelle qui les déplace | contrôle du service ; aperçu |
-| I-D7 | `OccupationExterne` ne contient ni intitulé, ni groupe, ni salle | schéma (colonnes absentes) |
+| I-D7 | `OccupationExterne` ne contient ni intitulé, ni groupe, ni salle, ni l'identité de l'école d'origine | schéma (colonnes absentes) ; la source n'est qu'un HMAC de la Plateforme, qui sert à remplacer les plages d'une même source |
 | I-D8 | Un emboîtement de groupes est un arbre : TP dans TD dans promotion, sans cycle | contrôle à l'écriture et à l'import |

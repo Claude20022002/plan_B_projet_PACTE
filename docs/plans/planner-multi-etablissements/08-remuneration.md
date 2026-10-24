@@ -21,6 +21,8 @@ Pour chaque établissement `e` et chaque mois d'usage `m` :
 - La part des jeux du créateur « Planner » (jeux maison) reste à Planner ; s'il n'y a aucun usage dans l'école ce mois-là, le fonds n'est pas distribué et reste à Planner. Les deux montants figurent dans le rapport mensuel de la plateforme.
 - **Arrondi** : les montants se calculent en centimes entiers ; la méthode du plus fort reste garantit que la somme des parts égale exactement le fonds (invariant I-R1).
 
+**Décision du 24 octobre (Q-15)** : les 4,99 MAD HT par compte restent nets pour Planner. Le fonds ne se prélève donc pas sur cette part : à l'ouverture du volet créateurs (reporté, Q-22), il s'ajoutera au prix comme une ligne à part, et la formule ci-dessus s'applique à cette ligne au lieu du chiffre d'affaires total.
+
 `τ` (part des créateurs) est à décider par le chef de projet ; **10 % est proposé**. Il est écrit dans le contrat des créateurs et ne change qu'avec un préavis de trois mois.
 
 ## 8.3 Exemple chiffré (τ = 10 %)
@@ -47,7 +49,7 @@ Un usage qualifié = un quadruplet **(établissement, jour dans le fuseau de l'�
 
 | Condition | Raison |
 |---|---|
-| au moins un défi ou une question terminé, réussi ou non | ouvrir un jeu n'est pas jouer |
+| au moins un défi ou une question terminé, réussi ou non (en mode collectif : au moins une proposition envoyée) | ouvrir un jeu n'est pas jouer |
 | au moins 60 secondes actives (temps d'interaction mesuré par le serveur des jeux) | écarter les ouvertures par erreur |
 | jeton joueur émis pour un compte **étudiant** de l'école | l'aperçu d'un enseignant ne compte pas |
 | jeu de visibilité `public`, version publiée | les jeux privés ou d'une école n'entrent pas dans le fonds |
@@ -63,24 +65,26 @@ Un usage qualifié = un quadruplet **(établissement, jour dans le fuseau de l'�
 
 ```mermaid
 flowchart TD
-    A["Fin du mois M"] --> B["Plateforme : factures de M émises"]
-    B --> C{"Facture de l'école e encaissée ?"}
-    C -- "pas encore" --> D["Fonds de (e, M) en attente<br/>réexaminé à chaque clôture suivante"]
-    C -- oui --> E["Événement facture.encaissee<br/>reçu par le service des jeux"]
-    E --> F["Fonds F(e, M) crédité au grand livre"]
-    F --> G["Gel des usages de (e, M)<br/>contrôles de fraude, écarts signalés"]
+    subgraph CONTINU["Pendant le mois"]
+        E["Événement facture.encaissee<br/>reçu par le service des jeux"] --> F["Fonds F(e, M) crédité au grand livre<br/>statut : crédité"]
+    end
+    A["Le 15 de chaque mois : clôture"] --> B["Fonds crédités et pas encore répartis<br/>(tous mois d'usage M confondus)"]
+    B --> C{"Pour chaque fonds (e, M)"}
+    C --> G["Gel des usages de (e, M)<br/>contrôles de fraude, écarts signalés"]
     G --> H{"Anomalie ?"}
-    H -- oui --> I["Revue humaine<br/>parts de (e, M) retenues"]
+    H -- oui --> I["Revue humaine : usages frauduleux retirés,<br/>ou fonds (e, M) reporté à la clôture suivante"]
     I --> J
     H -- non --> J["Calcul des parts, centimes, plus fort reste"]
-    J --> K["Écritures : fonds vers créateurs à payer,<br/>reste vers Planner"]
-    K --> L["Clôture du 15 du mois suivant"]
-    L --> M["Relevé par créateur<br/>jeux, usages, montant, sans nom d'école"]
+    J --> K["Écritures : fonds vers créateurs à payer,<br/>reste vers Planner ; fonds réparti"]
+    K --> M["Relevé par créateur<br/>jeux, usages, montant, sans nom d'école"]
     M --> N{"Solde ≥ seuil (200 MAD)<br/>et identité vérifiée ?"}
     N -- non --> O["Reporté au mois suivant"]
     N -- oui --> P["Virement préparé, validé par le chef de projet, envoyé"]
     P --> Q["Paiement confirmé, écriture de sortie"]
+    F -.-> B
 ```
+
+Un fonds dont la facture n'est pas encore encaissée n'existe pas : il n'entre dans aucune clôture. Il sera réparti à la première clôture qui suit son encaissement, même des mois plus tard, avec les usages de son mois d'usage, gelés depuis.
 
 - **Une clôture est idempotente** : elle porte un identifiant (mois de clôture) ; la relancer ne crée aucune écriture en double.
 - **Contestation** : un créateur conteste sous 60 jours ; une fraude découverte sous 90 jours se corrige par **contre-passation**, imputée sur ses paiements suivants (solde négatif reporté, jamais réclamé en justice pour de petits montants : à confirmer avec le conseil).
@@ -159,17 +163,26 @@ erDiagram
 | N° | Invariant | Contrôle |
 |---|---|---|
 | I-R1 | Pour chaque fonds : Σ parts + reste Planner = fonds, au centime | contrôle à la clôture ; une clôture qui ne tombe pas juste n'est pas verrouillée |
-| I-R2 | Σ des paiements d'un mois ≤ Σ des fonds crédités, depuis le début | contrôle quotidien, alerte |
+| I-R2 | Pour chaque créateur, Σ des paiements ≤ Σ de ses parts acquises moins les contre-passations, depuis le début (le fonds, lui, contient aussi la part de Planner : le comparer aux paiements laisserait passer un trop-payé) | contrôle quotidien, alerte, aucun virement préparé qui le violerait |
 | I-R3 | Une écriture n'est jamais modifiée ni supprimée | aucune route ; droits MySQL `INSERT, SELECT` seulement sur `Ecriture` |
 | I-R4 | Chaque opération a autant de débit que de crédit | contrainte vérifiée à l'écriture, par opération |
 | I-R5 | Un événement d'encaissement n'est compté qu'une fois | clé primaire sur l'identifiant d'événement |
 | I-R6 | Un usage qualifié n'est compté qu'une fois | clé primaire sur le quadruplet |
 
-## 8.7 Ce que voit le créateur
+## 8.7 Planner, arbitre et concurrent
+
+Planner écrit le catalogue, le classement de la bibliothèque, la revue, **et** ses propres jeux maison, dont la part du fonds lui revient. C'est un conflit d'intérêts que les créateurs verront. Règles :
+
+- les jeux maison portent la mention « Planner » dans la bibliothèque ;
+- l'ordre d'affichage par défaut suit des critères publiés (pertinence pour le module, note des enseignants, nouveauté), identiques pour tous ; aucune mise en avant payée ni réservée aux jeux maison ;
+- un jeu maison passe par la même revue que les autres ;
+- le rapport mensuel publie la part totale revenue aux jeux maison.
+
+## 8.8 Ce que voit le créateur
 
 Un tableau de bord : jeux, usages qualifiés du mois en cours (estimés, non définitifs), relevés clos, solde, paiements. Le taux par usage n'est jamais promis à l'avance ; le relevé explique la règle et donne le taux moyen constaté du mois.
 
-## 8.8 À faire valider hors du code (bloquant avant le premier paiement)
+## 8.9 À faire valider hors du code (bloquant avant le premier paiement)
 
 | Point | Qui |
 |---|---|

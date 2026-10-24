@@ -65,7 +65,7 @@ sequenceDiagram
     I-->>S: aperçu (liste, conflits, mois publiés concernés)
     A->>S: Appliquer
     S->>P: appliquer la version
-    P->>G: dans une seule transaction, nouvelle grille et séances recalées
+    P->>G: dans une seule transaction, nouvelle grille et séances recalées (même jour, même rang)
     G-->>P: fait, 3 séances à reprogrammer
     P-->>S: version appliquée, lien « Annuler ce changement »
     Note over P,G: les mois publiés concernés passent dans « à republier », les étudiants ne voient rien avant la publication
@@ -114,7 +114,7 @@ Une feuille par nature, dans l'ordre où elles s'appliquent. La première colonn
 | 7 | Enseignants | adresse électronique | Campus (préféré), Modules (compétences) |
 | 8 | Étudiants | adresse électronique **ou** numéro d'étudiant | — |
 | 9 | Inscriptions | étudiant + groupe | Étudiants, Groupes |
-| 10 | Services | module + nature + groupe + enseignant | Composantes, Groupes, Enseignants |
+| 10 | Services | période + module + nature + groupe + enseignant | Composantes, Groupes, Enseignants ; l'enseignement visé est celui qui fait suivre cette composante à ce groupe pendant cette période (un groupe ne suit une composante qu'une fois par période, mutualisation comprise : contrôle V-14) |
 | 11 | Disponibilités | enseignant + jour + créneau | Enseignants |
 | 12 | Calendrier | titre + date | Campus, Filières, Groupes (portée) |
 
@@ -133,9 +133,11 @@ Les nomenclatures (types de salle, équipements, pôles, cycles, rythmes) se cr�
 | V-07 | base | modification d'une donnée dont dépendent des séances publiées (salle, groupe) | avertissement avec liste |
 | V-08 | base | effectif d'un groupe supérieur à la plus grande salle du type demandé | avertissement |
 | V-09 | base | composante sans enseignant ni vacataire possible | avertissement |
-| V-10 | base | adresse électronique déjà connue de la plateforme (autre établissement) | information : une invitation sera envoyée, rien n'est partagé |
+| V-10 | base | *(retiré à la vérification)* : signaler « adresse déjà connue d'un autre établissement » apprendrait à l'école qu'une personne travaille ailleurs, ce que D-05 interdit. L'import traite toutes les adresses de la même façon (invitation) | — |
 | V-11 | fichier | volume horaire nul ou négatif | bloquant |
 | V-12 | base | disponibilité sur un créneau qui n'existe pas dans la grille | bloquant |
+| V-13 | base | étudiant dont l'adresse et le numéro désignent deux personnes différentes déjà en base | bloquant (le numéro d'étudiant prime pour rapprocher, mais un désaccord n'est jamais tranché en silence) |
+| V-14 | fichier | service sur un groupe qui ne suit pas cette composante pendant cette période | bloquant |
 
 Chaque contrôle est une fonction pure (ligne, contexte) → anomalies, testée seule : le catalogue s'agrandit sans toucher au moteur d'import (motif « Spécification »).
 

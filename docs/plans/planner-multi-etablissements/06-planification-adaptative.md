@@ -14,13 +14,14 @@ Relevé dans le code le 23 octobre 2026 (133 mentions de « HESTIM » dans `back
 | Solveur, `Parametres.java` | `samediApresMidi` | liste de plages restreintes avec leur force |
 | Solveur, « Deux créneaux consécutifs » | une séance = deux créneaux | `creneaux_par_seance` de la composante (déjà là) : la règle lit la composante |
 | `services/planning/edtMensuel.js` | « HESTIM-GANDHI », format officiel d'octobre 2026 | modèle de document « HESTIM », modèle « Planner » par défaut |
+| `services/mfa.js`, `services/calendrier/ics.js`, `services/studio/questionnaires.js` | sel de la clé de double authentification, domaine des identifiants d'agenda, format d'export des quiz | **inchangés** : identifiants techniques figés (D-11) ; les renommer bloquerait les administrateurs, doublerait les agendas, rendrait illisibles les anciens exports |
 | 10 fichiers, `APP_TIMEZONE` | Africa/Casablanca par défaut | fuseau de l'établissement, lu dans le contexte |
 | Courriels, ICS, notifications | « [HESTIM] », « HESTIM Planner », `hestim.ics`, `PRODID` | nom court de l'établissement |
 | `services/presences/appel.js` | « l'application HESTIM », « appel HESTIM » | « l'application Planner » |
 | `services/planning/examens.js` | « à HESTIM, les enseignants ne surveillent pas » | réglage « les enseignants surveillent les examens » |
 | `seed.js` | `HESTIM_CONFIG` | modèle d'établissement « École d'ingénieurs privée (Maroc) » + jeu de démonstration |
 
-Un contrôle en CI (`npm run verifier:neutre`) échoue si « hestim » apparaît hors des migrations, des tests, du modèle de document HESTIM et du jeu de démonstration.
+Un contrôle en CI (`npm run verifier:neutre`) échoue si « hestim » apparaît hors des migrations, des tests, du modèle de document HESTIM, du jeu de démonstration et de la liste des identifiants techniques figés.
 
 ## 6.2 Calendriers par pays (motif Stratégie)
 
@@ -97,7 +98,7 @@ sequenceDiagram
     PF->>EB: occupation.modifiee (mêmes plages, source opaque)
     EB->>EB: remplace les OccupationExterne de ce compte et de cette source
     EB->>EB: séances non publiées qui chevauchent ? liste « à corriger »
-    EB->>EB: prochaine génération : plages + trajet entre écoles = indisponibilité dure
+    EB->>EB: prochaine génération : plages répétées = indisponibilité de la semaine type, plages isolées = dates sautées au déploiement (trajet entre écoles compris)
 ```
 
 Points tranchés :
@@ -105,6 +106,8 @@ Points tranchés :
 - **Ce qui part** : début, fin, ville du campus. Rien d'autre (invariant I-D7). L'école B ne sait même pas quelle école est à l'origine ; elle voit « occupé ailleurs ».
 - **Quand** : à chaque publication et à chaque changement ponctuel publié (report, imprévu) ; pas pendant une génération, qui n'est qu'un brouillon.
 - **Qui gagne** quand deux écoles visent la même heure : la première **publiée**. La seconde voit le chevauchement dans « à corriger » avant de publier, jamais après.
+- **Chevauchements déjà publiés des deux côtés** au moment où le partage s'active (les deux écoles avaient publié avant) : il n'y a pas de « premier » ; chaque école reçoit le chevauchement dans « à corriger », et l'enseignant est prévenu pour qu'il dise laquelle il honore.
+- **Semaine type et dates** : le solveur place une semaine type, `deploiement.js` la pose sur les dates en sautant les dates bloquées. Une plage reçue qui revient à la même heure au moins la moitié des semaines de la période bloque ce créneau dans la semaine type ; une plage isolée fait sauter cette date au déploiement, comme un férié. Le seuil (la moitié) est un réglage, à ajuster après les premiers cas réels.
 - **Sans compte commun** (adresses différentes dans les deux écoles) : rien n'est partagé tant que la personne n'a pas relié ses adresses dans son profil (vérification des deux).
 - **Consentement** : désactivé par défaut, proposé à la première connexion d'un enseignant qui a plusieurs appartenances ; il est dans son intérêt, mais la décision est la sienne (loi 09-08).
 
