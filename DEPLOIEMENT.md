@@ -109,6 +109,23 @@ Restaurer sans vider la base (sans l'étape 3) laisserait en place les tables de
 6. Programmer la tâche (`crontab -e`) :
    `15 2 * * * bash /opt/hestim/deploy/vps/sauvegarder.sh >> /var/log/hestim-sauvegarde.log 2>&1`
 
+**Destination Backblaze B2 (choisie le 24 octobre 2026, à titre provisoire).** Dans la console B2 :
+
+1. *Buckets* → *Create a Bucket* : nom unique (par exemple `planner-sauvegardes-<suffixe>`), *Files* **Private**, *Default Encryption* **Enable**, *Object Lock* laissé désactivé.
+2. *Lifecycle Settings* du compartiment → règle personnalisée sur tout le compartiment : cacher les fichiers **30 jours** après leur envoi, les effacer **7 jours** après. C'est B2 qui fait la rétention ; les 7 jours laissent le temps de voir un incident avant que les fichiers disparaissent.
+3. *Application Keys* → *Add a New Application Key* : limitée à **ce compartiment**, accès *Read and Write*, puis retirer le droit d'effacer si la console le permet (capacités voulues : `listFiles`, `readFiles`, `writeFiles`, **sans `deleteFiles`**). Noter `keyID` et `applicationKey` : la clé ne s'affiche qu'une fois.
+
+Sur le serveur, à l'étape 2 ci-dessus : `rclone config create b2-planner b2 account <keyID> key <applicationKey>`, puis `rclone lsd b2-planner:` (doit lister le compartiment). Dans `/root/hestim-sauvegarde.conf` :
+
+```bash
+PHRASE=/root/hestim-sauvegarde.cle
+DESTINATION=b2-planner:planner-sauvegardes-<suffixe>
+JOURS=30
+SUPPRESSION_DISTANTE=non
+```
+
+Avec une version du script antérieure à `SUPPRESSION_DISTANTE`, garder une clé qui peut effacer : sinon l'effacement des vieux fichiers échoue et le script rend le code 3.
+
 **Lire le résultat.** Code 0 : tout est fait. Code 1 : un export a échoué (le journal dit lequel). Code 3 : les sauvegardes sont faites mais **ne sont pas sorties du serveur**. Regarder `/var/log/hestim-sauvegarde.log` chaque semaine : une sauvegarde que personne ne regarde finit par ne plus se faire.
 
 **Restaurer.** Récupérer le fichier voulu (`rclone copy hors-site:hestim-sauvegardes/mysql-<date>.sql.gz.gpg /root/`), puis :
