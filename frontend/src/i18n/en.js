@@ -906,11 +906,11 @@ const en = {
       "profQuizDirect": {
         "titre": "Run a live quiz during class",
         "etapes": [
-          "In “Activities”, click “Start a quiz”.",
-          "Choose one of your quizzes: Planner starts the game and opens the screen to project.",
-          "Students join with the projected code or QR code, then click “Start”."
+          "In “My quizzes”, click “Share” next to the quiz.",
+          "Choose “Live”, the class if you want its students notified, then “Start live”: the screen to project opens.",
+          "Students scan the QR code or enter the code in “Quiz”, then click “Start”."
         ],
-        "note": "A quiz is not tied to a class: start it whenever you want, and find the scores in “Activities”."
+        "note": "A quiz is not tied to any class: start it whenever you want. Results stay in the quiz, “Sessions” tab."
       },
       "profQuizIa": {
         "titre": "Create a quiz in one step",
@@ -1121,45 +1121,11 @@ const en = {
     erreurChargement: 'The quiz could not be loaded.',
     erreurEnregistrement: 'The quiz could not be saved.',
   },
+  // Seul reste le nombre de questions, repris par les listes de « Mes quiz » (ancien quiz en direct retiré, SC-3)
   quizDirect: {
-    titre: 'Live quiz',
-    connexion: 'Connecting to the game…',
-    qrAlt: 'Game QR code, to scan with the HESTIM Planner app',
-    consigne: 'Scan the QR code with the HESTIM Planner app',
-    code: 'Code {{pin}}',
-    joueurs_one: '{{count}} player',
-    joueurs_other: '{{count}} players',
-    demarrer: 'Start',
-    numero: 'Question {{numero}} of {{total}}',
-    reponsesRecues: '{{recues}} answers out of {{joueurs}}',
-    voirReponses: 'Show answers',
-    suivant: 'Next question',
-    bonneReponse: 'Correct answer',
-    reponses_one: '{{count}} answer',
-    reponses_other: '{{count}} answers',
-    classementFinal: 'Final ranking',
-    aucunScore: 'No player scored a point.',
-    points_one: '{{count}} point',
-    points_other: '{{count}} points',
-    terminer: 'Finish',
-    erreurs: {
-      absente: 'No game to host: start a quiz from Activities.',
-      dejaAnimee: 'This game is already being hosted in another window.',
-      connexion: 'The quiz service cannot be reached. Check the connection, then start the quiz again from Activities.',
-      serveur: 'The quiz service refused the game. Start the quiz again from Activities.',
-    },
     lancer: {
-      titre: 'Start a quiz · {{classe}}',
-      liste: 'My quizzes',
-      aucun: 'No quiz ready to start. Create one, or finish one in “My quizzes”.',
-      studio: 'My quizzes · at each student’s pace (code and QR code)',
-      direct: 'Live quizzes',
       questions_one: '{{count}} question',
       questions_other: '{{count}} questions',
-      enCours: 'Starting…',
-      erreur: 'The quiz could not be started.',
-      erreurListe: 'Your quizzes could not be loaded.',
-      creerIa: 'Create a quiz',
     },
   },
   espaces: {
@@ -1305,12 +1271,7 @@ const en = {
       nuages: 'Word clouds',
       reponses_one: '{{count}} answer',
       reponses_other: '{{count}} answers',
-      historique: 'My latest quizzes',
       voir: 'Results',
-      resumeEtudiant_ordinal_one: '{{score}} points · #{{count}} of {{total}}',
-      resumeEtudiant_ordinal_two: '{{score}} points · #{{count}} of {{total}}',
-      resumeEtudiant_ordinal_few: '{{score}} points · #{{count}} of {{total}}',
-      resumeEtudiant_ordinal_other: '{{score}} points · #{{count}} of {{total}}',
     },
     devoirs: {
       titre: 'Assignments',
@@ -1406,15 +1367,6 @@ const en = {
         toutesJustes: 'Question {{numero}}: at least one wrong answer is needed.',
         uneSeule: 'Question {{numero}}: only one correct answer, or tick "Several correct answers".',
       },
-    },
-    quiz: {
-      titre: 'Live quizzes',
-      enCours: 'Live',
-      code: 'Code {{pin}}',
-      rejoindre: 'Join',
-      saisirCode: 'Enter a code',
-      aucune: 'No quiz running in your classes. When your teacher starts one, it shows up here.',
-      aucuneEnseignant: 'No quiz started in the last two hours. Start one during class: your students are notified.',
     },
     modules: {
       but: 'Goal',
