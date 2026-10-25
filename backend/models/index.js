@@ -384,6 +384,9 @@ TrajetCampus.belongsTo(Campus, { foreignKey: "id_campus_b", as: "campus_b" });
 // Année universitaire -> Période (1:n)
 AnneeUniversitaire.hasMany(Periode, { foreignKey: "id_annee", as: "periodes", onDelete: "CASCADE" });
 Periode.belongsTo(AnneeUniversitaire, { foreignKey: "id_annee", as: "annee" });
+// Année universitaire -> Groupe (1:n, lot ME-18) ; « annee » est déjà l'année d'études du groupe
+AnneeUniversitaire.hasMany(Groupe, { foreignKey: "id_annee", as: "groupes" });
+Groupe.belongsTo(AnneeUniversitaire, { foreignKey: "id_annee", as: "anneeUniversitaire" });
 
 Evenement.belongsTo(Users, { foreignKey: "id_user_createur", as: "createur", targetKey: "id_user" });
 
