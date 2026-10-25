@@ -95,6 +95,8 @@ Gravité : **3** fuite ou perte de données, ou argent ; **2** service coupé po
 | « Archiver » en effaçant les inscriptions passées supprimerait le mélange, mais aussi l'historique de l'étudiant | on garde tout et on filtre par année, par une seule fonction (D-19) |
 | Supprimer un compte (droit à l'effacement) et garder les relevés de présence et les heures faites | anonymisation : l'identité part, l'historique reste sans nom (§ 11.2) |
 | La maquette sert à toutes les années : renommer un module l'année suivante réécrirait l'archive | photo de l'année écrite à la clôture ; un module servi n'est jamais supprimé (§ 11.3) |
+| Effacer l'identité d'un compte (loi 09-08) et garder un relevé de notes officiel rattaché à une personne | proposition : l'obligation légale de conservation l'emporte, l'identité reste sur les relevés seulement, archivés à part ; à faire valider par le juriste (fichier 14, § 14.5) |
+| La décision « le devoir fichier ne revient pas » et la demande de rapports à téléverser | remplacée le 25 octobre : les devoirs-fichiers reviennent, avec leurs fichiers hors de la base (fichier 14, § 14.6) |
 | Un ancien étudiant qui consulte ses archives devient un « compte actif » facturé à l'école | 30 jours de grâce en lecture seule, sans téléchargement des fichiers, puis désactivation (Q-13, tranchée le 24 octobre) |
 
 ### 10.4.1 Relecture du 23 octobre (deuxième passage, point par point)
