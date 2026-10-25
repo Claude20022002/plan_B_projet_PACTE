@@ -169,7 +169,8 @@ Cas refusés, chacun couvert par un test d'isolation : jeton sans `tid` (401 ; s
 
 | Donnée | Propriétaire | Copies de lecture chez | Mise à jour des copies |
 |---|---|---|---|
-| Établissement, domaines, statut, marque | Plateforme | Planner (cache), StudyLib, jeux | événement `etablissement.modifie` |
+| Établissement, domaines, statut | Plateforme | Planner (cache), StudyLib, jeux | événement `etablissement.modifie` |
+| Marque et configuration (logo, couleurs, nom affiché, campus associés ou dissociés, nomenclatures) | Planner (base de l'école, D-21) | Plateforme (page de connexion, courriels), application mobile (cache) | événement `etablissement.marque_modifiee` |
 | Compte, appartenances | Plateforme | Planner (`Users.uid_compte`) | événement `appartenance.*` |
 | Filières, modules, groupes | Planner (base de l'école) | StudyLib (le service des jeux n'en a pas besoin : il n'en reçoit pas, par minimisation des données) | événement `referentiel.*` (remplace le `planner:sync` par code) |
 | Séances, appel, reports | Planner | aucune | — |

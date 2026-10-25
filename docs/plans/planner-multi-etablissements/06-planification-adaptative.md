@@ -128,7 +128,8 @@ Le rôle du compte (`admin`, `enseignant`, `etudiant`) reste ; l'habilitation aj
 
 | Règle | Détail |
 |---|---|
-| Ce qu'est un site | un ensemble de campus d'un même établissement qui partagent leurs étudiants et leurs salles (une ville, ou un campus seul). Chaque campus appartient à un site |
+| À l'écran : campus associés ou dissociés | dans le panneau de configuration, chaque campus est **associé** à d'autres (ils partagent étudiants et salles : HESTIM, Gandhi et Stendhal) ou **dissocié** (ses étudiants restent chez lui : EMSI). Le mot « site » n'apparaît pas |
+| Ce qu'est un site (nom technique) | un ensemble de campus associés, ou un campus dissocié seul. Chaque campus appartient à un site |
 | Groupes | chaque groupe appartient à **un** site (`Groupe.id_site`, obligatoire dès que l'établissement a plus d'un site) |
 | Étudiants | un étudiant n'est inscrit que dans des groupes d'un même site ; une inscription dans deux sites est refusée (contrôle d'import V-15) |
 | Solveur | règle **dure** nouvelle : une séance d'un groupe n'a lieu que dans une salle d'un campus de **son** site ; à l'intérieur du site, toute salle convient (décision du 21 octobre) |

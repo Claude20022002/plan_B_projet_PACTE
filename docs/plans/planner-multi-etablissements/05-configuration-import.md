@@ -149,3 +149,36 @@ Chaque contrôle est une fonction pure (ligne, contexte) → anomalies, testée 
 - **Les invitations ne partent jamais pendant l'import** : elles partent à la date choisie à l'étape 8, ou à la main.
 - **Lecture du fichier sur le serveur** : bibliothèque de lecture Excel choisie au lot ME-9 sur deux critères écrits (maintenue, sans faille connue ouverte) ; la taille décompressée réelle est mesurée, comme pour les supports de l'IA (#111).
 - **Les pages actuelles d'import** (étudiants, enseignants, salles, modules) passent par le même moteur : il n'y a plus deux façons d'importer.
+
+## 5.5 Le panneau de configuration (demande du 25 octobre)
+
+Un seul endroit pour tout ce qui rend Planner propre à l'école : **le panneau de configuration** (menu de l'administration, « Configuration »). L'assistant de démarrage (§ 5.2) n'est que le premier passage à travers ce panneau, dans l'ordre ; ensuite, chaque section se rouvre seule, en quelques clics (§ 5.3). Chaque section qui contient des listes a **son fichier Excel** (modèle à télécharger, import avec aperçu, § 5.4), et tout le panneau s'exporte et se réimporte en un classeur.
+
+```mermaid
+flowchart LR
+    P["Panneau de configuration"] --> I["Identité et marque<br/>nom, nom court, logo,<br/>couleurs du site et de l'application"]
+    P --> C["Campus<br/>associés ou dissociés,<br/>temps de trajet"]
+    P --> S["Salles<br/>nombre, types, capacités,<br/>équipements"]
+    P --> O["Offre de formation<br/>pôles, cycles, filières,<br/>groupes, modules"]
+    P --> K["Calendrier<br/>années, périodes,<br/>fériés, vacances"]
+    P --> G["Grilles horaires<br/>par rythme, variantes,<br/>plages restreintes"]
+    P --> R["Règles de génération<br/>préréglage, poids"]
+    P --> F["Fonctionnalités<br/>devoirs, annonces,<br/>jeux, Moodle et Classroom"]
+    P --> X["Personnes<br/>enseignants, étudiants,<br/>rôles à portée"]
+```
+
+| Section | Ce que l'école règle | Excel | Lot |
+|---|---|---|---|
+| Identité et marque | nom, nom court (« EMSI » → « EMSI Planner »), logo, couleur principale et couleur d'accent (contraste AA vérifié à l'enregistrement, D-11), langues, fuseau | non (formulaire) | ME-11 |
+| Campus | nom, ville, adresse ; **associé** à quels autres campus, ou **dissocié** ; temps de trajet entre campus | feuille « Campus » | ME-25 |
+| Salles | salles, types de salle (liste de l'école), capacités, équipements | feuille « Salles », « Types de salle », « Équipements » | ME-2a, ME-9 |
+| Offre de formation | pôles, cycles, filières, groupes (et leur campus s'ils sont dissociés), modules et composantes | feuilles « Filières », « Groupes », « Modules », « Composantes » | ME-2a, ME-9 |
+| Calendrier | années, périodes (semestres, trimestres), fériés du pays, vacances | feuille « Calendrier » | ME-2b, ME-10 |
+| Grilles horaires | grille par rythme, variante (Ramadan…), plages interdites ou à éviter | feuille « Créneaux » | ME-2a, ME-2b |
+| Règles de génération | préréglage (souple, standard, strict), poids des règles souples | non | ME-14 |
+| Fonctionnalités | interrupteurs de l'école : devoirs, annonces d'enseignant, jeux, fonctions Moodle et Classroom (fichier 14) | non | D-04, EC-1 à EC-12 |
+| Personnes | enseignants, étudiants, inscriptions, habilitations à portée (campus, pôle, filière) | feuilles « Enseignants », « Étudiants », « Inscriptions », « Services » | ME-9, ME-12, ME-17 |
+
+**Couleurs** : l'école choisit **deux** couleurs, pas une palette entière. Les couleurs qui portent un sens (séance annulée, en retard, appel fait…) restent celles de Planner, pour qu'elles se lisent pareil partout ; le panneau refuse une couleur trop pâle sur fond clair ou trop foncée sur fond sombre. Aujourd'hui, les couleurs viennent d'un seul fichier (`shared/design-tokens.json`, lu par le site et l'application) : c'est ce fichier qui devient une valeur par défaut, remplacée par celles de l'école.
+
+**Logo** : aujourd'hui `HESTIM.png` est écrit en dur à cinq endroits du site (connexion, menu, accueil, EDT du mois, export) et dans l'application (`mobile/assets/logo.png`). Il devient un seul composant « logo de l'école », servi par le serveur, avec le logo de Planner par défaut.

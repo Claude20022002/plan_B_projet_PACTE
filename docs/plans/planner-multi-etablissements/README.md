@@ -12,7 +12,7 @@ Ce dossier décrit deux transformations :
 | Fichier | Contenu | Pour qui |
 |---|---|---|
 | [01-exigences.md](01-exigences.md) | Ce que le produit doit faire, avec un critère vérifiable pour chaque exigence | Tous |
-| [02-decisions.md](02-decisions.md) | Les 20 décisions d'architecture, chacune avec les options écartées et ce qui la ferait changer | Chef de projet, groupe A |
+| [02-decisions.md](02-decisions.md) | Les 21 décisions d'architecture, chacune avec les options écartées et ce qui la ferait changer | Chef de projet, groupe A |
 | [03-architecture.md](03-architecture.md) | Services, frontières, résolution de l'établissement, échanges entre services, déploiement | Groupes A et B |
 | [04-modele-donnees.md](04-modele-donnees.md) | Bases de la plateforme et des établissements, identifiants partagés, invariants | Groupe A |
 | [05-configuration-import.md](05-configuration-import.md) | Assistant de démarrage, paramètres datés « aperçu puis appliquer », import Excel sans conflit | Groupes A et B |
@@ -23,11 +23,12 @@ Ce dossier décrit deux transformations :
 | [11-comptes-et-annees.md](11-comptes-et-annees.md) | Désactivation des comptes par l'administration ; années closes archivées, séparées de l'année en cours ; passage à l'année suivante | Groupes A et B |
 | [12-contre-expertise.md](12-contre-expertise.md) | Contre-expertise par domaine (finance, vente, scolarité, sécurité, exploitation, équipe, droit, produit, créateurs) : verdicts, corrections faites, découpage en trois tranches, décisions Q-15 à Q-23 | Chef de projet |
 | [13-offre-et-exploitation.md](13-offre-et-exploitation.md) | Décisions du 24 octobre : prix (5,40 MAD HT, 6,48 TTC), modèle et offre d'IA, contrat annuel, accompagnement, école pilote, engagements de service, deuxième personne en production, hébergement au Maroc, nom | Chef de projet |
+| [14-parite-moodle-classroom.md](14-parite-moodle-classroom.md) | Fonctions de Moodle et de Classroom pour les enseignants : inventaire, écarts, lots EC-1 à EC-12, chacun derrière un interrupteur par établissement | Chef de projet, groupes A et B |
 | [10-verification.md](10-verification.md) | Traçabilité, invariants testés, analyse des défaillances, contradictions trouvées et levées, relecture point par point du 23 octobre (§ 10.4.1 : 25 corrections), questions | Chef de projet |
 
 Les diagrammes sont écrits en Mermaid : GitHub les affiche directement. Ils font partie du plan : un changement de conception commence par le diagramme.
 
-## L'essentiel en douze lignes
+## L'essentiel en treize lignes
 
 1. **Une base de données par établissement**, sur des serveurs MySQL partagés, avec un utilisateur MySQL propre à chaque école. Une école ne peut pas lire une autre, même en cas de bogue (décision D-01).
 2. **Un service « Plateforme »** connaît les établissements, leurs domaines, leurs bases, les comptes, les abonnements et la facturation. Il n'a aucune donnée pédagogique (D-04).
@@ -41,6 +42,7 @@ Les diagrammes sont écrits en Mermaid : GitHub les affiche directement. Ils fon
 10. **HESTIM devient le premier établissement sans déplacer ses données** : sa base actuelle est enregistrée telle quelle ; le passage se fait par petits lots, chacun réversible (fichier 09).
 11. **L'administration désactive un compte en un geste**, avec motif et date, après un aperçu de ce que cela touche ; on ne supprime jamais un compte qui a un historique (D-18).
 12. **Chaque année se clôture et s'archive** : étudiants et enseignants ne voient que l'année en cours, les années closes restent consultables à part, en lecture seule (D-19).
+13. **Planner est un modèle que chaque école règle elle-même** : un panneau de configuration (identité, logo et couleurs du site et de l'application, campus associés ou dissociés, salles, offre de formation, calendrier, grilles, règles, fonctionnalités, personnes), et un fichier Excel par section (D-21, § 5.5).
 
 ## Vocabulaire
 
