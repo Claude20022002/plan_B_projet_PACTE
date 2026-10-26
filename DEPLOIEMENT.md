@@ -194,7 +194,7 @@ Les images des quiz se restaurent de la même façon avec `fichiers-quiz-<date>`
 
    `--start-position` ne vaut que pour le premier journal de la liste ; `--stop-datetime` est l'heure du serveur. Puis effacer les journaux en clair (`shred -u /root/restauration/journaux/*`) et redémarrer les services.
 
-Au passage à MySQL 8.4 (lot ME-0e), vérifier quelle image fournit un `mysqlbinlog` 8.4 avant de compter sur cette procédure.
+Après le passage à MySQL 8.4 (lot ME-0e), remplacer `mysql:8.0-debian` par `percona/percona-server:8.4` dans la commande ci-dessus : elle fournit `mysqlbinlog` 8.4.11 (vérifié le 26 octobre), alors que l'image `mysql:8.4` ne le contient pas.
 
 **Essai de restauration, chaque premier dimanche du mois** (environ 20 minutes, sans toucher à la production) :
 
