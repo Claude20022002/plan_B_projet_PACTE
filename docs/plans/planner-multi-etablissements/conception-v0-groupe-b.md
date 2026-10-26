@@ -27,7 +27,9 @@ Toutes les routes sont réservées à l'administration, sous `/api/users`. Les e
 | `DELETE /:id/desactivation` | — | Annule une programmation : `{ statut: "actif" }` |
 | `POST /:id/reactivation` | — | `{ statut: "actif", a_verifier }` (texte à rappeler, ou `null`) |
 | `POST /:id/anonymisation` | — | `{ statut: "anonymise" }`, irréversible |
+| `GET /desactivations/apercu` | `?ids=1,2,3` ou `?id_groupe=`, `&date=` | Aperçu d'un lot, rien n'est modifié : `{ date_effet, comptes: [{ id_user, nom, prenom, role, prevu, seances? }], a_desactiver, refuses }` ; `prevu` vaut `a_desactiver`, `deja_desactive`, `anonymise`, `soi_meme` ou `seances_a_traiter` (ajout du 26 octobre) |
 | `POST /desactivations` | `{ ids?: [], id_groupe?, motif, date?, preavis? }` | `{ bilan: [{ id_user, statut, code?, message? }], desactives, programmes, refuses }` |
+| `POST /reactivations` | `{ ids?: [], id_groupe? }` | Rétablit un lot fait par erreur : réactive les comptes désactivés, annule les désactivations programmées. `{ bilan, reactives, programmations_annulees, inchanges, refuses }` (ajout du 26 octobre) |
 | `DELETE /:id` (existe) | — | Refusé si le compte a un historique |
 | `PUT /:id` (existe) | `{ actif }` | Passe par les mêmes règles, motif « autre », effet immédiat |
 
@@ -59,17 +61,17 @@ Toutes les routes sont réservées à l'administration, sous `/api/users`. Les e
 
 Tout part de la page Utilisateurs (`/gestion/utilisateurs`, `Utilisateurs.jsx`). Principe : **aperçu puis appliquer**, jamais de désactivation sans avoir vu ce qu'elle touche.
 
-1. **Liste.** Chaque ligne montre l'état : actif, « désactivation le <date> » (si `desactivation_prevue_le`), « compte désactivé », « ancien compte » (si `anonymise_le`). Filtre par état.
+1. **Liste.** Chaque ligne montre l'état : actif, « désactivation le [date] » (si `desactivation_prevue_le`), « compte désactivé », « ancien compte » (si `anonymise_le`). Filtre par état.
 2. **Action « Désactiver »** sur une ligne (masquée sur son propre compte). Elle ouvre une fenêtre avec motif (liste fermée), date d'effet (aujourd'hui par défaut) et case « Prévenir la personne 5 jours avant » (cochée, visible seulement si la date est plus tard).
 3. **Aperçu**, rechargé à chaque changement de date (`GET /:id/desactivation?date=`) :
     - enseignant : liste des séances à venir, services, responsabilités, demandes de report. Si des séances restent, deux choix explicites : « Confier à un remplaçant » (vers les imprévus) ou « Annuler les séances et prévenir les étudiants ». Le bouton final reste grisé tant qu'aucun choix n'est fait ;
     - étudiant : ses groupes et leur effectif saisi, avec la proposition de baisser l'effectif (la route `PUT /api/groupes/:id` existe) ;
     - autre rôle : rien à traiter.
-4. **Confirmation.** Le bouton dit ce qui va se passer : « Désactiver maintenant » ou « Programmer pour le <date> ». Retour : bandeau de résultat, ligne mise à jour.
+4. **Confirmation.** Le bouton dit ce qui va se passer : « Désactiver maintenant » ou « Programmer pour le [date] ». Retour : bandeau de résultat, ligne mise à jour.
 5. **Désactivation programmée.** Sur la ligne : date et motif, action « Annuler la programmation » (`DELETE /:id/desactivation`).
 6. **Réactivation** d'un compte désactivé : un bouton, puis afficher le rappel `a_verifier` (« services et séances de l'année en cours » ou « groupes de l'année en cours »).
 7. **Anonymisation** d'un compte désactivé seulement : double confirmation (taper le nom ou « ANONYMISER »), texte qui dit que c'est irréversible.
-8. **En lot.** Sélection de plusieurs lignes, ou « Désactiver la promotion » depuis un groupe. Même fenêtre motif + date + préavis, puis un **bilan ligne par ligne** : désactivé, programmé, refusé avec son message. Un refus ne bloque pas les autres.
+8. **En lot.** Sélection de plusieurs lignes, ou « Désactiver la promotion » depuis un groupe. Même fenêtre motif + date + préavis, **avec l'aperçu du lot** (`GET /desactivations/apercu` : nombre de comptes touchés et refus prévus) avant le bouton, puis un **bilan ligne par ligne** : désactivé, programmé, refusé avec son message. Un refus ne bloque pas les autres. Dans le bilan, un bouton « Défaire » (`POST /reactivations` avec les mêmes `ids` ou le même `id_groupe`).
 9. **Supprimer.** Proposer « Supprimer » seulement pour un compte sans historique ; sur `A_UN_HISTORIQUE`, basculer vers « Désactiver ».
 
 **Ailleurs dans le site.** Un nom de compte désactivé garde sa place dans l'historique, avec la mention « compte désactivé » (listes de séances passées, résultats). Textes en français et en anglais.
