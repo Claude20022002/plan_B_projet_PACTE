@@ -194,7 +194,7 @@ export const login = asyncHandler(async (req, res) => {
         await journaliser(contexteDe(req), { evenement: "connexion_compte_desactive", user });
         return res.status(403).json({
             message: "Compte désactivé",
-            error: "Votre compte a été désactivé. Contactez l'administrateur.",
+            error: "Votre compte est désactivé. Pour toute question, écrivez à la scolarité.",
         });
     }
 

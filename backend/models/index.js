@@ -39,6 +39,7 @@ import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
 import AppareilEtudiant from "./AppareilEtudiant.js";
 import DemandeTelephone from "./DemandeTelephone.js";
+import Desactivation from "./Desactivation.js";
 import SectionCours from "./SectionCours.js";
 import SupportCours from "./SupportCours.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
@@ -560,6 +561,9 @@ SignalementPresence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "
 Users.hasOne(AppareilEtudiant, { foreignKey: "id_user", as: "appareilAppel", onDelete: "CASCADE" });
 DemandeTelephone.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
 DemandeTelephone.belongsTo(Users, { foreignKey: "id_user_admin", as: "admin", targetKey: "id_user" });
+// Historique des désactivations d'un compte (lot ME-17)
+Users.hasMany(Desactivation, { foreignKey: "id_user", as: "desactivations", onDelete: "CASCADE" });
+Desactivation.belongsTo(Users, { foreignKey: "id_auteur", as: "auteur", targetKey: "id_user" });
 
 // Espace de cours d'une classe (docs/plans/espace-de-cours.md)
 SectionCours.hasMany(SupportCours, { foreignKey: "id_section", as: "supports", onDelete: "CASCADE" });
@@ -661,6 +665,7 @@ export {
     SignalementPresence,
     AppareilEtudiant,
     DemandeTelephone,
+    Desactivation,
     SectionCours,
     SupportCours,
     MfaCodeSecours,
