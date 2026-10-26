@@ -295,7 +295,7 @@ export const suivrePasserelle = asyncHandler(async (req, res) => {
     const suite = passerelle.suite.replace(/&/g, "&amp;");
     res.status(200).type("html").send(
         `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">` +
-            `<meta http-equiv="refresh" content="0;url=${suite}"><title>HESTIM</title></head>` +
+            `<meta http-equiv="refresh" content="0;url=${suite}"><title>Planner</title></head>` +
             `<body style="background:#0b0b0d;color:#f2efe9;font-family:system-ui,sans-serif;padding:24px">` +
             `<a href="${suite}" style="color:#f2efe9">Continuer</a></body></html>`
     );
@@ -627,7 +627,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     try {
         await sendEmail({
             to: user.email,
-            subject: "Réinitialisation de votre mot de passe - HESTIM Planner",
+            subject: "Réinitialisation de votre mot de passe - {{produit}}",
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #1976d2;">Réinitialisation de mot de passe</h2>
@@ -646,7 +646,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
                     </p>
                     <p style="margin-top: 30px; color: #666; font-size: 12px;">
                         Cordialement,<br>
-                        L'équipe HESTIM Planner
+                        L'équipe {{produit}}
                     </p>
                 </div>
             `,
@@ -662,7 +662,7 @@ ${resetUrl}
 Ce lien expire dans 1 heure. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
 
 Cordialement,
-L'équipe HESTIM Planner
+L'équipe {{produit}}
             `,
         });
     } catch (error) {

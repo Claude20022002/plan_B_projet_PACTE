@@ -39,6 +39,7 @@ import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
 import AppareilEtudiant from "./AppareilEtudiant.js";
 import DemandeTelephone from "./DemandeTelephone.js";
+import ConfigurationEtablissement from "./ConfigurationEtablissement.js";
 import SectionCours from "./SectionCours.js";
 import SupportCours from "./SupportCours.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
@@ -658,6 +659,7 @@ export {
     SignalementPresence,
     AppareilEtudiant,
     DemandeTelephone,
+    ConfigurationEtablissement,
     SectionCours,
     SupportCours,
     MfaCodeSecours,

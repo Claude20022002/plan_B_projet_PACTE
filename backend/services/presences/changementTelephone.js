@@ -32,7 +32,7 @@ const vueDemande = (d) => ({ id: d.id_demande, statut: d.statut, motif: d.motif 
  */
 export const demanderChangement = async (user, appareil, { motif } = {}, contexte = null) => {
     if (user.role !== "etudiant") throw new ErreurMetier("Réservé aux étudiants", 403);
-    if (typeof appareil !== "string" || !APPAREIL.test(appareil)) throw new ErreurMetier("Faites la demande depuis l'application HESTIM, sur votre nouveau téléphone", 403);
+    if (typeof appareil !== "string" || !APPAREIL.test(appareil)) throw new ErreurMetier("Faites la demande depuis l'application Planner, sur votre nouveau téléphone", 403);
     const empreinte = empreinteAppareil(appareil);
     const [duCompte, duTelephone] = await Promise.all([AppareilEtudiant.findByPk(user.id_user), AppareilEtudiant.findOne({ where: { appareil: empreinte } })]);
     // Sans téléphone lié, le prochain scan lie celui-ci : pas besoin de l'administration
