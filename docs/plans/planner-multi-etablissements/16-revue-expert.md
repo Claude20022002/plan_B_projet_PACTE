@@ -2,7 +2,7 @@
 
 Demandée le 26 octobre 2026 par le chef de projet, rôle tenu : **expert logiciel et sécurité**. Le plan (fichiers 01 à 15, surtout le plan de développement du fichier 15) est relu contre le code des branches de V0 (`a/me17-desactivation`, `a/me18-annees`, `a/identite-ecole`) et contre `main`. Chaque constat cite le fichier qui le prouve.
 
-Statut : **proposé**. Aucun autre fichier du plan n'est modifié ; les décisions demandées sont au § 16.5.
+Statut : **tranché par le chef de projet le 26 octobre 2026** (§ 16.5) : R-1 à R-5 retenues et reportées dans les fichiers 09 et 15 ; R-6 à R-8 non retenues.
 
 ## 16.1 Verdict
 
@@ -46,13 +46,13 @@ Statut : **proposé**. Aucun autre fichier du plan n'est modifié ; les décisio
 
 | Question | Proposition | Réponse |
 |---|---|---|
-| R-1 | Alléger le jalon V3 : ME-19 et ME-15 après l'ouverture, ME-25 selon Q-25, ME-2b réduit (A-1) | |
-| R-2 | Essai réduit de ME-3a et règle de lint dès V1 (A-2) | |
-| R-3 | Créer le lot « installation de l'école pilote » en V3 (A-3) | |
-| R-4 | Revue de sécurité par A sur EC-2 et EC-3 (A-4) | |
-| R-5 | Effectif et jours par semaine de chaque groupe, pour dater les jalons (A-5) | |
-| R-6 | Sauvegardes à clé publique et verrouillées dès V0 (B-1) | |
-| R-7 | Politique de contenu en V1, appliquée avant V3 (B-3) | |
-| R-8 | Dossier CNDP lancé maintenant, condition du jalon V3 (B-5) | |
+| R-1 | Alléger le jalon V3 : ME-19 et ME-15 après l'ouverture, ME-25 selon Q-25, ME-2b réduit (A-1) | **Retenue** (26 octobre) : fichier 15, V2, V3 et « Après l'ouverture » |
+| R-2 | Essai réduit de ME-3a et règle de lint dès V1 (A-2) | **Retenue** : fichier 15, V1 ; fichier 09, ME-3a |
+| R-3 | Créer le lot « installation de l'école pilote » en V3 (A-3) | **Retenue** : lot ME-27 (fichiers 09 et 15) |
+| R-4 | Revue de sécurité par A sur EC-2 et EC-3 (A-4) | **Retenue** : fichier 15, § 15.4 et lignes EC-2, EC-3 |
+| R-5 | Effectif et jours par semaine de chaque groupe, pour dater les jalons (A-5) | **Une personne par groupe** ; plein temps supposé : calendrier au § 15.8 |
+| R-6 | Sauvegardes à clé publique et verrouillées dès V0 (B-1) | Non retenue le 26 octobre. Le code est déjà écrit et essayé (PR #125) ; l'ancien mode par phrase y reste accepté : le garder ou le retirer de la PR, au choix du chef de projet |
+| R-7 | Politique de contenu en V1, appliquée avant V3 (B-3) | Non retenue le 26 octobre |
+| R-8 | Dossier CNDP lancé maintenant, condition du jalon V3 (B-5) | Non retenue le 26 octobre ; le dossier reste dans ME-23 |
 
-Une fois tranchées, les réponses se reportent dans les fichiers 09 et 15, dans la même PR, avec leurs diagrammes.
+Les réponses retenues sont reportées dans les fichiers 09 et 15 (même PR).
