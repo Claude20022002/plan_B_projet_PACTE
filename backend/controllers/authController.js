@@ -9,6 +9,7 @@ import { sendEmail } from "../utils/sendEmail.js";
 import { creerDefi, mfaAConfigurer, resoudreDefi } from "../services/mfa.js";
 import { contexteDe, journaliser } from "../services/journalSecurite.js";
 import { ErreurMetier } from "../services/planning/enseignements.js";
+import { filtrerParAnnee } from "../services/annees/annees.js";
 import {
     ACCESS_TOKEN_TTL_SECONDS,
     clearAuthCookies,
@@ -32,11 +33,11 @@ const identiteSso = async (user) => {
         Etudiant.findByPk(user.id_user, { attributes: ["niveau"] }),
         Appartenir.findAll({
             where: { id_user_etudiant: user.id_user },
-            include: [{ model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe", "annee", "id_groupe_parent"], include: [{ model: Filiere, as: "filiere", attributes: ["code_filiere"] }] }],
+            include: [{ model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe", "annee", "id_groupe_parent", "id_annee"], include: [{ model: Filiere, as: "filiere", attributes: ["code_filiere"] }] }],
         }),
     ]);
-    // Le groupe le plus fin : celui qui n'est le parent d'aucun autre groupe de l'étudiant
-    const groupes = appartenances.map((a) => a.groupe).filter(Boolean);
+    // Le groupe le plus fin de l'année en cours (lot ME-18) : celui qui n'est le parent d'aucun autre
+    const groupes = await filtrerParAnnee(appartenances.map((a) => a.groupe).filter(Boolean));
     const parents = new Set(groupes.map((g) => g.id_groupe_parent).filter(Boolean));
     const groupe = groupes.find((g) => !parents.has(g.id_groupe)) ?? groupes[0];
     return { ...identite, filiere: groupe?.filiere?.code_filiere ?? null, niveau: etudiant?.niveau ?? null, annee: groupe?.annee ?? null, groupe: groupe?.nom_groupe ?? null };
@@ -193,7 +194,7 @@ export const login = asyncHandler(async (req, res) => {
         await journaliser(contexteDe(req), { evenement: "connexion_compte_desactive", user });
         return res.status(403).json({
             message: "Compte désactivé",
-            error: "Votre compte a été désactivé. Contactez l'administrateur.",
+            error: "Votre compte est désactivé. Pour toute question, écrivez à la scolarité.",
         });
     }
 
