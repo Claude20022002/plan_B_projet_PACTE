@@ -32,6 +32,7 @@ export const EVENEMENTS = [
     "desactivation_annulee",
     "compte_anonymise",
     "comptes_importes",
+    "identite_ecole_modifiee",
     "appareil_delie",
     "telephone_demande",
     "telephone_change_accepte",

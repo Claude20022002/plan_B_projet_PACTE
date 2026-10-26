@@ -9,6 +9,7 @@ import { sendEmail } from "../utils/sendEmail.js";
 import { creerDefi, mfaAConfigurer, resoudreDefi } from "../services/mfa.js";
 import { contexteDe, journaliser } from "../services/journalSecurite.js";
 import { ErreurMetier } from "../services/planning/enseignements.js";
+import { filtrerParAnnee } from "../services/annees/annees.js";
 import {
     ACCESS_TOKEN_TTL_SECONDS,
     clearAuthCookies,
@@ -32,11 +33,11 @@ const identiteSso = async (user) => {
         Etudiant.findByPk(user.id_user, { attributes: ["niveau"] }),
         Appartenir.findAll({
             where: { id_user_etudiant: user.id_user },
-            include: [{ model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe", "annee", "id_groupe_parent"], include: [{ model: Filiere, as: "filiere", attributes: ["code_filiere"] }] }],
+            include: [{ model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe", "annee", "id_groupe_parent", "id_annee"], include: [{ model: Filiere, as: "filiere", attributes: ["code_filiere"] }] }],
         }),
     ]);
-    // Le groupe le plus fin : celui qui n'est le parent d'aucun autre groupe de l'étudiant
-    const groupes = appartenances.map((a) => a.groupe).filter(Boolean);
+    // Le groupe le plus fin de l'année en cours (lot ME-18) : celui qui n'est le parent d'aucun autre
+    const groupes = await filtrerParAnnee(appartenances.map((a) => a.groupe).filter(Boolean));
     const parents = new Set(groupes.map((g) => g.id_groupe_parent).filter(Boolean));
     const groupe = groupes.find((g) => !parents.has(g.id_groupe)) ?? groupes[0];
     return { ...identite, filiere: groupe?.filiere?.code_filiere ?? null, niveau: etudiant?.niveau ?? null, annee: groupe?.annee ?? null, groupe: groupe?.nom_groupe ?? null };
@@ -295,7 +296,7 @@ export const suivrePasserelle = asyncHandler(async (req, res) => {
     const suite = passerelle.suite.replace(/&/g, "&amp;");
     res.status(200).type("html").send(
         `<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">` +
-            `<meta http-equiv="refresh" content="0;url=${suite}"><title>HESTIM</title></head>` +
+            `<meta http-equiv="refresh" content="0;url=${suite}"><title>Planner</title></head>` +
             `<body style="background:#0b0b0d;color:#f2efe9;font-family:system-ui,sans-serif;padding:24px">` +
             `<a href="${suite}" style="color:#f2efe9">Continuer</a></body></html>`
     );
@@ -627,7 +628,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
     try {
         await sendEmail({
             to: user.email,
-            subject: "Réinitialisation de votre mot de passe - HESTIM Planner",
+            subject: "Réinitialisation de votre mot de passe - {{produit}}",
             html: `
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
                     <h2 style="color: #1976d2;">Réinitialisation de mot de passe</h2>
@@ -646,7 +647,7 @@ export const forgotPassword = asyncHandler(async (req, res) => {
                     </p>
                     <p style="margin-top: 30px; color: #666; font-size: 12px;">
                         Cordialement,<br>
-                        L'équipe HESTIM Planner
+                        L'équipe {{produit}}
                     </p>
                 </div>
             `,
@@ -662,7 +663,7 @@ ${resetUrl}
 Ce lien expire dans 1 heure. Si vous n'avez pas demandé cette réinitialisation, ignorez cet email.
 
 Cordialement,
-L'équipe HESTIM Planner
+L'équipe {{produit}}
             `,
         });
     } catch (error) {

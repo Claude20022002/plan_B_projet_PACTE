@@ -7,7 +7,14 @@ import Svg, { Polygon } from 'react-native-svg';
  * Animation de lancement : les douze triangles du logo HESTIM arrivent des bords en tournant et
  * se rejoignent sur la tuile blanche pour former le logo, puis le nom apparaît et l'écran s'efface
  * sur l'application. Rien si le téléphone demande de réduire les animations.
+ * Ce sont les pièces du logo de l'école pilote : les autres écoles s'ouvrent sans animation.
  */
+
+// École dont le logo est dessiné ici (nom court, ConfigurationEtablissement)
+const ECOLE_DU_LOGO = 'HESTIM';
+
+/** L'animation n'appartient qu'à l'école dont elle dessine le logo. */
+export const aUneIntro = (nomCourt) => nomCourt === ECOLE_DU_LOGO;
 
 // Couleurs du logo (mobile/assets/logo.png)
 const MARINE = '#001861';

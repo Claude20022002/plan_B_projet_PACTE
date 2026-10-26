@@ -148,6 +148,43 @@ describe("Désactivation en lot", () => {
         expect(res.body.desactives).toBe(2);
         expect((await Users.findAll({ where: { id_user: [e1.id_user, e2.id_user] } })).every((u) => !u.actif)).toBe(true);
     });
+
+    test("l'aperçu dit qui sera désactivé et qui sera refusé, sans rien changer", async () => {
+        const [actif, inactif] = [await createUser("etudiant"), await createUser("etudiant", { actif: false })];
+        const prof = await createUser("enseignant");
+        await createPlanningFixture({ admin, enseignant: prof });
+        const ids = [actif.id_user, inactif.id_user, prof.id_user, admin.id_user].join(",");
+
+        const res = await adminClient.get(`/api/users/desactivations/apercu?ids=${ids}`);
+        expect(res.status).toBe(200);
+        const sort = Object.fromEntries(res.body.comptes.map((c) => [c.id_user, c]));
+        expect(sort[actif.id_user].prevu).toBe("a_desactiver");
+        expect(sort[inactif.id_user].prevu).toBe("deja_desactive");
+        expect(sort[prof.id_user]).toMatchObject({ prevu: "seances_a_traiter", seances: 1 });
+        expect(sort[admin.id_user].prevu).toBe("soi_meme");
+        expect(res.body).toMatchObject({ a_desactiver: 1, refuses: 3 });
+        expect((await Users.findByPk(actif.id_user)).actif).toBe(true);
+
+        expect((await adminClient.get("/api/users/desactivations/apercu")).status).toBe(400);
+    });
+
+    test("un lot fait par erreur se rétablit d'un geste : réactivés, programmations annulées", async () => {
+        const [e1, e2] = [await createUser("etudiant"), await createUser("etudiant")];
+        const { groupe } = await createPlanningFixture({ admin, etudiant: e1 });
+        await Appartenir.create({ id_user_etudiant: e2.id_user, id_groupe: groupe.id_groupe });
+        await adminClient.send("post", "/api/users/desactivations", { id_groupe: groupe.id_groupe, motif: "diplome" });
+
+        const res = await adminClient.send("post", "/api/users/reactivations", { id_groupe: groupe.id_groupe });
+        expect(res.status).toBe(200);
+        expect(res.body).toMatchObject({ reactives: 2, refuses: 0 });
+        expect((await Users.findAll({ where: { id_user: [e1.id_user, e2.id_user] } })).every((u) => u.actif)).toBe(true);
+
+        // Programmé pour plus tard, puis rétabli : la date est retirée ; un compte resté actif ne bouge pas
+        await adminClient.send("post", "/api/users/desactivations", { ids: [e1.id_user], motif: "depart", date: dansJours(10) });
+        const retour = await adminClient.send("post", "/api/users/reactivations", { ids: [e1.id_user, e2.id_user] });
+        expect(retour.body).toMatchObject({ programmations_annulees: 1, inchanges: 1 });
+        expect((await Users.findByPk(e1.id_user)).desactivation_prevue_le).toBeNull();
+    });
 });
 
 describe("Supprimer ou désactiver", () => {

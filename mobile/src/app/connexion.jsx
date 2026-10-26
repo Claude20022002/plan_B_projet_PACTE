@@ -6,8 +6,9 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { ErreurConnexion, useAuth } from '../auth/AuthContext';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
+import { adresseLogo, identiteEcole } from '../ecole';
 
-/** Panneau de connexion : logo, email, mot de passe. Les comptes viennent de l'administration. */
+/** Panneau de connexion : logo de l'école, email, mot de passe. Les comptes viennent de l'administration. */
 export default function Connexion() {
   const { couleurs, sombre } = useTheme();
   const styles = useStyles();
@@ -19,6 +20,8 @@ export default function Connexion() {
   const [visible, setVisible] = useState(false);
   const [erreur, setErreur] = useState('');
   const [envoi, setEnvoi] = useState(false);
+  const ecole = identiteEcole();
+  const logo = adresseLogo(ecole);
 
   if (etat === 'connecte') return <Redirect href="/" />;
 
@@ -41,7 +44,12 @@ export default function Connexion() {
       {/* Pas de barre de titre ici : la barre d'état se lit sur le sol */}
       <StatusBar style={sombre ? 'light' : 'dark'} />
       <View style={styles.entete}>
-        <Image source={require('../../assets/logo.png')} style={styles.logo} accessibilityIgnoresInvertColors accessibilityLabel="HESTIM" />
+        {/* Logo servi par l'école (cadre blanc, comme sur le site) ; sans logo, le nom seul */}
+        {logo ? (
+          <View style={styles.cadreLogo}>
+            <Image source={{ uri: logo }} style={styles.logo} resizeMode="contain" accessibilityIgnoresInvertColors accessibilityLabel={ecole.nom} />
+          </View>
+        ) : null}
         <Text style={styles.nom} accessibilityRole="header">
           {t('app.nom')}
         </Text>
@@ -58,7 +66,7 @@ export default function Connexion() {
           keyboardType="email-address"
           textContentType="username"
           placeholderTextColor={couleurs.lettreAttenuee}
-          placeholder="prenom.nom@hestim.ma"
+          placeholder={t('app.connexion.exempleEmail')}
           accessibilityLabel={t('app.connexion.email')}
           returnKeyType="next"
         />
@@ -98,7 +106,8 @@ export default function Connexion() {
 const useStyles = creerStyles((t) => ({
   ecran: { flex: 1, backgroundColor: t.couleurs.fond, paddingHorizontal: 24 },
   entete: { alignItems: 'center', gap: 12, marginBottom: 40 },
-  logo: { width: 72, height: 72, borderRadius: t.rayons.md, backgroundColor: '#FFFFFF' },
+  cadreLogo: { backgroundColor: '#FFFFFF', borderRadius: t.rayons.md, paddingHorizontal: 14, paddingVertical: 10 },
+  logo: { width: 200, height: 44 },
   nom: { color: t.couleurs.lettre, fontFamily: t.polices.panneauGras, fontSize: 28, textTransform: t.capitales, letterSpacing: espace(t, 1.5) },
   formulaire: { gap: 8 },
   libelle: { color: t.couleurs.lettreAttenuee, fontFamily: t.polices.panneau, fontSize: 14, textTransform: t.capitales, letterSpacing: espace(t, 1), marginTop: 8 },

@@ -2,8 +2,9 @@ import { Fragment } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Box, GlobalStyles } from '@mui/material';
 import { ds } from '../../design-system/tokens';
+import LogoEcole from '../common/LogoEcole';
 
-// Couleurs du document officiel (EDT HESTIM) : hors du style « panneau », réservé à l'impression
+// Couleurs du document officiel (EDT du mois de l'école) : hors du style « panneau », réservé à l'impression
 const DOC = ds.document;
 const heure = (h) => h.replace(':', 'h');
 const td = { border: `1px solid ${DOC.bord}`, padding: '2px 4px', fontSize: 11, lineHeight: 1.25, textAlign: 'center', verticalAlign: 'middle' };
@@ -101,7 +102,7 @@ export default function DocumentEdtMois({ edt }) {
     return (
         <Box className="edt-document" sx={{ bgcolor: DOC.fond, color: DOC.encre, p: { xs: 1, md: 2 }, overflowX: 'auto', fontFamily: 'Arial, Helvetica, sans-serif' }}>
             <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 1 }}>
-                <img src="/HESTIM.png" alt="HESTIM" style={{ height: 42 }} />
+                <LogoEcole hauteur={42} />
                 <span style={{ fontSize: 13, fontWeight: 700 }}>
                     {t('monthly.year')} : {edt.entete.annee_universitaire ?? '-'}
                 </span>

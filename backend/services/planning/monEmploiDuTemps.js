@@ -4,6 +4,7 @@ import { ErreurMetier } from "./enseignements.js";
 import { ancetres } from "./groupes.js";
 import { campusDesGroupes } from "./campusDesSeances.js";
 import { appliquerVersionPubliee, lignesDesClasses } from "../calendrier/versionPubliee.js";
+import { filtrerParAnnee } from "../annees/annees.js";
 
 /**
  * Emploi du temps de l'étudiant connecté (application mobile, phase D2) : les séances de ses
@@ -101,7 +102,9 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
     if ((new Date(fin) - new Date(debut)) / 864e5 > JOURS_MAX) throw new ErreurMetier(`Période trop longue (${JOURS_MAX} jours au plus)`, 400);
 
     const appartenances = await Appartenir.findAll({ where: { id_user_etudiant: idUser }, include: [{ model: Groupe, as: "groupe" }] });
-    const directs = appartenances.map((a) => a.groupe).filter(Boolean);
+    // Les groupes des années qui recouvrent ces dates (lot ME-18) : l'an passé reste consultable,
+    // sans mélanger une année avec la suivante
+    const directs = await filtrerParAnnee(appartenances.map((a) => a.groupe).filter(Boolean), { du: debut, au: fin });
     if (!directs.length) return { du: debut, au: fin, groupes: [], seances: [], evenements: [], examens: [] };
 
     // Groupes de l'étudiant et leurs ancêtres (TP → TD → promotion), dans leurs filières
