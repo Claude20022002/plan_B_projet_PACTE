@@ -201,6 +201,14 @@ export const userAPI = {
     importBulk: (data) => request('/users/import', { method: 'POST', body: data }),
     // Téléphone perdu : retire la double authentification du compte et ferme ses sessions
     reinitialiserMfa: (id) => request(`/users/${id}/mfa`, { method: 'DELETE' }),
+    // Désactivation (ME-17) : aperçu de ce qu'elle touche, puis désactivation immédiate ou programmée
+    apercuDesactivation: (id, date) => request(`/users/${id}/desactivation${date ? `?date=${encodeURIComponent(date)}` : ''}`),
+    desactiver: (id, corps) => request(`/users/${id}/desactivation`, { method: 'POST', body: corps }),
+    annulerDesactivation: (id) => request(`/users/${id}/desactivation`, { method: 'DELETE' }),
+    reactiver: (id) => request(`/users/${id}/reactivation`, { method: 'POST' }),
+    anonymiser: (id) => request(`/users/${id}/anonymisation`, { method: 'POST' }),
+    // Plusieurs comptes (ids) ou tous les étudiants d'un groupe (id_groupe) ; le bilan dit le sort de chacun
+    desactiverEnLot: (corps) => request('/users/desactivations', { method: 'POST', body: corps }),
 };
 
 // ==================== ENSEIGNANTS ====================

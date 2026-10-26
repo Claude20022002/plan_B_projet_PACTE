@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
     Box,
     Paper,
@@ -14,51 +14,34 @@ import {
     Chip,
     TextField,
     Dialog,
-    Link,
     DialogTitle,
     DialogContent,
     DialogActions,
     Typography,
-    FormControl,
-    InputLabel,
-    Select,
-    MenuItem,
     Alert,
     Snackbar,
+    Checkbox,
+    TableSortLabel,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, SupervisedUserCircle, PhonelinkErase } from '@mui/icons-material';
-import { TableSortLabel } from '@mui/material';
+import { Add, Block, Edit, Delete, Search, SupervisedUserCircle, PhonelinkErase } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { userAPI } from '../../services/api';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import SkeletonTable from '../../components/common/SkeletonTable';
 import EmptyState from '../../components/common/EmptyState';
 import { useSortableTable } from '../../hooks/useSortableTable';
-import { useFormik } from 'formik';
-import * as yup from 'yup';
-import { Link as RouterLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
+import { useAuth } from '../../contexts/AuthContext';
+import StatutCompte from '../../components/comptes/StatutCompte';
+import BoutonsCompte from '../../components/comptes/BoutonsCompte';
+import DialoguesComptes from '../../components/comptes/DialoguesComptes';
+import FormulaireCompteDialog from '../../components/comptes/FormulaireCompteDialog';
+import useActionsComptes from '../../components/comptes/useActionsComptes';
 
-const validationSchema = yup.object({
-    // Messages : des clés de traduction, traduites à l'affichage
-    nom: yup.string().required('utilisateurs.erreurs.nom'),
-    prenom: yup.string().required('utilisateurs.erreurs.prenom'),
-    email: yup.string().email('utilisateurs.erreurs.emailInvalide').required('utilisateurs.erreurs.email'),
-    role: yup.string().oneOf(['admin', 'enseignant', 'etudiant']).required('utilisateurs.erreurs.role'),
-    telephone: yup.string(),
-    // Longueur comme le serveur (utils/passwordHelper.js) ; mots de passe courants, personnels ou
-    // divulgués : refusés par le serveur. Facultatif : sans mot de passe, le compte reçoit un lien
-    // d'invitation ; un mot de passe saisi est provisoire.
-    password: yup
-        .string()
-        .transform((valeur) => valeur || undefined)
-        .min(12, 'utilisateurs.erreurs.motDePasseCourt')
-        .max(64, 'utilisateurs.erreurs.motDePasseLong'),
-});
-
-/** Comptes (administration) : liste de tous les comptes, création des comptes administrateurs. */
+/** Comptes (administration) : liste de tous les comptes, création des comptes administrateurs, désactivation. */
 export default function Utilisateurs() {
     const { t } = useTranslation();
+    const { user: moi } = useAuth();
     const [utilisateurs, setUtilisateurs] = useState([]);
     const [loading, setLoading] = useState(true);
     const [page, setPage] = useState(0);
@@ -71,13 +54,10 @@ export default function Utilisateurs() {
     const [success, setSuccess] = useState('');
     const [confirmDialog, setConfirmDialog] = useState({ open: false, id: null });
     const [invitation, setInvitation] = useState(null);
+    const [mfaAReinitialiser, setMfaAReinitialiser] = useState(null);
     const { sorted: sortedUsers, requestSort, getSortDir } = useSortableTable(utilisateurs);
 
-    useEffect(() => {
-        loadUtilisateurs();
-    }, [page, rowsPerPage]);
-
-    const loadUtilisateurs = async () => {
+    const loadUtilisateurs = useCallback(async () => {
         setLoading(true);
         try {
             const data = await userAPI.getAll({ page: page + 1, limit: rowsPerPage });
@@ -89,71 +69,40 @@ export default function Utilisateurs() {
         } finally {
             setLoading(false);
         }
-    };
+    }, [page, rowsPerPage, t]);
 
-    const formik = useFormik({
-        initialValues: {
-            nom: '',
-            prenom: '',
-            email: '',
-            role: 'admin',
-            telephone: '',
-            password: '',
-            actif: true,
-            niveau: '',
-        },
-        validationSchema,
-        enableReinitialize: true,
-        onSubmit: async (values, { setSubmitting }) => {
-            try {
-                setError('');
-                setSuccess('');
-                const { niveau, ...dataToSend } = values;
-                if (!dataToSend.password) {
-                    delete dataToSend.password;
-                }
+    useEffect(() => {
+        loadUtilisateurs();
+    }, [loadUtilisateurs]);
 
-                if (editing) {
-                    await userAPI.update(editing.id_user, dataToSend);
-                    setSuccess(t('utilisateurs.modifie'));
-                } else {
-                    // La fiche étudiant ou enseignant est créée avec le compte
-                    const reponse = await userAPI.create({ ...dataToSend, ...(values.role === 'etudiant' && niveau ? { profil: { niveau } } : {}) });
-                    if (reponse.invitation) setInvitation({ email: values.email, ...reponse.invitation });
-                    setSuccess(t(reponse.invitation ? 'utilisateurs.creeInvitation' : 'utilisateurs.creeProvisoire'));
-                }
-                formik.resetForm();
-                setOpen(false);
-                setEditing(null);
-                loadUtilisateurs();
-            } catch (error) {
-                console.error('Erreur:', error);
-                setError(error.message || t('utilisateurs.erreurSauvegarde'));
-            } finally {
-                setSubmitting(false);
-            }
-        },
+    const actions = useActionsComptes({ comptes: utilisateurs, recharger: loadUtilisateurs, onSucces: setSuccess, onErreur: setError });
+    const visibles = sortedUsers.filter((u) => {
+        const q = search.toLowerCase();
+        return u.nom?.toLowerCase().includes(q) || u.prenom?.toLowerCase().includes(q) || u.email?.toLowerCase().includes(q);
     });
+    // Un compte déjà désactivé, ou le sien, n'entre pas dans une sélection
+    const cochables = visibles.filter((u) => u.actif && u.id_user !== moi?.id_user).map((u) => u.id_user);
 
-    const handleEdit = (user) => {
+    const ouvrirFormulaire = (user = null) => {
         setEditing(user);
-        formik.setValues({
-            nom: user.nom,
-            prenom: user.prenom,
-            email: user.email,
-            role: user.role,
-            telephone: user.telephone || '',
-            password: '',
-            actif: user.actif,
-            niveau: user.niveau || '',
-        });
+        setError('');
+        setSuccess('');
         setOpen(true);
     };
 
-    const handleDeleteClick = (id) => setConfirmDialog({ open: true, id });
+    const compteEnregistre = (reponse, valeurs) => {
+        if (editing) {
+            setSuccess(t('utilisateurs.modifie'));
+        } else {
+            if (reponse.invitation) setInvitation({ email: valeurs.email, ...reponse.invitation });
+            setSuccess(t(reponse.invitation ? 'utilisateurs.creeInvitation' : 'utilisateurs.creeProvisoire'));
+        }
+        setOpen(false);
+        setEditing(null);
+        loadUtilisateurs();
+    };
 
     // Double authentification : téléphone perdu → retirée, sessions fermées, à reconfigurer
-    const [mfaAReinitialiser, setMfaAReinitialiser] = useState(null);
     const reinitialiserMfa = async () => {
         const cible = mfaAReinitialiser;
         setMfaAReinitialiser(null);
@@ -175,9 +124,18 @@ export default function Utilisateurs() {
             loadUtilisateurs();
         } catch (err) {
             console.error('Erreur:', err);
-            setError(t('utilisateurs.erreurSuppression'));
+            // Un compte qui a un historique ne se supprime pas : le serveur dit de le désactiver
+            setError(err.response?.data?.code === 'A_UN_HISTORIQUE' ? t('comptes.supprimerImpossible') : t('utilisateurs.erreurSuppression'));
         }
     };
+
+    const enTete = (champ, cle) => (
+        <TableCell>
+            <TableSortLabel active={getSortDir(champ) !== undefined} direction={getSortDir(champ) || 'asc'} onClick={() => requestSort(champ)}>
+                {t(`utilisateurs.colonnes.${cle}`)}
+            </TableSortLabel>
+        </TableCell>
+    );
 
     return (
         <DashboardLayout>
@@ -185,17 +143,12 @@ export default function Utilisateurs() {
                 <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mb: 3 }}>
                     {/* Le titre est celui de la mise en page, et le menu y ramène : plus de « Retour » ni de « Gestion des… » (recette, m-1 et m-2) */}
                     <Box sx={{ display: 'flex', gap: 1 }}>
-                        <Button
-                            variant="contained"
-                            startIcon={<Add />}
-                            onClick={() => {
-                                setEditing(null);
-                                setError('');
-                                setSuccess('');
-                                formik.resetForm();
-                                setOpen(true);
-                            }}
-                        >
+                        {actions.selection.length > 0 && (
+                            <Button variant="outlined" color="error" startIcon={<Block />} onClick={actions.ouvrirLot}>
+                                {t('comptes.desactiverSelection', { count: actions.selection.length })}
+                            </Button>
+                        )}
+                        <Button variant="contained" startIcon={<Add />} onClick={() => ouvrirFormulaire()}>
                             {t('utilisateurs.ajouter')}
                         </Button>
                     </Box>
@@ -203,17 +156,12 @@ export default function Utilisateurs() {
 
                 {error && (
                     <Snackbar open={!!error} autoHideDuration={6000} onClose={() => setError('')}>
-                        <Alert onClose={() => setError('')} severity="error">
-                            {error}
-                        </Alert>
+                        <Alert onClose={() => setError('')} severity="error">{error}</Alert>
                     </Snackbar>
                 )}
-
                 {success && (
                     <Snackbar open={!!success} autoHideDuration={6000} onClose={() => setSuccess('')}>
-                        <Alert onClose={() => setSuccess('')} severity="success">
-                            {success}
-                        </Alert>
+                        <Alert onClose={() => setSuccess('')} severity="success">{success}</Alert>
                     </Snackbar>
                 )}
 
@@ -224,31 +172,39 @@ export default function Utilisateurs() {
                             placeholder={t('utilisateurs.rechercher')}
                             value={search}
                             onChange={(e) => setSearch(e.target.value)}
-                            InputProps={{
-                                startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} />,
-                            }}
+                            InputProps={{ startAdornment: <Search sx={{ mr: 1, color: 'text.secondary' }} /> }}
                         />
                     </Box>
                 </Paper>
 
                 {loading ? (
-                    <SkeletonTable columns={7} rows={rowsPerPage} />
+                    <SkeletonTable columns={8} rows={rowsPerPage} />
                 ) : utilisateurs.length === 0 ? (
                     <EmptyState
                         icon={SupervisedUserCircle}
                         title={t('utilisateurs.vide')}
                         description={t('utilisateurs.videAide')}
                         actionLabel={t('utilisateurs.ajouter')}
-                        onAction={() => { setEditing(null); setError(''); formik.resetForm(); setOpen(true); }}
+                        onAction={() => ouvrirFormulaire()}
                     />
                 ) : (
                 <TableContainer component={Paper}>
                     <Table>
                         <TableHead>
                             <TableRow>
-                                <TableCell><TableSortLabel active={getSortDir('nom') !== undefined} direction={getSortDir('nom') || 'asc'} onClick={() => requestSort('nom')}>{t('utilisateurs.colonnes.nom')}</TableSortLabel></TableCell>
-                                <TableCell><TableSortLabel active={getSortDir('prenom') !== undefined} direction={getSortDir('prenom') || 'asc'} onClick={() => requestSort('prenom')}>{t('utilisateurs.colonnes.prenom')}</TableSortLabel></TableCell>
-                                <TableCell><TableSortLabel active={getSortDir('email') !== undefined} direction={getSortDir('email') || 'asc'} onClick={() => requestSort('email')}>{t('utilisateurs.colonnes.email')}</TableSortLabel></TableCell>
+                                <TableCell padding="checkbox">
+                                    <Checkbox
+                                        size="small"
+                                        checked={cochables.length > 0 && cochables.every((id) => actions.coches.has(id))}
+                                        indeterminate={cochables.some((id) => actions.coches.has(id)) && !cochables.every((id) => actions.coches.has(id))}
+                                        onChange={() => actions.toutBasculer(cochables)}
+                                        disabled={cochables.length === 0}
+                                        inputProps={{ 'aria-label': t('comptes.toutSelectionner') }}
+                                    />
+                                </TableCell>
+                                {enTete('nom', 'nom')}
+                                {enTete('prenom', 'prenom')}
+                                {enTete('email', 'email')}
                                 <TableCell>{t('utilisateurs.colonnes.role')}</TableCell>
                                 <TableCell>{t('utilisateurs.colonnes.telephone')}</TableCell>
                                 <TableCell>{t('utilisateurs.colonnes.statut')}</TableCell>
@@ -256,37 +212,44 @@ export default function Utilisateurs() {
                             </TableRow>
                         </TableHead>
                         <TableBody>
-                            {sortedUsers.filter(u =>
-                                u.nom?.toLowerCase().includes(search.toLowerCase()) ||
-                                u.prenom?.toLowerCase().includes(search.toLowerCase()) ||
-                                u.email?.toLowerCase().includes(search.toLowerCase())
-                            ).map((user) => (
-                                <TableRow key={user.id_user} hover>
-                                    <TableCell>{user.nom}</TableCell>
-                                    <TableCell>{user.prenom}</TableCell>
-                                    <TableCell>{user.email}</TableCell>
-                                    <TableCell>
-                                        <Chip label={t(`roles.${user.role}`, { defaultValue: user.role })} size="small" color={user.role === 'admin' ? 'error' : user.role === 'enseignant' ? 'primary' : 'default'} />
-                                    </TableCell>
-                                    <TableCell>{user.telephone || '-'}</TableCell>
-                                    <TableCell>
-                                        <Chip label={t(user.actif ? 'utilisateurs.actif' : 'utilisateurs.inactif')} color={user.actif ? 'success' : 'default'} size="small" />
-                                    </TableCell>
-                                    <TableCell align="right">
-                                        <IconButton size="small" onClick={() => handleEdit(user)} aria-label={t('utilisateurs.modifierNom', { nom: `${user.prenom} ${user.nom}` })}>
-                                            <Edit />
-                                        </IconButton>
-                                        {user.mfa_active && (
-                                            <IconButton size="small" onClick={() => setMfaAReinitialiser(user)} aria-label={t('utilisateurs.mfaNom', { nom: `${user.prenom} ${user.nom}` })} title={t('utilisateurs.mfaTitre')}>
-                                                <PhonelinkErase />
+                            {visibles.map((user) => {
+                                const nom = `${user.prenom} ${user.nom}`;
+                                return (
+                                    <TableRow key={user.id_user} hover>
+                                        <TableCell padding="checkbox">
+                                            <Checkbox
+                                                size="small"
+                                                checked={actions.coches.has(user.id_user)}
+                                                onChange={() => actions.basculer(user.id_user)}
+                                                disabled={!cochables.includes(user.id_user)}
+                                                inputProps={{ 'aria-label': t('comptes.selectionnerNom', { nom }) }}
+                                            />
+                                        </TableCell>
+                                        <TableCell>{user.nom}</TableCell>
+                                        <TableCell>{user.prenom}</TableCell>
+                                        <TableCell>{user.email}</TableCell>
+                                        <TableCell>
+                                            <Chip label={t(`roles.${user.role}`, { defaultValue: user.role })} size="small" color={user.role === 'admin' ? 'error' : user.role === 'enseignant' ? 'primary' : 'default'} />
+                                        </TableCell>
+                                        <TableCell>{user.telephone || '-'}</TableCell>
+                                        <TableCell><StatutCompte compte={user} /></TableCell>
+                                        <TableCell align="right">
+                                            <IconButton size="small" onClick={() => ouvrirFormulaire(user)} aria-label={t('utilisateurs.modifierNom', { nom })}>
+                                                <Edit />
                                             </IconButton>
-                                        )}
-                                        <IconButton size="small" color="error" onClick={() => handleDeleteClick(user.id_user)} aria-label={t('utilisateurs.supprimerNom', { nom: `${user.prenom} ${user.nom}` })}>
-                                            <Delete />
-                                        </IconButton>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
+                                            {user.mfa_active && (
+                                                <IconButton size="small" onClick={() => setMfaAReinitialiser(user)} aria-label={t('utilisateurs.mfaNom', { nom })} title={t('utilisateurs.mfaTitre')}>
+                                                    <PhonelinkErase />
+                                                </IconButton>
+                                            )}
+                                            <BoutonsCompte compte={user} actions={actions} estMoi={user.id_user === moi?.id_user} />
+                                            <IconButton size="small" color="error" onClick={() => setConfirmDialog({ open: true, id: user.id_user })} aria-label={t('utilisateurs.supprimerNom', { nom })}>
+                                                <Delete />
+                                            </IconButton>
+                                        </TableCell>
+                                    </TableRow>
+                                );
+                            })}
                         </TableBody>
                     </Table>
                     <TablePagination
@@ -303,6 +266,8 @@ export default function Utilisateurs() {
                     />
                 </TableContainer>
                 )}
+
+                <DialoguesComptes actions={actions} />
 
                 <ConfirmDialog
                     open={confirmDialog.open}
@@ -322,92 +287,7 @@ export default function Utilisateurs() {
                     onCancel={() => setMfaAReinitialiser(null)}
                 />
 
-                <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-                    <form onSubmit={formik.handleSubmit}>
-                        <DialogTitle>{t(editing ? 'utilisateurs.titreModifier' : 'utilisateurs.titreNouveau')}</DialogTitle>
-                        <DialogContent>
-                            <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, mt: 1 }}>
-                                <TextField
-                                    fullWidth
-                                    label={t('utilisateurs.colonnes.nom')}
-                                    name="nom"
-                                    value={formik.values.nom}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.nom && Boolean(formik.errors.nom)}
-                                    helperText={formik.touched.nom && formik.errors.nom && t(formik.errors.nom)}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label={t('utilisateurs.colonnes.prenom')}
-                                    name="prenom"
-                                    value={formik.values.prenom}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.prenom && Boolean(formik.errors.prenom)}
-                                    helperText={formik.touched.prenom && formik.errors.prenom && t(formik.errors.prenom)}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label={t('utilisateurs.colonnes.email')}
-                                    name="email"
-                                    type="email"
-                                    value={formik.values.email}
-                                    onChange={formik.handleChange}
-                                    onBlur={formik.handleBlur}
-                                    error={formik.touched.email && Boolean(formik.errors.email)}
-                                    helperText={formik.touched.email && formik.errors.email && t(formik.errors.email)}
-                                />
-                                {!editing && (
-                                    <Alert severity="info">
-                                        {t('utilisateurs.infoAdmin')}{' '}
-                                        <Link component={RouterLink} to="/gestion/etudiants">{t('utilisateurs.pageEtudiants')}</Link> {t('utilisateurs.et')}{' '}
-                                        <Link component={RouterLink} to="/gestion/enseignants">{t('utilisateurs.pageEnseignants')}</Link>.
-                                    </Alert>
-                                )}
-                                {/* Le rôle d'un compte existant ne change pas ici : son profil (étudiant, enseignant) en dépend */}
-                                <FormControl fullWidth sx={{ display: editing ? undefined : 'none' }}>
-                                    <InputLabel>{t('utilisateurs.colonnes.role')}</InputLabel>
-                                    <Select
-                                        name="role"
-                                        value={formik.values.role}
-                                        onChange={formik.handleChange}
-                                        label={t('utilisateurs.colonnes.role')}
-                                        disabled
-                                    >
-                                        <MenuItem value="admin">{t('roles.admin')}</MenuItem>
-                                        <MenuItem value="enseignant">{t('roles.enseignant')}</MenuItem>
-                                        <MenuItem value="etudiant">{t('roles.etudiant')}</MenuItem>
-                                    </Select>
-                                </FormControl>
-                                <TextField
-                                    fullWidth
-                                    label={t('utilisateurs.colonnes.telephone')}
-                                    name="telephone"
-                                    value={formik.values.telephone}
-                                    onChange={formik.handleChange}
-                                />
-                                <TextField
-                                    fullWidth
-                                    label={t(editing ? 'utilisateurs.motDePasseModifier' : 'utilisateurs.motDePasseNouveau')}
-                                    name="password"
-                                    type="password"
-                                    value={formik.values.password}
-                                    onChange={formik.handleChange}
-                                    error={formik.touched.password && Boolean(formik.errors.password)}
-                                    helperText={
-                                        (formik.touched.password && formik.errors.password && t(formik.errors.password)) ||
-                                        t(editing ? 'utilisateurs.motDePasseAideModifier' : 'utilisateurs.motDePasseAideNouveau')
-                                    }
-                                />
-                            </Box>
-                        </DialogContent>
-                        <DialogActions>
-                            <Button onClick={() => setOpen(false)}>{t('common.cancel')}</Button>
-                            <Button type="submit" variant="contained">
-                                {t(editing ? 'utilisateurs.modifier' : 'utilisateurs.creer')}
-                            </Button>
-                        </DialogActions>
-                    </form>
-                </Dialog>
+                <FormulaireCompteDialog open={open} editing={editing} onClose={() => setOpen(false)} onSaved={compteEnregistre} onError={setError} />
 
                 {/* Lien d'invitation : à transmettre si l'email n'a pas pu partir */}
                 <Dialog open={Boolean(invitation)} onClose={() => setInvitation(null)} maxWidth="sm" fullWidth>
@@ -423,9 +303,7 @@ export default function Utilisateurs() {
                         <Button variant="contained" onClick={() => setInvitation(null)}>{t('common.close')}</Button>
                     </DialogActions>
                 </Dialog>
-
             </Box>
         </DashboardLayout>
     );
 }
-
