@@ -24,6 +24,7 @@ Ce dossier décrit deux transformations :
 | [12-contre-expertise.md](12-contre-expertise.md) | Contre-expertise par domaine (finance, vente, scolarité, sécurité, exploitation, équipe, droit, produit, créateurs) : verdicts, corrections faites, découpage en trois tranches, décisions Q-15 à Q-23 | Chef de projet |
 | [13-offre-et-exploitation.md](13-offre-et-exploitation.md) | Décisions du 24 octobre : prix (5,40 MAD HT, 6,48 TTC), modèle et offre d'IA, contrat annuel, accompagnement, école pilote, engagements de service, deuxième personne en production, hébergement au Maroc, nom | Chef de projet |
 | [14-parite-moodle-classroom.md](14-parite-moodle-classroom.md) | Fonctions de Moodle et de Classroom pour les enseignants : inventaire, écarts, lots EC-1 à EC-12, chacun derrière un interrupteur par établissement | Chef de projet, groupes A et B |
+| [15-plan-de-developpement.md](15-plan-de-developpement.md) | Plan de développement pour les deux groupes : six vagues avec leur jalon, répartition A / B, charge, passages de relais, règles communes, décisions qui bloquent | Chef de projet, groupes A et B |
 | [10-verification.md](10-verification.md) | Traçabilité, invariants testés, analyse des défaillances, contradictions trouvées et levées, relecture point par point du 23 octobre (§ 10.4.1 : 25 corrections), questions | Chef de projet |
 
 Les diagrammes sont écrits en Mermaid : GitHub les affiche directement. Ils font partie du plan : un changement de conception commence par le diagramme.
