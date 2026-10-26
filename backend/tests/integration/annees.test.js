@@ -81,6 +81,19 @@ describe("Les groupes d'un étudiant", () => {
         expect(res.body.map((c) => c.nom_groupe)).toEqual(["ANN-3A"]);
     });
 
+    test("l'administration filtre la liste et l'arbre des groupes par année (?id_annee)", async () => {
+        const admin = await loginAs(await createUser("admin"));
+        const liste = await admin.get(`/api/groupes?id_annee=${annees.passee.id_annee}&id_filiere=${groupes.passe.id_filiere}`);
+        expect(liste.status).toBe(200);
+        expect(liste.body.data.map((g) => g.nom_groupe)).toEqual(["ANN-2A"]);
+        const arbre = await admin.get(`/api/groupes/arbre?id_annee=${annees.courante.id_annee}&id_filiere=${groupes.courant.id_filiere}`);
+        expect(arbre.status).toBe(200);
+        expect(arbre.body.map((g) => g.nom_groupe)).toEqual(["ANN-3A"]);
+        // Sans le paramètre, toutes les années, y compris le groupe d'année inconnue
+        const toutes = await admin.get(`/api/groupes/arbre?id_filiere=${groupes.passe.id_filiere}`);
+        expect(toutes.body.map((g) => g.nom_groupe).sort()).toEqual(["ANN-2A", "ANN-3A", "ANN-X"]);
+    });
+
     test("sans année en cours définie, rien n'est filtré", async () => {
         await annees.courante.update({ active: false, date_debut: "2030-09-01", date_fin: "2031-08-31" });
         try {

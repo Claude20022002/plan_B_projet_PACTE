@@ -29,7 +29,8 @@ export const getAllGroupes = asyncHandler(async (req, res) => {
     const { page, limit, offset } = getPaginationParams(req, 10);
 
     const where = {};
-    for (const filtre of ["id_filiere", "niveau", "annee_scolaire", "type_groupe", "annee"]) {
+    // id_annee : sélecteur d'année de l'administration (lot ME-18) ; sans lui, toutes les années
+    for (const filtre of ["id_filiere", "niveau", "annee_scolaire", "id_annee", "type_groupe", "annee"]) {
         if (req.query[filtre]) where[filtre] = req.query[filtre];
     }
 
@@ -44,11 +45,12 @@ export const getAllGroupes = asyncHandler(async (req, res) => {
     res.json(createPaginationResponse(groupes, count, page, limit));
 });
 
-// 🌳 Arbre des groupes : promotions → TD → TP (par filière et année scolaire facultatives)
+// 🌳 Arbre des groupes : promotions → TD → TP (par filière et année facultatives)
 export const getArbreGroupes = asyncHandler(async (req, res) => {
     const where = {};
     if (req.query.id_filiere) where.id_filiere = req.query.id_filiere;
     if (req.query.annee_scolaire) where.annee_scolaire = req.query.annee_scolaire;
+    if (req.query.id_annee) where.id_annee = req.query.id_annee;
 
     const groupes = await Groupe.findAll({ where, include: [{ model: Filiere, as: "filiere", attributes: ["id_filiere", "code_filiere", "nom_filiere"] }] });
     res.json(construireArbre(groupes));
