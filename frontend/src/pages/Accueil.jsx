@@ -7,9 +7,12 @@ import { LANGUAGES } from '../i18n';
 import { ds } from '../design-system/tokens';
 import { FlapTiles } from '../design-system/board';
 import useTitreOnglet from '../hooks/useTitreOnglet';
+import LogoEcole from '../components/common/LogoEcole';
+import { identiteEcole } from '../services/etablissement';
+import { photosEcole } from '../design-system/photosEcole';
 
 /**
- * Photo réelle de l'école (hestim.ma) encadrée comme le panneau, légendée par une étiquette
+ * Photo réelle de l'école (design-system/photosEcole.js) encadrée comme le panneau, légendée par une étiquette
  * de quai en capitales condensées.
  */
 function PhotoWithCaption({ src, alt, caption, sx, objectPosition = '50% 50%', eager = false }) {
@@ -56,8 +59,9 @@ function PhotoWithCaption({ src, alt, caption, sx, objectPosition = '50% 50%', e
 }
 
 /**
- * Accueil public : le panneau HESTIM Planner et ce qu'il affiche.
+ * Accueil public : le panneau de l'école (« HESTIM Planner », « EMSI Planner ») et ce qu'il affiche.
  * Les fonctionnalités sont des lignes du panneau ; aucune donnée ni statistique inventée.
+ * Les photos n'apparaissent que si l'école en a.
  */
 export default function Accueil() {
   const { t, i18n } = useTranslation();
@@ -65,6 +69,8 @@ export default function Accueil() {
   const { isAuthenticated, user } = useAuth();
   useTitreOnglet();
   const features = t('landing.features', { returnObjects: true });
+  const ecole = identiteEcole();
+  const photos = photosEcole(ecole.nom_court);
 
   const enter = () => navigate(isAuthenticated && user?.role ? `/dashboard/${user.role}` : '/connexion');
 
@@ -75,7 +81,7 @@ export default function Accueil() {
         sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 2, px: { xs: 2, md: 6 }, py: 2, bgcolor: ds.board.frame }}
       >
         <Box sx={{ bgcolor: ds.white, borderRadius: `${ds.radius.md}px`, px: 1.25, py: 0.75, display: 'inline-flex' }}>
-          <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: { xs: 24, md: 28 }, display: 'block' }} />
+          <LogoEcole hauteur={{ xs: 24, md: 28 }} />
         </Box>
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
           <ToggleButtonGroup
@@ -117,9 +123,12 @@ export default function Accueil() {
         <Box sx={{ display: 'grid', gap: { xs: 4, md: 6 }, gridTemplateColumns: { xs: '1fr', md: '1.15fr 1fr' }, alignItems: 'center' }}>
           <Box>
             <Typography component="h1" sx={{ m: 0 }}>
-              <Box component="span" sx={{ display: 'block' }}>
-                <FlapTiles value="HESTIM" size="clamp(2.5rem, 8vw, 5rem)" />
-              </Box>
+              {/* « Planner » seul pour une installation sans école : pas de ligne en double */}
+              {ecole.nom_court !== 'Planner' && (
+                <Box component="span" sx={{ display: 'block' }}>
+                  <FlapTiles value={ecole.nom_court.toUpperCase()} size="clamp(2.5rem, 8vw, 5rem)" />
+                </Box>
+              )}
               <Box component="span" sx={{ display: 'block', mt: 1.5 }}>
                 <FlapTiles value="PLANNER" size="clamp(2.5rem, 8vw, 5rem)" color={ds.brand.orange} />
               </Box>
@@ -146,14 +155,16 @@ export default function Accueil() {
         </Box>
 
         {/* La salle réelle : ce que le panneau organise */}
-        <PhotoWithCaption
-          src="/img/hestim/seance-salle.jpg"
-          alt={t('landing.photos.sessionAlt')}
-          caption={t('landing.photos.session')}
-          sx={{ mt: { xs: 6, md: 9 }, height: { xs: 220, sm: 300, md: 380 } }}
-          objectPosition="50% 60%"
-          eager
-        />
+        {photos && (
+          <PhotoWithCaption
+            src={photos.salle}
+            alt={t('landing.photos.sessionAlt')}
+            caption={t('landing.photos.session')}
+            sx={{ mt: { xs: 6, md: 9 }, height: { xs: 220, sm: 300, md: 380 } }}
+            objectPosition="50% 60%"
+            eager
+          />
+        )}
 
         <Box component="section" aria-labelledby="features-title" sx={{ mt: { xs: 7, md: 11 } }}>
           <Box sx={{ bgcolor: ds.board.frame, p: { xs: '6px', sm: '8px' }, borderRadius: `${ds.radius.lg}px` }}>
@@ -193,26 +204,28 @@ export default function Accueil() {
           </Box>
         </Box>
 
-        <Box component="section" aria-label={t('landing.photos.galleryLabel')} sx={{ mt: { xs: 5, md: 7 }, display: 'grid', gap: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
-          <PhotoWithCaption
-            src="/img/hestim/incubateur-ciel.jpg"
-            alt={t('landing.photos.incubatorAlt')}
-            caption={t('landing.photos.incubator')}
-            sx={{ height: { xs: 220, md: 300 } }}
-            objectPosition="30% 40%"
-          />
-          <PhotoWithCaption
-            src="/img/hestim/campus-batiment.jpg"
-            alt={t('landing.photos.campusAlt')}
-            caption={t('landing.photos.campus')}
-            sx={{ height: { xs: 220, md: 300 } }}
-            objectPosition="50% 35%"
-          />
-        </Box>
+        {photos && (
+          <Box component="section" aria-label={t('landing.photos.galleryLabel')} sx={{ mt: { xs: 5, md: 7 }, display: 'grid', gap: { xs: 2, md: 3 }, gridTemplateColumns: { xs: '1fr', sm: '1fr 1fr' } }}>
+            <PhotoWithCaption
+              src={photos.incubateur}
+              alt={t('landing.photos.incubatorAlt')}
+              caption={t('landing.photos.incubator')}
+              sx={{ height: { xs: 220, md: 300 } }}
+              objectPosition="30% 40%"
+            />
+            <PhotoWithCaption
+              src={photos.campus}
+              alt={t('landing.photos.campusAlt')}
+              caption={t('landing.photos.campus')}
+              sx={{ height: { xs: 220, md: 300 } }}
+              objectPosition="50% 35%"
+            />
+          </Box>
+        )}
       </Box>
 
       <Box component="footer" sx={{ px: { xs: 2, md: 6 }, py: 3, borderTop: `1px solid ${ds.board.seam}`, color: ds.board.letterDim, fontSize: '0.875rem' }}>
-        © {new Date().getFullYear()} HESTIM Planner · {t('landing.footer')}
+        © {new Date().getFullYear()} {ecole.produit} · {t('landing.footer')}
       </Box>
     </Box>
   );

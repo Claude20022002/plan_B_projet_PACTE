@@ -38,7 +38,7 @@ router.get("/:fichier", async (req, res, next) => {
         if (!ics) return res.status(404).type("text/plain").send("Calendrier introuvable");
         res.set({
             "Content-Type": "text/calendar; charset=utf-8",
-            "Content-Disposition": 'inline; filename="hestim.ics"',
+            "Content-Disposition": 'inline; filename="planner.ics"',
             "Cache-Control": "private, max-age=900",
         });
         return res.send(ics);

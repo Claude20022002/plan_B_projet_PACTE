@@ -20,6 +20,7 @@ import { STATUTS_ACTIFS, jourDe, minutes, seChevauchent } from "./affectationRul
 import { ancetres } from "./groupes.js";
 import { appliquerVersionPubliee } from "../calendrier/versionPubliee.js";
 import { appliquerRamadan } from "./ramadan.js";
+import { identite } from "../etablissement/identite.js";
 
 /**
  * Emploi du temps mensuel au format HESTIM (phase P4), calqué sur l'EDT officiel d'octobre 2026
@@ -87,6 +88,8 @@ const evenementDeLaClasse = (e, { groupe, idsGroupes, campusDuMois }) => {
 };
 
 export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
+    // Préfixe des salles du format officiel (« HESTIM-GANDHI ») : le nom court de l'école
+    const prefixeCampus = (await identite()).nom_court.toUpperCase();
     if (!/^\d{4}-\d{2}$/.test(String(mois || ""))) throw new ErreurMetier("Mois attendu au format AAAA-MM", 400);
     const groupe = await Groupe.findByPk(id_groupe, { include: [{ model: Filiere, as: "filiere" }] });
     if (!groupe) throw new ErreurMetier("Groupe introuvable", 404);
@@ -194,7 +197,7 @@ export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
                         matiere: seance.enseignement?.libelle || seance.cours?.nom_cours,
                         type_composante: seance.enseignement?.composante?.type ?? null,
                         enseignants: [nomEnseignant(seance.enseignant), ...co].join(" / "),
-                        salle: distanciel ? null : { campus: `HESTIM-${String(seance.salle.campus?.nom ?? "").toUpperCase()}`, detail: `${seance.salle.etage != null ? `Étage ${seance.salle.etage} - ` : ""}${seance.salle.nom_salle}` },
+                        salle: distanciel ? null : { campus: `${prefixeCampus}-${String(seance.salle.campus?.nom ?? "").toUpperCase()}`, detail: `${seance.salle.etage != null ? `Étage ${seance.salle.etage} - ` : ""}${seance.salle.nom_salle}` },
                         distanciel,
                         mention: seance.enseignement?.composante?.mention ?? null,
                         premiere_seance: b?.premiere.id_affectation === seance.id_affectation,

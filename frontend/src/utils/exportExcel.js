@@ -1,5 +1,9 @@
 import * as XLSX from 'xlsx';
 import { aujourdhui } from '../../../shared/dates.js';
+import { identiteEcole } from '../services/etablissement';
+
+// « EMSI_seances_2026-10-25.xlsx » : le nom court de l'école, sans caractère interdit dans un nom de fichier
+const prefixeFichier = () => identiteEcole().nom_court.replace(/[^\p{L}\p{N}-]+/gu, '_');
 
 /**
  * Exporte un tableau de données vers un fichier Excel (.xlsx).
@@ -41,7 +45,7 @@ export function exportToExcel(data, columns, filename, sheetName = 'Export') {
     XLSX.utils.book_append_sheet(wb, ws, sheetName.slice(0, 31)); // max 31 chars
 
     const date = aujourdhui();
-    XLSX.writeFile(wb, `HESTIM_${filename}_${date}.xlsx`);
+    XLSX.writeFile(wb, `${prefixeFichier()}_${filename}_${date}.xlsx`);
 }
 
 /**
@@ -68,7 +72,7 @@ export function exportMultiSheet(sheets, filename) {
     }
 
     const date = aujourdhui();
-    XLSX.writeFile(wb, `HESTIM_${filename}_${date}.xlsx`);
+    XLSX.writeFile(wb, `${prefixeFichier()}_${filename}_${date}.xlsx`);
 }
 
 // ── Colonnes prédéfinies pour chaque entité ────────────────────────────────────
