@@ -95,15 +95,25 @@ Restaurer sans vider la base (sans l'étape 3) laisserait en place les tables de
 
 1. Installer les deux outils : `apt install rclone gnupg`.
 2. Déclarer la destination hors du serveur : `rclone config` (un autre serveur en SFTP, un stockage objet ou un Drive ; `rclone` connaît les trois). Noter le nom donné, par exemple `hors-site`.
-3. Créer la phrase de chiffrement, lisible par `root` seul :
-   `openssl rand -base64 48 > /root/hestim-sauvegarde.cle && chmod 600 /root/hestim-sauvegarde.cle`
-   **La copier aussi ailleurs que sur le serveur** (coffre de mots de passe du chef de projet). Sans elle, aucune sauvegarde ne se relit ; si elle n'existe que sur le serveur, elle disparaît avec lui.
+3. Créer la paire de clés de chiffrement **sur le PC du chef de projet, jamais sur le serveur** (Git Bash, qui fournit `gpg`). Le serveur ne reçoit que la clé publique : il peut chiffrer, pas relire. Un intrus qui prend le serveur ne lit donc aucune sauvegarde (revue d'expert, fichier 16, B-1).
+
+   ```bash
+   gpg --quick-generate-key "Planner sauvegardes <sauvegardes@planner.invalid>" default default never
+   # gpg demande une phrase de protection de la clé privée : la noter dans le coffre de mots de passe
+   gpg --armor --export sauvegardes@planner.invalid > planner-sauvegardes.pub
+   gpg --armor --export-secret-keys sauvegardes@planner.invalid > planner-sauvegardes-PRIVEE.asc
+   scp planner-sauvegardes.pub root@<serveur>:/root/hestim-sauvegarde.pub
+   ```
+
+   **Ranger `planner-sauvegardes-PRIVEE.asc` hors ligne** (clé USB dans un lieu sûr, et une seconde copie ailleurs), avec sa phrase dans le coffre, puis l'effacer du PC s'il n'est pas lui-même sûr. Sans la clé privée, aucune sauvegarde ne se relit.
 4. Écrire `/root/hestim-sauvegarde.conf` (`chmod 600`) :
 
    ```bash
-   PHRASE=/root/hestim-sauvegarde.cle
+   CLE_PUBLIQUE=/root/hestim-sauvegarde.pub
    DESTINATION=hors-site:hestim-sauvegardes
    ```
+
+   Ancien mode, encore accepté : `PHRASE=/root/hestim-sauvegarde.cle` (phrase créée par `openssl rand -base64 48`), utilisé seulement sans `CLE_PUBLIQUE`. La phrase est alors sur le serveur : à éviter.
 
 5. Lancer une première fois à la main et lire la sortie : `bash /opt/hestim/deploy/vps/sauvegarder.sh ; echo "code $?"`. Attendu : deux lignes « ok », « envoyé vers … », code 0.
 6. Programmer la tâche (`crontab -e`) :
@@ -111,24 +121,42 @@ Restaurer sans vider la base (sans l'étape 3) laisserait en place les tables de
 
 **Destination Backblaze B2 (choisie le 24 octobre 2026, à titre provisoire).** Dans la console B2 :
 
-1. *Buckets* → *Create a Bucket* : nom unique (par exemple `planner-sauvegardes-<suffixe>`), *Files* **Private**, *Default Encryption* **Enable**, *Object Lock* laissé désactivé.
+1. *Buckets* → *Create a Bucket* : nom unique (par exemple `planner-sauvegardes-<suffixe>`), *Files* **Private**, *Default Encryption* **Enable**, *Object Lock* **Enable**, rétention par défaut **30 jours** en mode *Governance*. Un fichier verrouillé ne peut être ni effacé ni remplacé avant 30 jours, même avec la clé du serveur : un intrus ne peut pas détruire les sauvegardes déjà envoyées. Pour un compartiment déjà créé sans verrouillage, l'activer dans ses réglages si la console le propose, sinon créer un nouveau compartiment et changer `DESTINATION`.
 2. *Lifecycle Settings* du compartiment → règle personnalisée sur tout le compartiment : cacher les fichiers **30 jours** après leur envoi, les effacer **7 jours** après. C'est B2 qui fait la rétention ; les 7 jours laissent le temps de voir un incident avant que les fichiers disparaissent.
 3. *Application Keys* → *Add a New Application Key* : limitée à **ce compartiment**, accès *Read and Write*, puis retirer le droit d'effacer si la console le permet (capacités voulues : `listFiles`, `readFiles`, `writeFiles`, **sans `deleteFiles`**). Noter `keyID` et `applicationKey` : la clé ne s'affiche qu'une fois.
 
 Sur le serveur, à l'étape 2 ci-dessus : `rclone config create b2-planner b2 account <keyID> key <applicationKey>`, puis `rclone lsd b2-planner:` (doit lister le compartiment). Dans `/root/hestim-sauvegarde.conf` :
 
 ```bash
-PHRASE=/root/hestim-sauvegarde.cle
+CLE_PUBLIQUE=/root/hestim-sauvegarde.pub
 DESTINATION=b2-planner:planner-sauvegardes-<suffixe>
 JOURS=30
 SUPPRESSION_DISTANTE=non
 ```
 
-Avec une version du script antérieure à `SUPPRESSION_DISTANTE`, garder une clé qui peut effacer : sinon l'effacement des vieux fichiers échoue et le script rend le code 3.
+`SUPPRESSION_DISTANTE=non` est obligatoire avec le verrouillage d'objet : le script ne doit rien effacer à distance, B2 s'en charge. Avec une version du script antérieure à `SUPPRESSION_DISTANTE`, garder une clé qui peut effacer : sinon l'effacement des vieux fichiers échoue et le script rend le code 3.
+
+**Passer de la phrase à la clé publique (serveur déjà en service).** Faire l'étape 3 ci-dessus sur le PC, ajouter `CLE_PUBLIQUE=/root/hestim-sauvegarde.pub` dans `/root/hestim-sauvegarde.conf`, lancer le script à la main : le journal doit dire « chiffrement pour la clé publique ». Les sauvegardes déjà envoyées restent chiffrées par l'ancienne phrase : vérifier que sa copie hors ligne existe, puis **retirer la phrase du serveur** (`shred -u /root/hestim-sauvegarde.cle` et la ligne `PHRASE` du fichier de réglages). Tant qu'elle y reste, un intrus peut relire les anciennes sauvegardes.
 
 **Lire le résultat.** Code 0 : tout est fait. Code 1 : un export a échoué (le journal dit lequel). Code 3 : les sauvegardes sont faites mais **ne sont pas sorties du serveur**. Regarder `/var/log/hestim-sauvegarde.log` chaque semaine : une sauvegarde que personne ne regarde finit par ne plus se faire.
 
-**Restaurer.** Récupérer le fichier voulu (`rclone copy hors-site:hestim-sauvegardes/mysql-<date>.sql.gz.gpg /root/`), puis :
+**Restaurer une sauvegarde chiffrée par la clé publique.** Le déchiffrement se fait **sur le PC qui détient la clé privée** (importée une fois par `gpg --import planner-sauvegardes-PRIVEE.asc`) ; la clé privée ne va jamais sur le serveur. Dans Git Bash, sur le PC :
+
+```bash
+# 1. Le serveur récupère le fichier chiffré, le PC le copie
+ssh root@<serveur> "rclone copy b2-planner:planner-sauvegardes-<suffixe>/mysql-<date>.sql.gz.gpg /root/restauration/"
+scp root@<serveur>:/root/restauration/mysql-<date>.sql.gz.gpg .
+
+# 2. Le PC déchiffre et renvoie l'export compressé par SSH, sans fichier en clair sur le PC
+gpg -d mysql-<date>.sql.gz.gpg | ssh root@<serveur> "cat > /root/restauration/mysql-<date>.sql.gz"
+
+# 3. Le serveur restaure (bases MySQL : Planner et bibliothèque), puis efface l'export en clair
+ssh root@<serveur> "gunzip -c /root/restauration/mysql-<date>.sql.gz | docker exec -i hestim_mysql sh -c 'MYSQL_PWD=\"\$MYSQL_ROOT_PASSWORD\" mysql -uroot' && shred -u /root/restauration/mysql-<date>.sql.gz"
+```
+
+La base du quiz se restaure de la même façon, avec `quiz-<date>` et la commande `psql` ci-dessous.
+
+**Restaurer une sauvegarde de l'ancien mode (phrase).** Récupérer le fichier voulu (`rclone copy hors-site:hestim-sauvegardes/mysql-<date>.sql.gz.gpg /root/`), puis :
 
 ```bash
 # Bases MySQL (Planner et bibliothèque). L'export recrée chaque base si elle manque.

@@ -4,14 +4,18 @@
 #
 # Ce que fait le script :
 #   1. exporte les bases MySQL (Planner et la bibliothèque) et la base PostgreSQL du quiz ;
-#   2. chiffre chaque export (GPG, AES-256) : une sauvegarde contient des données personnelles
-#      et quitte le serveur ;
+#   2. chiffre chaque export (GPG) : une sauvegarde contient des données personnelles et quitte
+#      le serveur. De préférence pour une clé publique, dont la clé privée n'est PAS sur le
+#      serveur : un intrus qui prend le serveur ne peut alors relire aucune sauvegarde ;
 #   3. envoie les fichiers chiffrés hors du serveur avec rclone ;
 #   4. ne garde que 14 jours de sauvegardes, sur le serveur comme à distance.
 # Il ne sauvegarde pas les fichiers (documents de la bibliothèque, images des quiz).
 #
 # Réglages, dans /root/hestim-sauvegarde.conf (lisible par root seul) :
-#   PHRASE=/root/hestim-sauvegarde.cle   fichier contenant la phrase de chiffrement (obligatoire)
+#   CLE_PUBLIQUE=/root/hestim-sauvegarde.pub   clé publique GPG (format texte) pour laquelle chiffrer ;
+#                                        la clé privée reste hors du serveur (recommandé)
+#   PHRASE=/root/hestim-sauvegarde.cle   ancien mode, utilisé seulement sans CLE_PUBLIQUE : phrase
+#                                        de chiffrement symétrique, présente sur le serveur
 #   DESTINATION=nom:chemin               destination rclone hors du serveur (voir « rclone config »)
 #   JOURS=14                             durée de rétention
 #   SUPPRESSION_DISTANTE=oui             « non » : le script n'efface rien à distance. À choisir quand
@@ -19,9 +23,10 @@
 #                                        Backblaze B2 sans « deleteFiles ») et que la destination
 #                                        efface elle-même les vieux fichiers (règle de cycle de vie) :
 #                                        un intrus qui prend le serveur ne peut alors pas détruire
-#                                        les sauvegardes déjà envoyées.
-# La phrase de chiffrement doit aussi être gardée AILLEURS que sur le serveur : sans elle, aucune
-# sauvegarde ne se relit. Restauration : DEPLOIEMENT.md, « Sauvegarde quotidienne ».
+#                                        les sauvegardes déjà envoyées. Obligatoire avec le
+#                                        verrouillage d'objet de B2 (Object Lock).
+# La clé privée (ou, dans l'ancien mode, la phrase) doit être gardée AILLEURS que sur le serveur :
+# sans elle, aucune sauvegarde ne se relit. Restauration : DEPLOIEMENT.md, « Sauvegarde quotidienne ».
 #
 # Codes de sortie : 0 tout est fait ; 1 un export ou le chiffrement a échoué ; 3 les sauvegardes
 # sont faites mais ne sont PAS sorties du serveur (pas de destination, ou envoi en échec).
@@ -32,6 +37,7 @@ CONF="${CONF:-/root/hestim-sauvegarde.conf}"
 [ -f "$CONF" ] && . "$CONF"
 DOSSIER="${DOSSIER:-/root/sauvegardes/quotidien}"
 JOURS="${JOURS:-14}"
+CLE_PUBLIQUE="${CLE_PUBLIQUE:-}"
 PHRASE="${PHRASE:-}"
 DESTINATION="${DESTINATION:-}"
 SUPPRESSION_DISTANTE="${SUPPRESSION_DISTANTE:-oui}"
@@ -42,7 +48,18 @@ DATE="$(date +%Y%m%d-%H%M%S)"
 journal() { echo "$(date '+%F %T') $*"; }
 [[ "$JOURS" =~ ^[1-9][0-9]*$ ]] || { journal "JOURS doit être un entier d'au moins 1"; exit 1; }
 [[ "$SUPPRESSION_DISTANTE" =~ ^(oui|non)$ ]] || { journal "SUPPRESSION_DISTANTE vaut « oui » ou « non »"; exit 1; }
-[ -s "$PHRASE" ] || { journal "ÉCHEC : phrase de chiffrement absente ($CONF, réglage PHRASE)"; exit 1; }
+# Chiffrement : pour la clé publique si elle est réglée, sinon avec la phrase (ancien mode)
+if [ -n "$CLE_PUBLIQUE" ]; then
+    [ -s "$CLE_PUBLIQUE" ] || { journal "ÉCHEC : clé publique introuvable ($CLE_PUBLIQUE)"; exit 1; }
+    CHIFFRER=(--encrypt --recipient-file "$CLE_PUBLIQUE" --trust-model always)
+    journal "chiffrement pour la clé publique $CLE_PUBLIQUE"
+elif [ -s "$PHRASE" ]; then
+    CHIFFRER=(--symmetric --cipher-algo AES256 --pinentry-mode loopback --passphrase-file "$PHRASE")
+    journal "ATTENTION : chiffrement par phrase, présente sur le serveur ; préférer CLE_PUBLIQUE"
+else
+    journal "ÉCHEC : ni CLE_PUBLIQUE ni PHRASE dans $CONF"
+    exit 1
+fi
 umask 077
 mkdir -p "$DOSSIER"
 
@@ -54,7 +71,7 @@ exporter() {
     local nom="$1"
     local cible="$DOSSIER/$nom-$DATE.sql.gz.gpg"
     shift
-    if "$@" | gzip | gpg --batch --quiet --yes --symmetric --cipher-algo AES256 --pinentry-mode loopback --passphrase-file "$PHRASE" -o "$cible"; then
+    if "$@" | gzip | gpg --batch --quiet --yes "${CHIFFRER[@]}" -o "$cible"; then
         journal "ok $(basename "$cible") ($(du -h "$cible" | cut -f1))"
     else
         rm -f "$cible"
