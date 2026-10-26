@@ -51,7 +51,7 @@ export default function Resultats() {
             {donnees.moi ? (
               <View style={styles.score} accessible accessibilityLabel={t('app.resultats.monScoreLu', { score: donnees.moi.score, count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}>
                 <Text style={styles.scoreValeur}>{nombre(donnees.moi.score)}</Text>
-                <Text style={styles.scoreUnite}>pts</Text>
+                <Text style={styles.scoreUnite}>{t('app.resultats.unitePoints', { count: donnees.moi.score })}</Text>
                 <View style={{ flex: 1 }} />
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={styles.rang}>{t('app.resultats.rang', { count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}</Text>

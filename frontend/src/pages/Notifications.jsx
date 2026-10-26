@@ -26,6 +26,7 @@ import { notificationAPI } from "../services/api";
 import { useAuth } from "../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { useTranslation } from "react-i18next";
+import { localeEcran } from '../utils/dates';
 
 const TYPE_COLOR = {
     success: "success",
@@ -200,15 +201,8 @@ export default function Notifications() {
                                                             size="small"
                                                             color={TYPE_COLOR[notif.type_notification] || "default"}
                                                         />
-                                                        {notif.lien && (
-                                                            <Chip
-                                                                label={t("notifs.cliquable")}
-                                                                size="small"
-                                                                variant="outlined"
-                                                                color="primary"
-                                                                icon={<OpenInNew sx={{ fontSize: "12px !important" }} />}
-                                                            />
-                                                        )}
+                                                        {/* La ligne est le lien : une icône suffit, plus d'étiquette « Cliquable » (recette m-8) */}
+                                                        {notif.lien && <OpenInNew aria-hidden color="primary" sx={{ fontSize: 16 }} />}
                                                     </Box>
                                                 }
                                                 secondary={
@@ -227,7 +221,7 @@ export default function Notifications() {
                                                             component="span"
                                                             sx={{ display: "block", mt: 0.5 }}
                                                         >
-                                                            {new Date(notif.date_envoi || notif.date_creation).toLocaleString(i18n.language)}
+                                                            {new Date(notif.date_envoi || notif.date_creation).toLocaleString(localeEcran(i18n.language))}
                                                         </Typography>
                                                     </Box>
                                                 }

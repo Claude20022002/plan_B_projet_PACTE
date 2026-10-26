@@ -31,6 +31,7 @@ import { coursAPI, examenAPI, groupeAPI, salleAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { fetchAll } from '../../utils/fetchAll';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 const hhmm = (h) => String(h || '').slice(0, 5);
 const VIDE = { titre: '', nature: 'examen', cours: null, date: '', heure_debut: '09:00', heure_fin: '11:00', groupes: [], salles: [] };
@@ -50,7 +51,7 @@ export default function Examens() {
     const [dialog, setDialog] = useState(null);
     const [violations, setViolations] = useState(null);
 
-    const formatDate = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }), [i18n.language]);
+    const formatDate = useMemo(() => new Intl.DateTimeFormat(localeEcran(i18n.language), { weekday: 'short', day: 'numeric', month: 'short' }), [i18n.language]);
 
     const charger = useCallback(async () => {
         try {

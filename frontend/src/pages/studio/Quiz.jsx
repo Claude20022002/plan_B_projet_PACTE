@@ -7,6 +7,7 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
 import { passationAPI } from '../../services/studioApi';
 import { sessionsJeuAPI } from '../../services/api';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * « Quiz » de l'étudiant : rejoindre par son code (ou par le lien /quiz/code/XXXXXX que
@@ -112,7 +113,7 @@ export default function Quiz() {
     }
   };
 
-  const date = (d) => new Date(d).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const date = (d) => new Date(d).toLocaleDateString(localeEcran(i18n.language), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   return (
     <DashboardLayout>

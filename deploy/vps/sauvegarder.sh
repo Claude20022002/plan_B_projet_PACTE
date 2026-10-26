@@ -14,6 +14,12 @@
 #   PHRASE=/root/hestim-sauvegarde.cle   fichier contenant la phrase de chiffrement (obligatoire)
 #   DESTINATION=nom:chemin               destination rclone hors du serveur (voir « rclone config »)
 #   JOURS=14                             durée de rétention
+#   SUPPRESSION_DISTANTE=oui             « non » : le script n'efface rien à distance. À choisir quand
+#                                        la clé de la destination n'a pas le droit d'effacer (clé
+#                                        Backblaze B2 sans « deleteFiles ») et que la destination
+#                                        efface elle-même les vieux fichiers (règle de cycle de vie) :
+#                                        un intrus qui prend le serveur ne peut alors pas détruire
+#                                        les sauvegardes déjà envoyées.
 # La phrase de chiffrement doit aussi être gardée AILLEURS que sur le serveur : sans elle, aucune
 # sauvegarde ne se relit. Restauration : DEPLOIEMENT.md, « Sauvegarde quotidienne ».
 #
@@ -28,12 +34,14 @@ DOSSIER="${DOSSIER:-/root/sauvegardes/quotidien}"
 JOURS="${JOURS:-14}"
 PHRASE="${PHRASE:-}"
 DESTINATION="${DESTINATION:-}"
+SUPPRESSION_DISTANTE="${SUPPRESSION_DISTANTE:-oui}"
 CONTENEUR_MYSQL="${CONTENEUR_MYSQL:-hestim_mysql}"
 CONTENEUR_QUIZ="${CONTENEUR_QUIZ:-hestim_quiz_db}"
 DATE="$(date +%Y%m%d-%H%M%S)"
 
 journal() { echo "$(date '+%F %T') $*"; }
 [[ "$JOURS" =~ ^[1-9][0-9]*$ ]] || { journal "JOURS doit être un entier d'au moins 1"; exit 1; }
+[[ "$SUPPRESSION_DISTANTE" =~ ^(oui|non)$ ]] || { journal "SUPPRESSION_DISTANTE vaut « oui » ou « non »"; exit 1; }
 [ -s "$PHRASE" ] || { journal "ÉCHEC : phrase de chiffrement absente ($CONF, réglage PHRASE)"; exit 1; }
 umask 077
 mkdir -p "$DOSSIER"
@@ -74,10 +82,15 @@ fi
 find "$DOSSIER" -maxdepth 1 -type f -name '*.sql.gz.gpg' -mtime "+$JOURS" -print -delete | sed 's/^/supprimé (plus de '"$JOURS"' jours) : /'
 
 # Envoi hors du serveur. Un export manquant n'empêche pas d'envoyer ceux qui ont réussi.
+# Sans suppression distante, la destination applique sa propre rétention (voir le réglage).
+nettoyer_distant() {
+    [ "$SUPPRESSION_DISTANTE" = "non" ] && return 0
+    rclone delete "$DESTINATION" --include '*.sql.gz.gpg' --min-age "${JOURS}d"
+}
 SORTIES=0
 if [ -z "$DESTINATION" ]; then
     journal "ATTENTION : aucune DESTINATION dans $CONF, les sauvegardes restent sur le serveur"
-elif rclone copy "$DOSSIER" "$DESTINATION" --include '*.sql.gz.gpg' --max-age "${JOURS}d" && rclone delete "$DESTINATION" --include '*.sql.gz.gpg' --min-age "${JOURS}d"; then
+elif rclone copy "$DOSSIER" "$DESTINATION" --include '*.sql.gz.gpg' --max-age "${JOURS}d" && nettoyer_distant; then
     journal "envoyé vers $DESTINATION"
     SORTIES=1
 else

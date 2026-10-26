@@ -8,8 +8,9 @@ import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import TableauSeancesClasse from './TableauSeancesClasse';
 import useExploration from './useExploration';
 import useImpressionClasses from './useImpressionClasses';
+import { localeEcran } from '../../utils/dates';
 
-const libelleMois = (mois, langue) => new Date(`${mois}-01T12:00:00`).toLocaleDateString(langue === 'en' ? 'en-GB' : 'fr-FR', { month: 'long', year: 'numeric' });
+const libelleMois = (mois, langue) => new Date(`${mois}-01T12:00:00`).toLocaleDateString(localeEcran(langue), { month: 'long', year: 'numeric' });
 
 /**
  * « Explorer les emplois du temps » après une génération (R-4, décision n° 4 : les classes

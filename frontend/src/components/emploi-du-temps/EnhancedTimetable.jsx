@@ -20,6 +20,7 @@ import { byStart, toBoardSession } from '../../utils/session';
 import CarteSeance from './CarteSeance';
 import FicheSeance from './FicheSeance';
 import ListeSemaine from './ListeSemaine';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Emploi du temps hebdomadaire, séances en cartes claires (R-7) :
@@ -90,7 +91,7 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
   }));
 
   const weekLabel = t('board.weekTitle', {
-    date: new Intl.DateTimeFormat(i18n.language, { day: 'numeric', month: 'long', year: 'numeric' }).format(weekStart),
+    date: new Intl.DateTimeFormat(localeEcran(i18n.language), { day: 'numeric', month: 'long', year: 'numeric' }).format(weekStart),
   });
 
   return (

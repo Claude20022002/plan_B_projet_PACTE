@@ -13,6 +13,9 @@
  * Variables (facultatives) : DEMO_DB_PORT (3311, conteneur hestim_mysql_test_cours), DEMO_DB
  * (hestim_demo), DB_USER et DB_PASSWORD (ceux des conteneurs de test), DEMO_PORT_API (5091),
  * DEMO_PORT_SITE (5194), DEMO_PORT_SOLVEUR (8091). `--neuf` repart d'une base vide.
+ * Garde-fous : la base est sur cette machine (DB_HOST local) et son nom contient « demo » ; sinon
+ * le script s'arrête avant toute connexion (un DB_HOST resté d'une autre session, un DEMO_DB mal
+ * choisi avec `--neuf` supprimeraient ou migreraient une vraie base).
  * Ctrl+C arrête le serveur, le site et le solveur.
  */
 import crypto from "node:crypto";
@@ -58,6 +61,16 @@ const env = {
   QUIZ_URL: "",
   INTEGRATION_TOKEN: "",
 };
+
+const HOTES_LOCAUX = ["127.0.0.1", "localhost", "::1"];
+if (!HOTES_LOCAUX.includes(env.DB_HOST)) {
+  console.error(`Démonstration refusée : la base doit être sur cette machine (DB_HOST vaut « ${env.DB_HOST} »).`);
+  process.exit(1);
+}
+if (!/^\w*demo\w*$/i.test(base)) {
+  console.error(`Démonstration refusée : le nom de la base doit contenir « demo », en lettres, chiffres et _ (DEMO_DB vaut « ${base} »).`);
+  process.exit(1);
+}
 
 const enfants = [];
 const arreter = () => {

@@ -9,6 +9,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { ds } from '../design-system/tokens';
 import { aujourdhui } from '../../../shared/dates.js';
+import { localeEcran } from '../utils/dates';
 
 const hhmm = (h) => String(h || '').slice(0, 5);
 
@@ -26,7 +27,7 @@ export default function MesExamens() {
     const [examens, setExamens] = useState([]);
     const [loading, setLoading] = useState(true);
 
-    const formatDate = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), [i18n.language]);
+    const formatDate = useMemo(() => new Intl.DateTimeFormat(localeEcran(i18n.language), { weekday: 'long', day: 'numeric', month: 'long' }), [i18n.language]);
 
     useEffect(() => {
         (surveillant ? examenAPI.getMesSurveillances() : examenAPI.getMesExamens())

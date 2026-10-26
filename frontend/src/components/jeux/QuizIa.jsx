@@ -1,35 +1,32 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Skeleton, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
 import { quizIaAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
-import CreerQuizDialog from '../quiz/creation/CreerQuizDialog';
 import RelireQuiz from '../quiz/creation/RelireQuiz';
 import ListeMesQuiz from '../quiz/mesQuiz/ListeMesQuiz';
 import ListeQuizStudio from '../quiz/mesQuiz/ListeQuizStudio';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
+import { localeEcran } from '../../utils/dates';
 
 /**
- * « Mes quiz » de l'enseignant (page Activités) : « Créer un quiz » en un geste (générer, ou le
- * faire soi-même dans le Studio quiz de Planner), puis les quiz générés, à relire avant leur
- * création, les quiz du Studio (à diffuser d'ici, code et QR code), puis tous les quiz du service
- * de quiz, modifiables depuis Planner (IA-5).
- * @param {{ preselection?: { id_cours, id_groupe }, donnerEnDevoir?: (generation) => void, ouvrirGeneration?: boolean }} props
- *   ouvrirGeneration : « Créer un quiz » s'ouvre d'emblée (arrivée depuis « Mes classes »)
+ * « Mes quiz » de l'enseignant (page Activités, avec les devoirs) : « Créer un quiz » ouvre la
+ * création du Studio quiz, où un sujet ou un document suffit, sans classe ni module (R-9). Puis les
+ * quiz générés pour l'ancien service, à relire avant leur création, les quiz du Studio (à diffuser
+ * d'ici, code et QR code), puis tous les quiz du service de quiz, modifiables depuis Planner (IA-5).
+ * @param {{ donnerEnDevoir?: (generation) => void }} props
  */
-export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouvrirGeneration = false }) {
+export default function PanneauQuizIa({ donnerEnDevoir }) {
   const { t, i18n } = useTranslation();
-  const [dispo, setDispo] = useState(null);
   const [generations, setGenerations] = useState(null);
-  const [creer, setCreer] = useState(false);
   const [ouverte, setOuverte] = useState(null); // { id, titre } de la génération relue
   const [nbStudio, setNbStudio] = useState(null); // quiz du Studio (null : pas encore chargés)
   const monte = useRef(true);
 
   const charger = useCallback(() => {
-    quizIaAPI.disponibilite().then((d) => monte.current && setDispo(d)).catch(() => monte.current && setDispo({ disponible: false }));
     quizIaAPI.lister().then((l) => monte.current && setGenerations(Array.isArray(l) ? l : [])).catch(() => monte.current && setGenerations([]));
   }, []);
 
@@ -41,11 +38,7 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
     };
   }, [charger]);
 
-  useEffect(() => {
-    if (ouvrirGeneration) setCreer(true);
-  }, [ouvrirGeneration]);
-
-  const date = (iso) => new Date(iso).toLocaleString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const date = (iso) => new Date(iso).toLocaleString(localeEcran(i18n.language), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const lampe = { pret: ds.board.letter, cree: ds.board.live, erreur: ds.brand.orange };
 
   return (
@@ -54,8 +47,8 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
         titre={t('jeux.quizIa.titre')}
         titreId="quiz-ia-titre"
         droite={
-          <Button size="small" variant="contained" startIcon={<Add />} sx={boutonPanneauPlein} onClick={() => setCreer(true)}>
-            {t('quizCreation.titre')}
+          <Button size="small" variant="contained" startIcon={<Add />} sx={boutonPanneauPlein} component={Link} to="/studio-quiz?nouveau=1">
+            {t('studio.banque.creer')}
           </Button>
         }
       >
@@ -88,17 +81,6 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
         <ListeQuizStudio onNombre={setNbStudio} />
         <ListeMesQuiz />
       </Panneau>
-      <CreerQuizDialog
-        ouvert={creer}
-        fermer={() => setCreer(false)}
-        preselection={preselection}
-        generation={dispo?.disponible ? dispo : null}
-        lancee={(id, sujet) => {
-          setCreer(false);
-          setOuverte({ id, titre: sujet });
-          charger();
-        }}
-      />
       <RelireQuiz
         id={ouverte?.id ?? null}
         titreInitial={ouverte?.titre ?? ''}

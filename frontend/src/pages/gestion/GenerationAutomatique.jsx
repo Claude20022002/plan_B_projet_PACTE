@@ -4,6 +4,7 @@ import { Paper, Tab, Tabs } from '@mui/material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import LancementGeneration from '../../components/generation/LancementGeneration';
 import VersionsGeneration from '../../components/generation/VersionsGeneration';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Génération automatique (phase E) : la semaine type est calculée par le service Timefold, puis
@@ -14,7 +15,7 @@ import VersionsGeneration from '../../components/generation/VersionsGeneration';
 export default function GenerationAutomatique() {
     const { t, i18n } = useTranslation();
     const [onglet, setOnglet] = useState(0);
-    const dateHeure = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { dateStyle: 'medium', timeStyle: 'short' }), [i18n.language]);
+    const dateHeure = useMemo(() => new Intl.DateTimeFormat(localeEcran(i18n.language), { dateStyle: 'medium', timeStyle: 'short' }), [i18n.language]);
 
     return (
         <DashboardLayout>
