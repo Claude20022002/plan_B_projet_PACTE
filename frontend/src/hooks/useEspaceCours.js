@@ -59,6 +59,18 @@ export default function useEspaceCours(idCours, idGroupe, saisir) {
     }
   };
 
+  // Dates d'ouverture et de fermeture d'une section ou d'un support (lot EC-1) : un champ vide = pas de limite
+  const dateOuverture = async (element, modifier) => {
+    const v = await saisir({
+      titre: t('espaceCours.ouverture.titre'),
+      champs: [
+        { nom: 'visible_du', libelle: t('espaceCours.ouverture.du'), type: 'date', valeur: element.visible_du ?? '', max: 10 },
+        { nom: 'visible_jusqu_au', libelle: t('espaceCours.ouverture.jusquAuChamp'), type: 'date', valeur: element.visible_jusqu_au ?? '', aide: t('espaceCours.ouverture.aide'), max: 10 },
+      ],
+    });
+    if (v) await faire(() => modifier({ visible_du: v.visible_du || null, visible_jusqu_au: v.visible_jusqu_au || null }), t('espaceCours.ouverture.enregistree'));
+  };
+
   const sections = espace?.sections ?? [];
   const voisin = (liste, element, cle, pas) => liste[liste.findIndex((x) => x[cle] === element[cle]) + pas];
 
@@ -72,6 +84,9 @@ export default function useEspaceCours(idCours, idGroupe, saisir) {
       }
       case 'visibilite':
         await faire(() => espaceCoursAPI.modifierSupport(support.id_support, { visible: !support.visible }), t(support.visible ? 'espaceCours.messages.masque' : 'espaceCours.messages.affiche'));
+        break;
+      case 'ouverture':
+        await dateOuverture(support, (champs) => espaceCoursAPI.modifierSupport(support.id_support, champs));
         break;
       case 'monter':
       case 'descendre': {
@@ -111,6 +126,9 @@ export default function useEspaceCours(idCours, idGroupe, saisir) {
       }
       case 'visibilite':
         await faire(() => espaceCoursAPI.modifierSection(section.id_section, { visible: !section.visible }));
+        break;
+      case 'ouverture':
+        await dateOuverture(section, (champs) => espaceCoursAPI.modifierSection(section.id_section, champs));
         break;
       case 'monter':
       case 'descendre': {

@@ -2,6 +2,7 @@ import { Op } from "sequelize";
 import { SectionCours, SupportCours, Users } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { classeAutorisee } from "./droits.js";
+import { changementsOuverture, conditionOuverte } from "./ouverture.js";
 
 /**
  * Sections de l'espace de cours d'une classe, et la vue de l'espace entier (sections et supports).
@@ -29,6 +30,8 @@ const versSupport = (s, user) => ({
     dans_bibliotheque: s.dans_bibliotheque,
     ordre: s.ordre,
     visible: s.visible,
+    visible_du: s.visible_du,
+    visible_jusqu_au: s.visible_jusqu_au,
     auteur: s.auteur ? { id_user: s.auteur.id_user, nom: s.auteur.nom, prenom: s.auteur.prenom } : null,
     modifiable: user.role === "admin" || s.id_user_auteur === user.id_user,
     createdAt: s.createdAt,
@@ -38,8 +41,9 @@ const versSupport = (s, user) => ({
 export const lireEspace = async (user, idCours, idGroupe) => {
     const { cours, groupe, gere } = await classeAutorisee(user, idCours, idGroupe);
     const sections = await SectionCours.findAll({
-        where: { id_cours: cours.id_cours, id_groupe: groupe.id_groupe, ...(gere ? {} : { visible: true }) },
-        include: [{ model: SupportCours, as: "supports", required: false, ...(gere ? {} : { where: { visible: true } }), include: [{ model: Users, as: "auteur", attributes: ["id_user", "nom", "prenom"] }] }],
+        // L'étudiant ne voit que ce qui est publié et ouvert aujourd'hui (interrupteur et dates, lot EC-1)
+        where: { id_cours: cours.id_cours, id_groupe: groupe.id_groupe, ...(gere ? {} : conditionOuverte()) },
+        include: [{ model: SupportCours, as: "supports", required: false, ...(gere ? {} : { where: conditionOuverte() }), include: [{ model: Users, as: "auteur", attributes: ["id_user", "nom", "prenom"] }] }],
         order: [["ordre", "ASC"], ["id_section", "ASC"], [{ model: SupportCours, as: "supports" }, "ordre", "ASC"], [{ model: SupportCours, as: "supports" }, "id_support", "ASC"]],
     });
     return {
@@ -48,7 +52,7 @@ export const lireEspace = async (user, idCours, idGroupe) => {
         sections: sections
             // L'étudiant ne voit pas une section vide
             .filter((s) => gere || s.supports.length > 0)
-            .map((s) => ({ id_section: s.id_section, titre: s.titre, ordre: s.ordre, visible: s.visible, supports: s.supports.map((x) => versSupport(x, user)) })),
+            .map((s) => ({ id_section: s.id_section, titre: s.titre, ordre: s.ordre, visible: s.visible, visible_du: s.visible_du, visible_jusqu_au: s.visible_jusqu_au, supports: s.supports.map((x) => versSupport(x, user)) })),
     };
 };
 
@@ -66,9 +70,9 @@ export const sectionGeree = async (user, idSection) => {
     return { section, ...classe };
 };
 
-export const modifierSection = async (user, idSection, { titre, visible } = {}) => {
+export const modifierSection = async (user, idSection, { titre, visible, visible_du, visible_jusqu_au } = {}) => {
     const { section } = await sectionGeree(user, idSection);
-    const changements = {};
+    const changements = changementsOuverture({ visible_du, visible_jusqu_au }, section);
     if (titre !== undefined) changements.titre = titreValide(titre);
     if (visible !== undefined) changements.visible = Boolean(visible);
     return section.update(changements);
@@ -105,8 +109,8 @@ export const sectionGenerale = async (user, cours, groupe) => {
 /** Classes d'un étudiant qui ont au moins un support publié (pour « Mes cours »). */
 export const sectionsPubliees = (groupes) =>
     SectionCours.findAll({
-        where: { id_groupe: { [Op.in]: groupes }, visible: true },
-        include: [{ model: SupportCours, as: "supports", where: { visible: true }, required: true, attributes: ["id_support"] }],
+        where: { id_groupe: { [Op.in]: groupes }, ...conditionOuverte() },
+        include: [{ model: SupportCours, as: "supports", where: conditionOuverte(), required: true, attributes: ["id_support"] }],
         attributes: ["id_cours", "id_groupe"],
     });
 
