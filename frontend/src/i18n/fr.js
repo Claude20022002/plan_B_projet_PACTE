@@ -1653,6 +1653,10 @@ const fr = {
     erreurs: { nom: 'Indiquez le nom.', prenom: 'Indiquez le prénom.', email: 'Indiquez l’email.', emailInvalide: 'Email invalide.', role: 'Choisissez le rôle.', motDePasseCourt: 'Au moins 12 caractères (une phrase de passe convient).', motDePasseLong: 'Au plus 64 caractères.' },
   },
   comptes: {
+    desactiverGroupe: 'Désactiver les comptes de ce groupe',
+    desactiverGroupeNom: 'Désactiver les comptes de {{nom}}',
+    groupeTitre: 'Désactiver les étudiants de {{nom}}',
+    groupeAide: 'Tous les étudiants inscrits dans ce groupe et dans ses sous-groupes. Les enseignants ne sont pas concernés ; un compte déjà désactivé est signalé dans le bilan.',
     statut: { programme: 'Désactivation le {{date}}', desactive: 'Désactivé', anonymise: 'Anonymisé' },
     motif: 'Motif',
     motifs: { depart: 'Départ', fin_contrat: 'Fin de contrat', diplome: 'Diplômé', exclusion: 'Exclusion', autre: 'Autre' },

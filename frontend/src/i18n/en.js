@@ -1655,6 +1655,10 @@ const en = {
     erreurs: { nom: 'Enter the last name.', prenom: 'Enter the first name.', email: 'Enter the email.', emailInvalide: 'Invalid email.', role: 'Choose the role.', motDePasseCourt: 'At least 12 characters (a passphrase works well).', motDePasseLong: 'At most 64 characters.' },
   },
   comptes: {
+    desactiverGroupe: 'Deactivate the accounts of this group',
+    desactiverGroupeNom: 'Deactivate the accounts of {{nom}}',
+    groupeTitre: 'Deactivate the students of {{nom}}',
+    groupeAide: 'Every student enrolled in this group and its subgroups. Teachers are not affected; an account that is already deactivated is reported in the summary.',
     statut: { programme: 'Deactivation on {{date}}', desactive: 'Deactivated', anonymise: 'Anonymised' },
     motif: 'Reason',
     motifs: { depart: 'Left the school', fin_contrat: 'Contract ended', diplome: 'Graduated', exclusion: 'Exclusion', autre: 'Other' },

@@ -72,3 +72,18 @@ test("désactivation : motif, réactivation, programmation, et séances d'un ens
   await fenetreProf.getByRole("button", { name: "Annuler", exact: true }).click();
   await expect(prof).toContainText("Actif");
 });
+
+test("désactivation d'un groupe entier : la fenêtre demande un motif et se ferme sans rien appliquer", async ({ page }) => {
+  const { admin, motDePasse } = lireDonnees();
+  await seConnecter(page, { email: admin.email, motDePasse, role: "admin" });
+  await page.goto("/gestion/groupes");
+  // Une filière et une année qui ont des groupes : on prend le premier bouton proposé
+  const bouton = page.getByRole("button", { name: /Désactiver les comptes de/ }).first();
+  await expect(bouton).toBeVisible({ timeout: 20_000 });
+  await bouton.click();
+  const fenetre = page.getByRole("dialog", { name: /Désactiver les étudiants de/ });
+  await expect(fenetre.getByText(/Tous les étudiants inscrits dans ce groupe/)).toBeVisible();
+  await expect(fenetre.getByRole("button", { name: "Désactiver", exact: true })).toBeDisabled();
+  await fenetre.getByRole("button", { name: "Annuler" }).click();
+  await expect(fenetre).toBeHidden();
+});
