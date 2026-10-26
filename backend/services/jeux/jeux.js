@@ -1,5 +1,6 @@
 import { Appartenir, Cours, CoursComposante, Enseignement, EnseignementEnseignant, EnseignementGroupe, Groupe, JeuModule, JeuProfil, JeuProgression, Users } from "../../models/index.js";
 import { ancetres } from "../planning/groupes.js";
+import { groupesDeLAnnee } from "../annees/annees.js";
 import { peutGererFiliere } from "../planning/droits.js";
 import { butEtNotion } from "../activites/but.js";
 import { ErreurMetier } from "../planning/enseignements.js";
@@ -20,16 +21,11 @@ const jeuOuErreur = (code) => {
     return jeu;
 };
 
-/** Identifiants des groupes de l'étudiant et de leurs groupes parents (TP → TD → promotion). */
-export const groupesDeLEtudiant = async (idUser) => {
-    const directs = (await Appartenir.findAll({ where: { id_user_etudiant: idUser }, include: [{ model: Groupe, as: "groupe" }] }))
-        .map((a) => a.groupe)
-        .filter(Boolean);
-    if (!directs.length) return [];
-    const tous = await Groupe.findAll({ where: { id_filiere: [...new Set(directs.map((g) => g.id_filiere))] } });
-    const parId = new Map(tous.map((g) => [g.id_groupe, g]));
-    return [...new Set(directs.flatMap((g) => [g.id_groupe, ...ancetres(g, parId).map((a) => a.id_groupe)]))];
-};
+/**
+ * Identifiants des groupes de l'étudiant **de l'année en cours** et de leurs groupes parents
+ * (TP → TD → promotion). Règle unique : services/annees/annees.js (lot ME-18).
+ */
+export const groupesDeLEtudiant = (idUser, options = {}) => groupesDeLAnnee(idUser, options);
 
 const coursDesEnseignements = async (idsEnseignements) => {
     if (!idsEnseignements.length) return [];
