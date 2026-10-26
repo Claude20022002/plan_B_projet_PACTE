@@ -209,6 +209,10 @@ export const userAPI = {
     anonymiser: (id) => request(`/users/${id}/anonymisation`, { method: 'POST' }),
     // Plusieurs comptes (ids) ou tous les étudiants d'un groupe (id_groupe) ; le bilan dit le sort de chacun
     desactiverEnLot: (corps) => request('/users/desactivations', { method: 'POST', body: corps }),
+    // Aperçu d'un lot, rien n'est modifié : `portee` est { ids } ou { id_groupe }
+    apercuLot: (portee, date) => request(`/users/desactivations/apercu?${portee.ids ? `ids=${portee.ids.join(',')}` : `id_groupe=${portee.id_groupe}`}&date=${encodeURIComponent(date)}`),
+    // Défait un lot fait par erreur : réactive les comptes et annule les désactivations programmées
+    retablirEnLot: (portee) => request('/users/reactivations', { method: 'POST', body: portee }),
 };
 
 // ==================== ENSEIGNANTS ====================

@@ -40,9 +40,36 @@ test("désactivation : motif, réactivation, programmation, et séances d'un ens
   await expect(page.getByText("Départ Essai est désactivé.")).toBeVisible();
   await expect(ligne).toContainText("Désactivé");
 
+  // Anonymisation : irréversible, le bouton attend le nom du compte ou le mot ANONYMISER
+  await ligne.getByRole("button", { name: "Anonymiser Départ Essai" }).click();
+  const anonymiser = page.getByRole("dialog", { name: "Anonymiser le compte" });
+  const confirmer = anonymiser.getByRole("button", { name: "Anonymiser", exact: true });
+  await expect(confirmer).toBeDisabled();
+  await anonymiser.getByRole("textbox").fill("ANONYMISE");
+  await expect(confirmer).toBeDisabled();
+  await anonymiser.getByRole("textbox").fill("anonymiser");
+  await expect(confirmer).toBeEnabled();
+  await anonymiser.getByRole("button", { name: "Annuler", exact: true }).click();
+  await expect(anonymiser).toBeHidden();
+  await expect(ligne).toContainText("Désactivé");
+
   // Réactivation : rien n'est perdu
   await ligne.getByRole("button", { name: "Réactiver Départ Essai" }).click();
   await expect(page.getByText("Départ Essai est réactivé")).toBeVisible();
+  await expect(ligne).toContainText("Actif");
+
+  // En lot : l'aperçu dit combien de comptes sont touchés, le bilan dit ce qui s'est passé, « Défaire » rétablit
+  await ligne.getByRole("checkbox", { name: "Sélectionner Départ Essai" }).check();
+  await page.getByRole("button", { name: "Désactiver la sélection (1)" }).click();
+  const lot = page.getByRole("dialog", { name: "Désactiver 1 compte" });
+  await expect(lot.getByText("1 compte sera désactivé.")).toBeVisible();
+  await lot.getByRole("combobox", { name: /Motif/ }).click();
+  await page.getByRole("option", { name: "Autre" }).click();
+  await lot.getByRole("button", { name: "Désactiver", exact: true }).click();
+  await expect(lot.getByText(/1 désactivé\(s\)/)).toBeVisible();
+  await lot.getByRole("button", { name: "Défaire" }).click();
+  await expect(lot.getByText(/Lot rétabli : 1 compte\(s\) réactivé\(s\)/)).toBeVisible();
+  await lot.getByRole("button", { name: "Fermer" }).click();
   await expect(ligne).toContainText("Actif");
 
   // Désactivation programmée dans dix jours, avec préavis par défaut
@@ -73,7 +100,7 @@ test("désactivation : motif, réactivation, programmation, et séances d'un ens
   await expect(prof).toContainText("Actif");
 });
 
-test("désactivation d'un groupe entier : la fenêtre demande un motif et se ferme sans rien appliquer", async ({ page }) => {
+test("désactivation d'un groupe entier : l'aperçu répond avant d'appliquer", async ({ page }) => {
   const { admin, motDePasse } = lireDonnees();
   await seConnecter(page, { email: admin.email, motDePasse, role: "admin" });
   await page.goto("/gestion/groupes");
@@ -83,7 +110,10 @@ test("désactivation d'un groupe entier : la fenêtre demande un motif et se fer
   await bouton.click();
   const fenetre = page.getByRole("dialog", { name: /Désactiver les étudiants de/ });
   await expect(fenetre.getByText(/Tous les étudiants inscrits dans ce groupe/)).toBeVisible();
-  await expect(fenetre.getByRole("button", { name: "Désactiver", exact: true })).toBeDisabled();
+  const valider = fenetre.getByRole("button", { name: "Désactiver", exact: true });
+  await expect(valider).toBeDisabled();
+  // L'aperçu répond avant tout bouton : le nombre de comptes touchés, ou « Aucun compte visé » si le groupe n'a pas d'étudiant
+  await expect(fenetre.getByText(/désactivés?\.$|Aucun compte visé/)).toBeVisible({ timeout: 20_000 });
   await fenetre.getByRole("button", { name: "Annuler" }).click();
   await expect(fenetre).toBeHidden();
 });
