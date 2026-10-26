@@ -1,9 +1,8 @@
-import { Appartenir, AuthSession, Desactivation, PasswordResetToken, PushToken } from "../../models/index.js";
+import { AuthSession, Desactivation, PasswordResetToken, PushToken } from "../../models/index.js";
 import sequelize from "../../config/db.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { aujourdhui } from "../planning/affectationRules.js";
 import { enregistrerSeance, notifierChangementSeance } from "../planning/seances.js";
-import { avecDescendants } from "../planning/groupes.js";
 import { journaliser } from "../journalSecurite.js";
 import { compteOuErreur, dateEffet, motifValide, seancesFutures, verifierCible } from "./regles.js";
 
@@ -115,30 +114,4 @@ export const changerActif = async (acteur, user, valeur, contexte = null) => {
     const voulu = valeur === true || valeur === "true" || valeur === 1 || valeur === "1";
     if (voulu === Boolean(user.actif)) return null;
     return voulu ? reactiver(acteur, user.id_user, contexte) : desactiver(acteur, user.id_user, { motif: "autre" }, contexte);
-};
-
-/**
- * Désactivation en lot (une sélection, ou tous les étudiants d'un groupe et de ses sous-groupes).
- * Chaque compte est traité seul : un refus (séances à traiter, dernier administrateur) ne bloque
- * pas les autres ; le bilan dit, pour chacun, ce qui s'est passé.
- */
-export const desactiverEnLot = async (acteur, { ids = [], id_groupe = null, motif, date, preavis = true } = {}, contexte = null) => {
-    motifValide(motif);
-    dateEffet(date);
-    const cibles = new Set(ids.map(Number).filter(Number.isInteger));
-    if (id_groupe) {
-        const groupes = await avecDescendants([Number(id_groupe)]);
-        (await Appartenir.findAll({ where: { id_groupe: [...groupes] }, attributes: ["id_user_etudiant"] })).forEach((a) => cibles.add(a.id_user_etudiant));
-    }
-    if (!cibles.size) throw new ErreurMetier("Aucun compte à désactiver", 400);
-    const bilan = [];
-    for (const id of cibles) {
-        try {
-            bilan.push({ id_user: id, ...(await desactiver(acteur, id, { motif, date, preavis }, contexte)) });
-        } catch (erreur) {
-            if (!(erreur instanceof ErreurMetier)) throw erreur;
-            bilan.push({ id_user: id, statut: "refuse", code: erreur.code ?? null, message: erreur.message });
-        }
-    }
-    return { bilan, desactives: bilan.filter((b) => b.statut === "desactive").length, programmes: bilan.filter((b) => b.statut === "programmee").length, refuses: bilan.filter((b) => b.statut === "refuse").length };
 };
