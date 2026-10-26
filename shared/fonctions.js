@@ -32,3 +32,12 @@ export const QUIZ_DANS_L_APPLICATION = false;
  * Passer à true pour rendre l'entrée du menu.
  */
 export const SURVEILLANCES_ACTIVES = false;
+
+/**
+ * Annonces écrites par les enseignants à leurs classes (plan multi-établissements, lot EC-5). Décision
+ * du chef de projet, le 20 octobre : pas d'annonces d'enseignant pour le moment, et pas d'entrée de menu.
+ * Le code reste : le serveur ferme l'envoi par sa variable ANNONCES_ENSEIGNANTS_ACTIVES, et les deux se
+ * rallument ensemble. Un responsable de filière écrit toujours à sa filière ; tous lisent leurs
+ * annonces reçues. Passer à true pour rendre l'entrée « Annonces » du menu de l'enseignant.
+ */
+export const ANNONCES_ENSEIGNANTS_ACTIVES = false;
