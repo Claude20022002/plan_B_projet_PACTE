@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Chip, MenuItem, Skeleton, TextField, Typography } from '@mui/material';
 import { enseignantAPI } from '../../services/api';
+import { localeEcran } from '../../utils/dates';
 
 const cleClasse = (c) => (c ? `${c.id_cours}:${c.id_groupe}` : '');
 
@@ -14,7 +15,7 @@ const cleClasse = (c) => (c ? `${c.id_cours}:${c.id_groupe}` : '');
 export default function SelecteurClasse({ valeur, onChange, filtreCours = null, label, preselection = null }) {
   const { t, i18n } = useTranslation();
   const [classes, setClasses] = useState(null);
-  const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
+  const locale = localeEcran(i18n.language);
 
   useEffect(() => {
     let actif = true;

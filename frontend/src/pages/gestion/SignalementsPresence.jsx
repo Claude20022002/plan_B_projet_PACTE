@@ -10,6 +10,7 @@ import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { presenceAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 const MOTIFS = ['autre_telephone', 'telephone_d_un_autre', 'appareil_partage', 'absent_verification'];
 
@@ -28,7 +29,7 @@ export default function SignalementsPresence() {
     const [motif, setMotif] = useState('');
     const [aDelier, setADelier] = useState(null);
 
-    const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
+    const locale = localeEcran(i18n.language);
     const dateHeure = (valeur) => new Date(valeur).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' });
     const date = (valeur) => (valeur ? new Date(`${valeur}T12:00:00`).toLocaleDateString(locale) : '-');
 

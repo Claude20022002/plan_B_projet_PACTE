@@ -20,3 +20,10 @@ export const aujourdhui = (maintenant = new Date()) =>
 
 /** Date de l'école (AAAA-MM-JJ) dans n jours (négatif : il y a n jours). */
 export const dansJours = (n, maintenant = new Date()) => aujourdhui(new Date(maintenant.getTime() + n * JOUR_MS));
+
+/**
+ * Locale de l'écran pour les dates, les heures et les nombres. En anglais aussi, l'heure sur
+ * 24 h et le jour avant le mois (en-GB), comme les emplois du temps de l'école : « en » seul
+ * donnait « 10:20 PM » et « 10/20/2026 » à côté de « 15:30 » (recette du 20 octobre, m-6).
+ */
+export const localeEcran = (langue) => (String(langue ?? '').startsWith('en') ? 'en-GB' : 'fr-FR');

@@ -2,8 +2,7 @@
  * Mise en forme des dates et heures des reports : jour et mois au format de la langue de l'écran,
  * jamais le format américain (l'anglais du site suit l'usage britannique, jour avant mois).
  */
-
-const locale = (langue) => (String(langue).startsWith('en') ? 'en-GB' : 'fr-FR');
+import { localeEcran as locale } from '../../utils/dates.js';
 
 /** « lun. 26/10/2026 » : une date (AAAA-MM-JJ ou Date) avec son jour de la semaine. */
 export const dateCourte = (date, langue) =>

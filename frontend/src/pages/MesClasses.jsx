@@ -10,6 +10,7 @@ import { cleClasse, minutesAvantFin, nomClasse } from '../components/mesClasses/
 import { enseignantAPI } from '../services/api';
 import { DEVOIRS_ACTIFS } from '../../../shared/fonctions.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
+import { localeEcran } from '../utils/dates';
 
 // Le rappel de l'appel s'affiche dans les dernières minutes de la séance (le serveur envoie
 // aussi une notification, même page fermée : RAPPEL_APPEL_MINUTES)
@@ -26,7 +27,7 @@ export default function MesClasses() {
   const [classes, setClasses] = useState(null);
   const [erreur, setErreur] = useState(false);
   const [maintenant, setMaintenant] = useState(() => new Date());
-  const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
+  const locale = localeEcran(i18n.language);
 
   const charger = useCallback(
     () =>

@@ -5,6 +5,7 @@ import StateChip from '../../design-system/components/StateChip';
 import { ds } from '../../design-system/tokens';
 import { aujourdhui, dansJours } from '../../../../shared/dates.js';
 import { cleProposition } from './cleProposition';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Recherche de créneaux libres (innovation I8), sans fenêtre : une plage de dates, puis les
@@ -21,7 +22,7 @@ export default function RechercheCreneaux({ chercher, onChoisir, libelleChoix, l
     const [erreur, setErreur] = useState('');
     const [choix, setChoix] = useState(null);
 
-    const formatDate = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'long', day: 'numeric', month: 'long' }), [i18n.language]);
+    const formatDate = useMemo(() => new Intl.DateTimeFormat(localeEcran(i18n.language), { weekday: 'long', day: 'numeric', month: 'long' }), [i18n.language]);
 
     const lancer = async () => {
         setChargement(true);

@@ -32,6 +32,7 @@ import PageHeader from '../../design-system/components/PageHeader';
 import { devoirsAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
+import { localeEcran } from '../../utils/dates';
 
 /** Réponse de départ selon le type de question */
 const reponseInitiale = (q) => {
@@ -173,7 +174,7 @@ function DevoirJouer() {
   const d = donnees?.devoir;
   const fige = Boolean(donnees?.rendu) || (d && !d.ouvert);
   const nonRepondues = donnees ? donnees.questions.filter((q, i) => !repondue(q, reponses[i] ?? reponseInitiale(q))).length : 0;
-  const limite = d ? new Date(d.date_limite).toLocaleString(i18n.language, { dateStyle: 'full', timeStyle: 'short' }) : '';
+  const limite = d ? new Date(d.date_limite).toLocaleString(localeEcran(i18n.language), { dateStyle: 'full', timeStyle: 'short' }) : '';
 
   return (
     <DashboardLayout>
@@ -187,7 +188,7 @@ function DevoirJouer() {
       {donnees?.rendu && (
         <Alert severity="success" icon={false} sx={{ mb: 3, alignItems: 'center' }}>
           <Stack direction="row" spacing={3} alignItems="baseline" flexWrap="wrap">
-            <Typography sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: '2rem' }}>{t('jeux.devoirs.note', { note: donnees.rendu.note.toLocaleString(i18n.language) })}</Typography>
+            <Typography sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: '2rem' }}>{t('jeux.devoirs.note', { note: donnees.rendu.note.toLocaleString(localeEcran(i18n.language)) })}</Typography>
             <Typography>{t('jeux.devoirs.bonnes', { bonnes: donnees.rendu.bonnes, total: donnees.rendu.notees })}</Typography>
             {d.ouvert && <Typography color="text.secondary">{t('jeux.devoirs.correctionApres', { date: limite })}</Typography>}
           </Stack>

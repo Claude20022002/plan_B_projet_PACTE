@@ -31,7 +31,7 @@ export const FICHES = [
   // ── Enseignant ───────────────────────────────────────────────────────────
   { id: 'profAppel', roles: ['enseignant'], theme: 'seance', pages: ['/mes-classes', '/appel', '/dashboard/enseignant', '/mes-affectations'], lien: '/mes-classes' },
   { id: 'profRappel', roles: ['enseignant'], theme: 'seance', pages: ['/appel', '/mes-classes'], lien: '/mes-classes' },
-  { id: 'profQuizDirect', roles: ['enseignant'], theme: 'seance', pages: ['/jeux'], lien: '/jeux' },
+  { id: 'profQuizDirect', roles: ['enseignant'], theme: 'seance', pages: ['/studio-quiz'], lien: '/studio-quiz' },
   { id: 'profQuizIa', roles: ['enseignant'], theme: 'classe', pages: ['/jeux'], lien: '/jeux' },
   { id: 'profDevoir', roles: ['enseignant'], devoirs: true, theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
   // Les supports d'une classe se gèrent dans son espace (espace-de-cours.md, lots E-3 et E-9)
