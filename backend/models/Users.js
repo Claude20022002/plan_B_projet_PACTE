@@ -45,6 +45,13 @@ const Users = sequelize.define(
         mfa_secret: { type: DataTypes.STRING(255), allowNull: true },
         mfa_active: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
         mfa_dernier_pas: { type: DataTypes.BIGINT, allowNull: true },
+        // Désactivation programmée (lot ME-17) : date d'effet, motif, préavis voulu et envoyé
+        desactivation_prevue_le: { type: DataTypes.DATEONLY, allowNull: true },
+        desactivation_motif: { type: DataTypes.STRING(20), allowNull: true },
+        desactivation_preavis: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+        preavis_envoye_le: { type: DataTypes.DATE, allowNull: true },
+        // Identité effacée (loi 09-08) : le compte reste pour l'historique, sans nom ni adresse
+        anonymise_le: { type: DataTypes.DATE, allowNull: true },
     },
     {
         tableName: "Users",

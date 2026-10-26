@@ -25,7 +25,7 @@ jobs:
   # ── 1. Site (React) ──────────────────────────────────────────────────────
   build-frontend:
     name: Build Frontend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
@@ -59,7 +59,7 @@ jobs:
   # ── 2. API Planner (Node + MySQL) ────────────────────────────────────────
   test-backend:
     name: Test Backend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: backend
@@ -131,7 +131,7 @@ jobs:
   # ── 3. Application mobile (Expo) ─────────────────────────────────────────
   test-mobile:
     name: Test Mobile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: mobile
@@ -166,7 +166,7 @@ jobs:
   # ── 4. Solveur Timefold (Java) ───────────────────────────────────────────
   test-solver:
     name: Test Solveur
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: solver
@@ -191,7 +191,7 @@ jobs:
   # Ajouté après A-4, sans toucher à ses lignes : à fusionner après lui.
   test-parcours:
     name: Parcours de démonstration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
