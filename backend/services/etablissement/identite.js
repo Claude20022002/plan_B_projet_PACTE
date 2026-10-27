@@ -106,6 +106,17 @@ const typeReel = (octets) => {
 };
 
 /**
+ * Date du nouveau logo, au moins une seconde après la précédente : la colonne est à la seconde, et
+ * la version du logo (que le site, les navigateurs et l'application gardent en cache) doit changer
+ * même si deux logos sont envoyés dans la même seconde.
+ */
+const dateSuivante = (precedente) => {
+    const maintenant = new Date();
+    const plancher = precedente ? (Math.floor(new Date(precedente).getTime() / 1000) + 1) * 1000 : 0;
+    return maintenant.getTime() >= plancher ? maintenant : new Date(plancher);
+};
+
+/**
  * Remplace le logo. PNG, JPEG ou WebP, 512 Ko au plus. Le SVG est refusé : il peut contenir du
  * script, et un logo s'affiche sur toutes les pages.
  */
@@ -115,7 +126,7 @@ export const enregistrerLogo = async (octets) => {
     const type = typeReel(octets);
     if (!TYPES_LOGO.includes(type)) throw new ErreurMetier("Format refusé : PNG, JPEG ou WebP seulement", 415);
     const [ligne] = await ConfigurationEtablissement.findOrCreate({ where: { id: 1 }, defaults: { id: 1, ...DEFAUT } });
-    await ligne.update({ logo: octets, logo_type: type, logo_maj_le: new Date() });
+    await ligne.update({ logo: octets, logo_type: type, logo_maj_le: dateSuivante(ligne.logo_maj_le) });
     oublierIdentite();
     return identitePublique();
 };
