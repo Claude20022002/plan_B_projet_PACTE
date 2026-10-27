@@ -18,7 +18,7 @@ import {
 } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS } from "./affectationRules.js";
-import { anneeDepuisNiveau, periodeDuSemestre } from "../../config/referentiel.js";
+import { anneeDepuisNiveau, normaliserAnnee, periodeDuSemestre } from "../../config/referentiel.js";
 import { filieresDuResponsable } from "./droits.js";
 import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 
@@ -30,7 +30,6 @@ import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 
 const pourcent = (fait, total) => (total ? Math.round((100 * fait) / total) : 0);
 const etat = (avancement, total = 1) => (total === 0 ? "a_faire" : avancement >= 100 ? "fait" : avancement > 0 ? "en_cours" : "a_faire");
-const normaliserAnnee = (v) => String(v || "").replace("/", "-").trim();
 
 /** Étape 1 (commune) : période datée, fériés et semaine d'examens dans le calendrier. */
 const etapeCalendrier = async (periode) => {

@@ -1,6 +1,7 @@
 import { DataTypes } from "sequelize";
 import sequelize from "../config/db.js";
-import { TYPES_GROUPE } from "../config/referentiel.js";
+import { TYPES_GROUPE, normaliserAnnee as normaliser } from "../config/referentiel.js";
+import AnneeUniversitaire from "./AnneeUniversitaire.js";
 
 const Groupe = sequelize.define(
     "Groupe",
@@ -26,6 +27,8 @@ const Groupe = sequelize.define(
             type: DataTypes.STRING,
             allowNull: false,
         },
+        // Année universitaire du groupe (lot ME-18), tenue à jour depuis annee_scolaire par le crochet ci-dessous
+        id_annee: DataTypes.INTEGER,
         id_filiere: {
             type: DataTypes.INTEGER,
             allowNull: false,
@@ -44,6 +47,16 @@ const Groupe = sequelize.define(
     {
         tableName: "Groupes",
         freezeTableName: true,
+        hooks: {
+            // annee_scolaire donné ou changé sans id_annee explicite : l'année se retrouve par son libellé
+            // (création par le site, l'import, le jeu de démonstration ou les tests, sans changer d'appelant)
+            beforeSave: async (groupe, { transaction } = {}) => {
+                if (!groupe.changed("annee_scolaire") || groupe.changed("id_annee")) return;
+                const libelle = normaliser(groupe.annee_scolaire);
+                const annees = await AnneeUniversitaire.findAll({ attributes: ["id_annee", "libelle"], transaction });
+                groupe.id_annee = annees.find((a) => normaliser(a.libelle) === libelle)?.id_annee ?? null;
+            },
+        },
     }
 );
 

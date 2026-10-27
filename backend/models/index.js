@@ -39,6 +39,8 @@ import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
 import AppareilEtudiant from "./AppareilEtudiant.js";
 import DemandeTelephone from "./DemandeTelephone.js";
+import ConfigurationEtablissement from "./ConfigurationEtablissement.js";
+import Desactivation from "./Desactivation.js";
 import SectionCours from "./SectionCours.js";
 import SupportCours from "./SupportCours.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
@@ -384,6 +386,9 @@ TrajetCampus.belongsTo(Campus, { foreignKey: "id_campus_b", as: "campus_b" });
 // Année universitaire -> Période (1:n)
 AnneeUniversitaire.hasMany(Periode, { foreignKey: "id_annee", as: "periodes", onDelete: "CASCADE" });
 Periode.belongsTo(AnneeUniversitaire, { foreignKey: "id_annee", as: "annee" });
+// Année universitaire -> Groupe (1:n, lot ME-18) ; « annee » est déjà l'année d'études du groupe
+AnneeUniversitaire.hasMany(Groupe, { foreignKey: "id_annee", as: "groupes" });
+Groupe.belongsTo(AnneeUniversitaire, { foreignKey: "id_annee", as: "anneeUniversitaire" });
 
 Evenement.belongsTo(Users, { foreignKey: "id_user_createur", as: "createur", targetKey: "id_user" });
 
@@ -557,6 +562,9 @@ SignalementPresence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "
 Users.hasOne(AppareilEtudiant, { foreignKey: "id_user", as: "appareilAppel", onDelete: "CASCADE" });
 DemandeTelephone.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
 DemandeTelephone.belongsTo(Users, { foreignKey: "id_user_admin", as: "admin", targetKey: "id_user" });
+// Historique des désactivations d'un compte (lot ME-17)
+Users.hasMany(Desactivation, { foreignKey: "id_user", as: "desactivations", onDelete: "CASCADE" });
+Desactivation.belongsTo(Users, { foreignKey: "id_auteur", as: "auteur", targetKey: "id_user" });
 
 // Espace de cours d'une classe (docs/plans/espace-de-cours.md)
 SectionCours.hasMany(SupportCours, { foreignKey: "id_section", as: "supports", onDelete: "CASCADE" });
@@ -658,6 +666,8 @@ export {
     SignalementPresence,
     AppareilEtudiant,
     DemandeTelephone,
+    ConfigurationEtablissement,
+    Desactivation,
     SectionCours,
     SupportCours,
     MfaCodeSecours,

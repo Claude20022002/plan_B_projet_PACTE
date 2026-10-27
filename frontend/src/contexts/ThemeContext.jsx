@@ -4,6 +4,7 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import { frFR, enUS } from '@mui/material/locale';
 import { useTranslation } from 'react-i18next';
 import { ds } from '../design-system/tokens';
+import { texteSur } from '../../../shared/couleurs.js';
 
 const ThemeContext = createContext(null);
 
@@ -58,8 +59,9 @@ const PANNEAU_STUDYLIB = {
     },
 };
 
+// Thème Planner : le menu et le cadre du panneau prennent la couleur de l'école (design-system/marque.js)
 const variablesCss = (famille, mode) => {
-    if (famille !== 'studylib') return {};
+    if (famille !== 'studylib') return { '--nav-fond': ds.navBrut.fond, '--board-frame': ds.boardBrut.frame };
     const { board, nav } = PANNEAU_STUDYLIB[mode === 'light' ? 'clair' : 'sombre'];
     return {
         ...Object.fromEntries(Object.entries(board).map(([cle, valeur]) => [`--board-${cle}`, valeur])),
@@ -99,25 +101,26 @@ const buildTheme = (mode, language, famille = 'planner') => {
             palette: {
                 mode,
                 primary: {
-                    main: sl ? p.primary : isLight ? ds.brand.navy : '#8FA6F0',
+                    main: sl ? p.primary : isLight ? ds.brand.navy : ds.brand.navyNight,
                     dark: sl ? p.primaryDark : ds.brand.navyDeep,
-                    light: sl ? '#3B82F6' : '#3350A8',
+                    light: sl ? '#3B82F6' : ds.brand.navyLight,
                     contrastText: sl ? (isLight ? '#FFFFFF' : '#0F172A') : isLight ? '#FFFFFF' : b.ground,
                 },
                 secondary: {
                     main: ds.brand.orange,
-                    contrastText: '#1A0A02',
+                    // Texte foncé sur l'orange de Planner ; blanc si l'accent de l'école est plus sombre
+                    contrastText: texteSur(ds.brand.orange),
                 },
                 success: { main: isLight ? c.success.text : b.live },
                 warning: { main: isLight ? c.warning.text : b.delayed },
                 error: { main: isLight ? c.danger.text : b.cancelled },
-                info: { main: isLight ? c.info.text : '#8FA6F0' },
+                info: { main: isLight ? c.info.text : ds.brand.navyNight },
                 background: { default: ground, paper: surface },
                 text: { primary: textPrimary, secondary: textSecondary },
                 divider: line,
                 action: {
                     hover: sl ? p.hover : isLight ? '#EEF0F5' : 'rgba(242, 241, 236, 0.06)',
-                    selected: sl ? p.selected : isLight ? ds.brand.navySoft : 'rgba(143, 166, 240, 0.16)',
+                    selected: sl ? p.selected : isLight ? ds.brand.navySoft : `${ds.brand.navyNight}29`, // 16 % d'opacité
                 },
             },
             typography: {

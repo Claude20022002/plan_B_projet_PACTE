@@ -5,6 +5,9 @@ import { ds } from '../../design-system/tokens';
 import { FlapTiles } from '../../design-system/board';
 import PanneauAccueil from './PanneauAccueil';
 import useTitreOnglet from '../../hooks/useTitreOnglet';
+import LogoEcole from '../common/LogoEcole';
+import { identiteEcole } from '../../services/etablissement';
+import { photosEcole } from '../../design-system/photosEcole';
 
 /**
  * Mise en page des écrans publics (connexion, mot de passe oublié, réinitialisation) : le panneau
@@ -14,6 +17,8 @@ import useTitreOnglet from '../../hooks/useTitreOnglet';
  */
 export default function EcranPublic({ children }) {
   const { t, i18n } = useTranslation();
+  const ecole = identiteEcole();
+  const photo = photosEcole(ecole.nom_court)?.salle;
 
   return (
     <Box sx={{ minHeight: '100vh', display: 'grid', gridTemplateColumns: { xs: '1fr', md: '1.1fr 1fr' }, bgcolor: 'background.paper' }}>
@@ -23,10 +28,11 @@ export default function EcranPublic({ children }) {
           alignItems: 'center',
           justifyContent: 'center',
           bgcolor: ds.board.ground,
-          // Une vraie salle de HESTIM derrière le panneau : voile léger au centre (la salle se voit),
-          // plus dense vers les bords ; le panneau garde son propre fond noir, donc son contraste
-          backgroundImage:
-            'radial-gradient(ellipse at 50% 55%, rgba(11, 11, 13, 0.35) 0%, rgba(11, 11, 13, 0.55) 55%, rgba(11, 11, 13, 0.85) 100%), url(/img/hestim/seance-salle.jpg)',
+          // Une vraie salle de l'école derrière le panneau, si elle en a une photo : voile léger au
+          // centre (la salle se voit), plus dense vers les bords ; le panneau garde son fond noir
+          backgroundImage: photo
+            ? `radial-gradient(ellipse at 50% 55%, rgba(11, 11, 13, 0.35) 0%, rgba(11, 11, 13, 0.55) 55%, rgba(11, 11, 13, 0.85) 100%), url(${photo})`
+            : 'none',
           backgroundSize: 'cover',
           backgroundPosition: '50% 60%',
           px: { md: 5, lg: 8 },
@@ -40,12 +46,12 @@ export default function EcranPublic({ children }) {
         {/* Téléphone : le panneau en bandeau, première chose que voit un étudiant */}
         <Box sx={{ display: { xs: 'block', md: 'none' }, bgcolor: ds.board.frame, p: '6px' }}>
           <Box sx={{ bgcolor: ds.board.ground, borderRadius: `${ds.radius.md}px`, px: 2, py: 1.75, display: 'flex', flexWrap: 'wrap', gap: 1 }}>
-            <FlapTiles value="HESTIM" size="1.5rem" />
+            {ecole.nom_court !== 'Planner' && <FlapTiles value={ecole.nom_court.toUpperCase()} size="1.5rem" />}
             <FlapTiles value="PLANNER" size="1.5rem" color={ds.brand.orange} />
           </Box>
         </Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', px: { xs: 2, sm: 4 }, pt: { xs: 2, sm: 3 } }}>
-          <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: { xs: 32, sm: 38 } }} />
+          <LogoEcole hauteur={{ xs: 32, sm: 38 }} />
           <ToggleButtonGroup
             size="small"
             exclusive

@@ -1,6 +1,6 @@
 /**
  * Internationalisation FR / EN.
- * Le français est la langue par défaut (langue d'enseignement de HESTIM) ;
+ * Le français est la langue par défaut (langue d'enseignement des écoles visées) ;
  * le choix de l'utilisateur est mémorisé et appliqué à <html lang>.
  */
 import i18n from 'i18next';
@@ -13,6 +13,8 @@ import sessionsJeuFr from './sessionsJeu.fr.js';
 import sessionsJeuEn from './sessionsJeu.en.js';
 import directFr from './direct.fr.js';
 import directEn from './direct.en.js';
+import etablissementFr from './etablissement.fr.js';
+import etablissementEn from './etablissement.en.js';
 
 export const LANGUAGES = [
   { code: 'fr', label: 'Français', short: 'FR' },
@@ -32,10 +34,10 @@ const readStoredLanguage = () => {
 };
 
 i18n.use(initReactI18next).init({
-  // Studio quiz et sessions de jeu : textes dans leurs propres fichiers, sous leur clé
+  // Studio quiz, sessions de jeu, identité de l'école : textes dans leurs propres fichiers, sous leur clé
   resources: {
-    fr: { translation: { ...fr, studio: studioFr, sessionsJeu: sessionsJeuFr, direct: directFr } },
-    en: { translation: { ...en, studio: studioEn, sessionsJeu: sessionsJeuEn, direct: directEn } },
+    fr: { translation: { ...fr, studio: studioFr, sessionsJeu: sessionsJeuFr, direct: directFr, etablissement: etablissementFr } },
+    en: { translation: { ...en, studio: studioEn, sessionsJeu: sessionsJeuEn, direct: directEn, etablissement: etablissementEn } },
   },
   lng: readStoredLanguage(),
   fallbackLng: 'fr',

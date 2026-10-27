@@ -7,6 +7,9 @@ import { pick } from "../utils/validationHelper.js";
 import sequelize from "../config/db.js";
 import { creerLienInvitation, creerProfil, empreinteInutilisable, envoyerInvitation } from "../services/comptes.js";
 import { contexteDe, journaliser } from "../services/journalSecurite.js";
+import { changerActif } from "../services/desactivation/desactivation.js";
+import { aUnHistorique } from "../services/desactivation/regles.js";
+import { ErreurMetier } from "../services/planning/enseignements.js";
 
 // Champs dont un changement est une décision de sécurité (journalisée avec avant / après)
 const CHAMPS_SENSIBLES = ["role", "actif", "email"];
@@ -158,6 +161,8 @@ export const updateUser = asyncHandler(async (req, res) => {
     const changements = Object.fromEntries(
         CHAMPS_SENSIBLES.filter((champ) => champ in updateData && String(updateData[champ]) !== String(user[champ])).map((champ) => [champ, { avant: user[champ], apres: updateData[champ] }])
     );
+    // Désactiver ou réactiver passe par les règles de la désactivation (lot ME-17)
+    if ("actif" in updateData) await changerActif(req.user, user, updateData.actif, contexteDe(req));
     await user.update(updateData);
     if (Object.keys(changements).length) {
         await journaliser(contexteDe(req), { evenement: "compte_modifie", user, acteur: req.user, details: changements });
@@ -204,6 +209,7 @@ export const deleteUser = asyncHandler(async (req, res) => {
         });
     }
 
+    if (await aUnHistorique(user.id_user)) throw new ErreurMetier("Ce compte a un historique : désactivez-le au lieu de le supprimer", 409, "A_UN_HISTORIQUE");
     await user.destroy();
     await journaliser(contexteDe(req), { evenement: "compte_supprime", user, acteur: req.user, details: { role: user.role } });
 

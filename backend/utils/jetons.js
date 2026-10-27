@@ -15,6 +15,7 @@ import jwt from "jsonwebtoken";
  * en développement et en test, une clé éphémère est générée au démarrage.
  */
 
+// Émetteur figé (D-11) : la Bibliothèque (StudyLib) vérifie cette valeur ; la changer couperait la connexion unique
 export const EMETTEUR = process.env.JWT_ISSUER || "hestim-planner";
 // Un jeton sert à Planner et à StudyLib (connexion unique) ; chaque service vérifie la sienne
 export const AUDIENCES = ["planner", "studylib"];

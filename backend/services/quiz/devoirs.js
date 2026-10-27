@@ -263,13 +263,15 @@ export const devoirsDe = async (user) => {
             };
         });
     }
-    const modules = await modulesDuJoueur(user);
+    // Groupes lus une seule fois : ils servent aux modules et au filtre des devoirs de groupe
+    const groupes = await groupesDeLEtudiant(user.id_user);
+    const modules = await modulesDuJoueur(user, { groupes });
     if (!modules.length) return [];
     const candidats = await Devoir.findAll({ where: { id_cours: modules, type: "quiz" }, include, order: [["date_limite", "ASC"]] });
     // Devoir d'un groupe : visible si l'un de mes groupes est ce groupe ou l'un de ses descendants.
     // Mes groupes comprennent tous leurs ancêtres : cela revient à « son groupe est parmi les miens »
     // (sans lire la descendance de chaque devoir)
-    const mesGroupes = new Set(await groupesDeLEtudiant(user.id_user));
+    const mesGroupes = new Set(groupes);
     const visibles = candidats.filter((d) => !d.id_groupe || mesGroupes.has(d.id_groupe));
     const mesRendus = visibles.length ? await DevoirRendu.findAll({ where: { id_devoir: visibles.map((d) => d.id_devoir), id_user: user.id_user } }) : [];
     return visibles.map((d) => {
