@@ -29,6 +29,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { notificationAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import useTitreOnglet from '../../hooks/useTitreOnglet';
+import LogoEcole from '../common/LogoEcole';
 
 const RAIL_WIDTH = 248;
 
@@ -91,7 +92,7 @@ export default function DashboardLayout({ children }) {
     >
       <Box sx={{ px: 2, pt: 2.5, pb: 2 }}>
         <Box sx={{ bgcolor: ds.white, borderRadius: `${ds.radius.md}px`, px: 1.5, py: 1, display: 'inline-flex' }}>
-          <Box component="img" src="/HESTIM.png" alt="HESTIM Engineering & Business School" sx={{ height: 26, display: 'block' }} />
+          <LogoEcole hauteur={26} />
         </Box>
         <Box
           sx={{

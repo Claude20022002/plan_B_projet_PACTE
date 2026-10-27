@@ -2,8 +2,7 @@ import partage from '../../../shared/i18n/en.js';
 
 const en = {
   app: {
-    name: 'HESTIM Planner',
-    school: 'Engineering & Business School',
+    name: '{{produit}}',
   },
   vuesEdt: { grille: 'Grid', liste: 'Session list', mois: 'Month (print)' },
   common: {
@@ -47,7 +46,7 @@ const en = {
     codeApp: 'App code',
     activer: 'Turn on',
     codesAide: 'Your backup codes: each works once if your phone is unavailable. They will not be shown again: keep them somewhere safe (password manager, paper under lock).',
-    codesFichier: 'HESTIM Planner: two-factor authentication backup codes (each works once)',
+    codesFichier: '{{produit}}: two-factor authentication backup codes (each works once)',
     copier: 'Copy',
     telecharger: 'Download',
     codesRanges: 'I have stored these codes somewhere safe',
@@ -421,13 +420,13 @@ const en = {
   appel: {
     titre: 'Roll call',
     retour: 'My classes',
-    qrAlt: 'Roll call QR code, to scan with the HESTIM app',
+    qrAlt: 'Roll call QR code, to scan with the Planner app',
     change: 'New code in {{secondes}} s',
     presents: '{{presents}} / {{attendus}} present',
     projeter: 'Project the QR code',
     projeterAide: 'Opens a window to show on the classroom screen: the QR code, and the students who appear as soon as they have scanned. You confirm the roll call there at the end.',
     projection: {
-      consigne: 'Scan this code with the HESTIM app, then check that your name appears',
+      consigne: 'Scan this code with the Planner app, then check that your name appears',
       pleinEcran: 'Full screen',
       quitterPleinEcran: 'Exit full screen',
       erreur: 'Roll call screen unavailable',
@@ -701,7 +700,7 @@ const en = {
   },
   presence: {
     titre: 'Scan with the app',
-    consigne: 'Attendance is only recorded from the HESTIM app, on your own phone: open it, tap the QR icon at the top of the board, then scan the code shown in class.',
+    consigne: 'Attendance is only recorded from the Planner app, on your own phone: open it, tap the QR icon at the top of the board, then scan the code shown in class.',
     retour: 'My board',
   },
   agenda: {
@@ -742,7 +741,7 @@ const en = {
     year: 'Academic year',
     group: 'Class (group)',
     print: 'Print / PDF',
-    help: 'Official HESTIM format, A4 portrait: use “Save as PDF” in the print window.',
+    help: 'Official {{ecole}} format, A4 portrait: use “Save as PDF” in the print window.',
     noGroup: 'You are not enrolled in any group',
     emptyTitle: 'Choose a class',
     emptyBody: 'The month’s timetable is shown in the school format, ready to print.',
@@ -901,7 +900,7 @@ const en = {
         "etapes": [
           "Open “My classes”: the class in progress comes first. Click “Take attendance”.",
           "Click “Project the QR code” and show the window on the classroom screen: it shows neither the menu nor your other pages.",
-          "Students scan with the HESTIM app: their name appears on screen as soon as attendance is recorded.",
+          "Students scan with the Planner app: their name appears on screen as soon as attendance is recorded.",
           "Click “Confirm roll call”, then view the full list for those present and absent."
         ],
         "note": "A student without a phone or arriving late: choose “Present” or “Late” next to their name on your roll call screen. The class history and rates are in My classes, Attendance and Students tabs. The optional spot check draws a few students at random to call out loud."
@@ -1016,7 +1015,7 @@ const en = {
       "etuPresence": {
         "titre": "Check in to class",
         "etapes": [
-          "Open the HESTIM app on your phone and tap the QR code icon.",
+          "Open the Planner app on your phone and tap the QR code icon.",
           "Scan the code shown on the classroom screen: your name appears on screen when attendance is recorded."
         ],
         "note": "Check-in only works from the app, and your account is linked to a single phone. New phone: ask the registrar’s office to unlink it."
@@ -1093,6 +1092,7 @@ const en = {
     calendar: 'Calendar',
     campus: 'Campuses',
     planningSettings: 'Planning settings',
+    identity: 'Identity and brand',
     rooms: 'Rooms',
     settings: 'Settings',
     notifications: 'Notifications',
@@ -1140,7 +1140,7 @@ const en = {
     },
   },
   espaces: {
-    titre: 'HESTIM spaces',
+    titre: '{{ecole}} spaces',
     ouvrir: 'Switch space',
     ici: 'You are here',
   },
@@ -1675,7 +1675,7 @@ const en = {
     forgot: 'Forgot your password?',
     submit: 'Sign in',
     submitting: 'Signing in…',
-    accountsByAdmin: 'No account yet? Accounts are created by the HESTIM administration.',
+    accountsByAdmin: 'No account yet? Accounts are created by the school administration.',
     mfa: {
       title: 'Two-factor authentication',
       aide: 'Enter the 6-digit code shown by your authenticator app.',
@@ -1705,19 +1705,19 @@ const en = {
       { title: 'Conflict-free scheduling', body: 'Sessions are planned against the room, the teacher and the group.' },
       { title: 'Live timetables', body: 'Every group and every teacher sees their week, on a computer or a phone.' },
       { title: 'Reschedules and cancellations', body: 'A rescheduled or cancelled session is flagged right away to the people concerned.' },
-      { title: 'Resource management', body: 'Rooms in the Gandhi and Stendhal buildings, courses, groups, teachers and students in one place.' },
+      { title: 'Resource management', body: 'Rooms on every campus, courses, groups, teachers and students in one place.' },
       { title: 'Automatic scheduling', body: 'Timetables are built from availability, room capacity and room type.' },
       { title: 'Statistics', body: 'Room occupancy, teacher workload, quiet hours and peak times.' },
     ],
-    footer: 'PACTE project · HESTIM Engineering & Business School',
+    footer: '{{nomEcole}}',
     photos: {
       galleryLabel: 'School photos',
-      session: 'A room at HESTIM',
-      sessionAlt: 'A HESTIM room during a talk: the audience seated facing the speaker and the screen.',
+      session: 'A room at the school',
+      sessionAlt: 'A school room during a talk: the audience seated facing the speaker and the screen.',
       incubator: 'CIEL incubator',
-      incubatorAlt: 'Workshop at the HESTIM CIEL incubator, in front of the "Innovation, entrepreneurship and leadership centre" banner.',
-      campus: 'HESTIM campus',
-      campusAlt: 'Students gathered in front of the HESTIM building.',
+      incubatorAlt: 'Workshop at the school CIEL incubator, in front of the "Innovation, entrepreneurship and leadership centre" banner.',
+      campus: '{{ecole}} campus',
+      campusAlt: 'Students gathered in front of the school building.',
     },
   },
   timetable: {
@@ -1860,7 +1860,7 @@ const en = {
       basement: 'Basement',
       floorN: 'Floor {{n}}',
       emptyTitle: 'No rooms',
-      emptyBody: 'Import the room inventory of Gandhi and Stendhal (CSV template provided) or add rooms one by one.',
+      emptyBody: 'Import the room inventory of each campus (CSV template provided) or add rooms one by one.',
       noMatch: 'No room matches this filter.',
       dialogCreate: 'New room',
       dialogEdit: 'Edit room',
@@ -2084,7 +2084,7 @@ const en = {
         cycleTitle: 'Cycle title',
         cycleTitleHelp: '“2nd year of the State Engineering cycle in …” on the timetable',
         partner: 'Partner (double degree)',
-        yearsHere: 'Years at HESTIM',
+        yearsHere: 'Years at the school',
         description: 'Description',
       },
       saved: 'Program saved',
@@ -2169,7 +2169,7 @@ const en = {
         volume: 'Hours',
         group: 'Taken by',
         session: 'Session length',
-        sessionHelp: 'At HESTIM a session usually uses two consecutive slots',
+        sessionHelp: 'A session usually uses two consecutive slots',
         mode: 'Mode',
         mention: 'Note (optional)',
         room: 'Room needed',

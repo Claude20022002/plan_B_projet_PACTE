@@ -14,6 +14,7 @@ import {
   Event,
   Hub,
   Tune,
+  Palette,
   Book,
   CalendarMonth,
   Category,
@@ -97,6 +98,7 @@ export const navigationFor = (user) => {
           { key: 'nav.rooms', icon: <MeetingRoom />, path: '/gestion/salles' },
           { key: 'nav.slots', icon: <CalendarMonth />, path: '/gestion/creneaux' },
           { key: 'nav.planningSettings', icon: <Tune />, path: '/gestion/parametres-planning' },
+          { key: 'nav.identity', icon: <Palette />, path: '/gestion/identite' },
         ],
       },
     ];
@@ -189,6 +191,7 @@ const TITLE_KEYS = {
   '/gestion/campus': 'nav.campus',
   '/gestion/calendrier': 'nav.calendar',
   '/gestion/parametres-planning': 'nav.planningSettings',
+  '/gestion/identite': 'nav.identity',
   '/gestion/enseignements': 'nav.teaching',
   '/statistiques': 'nav.statistics',
   '/notifications': 'nav.notifications',

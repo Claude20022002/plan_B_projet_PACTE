@@ -11,17 +11,18 @@ import partageEn from '../../shared/i18n/en.js';
 const fr = {
   ...partageFr,
   app: {
-    nom: 'HESTIM Planner',
+    nom: '{{produit}}',
     onglets: { tableau: 'Tableau', semaine: 'Semaine', scanner: 'Scanner', jeux: 'Activités', bibliotheque: 'Bibliothèque', compte: 'Compte' },
     connexion: {
       titre: 'Connexion',
-      email: 'Adresse e-mail HESTIM',
+      email: 'Adresse e-mail de l’école',
+      exempleEmail: 'prenom.nom@ecole.ma',
       motDePasse: 'Mot de passe',
       afficher: 'Afficher le mot de passe',
       masquer: 'Masquer le mot de passe',
       valider: 'Se connecter',
       erreurIdentifiants: 'Adresse e-mail ou mot de passe incorrect. Vérifiez-les, puis réessayez.',
-      erreurReseau: 'HESTIM Planner ne répond pas. Vérifiez votre connexion Internet, puis réessayez.',
+      erreurReseau: '{{produit}} ne répond pas. Vérifiez votre connexion Internet, puis réessayez.',
       erreurRole: 'Cette application est faite pour les étudiants. Avec votre compte, passez par le site web.',
       erreurConfiguration: 'L’application ne peut pas se connecter en toute sécurité. Prévenez l’administration de l’école.',
       erreurMotDePasse: 'Choisissez d’abord votre propre mot de passe sur le site web, puis revenez ici.',
@@ -131,7 +132,7 @@ const fr = {
       avis: 'Votre retour (missions, encadrement, conseils)',
       note: 'Note',
       remunere: 'Stage rémunéré',
-      consentement: 'J’accepte que ce retour soit publié dans la bibliothèque, visible des étudiants HESTIM.',
+      consentement: 'J’accepte que ce retour soit publié dans la bibliothèque, visible des étudiants de l’école.',
       envoyer: 'Publier',
       merci: 'Merci ! Votre retour est publié.',
       erreur: 'Votre retour n’est pas parti. Vérifiez ce que vous avez rempli, puis réessayez.',
@@ -162,7 +163,7 @@ const fr = {
       theme: 'Apparence',
       themes: {
         planner: 'Planner',
-        plannerAide: 'Le panneau des départs HESTIM.',
+        plannerAide: 'Le panneau des départs de l’école.',
         studylib: 'StudyLib',
         studylibAide: 'Le style clair de la bibliothèque.',
       },
@@ -170,7 +171,7 @@ const fr = {
       modes: { automatique: 'Auto', clair: 'Clair', sombre: 'Sombre' },
     },
     espaces: {
-      ouvrir: 'Espaces HESTIM',
+      ouvrir: 'Espaces {{ecole}}',
       titre: 'Espaces',
       web: 'Site web',
       siteDe: 'Ouvrir le site {{espace}}, déjà connecté',
@@ -180,7 +181,7 @@ const fr = {
     alertes: { titre: 'Alertes', vide: 'Aucune alerte pour le moment.' },
     propositionAlertes: {
       titre: 'Être prévenu des changements ?',
-      texte: 'Quand un cours est reporté, annulé ou change de salle, HESTIM Planner vous envoie une alerte sur ce téléphone.',
+      texte: 'Quand un cours est reporté, annulé ou change de salle, {{produit}} vous envoie une alerte sur ce téléphone.',
       activer: 'Activer les alertes',
       plusTard: 'Plus tard',
       aide: 'Vous pourrez changer d’avis dans Compte.',
@@ -408,17 +409,18 @@ const fr = {
 const en = {
   ...partageEn,
   app: {
-    nom: 'HESTIM Planner',
+    nom: '{{produit}}',
     onglets: { tableau: 'Board', semaine: 'Week', scanner: 'Scan', jeux: 'Activities', bibliotheque: 'Library', compte: 'Account' },
     connexion: {
       titre: 'Sign in',
-      email: 'HESTIM email address',
+      email: 'School email address',
+      exempleEmail: 'firstname.lastname@school.edu',
       motDePasse: 'Password',
       afficher: 'Show password',
       masquer: 'Hide password',
       valider: 'Sign in',
       erreurIdentifiants: 'Wrong email address or password. Check them and try again.',
-      erreurReseau: 'HESTIM Planner isn’t responding. Check your Internet connection and try again.',
+      erreurReseau: '{{produit}} isn’t responding. Check your Internet connection and try again.',
       erreurRole: 'This app is for students. Please use the website.',
       erreurConfiguration: 'The app can’t connect securely. Please let the school administration know.',
       erreurMotDePasse: 'Change your temporary password on the website, then come back.',
@@ -528,7 +530,7 @@ const en = {
       avis: 'Your feedback (tasks, supervision, advice)',
       note: 'Rating',
       remunere: 'Paid internship',
-      consentement: 'I agree that this review is published in the library, visible to HESTIM students.',
+      consentement: 'I agree that this review is published in the library, visible to the school’s students.',
       envoyer: 'Publish',
       merci: 'Thank you! Your review is published.',
       erreur: 'Could not send. Check the fields.',
@@ -559,7 +561,7 @@ const en = {
       theme: 'Appearance',
       themes: {
         planner: 'Planner',
-        plannerAide: 'The HESTIM departure board.',
+        plannerAide: 'The school departure board.',
         studylib: 'StudyLib',
         studylibAide: 'The library’s clean style.',
       },
@@ -567,7 +569,7 @@ const en = {
       modes: { automatique: 'Auto', clair: 'Light', sombre: 'Dark' },
     },
     espaces: {
-      ouvrir: 'HESTIM spaces',
+      ouvrir: '{{ecole}} spaces',
       titre: 'Spaces',
       web: 'Website',
       siteDe: 'Open the {{espace}} website, already signed in',
@@ -577,7 +579,7 @@ const en = {
     alertes: { titre: 'Alerts', vide: 'No alerts.' },
     propositionAlertes: {
       titre: 'Get notified of changes?',
-      texte: 'When a class is postponed, cancelled or moved to another room, HESTIM Planner sends an alert to this phone.',
+      texte: 'When a class is postponed, cancelled or moved to another room, {{produit}} sends an alert to this phone.',
       activer: 'Turn on alerts',
       plusTard: 'Not now',
       aide: 'You can change your mind in Account.',
@@ -808,6 +810,7 @@ const en = {
   },
 };
 
+// Clé figée : la renommer ferait oublier la langue choisie sur les téléphones déjà installés
 const CLE_LANGUE = 'hestim.langue';
 
 i18n.use(initReactI18next).init({
@@ -816,6 +819,12 @@ i18n.use(initReactI18next).init({
   fallbackLng: 'fr',
   interpolation: { escapeValue: false },
 });
+
+/** {{ecole}}, {{nomEcole}} et {{produit}} dans tous les textes (identité lue au lancement, src/ecole.js) */
+export const nommerEcole = ({ nom, nom_court: ecole, produit }) => {
+  i18n.options.interpolation.defaultVariables = { ecole, nomEcole: nom, produit };
+};
+nommerEcole({ nom: 'Planner', nom_court: 'Planner', produit: 'Planner' });
 
 /** Reprend la langue choisie sur cet appareil */
 export const restaurerLangue = async () => {

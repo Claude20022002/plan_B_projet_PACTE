@@ -33,11 +33,11 @@ export const envoyerInvitation = async (user, lien) => {
     try {
         const resultat = await sendEmail({
             to: user.email,
-            subject: "Votre compte HESTIM Planner",
-            text: `Bonjour ${user.prenom} ${user.nom},\n\nUn compte HESTIM Planner a été créé pour vous. Choisissez votre mot de passe en ouvrant ce lien (valable ${DUREE_INVITATION_JOURS} jours) :\n\n${lien}\n\nL'équipe HESTIM Planner`,
+            subject: "Votre compte {{produit}}",
+            text: `Bonjour ${user.prenom} ${user.nom},\n\nUn compte {{produit}} a été créé pour vous. Choisissez votre mot de passe en ouvrant ce lien (valable ${DUREE_INVITATION_JOURS} jours) :\n\n${lien}\n\nL'équipe {{produit}}`,
             html: `<div style="font-family: Arial, sans-serif; max-width: 600px;">
                 <p>Bonjour ${echapper(user.prenom)} ${echapper(user.nom)},</p>
-                <p>Un compte HESTIM Planner a été créé pour vous. Choisissez votre mot de passe :</p>
+                <p>Un compte {{produit}} a été créé pour vous. Choisissez votre mot de passe :</p>
                 <p><a href="${lien}" style="background:#001861;color:#fff;padding:12px 24px;text-decoration:none;border-radius:4px;display:inline-block;">Choisir mon mot de passe</a></p>
                 <p style="color:#666;font-size:12px;">Ce lien est valable ${DUREE_INVITATION_JOURS} jours.</p>
             </div>`,
