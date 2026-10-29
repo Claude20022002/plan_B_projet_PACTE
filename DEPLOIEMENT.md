@@ -224,6 +224,61 @@ bash /opt/hestim/deploy/vps/nettoyer-paquets.sh /root --supprimer
 
 Il ne touche ni aux sauvegardes de la base (`/root/sauvegardes`), ni aux images `avant-image-majNN`, ni aux archives d'images. À ne lancer qu'une fois la mise à jour en cours validée par la recette : les paquets et images supprimés sont ceux qui permettraient un retour plus ancien.
 
+### Passer à MySQL 8.4 (lot ME-0e)
+
+MySQL 8.0 n'est plus suivi depuis avril 2026 ; 8.4 est la version suivie à long terme. Le passage est une **mise à niveau sur place** : MySQL 8.4 ouvre le dossier de données de 8.0 et le met à jour lui-même au premier démarrage. Il ne se défait pas sur place (8.4 ne redescend pas en 8.0) : le retour arrière passe par une copie du dossier faite juste avant.
+
+Essayé le 26 octobre 2026 sur le PC : schéma de Planner et données de démonstration créés en 8.0.46, puis ouverts par 8.4.13 ; mise à niveau sans erreur, les 69 tables gardent la même empreinte (`CHECKSUM TABLE`), comptes en `caching_sha2_password` acceptés, aucune migration en attente, suite d'intégration complète verte (461 tests) ; mémoire au repos avec `mysql.cnf` : 157 Mo en 8.0, 139 à 182 Mo en 8.4 (limite du conteneur : 512 Mo).
+
+**1. Répéter sur une copie des vraies données** (sans arrêt, rien n'est modifié), quelques jours avant :
+
+```bash
+bash /opt/hestim/deploy/vps/essayer-mysql84.sh ; echo "code $?"
+```
+
+Attendu : « RÉPÉTITION RÉUSSIE », code 0. Le script vérifie aussi qu'aucun compte n'utilise `mysql_native_password`, désactivé par défaut en 8.4. S'il en signale un : `ALTER USER '<nom>'@'<hôte>' IDENTIFIED WITH caching_sha2_password BY '<son mot de passe>';` avant le passage. Récupérer l'image à l'avance : `docker pull mysql:8.4.13`.
+
+**2. Le passage**, dans la fenêtre du dimanche matin (environ 15 minutes d'arrêt), dans `/opt/hestim` avec `COMPOSE` comme plus haut :
+
+```bash
+# Une sauvegarde fraîche, sortie du serveur (code 0 attendu)
+bash /opt/hestim/deploy/vps/sauvegarder.sh ; echo "code $?"
+# Plus aucune écriture
+$COMPOSE stop backend studylib studylib-queue studylib-scheduler
+# Arrêt lent : InnoDB vide tout avant de changer de version
+docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SET GLOBAL innodb_fast_shutdown = 0"'
+$COMPOSE stop mysql
+# Copie du dossier de données de 8.0, MySQL arrêté : c'est le retour arrière
+VOL=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/var/lib/mysql"}}{{.Name}}{{end}}{{end}}' hestim_mysql)
+docker volume create hestim_mysql80_avant84
+docker run --rm --network none -v "$VOL":/de:ro -v hestim_mysql80_avant84:/vers alpine:3.20 cp -a /de/. /vers/
+```
+
+Les paquets majNN ne livrent pas `docker-compose.yml` et `appliquer-maj.sh` ne relance jamais MySQL : l'image ne change qu'ici, à la main.
+
+```bash
+sed -i 's#^\( *image: \)mysql:8\.0$#\1mysql:8.4.13#' /opt/hestim/docker-compose.yml
+grep -n 'image: mysql' /opt/hestim/docker-compose.yml   # une seule ligne, mysql:8.4.13
+$COMPOSE up -d mysql
+docker logs -f hestim_mysql    # attendre « Server upgrade from '80046' to '80413' completed » puis « ready for connections », Ctrl+C
+docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -N -e "SELECT VERSION()"'   # 8.4.13
+$COMPOSE up -d backend studylib studylib-queue studylib-scheduler
+```
+
+Recette courte : connexion, emploi du temps d'un étudiant, un document de la Bibliothèque, puis `bash /opt/hestim/deploy/vps/sauvegarder.sh` (code 0). Garder le volume `hestim_mysql80_avant84` deux semaines, puis `docker volume rm hestim_mysql80_avant84`.
+
+**Retour arrière** (tout ce qui a été saisi depuis le passage est perdu : décider vite) :
+
+```bash
+$COMPOSE stop backend studylib studylib-queue studylib-scheduler mysql
+docker run --rm --network none -v hestim_mysql80_avant84:/de:ro -v "$VOL":/vers alpine:3.20 sh -c 'find /vers -mindepth 1 -delete && cp -a /de/. /vers/'
+sed -i 's#^\( *image: \)mysql:8\.4\.13$#\1mysql:8.0#' /opt/hestim/docker-compose.yml
+$COMPOSE up -d mysql
+$COMPOSE up -d backend studylib studylib-queue studylib-scheduler
+```
+
+Pendant l'arrêt, la tâche `*/15` de `sauvegarder-journaux.sh` peut échouer une fois (MySQL arrêté) : sans effet, la sauvegarde fraîche du début couvre ce moment ; la lancer à la main après la recette. Après le passage, les journaux binaires continuent sans rupture (même identifiant de serveur, même suite de numéros), et l'essai de restauration du mois se fait dans un MySQL jetable `mysql:8.4.13` (un export de 8.4 ne se relit pas à coup sûr en 8.0). Pour les rejouer (« Revenir à une heure précise »), l'outil `mysqlbinlog` 8.4 vient de l'image `percona/percona-server:8.4` (8.4.11, vérifié le 26 octobre) : l'image `mysql:8.4` ne le contient pas.
+
 ---
 
 ## Comparatif des plateformes
