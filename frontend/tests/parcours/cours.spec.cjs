@@ -4,13 +4,15 @@
  * le supprime. Chaque étape est vérifiée à l'écran, comme l'utilisateur la voit.
  */
 const { test, expect } = require("@playwright/test");
-const { lireDonnees, seConnecter } = require("./outils.cjs");
+const { lireDonnees, seConnecter, supprimerModule } = require("./outils.cjs");
 
 test.setTimeout(90_000);
 
 test("maquette : créer un module, ajouter une composante, le renommer, le supprimer", async ({ page }) => {
   const { admin, motDePasse } = lireDonnees();
   await seConnecter(page, { email: admin.email, motDePasse, role: "admin" });
+  // Un essai précédent arrêté en route a pu laisser le module : on repart sans lui
+  await supprimerModule(page, { code: "PRC-RES", semestre: "S7" });
   await page.goto("/gestion/cours");
 
   // Créer : code, intitulé, filière, niveau, semestre, et la première composante (CM, 21 h)
