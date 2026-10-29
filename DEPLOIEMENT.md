@@ -254,9 +254,11 @@ docker volume create hestim_mysql80_avant84
 docker run --rm --network none -v "$VOL":/de:ro -v hestim_mysql80_avant84:/vers alpine:3.20 cp -a /de/. /vers/
 ```
 
-Mettre en place le `docker-compose.yml` de cette version (image `mysql:8.4.13`), puis :
+Les paquets majNN ne livrent pas `docker-compose.yml` et `appliquer-maj.sh` ne relance jamais MySQL : l'image ne change qu'ici, à la main.
 
 ```bash
+sed -i 's#^\( *image: \)mysql:8\.0$#\1mysql:8.4.13#' /opt/hestim/docker-compose.yml
+grep -n 'image: mysql' /opt/hestim/docker-compose.yml   # une seule ligne, mysql:8.4.13
 $COMPOSE up -d mysql
 docker logs -f hestim_mysql    # attendre « Server upgrade from '80046' to '80413' completed » puis « ready for connections », Ctrl+C
 docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -N -e "SELECT VERSION()"'   # 8.4.13
@@ -270,12 +272,12 @@ Recette courte : connexion, emploi du temps d'un étudiant, un document de la Bi
 ```bash
 $COMPOSE stop backend studylib studylib-queue studylib-scheduler mysql
 docker run --rm --network none -v hestim_mysql80_avant84:/de:ro -v "$VOL":/vers alpine:3.20 sh -c 'find /vers -mindepth 1 -delete && cp -a /de/. /vers/'
-# Remettre « image: mysql:8.0 » dans docker-compose.yml, puis :
+sed -i 's#^\( *image: \)mysql:8\.4\.13$#\1mysql:8.0#' /opt/hestim/docker-compose.yml
 $COMPOSE up -d mysql
 $COMPOSE up -d backend studylib studylib-queue studylib-scheduler
 ```
 
-Après le passage, les journaux binaires continuent sans rupture (même identifiant de serveur, même suite de numéros). Pour les rejouer (« Revenir à une heure précise »), l'outil `mysqlbinlog` 8.4 vient de l'image `percona/percona-server:8.4` (8.4.11, vérifié le 26 octobre) : l'image `mysql:8.4` ne le contient pas.
+Pendant l'arrêt, la tâche `*/15` de `sauvegarder-journaux.sh` peut échouer une fois (MySQL arrêté) : sans effet, la sauvegarde fraîche du début couvre ce moment ; la lancer à la main après la recette. Après le passage, les journaux binaires continuent sans rupture (même identifiant de serveur, même suite de numéros), et l'essai de restauration du mois se fait dans un MySQL jetable `mysql:8.4.13` (un export de 8.4 ne se relit pas à coup sûr en 8.0). Pour les rejouer (« Revenir à une heure précise »), l'outil `mysqlbinlog` 8.4 vient de l'image `percona/percona-server:8.4` (8.4.11, vérifié le 26 octobre) : l'image `mysql:8.4` ne le contient pas.
 
 ---
 
