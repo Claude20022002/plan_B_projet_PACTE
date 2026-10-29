@@ -26,6 +26,9 @@ const BASE_B = "hestim_test_b";
 let ecoleA;
 let ecoleB;
 let connexionB;
+// Un seul serveur pour tout le fichier : supertest en ouvrirait un par requête, et 20 requêtes
+// simultanées ont alors perdu une connexion sur la CI (ECONNRESET)
+let serveur;
 const dansA = (fn) => dansEtablissement(ecoleA, fn);
 const dansB = (fn) => dansEtablissement(ecoleB, fn);
 
@@ -36,7 +39,7 @@ const cookie = (reponse, nom) => {
 
 /** Client connecté à l'école de l'hôte donné (cookies de session et jeton CSRF). */
 const connecter = async (hote, user) => {
-    const agent = request.agent(app);
+    const agent = request.agent(serveur);
     const reponse = await agent.post("/api/auth/login").set("Host", hote).send({ email: user.email, password: PASSWORD });
     if (reponse.status !== 200) throw new Error(`Connexion impossible sur ${hote} : ${reponse.status} ${JSON.stringify(reponse.body)}`);
     const csrf = cookie(reponse, "csrf_token");
@@ -56,6 +59,7 @@ let filiereA;
 let filiereB;
 
 beforeAll(async () => {
+    serveur = app.listen(0);
     await resetDatabase();
     await sequelize.query(`DROP DATABASE IF EXISTS \`${BASE_B}\``);
     await sequelize.query(`CREATE DATABASE \`${BASE_B}\``);
@@ -81,6 +85,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
     oublierEtablissements();
+    await new Promise((fin) => serveur.close(fin));
     await connexionB?.close();
     await closeDatabase();
 });
@@ -141,7 +146,7 @@ describe("Deux écoles, deux bases, le même code", () => {
 
     test("un jeton de B rejoué sur A est refusé", async () => {
         const b = await connecter(HOTE_B, adminB);
-        const reponse = await request(app).get("/api/groupes").set("Host", HOTE_A).set("Cookie", b.jeton);
+        const reponse = await request(serveur).get("/api/groupes").set("Host", HOTE_A).set("Cookie", b.jeton);
         expect(reponse.status).toBe(401);
     });
 
@@ -157,8 +162,8 @@ describe("Deux écoles, deux bases, le même code", () => {
     // dès qu'il passe, pour qu'on le change en test ordinaire avec la correction
     test.failing("chaque école lit sa propre identité (nom, couleurs, expéditeur)", async () => {
         await dansB(() => ConfigurationEtablissement.update({ nom: "École Beta", nom_court: "Beta" }, { where: { id: 1 } }));
-        const nomA = (await request(app).get("/api/etablissement").set("Host", HOTE_A)).body.nom;
-        const nomB = (await request(app).get("/api/etablissement").set("Host", HOTE_B)).body.nom;
+        const nomA = (await request(serveur).get("/api/etablissement").set("Host", HOTE_A)).body.nom;
+        const nomB = (await request(serveur).get("/api/etablissement").set("Host", HOTE_B)).body.nom;
         expect(nomA).not.toBe("École Beta");
         expect(nomB).toBe("École Beta");
     });
@@ -193,7 +198,7 @@ describe("Échec fermé (mode strict)", () => {
     });
 
     test("un hôte inconnu n'atteint aucune base", async () => {
-        const reponse = await request(app).get("/api/groupes").set("Host", "inconnue.planner.test");
+        const reponse = await request(serveur).get("/api/groupes").set("Host", "inconnue.planner.test");
         expect(reponse.status).toBe(404);
     });
 });
