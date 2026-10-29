@@ -187,3 +187,50 @@ describe("Supprimer", () => {
         expect(await Notification.count({ where: { lien: `/annonces/${idAnnonceGroupe}` } })).toBe(0);
     });
 });
+
+describe("Envoi aux classes fermé (lot EC-5)", () => {
+    // Fermé le temps du bloc, rouvert ensuite : les autres blocs testent l'envoi ouvert
+    beforeAll(() => {
+        process.env.ANNONCES_ENSEIGNANTS_ACTIVES = "false";
+    });
+    afterAll(() => {
+        process.env.ANNONCES_ENSEIGNANTS_ACTIVES = "true";
+    });
+
+    test("un enseignant n'écrit plus à sa classe : 403, aucune annonce ni notification créée", async () => {
+        const avant = await Annonce.count();
+        const res = await (await loginAs(enseignant)).send("post", "/api/annonces", { titre: "Salle changée", corps: "Le TD a lieu en LABO02.", portee: "groupe", id_cible: fixture.groupe.id_groupe });
+        expect(res.status).toBe(403);
+        expect(res.body.code).toBe("ANNONCES_CLASSES_FERMEES");
+        expect(await Annonce.count()).toBe(avant);
+    });
+
+    test("ses cibles sont vides : le site masque « Nouvelle annonce »", async () => {
+        const prof = (await (await loginAs(enseignant)).get("/api/annonces/cibles")).body;
+        expect(prof).toMatchObject({ portees: [], publics: [], groupes: [] });
+    });
+
+    test("il lit toujours ses annonces reçues et ce qu'il a envoyé avant la fermeture", async () => {
+        const prof = await loginAs(enseignant);
+        expect((await prof.get("/api/annonces")).status).toBe(200);
+        expect((await prof.get("/api/annonces/envoyees")).status).toBe(200);
+    });
+
+    test("le responsable de filière écrit toujours à sa filière et à ses groupes ; l'administration aussi", async () => {
+        const resp = await loginAs(responsable);
+        expect((await resp.get("/api/annonces/cibles")).body.portees).toEqual(["filiere", "niveau", "groupe"]);
+        const aGroupe = await resp.send("post", "/api/annonces", { titre: "Rattrapage", corps: "Séance de rattrapage vendredi.", portee: "groupe", id_cible: fixture.groupe.id_groupe });
+        expect(aGroupe.status).toBe(201);
+        const adm = await (await loginAs(admin)).send("post", "/api/annonces", { titre: "Information", corps: "Rentrée le 14.", portee: "etablissement" });
+        expect(adm.status).toBe(201);
+    });
+
+    test("rouvert, l'enseignant écrit de nouveau à sa classe", async () => {
+        process.env.ANNONCES_ENSEIGNANTS_ACTIVES = "true";
+        const prof = await loginAs(enseignant);
+        expect((await prof.get("/api/annonces/cibles")).body.portees).toEqual(["groupe"]);
+        const res = await prof.send("post", "/api/annonces", { titre: "Salle changée", corps: "Le TD a lieu en LABO02.", portee: "groupe", id_cible: fixture.groupe.id_groupe });
+        expect(res.status).toBe(201);
+        process.env.ANNONCES_ENSEIGNANTS_ACTIVES = "false";
+    });
+});
