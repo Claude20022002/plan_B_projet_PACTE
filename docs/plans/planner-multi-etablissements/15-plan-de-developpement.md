@@ -110,7 +110,7 @@ Jalon : **MySQL 8.4 en production, déploiement en une commande, alertes en plac
 | A | ME-21 | Sonde extérieure, alertes par courriel et téléphone, page d'état | M |
 | A | ME-14a | Mesure du solveur sur 20 000 étudiants de démonstration : dit si les universités sont visées la première année | M |
 | A | ME-0c | ClassQuiz derrière une fonctionnalité par établissement (serveur) | S |
-| A | ME-3a (essai) | Essai réduit du contexte d'établissement (R-2) : un résolveur de modèles, `AsyncLocalStorage`, trois routes, une transaction, un crochet de modèle, deux bases de test. Dit tôt si D-03 tient ou s'il faut l'injection explicite | M |
+| A | ME-3a (essai) | Essai réduit du contexte d'établissement (R-2) : un résolveur de modèles, `AsyncLocalStorage`, trois routes, une transaction, un crochet de modèle, deux bases de test. Dit tôt si D-03 tient ou s'il faut l'injection explicite. **Fait le 29 octobre : D-03 tient** (fichier 17) | M |
 | A | Lint | Règle `no-restricted-imports` sur `config/db.js` et sur l'import direct d'un modèle par un autre, avec la liste des exceptions actuelles figée (33 fichiers le 26 octobre) : la dette ne grossit plus | S |
 | B | ME-0d | Parcours `cours.spec` fiable, parcours complets verts dix fois sur dix | S |
 | B | ME-0c | ClassQuiz masqué dans les écrans quand la fonctionnalité est éteinte | S |
