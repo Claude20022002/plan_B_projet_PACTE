@@ -40,7 +40,8 @@ const SEARCH_SOURCES = [
     { type: 'salle', load: salleAPI.getAll, label: (item) => item.nom_salle },
     { type: 'enseignant', load: enseignantAPI.getAll, label: personLabel },
     { type: 'cours', load: coursAPI.getAll, label: (item) => item.nom_cours },
-    { type: 'groupe', load: groupeAPI.getAll, label: (item) => item.nom_groupe },
+    // L'année distingue « 4A IIIA » de 2025-2026 de celle de 2026-2027 (lot ME-18)
+    { type: 'groupe', load: groupeAPI.getAll, label: (item) => [item.nom_groupe, item.annee_scolaire].filter(Boolean).join(' · ') },
     { type: 'etudiant', load: etudiantAPI.getAll, label: personLabel },
 ];
 
