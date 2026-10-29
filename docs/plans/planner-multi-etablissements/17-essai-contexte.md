@@ -37,7 +37,7 @@ Le test : `backend/tests/integration/contexteEtablissement.test.js` (10 tests).
 
 ## 17.4 Ce qui reste à ME-3a complet
 
-- **Fabrique.** L'essai crée les modèles de B en clonant ceux de A (`contexte/fabrique.js` : attributs, options, crochets, méthodes ajoutées, relations). ME-3a complet fait de chaque fichier de modèle une fonction `(sequelize) => sequelize.define(...)`, appelée une fois par établissement ; `definitions.js` devient la fonction qui les crée et les relie.
+- **Fabrique.** L'essai crée les modèles de B en clonant ceux de A (`tests/integration/helpers/fabriqueEtablissement.js`, outil de test seulement : attributs, options, crochets, méthodes ajoutées, relations). ME-3a complet fait de chaque fichier de modèle une fonction `(sequelize) => sequelize.define(...)`, appelée une fois par établissement ; `definitions.js` devient la fonction qui les crée et les relie.
 - **Les 23 fichiers figés** de la règle de lint (point 2 ci-dessus), dont `services/taches/periodiques.js`, qui nomme son verrou d'après la base.
 - **Travail hors requête** : tâches périodiques (une boucle sur les établissements, chacune dans `dansEtablissement`), file des notifications (point 3), générations en cours et limiteur en mémoire (clés préfixées par l'établissement, D-03).
 - **Mode strict par défaut**, une fois ces points faits ; l'école par défaut ne sert plus que pendant la transition.
@@ -48,7 +48,8 @@ Le test : `backend/tests/integration/contexteEtablissement.test.js` (10 tests).
 
 | Fichier | Changement |
 |---|---|
-| `backend/contexte/etablissement.js`, `resolveur.js`, `fabrique.js` | Nouveaux : contexte, résolveurs, clonage de l'essai |
+| `backend/contexte/etablissement.js`, `resolveur.js` | Nouveaux : contexte et résolveurs |
+| `backend/tests/integration/helpers/fabriqueEtablissement.js` | Nouveau : clonage des modèles pour la deuxième base de test (jamais importé par le code de production, vérifié par `tests/architecture/importsProduction.test.js`) |
 | `backend/middleware/etablissementMiddleware.js` | Nouveau : école choisie par le nom d'hôte |
 | `backend/models/index.js` → `definitions.js` ; nouvel `index.js` | Les définitions changent de nom ; `index.js` exporte un résolveur par nom |
 | `backend/models/acces.js` | `enTransaction` et `requete` prennent la connexion de l'établissement courant |

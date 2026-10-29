@@ -7,7 +7,7 @@ import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import fs from "node:fs";
 import { AnneeUniversitaire, AppareilEtudiant, ConfigurationEtablissement, DemandeTelephone, Filiere, Groupe } from "../../models/index.js";
 import { dansEtablissement, etablissementParDefaut, HorsContexteError } from "../../contexte/etablissement.js";
-import { creerEtablissement } from "../../contexte/fabrique.js";
+import { creerEtablissement } from "./helpers/fabriqueEtablissement.js";
 import { migrateurPour } from "../../migrations/migrator.js";
 import { enregistrerEtablissement, oublierEtablissements } from "../../middleware/etablissementMiddleware.js";
 

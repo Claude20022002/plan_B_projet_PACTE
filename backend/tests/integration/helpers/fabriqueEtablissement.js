@@ -1,5 +1,5 @@
-import sequelizeParDefaut from "../config/db.js";
-import * as definitions from "../models/definitions.js";
+import sequelizeParDefaut from "../../../config/db.js";
+import * as definitions from "../../../models/definitions.js";
 
 /**
  * Modèles d'un autre établissement, pour l'essai réduit de ME-3a seulement. Les modèles de l'école
