@@ -60,4 +60,15 @@ const Groupe = sequelize.define(
     }
 );
 
+// Une année créée ou renommée après ses groupes (ceux de l'année suivante saisis avant de la déclarer au
+// calendrier) : les groupes restés sans année dont le texte la désigne s'y rattachent
+AnneeUniversitaire.addHook("afterSave", "rattacherGroupesSansAnnee", async (annee, { transaction } = {}) => {
+    if (!annee.changed("libelle")) return;
+    const libelle = normaliser(annee.libelle);
+    const orphelins = (await Groupe.findAll({ where: { id_annee: null }, attributes: ["id_groupe", "annee_scolaire"], transaction }))
+        .filter((g) => normaliser(g.annee_scolaire) === libelle)
+        .map((g) => g.id_groupe);
+    if (orphelins.length) await Groupe.update({ id_annee: annee.id_annee }, { where: { id_groupe: orphelins }, transaction });
+});
+
 export default Groupe;

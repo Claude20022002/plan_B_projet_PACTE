@@ -42,10 +42,28 @@ const scannerCommeMobile = async (request, { email, motDePasse, code, appareil }
  * cela, les étudiants ne voient aucune séance (décision du 21 octobre 2026). `page` est celle de l'administration.
  */
 const publierMois = async (page, { mois, idFiliere }) => {
-  const jeton = await page.request.get("/api/auth/csrf-token");
-  const csrf = (await page.context().cookies()).find((c) => c.name === "csrf_token")?.value ?? (await jeton.json()).csrfToken;
-  const reponse = await page.request.post("/api/agenda/edt-mensuel/publier", { headers: { "X-CSRF-Token": decodeURIComponent(csrf) }, data: { mois, id_filiere: idFiliere } });
+  const reponse = await page.request.post("/api/agenda/edt-mensuel/publier", { headers: await enTeteCsrf(page), data: { mois, id_filiere: idFiliere } });
   expect(reponse.ok(), `publication de ${mois} : ${await reponse.text()}`).toBeTruthy();
 };
 
-module.exports = { lireDonnees, seConnecter, scannerCommeMobile, publierMois };
+/**
+ * Supprime par l'API les modules d'un code laissés par un essai arrêté en route : la relance de la
+ * CI (retries) et --repeat-each rejouent un parcours sur la même base. `page` est celle de l'administration.
+ */
+const supprimerModule = async (page, { code, semestre }) => {
+  const liste = await page.request.get(`/api/cours?semestre=${semestre}&limit=100`);
+  expect(liste.ok(), `liste des modules : ${await liste.text()}`).toBeTruthy();
+  for (const { id_cours: id } of (await liste.json()).data.filter((c) => c.code_cours === code)) {
+    const reponse = await page.request.delete(`/api/cours/${id}`, { headers: await enTeteCsrf(page) });
+    expect(reponse.ok(), `suppression de ${code} : ${await reponse.text()}`).toBeTruthy();
+  }
+};
+
+/** En-tête CSRF des requêtes d'écriture faites au nom de la session ouverte dans `page`. */
+const enTeteCsrf = async (page) => {
+  const jeton = await page.request.get("/api/auth/csrf-token");
+  const csrf = (await page.context().cookies()).find((c) => c.name === "csrf_token")?.value ?? (await jeton.json()).csrfToken;
+  return { "X-CSRF-Token": decodeURIComponent(csrf) };
+};
+
+module.exports = { lireDonnees, seConnecter, scannerCommeMobile, publierMois, supprimerModule };

@@ -13,6 +13,8 @@ import { estResponsable } from '../utils/droits';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { fetchAll } from '../utils/fetchAll';
+import useAnnees from '../hooks/useAnnees';
+import { groupesDuJour } from '../utils/annees';
 import OngletsEmploisDuTemps from '../components/gestion/OngletsEmploisDuTemps';
 
 const moisCourant = () => new Date().toISOString().slice(0, 7);
@@ -38,6 +40,9 @@ export default function EdtMensuel() {
     // Publier et envoyer le mois (R4) : administration ou responsable de filière
     const peutPublier = user?.role === 'admin' || estResponsable(user);
     const groupe = groupes.find((g) => g.id_groupe === idGroupe) ?? null;
+    // Les classes de l'année du mois affiché (lot ME-18), plus celle déjà choisie
+    const annees = useAnnees(!etudiant);
+    const classesDuMois = groupesDuJour(groupes, annees ?? [], `${mois}-01`, [idGroupe]);
 
     useEffect(() => {
         if (etudiant) {
@@ -72,8 +77,8 @@ export default function EdtMensuel() {
                         <Autocomplete
                             sx={{ minWidth: 260 }}
                             size="small"
-                            options={groupes}
-                            value={groupes.find((g) => g.id_groupe === idGroupe) ?? null}
+                            options={classesDuMois}
+                            value={groupe}
                             onChange={(_, v) => setIdGroupe(v?.id_groupe ?? null)}
                             getOptionLabel={(g) => g.nom_groupe}
                             isOptionEqualToValue={(a, b) => a.id_groupe === b.id_groupe}

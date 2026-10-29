@@ -29,6 +29,8 @@ import { etudiantAPI, userAPI, groupeAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
+import SelecteurAnnee from '../../components/common/SelecteurAnnee';
+import useAnneeChoisie from '../../hooks/useAnneeChoisie';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_ETUDIANTS } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
@@ -65,27 +67,25 @@ export default function Etudiants() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [importOuvert, setImportOuvert] = useState(false);
+    const { annees, valeur: valeurAnnee, annee, filtre, choisir: choisirAnnee } = useAnneeChoisie();
 
     useEffect(() => {
         loadEtudiants();
         loadUsers();
-        loadGroupes();
     }, [page, rowsPerPage]);
+
+    // Groupes de l'année choisie (lot ME-18) : le formulaire et l'import ne confondent plus
+    // « 4A IIIA » de deux années différentes
+    useEffect(() => {
+        if (valeurAnnee === null) return;
+        groupeAPI.getTous(filtre).then(setGroupes).catch((error) => console.error('Erreur:', error));
+    }, [valeurAnnee, filtre]);
 
     const loadUsers = async () => {
         try {
             const data = await userAPI.getTous();
             const etudiantsUsers = data.filter((u) => u.role === 'etudiant');
             setUsers(etudiantsUsers);
-        } catch (error) {
-            console.error('Erreur:', error);
-        }
-    };
-
-    const loadGroupes = async () => {
-        try {
-            const data = await groupeAPI.getTous();
-            setGroupes(data);
         } catch (error) {
             console.error('Erreur:', error);
         }
@@ -172,7 +172,8 @@ export default function Etudiants() {
             const propre = Object.fromEntries(Object.entries(l).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]));
             const nomGroupe = String(propre.groupe ?? '').toLowerCase();
             if (nomGroupe && !parNom.has(nomGroupe)) {
-                erreurs.push({ ligne: index + 2, libelle: propre.email, message: t('etudiants.groupeInconnu', { groupe: propre.groupe }) });
+                const message = annee ? t('etudiants.groupeInconnuAnnee', { groupe: propre.groupe, annee: annee.libelle }) : t('etudiants.groupeInconnu', { groupe: propre.groupe });
+                erreurs.push({ ligne: index + 2, libelle: propre.email, message });
                 return;
             }
             valides.push({ ...propre, email: String(propre.email ?? '').toLowerCase(), id_groupe: nomGroupe ? parNom.get(nomGroupe) : null });
@@ -196,6 +197,12 @@ export default function Etudiants() {
     };
 
 
+    // Fiche d'un étudiant d'une autre année : son groupe reste proposé, pour ne pas l'effacer
+    const groupesProposes =
+        editing?.groupe && !groupes.some((g) => g.id_groupe === editing.id_groupe)
+            ? [...groupes, { id_groupe: editing.id_groupe, nom_groupe: editing.groupe.nom_groupe }]
+            : groupes;
+
     const filteredEtudiants = etudiants.filter(
         (etu) =>
             etu.user?.nom?.toLowerCase().includes(search.toLowerCase()) ||
@@ -206,8 +213,9 @@ export default function Etudiants() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'flex-end', mb: 3 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
                     {/* Le titre est celui de la mise en page, et le menu y ramène : plus de « Retour » ni de « Gestion des… » (recette, m-1 et m-2) */}
+                    <SelecteurAnnee annees={annees} valeur={valeurAnnee} onChange={choisirAnnee} />
                     <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         <Button
                             variant="outlined"
@@ -361,7 +369,7 @@ export default function Etudiants() {
                                         label={t('etudiants.colonnes.groupe')}
                                         error={formik.touched.id_groupe && Boolean(formik.errors.id_groupe)}
                                     >
-                                        {groupes.map((groupe) => (
+                                        {groupesProposes.map((groupe) => (
                                             <MenuItem key={groupe.id_groupe} value={groupe.id_groupe}>
                                                 {groupe.nom_groupe}
                                             </MenuItem>
