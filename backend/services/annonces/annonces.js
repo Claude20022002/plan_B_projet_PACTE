@@ -178,8 +178,8 @@ const apercu = (texte) => (texte.length > 200 ? `${texte.slice(0, 197)}…` : te
 
 /** E-mails après validation, un par un, sans jamais bloquer ni faire échouer l'envoi. */
 const envoyerEmails = (destinataires, annonce, auteur) => {
-    const sujet = `[HESTIM] ${annonce.titre}`;
-    const texte = `${annonce.corps}\n\n${auteur.prenom} ${auteur.nom}\nÀ retrouver dans HESTIM Planner, rubrique Annonces.`;
+    const sujet = `[{{ecole}}] ${annonce.titre}`;
+    const texte = `${annonce.corps}\n\n${auteur.prenom} ${auteur.nom}\nÀ retrouver dans {{produit}}, rubrique Annonces.`;
     (async () => {
         for (const d of destinataires) {
             if (!d.email) continue;

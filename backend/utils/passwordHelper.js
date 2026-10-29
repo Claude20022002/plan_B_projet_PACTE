@@ -79,7 +79,7 @@ export const estDivulgue = async (password, { fetchImpl = globalThis.fetch, dela
     const [prefixe, suffixe] = [empreinte.slice(0, 5), empreinte.slice(5)];
     try {
         const reponse = await fetchImpl(`https://api.pwnedpasswords.com/range/${prefixe}`, {
-            headers: { "Add-Padding": "true", "User-Agent": "HESTIM-Planner" },
+            headers: { "Add-Padding": "true", "User-Agent": "Planner" },
             signal: AbortSignal.timeout(delaiMs),
         });
         if (!reponse.ok) return null;

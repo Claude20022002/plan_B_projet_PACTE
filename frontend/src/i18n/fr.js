@@ -2,8 +2,7 @@ import partage from '../../../shared/i18n/fr.js';
 
 const fr = {
   app: {
-    name: 'HESTIM Planner',
-    school: 'Engineering & Business School',
+    name: '{{produit}}',
   },
   vuesEdt: { grille: 'Grille', liste: 'Liste des séances', mois: 'Mois (impression)' },
   common: {
@@ -47,7 +46,7 @@ const fr = {
     codeApp: 'Code de l’application',
     activer: 'Activer',
     codesAide: 'Vos codes de secours : chacun sert une seule fois si votre téléphone est indisponible. Ils ne seront plus affichés : rangez-les en lieu sûr (gestionnaire de mots de passe, papier sous clé).',
-    codesFichier: 'HESTIM Planner : codes de secours de la double authentification (chacun sert une fois)',
+    codesFichier: '{{produit}} : codes de secours de la double authentification (chacun sert une fois)',
     copier: 'Copier',
     telecharger: 'Télécharger',
     codesRanges: 'J’ai rangé ces codes en lieu sûr',
@@ -421,13 +420,13 @@ const fr = {
   appel: {
     titre: 'Appel',
     retour: 'Mes classes',
-    qrAlt: 'QR code de l’appel à scanner avec l’application HESTIM',
+    qrAlt: 'QR code de l’appel à scanner avec l’application Planner',
     change: 'Nouveau code dans {{secondes}} s',
     presents: '{{presents}} / {{attendus}} présents',
     projeter: 'Projeter le QR code',
     projeterAide: 'Ouvre une fenêtre à afficher sur l’écran de la salle : le QR, et les étudiants qui apparaissent dès qu’ils ont scanné. Vous y validez l’appel à la fin.',
     projection: {
-      consigne: 'Scannez ce code avec l’application HESTIM, puis vérifiez que votre nom apparaît',
+      consigne: 'Scannez ce code avec l’application Planner, puis vérifiez que votre nom apparaît',
       pleinEcran: 'Plein écran',
       quitterPleinEcran: 'Quitter le plein écran',
       erreur: 'L’écran d’appel n’a pas pu s’ouvrir. Réessayez dans un instant.',
@@ -603,6 +602,17 @@ const fr = {
     sectionVide: 'Aucun support dans cette section.',
     sectionMasquee: 'Masquée',
     masque: 'Masqué',
+    ouverture: {
+      action: 'Dates d’ouverture…',
+      titre: 'Dates d’ouverture',
+      du: 'Visible à partir du',
+      jusquAuChamp: 'Visible jusqu’au (inclus)',
+      aide: 'Laissez vide pour ne pas limiter. En dehors de ces dates, les étudiants ne voient pas l’élément ; vous, si.',
+      enregistree: 'Dates enregistrées.',
+      ouvreLe: 'Ouvre le {{date}}',
+      fermeDepuis: 'Fermé depuis le {{date}}',
+      jusquAu: 'Jusqu’au {{date}}',
+    },
     dansBibliotheque: 'Bibliothèque',
     dansBibliothequeAide: 'Aussi publié dans la Bibliothèque, pour toute l’école',
     parAuteur: 'par {{auteur}}',
@@ -690,7 +700,7 @@ const fr = {
   },
   presence: {
     titre: 'Scannez avec l’application',
-    consigne: 'La présence ne s’enregistre que depuis l’application HESTIM, avec votre propre téléphone : ouvrez-la, touchez l’icône QR en haut du tableau, puis scannez le code affiché en classe.',
+    consigne: 'La présence ne s’enregistre que depuis l’application Planner, avec votre propre téléphone : ouvrez-la, touchez l’icône QR en haut du tableau, puis scannez le code affiché en classe.',
     retour: 'Mon tableau',
   },
   agenda: {
@@ -731,7 +741,7 @@ const fr = {
     year: 'Année Universitaire',
     group: 'Classe (groupe)',
     print: 'Imprimer / PDF',
-    help: 'Format officiel HESTIM, en A4 portrait : utilisez « Enregistrer au format PDF » dans la fenêtre d’impression.',
+    help: 'Format officiel {{ecole}}, en A4 portrait : utilisez « Enregistrer au format PDF » dans la fenêtre d’impression.',
     noGroup: 'Vous n’êtes inscrit dans aucun groupe',
     emptyTitle: 'Choisissez une classe',
     emptyBody: 'L’emploi du temps du mois s’affiche au format de l’école, prêt à imprimer.',
@@ -890,7 +900,7 @@ const fr = {
         "etapes": [
           "Ouvrez « Mes classes » : la classe en cours est en tête. Cliquez sur « Faire l’appel ».",
           "Cliquez sur « Projeter le QR code » et affichez la fenêtre sur l’écran de la salle : elle ne montre ni le menu ni vos autres pages.",
-          "Les étudiants scannent avec l’application HESTIM : leur nom apparaît à l’écran dès que la présence est enregistrée.",
+          "Les étudiants scannent avec l’application Planner : leur nom apparaît à l’écran dès que la présence est enregistrée.",
           "Cliquez sur « Valider l’appel », puis « Voir la liste complète » pour les présents et les absents."
         ],
         "note": "Un étudiant sans téléphone ou en retard : choisissez « Présent » ou « En retard » à côté de son nom, sur votre écran d’appel. L’historique et les taux de la classe sont dans Mes classes, onglets Appel et Élèves. La « Vérification surprise », facultative, tire quelques présents au hasard à appeler à voix haute."
@@ -943,7 +953,7 @@ const fr = {
         "etapes": [
           "Dans « Mes classes », ouvrez la carte de la classe : l’onglet « Supports » s’affiche.",
           "Glissez vos fichiers dans la zone de dépôt, ou cliquez sur « Ajouter un lien ». Un document déjà dans la Bibliothèque : « Depuis la Bibliothèque », sans le copier.",
-          "Rangez-les en sections. Le menu d’un support permet de le masquer aux étudiants, ou de le publier dans la Bibliothèque pour toute l’école."
+          "Rangez-les en sections. Le menu d’un support permet de le masquer aux étudiants, de choisir ses dates d’ouverture et de fermeture (il n’apparaît chez eux qu’entre ces deux jours), ou de le publier dans la Bibliothèque pour toute l’école."
         ],
         "note": "Seuls les étudiants de cette classe voient ses supports. Un fichier fait 20 Mo au plus."
       },
@@ -1005,7 +1015,7 @@ const fr = {
       "etuPresence": {
         "titre": "Pointer ma présence",
         "etapes": [
-          "Ouvrez l’application HESTIM sur votre téléphone et touchez l’icône du QR code.",
+          "Ouvrez l’application Planner sur votre téléphone et touchez l’icône du QR code.",
           "Scannez le code affiché à l’écran de la salle : votre nom apparaît à l’écran quand la présence est enregistrée."
         ],
         "note": "Le pointage ne se fait que depuis l’application, et votre compte est lié à un seul téléphone. Nouveau téléphone : demandez à la scolarité de le délier."
@@ -1082,6 +1092,7 @@ const fr = {
     calendar: 'Calendrier',
     campus: 'Campus',
     planningSettings: 'Paramètres de planification',
+    identity: 'Identité et marque',
     rooms: 'Salles',
     settings: 'Paramètres',
     notifications: 'Notifications',
@@ -1129,7 +1140,7 @@ const fr = {
     },
   },
   espaces: {
-    titre: 'Espaces HESTIM',
+    titre: 'Espaces {{ecole}}',
     ouvrir: 'Changer d’espace',
     ici: 'Vous êtes ici',
   },
@@ -1539,6 +1550,11 @@ const fr = {
     titreDetails: 'Détails du conflit',
     marquerResolu: 'Marquer comme résolu',
   },
+  annees: {
+    selecteur: 'Année universitaire',
+    enCours: '{{annee}} (en cours)',
+    toutes: 'Toutes les années',
+  },
   stats: {
     erreur: 'Les statistiques n’ont pas pu s’afficher. Réessayez dans un instant.',
     perimetre: 'Périmètre',
@@ -1600,6 +1616,7 @@ const fr = {
     supprime: 'Étudiant supprimé.',
     confirmerSuppression: 'Êtes-vous sûr de vouloir supprimer cet étudiant ?',
     groupeInconnu: 'Groupe inconnu : {{groupe}}',
+    groupeInconnuAnnee: 'Groupe inconnu en {{annee}} : {{groupe}}',
     fichierExport: 'Étudiants',
     titreImport: 'Importer des étudiants',
     introImport: 'Une ligne par étudiant. Colonnes obligatoires : nom, prenom, email, numero_etudiant, niveau. Facultatives : telephone, groupe (nom du groupe le plus fin, tel qu’affiché dans Groupes). Chaque étudiant reçoit un lien d’invitation par email pour choisir son mot de passe.',
@@ -1662,7 +1679,7 @@ const fr = {
     forgot: 'Mot de passe oublié ?',
     submit: 'Connexion',
     submitting: 'Connexion…',
-    accountsByAdmin: "Pas encore de compte ? Les comptes sont créés par l'administration de HESTIM.",
+    accountsByAdmin: "Pas encore de compte ? Les comptes sont créés par l'administration de l'école.",
     mfa: {
       title: 'Double authentification',
       aide: 'Saisissez le code à 6 chiffres affiché par votre application d’authentification.',
@@ -1692,19 +1709,19 @@ const fr = {
       { title: 'Planification sans conflit', body: 'Les séances se planifient en vérifiant la salle, l’enseignant et le groupe.' },
       { title: 'Emplois du temps en direct', body: 'Chaque groupe et chaque enseignant consulte sa semaine, sur ordinateur comme sur téléphone.' },
       { title: 'Reports et annulations', body: 'Une séance reportée ou annulée est signalée immédiatement aux personnes concernées.' },
-      { title: 'Gestion des ressources', body: 'Salles des bâtiments Gandhi et Stendhal, cours, groupes, enseignants et étudiants au même endroit.' },
+      { title: 'Gestion des ressources', body: 'Salles de chaque campus, cours, groupes, enseignants et étudiants au même endroit.' },
       { title: 'Génération automatique', body: 'Les emplois du temps se construisent selon les disponibilités, les capacités et le type des salles.' },
       { title: 'Statistiques', body: 'Occupation des salles, charge des enseignants, heures creuses et pics d’activité.' },
     ],
-    footer: 'Projet PACTE · HESTIM Engineering & Business School',
+    footer: '{{nomEcole}}',
     photos: {
       galleryLabel: "Photos de l'école",
-      session: 'Une salle de HESTIM',
-      sessionAlt: "Une salle de HESTIM pendant une conférence : le public assis face à l'intervenant et à l'écran.",
+      session: 'Une salle de l’école',
+      sessionAlt: "Une salle de l'école pendant une conférence : le public assis face à l'intervenant et à l'écran.",
       incubator: 'Incubateur CIEL',
-      incubatorAlt: "Atelier à l'incubateur CIEL de HESTIM, devant la kakémono « Centre d'innovation, entrepreneuriat et leadership ».",
-      campus: 'Campus HESTIM',
-      campusAlt: 'Des étudiants rassemblés devant le bâtiment HESTIM.',
+      incubatorAlt: "Atelier à l'incubateur CIEL de l'école, devant la kakémono « Centre d'innovation, entrepreneuriat et leadership ».",
+      campus: 'Campus {{ecole}}',
+      campusAlt: 'Des étudiants rassemblés devant le bâtiment de l’école.',
     },
   },
   timetable: {
@@ -1847,7 +1864,7 @@ const fr = {
       basement: 'Sous-sol',
       floorN: 'Étage {{n}}',
       emptyTitle: 'Aucune salle',
-      emptyBody: 'Importez l’inventaire des salles de Gandhi et Stendhal (modèle CSV fourni) ou ajoutez-les une à une.',
+      emptyBody: 'Importez l’inventaire des salles de chaque campus (modèle CSV fourni) ou ajoutez-les une à une.',
       noMatch: 'Aucune salle ne correspond à ce filtre.',
       dialogCreate: 'Nouvelle salle',
       dialogEdit: 'Modifier la salle',
@@ -2071,7 +2088,7 @@ const fr = {
         cycleTitle: 'Intitulé du cycle',
         cycleTitleHelp: "Sert à écrire « 2ème année du cycle Ingénieur d'Etat en … » sur l'emploi du temps",
         partner: 'Partenaire (double diplôme)',
-        yearsHere: 'Années à HESTIM',
+        yearsHere: 'Années dans l’école',
         description: 'Description',
       },
       saved: 'Filière enregistrée',
@@ -2156,7 +2173,7 @@ const fr = {
         volume: 'Volume (heures)',
         group: 'Suivi par',
         session: 'Durée d’une séance',
-        sessionHelp: 'À HESTIM, une séance occupe en général deux créneaux consécutifs',
+        sessionHelp: 'Une séance occupe en général deux créneaux consécutifs',
         mode: 'Modalité',
         mention: 'Mention (facultative)',
         room: 'Salle requise',
@@ -2174,7 +2191,6 @@ const fr = {
       deleteComponentBody: 'La composante {{type}} de {{name}} sera supprimée.',
     },
     groups: {
-      schoolYear: 'Année scolaire',
       addPromotion: 'Nouvelle promotion',
       intro: 'Une promotion se divise en groupes de TD, eux-mêmes en demi-groupes de TP. Un étudiant est inscrit dans son groupe le plus fin et suit aussi les séances de ses groupes parents.',
       gap: 'Écart',
@@ -2208,6 +2224,12 @@ const fr = {
       deleted: 'Groupe supprimé',
       parentNotFound: 'groupe parent « {{name}} » absent plus haut dans le fichier',
       emptyTitle: 'Aucun groupe {{program}} en {{year}}',
+      emptyTitleAllYears: 'Aucun groupe {{program}}',
+      withoutYear_one: 'Un groupe de cette filière n’a pas d’année reconnue : il n’apparaît que dans « Toutes les années ». Corrigez son année scolaire pour le rattacher à une année.',
+      withoutYear_other: '{{count}} groupes de cette filière n’ont pas d’année reconnue : ils n’apparaissent que dans « Toutes les années ». Corrigez leur année scolaire pour les rattacher à une année.',
+      showAllYears: 'Voir toutes les années',
+      unknownYear: 'Année inconnue',
+      unknownYearHelp: '« {{text}} » ne correspond à aucune année du calendrier',
       emptyBody: 'Créez la promotion, puis ses groupes de TD et de TP.',
       importTitle: 'Importer des groupes',
       importIntro: 'Une ligne par groupe ; les promotions avant leurs groupes. Colonnes : nom_groupe, code_filiere, niveau, annee, effectif, annee_scolaire, type_groupe (promotion, td, tp), parent (nom du groupe parent).',

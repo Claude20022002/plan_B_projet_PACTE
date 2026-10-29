@@ -179,7 +179,7 @@ const champsFiliereP2 = () => [
     body("intitule_cycle").optional({ nullable: true }).isString().trim(),
     body("premiere_annee_cycle").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Première année du cycle : 1 à 6"),
     body("partenaire").optional({ nullable: true }).isString().trim(),
-    body("annees_a_hestim").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Années à HESTIM : 1 à 6"),
+    body("annees_a_hestim").optional({ nullable: true }).isInt({ min: 1, max: 6 }).withMessage("Années dans l'établissement : 1 à 6"),
 ];
 
 export const validateFiliereCreation = [

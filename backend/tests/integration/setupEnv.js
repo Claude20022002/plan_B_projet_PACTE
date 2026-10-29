@@ -5,7 +5,7 @@
  * la vraie base. La CI peut surcharger chaque valeur (ex: DB_PORT=3306).
  *
  * En local : docker run -d --name hestim_mysql_test -e MYSQL_ROOT_PASSWORD=test_root \
- *            -e MYSQL_DATABASE=hestim_test -p 3307:3306 mysql:8.0
+ *            -e MYSQL_DATABASE=hestim_test -p 3307:3306 mysql:8.4.13
  */
 const defaults = {
     NODE_ENV: "test",

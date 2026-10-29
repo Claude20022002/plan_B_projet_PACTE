@@ -89,46 +89,77 @@ Restaurer sans vider la base (sans l'étape 3) laisserait en place les tables de
 
 ### Sauvegarde quotidienne
 
-`appliquer-maj.sh` ne sauvegarde la base qu'au moment d'une mise à jour, et sur le serveur lui-même. `deploy/vps/sauvegarder.sh` le fait chaque nuit et **sort les sauvegardes du serveur** : il exporte les bases MySQL (Planner et la bibliothèque) et la base du quiz, les chiffre, les envoie avec `rclone`, et garde 14 jours des deux côtés. Il ne sauvegarde pas les fichiers (documents de la bibliothèque, images des quiz).
+`appliquer-maj.sh` ne sauvegarde la base qu'au moment d'une mise à jour, et sur le serveur lui-même. `deploy/vps/sauvegarder.sh` le fait chaque nuit et **sort les sauvegardes du serveur** : il exporte les bases MySQL (Planner et la bibliothèque) et la base du quiz, archive les fichiers (documents de la bibliothèque, dans le volume de MinIO, et images des quiz), chiffre le tout, l'envoie avec `rclone`, et garde 14 jours des deux côtés. Les fichiers sont lus par un conteneur jetable (`alpine:3.20`) qui monte les volumes en lecture seule, sans arrêter les services. Redis, les index de recherche et les certificats de Caddy ne sont pas sauvegardés : ils se reconstruisent seuls. Les archives de fichiers sont entières chaque nuit : surveiller leur taille dans le journal (`ok fichiers-bibliotheque-… (taille)`) ; si elle devient lourde, garder `FICHIERS=non` dans la tâche quotidienne et ajouter une seconde tâche hebdomadaire avec `FICHIERS=oui`.
 
 **Mise en place, une fois, en `root` :**
 
 1. Installer les deux outils : `apt install rclone gnupg`.
 2. Déclarer la destination hors du serveur : `rclone config` (un autre serveur en SFTP, un stockage objet ou un Drive ; `rclone` connaît les trois). Noter le nom donné, par exemple `hors-site`.
-3. Créer la phrase de chiffrement, lisible par `root` seul :
-   `openssl rand -base64 48 > /root/hestim-sauvegarde.cle && chmod 600 /root/hestim-sauvegarde.cle`
-   **La copier aussi ailleurs que sur le serveur** (coffre de mots de passe du chef de projet). Sans elle, aucune sauvegarde ne se relit ; si elle n'existe que sur le serveur, elle disparaît avec lui.
+3. Créer la paire de clés de chiffrement **sur le PC du chef de projet, jamais sur le serveur** (Git Bash, qui fournit `gpg`). Le serveur ne reçoit que la clé publique : il peut chiffrer, pas relire. Un intrus qui prend le serveur ne lit donc aucune sauvegarde (revue d'expert, fichier 16, B-1).
+
+   ```bash
+   gpg --quick-generate-key "Planner sauvegardes <sauvegardes@planner.invalid>" default default never
+   # gpg demande une phrase de protection de la clé privée : la noter dans le coffre de mots de passe
+   gpg --armor --export sauvegardes@planner.invalid > planner-sauvegardes.pub
+   gpg --armor --export-secret-keys sauvegardes@planner.invalid > planner-sauvegardes-PRIVEE.asc
+   scp planner-sauvegardes.pub root@<serveur>:/root/hestim-sauvegarde.pub
+   ```
+
+   **Ranger `planner-sauvegardes-PRIVEE.asc` hors ligne** (clé USB dans un lieu sûr, et une seconde copie ailleurs), avec sa phrase dans le coffre, puis l'effacer du PC s'il n'est pas lui-même sûr. Sans la clé privée, aucune sauvegarde ne se relit.
 4. Écrire `/root/hestim-sauvegarde.conf` (`chmod 600`) :
 
    ```bash
-   PHRASE=/root/hestim-sauvegarde.cle
+   CLE_PUBLIQUE=/root/hestim-sauvegarde.pub
    DESTINATION=hors-site:hestim-sauvegardes
    ```
 
-5. Lancer une première fois à la main et lire la sortie : `bash /opt/hestim/deploy/vps/sauvegarder.sh ; echo "code $?"`. Attendu : deux lignes « ok », « envoyé vers … », code 0.
+   Ancien mode, encore accepté : `PHRASE=/root/hestim-sauvegarde.cle` (phrase créée par `openssl rand -base64 48`), utilisé seulement sans `CLE_PUBLIQUE`. La phrase est alors sur le serveur : à éviter.
+
+5. Lancer une première fois à la main et lire la sortie : `bash /opt/hestim/deploy/vps/sauvegarder.sh ; echo "code $?"`. Attendu : quatre lignes « ok » (`mysql`, `quiz`, `fichiers-bibliotheque`, `fichiers-quiz`), « envoyé vers … », code 0.
 6. Programmer la tâche (`crontab -e`) :
    `15 2 * * * bash /opt/hestim/deploy/vps/sauvegarder.sh >> /var/log/hestim-sauvegarde.log 2>&1`
+7. **Journaux binaires, toutes les 15 minutes** (`deploy/vps/sauvegarder-journaux.sh`, mêmes réglages). L'export de la nuit ne protège que jusqu'à 2 h 15 ; les journaux binaires de MySQL notent chaque écriture et permettent de revenir à n'importe quelle minute. Vérifier d'abord qu'ils sont actifs (c'est le réglage par défaut de MySQL 8.0, gardés 30 jours) : `docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -N -e "SELECT @@log_bin"'` doit répondre `1`. Lancer une fois à la main (`bash /opt/hestim/deploy/vps/sauvegarder-journaux.sh ; echo "code $?"`, attendu : « ok … journal(aux) chiffré(s) », code 0), puis ajouter la tâche :
+   `*/15 * * * * bash /opt/hestim/deploy/vps/sauvegarder-journaux.sh >> /var/log/hestim-journaux.log 2>&1`
+   Les journaux partent dans le sous-dossier `journaux` de la destination ; un passage sans écriture dans la base n'envoie rien.
 
 **Destination Backblaze B2 (choisie le 24 octobre 2026, à titre provisoire).** Dans la console B2 :
 
-1. *Buckets* → *Create a Bucket* : nom unique (par exemple `planner-sauvegardes-<suffixe>`), *Files* **Private**, *Default Encryption* **Enable**, *Object Lock* laissé désactivé.
+1. *Buckets* → *Create a Bucket* : nom unique (par exemple `planner-sauvegardes-<suffixe>`), *Files* **Private**, *Default Encryption* **Enable**, *Object Lock* **Enable**, rétention par défaut **30 jours** en mode *Governance*. Un fichier verrouillé ne peut être ni effacé ni remplacé avant 30 jours, même avec la clé du serveur : un intrus ne peut pas détruire les sauvegardes déjà envoyées. Pour un compartiment déjà créé sans verrouillage, l'activer dans ses réglages si la console le propose, sinon créer un nouveau compartiment et changer `DESTINATION`.
 2. *Lifecycle Settings* du compartiment → règle personnalisée sur tout le compartiment : cacher les fichiers **30 jours** après leur envoi, les effacer **7 jours** après. C'est B2 qui fait la rétention ; les 7 jours laissent le temps de voir un incident avant que les fichiers disparaissent.
 3. *Application Keys* → *Add a New Application Key* : limitée à **ce compartiment**, accès *Read and Write*, puis retirer le droit d'effacer si la console le permet (capacités voulues : `listFiles`, `readFiles`, `writeFiles`, **sans `deleteFiles`**). Noter `keyID` et `applicationKey` : la clé ne s'affiche qu'une fois.
 
 Sur le serveur, à l'étape 2 ci-dessus : `rclone config create b2-planner b2 account <keyID> key <applicationKey>`, puis `rclone lsd b2-planner:` (doit lister le compartiment). Dans `/root/hestim-sauvegarde.conf` :
 
 ```bash
-PHRASE=/root/hestim-sauvegarde.cle
+CLE_PUBLIQUE=/root/hestim-sauvegarde.pub
 DESTINATION=b2-planner:planner-sauvegardes-<suffixe>
 JOURS=30
 SUPPRESSION_DISTANTE=non
 ```
 
-Avec une version du script antérieure à `SUPPRESSION_DISTANTE`, garder une clé qui peut effacer : sinon l'effacement des vieux fichiers échoue et le script rend le code 3.
+`SUPPRESSION_DISTANTE=non` est obligatoire avec le verrouillage d'objet : le script ne doit rien effacer à distance, B2 s'en charge. Avec une version du script antérieure à `SUPPRESSION_DISTANTE`, garder une clé qui peut effacer : sinon l'effacement des vieux fichiers échoue et le script rend le code 3.
+
+**Passer de la phrase à la clé publique (serveur déjà en service).** Faire l'étape 3 ci-dessus sur le PC, ajouter `CLE_PUBLIQUE=/root/hestim-sauvegarde.pub` dans `/root/hestim-sauvegarde.conf`, lancer le script à la main : le journal doit dire « chiffrement pour la clé publique ». Les sauvegardes déjà envoyées restent chiffrées par l'ancienne phrase : vérifier que sa copie hors ligne existe, puis **retirer la phrase du serveur** (`shred -u /root/hestim-sauvegarde.cle` et la ligne `PHRASE` du fichier de réglages). Tant qu'elle y reste, un intrus peut relire les anciennes sauvegardes.
 
 **Lire le résultat.** Code 0 : tout est fait. Code 1 : un export a échoué (le journal dit lequel). Code 3 : les sauvegardes sont faites mais **ne sont pas sorties du serveur**. Regarder `/var/log/hestim-sauvegarde.log` chaque semaine : une sauvegarde que personne ne regarde finit par ne plus se faire.
 
-**Restaurer.** Récupérer le fichier voulu (`rclone copy hors-site:hestim-sauvegardes/mysql-<date>.sql.gz.gpg /root/`), puis :
+**Restaurer une sauvegarde chiffrée par la clé publique.** Le déchiffrement se fait **sur le PC qui détient la clé privée** (importée une fois par `gpg --import planner-sauvegardes-PRIVEE.asc`) ; la clé privée ne va jamais sur le serveur. Dans Git Bash, sur le PC :
+
+```bash
+# 1. Le serveur récupère le fichier chiffré, le PC le copie
+ssh root@<serveur> "rclone copy b2-planner:planner-sauvegardes-<suffixe>/mysql-<date>.sql.gz.gpg /root/restauration/"
+scp root@<serveur>:/root/restauration/mysql-<date>.sql.gz.gpg .
+
+# 2. Le PC déchiffre et renvoie l'export compressé par SSH, sans fichier en clair sur le PC
+gpg -d mysql-<date>.sql.gz.gpg | ssh root@<serveur> "cat > /root/restauration/mysql-<date>.sql.gz"
+
+# 3. Le serveur restaure (bases MySQL : Planner et bibliothèque), puis efface l'export en clair
+ssh root@<serveur> "gunzip -c /root/restauration/mysql-<date>.sql.gz | docker exec -i hestim_mysql sh -c 'MYSQL_PWD=\"\$MYSQL_ROOT_PASSWORD\" mysql -uroot' && shred -u /root/restauration/mysql-<date>.sql.gz"
+```
+
+La base du quiz se restaure de la même façon, avec `quiz-<date>` et la commande `psql` ci-dessous.
+
+**Restaurer une sauvegarde de l'ancien mode (phrase).** Récupérer le fichier voulu (`rclone copy hors-site:hestim-sauvegardes/mysql-<date>.sql.gz.gpg /root/`), puis :
 
 ```bash
 # Bases MySQL (Planner et bibliothèque). L'export recrée chaque base si elle manque.
@@ -142,6 +173,46 @@ gpg --batch --pinentry-mode loopback --passphrase-file /root/hestim-sauvegarde.c
 
 Sur un serveur neuf, ces commandes suffisent. **Sur un serveur qui a déjà ses bases, arrêter d'abord le backend, la bibliothèque et le quiz, puis vider chaque base à restaurer** (étapes 1 à 3 du cas 2 ci-dessus) : restaurer par-dessus laisserait en place les tables créées depuis la sauvegarde. L'export ne contient ni les comptes ni les réglages de MySQL : les mots de passe du serveur qui reçoit la restauration ne changent pas.
 
+**Restaurer les fichiers.** L'archive de MinIO est son dossier de données tel quel : elle se restaure dans le même MinIO (l'image est fixée dans `docker-compose.yml`). Récupérer le fichier comme à l'étape 1 ci-dessus (`fichiers-bibliotheque-<date>.tar.gz.gpg`), puis, sur le PC, déchiffrer et envoyer directement dans le volume, services arrêtés :
+
+```bash
+gpg -d fichiers-bibliotheque-<date>.tar.gz.gpg | ssh root@<serveur> "docker stop hestim_studylib hestim_studylib_queue hestim_studylib_scheduler hestim_minio && docker run --rm -i --network none --volumes-from hestim_minio alpine:3.20 sh -c 'find /data -mindepth 1 -delete && tar -C /data -xzf -' && docker start hestim_minio hestim_studylib hestim_studylib_queue hestim_studylib_scheduler"
+```
+
+Les images des quiz se restaurent de la même façon avec `fichiers-quiz-<date>`, les conteneurs `hestim_quiz_api` et `hestim_quiz_worker`, et le dossier `/app/data` (`--volumes-from hestim_quiz_worker`). Restaurer les fichiers **et** la base de la même nuit : une base plus récente que ses fichiers pointe vers des documents absents.
+
+**Revenir à une heure précise** (par exemple juste avant une erreur de manipulation à 10 h 14). On restaure l'export de la nuit, puis on rejoue les journaux binaires écrits depuis, en s'arrêtant à l'heure voulue. Essayé le 26 octobre sur un MySQL 8.0 jetable : les écritures d'avant l'heure limite reviennent, celles d'après non.
+
+1. Restaurer l'export de la nuit comme ci-dessus, services arrêtés.
+2. Lire dans cet export la position où il a été pris (MySQL 8.0 écrit `CHANGE MASTER TO MASTER_LOG_FILE=…`, MySQL 8.4 `CHANGE REPLICATION SOURCE TO SOURCE_LOG_FILE=…`) : `gpg -d mysql-<date>.sql.gz.gpg | gunzip | grep -m1 -E "CHANGE (MASTER|REPLICATION SOURCE) TO"`. Exemple : `MASTER_LOG_FILE='binlog.000042', MASTER_LOG_POS=868`.
+3. Récupérer depuis `<destination>/journaux/` le journal noté et tous les suivants (`<identifiant du serveur>-binlog.000042.gz.gpg`, `…000043…`), les déchiffrer sur le PC et les envoyer, décompressés, dans `/root/restauration/journaux/` (même méthode qu'à l'étape 2 de la restauration : `gpg -d … | ssh root@<serveur> "gunzip > /root/restauration/journaux/binlog.000042"`).
+4. Rejouer, avec `mysqlbinlog` de l'image `mysql:8.0-debian` (l'image `mysql:8.0` du serveur ne le contient pas) :
+
+   ```bash
+   ssh root@<serveur> "cd /root/restauration/journaux && docker run --rm --network none -v \"\$PWD\":/j:ro mysql:8.0-debian mysqlbinlog --start-position=868 --stop-datetime='2026-10-27 10:14:00' /j/binlog.000042 /j/binlog.000043 | docker exec -i hestim_mysql sh -c 'MYSQL_PWD=\"\$MYSQL_ROOT_PASSWORD\" mysql -uroot'"
+   ```
+
+   `--start-position` ne vaut que pour le premier journal de la liste ; `--stop-datetime` est l'heure du serveur. Puis effacer les journaux en clair (`shred -u /root/restauration/journaux/*`) et redémarrer les services.
+
+Après le passage à MySQL 8.4 (lot ME-0e), remplacer `mysql:8.0-debian` par `percona/percona-server:8.4` dans la commande ci-dessus : elle fournit `mysqlbinlog` 8.4.11 (vérifié le 26 octobre), alors que l'image `mysql:8.4` ne le contient pas.
+
+**Essai de restauration, chaque premier dimanche du mois** (environ 20 minutes, sans toucher à la production) :
+
+1. Récupérer les sauvegardes de la nuit (`mysql-…` et `fichiers-bibliotheque-…`) comme à l'étape 1 ci-dessus, dans `/root/essai/`.
+2. Restaurer la base dans un MySQL jetable, puis compter :
+
+   ```bash
+   ssh root@<serveur> "docker run -d --name essai_restauration --network none -e MYSQL_ROOT_PASSWORD=essai mysql:8.0"
+   # attendre 30 s que MySQL démarre, puis, depuis le PC :
+   gpg -d mysql-<date>.sql.gz.gpg | ssh root@<serveur> "gunzip | docker exec -i -e MYSQL_PWD=essai essai_restauration mysql -uroot"
+   ssh root@<serveur> "docker exec -e MYSQL_PWD=essai essai_restauration mysql -uroot -N -e 'SHOW DATABASES'"
+   ```
+
+   Comparer le nombre de comptes (`SELECT COUNT(*) FROM <base de Planner>.Users`) avec la production : l'écart doit se limiter aux comptes créés depuis la nuit.
+3. Lister l'archive des fichiers sur le PC (`gpg -d fichiers-bibliotheque-<date>.tar.gz.gpg | tar -tzf - | wc -l`) et comparer au volume (`ssh root@<serveur> "docker run --rm --volumes-from hestim_minio:ro alpine:3.20 find /data -type f | wc -l"`).
+4. Nettoyer : `ssh root@<serveur> "docker rm -f essai_restauration && rm -rf /root/essai"`.
+5. **Écrire le résultat** dans `docs/recette/essais-restauration.md` : date, fichiers utilisés, nombres comparés, durée, problème rencontré. Un essai non écrit n'a pas eu lieu.
+
 ### Faire de la place
 
 Chaque mise à jour laisse une archive, un dossier extrait et des images `avant-<date>`. `nettoyer-paquets.sh` garde les 3 derniers. Sans option, il montre ce qu'il supprimerait ; il ne supprime qu'avec `--supprimer` :
@@ -152,6 +223,61 @@ bash /opt/hestim/deploy/vps/nettoyer-paquets.sh /root --supprimer
 ```
 
 Il ne touche ni aux sauvegardes de la base (`/root/sauvegardes`), ni aux images `avant-image-majNN`, ni aux archives d'images. À ne lancer qu'une fois la mise à jour en cours validée par la recette : les paquets et images supprimés sont ceux qui permettraient un retour plus ancien.
+
+### Passer à MySQL 8.4 (lot ME-0e)
+
+MySQL 8.0 n'est plus suivi depuis avril 2026 ; 8.4 est la version suivie à long terme. Le passage est une **mise à niveau sur place** : MySQL 8.4 ouvre le dossier de données de 8.0 et le met à jour lui-même au premier démarrage. Il ne se défait pas sur place (8.4 ne redescend pas en 8.0) : le retour arrière passe par une copie du dossier faite juste avant.
+
+Essayé le 26 octobre 2026 sur le PC : schéma de Planner et données de démonstration créés en 8.0.46, puis ouverts par 8.4.13 ; mise à niveau sans erreur, les 69 tables gardent la même empreinte (`CHECKSUM TABLE`), comptes en `caching_sha2_password` acceptés, aucune migration en attente, suite d'intégration complète verte (461 tests) ; mémoire au repos avec `mysql.cnf` : 157 Mo en 8.0, 139 à 182 Mo en 8.4 (limite du conteneur : 512 Mo).
+
+**1. Répéter sur une copie des vraies données** (sans arrêt, rien n'est modifié), quelques jours avant :
+
+```bash
+bash /opt/hestim/deploy/vps/essayer-mysql84.sh ; echo "code $?"
+```
+
+Attendu : « RÉPÉTITION RÉUSSIE », code 0. Le script vérifie aussi qu'aucun compte n'utilise `mysql_native_password`, désactivé par défaut en 8.4. S'il en signale un : `ALTER USER '<nom>'@'<hôte>' IDENTIFIED WITH caching_sha2_password BY '<son mot de passe>';` avant le passage. Récupérer l'image à l'avance : `docker pull mysql:8.4.13`.
+
+**2. Le passage**, dans la fenêtre du dimanche matin (environ 15 minutes d'arrêt), dans `/opt/hestim` avec `COMPOSE` comme plus haut :
+
+```bash
+# Une sauvegarde fraîche, sortie du serveur (code 0 attendu)
+bash /opt/hestim/deploy/vps/sauvegarder.sh ; echo "code $?"
+# Plus aucune écriture
+$COMPOSE stop backend studylib studylib-queue studylib-scheduler
+# Arrêt lent : InnoDB vide tout avant de changer de version
+docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SET GLOBAL innodb_fast_shutdown = 0"'
+$COMPOSE stop mysql
+# Copie du dossier de données de 8.0, MySQL arrêté : c'est le retour arrière
+VOL=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/var/lib/mysql"}}{{.Name}}{{end}}{{end}}' hestim_mysql)
+docker volume create hestim_mysql80_avant84
+docker run --rm --network none -v "$VOL":/de:ro -v hestim_mysql80_avant84:/vers alpine:3.20 cp -a /de/. /vers/
+```
+
+Les paquets majNN ne livrent pas `docker-compose.yml` et `appliquer-maj.sh` ne relance jamais MySQL : l'image ne change qu'ici, à la main.
+
+```bash
+sed -i 's#^\( *image: \)mysql:8\.0$#\1mysql:8.4.13#' /opt/hestim/docker-compose.yml
+grep -n 'image: mysql' /opt/hestim/docker-compose.yml   # une seule ligne, mysql:8.4.13
+$COMPOSE up -d mysql
+docker logs -f hestim_mysql    # attendre « Server upgrade from '80046' to '80413' completed » puis « ready for connections », Ctrl+C
+docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -N -e "SELECT VERSION()"'   # 8.4.13
+$COMPOSE up -d backend studylib studylib-queue studylib-scheduler
+```
+
+Recette courte : connexion, emploi du temps d'un étudiant, un document de la Bibliothèque, puis `bash /opt/hestim/deploy/vps/sauvegarder.sh` (code 0). Garder le volume `hestim_mysql80_avant84` deux semaines, puis `docker volume rm hestim_mysql80_avant84`.
+
+**Retour arrière** (tout ce qui a été saisi depuis le passage est perdu : décider vite) :
+
+```bash
+$COMPOSE stop backend studylib studylib-queue studylib-scheduler mysql
+docker run --rm --network none -v hestim_mysql80_avant84:/de:ro -v "$VOL":/vers alpine:3.20 sh -c 'find /vers -mindepth 1 -delete && cp -a /de/. /vers/'
+sed -i 's#^\( *image: \)mysql:8\.4\.13$#\1mysql:8.0#' /opt/hestim/docker-compose.yml
+$COMPOSE up -d mysql
+$COMPOSE up -d backend studylib studylib-queue studylib-scheduler
+```
+
+Pendant l'arrêt, la tâche `*/15` de `sauvegarder-journaux.sh` peut échouer une fois (MySQL arrêté) : sans effet, la sauvegarde fraîche du début couvre ce moment ; la lancer à la main après la recette. Après le passage, les journaux binaires continuent sans rupture (même identifiant de serveur, même suite de numéros), et l'essai de restauration du mois se fait dans un MySQL jetable `mysql:8.4.13` (un export de 8.4 ne se relit pas à coup sûr en 8.0). Pour les rejouer (« Revenir à une heure précise »), l'outil `mysqlbinlog` 8.4 vient de l'image `percona/percona-server:8.4` (8.4.11, vérifié le 26 octobre) : l'image `mysql:8.4` ne le contient pas.
 
 ---
 

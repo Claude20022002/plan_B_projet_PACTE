@@ -109,7 +109,7 @@ const prevenir = async (etudiants, { titre, message, texteEmail, lien }) => {
         for (const e of etudiants) {
             if (!e.email) continue;
             try {
-                await sendEmail({ to: e.email, subject: `[HESTIM] ${titre}`, text: texteEmail });
+                await sendEmail({ to: e.email, subject: `[{{ecole}}] ${titre}`, text: texteEmail });
             } catch (error) {
                 console.error("E-mail d'emploi du temps impossible :", error.message);
             }
@@ -135,7 +135,7 @@ const envoyerClasse = async (groupe, mois, { idUser = null }) => {
         await prevenir(etudiants, {
             titre: `Emploi du temps de ${nomMois}`,
             message: `${groupe.nom_groupe} : ${nombre} séance(s). Consultez-le ou imprimez-le en PDF depuis l'application.`,
-            texteEmail: `Bonjour,\n\nL'emploi du temps de ${nomMois} (${groupe.nom_groupe}) est publié : ${nombre} séance(s).\nIl se consulte et s'imprime en PDF ici : ${adresse}\n\nVous serez prévenu de chaque changement.\n\nHESTIM Planner`,
+            texteEmail: `Bonjour,\n\nL'emploi du temps de ${nomMois} (${groupe.nom_groupe}) est publié : ${nombre} séance(s).\nIl se consulte et s'imprime en PDF ici : ${adresse}\n\nVous serez prévenu de chaque changement.\n\n{{produit}}`,
             lien,
         });
         await EnvoiEdt.create({ id_groupe: groupe.id_groupe, mois, seances: lignes, envoye_le: new Date(), nb_destinataires: etudiants.length, id_user_publication: idUser });
@@ -149,7 +149,7 @@ const envoyerClasse = async (groupe, mois, { idUser = null }) => {
     await prevenir(etudiants, {
         titre: `Emploi du temps de ${nomMois} modifié`,
         message: `${groupe.nom_groupe} : ${changements.length} changement(s). ${liste[0]}${changements.length > 1 ? " …" : ""}`.slice(0, 480),
-        texteEmail: `Bonjour,\n\nL'emploi du temps de ${nomMois} (${groupe.nom_groupe}) a changé :\n\n${liste.map((c) => `• ${c}`).join("\n")}${suite}\n\nEmploi du temps à jour (imprimable en PDF) : ${adresse}\n\nHESTIM Planner`,
+        texteEmail: `Bonjour,\n\nL'emploi du temps de ${nomMois} (${groupe.nom_groupe}) a changé :\n\n${liste.map((c) => `• ${c}`).join("\n")}${suite}\n\nEmploi du temps à jour (imprimable en PDF) : ${adresse}\n\n{{produit}}`,
         lien,
     });
     await precedent.update({ seances: lignes, envoye_le: new Date(), nb_destinataires: etudiants.length, ...(idUser ? { id_user_publication: idUser } : {}) });

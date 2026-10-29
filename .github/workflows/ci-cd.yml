@@ -25,7 +25,7 @@ jobs:
   # ── 1. Site (React) ──────────────────────────────────────────────────────
   build-frontend:
     name: Build Frontend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
@@ -51,6 +51,10 @@ jobs:
       - name: Lint
         run: npm run lint --if-present
 
+      # Planner pour toute école : aucun nom d'école écrit en dur (serveur, site, application)
+      - name: Nom de l'école jamais écrit en dur
+        run: node ../scripts/verifier-neutre.mjs
+
       - name: Build de production
         run: npm run build
         env:
@@ -59,14 +63,14 @@ jobs:
   # ── 2. API Planner (Node + MySQL) ────────────────────────────────────────
   test-backend:
     name: Test Backend
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: backend
 
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.4.13
         env:
           MYSQL_ROOT_PASSWORD: root
           MYSQL_DATABASE: hestim_test
@@ -131,7 +135,7 @@ jobs:
   # ── 3. Application mobile (Expo) ─────────────────────────────────────────
   test-mobile:
     name: Test Mobile
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: mobile
@@ -166,7 +170,7 @@ jobs:
   # ── 4. Solveur Timefold (Java) ───────────────────────────────────────────
   test-solver:
     name: Test Solveur
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: solver
@@ -191,14 +195,14 @@ jobs:
   # Ajouté après A-4, sans toucher à ses lignes : à fusionner après lui.
   test-parcours:
     name: Parcours de démonstration
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: frontend
 
     services:
       mysql:
-        image: mysql:8.0
+        image: mysql:8.4.13
         env:
           MYSQL_ROOT_PASSWORD: root
         ports:
