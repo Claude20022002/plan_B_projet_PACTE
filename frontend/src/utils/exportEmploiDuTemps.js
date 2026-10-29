@@ -1,12 +1,16 @@
 /**
- * PDF officiel de l'emploi du temps (format HESTIM, A4 portrait), ouvert dans une fenêtre d'impression.
+ * PDF officiel de l'emploi du temps (A4 paysage, aux couleurs et au logo de l'école), ouvert dans une fenêtre d'impression.
  * Seul format d'export de ce module (lot B-6) : l'Excel passe par exportExcel.js, l'agenda par
  * l'abonnement personnel (page Paramètres) ; CSV, iCal (fichier) et YAML sont retirés.
  * Chargé à la demande par lazyExports.js.
  */
+import { ds } from '../design-system/tokens';
+import { melanger } from '../../../shared/couleurs.js';
+import { adresseLogo, identiteEcole } from '../services/etablissement';
 
-// ── Créneaux officiels HESTIM (planning.html) ─────────────────────────────────
-const HESTIM_SLOTS = [
+// ── Créneaux de la grille (planning.html, ceux de l'école pilote) ─────────────
+// À reprendre de la configuration des créneaux quand une autre école aura une autre grille
+const CRENEAUX_PDF = [
     { label: '09h00 - 10h45', debut: '09:00' },
     { label: '10h45 - 12h30', debut: '10:45' },
     { label: '13h30 - 15h15', debut: '13:30' },
@@ -16,7 +20,7 @@ const HESTIM_SLOTS = [
 const HTML_JOURS      = ['lundi', 'mardi', 'mercredi', 'jeudi', 'samedi'];
 const HTML_JOUR_LABEL = { lundi:'Lundi', mardi:'Mardi', mercredi:'Mercredi', jeudi:'Jeudi', samedi:'Samedi' };
 
-/** Mappe heure_debut → index créneau HESTIM (0-3), -1 si hors plage */
+/** Mappe heure_debut → index du créneau (0-3), -1 si hors plage */
 function htmlSlotIdx(heureDebut) {
     const h = (heureDebut || '').substring(0, 5);
     if (h >= '09:00' && h < '10:45') return 0;
@@ -48,9 +52,9 @@ function fmtJourDate(mondayStr, jourName) {
     return d.toLocaleDateString('fr-FR', { day:'2-digit', month:'2-digit' });
 }
 
-/** Échappe le HTML */
+/** Échappe le HTML (guillemets compris : le nom de l'école sert aussi d'attribut alt) */
 function esc(s) {
-    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    return (s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 /**
@@ -125,9 +129,15 @@ function renderCell(aff, role) {
 
 /**
  * Construit le document HTML complet du template planning.html
- * avec les données réelles et les couleurs HESTIM.
+ * avec les données réelles, aux couleurs de l'école.
  */
 function buildTimetableHTML(affectations, title, role, logoBase64) {
+    const ecole = identiteEcole();
+    // Couleur principale de l'école, ses nuances (en-têtes de matière, fonds des jours), son accent
+    const M = ds.brand.navy;
+    const M2 = melanger(M, '#FFFFFF', 0.18);
+    const fondSemaine = melanger(M, '#FFFFFF', 0.93);
+    const fondJour = melanger(M, '#FFFFFF', 0.96);
     const weeks   = buildHtmlWeeks(affectations);
     const nWeeks  = weeks.length || 1;
 
@@ -175,8 +185,8 @@ function buildTimetableHTML(affectations, title, role, logoBase64) {
     });
 
     const logoTag = logoBase64
-        ? `<img src="${logoBase64}" alt="HESTIM" class="logo-img">`
-        : `<span class="logo-txt">HESTIM</span>`;
+        ? `<img src="${logoBase64}" alt="${esc(ecole.nom)}" class="logo-img">`
+        : `<span class="logo-txt">${esc(ecole.nom_court)}</span>`;
 
     return `<!DOCTYPE html>
 <html lang="fr">
@@ -207,14 +217,14 @@ body {
     gap: 2mm;
     margin-bottom: 0.97mm;
     padding-bottom: 0.97mm;
-    border-bottom: 1.5px solid #001962;
+    border-bottom: 1.5px solid ${M};
     width: 100%;
 }
 .hdr-left  { flex: 0 0 auto; display: flex; align-items: center; }
 .hdr-mid   { flex: 1; text-align: center; }
 .hdr-right { flex: 0 0 auto; text-align: right; }
 .logo-img  { height: 8.7mm; width: auto; object-fit: contain; display: block; }
-.logo-txt  { font-size: 12pt; font-weight: 900; color: #001962; }
+.logo-txt  { font-size: 12pt; font-weight: 900; color: ${M}; }
 .hdr-title {
     font-size: ${fs + 2}pt;
     font-weight: 700;
@@ -232,7 +242,7 @@ body {
     display: block;
     font-size: ${fs}pt;
     font-weight: 700;
-    color: #001962;
+    color: ${M};
     margin-bottom: 0.2mm;
 }
 .hdr-annee {
@@ -240,20 +250,20 @@ body {
     font-size: ${fs - 0.5}pt;
     color: #555;
 }
-.gold-bar { height: 1.5px; background: linear-gradient(90deg,#001962,#E8A020); margin-bottom: 0.97mm; }
+.gold-bar { height: 1.5px; background: linear-gradient(90deg,${M},${ds.brand.orange}); margin-bottom: 0.97mm; }
 /* ── Table ────────────────────────────────────────────────────── */
 table {
     width: 100%;
     border-collapse: collapse;
-    border: 1px solid #001962;
+    border: 1px solid ${M};
     table-layout: fixed;
     margin: 0;
 }
-th, td { border: 1px solid #001962; padding: 0.24mm 0.49mm; vertical-align: middle; text-align: center; font-size: ${fs}pt; line-height: 1.07; }
+th, td { border: 1px solid ${M}; padding: 0.24mm 0.49mm; vertical-align: middle; text-align: center; font-size: ${fs}pt; line-height: 1.07; }
 tbody th, tbody td { line-height: 1.08; }
 /* En-têtes colonnes */
 thead th {
-    background: #001962;
+    background: ${M};
     color: #fff;
     font-weight: 700;
     text-align: center;
@@ -261,14 +271,14 @@ thead th {
     padding: 0.48mm 0.49mm;
     line-height: 1.07;
 }
-thead .th-mat  { background: #003087; }
+thead .th-mat  { background: ${M2}; }
 thead .th-apm  { background: #1a3a8f; }
 thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
 /* Colonnes fixes */
-.td-sem  { width: 12.6mm; font-size: ${fs - 0.5}pt; font-weight: 700; color: #001962; background: #EEF3FF; text-align: center; vertical-align: middle; }
-.td-jour { width: 12.6mm; font-weight: 700; color: #001962; background: #F5F7FF; text-align: center; vertical-align: middle; }
+.td-sem  { width: 12.6mm; font-size: ${fs - 0.5}pt; font-weight: 700; color: ${M}; background: ${fondSemaine}; text-align: center; vertical-align: middle; }
+.td-jour { width: 12.6mm; font-weight: 700; color: ${M}; background: ${fondJour}; text-align: center; vertical-align: middle; }
 .td-jour small { font-weight: 400; color: #666; display: block; }
-.td-mms  { width: 6.8mm; font-size: ${fs - 1}pt; color: #555; background: #F5F7FF; text-align: center; vertical-align: middle; line-height: 1.08; }
+.td-mms  { width: 6.8mm; font-size: ${fs - 1}pt; color: #555; background: ${fondJour}; text-align: center; vertical-align: middle; line-height: 1.08; }
 .td-mms hr { border: none; border-top: 0.5px solid #bbb; margin: 0.1mm 0; }
 /* Cellules de cours */
 .td-slot {
@@ -278,15 +288,15 @@ thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
     background: #FAFAFE;
     word-break: break-word;
 }
-.td-slot.has-cours { background: #EEF3FF; }
+.td-slot.has-cours { background: ${fondSemaine}; }
 .td-slot hr { border: none; border-top: 0.5px dotted #aac; margin: 0.1mm 0; }
-.c-mat { display: block; font-weight: 700; color: #001962; text-align: center; }
-.c-mat em { font-style: normal; font-weight: 400; color: #E8A020; font-size: ${fs - 1}pt; }
+.c-mat { display: block; font-weight: 700; color: ${M}; text-align: center; }
+.c-mat em { font-style: normal; font-weight: 400; color: ${ds.brand.orange}; font-size: ${fs - 1}pt; }
 .c-ens { display: block; color: #333; font-size: ${fs - 0.5}pt; text-align: center; }
 .c-sal { display: block; color: #444; font-size: ${fs - 0.5}pt; text-align: center; }
-.c-grp { display: block; color: #E8A020; font-size: ${fs - 1}pt; font-weight: 700; text-align: center; }
+.c-grp { display: block; color: ${ds.brand.orange}; font-size: ${fs - 1}pt; font-weight: 700; text-align: center; }
 /* Séparateur entre semaines */
-.sep td { height: 0.97mm; background: #E8A020; border: none; padding: 0; }
+.sep td { height: 0.97mm; background: ${ds.brand.orange}; border: none; padding: 0; }
 /* Pied de page */
 .ftr {
     margin-top: 0.97mm;
@@ -329,7 +339,7 @@ thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
         <th colspan="2" class="th-apm">Après-midi</th>
       </tr>
       <tr>
-        ${HESTIM_SLOTS.map(s => `<th class="th-slot">${s.label}</th>`).join('')}
+        ${CRENEAUX_PDF.map(s => `<th class="th-slot">${s.label}</th>`).join('')}
       </tr>
     </thead>
     <tbody>
@@ -339,9 +349,9 @@ thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
 
   <!-- ── Pied de page ──────────────────────────────── -->
   <div class="ftr">
-    <span>HESTIM &mdash; École d&apos;Ingénierie &amp; Management</span>
+    <span>${esc(ecole.nom)}</span>
     <span>Généré le ${new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'})}</span>
-    <span>hestim.ma</span>
+    <span>${esc(ecole.produit)}</span>
   </div>
 
 </div><!-- /.inner -->
@@ -361,11 +371,12 @@ thead .th-slot { font-size: ${fs - 0.5}pt; background: #1a3a8f; }
  * @param {String} role         - 'enseignant' | 'etudiant' | 'admin'
  */
 export const exportToPDF = async (affectations, _filename = 'emploi-du-temps', title = 'Emploi du Temps', role = 'enseignant') => {
-    // Chargement du logo HESTIM en base64 (évite les problèmes CORS dans la fenêtre print)
+    // Logo de l'école en base64 (évite les problèmes CORS dans la fenêtre print) ; sans logo, son nom court
     let logoBase64 = '';
     try {
-        const res = await fetch('/HESTIM.png');
-        if (res.ok) {
+        const adresse = adresseLogo();
+        const res = adresse ? await fetch(adresse) : null;
+        if (res?.ok) {
             const blob = await res.blob();
             logoBase64 = await new Promise((resolve, reject) => {
                 const reader = new FileReader();

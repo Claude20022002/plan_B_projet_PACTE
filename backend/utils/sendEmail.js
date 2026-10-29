@@ -48,7 +48,30 @@ const createTransporter = async () => {
  * @param {string} options.html - Corps du message (HTML, optionnel)
  * @returns {Promise<Object>} - Résultat de l'envoi
  */
-export const sendEmail = async ({ to, subject, text, html }) => {
+/**
+ * Courriel aux couleurs de l'école (D-11, lots ME-1 et ME-11) : les modèles écrivent {{produit}}
+ * (« HESTIM Planner ») et {{ecole}} (« HESTIM ») au lieu d'un nom en dur ; l'expéditeur affiché et
+ * l'adresse de réponse viennent du panneau de configuration. L'adresse d'envoi reste celle du
+ * serveur (EMAIL_FROM) : envoyer depuis le domaine de l'école exigerait ses clés SPF et DKIM.
+ */
+export const personnaliserCourriel = ({ subject, text, html }, { produit, ecole }) => {
+    const remplir = (valeur) => (typeof valeur === "string" ? valeur.replaceAll("{{produit}}", produit).replaceAll("{{ecole}}", ecole) : valeur);
+    return { subject: remplir(subject), text: remplir(text), html: remplir(html) };
+};
+
+const expediteur = (adresseServeur, nom) => {
+    if (!adresseServeur) return undefined;
+    const adresse = adresseServeur.match(/<([^>]+)>/)?.[1] ?? adresseServeur;
+    return nom ? { name: nom, address: adresse } : adresseServeur;
+};
+
+export const sendEmail = async (message) => {
+    // Chargé à l'appel : l'identité lit la base, que ce module ne doit pas importer à son chargement
+    const { identite, nomProduit } = await import("../services/etablissement/identite.js");
+    const ecole = await identite();
+    const produit = await nomProduit();
+    const { subject, text, html } = personnaliserCourriel(message, { produit, ecole: ecole.nom_court });
+    const { to } = message;
     try {
         // Jamais d'envoi réel pendant les tests automatisés
         if (process.env.NODE_ENV === "test") {
@@ -84,7 +107,8 @@ export const sendEmail = async ({ to, subject, text, html }) => {
         }
 
         const mailOptions = {
-            from: process.env.EMAIL_FROM || process.env.EMAIL_USER,
+            from: expediteur(process.env.EMAIL_FROM || process.env.EMAIL_USER, ecole.expediteur_nom || produit),
+            ...(ecole.adresse_reponse ? { replyTo: ecole.adresse_reponse } : {}),
             to,
             subject,
             text,
@@ -125,7 +149,7 @@ Détails :
     } à ${affectation.creneau?.heure_fin}
 
 Cordialement,
-HESTIM Planner
+{{produit}}
     `;
 
     const html = `
@@ -168,7 +192,7 @@ HESTIM Planner
             </div>
         </div>
         <div class="footer">
-            <p>Cordialement,<br>HESTIM Planner</p>
+            <p>Cordialement,<br>{{produit}}</p>
         </div>
     </div>
 </body>
@@ -198,7 +222,7 @@ Description : ${conflit.description}
 Veuillez contacter l'administration pour résoudre ce conflit.
 
 Cordialement,
-HESTIM Planner
+{{produit}}
     `;
 
     return await sendEmail({ to, subject, text });
@@ -229,7 +253,7 @@ Détails :
 Veuillez traiter cette demande.
 
 Cordialement,
-HESTIM Planner
+{{produit}}
     `;
 
     return await sendEmail({ to, subject, text });
@@ -260,7 +284,7 @@ Détails :
 La séance a été reportée avec succès. Les étudiants ont été notifiés de l'annulation de l'ancienne séance.
 
 Cordialement,
-HESTIM Planner
+{{produit}}
     `;
 
     return await sendEmail({ to, subject, text });
@@ -303,7 +327,7 @@ Nouvelle date : ${nouvelleDate}
 Veuillez consulter votre emploi du temps pour les détails complets.
 
 Cordialement,
-HESTIM Planner
+{{produit}}
     `;
 
     const html = `
@@ -357,9 +381,9 @@ HESTIM Planner
           <div class="date-value">${nouvelleDate}</div>
         </div>
       </div>
-      <p style="font-size:13px;color:#666">Veuillez consulter votre emploi du temps sur HESTIM Planner pour confirmer les détails.</p>
+      <p style="font-size:13px;color:#666">Veuillez consulter votre emploi du temps sur {{produit}} pour confirmer les détails.</p>
     </div>
-    <div class="footer">HESTIM Planner, gestion des emplois du temps</div>
+    <div class="footer">{{produit}}, gestion des emplois du temps</div>
   </div>
 </body>
 </html>

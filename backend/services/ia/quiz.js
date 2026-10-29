@@ -7,6 +7,7 @@ import { estConfigure, genererJson } from "./client.js";
 import { consigneSysteme, difficulteConnue, langueConnue, lireSujet, messageUtilisateur } from "./consigne.js";
 import { extraireSupport } from "./extraction.js";
 import { creerQuizClassQuiz } from "../quiz/devoirs.js";
+import { nomProduit } from "../etablissement/identite.js";
 
 /**
  * Quiz générés par l'IA (docs/plans/quiz-ia.md, lot IA-3). L'enseignant dépose un support pour
@@ -304,7 +305,7 @@ export const creerDansClassQuiz = async (user, id, { titre } = {}) => {
     const support = generation.nom_source?.replace(/\.[A-Za-z0-9]{1,5}$/, "").trim();
     const quiz = {
         titre: propose || [cours?.nom_cours, support].filter(Boolean).join(" : ").slice(0, TITRE_MAX) || "Quiz",
-        description: `Quiz préparé dans HESTIM Planner pour ${module}.`,
+        description: `Quiz préparé dans ${await nomProduit()} pour ${module}.`,
         questions: generation.brouillon.map((q) => ({
             question: q.question,
             time: q.temps,

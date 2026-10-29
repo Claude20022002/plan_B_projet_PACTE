@@ -258,13 +258,13 @@ const verifierTelephoneDuCompte = async (idSeance, idUser, empreinte, maintenant
  */
 export const scannerCode = async (user, brut, maintenant = new Date(), appareil = null) => {
     if (user.role !== "etudiant") throw new ErreurMetier("Réservé aux étudiants", 403);
-    if (typeof appareil !== "string" || !APPAREIL.test(appareil)) throw new ErreurMetier("Scannez le QR code avec l'application HESTIM à jour (icône QR de l'accueil)", 403);
+    if (typeof appareil !== "string" || !APPAREIL.test(appareil)) throw new ErreurMetier("Scannez le QR code avec l'application Planner à jour (icône QR de l'accueil)", 403);
     let texte = String(brut ?? "").trim();
     // Le QR contient une adresse « …/presence?c=CODE » : on en extrait le code
     const dansAdresse = /[?&]c=([^&#]+)/.exec(texte);
     if (dansAdresse) texte = decodeURIComponent(dansAdresse[1]);
     const morceaux = CODE.exec(texte);
-    if (!morceaux) throw new ErreurMetier("Ce QR code n'est pas un appel HESTIM", 400);
+    if (!morceaux) throw new ErreurMetier("Ce QR code n'est pas un appel Planner", 400);
     const [, idTexte, fenetreTexte, sig] = morceaux;
     const appel = await AppelSeance.findByPk(Number(idTexte));
     if (!appel || appel.ferme_le) throw new ErreurMetier("L'appel de cette séance est fermé", 409);

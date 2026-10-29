@@ -78,7 +78,7 @@ Il complète `assainissement.md` sans le remplacer : quand une réponse existe d
 |---|---|---|---|
 | Le quiz se lance sur un autre site | Lancer et projeter le quiz depuis Planner. En attendant : arrivée sans reconnexion, même onglet, lien de retour (fait) | CQ-1 à CQ-3 | Maintenant |
 | Un quiz créé par l'IA ne se modifie plus depuis Planner | Route de mise à jour d'un quiz (reste de IA-4) et éditeur « Mes quiz » (reste de IA-5) | IA-4, IA-5 | Après |
-| Plus de devoir « fichier », pas d'export des notes | Le devoir « fichier » a été retiré par décision : on ne le remet pas. Pour les notes : un export CSV des notes d'un devoir, protégé contre les formules comme les autres exports. Les devoirs étant masqués (D-1, D-2), ce lot attend leur retour | R-13 | Au retour des devoirs |
+| Plus de devoir « fichier », pas d'export des notes | **Remplacé le 25 octobre 2026** : les devoirs avec rendu de fichier reviennent (rapports, comptes rendus, projets), fichiers hors de la base (`planner-multi-etablissements/14-parite-moodle-classroom.md`, § 14.6). Texte d'origine : le devoir « fichier » a été retiré par décision : on ne le remet pas. Pour les notes : un export CSV des notes d'un devoir, protégé contre les formules comme les autres exports. Les devoirs étant masqués (D-1, D-2), ce lot attend leur retour | R-13 | Au retour des devoirs |
 
 ### Étudiant
 
