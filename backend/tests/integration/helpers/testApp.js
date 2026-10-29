@@ -17,6 +17,7 @@ import {
 import { hashPassword } from "../../../utils/passwordHelper.js";
 import { resetRateLimiters } from "../../../middleware/rateLimiterMiddleware.js";
 import { runMigrations } from "../../../migrations/migrator.js";
+import { oublierIdentite } from "../../../services/etablissement/identite.js";
 
 export const PASSWORD = "Hestim@2026";
 
@@ -39,6 +40,10 @@ export const resetDatabase = async () => {
     }
     await sequelize.query("SET FOREIGN_KEY_CHECKS = 1");
     await runMigrations();
+    // Base vide : la migration 0057 éteint ClassQuiz (installation neuve, lot ME-0c). Les tests
+    // l'allument pour que son code reste vérifié ; classQuizEteint.test.js vérifie l'inverse
+    await sequelize.query("UPDATE ConfigurationEtablissement SET classquiz_actif = 1 WHERE id = 1");
+    oublierIdentite();
     resetRateLimiters();
 };
 

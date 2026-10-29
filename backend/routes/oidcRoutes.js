@@ -3,6 +3,7 @@ import { parseCookies } from "../middleware/cookieMiddleware.js";
 import { optionalAuth } from "../middleware/authMiddleware.js";
 import { fournisseur, idCompte, MONTAGE, ROLES_AUTORISES } from "../services/oidc/provider.js";
 import { mfaAConfigurer } from "../services/mfa.js";
+import { classQuizActif } from "../services/etablissement/fonctionnalites.js";
 
 /**
  * Fournisseur OpenID Connect sous /api/oidc (phase Q, connexion des enseignants à ClassQuiz).
@@ -15,9 +16,11 @@ import { mfaAConfigurer } from "../services/mfa.js";
 const router = express.Router();
 const SCOPES = ["openid", "email", "profile"];
 
+// Le seul client est ClassQuiz : éteint pour l'école (lot ME-0c), le fournisseur l'est aussi
 router.use((req, res, next) => {
-    if (!fournisseur()) return res.status(404).json({ message: "Fournisseur OpenID Connect désactivé" });
-    next();
+    const desactive = () => res.status(404).json({ message: "Fournisseur OpenID Connect désactivé" });
+    if (!fournisseur()) return desactive();
+    classQuizActif().then((actif) => (actif ? next() : desactive()), next);
 });
 
 router.get("/interaction/:uid", parseCookies, optionalAuth, async (req, res, next) => {
