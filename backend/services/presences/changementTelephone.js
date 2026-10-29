@@ -1,5 +1,5 @@
 import { UniqueConstraintError } from "sequelize";
-import sequelize from "../../config/db.js";
+import { enTransaction } from "../../models/acces.js";
 import { AppareilEtudiant, DemandeTelephone, Users } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { journaliser } from "../journalSecurite.js";
@@ -109,7 +109,7 @@ export const deciderDemande = async (user, idDemande, accepter, { motif } = {}, 
     const decision = { statut: accepter ? "acceptee" : "refusee", id_user_admin: user.id_user, decidee_le: maintenant };
     if (accepter) {
         try {
-            await sequelize.transaction(async (transaction) => {
+            await enTransaction(async (transaction) => {
                 // Lié entre-temps à un autre compte (premier scan d'un camarade) : la demande attend
                 const pris = await AppareilEtudiant.findOne({ where: { appareil: demande.appareil }, transaction });
                 if (pris && pris.id_user !== demande.id_user) throw telephoneDUnAutre();
