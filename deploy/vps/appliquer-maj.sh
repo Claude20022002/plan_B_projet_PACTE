@@ -3,7 +3,7 @@
 #   cd /root && tar -xzf maj8.tar.gz && bash maj8/deploy-vps/appliquer-maj.sh /root/maj8
 # Étapes : sauvegarde de la base (/root/sauvegardes) et des images actuelles (tag avant-<date>),
 # superposition, recréation du backend (qui applique ses migrations) puis du site, scripts .mjs
-# mis à jour dans /opt/hestim/deploy/vps, contrôles. FinAdminTech n'est jamais touché.
+# et .sh mis à jour dans /opt/hestim/deploy/vps, contrôles. FinAdminTech n'est jamais touché.
 set -euo pipefail
 
 PAQUET="$(cd "${1:?usage : appliquer-maj.sh <dossier extrait, par ex. /root/maj8>}" && pwd)"
@@ -56,10 +56,8 @@ docker build -q -t claude20022002/hestim-frontend:latest -f "$PAQUET/Dockerfile.
 [ -f "$PAQUET/Dockerfile.studylib" ] && docker build -q -t claude20022002/hestim-studylib:latest -f "$PAQUET/Dockerfile.studylib" "$PAQUET"
 
 echo "== Scripts d'exploitation"
-cp "$PAQUET"/deploy-vps/*.mjs "$PAQUET"/deploy-vps/appliquer-maj.sh "$HESTIM/deploy/vps/"
-for script in nettoyer-paquets.sh sauvegarder.sh; do
-    [ -f "$PAQUET/deploy-vps/$script" ] && cp "$PAQUET/deploy-vps/$script" "$HESTIM/deploy/vps/"
-done
+# Tous ceux du paquet : une liste fixe a oublié sauvegarde-commun.sh, que sauvegarder.sh charge (maj44)
+cp "$PAQUET"/deploy-vps/*.mjs "$PAQUET"/deploy-vps/*.sh "$HESTIM/deploy/vps/"
 [ -d "$PAQUET/deploy-vps/demo" ] && rm -rf "$HESTIM/deploy/vps/demo" && cp -r "$PAQUET/deploy-vps/demo" "$HESTIM/deploy/vps/demo"
 
 cd "$HESTIM"
