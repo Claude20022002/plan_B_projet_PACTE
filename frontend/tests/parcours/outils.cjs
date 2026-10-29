@@ -66,4 +66,4 @@ const enTeteCsrf = async (page) => {
   return { "X-CSRF-Token": decodeURIComponent(csrf) };
 };
 
-module.exports = { lireDonnees, seConnecter, scannerCommeMobile, publierMois, supprimerModule };
+module.exports = { lireDonnees, seConnecter, scannerCommeMobile, publierMois, supprimerModule, enTeteCsrf };

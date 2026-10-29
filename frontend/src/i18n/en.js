@@ -1741,7 +1741,7 @@ const en = {
     retablir: 'Restore',
     retablirGroupe: 'Restore the accounts of this group',
     retablirGroupeNom: 'Restore the accounts of {{nom}}',
-    retablirMessage: 'The deactivated accounts of the students of {{nom}} (and its subgroups) will be reactivated, and scheduled deactivations cancelled.',
+    retablirMessage: 'All deactivated accounts of the students of {{nom}} (and its subgroups) will be reactivated, including those deactivated before the last batch (departures, exclusions), and all their scheduled deactivations cancelled.',
     anonymiserSaisie: 'Type “{{nom}}” or {{mot}} to confirm',
   },
   login: {

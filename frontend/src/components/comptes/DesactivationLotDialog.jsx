@@ -14,7 +14,8 @@ const VIDE = () => ({ motif: '', date: aujourdhui(), preavis: true });
  * promotion »). « Aperçu puis appliquer » : le nombre de comptes touchés et les refus prévus sont
  * relus à chaque changement de date, avant le bouton. Le serveur traite ensuite chaque compte seul :
  * un refus (séances à traiter chez un enseignant, dernier administrateur, compte déjà désactivé) ne
- * bloque pas les autres, et le bilan dit ce qui s'est passé ; « Défaire » rétablit tout le lot.
+ * bloque pas les autres, et le bilan dit ce qui s'est passé ; « Défaire » rétablit les comptes que
+ * le lot a désactivés ou programmés, et eux seuls.
  * `onFini()` est appelé à la fermeture d'un lot appliqué (recharger la liste).
  */
 export default function DesactivationLotDialog({ comptes, groupe, onClose, onFini }) {
@@ -68,7 +69,10 @@ export default function DesactivationLotDialog({ comptes, groupe, onClose, onFin
         }),
         setBilan,
     );
-    const annulerLot = () => agir(() => userAPI.retablirEnLot(portee), setDefait);
+    // Les comptes touchés, pris dans le bilan : la portée du lot (tout le groupe) réactiverait aussi
+    // ceux qui étaient déjà désactivés avant lui (refusés « déjà désactivé »)
+    const touches = (bilan?.bilan ?? []).filter((b) => b.statut === 'desactive' || b.statut === 'programmee').map((b) => b.id_user);
+    const annulerLot = () => agir(() => userAPI.retablirEnLot({ ids: touches }), setDefait);
 
     const fermer = () => { if (bilan) onFini?.(); onClose(); };
 
@@ -77,7 +81,7 @@ export default function DesactivationLotDialog({ comptes, groupe, onClose, onFin
     const lignesRefus = groupe
         ? Object.entries(refus.reduce((acc, b) => ({ ...acc, [b.message]: (acc[b.message] ?? 0) + 1 }), {})).map(([message, n]) => `${message} (${n})`)
         : refus.map((b) => `${nomDe(b.id_user) ?? `#${b.id_user}`} : ${b.message}`);
-    const aDefaire = bilan && !defait && bilan.desactives + bilan.programmes > 0;
+    const aDefaire = bilan && !defait && touches.length > 0;
 
     return (
         <Dialog open onClose={fermer} maxWidth="sm" fullWidth>

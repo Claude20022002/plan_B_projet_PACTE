@@ -5,7 +5,7 @@
  * Le compte de l'essai est créé ici : les autres parcours partagent la base et gardent leurs comptes.
  */
 const { test, expect } = require("@playwright/test");
-const { lireDonnees, seConnecter } = require("./outils.cjs");
+const { lireDonnees, seConnecter, enTeteCsrf } = require("./outils.cjs");
 
 test.setTimeout(120_000);
 
@@ -116,4 +116,50 @@ test("désactivation d'un groupe entier : l'aperçu répond avant d'appliquer", 
   await expect(fenetre.getByText(/désactivés?\.$|Aucun compte visé/)).toBeVisible({ timeout: 20_000 });
   await fenetre.getByRole("button", { name: "Annuler" }).click();
   await expect(fenetre).toBeHidden();
+});
+
+test("désactivation d'un groupe, « Défaire » : un compte déjà désactivé avant le lot le reste", async ({ page }) => {
+  const { admin, motDePasse } = lireDonnees();
+  await seConnecter(page, { email: admin.email, motDePasse, role: "admin" });
+  const appel = async (methode, chemin, data) => {
+    const reponse = await page.request[methode](`/api${chemin}`, { headers: await enTeteCsrf(page), data });
+    expect(reponse.ok(), `${chemin} : ${await reponse.text()}`).toBeTruthy();
+    return reponse.json();
+  };
+
+  // Un groupe de GEN pour l'essai, nommé à chaque essai (un essai rejoué ne bute pas sur le précédent),
+  // avec deux étudiants : « Parti » est désactivé avant le lot, « Reste » ne l'est pas
+  const essai = Date.now().toString(36);
+  const nom = `Essai ${essai}`;
+  const { id_filiere } = (await appel("get", "/groupes?annee_scolaire=2026-2027&limit=100")).data.find((g) => g.nom_groupe === "4A GEN");
+  const { groupe } = await appel("post", "/groupes", { nom_groupe: nom, niveau: "1ère année", annee: 1, effectif: 2, annee_scolaire: "2026-2027", type_groupe: "promotion", id_filiere });
+  const etudiant = (prenom) => ({ nom: "Essai", prenom, email: `${prenom.toLowerCase()}.${essai}@exemple.hestim.test`, numero_etudiant: `${prenom[0]}${essai}`, niveau: "1A", id_groupe: groupe.id_groupe });
+  const { success } = await appel("post", "/etudiants/import", { etudiants: [etudiant("Parti"), etudiant("Reste")] });
+  const idDe = (prenom) => success.find((e) => e.user.prenom === prenom).id_user;
+  await appel("post", `/users/${idDe("Parti")}/desactivation`, { motif: "depart" });
+
+  try {
+    await page.goto("/gestion/groupes");
+    await page.getByRole("combobox", { name: "Filière" }).click();
+    await page.getByRole("option", { name: /^GEN · / }).click();
+    await page.getByRole("button", { name: `Désactiver les comptes de ${nom}` }).click();
+    const fenetre = page.getByRole("dialog", { name: `Désactiver les étudiants de ${nom}` });
+    await expect(fenetre.getByText("1 compte sera désactivé.")).toBeVisible({ timeout: 20_000 });
+    await fenetre.getByRole("combobox", { name: /Motif/ }).click();
+    await page.getByRole("option", { name: "Autre" }).click();
+    await fenetre.getByRole("button", { name: "Désactiver", exact: true }).click();
+    await expect(fenetre.getByText("1 désactivé(s), 0 programmé(s), 1 refusé(s).")).toBeVisible();
+
+    // « Défaire » ne rétablit que le compte que le lot a désactivé
+    await fenetre.getByRole("button", { name: "Défaire" }).click();
+    await expect(fenetre.getByText(/Lot rétabli : 1 compte\(s\) réactivé\(s\)/)).toBeVisible();
+    await fenetre.getByRole("button", { name: "Fermer" }).click();
+    const actif = async (prenom) => { const r = await appel("get", `/users/${idDe(prenom)}`); return (r.user ?? r).actif; };
+    expect(await actif("Reste")).toBe(true);
+    expect(await actif("Parti")).toBe(false);
+  } finally {
+    // Ménage sans échec : le groupe ne se supprime qu'une fois vidé de ses étudiants
+    for (const e of success) await page.request.delete(`/api/etudiants/${e.id_user}`, { headers: await enTeteCsrf(page) });
+    await page.request.delete(`/api/groupes/${groupe.id_groupe}`, { headers: await enTeteCsrf(page) });
+  }
 });

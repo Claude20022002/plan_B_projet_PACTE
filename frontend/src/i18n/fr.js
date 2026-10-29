@@ -1739,7 +1739,7 @@ const fr = {
     retablir: 'Rétablir',
     retablirGroupe: 'Rétablir les comptes de ce groupe',
     retablirGroupeNom: 'Rétablir les comptes de {{nom}}',
-    retablirMessage: 'Les comptes désactivés des étudiants de {{nom}} (et de ses sous-groupes) seront réactivés, et les désactivations programmées annulées.',
+    retablirMessage: 'Tous les comptes désactivés des étudiants de {{nom}} (et de ses sous-groupes) seront réactivés, y compris ceux désactivés avant le dernier lot (départs, exclusions), et toutes leurs désactivations programmées annulées.',
     anonymiserSaisie: 'Tapez « {{nom}} » ou {{mot}} pour confirmer',
   },
   login: {
