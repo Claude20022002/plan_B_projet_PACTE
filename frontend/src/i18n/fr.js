@@ -593,6 +593,7 @@ const fr = {
     publier: 'Publier dans la Bibliothèque',
     publierBouton: 'Publier',
     publierConfirmation: '« {{titre}} » sera visible de toute l’école dans la Bibliothèque, et restera dans cette classe.',
+    publierAvantOuverture: '« {{titre}} » n’ouvre à la classe que le {{date}}, mais dans la Bibliothèque il sera visible de toute l’école dès maintenant. Il restera aussi dans cette classe.',
     retirer: 'Retirer',
     retirerConfirmation: '« {{titre}} » sera retiré de la classe et supprimé.',
     retirerEpingle: '« {{titre}} » sera retiré de la classe ; il reste dans la Bibliothèque.',
