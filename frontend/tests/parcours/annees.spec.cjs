@@ -29,6 +29,7 @@ test("groupes : l'année en cours par défaut, une autre année sur demande, gar
   await page.getByRole("option", { name: "Toutes les années" }).click();
   await expect(page.getByText("4A GEN", { exact: true })).toBeVisible();
 
+  // Page compilée à froid par le serveur de développement : le sélecteur attend les années plus de 5 s
   await page.goto("/gestion/etudiants");
-  await expect(page.getByRole("combobox", { name: "Année universitaire" })).toHaveText("Toutes les années");
+  await expect(page.getByRole("combobox", { name: "Année universitaire" })).toHaveText("Toutes les années", { timeout: 20_000 });
 });
