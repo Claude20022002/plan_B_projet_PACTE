@@ -37,6 +37,9 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
   CMD wget -qO- http://localhost:5000/health || exit 1
 
 ENV NODE_ENV=production
+# Commit de l'image, annoncé par /health (lot ME-0b) : passé par la CI, « inconnue » sinon
+ARG VERSION_PLANNER=inconnue
+ENV PLANNER_VERSION=$VERSION_PLANNER
 # Base des fuseaux à jour (Maroc à UTC+0 depuis le 20 septembre 2026), voir tzdata/LISEZMOI.md
 ENV ICU_TIMEZONE_FILES_DIR=/app/tzdata
 CMD ["node", "server.js"]

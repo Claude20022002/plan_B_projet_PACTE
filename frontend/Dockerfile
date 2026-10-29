@@ -33,6 +33,10 @@ RUN apk upgrade --no-cache
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Commit du site, lu par la commande de mise en ligne (lot ME-0b) : passé par la CI, « inconnue » sinon
+ARG VERSION_PLANNER=inconnue
+RUN echo "$VERSION_PLANNER" > /usr/share/nginx/html/version.txt
+
 # Réduire les permissions sur les fichiers statiques
 RUN chown -R nginx:nginx /usr/share/nginx/html && chmod -R 755 /usr/share/nginx/html
 
