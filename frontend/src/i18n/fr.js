@@ -1606,6 +1606,8 @@ const fr = {
     confirmerSuppression: 'Êtes-vous sûr de vouloir supprimer cet étudiant ?',
     groupeInconnu: 'Groupe inconnu : {{groupe}}',
     groupeInconnuAnnee: 'Groupe inconnu en {{annee}} : {{groupe}}',
+    groupePlusieursAnnees: 'Le groupe {{groupe}} existe dans plusieurs années ({{annees}}) : choisissez l’année avant d’importer',
+    groupeHomonyme: 'Plusieurs groupes s’appellent {{groupe}} : renommez-les dans Groupes avant d’importer',
     fichierExport: 'Étudiants',
     titreImport: 'Importer des étudiants',
     introImport: 'Une ligne par étudiant. Colonnes obligatoires : nom, prenom, email, numero_etudiant, niveau. Facultatives : telephone, groupe (nom du groupe le plus fin, tel qu’affiché dans Groupes). Chaque étudiant reçoit un lien d’invitation par email pour choisir son mot de passe.',

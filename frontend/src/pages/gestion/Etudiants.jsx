@@ -31,6 +31,7 @@ import * as yup from 'yup';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
 import SelecteurAnnee from '../../components/common/SelecteurAnnee';
 import useAnneeChoisie from '../../hooks/useAnneeChoisie';
+import { groupesParNom, nomEtAnnee } from '../../utils/annees';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_ETUDIANTS } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
@@ -162,21 +163,29 @@ export default function Etudiants() {
         }
     };
 
+    // Ligne refusée quand son nom ne désigne pas un seul groupe : inconnu, ou porté par plusieurs
+    // groupes (avec « Toutes les années », « 4A IIIA » de deux années : on ne choisit pas au hasard)
+    const erreurGroupe = (groupe, trouves) => {
+        if (!trouves.length) return annee ? t('etudiants.groupeInconnuAnnee', { groupe, annee: annee.libelle }) : t('etudiants.groupeInconnu', { groupe });
+        const annees = [...new Set(trouves.map((g) => g.annee_scolaire))];
+        return annees.length > 1 ? t('etudiants.groupePlusieursAnnees', { groupe, annees: annees.join(', ') }) : t('etudiants.groupeHomonyme', { groupe });
+    };
+
     // Groupe désigné par son nom (casse et espaces ignorés) ; l'import serveur traite le reste du
     // fichier et ses erreurs (par email) sont ramenées aux lignes
     const importer = async (lignes) => {
-        const parNom = new Map(groupes.map((g) => [String(g.nom_groupe).trim().toLowerCase(), g.id_groupe]));
+        const parNom = groupesParNom(groupes);
         const erreurs = [];
         const valides = [];
         lignes.forEach((l, index) => {
             const propre = Object.fromEntries(Object.entries(l).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]));
             const nomGroupe = String(propre.groupe ?? '').toLowerCase();
-            if (nomGroupe && !parNom.has(nomGroupe)) {
-                const message = annee ? t('etudiants.groupeInconnuAnnee', { groupe: propre.groupe, annee: annee.libelle }) : t('etudiants.groupeInconnu', { groupe: propre.groupe });
-                erreurs.push({ ligne: index + 2, libelle: propre.email, message });
+            const trouves = parNom.get(nomGroupe) ?? [];
+            if (nomGroupe && trouves.length !== 1) {
+                erreurs.push({ ligne: index + 2, libelle: propre.email, message: erreurGroupe(propre.groupe, trouves) });
                 return;
             }
-            valides.push({ ...propre, email: String(propre.email ?? '').toLowerCase(), id_groupe: nomGroupe ? parNom.get(nomGroupe) : null });
+            valides.push({ ...propre, email: String(propre.email ?? '').toLowerCase(), id_groupe: nomGroupe ? trouves[0].id_groupe : null });
         });
         if (valides.length) {
             const reponse = await etudiantAPI.importEtudiants(valides);
@@ -200,8 +209,11 @@ export default function Etudiants() {
     // Fiche d'un étudiant d'une autre année : son groupe reste proposé, pour ne pas l'effacer
     const groupesProposes =
         editing?.groupe && !groupes.some((g) => g.id_groupe === editing.id_groupe)
-            ? [...groupes, { id_groupe: editing.id_groupe, nom_groupe: editing.groupe.nom_groupe }]
+            ? [...groupes, { ...editing.groupe, id_groupe: editing.id_groupe }]
             : groupes;
+    // L'année à côté du nom dès qu'elle n'est pas celle choisie : avec « Toutes les années », deux
+    // « 4A IIIA » restent distincts dans le menu
+    const libelleGroupe = (g) => (String(g.id_annee) === String(valeurAnnee) ? g.nom_groupe : nomEtAnnee(g));
 
     const filteredEtudiants = etudiants.filter(
         (etu) =>
@@ -371,7 +383,7 @@ export default function Etudiants() {
                                     >
                                         {groupesProposes.map((groupe) => (
                                             <MenuItem key={groupe.id_groupe} value={groupe.id_groupe}>
-                                                {groupe.nom_groupe}
+                                                {libelleGroupe(groupe)}
                                             </MenuItem>
                                         ))}
                                     </Select>
