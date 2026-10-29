@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from 'react';
-import { calendrierAPI } from '../services/api';
+import { useCallback, useMemo, useState } from 'react';
+import useAnnees from './useAnnees';
 import { filtreAnnee, valeurRetenue } from '../utils/annees';
 
 // Le choix suit l'administrateur d'une page de gestion à l'autre, le temps de la session ; une
@@ -28,19 +28,8 @@ const ecrire = (valeur) => {
  * `filtre` se passe tel quel aux listes de groupes (`{ id_annee }`, ou rien pour toutes les années).
  */
 export default function useAnneeChoisie() {
-    const [annees, setAnnees] = useState(null);
+    const annees = useAnnees();
     const [choix, setChoix] = useState(lire);
-
-    useEffect(() => {
-        let actif = true;
-        calendrierAPI
-            .getAnnees()
-            .then((liste) => actif && setAnnees(Array.isArray(liste) ? liste : []))
-            .catch(() => actif && setAnnees([]));
-        return () => {
-            actif = false;
-        };
-    }, []);
 
     const valeur = useMemo(() => (annees ? valeurRetenue(annees, choix) : null), [annees, choix]);
     const filtre = useMemo(() => filtreAnnee(valeur), [valeur]);
