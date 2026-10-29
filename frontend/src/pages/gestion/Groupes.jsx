@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
+    Alert,
     Box,
     Button,
     IconButton,
@@ -21,6 +22,7 @@ import { Add, Delete, Edit, SubdirectoryArrowRight, UploadFile } from '@mui/icon
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
+import SelecteurAnnee from '../../components/common/SelecteurAnnee';
 import GroupeDialog from '../../components/groupes/GroupeDialog';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
@@ -28,6 +30,8 @@ import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { filiereAPI, groupeAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
+import useAnneeChoisie from '../../hooks/useAnneeChoisie';
+import { TOUTES } from '../../utils/annees';
 import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { exportToExcelLazy } from '../../utils/lazyExports';
@@ -58,31 +62,33 @@ const aplatir = (noeuds, profondeur = 0) =>
 /**
  * Groupes emboîtés : promotion ⊃ groupes de TD ⊃ demi-groupes de TP. Un étudiant est inscrit
  * dans son groupe le plus fin ; il suit aussi les séances de ses groupes parents.
+ * Une année à la fois (lot ME-18) : celle en cours par défaut.
  */
 export default function Groupes() {
     const { t } = useTranslation();
     const toast = useToast();
     const { user } = useAuth();
+    const { annees, valeur: valeurAnnee, annee, filtre, choisir: choisirAnnee } = useAnneeChoisie();
     const [filieres, setFilieres] = useState([]);
     const [filiere, setFiliere] = useState('');
-    const [annees, setAnnees] = useState(() => [anneeScolaireCourante()]);
-    const [anneeScolaire, setAnneeScolaire] = useState(anneeScolaireCourante());
     const [arbre, setArbre] = useState([]);
+    // Groupes de la filière dont le texte d'année ne correspond à aucune année : le filtre par
+    // année les écarte, on les signale pour qu'ils soient corrigés
+    const [sansAnnee, setSansAnnee] = useState(0);
     const [loading, setLoading] = useState(true);
     const [dialog, setDialog] = useState({ open: false, editing: null, form: GROUPE_VIDE });
     const [aSupprimer, setASupprimer] = useState(null);
     const [importOuvert, setImportOuvert] = useState(false);
 
-    // Filières et années scolaires disponibles
+    // Année scolaire proposée pour un nouveau groupe : celle choisie, sinon l'année en cours
+    const anneeScolaire = annee?.libelle ?? anneeScolaireCourante();
+
     useEffect(() => {
         (async () => {
             try {
-                const [toutes, groupes] = await Promise.all([fetchAll(filiereAPI.getAll), fetchAll(groupeAPI.getAll)]);
-                const listeFilieres = filieresGerables(toutes, user);
+                const listeFilieres = filieresGerables(await fetchAll(filiereAPI.getAll), user);
                 setFilieres(listeFilieres);
                 setFiliere((f) => f || listeFilieres[0]?.id_filiere || '');
-                const liste = [...new Set([anneeScolaireCourante(), ...groupes.map((g) => g.annee_scolaire)])].sort().reverse();
-                setAnnees(liste);
             } catch {
                 toast.error(t('common.errorLoad'));
             }
@@ -91,19 +97,24 @@ export default function Groupes() {
     }, []);
 
     const chargerArbre = useCallback(async () => {
-        if (!filiere) {
-            setLoading(false);
+        if (!filiere || valeurAnnee === null) {
+            setLoading(Boolean(filiere));
             return;
         }
         setLoading(true);
         try {
-            setArbre(await groupeAPI.getArbre({ id_filiere: filiere, annee_scolaire: anneeScolaire }));
+            const [groupes, tous] = await Promise.all([
+                groupeAPI.getArbre({ id_filiere: filiere, ...filtre }),
+                valeurAnnee === TOUTES ? null : fetchAll(groupeAPI.getAll, { id_filiere: filiere }),
+            ]);
+            setArbre(groupes);
+            setSansAnnee(tous ? tous.filter((g) => g.id_annee == null).length : 0);
         } catch {
             toast.error(t('common.errorLoad'));
         } finally {
             setLoading(false);
         }
-    }, [filiere, anneeScolaire, t, toast]);
+    }, [filiere, valeurAnnee, filtre, t, toast]);
 
     useEffect(() => {
         chargerArbre();
@@ -229,16 +240,10 @@ export default function Groupes() {
                                 </MenuItem>
                             ))}
                         </TextField>
-                        <TextField select size="small" label={t('ref.groups.schoolYear')} value={anneeScolaire} onChange={(e) => setAnneeScolaire(e.target.value)} sx={{ minWidth: 150 }}>
-                            {annees.map((a) => (
-                                <MenuItem key={a} value={a}>
-                                    {a}
-                                </MenuItem>
-                            ))}
-                        </TextField>
+                        <SelecteurAnnee annees={annees} valeur={valeurAnnee} onChange={choisirAnnee} />
                     </Stack>
                     <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-                        <Button variant="outlined" onClick={async () => exportToExcelLazy(await fetchAll(groupeAPI.getAll, { id_filiere: filiere }), COLS_GROUPES, 'Groupes', 'Groupes')}>
+                        <Button variant="outlined" onClick={async () => exportToExcelLazy(await fetchAll(groupeAPI.getAll, { id_filiere: filiere, ...filtre }), COLS_GROUPES, 'Groupes', 'Groupes')}>
                             {t('ref.import.export')}
                         </Button>
                         <Button variant="outlined" startIcon={<UploadFile />} onClick={() => setImportOuvert(true)}>
@@ -253,11 +258,29 @@ export default function Groupes() {
                     {t('ref.groups.intro')}
                 </Typography>
 
+                {sansAnnee > 0 && valeurAnnee !== TOUTES && (
+                    <Alert
+                        severity="warning"
+                        sx={{ mb: 2 }}
+                        action={
+                            <Button color="inherit" size="small" onClick={() => choisirAnnee(TOUTES)}>
+                                {t('ref.groups.showAllYears')}
+                            </Button>
+                        }
+                    >
+                        {t('ref.groups.withoutYear', { count: sansAnnee })}
+                    </Alert>
+                )}
+
                 {loading ? (
                     <TableSkeleton rows={6} />
                 ) : lignes.length === 0 ? (
                     <EmptyState
-                        title={t('ref.groups.emptyTitle', { program: filiereCourante?.code_filiere || '', year: anneeScolaire })}
+                        title={
+                            valeurAnnee === TOUTES
+                                ? t('ref.groups.emptyTitleAllYears', { program: filiereCourante?.code_filiere || '' })
+                                : t('ref.groups.emptyTitle', { program: filiereCourante?.code_filiere || '', year: anneeScolaire })
+                        }
                         description={t('ref.groups.emptyBody')}
                         actionLabel={t('ref.groups.addPromotion')}
                         onAction={() => ouvrir()}
@@ -290,6 +313,19 @@ export default function Groupes() {
                                                     <Typography variant="body2" sx={{ fontWeight: groupe.profondeur === 0 ? 700 : 600, fontFamily: groupe.profondeur === 0 ? ds.font.board : undefined, letterSpacing: groupe.profondeur === 0 ? '0.04em' : undefined }}>
                                                         {groupe.nom_groupe}
                                                     </Typography>
+                                                    {/* Toutes les années : on distingue « 4A IIIA » de 2025-2026 de celle de 2026-2027 */}
+                                                    {valeurAnnee === TOUTES && groupe.profondeur === 0 && groupe.id_annee != null && (
+                                                        <Typography variant="caption" color="text.secondary">
+                                                            {groupe.annee_scolaire}
+                                                        </Typography>
+                                                    )}
+                                                    {groupe.id_annee == null && (
+                                                        <Tooltip title={t('ref.groups.unknownYearHelp', { text: groupe.annee_scolaire })}>
+                                                            <Box component="span">
+                                                                <StateChip tone="warning">{t('ref.groups.unknownYear')}</StateChip>
+                                                            </Box>
+                                                        </Tooltip>
+                                                    )}
                                                 </Stack>
                                             </TableCell>
                                             <TableCell>{t(`ref.groupTypes.${groupe.type_groupe}`)}</TableCell>
