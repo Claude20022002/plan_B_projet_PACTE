@@ -425,6 +425,8 @@ export const affectationAPI = {
     create: (data) => request('/affectations', { method: 'POST', body: data }),
     update: (id, data) => request(`/affectations/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/affectations/${id}`, { method: 'DELETE' }),
+    // Lien de visio d'une séance à distance (lot EC-11) : null le retire
+    lienVisio: (id, lien) => request(`/affectations/${id}/lien-visio`, { method: 'PUT', body: { lien_visio: lien } }),
 };
 
 // ==================== CONFLITS ====================
