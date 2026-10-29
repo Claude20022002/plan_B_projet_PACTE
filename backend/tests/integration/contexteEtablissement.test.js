@@ -152,6 +152,16 @@ describe("Deux écoles, deux bases, le même code", () => {
         expect(await dansA(() => Filiere.count({ where: { code_filiere: "PIEGE" } }))).toBe(1);
         expect(await dansB(() => Filiere.count({ where: { code_filiere: "PIEGE" } }))).toBe(0);
     });
+
+    // Audit d'isolation (fichier 18, I-3) : test.failing décrit le comportement voulu ; Jest le signale
+    // dès qu'il passe, pour qu'on le change en test ordinaire avec la correction
+    test.failing("chaque école lit sa propre identité (nom, couleurs, expéditeur)", async () => {
+        await dansB(() => ConfigurationEtablissement.update({ nom: "École Beta", nom_court: "Beta" }, { where: { id: 1 } }));
+        const nomA = (await request(app).get("/api/etablissement").set("Host", HOTE_A)).body.nom;
+        const nomB = (await request(app).get("/api/etablissement").set("Host", HOTE_B)).body.nom;
+        expect(nomA).not.toBe("École Beta");
+        expect(nomB).toBe("École Beta");
+    });
 });
 
 describe("Échec fermé (mode strict)", () => {
