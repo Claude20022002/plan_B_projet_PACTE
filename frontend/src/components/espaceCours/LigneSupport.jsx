@@ -4,6 +4,8 @@ import { Box, Chip, IconButton, ListItem, ListItemButton, ListItemIcon, ListItem
 import { MoreVert } from '@mui/icons-material';
 import { domaineDe, familleDuSupport, tailleCourte } from './iconeSupport';
 import { localeEcran } from '../../utils/dates';
+import { etatOuverture } from '../../utils/ouverture';
+import PastilleOuverture from './PastilleOuverture';
 
 /**
  * Un support dans sa section. Toute la ligne ouvre le support ; le menu « ⋮ » (auteur ou
@@ -40,7 +42,7 @@ export default function LigneSupport({ support, gere, sections, idSection, premi
         ) : null
       }
     >
-      <ListItemButton onClick={() => onOuvrir(support)} sx={{ borderRadius: 1, opacity: support.visible ? 1 : 0.6 }}>
+      <ListItemButton onClick={() => onOuvrir(support)} sx={{ borderRadius: 1, opacity: support.visible && ['libre', 'ouvert'].includes(etatOuverture(support).etat) ? 1 : 0.6 }}>
         <ListItemIcon sx={{ minWidth: 44, color: 'primary.main' }}>
           <Icone aria-hidden="true" />
         </ListItemIcon>
@@ -49,6 +51,7 @@ export default function LigneSupport({ support, gere, sections, idSection, premi
             <Box component="span" sx={{ display: 'inline-flex', alignItems: 'center', gap: 1, flexWrap: 'wrap' }}>
               <Box component="span" sx={{ fontWeight: 500 }}>{support.titre}</Box>
               {!support.visible && <Chip size="small" label={t('espaceCours.masque')} variant="outlined" />}
+              {gere && <PastilleOuverture element={support} />}
               {gere && support.dans_bibliotheque && (
                 <Tooltip title={t('espaceCours.dansBibliothequeAide')}>
                   <Chip size="small" label={t('espaceCours.dansBibliotheque')} color="primary" variant="outlined" />
@@ -62,6 +65,7 @@ export default function LigneSupport({ support, gere, sections, idSection, premi
       <Menu anchorEl={ancre} open={Boolean(ancre)} onClose={() => setAncre(null)}>
         <MenuItem onClick={action('renommer')}>{t('espaceCours.renommer')}</MenuItem>
         <MenuItem onClick={action('visibilite')}>{t(support.visible ? 'espaceCours.masquer' : 'espaceCours.afficher')}</MenuItem>
+        <MenuItem onClick={action('ouverture')}>{t('espaceCours.ouverture.action')}</MenuItem>
         {!premier && <MenuItem onClick={action('monter')}>{t('espaceCours.monter')}</MenuItem>}
         {!dernier && <MenuItem onClick={action('descendre')}>{t('espaceCours.descendre')}</MenuItem>}
         {autresSections.map((s) => (
