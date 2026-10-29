@@ -203,13 +203,14 @@ Après le passage à MySQL 8.4 (lot ME-0e), remplacer `mysql:8.0-debian` par `pe
 
    ```bash
    ssh root@<serveur> "docker run -d --name essai_restauration --network none -e MYSQL_ROOT_PASSWORD=essai mysql:8.0"
-   # attendre 30 s que MySQL démarre, puis, depuis le PC :
+   # attendre 30 s que MySQL démarre, puis, depuis le PC, dans Git Bash
+   # (sous Windows PowerShell 5.1, un | entre deux programmes abîme les données binaires) :
    gpg -d mysql-<date>.sql.gz.gpg | ssh root@<serveur> "gunzip | docker exec -i -e MYSQL_PWD=essai essai_restauration mysql -uroot"
    ssh root@<serveur> "docker exec -e MYSQL_PWD=essai essai_restauration mysql -uroot -N -e 'SHOW DATABASES'"
    ```
 
    Comparer le nombre de comptes (`SELECT COUNT(*) FROM <base de Planner>.Users`) avec la production : l'écart doit se limiter aux comptes créés depuis la nuit.
-3. Lister l'archive des fichiers sur le PC (`gpg -d fichiers-bibliotheque-<date>.tar.gz.gpg | tar -tzf - | wc -l`) et comparer au volume (`ssh root@<serveur> "docker run --rm --volumes-from hestim_minio:ro alpine:3.20 find /data -type f | wc -l"`).
+3. Compter les documents de l'archive et du volume, sans les dossiers ni les fichiers internes de MinIO (`.minio.sys`, dont la corbeille `tmp/.trash` change d'elle-même d'heure en heure : le 29 octobre, elle faisait 6 fichiers d'écart). Sur le PC : `gpg -d fichiers-bibliotheque-<date>.tar.gz.gpg | tar -tzf - | grep -v '/$' | grep -vc '^\./\.minio\.sys/'` ; sur le serveur : `ssh root@<serveur> "docker run --rm --volumes-from hestim_minio:ro alpine:3.20 find /data -type f -not -path '/data/.minio.sys/*' | wc -l"`. Les deux nombres sont égaux, à l'écart près des documents déposés depuis la nuit. Pour expliquer un écart, comparer les deux listes nom par nom (triées avec `LC_ALL=C sort`, puis `comm -3`).
 4. Nettoyer : `ssh root@<serveur> "docker rm -f essai_restauration && rm -rf /root/essai"`.
 5. **Écrire le résultat** dans `docs/recette/essais-restauration.md` : date, fichiers utilisés, nombres comparés, durée, problème rencontré. Un essai non écrit n'a pas eu lieu.
 
