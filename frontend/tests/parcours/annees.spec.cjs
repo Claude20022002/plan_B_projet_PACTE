@@ -33,3 +33,18 @@ test("groupes : l'année en cours par défaut, une autre année sur demande, gar
   await page.goto("/gestion/etudiants");
   await expect(page.getByRole("combobox", { name: "Année universitaire" })).toHaveText("Toutes les années", { timeout: 20_000 });
 });
+
+test("EDT du mois : seules les classes de l'année du mois affiché sont proposées", async ({ page }) => {
+  const { admin, motDePasse } = lireDonnees();
+  await seConnecter(page, { email: admin.email, motDePasse, role: "admin" });
+  await page.goto("/emploi-du-temps/mensuel?mois=2027-01");
+  const classe = page.getByRole("combobox", { name: "Classe (groupe)" });
+  await classe.fill("GEN");
+  await expect(page.getByRole("option", { name: "4A GEN" })).toBeVisible();
+  await classe.press("Escape");
+
+  // Mars 2026 est en 2025-2026 : la promotion de 2026-2027 n'y est plus proposée
+  await page.getByLabel("Mois").fill("2026-03");
+  await classe.fill("GEN");
+  await expect(page.getByRole("option", { name: "4A GEN" })).toHaveCount(0);
+});
