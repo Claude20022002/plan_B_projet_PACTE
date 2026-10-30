@@ -200,10 +200,12 @@ app.get("/", (req, res) => {
     });
 });
 
-// Route de santé (health check)
+// Route de santé (health check). « version » : le commit de l'image (PLANNER_VERSION, posé à la
+// construction par la CI) ; la commande de mise en ligne le compare au commit demandé (lot ME-0b)
 app.get("/health", (req, res) => {
     res.json({
         status: "healthy",
+        version: process.env.PLANNER_VERSION || null,
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
     });
