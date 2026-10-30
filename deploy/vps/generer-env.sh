@@ -38,6 +38,7 @@ QUIZ_DB_PASSWORD=$(hex 24)
 CLASSQUIZ_OIDC_CLIENT_SECRET=$(hex)
 QUIZ_WEBHOOK_SECRET=$(hex)
 OIDC_COOKIE_KEYS=$(hex)
+SUPERVISION_TOKEN=$(hex)
 VITE_API_URL=/api
 EOF
 mkdir -p /opt/hestim/secrets/google

@@ -1,4 +1,5 @@
 import dotenv from "dotenv";
+import { noterEchecCourriel } from "../services/supervision/compteurs.js";
 
 dotenv.config();
 
@@ -121,6 +122,8 @@ export const sendEmail = async (message) => {
         return { success: true, messageId: info.messageId };
     } catch (error) {
         console.error("❌ Erreur lors de l'envoi de l'email:", error);
+        // Compté pour la supervision (lot ME-21 : la « boîte d'envoi » qui n'envoie plus)
+        noterEchecCourriel();
         throw error;
     }
 };

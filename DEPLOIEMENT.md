@@ -279,6 +279,24 @@ $COMPOSE up -d backend studylib studylib-queue studylib-scheduler
 
 Pendant l'arrêt, la tâche `*/15` de `sauvegarder-journaux.sh` peut échouer une fois (MySQL arrêté) : sans effet, la sauvegarde fraîche du début couvre ce moment ; la lancer à la main après la recette. Après le passage, les journaux binaires continuent sans rupture (même identifiant de serveur, même suite de numéros), et l'essai de restauration du mois se fait dans un MySQL jetable `mysql:8.4.13` (un export de 8.4 ne se relit pas à coup sûr en 8.0). Pour les rejouer (« Revenir à une heure précise »), l'outil `mysqlbinlog` 8.4 vient de l'image `percona/percona-server:8.4` (8.4.11, vérifié le 26 octobre) : l'image `mysql:8.4` ne le contient pas.
 
+### Supervision (lot ME-21)
+
+Conception et diagrammes : `docs/plans/planner-multi-etablissements/conception-me21-supervision.md`. Une sonde hébergée (Better Stack ou UptimeRobot) interroge Planner depuis l'extérieur et prévient la personne d'astreinte par courriel et par notification sur le téléphone. Aucune donnée d'élève ne sort : la sonde ne lit que des codes HTTP et des mots-clés.
+
+1. **Sur le serveur, une fois** : ajouter à `/opt/hestim/.env.docker` le jeton des mesures et le nom de l'école dans les journaux, puis recréer le conteneur du serveur de Planner (un simple redémarrage ne relit pas `.env.docker`) :
+   ```bash
+   echo "SUPERVISION_TOKEN=$(openssl rand -hex 32)" >> /opt/hestim/.env.docker
+   echo "ETABLISSEMENT_NOM=hestim" >> /opt/hestim/.env.docker
+   cd /opt/hestim && docker compose --env-file .env.docker -f docker-compose.yml -f deploy/vps/docker-compose.vps.yml up -d --no-deps --force-recreate backend
+   ```
+2. **Dans le service de sonde** : créer les moniteurs du tableau du § 3 de la conception (site, `/api/supervision/sante` en code 200, les mots-clés `"solveur":"ok"` et `"erreurs":"ok"`, la bibliothèque), à l'intervalle le plus court de l'offre ; les alertes vont au courriel et à l'application du service sur le téléphone d'astreinte (notifications autorisées la nuit).
+3. **Battements des sauvegardes** : créer dans la sonde deux tâches attendues (sauvegarde de nuit chaque jour vers 02:15, journaux binaires toutes les 15 minutes), puis mettre leurs adresses dans `/root/hestim-sauvegarde.conf` (`BATTEMENT=…`, `BATTEMENT_JOURNAUX=…`). Lancer une fois `sauvegarder.sh` à la main et vérifier que la sonde a reçu le battement.
+4. **Page d'état publique** : les moniteurs du site, de l'API et de la bibliothèque ; la maintenance du dimanche (06 h à 09 h) s'y annonce 48 heures avant.
+5. **Essai de panne de nuit** (critère du lot), un dimanche dans la fenêtre de maintenance, **sans** la déclarer dans la sonde : noter l'heure, `docker pause hestim_backend`, attendre la notification sur le téléphone, `docker unpause hestim_backend`. L'alerte doit arriver en moins de 5 minutes ; noter le résultat dans `docs/recette/essais-supervision.md`.
+
+Mesures à la demande (trafic, temps de réponse, erreurs, courriels en échec, générations, connexions MySQL), sur le serveur :
+`docker exec hestim_backend sh -c 'wget -qO- --header "X-Supervision-Jeton: $SUPERVISION_TOKEN" http://localhost:5000/api/supervision/mesures'`
+
 ---
 
 ## Comparatif des plateformes
