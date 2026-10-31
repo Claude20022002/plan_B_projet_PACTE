@@ -22,6 +22,14 @@ export const aujourdhui = (maintenant = new Date()) =>
 export const dansJours = (n, maintenant = new Date()) => aujourdhui(new Date(maintenant.getTime() + n * JOUR_MS));
 
 /**
+ * Instant réel d'une heure de l'école (date AAAA-MM-JJ, heure HH:MM ou HH:MM:SS), par exemple la fin
+ * d'une séance. Jamais `new Date("2026-10-29T23:55")`, lu dans le fuseau du navigateur : avec une
+ * base de fuseaux ancienne, la séance finirait une heure trop tôt.
+ */
+export const instantEcole = (date, heure) =>
+  new Date(Date.parse(`${String(date).slice(0, 10)}T${String(heure).slice(0, 5)}:00Z`) - DECALAGE_ECOLE_MINUTES * 60 * 1000);
+
+/**
  * Locale de l'écran pour les dates, les heures et les nombres. En anglais aussi, l'heure sur
  * 24 h et le jour avant le mois (en-GB), comme les emplois du temps de l'école : « en » seul
  * donnait « 10:20 PM » et « 10/20/2026 » à côté de « 15:30 » (recette du 20 octobre, m-6).
