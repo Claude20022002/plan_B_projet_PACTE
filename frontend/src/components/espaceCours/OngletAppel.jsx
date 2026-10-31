@@ -5,9 +5,10 @@ import { Alert, Box, Chip, List, ListItem, ListItemButton, ListItemText, Paper, 
 import EmptyState from '../../design-system/components/EmptyState';
 import { espaceCoursAPI } from '../../services/espaceCours';
 import { localeEcran } from '../../utils/dates';
+// La date de l'école, pas celle du fuseau du navigateur (faux entre 23 h et minuit avec une base de fuseaux ancienne)
+import { aujourdhui } from '../../../../shared/dates.js';
 
 const COULEUR = { a_faire: 'default', ouvert: 'info', ferme: 'success' };
-const aujourdhui = () => new Date().toLocaleDateString('en-CA');
 
 /**
  * Onglet « Appel » d'une classe (lot E-7) : ses séances, la plus récente d'abord, avec l'état de
