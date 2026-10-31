@@ -33,6 +33,17 @@ Pour un correctif du moteur (le code Python de `../ClassQuiz`) qui ne doit pas a
 
 Si les dépendances Python du quiz (`Pipfile`) ont changé, ce paquet ne suffit pas : il faut une nouvelle image de l'API.
 
+### Allumer ou éteindre ClassQuiz pour l'école (lot ME-0c)
+
+ClassQuiz est une fonctionnalité de l'établissement (`ConfigurationEtablissement.classquiz_actif`, migration 0057). Une installation neuve part éteinte ; la base de HESTIM, qui avait déjà des comptes, est restée allumée. Éteint, Planner ne lance plus de partie, refuse le webhook et la connexion par OpenID Connect, et `/api/quiz/config` répond `actif: false` (l'espace « Quiz » disparaît du sélecteur). Les conteneurs du quiz, eux, tournent toujours : les arrêter est une autre décision.
+
+Sur le serveur (`1` pour allumer, `0` pour éteindre), puis redémarrer le serveur de Planner, qui garde la ligne de l'école en mémoire :
+
+```bash
+echo UPDATE ConfigurationEtablissement SET classquiz_actif=1 WHERE id=1 | docker exec -i hestim_mysql sh -c 'MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql -uroot $MYSQL_DATABASE'
+docker restart hestim_backend
+```
+
 ### Quand les dépendances changent
 
 La superposition ne met pas à jour les modules npm du backend. Si `backend/package-lock.json` demande un module absent de l'image, `preparer-maj.sh` puis `appliquer-maj.sh` **s'arrêtent avec la liste des modules en cause**, avant d'avoir rien modifié. Il faut alors une nouvelle image.

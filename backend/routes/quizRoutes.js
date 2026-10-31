@@ -5,6 +5,7 @@ import { planification } from "../utils/erreursPlanning.js";
 import { lancerPartie } from "../services/quiz/lancement.js";
 import { modifierQuiz, quizAModifier } from "../services/quiz/mesQuiz.js";
 import { enregistrerFinPartie, enregistrerPartie, historiqueQuiz, partiesEnCours, resultatsPartie, signatureValide, urlQuiz, webhookActif } from "../services/quiz/parties.js";
+import { classQuizActif } from "../services/etablissement/fonctionnalites.js";
 
 /**
  * Jeux pédagogiques (phase Q).
@@ -24,7 +25,8 @@ import { enregistrerFinPartie, enregistrerPartie, historiqueQuiz, partiesEnCours
 export const webhookQuiz = express.Router();
 
 webhookQuiz.post("/", express.raw({ type: "application/json", limit: "32kb" }), asyncHandler(async (req, res) => {
-    if (!webhookActif()) return res.status(503).json({ message: "Webhook du service de quiz désactivé" });
+    // ClassQuiz éteint pour l'école (lot ME-0c) : même réponse que sans secret configuré
+    if (!webhookActif() || !(await classQuizActif())) return res.status(503).json({ message: "Webhook du service de quiz désactivé" });
     const corps = Buffer.isBuffer(req.body) ? req.body : Buffer.alloc(0);
     if (!signatureValide(corps, req.get("X-Hestim-Timestamp"), req.get("X-Hestim-Signature"))) {
         return res.status(401).json({ message: "Signature invalide" });
@@ -52,10 +54,11 @@ webhookQuiz.post("/", express.raw({ type: "application/json", limit: "32kb" }), 
 
 const router = express.Router();
 
-router.get("/config", authenticateToken, (req, res) => {
-    const url = urlQuiz();
+// ClassQuiz éteint pour l'école (lot ME-0c) : « actif: false », sans adresse, comme non configuré
+router.get("/config", authenticateToken, asyncHandler(async (req, res) => {
+    const url = (await classQuizActif()) ? urlQuiz() : null;
     res.json({ actif: Boolean(url), url, peutLancer: Boolean(url) && req.user.role === "enseignant" });
-});
+}));
 
 router.post("/parties", authenticateToken, planification(async (req, res) => {
     res.status(201).json(await lancerPartie(req.user, { id_quiz: req.body?.id_quiz, id_affectation: req.body?.id_affectation }));
