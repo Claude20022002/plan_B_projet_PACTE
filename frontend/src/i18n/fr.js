@@ -1205,6 +1205,12 @@ const fr = {
   },
   jeux: {
     buts: { verifier: 'Vérifier la compréhension', entrainer: 'S’entraîner' },
+    // Adresse ouverte alors que les quiz en direct ne sont pas ouverts pour l’école (lot ME-0c)
+    quizFerme: {
+      titre: 'Les quiz en direct de ce service ne sont pas ouverts pour votre établissement',
+      aide: 'Vos quiz de « Mes quiz » et les jeux restent disponibles.',
+      retour: 'Aller aux activités',
+    },
     titre: 'Activités',
     sousTitre: 'Les quiz, devoirs et jeux choisis par vos enseignants, module par module : pour vérifier ce que vous avez compris ou vous entraîner.',
     sousTitre_sansDevoirs: 'Les quiz et jeux choisis par vos enseignants, module par module : pour vérifier ce que vous avez compris ou vous entraîner.',

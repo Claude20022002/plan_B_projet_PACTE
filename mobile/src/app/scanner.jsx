@@ -6,7 +6,8 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../board/Ecran';
 import { planner } from '../api/client';
-import { chargerConfigQuiz, chargerPartiesQuiz, rejoindreQuizStudio, rejoindreSessionJeu } from '../api/donnees';
+import { chargerPartiesQuiz, rejoindreQuizStudio, rejoindreSessionJeu } from '../api/donnees';
+import { sourceClassQuiz } from '../quiz/classQuiz';
 import { ecranDuQuiz } from '../quiz/direct';
 import { origineDe, partieDuPin, pinScanne } from '../quiz/scan';
 import { codeSessionScanne, ecranDeSession } from '../jeux/session';
@@ -15,6 +16,7 @@ import { ouvrirSurLeWeb } from '../espaces/ouvrir';
 import { ouvrirPartie as ouvrirLaPartie } from '../quiz/ouvrir';
 import { proposerChangement } from '../telephone/etat';
 import { QUIZ_DANS_L_APPLICATION } from '../../../shared/fonctions.js';
+import { ressembleAPartie } from '../../../shared/classQuiz.js';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
 
 /**
@@ -39,9 +41,8 @@ export default function Scanner() {
   const origineQuiz = useRef(null);
 
   useEffect(() => {
-    origineQuiz.current = chargerConfigQuiz()
-      .then((c) => (c?.actif ? origineDe(c.url) : null))
-      .catch(() => null);
+    // Source commune (lot ME-0c) : éteint pour l'école, ou configuration illisible, l'origine est nulle
+    origineQuiz.current = sourceClassQuiz.lire().then((c) => (c.actif ? origineDe(c.url) : null));
   }, []);
 
   // Vue navigateur ouverte : le scanner se ferme derrière elle (au retour, l'étudiant retrouve l'application)
@@ -90,6 +91,11 @@ export default function Scanner() {
       const pin = pinScanne(data, origine);
       if (pin) {
         await ouvrirPartie(pin, origine);
+        return;
+      }
+      // QR d'une partie alors que le service de quiz est éteint pour l'école : rien ne s'ouvre (C-6)
+      if (!origine && ressembleAPartie(data)) {
+        setResultat({ ok: false, texte: t('app.jeux.quizFerme') });
         return;
       }
       const r = await planner('/presences/scanner', { method: 'POST', body: { code: data } });

@@ -6,6 +6,8 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
 import { chargerPartiesQuiz } from '../../api/donnees';
 import { ouvrirPartie } from '../../quiz/ouvrir';
+import QuizFerme from '../../quiz/QuizFerme';
+import useClassQuiz from '../../hooks/useClassQuiz';
 import { QUIZ_DANS_L_APPLICATION } from '../../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../../theme';
 
@@ -22,9 +24,11 @@ export default function PartieDepuisAlerte() {
   const { id } = useLocalSearchParams();
   const [introuvable, setIntrouvable] = useState(false);
   const ouverte = useRef(false);
+  // Service de quiz éteint pour l'école (lot ME-0c) : rien ne s'ouvre, un message le dit
+  const { pret, actif } = useClassQuiz();
 
   useEffect(() => {
-    if (ouverte.current) return;
+    if (!pret || !actif || ouverte.current) return;
     ouverte.current = true;
     chargerPartiesQuiz()
       .then(async (parties) => {
@@ -36,7 +40,7 @@ export default function PartieDepuisAlerte() {
         return undefined;
       })
       .catch(() => setIntrouvable(true));
-  }, [id, router, couleurs]);
+  }, [id, router, couleurs, pret, actif]);
 
   const fermer = (
     <Pressable onPress={() => (router.canGoBack() ? router.back() : router.replace('/'))} style={styles.icone} accessibilityRole="button" accessibilityLabel={t('app.commun.fermer')}>
@@ -46,7 +50,9 @@ export default function PartieDepuisAlerte() {
 
   return (
     <Ecran titre={t('app.jeux.enCours')} droite={fermer} espaces={false}>
-      {introuvable ? (
+      {pret && !actif ? (
+        <QuizFerme />
+      ) : introuvable ? (
         <View>
           <Message>{t('app.jeux.partieTerminee')}</Message>
           <Pressable onPress={() => router.replace('/jeux')} style={styles.bouton} accessibilityRole="button">

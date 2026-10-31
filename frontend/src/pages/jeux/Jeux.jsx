@@ -33,6 +33,7 @@ import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles'
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
 import { jeuxAPI } from '../../services/api';
+import useClassQuiz from '../../hooks/useClassQuiz';
 import { ds } from '../../design-system/tokens';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { CONTEXTE_DEVOIRS, DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
@@ -58,6 +59,9 @@ export default function Jeux() {
   const [historiqueProf, setHistoriqueProf] = useState(null); // enseignant : quiz, devoirs, défis
   const [resultats, setResultats] = useState(null); // id de la partie affichée
   const [lancement, setLancement] = useState(null); // jeu à lancer en classe (enseignant)
+  // Parties du service de quiz : retirées de l'historique quand l'école ne l'a pas (lot ME-0c)
+  const { actif: classQuiz } = useClassQuiz();
+  const historique = historiqueProf && historiqueProf.filter((e) => classQuiz || e.type !== 'quiz');
 
   const charger = useCallback(() => {
     jeuxAPI.getAccueil()
@@ -291,13 +295,13 @@ export default function Jeux() {
         {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
         {enseignant && (
           <Panneau titre={t('jeux.historiqueProf.titre')} titreId="historique-titre">
-            {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
-            {historiqueProf?.length === 0 && (
+            {historique === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
+            {historique?.length === 0 && (
               <LignePanneau premier>
                 <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide', { context: CONTEXTE_DEVOIRS })}</Typography>
               </LignePanneau>
             )}
-            {(historiqueProf ?? []).map((e, i) => (
+            {(historique ?? []).map((e, i) => (
               <LignePanneau
                 key={e.id}
                 premier={i === 0}
@@ -322,7 +326,7 @@ export default function Jeux() {
         )}
       </Box>
 
-      <ResultatsQuiz idPartie={resultats} onClose={() => setResultats(null)} />
+      <ResultatsQuiz idPartie={classQuiz ? resultats : null} onClose={() => setResultats(null)} />
       <LancerJeuDialog jeu={lancement} modules={modules} onFermer={() => setLancement(null)} />
 
       {/* Proposer un jeu dans un module : but et notion visée */}

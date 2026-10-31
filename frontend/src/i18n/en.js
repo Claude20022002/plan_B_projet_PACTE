@@ -1205,6 +1205,12 @@ const en = {
   },
   jeux: {
     buts: { verifier: 'Check understanding', entrainer: 'Practice' },
+    // Address opened while live quizzes are not open for the school (ME-0c)
+    quizFerme: {
+      titre: 'Live quizzes from this service are not open for your school',
+      aide: 'Your quizzes in “My quizzes” and the games are still available.',
+      retour: 'Go to activities',
+    },
     titre: 'Activities',
     sousTitre: 'Quizzes, homework and games chosen by your teachers, course by course: to check what you understood or to practise.',
     sousTitre_sansDevoirs: 'Quizzes and games chosen by your teachers, course by course: to check what you understood or to practise.',

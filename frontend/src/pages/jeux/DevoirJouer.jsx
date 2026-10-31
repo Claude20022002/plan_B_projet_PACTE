@@ -33,6 +33,8 @@ import { devoirsAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 import { localeEcran } from '../../utils/dates';
+import useClassQuiz from '../../hooks/useClassQuiz';
+import QuizFerme from '../../components/quiz/QuizFerme';
 
 /** Réponse de départ selon le type de question */
 const reponseInitiale = (q) => {
@@ -122,9 +124,23 @@ function Saisie({ question: q, valeur, changer, fige }) {
   return null;
 }
 
+/** Un devoir est un quiz du service de quiz : sans lui pour l'école, un message (lot ME-0c, règle C-5). */
+function DevoirSiClassQuiz() {
+  const { pret, actif } = useClassQuiz();
+  if (!pret) return null;
+  if (!actif) {
+    return (
+      <DashboardLayout>
+        <QuizFerme />
+      </DashboardLayout>
+    );
+  }
+  return <DevoirJouer />;
+}
+
 /** Écran d'un devoir ; devoirs masqués (lot D-1) : un ancien lien de notification ramène aux activités. */
 export default function DevoirJouerSiActif() {
-  return DEVOIRS_ACTIFS ? <DevoirJouer /> : <Navigate to="/jeux" replace />;
+  return DEVOIRS_ACTIFS ? <DevoirSiClassQuiz /> : <Navigate to="/jeux" replace />;
 }
 
 /**

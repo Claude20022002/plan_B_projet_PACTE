@@ -10,6 +10,7 @@ import { cleClasse, minutesAvantFin, nomClasse } from '../components/mesClasses/
 import { enseignantAPI } from '../services/api';
 import { DEVOIRS_ACTIFS } from '../../../shared/fonctions.js';
 import useLiveRefresh from '../hooks/useLiveRefresh';
+import useClassQuiz from '../hooks/useClassQuiz';
 import { localeEcran } from '../utils/dates';
 
 // Le rappel de l'appel s'affiche dans les dernières minutes de la séance (le serveur envoie
@@ -28,6 +29,7 @@ export default function MesClasses() {
   const [erreur, setErreur] = useState(false);
   const [maintenant, setMaintenant] = useState(() => new Date());
   const locale = localeEcran(i18n.language);
+  const { actif: classQuiz } = useClassQuiz();
 
   const charger = useCallback(
     () =>
@@ -53,7 +55,8 @@ export default function MesClasses() {
   const ouvrirAppel = (seance) => navigate(`/appel/${seance.id_affectation}`);
   // L'espace de la classe (supports, appel, élèves) ; `onglet` ouvre directement l'un d'eux
   const ouvrirEspace = (c, onglet = null) => navigate(`/mes-classes/${c.id_cours}/${c.id_groupe}${onglet ? `?onglet=${onglet}` : ''}`);
-  const options = { devoirs: DEVOIRS_ACTIFS };
+  // Un devoir est un quiz du service de quiz : il faut aussi que l'école l'ait (lot ME-0c, règle C-8)
+  const options = { devoirs: DEVOIRS_ACTIFS && classQuiz };
 
   return (
     <DashboardLayout>

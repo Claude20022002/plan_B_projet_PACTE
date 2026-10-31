@@ -6,7 +6,9 @@ import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { usePreventScreenCapture } from 'expo-screen-capture';
 import { SvgXml } from 'react-native-svg';
 import Ecran, { Message } from '../board/Ecran';
-import { chargerConfigQuiz } from '../api/donnees';
+import useClassQuiz from '../hooks/useClassQuiz';
+import QuizFerme from '../quiz/QuizFerme';
+import { origineDe } from '../quiz/scan';
 import { FORMES_KAHOOT } from '../quiz/formes';
 import { lireLienPartie, ordreAffichage, reponseCases, texteSimple, usePartie } from '../quiz/partie';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../theme';
@@ -26,14 +28,9 @@ export default function Quiz() {
   const { couleurs } = useTheme();
   const styles = useStyles();
   const { url, id, titre } = useLocalSearchParams();
-  const [origine, setOrigine] = useState(undefined);
-
-  useEffect(() => {
-    chargerConfigQuiz()
-      // Origine calculée à la main : URL de React Native n'implémente pas toutes ses propriétés
-      .then((c) => setOrigine(c?.actif ? (/^(https:\/\/[^/?#]+)/.exec(c.url ?? '')?.[1] ?? null) : null))
-      .catch(() => setOrigine(null));
-  }, []);
+  // Source commune (lot ME-0c) ; undefined : pas encore lue, null : service éteint ou adresse illisible
+  const { pret, actif, url: urlQuiz } = useClassQuiz();
+  const origine = !pret ? undefined : actif ? origineDe(urlQuiz) : null;
 
   const lien = useMemo(() => (origine ? lireLienPartie(typeof url === 'string' ? url : '', origine) : null), [origine, url]);
   const sortir = () => (router.canGoBack() ? router.back() : router.replace('/'));
@@ -56,7 +53,8 @@ export default function Quiz() {
   return (
     <Ecran titre={typeof titre === 'string' && titre ? titre : t('app.jeux.quiz')} droite={fermer} espaces={false}>
       {origine === undefined ? <ActivityIndicator style={styles.attente} color={couleurs.lettre} size="large" /> : null}
-      {origine !== undefined && !lien ? <Message>{t('app.jeux.quizIndisponible')}</Message> : null}
+      {pret && !actif ? <QuizFerme /> : null}
+      {actif && !lien ? <Message>{t('app.jeux.quizIndisponible')}</Message> : null}
       {lien ? <Partie origine={origine} lien={lien} idPartie={typeof id === 'string' ? id : null} /> : null}
     </Ecran>
   );

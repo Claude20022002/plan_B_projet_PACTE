@@ -22,7 +22,7 @@ Les écrans affichent encore des entrées ClassQuiz : elles mèneraient à une e
 | C-2 | **Fermé par défaut** : réponse en erreur, sans réponse au bout de 8 secondes, `actif` différent de `true`, ou adresse qui n'est pas `http(s)://` : ClassQuiz est traité comme éteint. Une erreur n'est pas mise en cache : la lecture suivante réessaie. |
 | C-3 | **Pendant la lecture**, les entrées ClassQuiz ne s'affichent pas : elles apparaissent quand la réponse dit `actif: true`. Pour HESTIM, la différence se limite à ce court délai, qui existe déjà pour l'espace « Quiz » du sélecteur. |
 | C-4 | **Éteint** : toute entrée qui mène à ClassQuiz est masquée (inventaire ci-dessous). Le Studio quiz et les jeux restent visibles et utilisables. |
-| C-5 | **Adresse ouverte directement** (favori, alerte, notification push) vers un écran qui n'existe que pour ClassQuiz : un message clair, « Les quiz ne sont pas ouverts pour votre établissement », avec un lien vers les activités. Jamais une erreur 503 brute ni une page cassée. |
+| C-5 | **Adresse ouverte directement** (favori, alerte, notification push) vers un écran qui n'existe que pour ClassQuiz : un message clair, « Les quiz en direct de ce service ne sont pas ouverts pour votre établissement » (texte validé le 31 octobre), avec un lien vers les activités. Jamais une erreur 503 brute ni une page cassée. |
 | C-6 | **QR d'une partie ClassQuiz** (adresse `…/play?pin=…`) scanné dans l'application quand c'est éteint : le même message, et rien ne s'ouvre. Les QR du Studio, des sessions de jeu et de l'appel marchent comme avant. |
 | C-7 | Dans les écrans, on dit « Quiz », jamais « ClassQuiz » ni « PlannerQuiz ». Textes en français et en anglais. |
 | C-8 | Devoirs : aujourd'hui, un devoir est un quiz ClassQuiz corrigé par Planner. Leur panneau et leurs boutons demandent **à la fois** `DEVOIRS_ACTIFS` (éteint depuis le 11 octobre) et ClassQuiz allumé. EC-2 (devoirs-fichiers) reverra cette règle. |
@@ -139,7 +139,7 @@ flowchart TD
 | --- | --- | --- |
 | Unitaire (site, `node --test`) | `frontend/src/utils/classQuiz.test.js` | source : allumé ; éteint ; `actif: true` sans adresse `http(s)` : éteint ; erreur réseau : éteint, et une nouvelle lecture réessaie ; pas de réponse en 8 s : éteint ; une seule requête pour plusieurs lectures |
 | Unitaire (application, jest) | `mobile/__tests__/classQuiz.test.js` | la source de l'application sur la même règle ; QR `…/play?pin=…` reconnu comme partie quand l'origine est inconnue (C-6) |
-| Parcours | `frontend/tests/parcours/classQuizEteint.spec.cjs` | `/api/quiz/config` simulé (`page.route`) à `{ actif: false, url: null, peutLancer: false }` : pas d'espace « Quiz » dans le sélecteur, pas de « Importer mes quiz » dans le Studio, pas de partie dans l'historique de l'enseignant ; le Studio (« Mes quiz », création) et les jeux restent ouverts. Le même parcours avec `actif: true` : les entrées reviennent |
+| Parcours | `frontend/tests/parcours/classQuizEteint.spec.cjs` | `/api/quiz/config` simulé (`page.route`) à `{ actif: false, url: null, peutLancer: false }` : pas d'espace « Quiz » dans le sélecteur, pas de « Importer mes quiz » dans le Studio, pas de partie dans l'historique de l'enseignant ; le Studio (« Mes quiz », création) et les activités restent ouverts. Le même parcours avec `actif: true` : les entrées reviennent. Sur le site, tant que les devoirs sont masqués (D-1), aucune adresse n'est propre à ClassQuiz : le message (C-5) n'y a pas de parcours ; dans l'application, les écrans à message (`partie`, `resultats`, `quiz`) ne sont couverts que par les tests de la source |
 | Régression | — | tests du site, suite de l'application, **tous** les parcours (pas en même temps qu'une autre suite) ; lint, `verifier:neutre`, build du site |
 
 Le parcours et les tests unitaires de la source échouent sur le code d'avant : il n'existe ni source commune ni masquage de l'import ou de l'historique.
@@ -148,6 +148,6 @@ Le parcours et les tests unitaires de la source échouent sur le code d'avant : 
 
 ## Questions ouvertes
 
-- [ ] **Chef de projet** : le message « Les quiz ne sont pas ouverts pour votre établissement » peut prêter à confusion, puisque les quiz du Studio, eux, restent ouverts. Proposition : « Les quiz en direct de ce service ne sont pas ouverts pour votre établissement », ou garder le texte demandé. **À trancher avant le code.**
-- [ ] **Chef de projet** : pendant la lecture de la configuration (C-3), les entrées ClassQuiz de HESTIM apparaissent avec un court retard, comme l'espace « Quiz » aujourd'hui. Acceptable ?
+- [x] **Chef de projet** (31 octobre) : texte du message validé, « Les quiz en direct de ce service ne sont pas ouverts pour votre établissement ».
+- [x] **Chef de projet** (31 octobre) : le court retard d'affichage des entrées ClassQuiz chez HESTIM (C-3) est accepté.
 - [ ] **A** (remarque de la relecture de #141) : les lectures de l'historique et des résultats des parties répondent encore quand ClassQuiz est éteint. Les écrans les masquent ; au serveur de dire si c'est voulu.

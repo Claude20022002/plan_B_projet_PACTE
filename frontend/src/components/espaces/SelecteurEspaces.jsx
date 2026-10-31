@@ -1,21 +1,14 @@
-import { useEffect, useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Box, ButtonBase, IconButton, Popover, Tooltip } from '@mui/material';
 import { Apps, CalendarMonth, LocalLibrary, NorthEast, Quiz } from '@mui/icons-material';
 import { ESPACES, adresseEspace } from '../../../../shared/espaces.js';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
-import { quizAPI } from '../../services/api';
+import useClassQuiz from '../../hooks/useClassQuiz';
 import { ds } from '../../design-system/tokens';
 
 const ICONES = { calendar: CalendarMonth, library: LocalLibrary, quiz: Quiz };
-
-// Adresse de ClassQuiz : demandée une fois par session de page
-let configQuiz = null;
-const lireUrlQuiz = () => {
-  configQuiz ??= quizAPI.getConfig().then((c) => (c?.actif ? c.url : null)).catch(() => null);
-  return configQuiz;
-};
 
 // Toutes les pages de ce site, Activités compris, sont dans l'espace Planner
 const courant = 'planner';
@@ -32,15 +25,8 @@ export default function SelecteurEspaces({ role, sx }) {
   const navigate = useNavigate();
   const bouton = useRef(null);
   const [ouvert, setOuvert] = useState(false);
-  const [urlQuiz, setUrlQuiz] = useState(null);
-
-  useEffect(() => {
-    let actif = true;
-    lireUrlQuiz().then((url) => actif && setUrlQuiz(url));
-    return () => {
-      actif = false;
-    };
-  }, []);
+  // Adresse de ClassQuiz, lue une fois par page (source commune, lot ME-0c) ; null si éteint pour l'école
+  const { url: urlQuiz } = useClassQuiz();
 
   const espaces = ESPACES.map((e) => ({ ...e, adresse: adresseEspace(e.code, { role, urlQuiz }) })).filter((e) => e.adresse);
 
