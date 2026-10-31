@@ -3,7 +3,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { etatOuverture } from './ouverture.js';
+import { etatOuverture, ouvertureAVenir } from './ouverture.js';
 
 const JOUR = '2026-11-10';
 
@@ -25,4 +25,11 @@ test("fermeture : encore ouvert le dernier jour, fermé le lendemain", () => {
 
 test("une ouverture à venir l'emporte sur une fermeture plus lointaine", () => {
   assert.deepEqual(etatOuverture({ visible_du: '2026-11-20', visible_jusqu_au: '2026-12-20' }, JOUR), { etat: 'programme', date: '2026-11-20' });
+});
+
+test("publication : le support s'ouvre à la plus tardive de ses dates et de celles de sa section", () => {
+  assert.equal(ouvertureAVenir({ visible_du: '2026-11-20' }, { visible_du: null }, JOUR), '2026-11-20');
+  assert.equal(ouvertureAVenir({ visible_du: '2026-11-20' }, { visible_du: '2026-12-01' }, JOUR), '2026-12-01');
+  assert.equal(ouvertureAVenir({ visible_du: JOUR }, { visible_du: '2026-11-01' }, JOUR), null);
+  assert.equal(ouvertureAVenir({}, undefined, JOUR), null);
 });
