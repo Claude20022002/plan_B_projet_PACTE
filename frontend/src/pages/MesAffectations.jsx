@@ -8,13 +8,14 @@ import { affectationAPI } from '../services/api';
 import { fetchAll } from '../utils/fetchAll';
 import { useAuth } from '../contexts/AuthContext';
 import { useTranslation } from 'react-i18next';
+import { aujourdhui as dateDeLEcole } from '../../../shared/dates.js';
 
 /** Mes séances (enseignant) : la liste, l'appel du jour, et la demande de report d'une séance. */
 export default function MesAffectations() {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    // Appel par QR (I1) : seulement le jour de la séance (date locale du navigateur)
-    const aujourdhui = new Date().toLocaleDateString('en-CA');
+    // Appel par QR (I1) : seulement le jour de la séance, à la date de l'école (shared/dates.js)
+    const aujourdhui = dateDeLEcole();
     const { user } = useAuth();
     const [affectations, setAffectations]     = useState([]);
     const [loading, setLoading]               = useState(true);
