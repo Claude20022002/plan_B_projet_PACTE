@@ -602,6 +602,17 @@ const fr = {
     sectionVide: 'Aucun support dans cette section.',
     sectionMasquee: 'Masquée',
     masque: 'Masqué',
+    ouverture: {
+      action: 'Dates d’ouverture…',
+      titre: 'Dates d’ouverture',
+      du: 'Visible à partir du',
+      jusquAuChamp: 'Visible jusqu’au (inclus)',
+      aide: 'Laissez vide pour ne pas limiter. En dehors de ces dates, les étudiants ne voient pas l’élément ; vous, si.',
+      enregistree: 'Dates enregistrées.',
+      ouvreLe: 'Ouvre le {{date}}',
+      fermeDepuis: 'Fermé depuis le {{date}}',
+      jusquAu: 'Jusqu’au {{date}}',
+    },
     dansBibliotheque: 'Bibliothèque',
     dansBibliothequeAide: 'Aussi publié dans la Bibliothèque, pour toute l’école',
     parAuteur: 'par {{auteur}}',
@@ -948,7 +959,7 @@ const fr = {
         "etapes": [
           "Dans « Mes classes », ouvrez la carte de la classe : l’onglet « Supports » s’affiche.",
           "Glissez vos fichiers dans la zone de dépôt, ou cliquez sur « Ajouter un lien ». Un document déjà dans la Bibliothèque : « Depuis la Bibliothèque », sans le copier.",
-          "Rangez-les en sections. Le menu d’un support permet de le masquer aux étudiants, ou de le publier dans la Bibliothèque pour toute l’école."
+          "Rangez-les en sections. Le menu d’un support permet de le masquer aux étudiants, de choisir ses dates d’ouverture et de fermeture (il n’apparaît chez eux qu’entre ces deux jours), ou de le publier dans la Bibliothèque pour toute l’école."
         ],
         "note": "Seuls les étudiants de cette classe voient ses supports. Un fichier fait 20 Mo au plus."
       },

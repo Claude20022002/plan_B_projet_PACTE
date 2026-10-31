@@ -42,6 +42,7 @@ export default function SaisieDialog({ ouvert, titre, champs = [], libelleValide
               type={c.type ?? 'text'}
               required={c.requis}
               helperText={c.aide}
+              slotProps={c.type === 'date' ? { inputLabel: { shrink: true } } : undefined}
               value={valeurs[c.nom] ?? ''}
               onChange={(e) => setValeurs((v) => ({ ...v, [c.nom]: e.target.value }))}
               inputProps={{ maxLength: c.max ?? 200 }}

@@ -4,6 +4,7 @@ import { Box, Button, Chip, IconButton, List, Menu, MenuItem, Divider, Paper, Ty
 import { AddLink, LocalLibrary, MoreVert } from '@mui/icons-material';
 import LigneSupport from './LigneSupport';
 import ZoneDepot from './ZoneDepot';
+import PastilleOuverture from './PastilleOuverture';
 
 /**
  * Une section de l'espace de cours : son titre, ses supports, et pour l'enseignant la zone de
@@ -26,6 +27,7 @@ export default function SectionCours({ section, sections, gere, premiere, dernie
           {section.titre}
         </Typography>
         {!section.visible && <Chip size="small" variant="outlined" label={t('espaceCours.sectionMasquee')} />}
+        {gere && <PastilleOuverture element={section} />}
         {gere && (
           <IconButton aria-label={t('espaceCours.actionsSection', { titre: section.titre })} onClick={(e) => setAncre(e.currentTarget)}>
             <MoreVert />
@@ -70,6 +72,7 @@ export default function SectionCours({ section, sections, gere, premiere, dernie
       <Menu anchorEl={ancre} open={Boolean(ancre)} onClose={() => setAncre(null)}>
         <MenuItem onClick={action('renommer')}>{t('espaceCours.renommer')}</MenuItem>
         <MenuItem onClick={action('visibilite')}>{t(section.visible ? 'espaceCours.masquerSection' : 'espaceCours.afficherSection')}</MenuItem>
+        <MenuItem onClick={action('ouverture')}>{t('espaceCours.ouverture.action')}</MenuItem>
         {!premiere && <MenuItem onClick={action('monter')}>{t('espaceCours.monter')}</MenuItem>}
         {!derniere && <MenuItem onClick={action('descendre')}>{t('espaceCours.descendre')}</MenuItem>}
         <Divider />
