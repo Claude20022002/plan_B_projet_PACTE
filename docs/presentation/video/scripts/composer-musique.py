@@ -313,10 +313,10 @@ def lire_matinee():
     return montages
 
 
-def lire_keynote():
-    """Durées de la vidéo Keynote : TEMPS_KEYNOTE (Keynote.tsx)."""
-    source = open(os.path.join(ICI, "..", "src", "Keynote.tsx"), encoding="utf-8").read()
-    debut = source.index("export const TEMPS_KEYNOTE")
+def lire_keynote(fichier="Keynote.tsx", nom="TEMPS_KEYNOTE"):
+    """Durées d'une vidéo Keynote : TEMPS_KEYNOTE (Keynote.tsx) ou TEMPS_KEYNOTE_80 (Keynote80.tsx)."""
+    source = open(os.path.join(ICI, "..", "src", fichier), encoding="utf-8").read()
+    debut = source.index(f"export const {nom}")
     bloc = source[debut : source.index("} as const;", debut)]
     return {scene: int(n) * TEMPS for scene, n in re.findall(r"(\w+): (\d+) \* BEAT", bloc)}
 
@@ -353,7 +353,7 @@ def section_revelation(musique, sec, sfx, debut, fin):
     roulement(sec, fin - 1.0, fin)
 
 
-GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "formes", "jeux", "admin", "mois", "heures", "etudiante", "prof", "salle", "classement"}
+GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "formes", "jeux", "admin", "generation", "mois", "heures", "etudiante", "prof", "salle", "classement"}
 
 
 def composer(ids, durees):
@@ -434,6 +434,9 @@ def composer(ids, durees):
                 sfx.ajouter(s + 2.75, impact(profond=False), 0.45)
             elif i == "classement":
                 sfx.ajouter(s + 0.1, souffle(0.5, haut=True), 0.35)
+            elif i == "generation":
+                sfx.ajouter(s + 0.1, souffle(0.6), 0.4)
+                volets(sfx, s + 1.5, s + 2.4, 0.14)  # le chiffre en volets
             elif i in ("mois", "heures"):
                 sfx.ajouter(s + 0.1, souffle(0.5), 0.35)
             elif i == "admin":
@@ -469,3 +472,8 @@ if __name__ == "__main__":
     donnees = composer(list(keynote), keynote)
     wavfile.write(os.path.join(SORTIE, "keynote.wav"), SR, donnees)
     print(f"keynote.wav : {len(donnees) / SR:.2f} s ({', '.join(keynote)})")
+    # « Keynote » en 1 min 20 : les mêmes plans et quatre preuves de plus
+    keynote80 = lire_keynote("Keynote80.tsx", "TEMPS_KEYNOTE_80")
+    donnees = composer(list(keynote80), keynote80)
+    wavfile.write(os.path.join(SORTIE, "keynote-1m20.wav"), SR, donnees)
+    print(f"keynote-1m20.wav : {len(donnees) / SR:.2f} s ({', '.join(keynote80)})")

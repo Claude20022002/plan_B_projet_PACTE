@@ -1,0 +1,22 @@
+{
+  "fps": 30,
+  "dureeSecondes": 60,
+  "voix": {
+    "narrateur": { "voix": "fr-FR-HenriNeural", "debit": "-6%", "nom": "Narrateur" },
+    "nadia": { "voix": "fr-FR-DeniseNeural", "debit": "-2%", "nom": "Nadia · Scolarité" },
+    "youssef": { "voix": "fr-FR-RemyMultilingualNeural", "debit": "-2%", "nom": "Youssef · Enseignant" },
+    "salma": { "voix": "fr-FR-VivienneMultilingualNeural", "debit": "+0%", "nom": "Salma · Étudiante" }
+  },
+  "repliques": [
+    { "id": "r01", "qui": "salma", "debut": 0.5, "dit": "Lundi, treize heures trente… Je suis dans quelle salle ?", "texte": "Lundi, 13 h 30… Je suis dans quelle salle ?" },
+    { "id": "r02", "qui": "nadia", "debut": 4.4, "dit": "Un cours déplacé ? Il faut prévenir tout le monde.", "texte": "Un cours déplacé ? Il faut prévenir tout le monde." },
+    { "id": "r03", "qui": "youssef", "debut": 8.6, "dit": "Et l'appel se fait encore sur papier.", "texte": "Et l'appel se fait encore sur papier." },
+    { "id": "r04", "qui": "narrateur", "debut": 12.9, "dit": "HESTIM Planner. Toute l'école à l'heure, dans une seule application.", "texte": "HESTIM Planner. Toute l'école à l'heure, dans une seule application." },
+    { "id": "r05", "qui": "narrateur", "debut": 18.8, "dit": "L'emploi du temps du semestre se construit tout seul, sans qu'une salle, un enseignant ou un groupe soit pris deux fois.", "texte": "L'emploi du temps du semestre se construit tout seul, sans qu'une salle, un enseignant ou un groupe soit pris deux fois." },
+    { "id": "r06", "qui": "nadia", "debut": 30.5, "dit": "Je déplace un cours : seuls les étudiants concernés sont prévenus.", "texte": "Je déplace un cours : seuls les étudiants concernés sont prévenus." },
+    { "id": "r07", "qui": "salma", "debut": 35.4, "dit": "Et l'alerte arrive sur mon téléphone.", "texte": "Et l'alerte arrive sur mon téléphone." },
+    { "id": "r08", "qui": "youssef", "debut": 40.5, "dit": "L'appel ? Un code Q R projeté, qui change toutes les trente secondes.", "texte": "L'appel ? Un QR code projeté, qui change toutes les 30 secondes." },
+    { "id": "r09", "qui": "narrateur", "debut": 48.4, "dit": "Sur notre semestre de démonstration : deux mille six cent vingt séances placées, aucune salle prise deux fois.", "texte": "Sur notre semestre de démonstration : 2 620 séances placées, aucune salle prise deux fois." },
+    { "id": "r10", "qui": "narrateur", "debut": 55.5, "dit": "HESTIM Planner. Demandez votre démo.", "texte": "HESTIM Planner. Demandez votre démo." }
+  ]
+}
