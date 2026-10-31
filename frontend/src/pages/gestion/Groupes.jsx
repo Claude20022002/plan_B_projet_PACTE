@@ -32,7 +32,7 @@ import { filiereAPI, groupeAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import useAnneeChoisie from '../../hooks/useAnneeChoisie';
-import { TOUTES } from '../../utils/annees';
+import { TOUTES, anneeEnCours } from '../../utils/annees';
 import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { exportToExcelLazy } from '../../utils/lazyExports';
@@ -81,8 +81,9 @@ export default function Groupes() {
     const [aSupprimer, setASupprimer] = useState(null);
     const [importOuvert, setImportOuvert] = useState(false);
 
-    // Année scolaire proposée pour un nouveau groupe : celle choisie, sinon l'année en cours
-    const anneeScolaire = annee?.libelle ?? anneeScolaireCourante();
+    // Année scolaire proposée pour un nouveau groupe : celle choisie, sinon l'année en cours (même
+    // règle que le serveur) ; le calcul par la date ne sert que s'il n'existe aucune année
+    const anneeScolaire = annee?.libelle ?? anneeEnCours(annees)?.libelle ?? anneeScolaireCourante();
 
     useEffect(() => {
         (async () => {

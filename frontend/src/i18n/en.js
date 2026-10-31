@@ -1625,6 +1625,8 @@ const en = {
     confirmerSuppression: 'Are you sure you want to delete this student?',
     groupeInconnu: 'Unknown group: {{groupe}}',
     groupeInconnuAnnee: 'Unknown group in {{annee}}: {{groupe}}',
+    groupePlusieursAnnees: 'Group {{groupe}} exists in several years ({{annees}}): choose the year before importing',
+    groupeHomonyme: 'Several groups are named {{groupe}}: rename them in Groups before importing',
     fichierExport: 'Students',
     titreImport: 'Import students',
     introImport: 'One row per student. Required columns: nom, prenom, email, numero_etudiant, niveau. Optional: telephone, groupe (name of the finest group, as shown in Groups). Each student receives an invitation link by email to choose their password.',
