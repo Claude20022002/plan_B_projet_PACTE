@@ -1550,6 +1550,22 @@ const fr = {
     titreDetails: 'Détails du conflit',
     marquerResolu: 'Marquer comme résolu',
   },
+  // Lien de visio d'une séance à distance (lot EC-11)
+  visio: {
+    rejoindre: 'Rejoindre sur {{domaine}}',
+    pasEncore: 'Séance à distance : le lien de visio n’est pas encore donné.',
+    champ: 'Lien de visioconférence',
+    aide: 'Meet, Teams, Zoom… Les étudiants le voient tout de suite dans leur emploi du temps.',
+    enregistre: 'Lien enregistré.',
+    retirer: 'Retirer le lien',
+    refus: {
+      longueur: 'Lien trop long (500 caractères au plus).',
+      adresse: 'Ce n’est pas une adresse web : collez le lien complet de la réunion.',
+      https: 'Le lien doit commencer par https://',
+      hote: 'Le lien doit désigner un site public (par exemple meet.google.com).',
+      identifiants: 'Le lien ne doit pas contenir d’identifiant ni de mot de passe.',
+    },
+  },
   annees: {
     selecteur: 'Année universitaire',
     enCours: '{{annee}} (en cours)',

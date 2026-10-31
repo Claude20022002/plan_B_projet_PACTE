@@ -79,6 +79,10 @@ export const toBoardSession = (a) => {
     roomType: a.salle?.type_salle || '',
     status: a.statut || 'planifie',
     lineKey: a.cours?.id_filiere ?? a.groupe?.id_filiere ?? a.groupe?.nom_groupe,
+    // Séance à distance et son lien de visio (lot EC-11, même règle que le serveur : composante en
+    // distanciel ou hybride, ou pas de salle)
+    aDistance: ['distanciel', 'hybride'].includes(a.enseignement?.composante?.modalite) || !a.salle,
+    lienVisio: a.lien_visio || null,
     raw: a,
   };
 };

@@ -56,9 +56,22 @@ export const preparerDonnees = async (racine) => {
     id_creneau: creneau.id_creneau,
     id_user_admin: admin.id_user,
   });
+  // La même séance dans une semaine, à distance (sans salle) : son lien de visio (lot EC-11, lienVisio.spec)
+  const semaineSuivante = new Date(`${aujourdhui}T12:00:00Z`);
+  semaineSuivante.setUTCDate(semaineSuivante.getUTCDate() + 7);
+  const seanceADistance = await Affectation.create({
+    date_seance: semaineSuivante.toISOString().slice(0, 10),
+    statut: "confirme",
+    id_cours: fixture.cours.id_cours,
+    id_groupe: fixture.groupe.id_groupe,
+    id_user_enseignant: enseignante.id_user,
+    id_salle: null,
+    id_creneau: creneau.id_creneau,
+    id_user_admin: admin.id_user,
+  });
 
-  // Les étudiants ne voient un mois qu'une fois publié : ceux de la séance du jour et de la séance fixe de la classe le sont
-  const moisPublies = [...new Set([aujourdhui, String(fixture.affectation.date_seance).slice(0, 10)].map((d) => d.slice(0, 7)))];
+  // Les étudiants ne voient un mois qu'une fois publié : ceux de la séance du jour, de la séance à distance et de la séance fixe de la classe le sont
+  const moisPublies = [...new Set([aujourdhui, seanceADistance.date_seance, String(fixture.affectation.date_seance).slice(0, 10)].map((d) => String(d).slice(0, 7)))];
   // Avec les séances telles que publiées : c'est cette version que lisent les étudiants
   const { lignesDuMois } = await serveur("services/calendrier/envoiEdt.js");
   for (const mois of moisPublies) {
@@ -88,6 +101,7 @@ export const preparerDonnees = async (racine) => {
     etudiants: etudiants.map(compte),
     changementTelephone: { etudiante: compte(changeDeTelephone), ...TELEPHONES },
     seance: { id: seance.id_affectation, cours: fixture.cours.nom_cours, groupe: fixture.groupe.nom_groupe },
+    seanceADistance: { id: seanceADistance.id_affectation, date: String(seanceADistance.date_seance).slice(0, 10) },
     // Séance déjà planifiée lundi 4 janvier 2027 à 9 h (createPlanningFixture) : le parcours des séances la percute
     seanceFixe: { date: String(fixture.affectation.date_seance).slice(0, 10), salle: fixture.salle.nom_salle, groupe: fixture.groupe.nom_groupe, autreGroupe: fixture.autreGroupe.nom_groupe },
     generation,

@@ -18,6 +18,9 @@ import {
     validateAffectationUpdate,
 } from "../middleware/index.js";
 import { requireGroupAccess } from "../middleware/accessMiddleware.js";
+import { requireRole } from "../middleware/roleMiddleware.js";
+import { planification } from "../utils/erreursPlanning.js";
+import { modifierLienVisio } from "../services/planning/lienVisio.js";
 
 const router = express.Router();
 
@@ -52,6 +55,13 @@ router.post(
 
 // ✏️ Mettre à jour une affectation (Admin seulement)
 router.put("/:id", requireAdmin, validateAffectationUpdate, asyncHandler(updateAffectation));
+
+// 🎥 Lien de visio d'une séance à distance (lot EC-11) : l'enseignant de la séance ou l'administration
+router.put(
+    "/:id/lien-visio",
+    requireRole("enseignant", "admin"),
+    planification(async (req, res) => res.json(await modifierLienVisio(req.user, req.params.id, req.body?.lien_visio)))
+);
 
 // 🗑️ Supprimer une affectation (Admin seulement)
 router.delete("/:id", requireAdmin, asyncHandler(deleteAffectation));

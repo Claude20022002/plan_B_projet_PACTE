@@ -65,6 +65,9 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
   const [weekResolved, setWeekResolved] = useState(Boolean(dateDemandee));
   const [mode, setMode] = useState('grid');
   const [selected, setSelected] = useState(null);
+  // Liens de visio changés depuis la fiche (lot EC-11) : à jour sans recharger les séances
+  const [liens, setLiens] = useState({});
+  const fiche = selected && selected.id in liens ? { ...selected, lienVisio: liens[selected.id] } : selected;
 
   // Positionne la semaine dès que les séances sont connues (une seule fois)
   useEffect(() => {
@@ -221,7 +224,7 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
         </Box>
       )}
 
-      <FicheSeance session={selected} onClose={() => setSelected(null)} />
+      <FicheSeance session={fiche} onClose={() => setSelected(null)} onLienVisio={(id, lien) => setLiens((l) => ({ ...l, [id]: lien }))} />
     </Box>
   );
 }

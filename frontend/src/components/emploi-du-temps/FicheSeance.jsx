@@ -4,6 +4,7 @@ import { StatusFlap, SupportsCours } from '../../design-system/board';
 import { ds } from '../../design-system/tokens';
 import { couleurDuModule } from './couleurs';
 import { localeEcran } from '../../utils/dates';
+import LienVisio from './LienVisio';
 
 /**
  * Fiche d'une séance de l'emploi du temps, ouverte depuis la grille ou la liste : la salle en
@@ -20,8 +21,8 @@ const sxLibelle = {
   color: 'text.secondary',
 };
 
-/** Rend la fiche de session dans un dialogue ; onClose la ferme. */
-export default function FicheSeance({ session: s, onClose }) {
+/** Rend la fiche de session dans un dialogue ; onClose la ferme ; onLienVisio(id, lien) signale un lien de visio changé. */
+export default function FicheSeance({ session: s, onClose, onLienVisio }) {
   const { t, i18n } = useTranslation();
   const ouvert = Boolean(s);
 
@@ -61,6 +62,7 @@ export default function FicheSeance({ session: s, onClose }) {
                   </Box>
                 )}
                 <SupportsCours code={s.courseCode} color="primary.main" />
+                <LienVisio session={s} onChange={onLienVisio} />
               </Box>
             </Box>
           </DialogContent>
