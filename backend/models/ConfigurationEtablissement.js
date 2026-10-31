@@ -19,6 +19,8 @@ const ConfigurationEtablissement = sequelize.define(
         expediteur_nom: { type: DataTypes.STRING(100), allowNull: true },
         adresse_reponse: { type: DataTypes.STRING(255), allowNull: true },
         modele_edt: { type: DataTypes.STRING(20), allowNull: false, defaultValue: "planner" },
+        // Sondages des enseignants à leurs classes (lot EC-9, migration 0059) : éteints par défaut
+        sondages_actifs: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     },
     {
         tableName: "ConfigurationEtablissement",

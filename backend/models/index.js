@@ -43,6 +43,9 @@ import ConfigurationEtablissement from "./ConfigurationEtablissement.js";
 import Desactivation from "./Desactivation.js";
 import SectionCours from "./SectionCours.js";
 import SupportCours from "./SupportCours.js";
+import Sondage from "./Sondage.js";
+import SondageChoix from "./SondageChoix.js";
+import SondageParticipation from "./SondageParticipation.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
 import JournalSecurite from "./JournalSecurite.js";
 import GenerationQuiz from "./GenerationQuiz.js";
@@ -573,6 +576,13 @@ SupportCours.belongsTo(Users, { foreignKey: "id_user_auteur", as: "auteur", targ
 SectionCours.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
 SectionCours.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
 
+// Sondage de l'enseignant à sa classe (lot EC-9) : choix et participations, sans lien entre les deux
+Sondage.hasMany(SondageChoix, { foreignKey: "id_sondage", as: "choix", onDelete: "CASCADE" });
+SondageChoix.belongsTo(Sondage, { foreignKey: "id_sondage", as: "sondage" });
+Sondage.hasMany(SondageParticipation, { foreignKey: "id_sondage", as: "participations", onDelete: "CASCADE" });
+Sondage.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
+Sondage.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
+
 // Double authentification
 Users.hasMany(MfaCodeSecours, { foreignKey: "id_user", as: "codesSecours", onDelete: "CASCADE" });
 MfaDefi.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
@@ -669,6 +679,9 @@ export {
     ConfigurationEtablissement,
     Desactivation,
     SectionCours,
+    Sondage,
+    SondageChoix,
+    SondageParticipation,
     SupportCours,
     MfaCodeSecours,
     JournalSecurite,

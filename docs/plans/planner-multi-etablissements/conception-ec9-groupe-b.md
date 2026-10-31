@@ -258,7 +258,7 @@ flowchart LR
 | Modèles | `backend/models/Sondage.js`, `SondageChoix.js`, `SondageParticipation.js` (nouveaux), `ConfigurationEtablissement.js`, `index.js` | champs et associations |
 | Service | `backend/services/cours/sondages.js` (nouveau) | `lireSondages`, `creerSondage`, `repondre`, `clore`, `supprimer` ; règles S-1 à S-10 |
 | Route | `backend/routes/sondageRoutes.js` (nouveau), `app.js` | cinq routes, montées sous `/api` |
-| Site | `pages/EspaceClasse.jsx`, `components/espaceCours/OngletSondages.jsx`, `NouveauSondageDialog.jsx`, `SondagesOuverts.jsx` (nouveaux), `services/espaceCours.js` | onglet de l'enseignant ; bloc « Sondage » de l'étudiant au-dessus des supports |
+| Site | `pages/EspaceClasse.jsx`, `components/espaceCours/OngletSondages.jsx`, `NouveauSondageDialog.jsx`, `SondagesOuverts.jsx`, `hooks/useSondages.js` (nouveaux), `services/espaceCours.js` | onglet de l'enseignant ; bloc « Sondage » de l'étudiant au-dessus des supports |
 | Application | `mobile/src/cours/SondagesOuverts.jsx` (nouveau), `app/cours/[classe].jsx`, `src/api/donnees.js`, `src/alertes/liens.js` | répondre depuis le téléphone ; la notification ouvre le cours |
 | Textes | `frontend/src/i18n/fr.js`, `en.js`, `mobile/src/i18n.js` | français et anglais |
 
