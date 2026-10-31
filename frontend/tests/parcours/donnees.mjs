@@ -27,10 +27,12 @@ const ETUDIANTS = [["Salma", "Bennani"], ["Yassine", "Alami"], ["Imane", "Tazi"]
 export const preparerDonnees = async (racine) => {
   const serveur = (chemin) => import(pathToFileURL(path.join(racine, "backend", chemin)).href);
   const { resetDatabase, createUser, createPlanningFixture, PASSWORD } = await serveur("tests/integration/helpers/testApp.js");
-  const { Affectation, AnneeUniversitaire, AppareilEtudiant, Appartenir, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, EnvoiEdt, Periode } = await serveur("models/index.js");
+  const { Affectation, AnneeUniversitaire, AppareilEtudiant, Appartenir, ConfigurationEtablissement, CoursComposante, Creneau, Enseignement, EnseignementEnseignant, EnvoiEdt, Periode } = await serveur("models/index.js");
   const { empreinteAppareil } = await serveur("services/presences/appareil.js");
 
   await resetDatabase();
+  // Sondages des enseignants (lot EC-9) : éteints pour une base neuve, allumés pour leur parcours
+  await ConfigurationEtablissement.update({ sondages_actifs: true }, { where: { id: 1 } });
   const admin = await createUser("admin", { prenom: "Admin", nom: "Parcours", email: "admin.parcours@exemple.hestim.test" });
   const enseignante = await createUser("enseignant", { prenom: "Nadia", nom: "Sefrioui", email: "prof.parcours@exemple.hestim.test" });
   const etudiants = [];

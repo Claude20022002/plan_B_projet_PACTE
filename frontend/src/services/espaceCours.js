@@ -27,6 +27,12 @@ export const espaceCoursAPI = {
   appels: (idCours, idGroupe) => request(`${classe(idCours, idGroupe)}/appels`),
   eleves: (idCours, idGroupe) => request(`${classe(idCours, idGroupe)}/eleves`),
   exporterPresences: (idCours, idGroupe, nom) => telecharger(`${classe(idCours, idGroupe)}/presences.csv`, nom),
+  // Sondages de la classe (lot EC-9) : { actif, gere, sondages } ; réponse anonyme et définitive
+  sondages: (idCours, idGroupe) => request(`${classe(idCours, idGroupe)}/sondages`),
+  creerSondage: (idCours, idGroupe, sondage) => request(`${classe(idCours, idGroupe)}/sondages`, { method: 'POST', body: sondage }),
+  repondreSondage: (id, idChoix) => request(`/sondages/${id}/reponse`, { method: 'POST', body: { id_choix: idChoix } }),
+  cloreSondage: (id) => request(`/sondages/${id}/cloture`, { method: 'POST' }),
+  supprimerSondage: (id) => request(`/sondages/${id}`, { method: 'DELETE' }),
 };
 
 /** Le serveur rend une erreur au format commun { message } ; sinon un message générique. */

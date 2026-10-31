@@ -1,11 +1,12 @@
-import { Fragment, useEffect, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { Linking, Pressable, ScrollView, Text } from 'react-native';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import Ecran, { Message } from '../../board/Ecran';
-import { chargerEspaceCours, lienSupport } from '../../api/donnees';
+import { chargerEspaceCours, chargerSondages, lienSupport } from '../../api/donnees';
+import SondagesOuverts from '../../cours/SondagesOuverts';
 import Etagere, { Couverture, useLargeurCouverture } from '../../bibliotheque/Etagere';
 import { dejaTelecharge, formatDe, formatTaille } from '../../documents/fichiers';
 import { CIBLE_TACTILE, creerStyles, espace, lineColor, useTheme } from '../../theme';
@@ -17,7 +18,7 @@ const CLASSE = /^(\d{1,10})-(\d{1,10})$/;
  * Un de mes cours (docs/plans/espace-de-cours.md, lot E-5) : les supports que mes enseignants ont
  * publiés pour ma classe, section par section, rangés comme les documents d'un module. Un document
  * s'ouvre dans la fiche habituelle (téléchargement, lecture hors connexion) ; un lien, dans le
- * navigateur du téléphone.
+ * navigateur du téléphone. Les sondages ouverts de l'enseignant (lot EC-9) passent en tête.
  */
 export default function CoursDeLaClasse() {
   const { couleurs } = useTheme();
@@ -30,12 +31,20 @@ export default function CoursDeLaClasse() {
   const [, idCours, idGroupe] = (typeof classe === 'string' && CLASSE.exec(classe)) || [];
   const [espaceCours, setEspace] = useState(null);
   const [erreur, setErreur] = useState(!idCours);
+  const [sondages, setSondages] = useState([]);
   const couleur = lineColor(typeof ligne === 'string' && ligne ? ligne : undefined);
 
   useEffect(() => {
     if (!idCours) return;
     chargerEspaceCours(idCours, idGroupe).then(setEspace, () => setErreur(true));
   }, [idCours, idGroupe]);
+
+  // Interrupteur de l'école éteint ou lecture en échec : pas de sondage, le cours s'affiche quand même
+  const chargerLesSondages = useCallback(() => {
+    if (!idCours) return;
+    chargerSondages(idCours, idGroupe).then((d) => setSondages(d?.actif ? d.sondages : []), () => setSondages([]));
+  }, [idCours, idGroupe]);
+  useEffect(chargerLesSondages, [chargerLesSondages]);
 
   const ouvrir = async (s) => {
     if (s.type === 'lien') {
@@ -64,6 +73,7 @@ export default function CoursDeLaClasse() {
     <Ecran titre={espaceCours?.classe.code_cours ?? t('app.bibliotheque.mesCours')} droite={fermer} espaces={false}>
       <ScrollView contentContainerStyle={{ paddingBottom: margeBas + 24 }}>
         {titre ? <Text style={styles.nom}>{titre}</Text> : null}
+        <SondagesOuverts sondages={sondages} onRecharger={chargerLesSondages} />
         {erreur ? <Message>{t('app.bibliotheque.coursIndisponible')}</Message> : null}
         {!espaceCours && !erreur ? <Message discret>{t('app.commun.chargement')}</Message> : null}
         {espaceCours?.sections.length === 0 ? <Message>{t('app.bibliotheque.aucunSupport')}</Message> : null}
