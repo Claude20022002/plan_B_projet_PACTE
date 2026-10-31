@@ -24,6 +24,7 @@ import ConfirmDialog from '../../components/common/ConfirmDialog';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
 import SelecteurAnnee from '../../components/common/SelecteurAnnee';
 import GroupeDialog from '../../components/groupes/GroupeDialog';
+import DesactiverGroupe from '../../components/comptes/DesactiverGroupe';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
@@ -356,6 +357,7 @@ export default function Groupes() {
                                                 <IconButton size="small" onClick={() => ouvrir({ groupe })} aria-label={t('ref.common.editItem', { name: groupe.nom_groupe })}>
                                                     <Edit fontSize="small" />
                                                 </IconButton>
+                                                {user?.role === 'admin' && <DesactiverGroupe groupe={groupe} />}
                                                 <IconButton size="small" color="error" onClick={() => setASupprimer(groupe)} aria-label={t('ref.common.deleteItem', { name: groupe.nom_groupe })}>
                                                     <Delete fontSize="small" />
                                                 </IconButton>
