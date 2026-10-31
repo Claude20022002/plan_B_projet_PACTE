@@ -593,6 +593,7 @@ const en = {
     publier: 'Publish in the Library',
     publierBouton: 'Publish',
     publierConfirmation: '“{{titre}}” will be visible to the whole school in the Library, and will stay in this class.',
+    publierAvantOuverture: '“{{titre}}” only opens to the class on {{date}}, but in the Library it will be visible to the whole school right away. It will also stay in this class.',
     retirer: 'Remove',
     retirerConfirmation: '“{{titre}}” will be removed from the class and deleted.',
     retirerEpingle: '“{{titre}}” will be removed from the class; it stays in the Library.',
