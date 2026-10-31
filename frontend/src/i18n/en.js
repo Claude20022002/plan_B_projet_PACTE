@@ -602,6 +602,17 @@ const en = {
     sectionVide: 'No materials in this section.',
     sectionMasquee: 'Hidden',
     masque: 'Hidden',
+    ouverture: {
+      action: 'Opening dates…',
+      titre: 'Opening dates',
+      du: 'Visible from',
+      jusquAuChamp: 'Visible until (included)',
+      aide: 'Leave empty for no limit. Outside these dates students do not see the item; you still do.',
+      enregistree: 'Dates saved.',
+      ouvreLe: 'Opens on {{date}}',
+      fermeDepuis: 'Closed since {{date}}',
+      jusquAu: 'Until {{date}}',
+    },
     dansBibliotheque: 'Library',
     dansBibliothequeAide: 'Also published in the Library, for the whole school',
     parAuteur: 'by {{auteur}}',
@@ -942,7 +953,7 @@ const en = {
         "etapes": [
           "In “My classes”, open the class card: the “Materials” tab is shown.",
           "Drop your files in the upload area, or click “Add a link”. A document already in the Library: “From the Library”, without copying it.",
-          "Arrange them in sections. A material’s menu lets you hide it from students, or publish it in the Library for the whole school."
+          "Arrange them in sections. A material’s menu lets you hide it from students, set its opening and closing dates (students only see it between those two days), or publish it in the Library for the whole school."
         ],
         "note": "Only the students of this class see its materials. A file is 20 MB at most."
       },

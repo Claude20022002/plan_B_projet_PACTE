@@ -20,6 +20,9 @@ const SupportCours = sequelize.define(
         dans_bibliotheque: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
         ordre: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
         visible: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: true },
+        // Dates d'ouverture et de fermeture facultatives, incluses (lot EC-1, services/cours/ouverture.js)
+        visible_du: { type: DataTypes.DATEONLY, allowNull: true },
+        visible_jusqu_au: { type: DataTypes.DATEONLY, allowNull: true },
         id_user_auteur: { type: DataTypes.INTEGER, allowNull: true },
     },
     { tableName: "SupportsCours", freezeTableName: true }

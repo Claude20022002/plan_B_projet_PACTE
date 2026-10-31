@@ -3,6 +3,7 @@ import { journaliser } from "../journalSecurite.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { chargerClasse, classeAutorisee, groupesVisiblesPar } from "./droits.js";
 import { ordreSuivant, sectionGeree, sectionGenerale, sectionsPubliees } from "./sections.js";
+import { changementsOuverture, estOuvert } from "./ouverture.js";
 import { chercherDocuments, lienDocument, lireDocument, publierDocument, supprimerDocument, transmettreDepot } from "./studylib.js";
 
 /**
@@ -92,9 +93,9 @@ const supportModifiable = async (user, idSupport) => {
     return support;
 };
 
-export const modifierSupport = async (user, idSupport, { titre, visible, id_section, ordre } = {}) => {
+export const modifierSupport = async (user, idSupport, { titre, visible, visible_du, visible_jusqu_au, id_section, ordre } = {}) => {
     const support = await supportModifiable(user, idSupport);
-    const changements = {};
+    const changements = changementsOuverture({ visible_du, visible_jusqu_au }, support);
     if (titre !== undefined) changements.titre = titreOuDefaut(titre, support.titre);
     if (visible !== undefined) changements.visible = Boolean(visible);
     if (ordre !== undefined && Number.isInteger(Number(ordre))) changements.ordre = Number(ordre);
@@ -131,7 +132,8 @@ export const ouvrirSupport = async (user, idSupport) => {
     const support = await SupportCours.findByPk(Number(idSupport) || 0, { include: [{ model: SectionCours, as: "section" }] });
     if (!support) throw new ErreurMetier("Support introuvable", 404);
     const { gere } = await classeAutorisee(user, support.section.id_cours, support.section.id_groupe);
-    if (!gere && !(support.visible && support.section.visible)) throw new ErreurMetier("Support introuvable", 404);
+    // Un support fermé ou pas encore ouvert est introuvable pour l'étudiant, même avec son adresse (lot EC-1)
+    if (!gere && !(estOuvert(support) && estOuvert(support.section))) throw new ErreurMetier("Support introuvable", 404);
     return support.type === "lien" ? support.url : lienDocument(support.id_document, user.id_user);
 };
 

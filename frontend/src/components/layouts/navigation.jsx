@@ -36,7 +36,7 @@ import {
   Quiz as QuizIcon,
 } from '@mui/icons-material';
 import { estResponsable } from '../../utils/droits';
-import { SURVEILLANCES_ACTIVES } from '../../../../shared/fonctions.js';
+import { ANNONCES_ENSEIGNANTS_ACTIVES, SURVEILLANCES_ACTIVES } from '../../../../shared/fonctions.js';
 
 /*
  * Navigation de Planner, par rôle : le menu latéral, les onglets du bas sur téléphone, et le titre
@@ -108,6 +108,8 @@ export const navigationFor = (user) => {
       {
         items: [
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
+          // Annonces aux classes : pas d'entrée tant que l'envoi est fermé (lot EC-5)
+          ...(ANNONCES_ENSEIGNANTS_ACTIVES ? [{ key: 'nav.announcements', icon: <Campaign />, path: '/annonces' }] : []),
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
           { key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' },
           { key: 'nav.myQuizzes', icon: <QuizIcon />, path: '/studio-quiz' },
