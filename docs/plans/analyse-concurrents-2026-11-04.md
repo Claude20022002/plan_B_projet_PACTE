@@ -82,6 +82,39 @@ Recommandations du groupe B, à trancher par le chef de projet :
 5. **MASSAR** : un import des listes d'élèves au format MASSAR est un petit lot (ME-9) qui lève une objection fréquente au Maroc.
 6. **À ne pas faire maintenant** : encaissement des frais, transport, cantine. Ce sont des produits entiers, déjà bien servis et bon marché.
 
+## 7. Ce que disent les utilisateurs
+
+Recherche du 4 novembre sur les comparateurs (Capterra, G2, GetApp, Software Advice), Trustpilot, les magasins d'applications et les forums. Capterra, G2 et GetApp refusent la lecture directe : leurs avis sont connus par les extraits que donnent les moteurs de recherche. Plusieurs avis ont été sollicités par les éditeurs, beaucoup datent de 2018 à 2021, et les échantillons sont petits (4 avis pour aSc sur G2).
+
+**Produits marocains : aucun avis public.** Skoolly n'a pas assez de notes sur l'App Store pour en afficher une ; sa page Google Play renvoie une erreur 404. Schoolz, Scoliance et Eduzaas ne donnent aucun lien vers un magasin d'applications. iLimo fonctionne dans le navigateur, sans application. La page Google Play de Caisso École ne s'est pas affichée. Aucun avis non plus sur Trustpilot, Facebook ou LinkedIn. Ce sont des produits jeunes, sans réputation établie : un nouvel entrant n'a pas de leader installé à déloger.
+
+| Produit | Ce que les utilisateurs aiment | Ce qu'ils reprochent |
+| --- | --- | --- |
+| **aSc Timetables** (G2 4,6 sur 4 avis) | la puissance du générateur sur des contraintes complexes ; les remplacements proposés automatiquement, « gros gain de temps » | interface « datée », à moderniser ; trop de fonctions, difficiles à retenir ; erreurs ponctuelles de la génération automatique ; faux conflits signalés pour des classes à plusieurs niveaux |
+| **EduPage** (l'application d'aSc pour élèves, parents et enseignants ; 3,5 sur Google Play, 39 100 avis) | « ça marche », bonne sur iPad | lenteurs, plantages, messagerie et notes peu fiables ; le site marche quand l'application ne marche pas ; icônes et ergonomie vieillies |
+| **Fedena** (Software Advice 4,2, 19 avis, surtout 2018-2019) | facile à prendre en main, peu de formation ; reprise des données depuis un autre logiciel simple ; portails parents et élèves | assistance lente ; installation « très pénible » ; rapport qualité-prix le moins bien noté (3,6/5) ; report des frais d'une année à l'autre à la main ; paiement non affiché aussitôt dans l'application, sans assistance joignable |
+| **OpenEduCat** (G2, environ 140 avis ; Capterra 3,8 sur 4) | tout au même endroit, moins d'erreurs de saisie ; large couverture, bon prix de départ | « pas prêt à l'emploi » : mise en route et apprentissage difficiles (35 mentions sur G2) ; fonctions limitées, surtout examens et personnalisation ; intégrations et assistance faibles ; prix qui monte vite ; écrans d'élève vieillis, trop de menus |
+| **Classter** (Capterra 4,6, environ 115 avis) | une seule connexion pour tout ; assistance réactive ; données réunies entre campus | réglages initiaux lourds, « beaucoup de travail pour le rendre utilisable » ; options qui submergent ; tâches encore manuelles ; bogues ; liaison avec Moodle ; séances qui se chevauchent dans le planning ; finances complexes à régler |
+| **Odoo** (Capterra 4,2 sur 1 314 ; Trustpilot 3,1 sur 1 304, 43 % d'une étoile) | souplesse, couverture de tous les besoins, moins cher que SAP ou Oracle ; on peut l'installer seul avec la documentation | coût de mise en place (« 250 $ de l'heure pour configurer quoi que ce soit », plus de 5 000 $ dépensés) ; mises à jour qui cassent ; assistance qui ne résout pas ; hausse de prix au renouvellement ; interface peu intuitive. Aucun avis propre à l'éducation |
+
+**Plaintes du marché marocain** (articles, pas d'avis vérifiés) :
+- les écoles saisissent deux fois, dans leur logiciel puis dans MASSAR ;
+- les familles d'écoles non rattachées à MASSAR ne voient rien dans l'application Waliye Massar.
+
+### Ce qu'on en retient pour Planner
+
+| Constat | Conséquence pour la conception |
+| --- | --- |
+| La mise en route est la première plainte partout : Classter, OpenEduCat, Odoo, Fedena | l'assistant de démarrage (ME-10) et les pages vides qui guident (N-15) sont le premier argument de vente : à chronométrer et à montrer en démonstration |
+| Interfaces jugées vieillies (aSc, EduPage, OpenEduCat) | confirme le socle neutre, plat et moderne ; c'est l'écart le plus visible avec aSc |
+| Trop de fonctions, menus qui submergent (aSc, Classter, OpenEduCat) | un menu limité aux modules actifs (N-12, N-14), qui est aussi le principe du registre de modules de `docs/ecole/plan.txt` |
+| Application mobile lente ou qui plante (EduPage, Fedena) | fiabilité et lecture hors ligne de l'application avant toute nouvelle fonction (exigence de plan.txt, § 17 A) |
+| Faux conflits, erreurs de génération (aSc) | expliquer chaque conflit (quelle règle, quel groupe) ; Planner a déjà la hiérarchie promotion › TD › TP qui évite les faux conflits entre sous-groupes |
+| Passage d'une année à l'autre manuel (Fedena) | le passage d'année (ME-19, ME-20) fait partie du produit, pas d'un service payant |
+| Coûts cachés de mise en place, hausses au renouvellement (Odoo) | prix public, mise en route incluse, hausse plafonnée et écrite au contrat |
+| Assistance lente ou injoignable (Fedena, Odoo) | prévoir l'assistance (WhatsApp, délai de réponse) dans l'offre, comme les éditeurs marocains |
+| Double saisie MASSAR | import et export MASSAR, déjà recommandés au § 6 |
+
 ## Sources
 
 - Skoolly : [skoolly.ma](https://skoolly.ma/), [tarifs](https://skoolly.ma/tarifs), [App Store](https://apps.apple.com/ma/app/skoolly/id6768355092)
@@ -95,3 +128,11 @@ Recommandations du groupe B, à trancher par le chef de projet :
 - Fedena : [tarifs](https://fedena.com/pricing-and-plans), [emploi du temps](https://fedena.com/feature-tour/timetable-management-system), [modules Ultimate](https://fedena.com/feature-tour/ultimate-modules)
 - Classter : [tarifs](https://www.classter.com/pricing/), [Academics & LMS](https://www.classter.com/product/modules/academics-and-lms/), [EdTech Impact](https://edtechimpact.com/products/classter)
 - aSc Timetables : [asctimetables.com](https://www.asctimetables.com/), [tarifs](https://www.asctimetables.com/a/prices)
+- Avis des utilisateurs :
+  - aSc : [G2](https://www.g2.com/products/asc-timetables/reviews), [Capterra](https://www.capterra.co.uk/software/58290/asc-timetable), [SaaSworthy](https://www.saasworthy.com/product/asctimetables/reviews)
+  - EduPage : [App Store](https://apps.apple.com/app/edupage/id569428005), [chrome-stats](https://chrome-stats.com/d/id569428005)
+  - Fedena : [Capterra](https://www.capterra.com/p/126199/Fedena-Pro/reviews/), [Software Advice](https://www.softwareadvice.com/admissions/fedena-profile/reviews/), [Google Play](https://play.google.com/store/apps/details?id=com.fedena.app&hl=en_US)
+  - OpenEduCat : [G2](https://www.g2.com/products/openeducat/reviews), [Capterra](https://www.capterra.co.uk/reviews/182870/openeducat)
+  - Classter : [Capterra](https://www.capterra.com/p/155900/Classter/reviews/), [G2](https://www.g2.com/products/classter/reviews?qs=pros-and-cons), [Software Advice](https://www.softwareadvice.com/school-management/classter-profile/reviews/)
+  - Odoo : [Trustpilot](https://www.trustpilot.com/review/odoo.com), [Capterra](https://www.capterra.ca/software/135618/odoo), [SelectHub](https://www.selecthub.com/p/financial-management-systems/odoo/)
+  - Maroc : [App Store Skoolly](https://apps.apple.com/ma/app/skoolly/id6768355092), [Oasis Technocloud](https://oasistechnocloud.com/blog/logiciel-gestion-ecole-maroc/), [BeeNet](https://beenet.app/fr/blog/waliye-massar-app-for-parents-what-schools-still-need/)
