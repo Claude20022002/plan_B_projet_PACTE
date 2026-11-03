@@ -3,6 +3,8 @@ import { useTranslation } from 'react-i18next';
 import { espaceCoursAPI } from '../services/espaceCours';
 import { useToast } from '../contexts/ToastContext';
 import { useConfirmation } from '../contexts/ConfirmationContext';
+import { ouvertureAVenir } from '../utils/ouverture';
+import { localeEcran } from '../utils/dates';
 
 /**
  * État et actions de l'espace de cours d'une classe : chargement, ouverture d'un support, et les
@@ -11,7 +13,7 @@ import { useConfirmation } from '../contexts/ConfirmationContext';
  * `saisir(options)` ouvre la fenêtre de saisie de la page et rend les valeurs (ou null).
  */
 export default function useEspaceCours(idCours, idGroupe, saisir) {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const toast = useToast();
   const confirmer = useConfirmation();
   const [espace, setEspace] = useState(null);
@@ -101,11 +103,17 @@ export default function useEspaceCours(idCours, idGroupe, saisir) {
       case 'deplacer':
         await faire(() => espaceCoursAPI.modifierSupport(support.id_support, { id_section: valeur }));
         break;
-      case 'publier':
-        if (await confirmer({ titre: t('espaceCours.publier'), message: t('espaceCours.publierConfirmation', { titre: support.titre }), libelle: t('espaceCours.publierBouton') })) {
+      case 'publier': {
+        // Pas encore ouvert à la classe : la Bibliothèque le montrera quand même à toute l'école dès
+        // maintenant, quelles que soient ses dates (relecture de A, lot EC-1). On le dit avant.
+        const ouvre = ouvertureAVenir(support, section);
+        const date = ouvre && new Date(`${ouvre}T12:00:00`).toLocaleDateString(localeEcran(i18n.language), { day: 'numeric', month: 'long' });
+        const message = ouvre ? t('espaceCours.publierAvantOuverture', { titre: support.titre, date }) : t('espaceCours.publierConfirmation', { titre: support.titre });
+        if (await confirmer({ titre: t('espaceCours.publier'), message, libelle: t('espaceCours.publierBouton') })) {
           await faire(() => espaceCoursAPI.publierSupport(support.id_support), t('espaceCours.messages.publie'));
         }
         break;
+      }
       case 'retirer': {
         const message = support.dans_bibliotheque ? t('espaceCours.retirerEpingle', { titre: support.titre }) : t('espaceCours.retirerConfirmation', { titre: support.titre });
         if (await confirmer({ titre: t('espaceCours.retirer'), message, libelle: t('espaceCours.retirer') })) {

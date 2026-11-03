@@ -15,3 +15,10 @@ export const etatOuverture = ({ visible_du: du, visible_jusqu_au: jusqu } = {}, 
   if (jusqu) return { etat: 'ouvert', date: jusqu };
   return { etat: 'libre', date: null };
 };
+
+/**
+ * Jour où un support s'ouvre aux étudiants, s'il n'est pas encore ouvert : sa date d'ouverture ou
+ * celle de sa section, la plus tardive. null s'il est déjà ouvert (ou sans date).
+ */
+export const ouvertureAVenir = (support, section, jour = aujourdhui()) =>
+  [support?.visible_du, section?.visible_du].filter((d) => d && d > jour).sort().at(-1) ?? null;
