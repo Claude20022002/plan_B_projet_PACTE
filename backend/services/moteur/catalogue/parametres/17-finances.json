@@ -1,0 +1,28 @@
+{
+  "code": "FIN", "nom": "Finances",
+  "role": "Absent de la liste des 16 familles de para.txt, mais présent dans sa section 13 : gardé. Tout est facultatif : sans prix, aucun coût n'entre dans le calcul.",
+  "groupes": [
+    { "code": "COUT", "nom": "Coûts",
+      "defauts": { "role": "donnee", "type": "montant", "niveaux": "G", "priorite": 5, "validite": "annee", "etat": "absent" },
+      "parametres": [
+        { "code": "BUDGET", "nom": "Budget de fonctionnement", "desc": "Plafond général.", "src": "13.1" },
+        { "code": "VACATAIRES", "nom": "Coût horaire des vacataires", "desc": "Par enseignant ou par statut.", "niveaux": "GI", "cible": "enseignant", "priorite": 4, "src": "13.2" },
+        { "code": "HEURES_SUP", "nom": "Coût des heures supplémentaires", "desc": "Au-delà du service contractuel.", "priorite": 4, "src": "13.3" },
+        { "code": "LOCATION", "nom": "Coût de location des salles", "desc": "Par heure de salle externe.", "niveaux": "GI", "cible": "salle", "src": "13.4" },
+        { "code": "LABO", "nom": "Coût d'utilisation des laboratoires", "desc": "Par heure de laboratoire.", "src": "13.5" },
+        { "code": "EQUIPEMENTS", "nom": "Coût des équipements", "desc": "Par usage d'un équipement.", "src": "13.6" },
+        { "code": "DEPLACEMENTS", "nom": "Coût des déplacements entre campus", "desc": "Par trajet.", "src": "13.7" },
+        { "code": "ACTIVITES", "nom": "Coût des activités externes", "desc": "Par activité.", "src": "13.8" },
+        { "code": "FORMATIONS", "nom": "Budget des formations", "desc": "Plafond des formations.", "src": "13.9" },
+        { "code": "RECRUTEMENT", "nom": "Marge pour recruter des intervenants", "desc": "Permet au rapport de proposer un recrutement plutôt qu'un échec.", "src": "13.10" },
+        { "code": "SURVEILLANCE", "nom": "Coût des heures de surveillance", "desc": "Par heure de surveillance.", "src": "13.11" },
+        { "code": "ENERGIE", "nom": "Coût des ressources énergétiques", "desc": "Permet de regrouper les séances pour fermer un bâtiment.", "niveaux": "GI", "cible": "batiment", "src": "13.12 12.20" },
+        { "code": "CHANGEMENTS", "nom": "Coût des changements de planning", "desc": "Prix administratif d'un changement.", "src": "13.13" }
+      ] },
+    { "code": "REGLE", "nom": "Objectif financier",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": false, "niveaux": "G", "force": "souple", "priorite": 5, "etat": "absent", "validite": "generation" },
+      "parametres": [
+        { "code": "MINIMISER_COUT", "nom": "Minimiser le coût", "desc": "Départage les plannings de même qualité pédagogique ; ne passe jamais avant elle.", "poids": 1 }
+      ] }
+  ]
+}

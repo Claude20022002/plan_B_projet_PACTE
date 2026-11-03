@@ -1,0 +1,70 @@
+{
+  "code": "ENS", "nom": "Enseignants et intervenants",
+  "groupes": [
+    { "code": "PRO", "nom": "Informations professionnelles",
+      "defauts": { "role": "contexte", "niveaux": "I", "cible": "enseignant", "priorite": 4, "validite": "annee", "etat": "base" },
+      "parametres": [
+        { "code": "ID", "nom": "Identifiant de l'enseignant", "desc": "Clé stable, celle du compte.", "type": "texte", "role": "donnee", "obligatoire": true, "priorite": 1, "modifiable": "non", "etat": "solveur", "ref": "Enseignant.id_user", "src": "5.1" },
+        { "code": "NOM", "nom": "Nom et prénom", "desc": "Nom affiché ; n'entre jamais dans le calcul.", "type": "texte", "obligatoire": true, "ref": "Users", "src": "5.2" },
+        { "code": "DEPARTEMENT", "nom": "Département de rattachement", "desc": "Sert au découpage par lots et aux répartitions.", "type": "reference", "ref": "Enseignant.departement", "src": "5.3" },
+        { "code": "SPECIALITE", "nom": "Spécialité", "desc": "Spécialité affichée.", "type": "texte", "ref": "Enseignant.specialite", "src": "5.4" },
+        { "code": "COMPETENCES", "nom": "Disciplines enseignées", "desc": "Matières qu'il peut enseigner. Nécessaire dès que le moteur choisit l'enseignant.", "type": "liste_references", "role": "donnee", "obligatoire": true, "priorite": 1, "ref": "CompetenceEnseignant", "src": "5.5 5.6 16B.1" },
+        { "code": "DIPLOMES", "nom": "Diplômes", "desc": "Justifient une qualification ; relèvent du dossier, pas du calcul.", "type": "liste", "etat": "absent", "src": "5.7" },
+        { "code": "STATUT", "nom": "Statut professionnel", "desc": "Vacataire : seulement ses créneaux déclarés. Permanent : partout sauf indisponibilité.", "type": "enum", "valeurs": ["permanent", "vacataire", "externe"], "defaut": "permanent", "role": "donnee", "obligatoire": true, "priorite": 1, "etat": "solveur", "ref": "Enseignant.statut", "src": "5.8 5.16 5.17 16D.8 11.13" },
+        { "code": "CONTRAT", "nom": "Type de contrat", "desc": "Détermine les obligations de service.", "type": "texte", "etat": "absent", "src": "5.9" },
+        { "code": "QUOTITE", "nom": "Temps plein ou partiel", "desc": "Quotité de service.", "type": "pourcentage", "defaut": 100, "role": "donnee", "priorite": 3, "etat": "absent", "src": "5.10" },
+        { "code": "SERVICE_CONTRAT", "nom": "Volume contractuel", "desc": "Heures dues sur l'année.", "type": "decimal", "role": "donnee", "priorite": 2, "ref": "Enseignant.service_annuel_heures", "src": "5.11" },
+        { "code": "ANCIENNETE", "nom": "Ancienneté", "desc": "Peut départager les vœux si l'école le décide.", "type": "entier", "etat": "absent", "src": "5.14" },
+        { "code": "COORDINATEUR", "nom": "Responsable pédagogique ou coordinateur", "desc": "Ses heures de coordination réduisent le temps disponible.", "type": "booleen", "defaut": false, "ref": "ResponsableFiliere", "src": "5.15" },
+        { "code": "MULTI_CAMPUS", "nom": "Intervient sur plusieurs campus", "desc": "Soumis aux temps de trajet.", "type": "booleen", "defaut": false, "etat": "solveur", "ref": "trajetEntreCampus", "src": "5.18" },
+        { "code": "MULTI_DEPARTEMENTS", "nom": "Partagé entre départements", "desc": "Il faut éviter que deux lots se le disputent.", "type": "booleen", "defaut": false, "etat": "absent", "src": "5.56" },
+        { "code": "MULTI_ETABLISSEMENTS", "nom": "Intervient dans plusieurs établissements", "desc": "Ses plages occupées ailleurs arrivent comme indisponibilités.", "type": "booleen", "defaut": false, "role": "donnee", "priorite": 2, "etat": "plan", "ref": "D-10, OccupationExterne", "src": "5.57 5.43" },
+        { "code": "PROFESSEUR_PRINCIPAL", "nom": "Enseignant responsable de classe", "desc": "Stabilité de l'enseignant principal, surtout en primaire.", "type": "reference", "role": "donnee", "priorite": 2, "etat": "absent", "src": "5.58 16A.1" },
+        { "code": "ENCADRE_PROJETS", "nom": "Encadre des projets", "desc": "Heures de projet à réserver dans sa semaine.", "type": "booleen", "defaut": false, "etat": "absent", "src": "5.59 11.17" },
+        { "code": "CHARGE_TP", "nom": "Chargé de travaux pratiques", "desc": "Qualifié pour encadrer les TP.", "type": "booleen", "defaut": false, "etat": "absent", "src": "5.60" },
+        { "code": "CHARGE_EXAMENS", "nom": "Chargé des examens", "desc": "Mobilisable pour surveiller ou examiner.", "type": "booleen", "defaut": false, "etat": "plan", "ref": "services/planning/examens.js", "src": "5.61" },
+        { "code": "ADMINISTRATIF", "nom": "Responsabilités administratives", "desc": "Plages bloquées pour ces tâches.", "type": "structure", "etat": "absent", "src": "5.62" },
+        { "code": "PERMANENCES", "nom": "Heures de permanence", "desc": "Plages récurrentes bloquées.", "type": "structure", "etat": "absent", "src": "5.63" },
+        { "code": "BESOIN_ASSISTANT", "nom": "Nécessite un assistant", "desc": "Sa séance réserve aussi un assistant.", "type": "booleen", "defaut": false, "etat": "absent", "src": "5.64" },
+        { "code": "BESOIN_MATERIEL", "nom": "Nécessite du matériel", "desc": "Ajoute ses besoins à ceux de la matière.", "type": "liste_references", "etat": "absent", "src": "5.65" }
+      ] },
+    { "code": "DISPO", "nom": "Disponibilités",
+      "defauts": { "role": "donnee", "niveaux": "I", "cible": "enseignant", "priorite": 1, "validite": "periode", "modifiable": "personne", "etat": "absent" },
+      "parametres": [
+        { "code": "CRENEAUX", "nom": "Disponibilité par créneau", "desc": "Déclaration de l'enseignant, créneau par créneau et par dates.", "type": "structure", "obligatoire": true, "etat": "solveur", "ref": "Disponibilite", "src": "5.19 5.20 5.23 5.24" },
+        { "code": "HEURE_DEBUT", "nom": "Heure de début de disponibilité", "desc": "Raccourci de saisie : pas de séance avant.", "type": "heure", "src": "5.21" },
+        { "code": "HEURE_FIN", "nom": "Heure de fin de disponibilité", "desc": "Raccourci de saisie : pas de séance après.", "type": "heure", "src": "5.22" },
+        { "code": "CONGES", "nom": "Congés et absences prévus", "desc": "Plages datées : le déploiement saute ces dates.", "type": "structure", "validite": "datee", "etat": "saisie", "ref": "Disponibilite (dates), deploiement.js", "src": "5.25 5.26" },
+        { "code": "SOIR", "nom": "Disponible en soirée", "desc": "Sans lui, les créneaux du soir lui sont fermés.", "type": "booleen", "defaut": false, "priorite": 3, "src": "5.27" },
+        { "code": "WEEKEND", "nom": "Disponible le week-end", "desc": "Sans lui, les créneaux du week-end lui sont fermés.", "type": "booleen", "defaut": false, "priorite": 3, "src": "5.28" },
+        { "code": "VACANCES", "nom": "Disponible pendant les vacances", "desc": "Pour les stages intensifs et les rattrapages.", "type": "booleen", "defaut": false, "priorite": 4, "src": "5.29" },
+        { "code": "CAMPUS", "nom": "Campus autorisés", "desc": "Certains enseignants ne viennent que sur certains campus.", "type": "liste_references", "priorite": 2, "ref": "Enseignant.id_campus_prefere (préférence seule)", "src": "5.30" },
+        { "code": "OCCUPE_AILLEURS", "nom": "Plages occupées ailleurs", "desc": "Reçues d'une autre école : début, fin et ville, rien d'autre.", "type": "structure", "validite": "datee", "modifiable": "non", "etat": "plan", "ref": "D-10" }
+      ] },
+    { "code": "CHARGE", "nom": "Charge de travail",
+      "defauts": { "role": "regle", "niveaux": "GPI", "cible": "enseignant", "force": "strict", "force_reglable": true, "priorite": 2, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "MAX_H_JOUR", "nom": "Maximum d'heures par jour", "desc": "Plafond quotidien d'un enseignant, en minutes.", "type": "duree_min", "defaut": 480, "etat": "solveur", "regle_solveur": "Heures maximales par jour", "ref": "max_heures_jour_enseignant", "src": "5.33 9.2" },
+        { "code": "MAX_H_SEMAINE", "nom": "Maximum d'heures par semaine", "desc": "Plafond hebdomadaire. Aujourd'hui averti avant le calcul, mais le solveur ne le connaît pas.", "type": "duree_min", "etat": "saisie", "ref": "Enseignant.max_heures_semaine, avertissements.js", "src": "5.34 5.12 9.3" },
+        { "code": "MIN_H_SEMAINE", "nom": "Volume minimum souhaité", "desc": "En dessous, l'enseignant est sous-employé (utile au choix de l'enseignant).", "type": "duree_min", "force": "souple", "poids": 3, "priorite": 4, "src": "5.13" },
+        { "code": "MIN_H_JOUR", "nom": "Minimum d'heures par jour", "desc": "Ne pas faire venir un enseignant pour moins que cela.", "type": "duree_min", "force": "souple", "poids": 3, "priorite": 4, "src": "5.35" },
+        { "code": "MAX_CONSECUTIVES", "nom": "Maximum de séances consécutives", "desc": "Au-delà, une pause est nécessaire.", "type": "entier", "force": "souple", "poids": 15, "src": "5.36" },
+        { "code": "MIN_PAUSES", "nom": "Nombre minimum de pauses", "desc": "Pauses à garantir dans une journée complète.", "type": "entier", "force": "souple", "poids": 8, "priorite": 3, "src": "5.37" },
+        { "code": "REPOS_ENTRE_JOURNEES", "nom": "Repos entre deux journées", "desc": "Temps minimal entre la dernière séance et la première du lendemain.", "type": "duree_min", "src": "5.38 9.4" },
+        { "code": "MAX_CLASSES_JOUR", "nom": "Maximum de classes différentes par jour", "desc": "Limite la dispersion d'un enseignant.", "type": "entier", "force": "souple", "poids": 3, "priorite": 4, "src": "5.39" },
+        { "code": "MAX_GROUPES_JOUR", "nom": "Maximum de groupes par jour", "desc": "Limite le nombre de groupes vus dans la journée.", "type": "entier", "force": "souple", "poids": 3, "priorite": 4, "src": "5.40" },
+        { "code": "MAX_TP_SEMAINE", "nom": "Maximum de TP par semaine", "desc": "Limite les encadrements pratiques.", "type": "entier", "force": "souple", "poids": 3, "priorite": 4, "src": "5.41" },
+        { "code": "REPART_NIVEAUX", "nom": "Répartition entre niveaux", "desc": "Part visée de son service par niveau.", "type": "structure", "force": "souple", "poids": 2, "priorite": 5, "src": "5.42" },
+        { "code": "REPART_THEO_PRAT", "nom": "Répartition théorie et pratique", "desc": "Part visée de cours et de TP dans son service.", "type": "structure", "force": "souple", "poids": 2, "priorite": 5, "src": "5.44" },
+        { "code": "TEMPS_ENTRE_INTERVENTIONS", "nom": "Temps entre deux interventions", "desc": "Battement minimal entre deux séances d'un même enseignant.", "type": "duree_min", "defaut": 0, "src": "5.32 7.17" }
+      ] },
+    { "code": "REGLE", "nom": "Règles fondamentales",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "obligatoire": true, "priorite": 1, "modifiable": "non", "etat": "absent" },
+      "parametres": [
+        { "code": "CONFLIT", "nom": "Un enseignant n'a qu'un cours à la fois", "desc": "Aucune séance simultanée, co-enseignement compris.", "etat": "solveur", "regle_solveur": "Enseignant déjà pris", "ref": "conflitEnseignant", "src": "17B.1 18A.1" },
+        { "code": "INDISPONIBLE", "nom": "Enseignant disponible", "desc": "Aucune séance sur un créneau indisponible, ni hors des créneaux d'un vacataire.", "etat": "solveur", "regle_solveur": "Enseignant indisponible", "ref": "enseignantIndisponible", "src": "17B.6" },
+        { "code": "QUALIFIE", "nom": "Enseignant qualifié", "desc": "Une matière va à un enseignant compétent. Aujourd'hui, les services sont choisis à la main : le solveur ne le vérifie pas.", "etat": "base", "ref": "CompetenceEnseignant", "src": "17B.5 18A.5" },
+        { "code": "CAMPUS_AUTORISE", "nom": "Campus autorisés respectés", "desc": "Aucune séance sur un campus où il ne vient pas.", "force_reglable": true, "obligatoire": false, "priorite": 2, "modifiable": "etablissement" }
+      ] }
+  ]
+}

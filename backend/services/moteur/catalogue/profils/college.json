@@ -1,0 +1,28 @@
+{
+  "code": "college", "nom": "Collège",
+  "traits": { "unite": "Classe et groupes de langues", "enseignants": "Spécialisés", "duree": "Période fixe", "groupes": "Langues, sciences", "salles": "Spécialisées pour quelques matières", "organisation": "Hebdomadaire", "priorite": "Équilibre entre disciplines" },
+  "reglages": {
+    "OPT.PORTEE.HORIZON": { "valeur": "semaine" },
+    "OPT.PORTEE.MODELE_TEMPS": { "valeur": "cycle_semaines" },
+    "CAL.ANNEE.SEMAINES_ALTERNEES": { "valeur": 2 },
+    "HUM.BESOIN.MINEURS": { "valeur": true },
+    "HUM.REGLE.ENCADREMENT": { "valeur": true, "force": "strict" },
+    "MAT.VOL.DUREE_MIN": { "valeur": 55 },
+    "MAT.VOL.DUREE_REC": { "valeur": 55 },
+    "MAT.VOL.DUREE_MAX": { "valeur": 110 },
+    "MAT.VOL.CRENEAUX_PAR_SEANCE": { "valeur": 1 },
+    "ENS.CHARGE.MAX_H_JOUR": { "valeur": 420 },
+    "HOR.REGLE.MAX_H_JOUR_GROUPE": { "valeur": 420 },
+    "HOR.REGLE.MAX_CONSECUTIVES": { "valeur": 180 },
+    "HOR.REGLE.TROUS": { "poids": 30 },
+    "HOR.REGLE.REPAS": { "force": "strict" },
+    "MAT.REGLE.ALIGNEMENT": { "valeur": true },
+    "PED.COGN.DIFFICILES_SUIVIES": { "valeur": true, "poids": 20 },
+    "PED.COGN.DIFFICILES_REPARTIES": { "valeur": true, "poids": 20 },
+    "PED.COGN.ALTERNANCE_DOMAINES": { "valeur": true, "poids": 10 },
+    "PED.COGN.CHARGE_QUOTIDIENNE": { "valeur": 18, "poids": 20 },
+    "PED.ORG.ROTATION_ENSEIGNANTS": { "valeur": 5, "poids": 5 },
+    "PED.ORG.HEURE_VIE_CLASSE": { "valeur": 55, "poids": 5 },
+    "PRF.APP.REPARTITION_MATIERES": { "valeur": true, "poids": 15 }
+  }
+}

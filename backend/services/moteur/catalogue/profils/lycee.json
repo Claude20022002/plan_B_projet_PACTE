@@ -1,0 +1,26 @@
+{
+  "code": "lycee", "nom": "Lycée",
+  "traits": { "unite": "Classe et groupe", "enseignants": "Spécialisés", "duree": "Variable", "groupes": "Options, spécialités", "salles": "Spécialisées", "organisation": "Hebdomadaire", "priorite": "Équilibre pédagogique" },
+  "reglages": {
+    "OPT.PORTEE.HORIZON": { "valeur": "semaine" },
+    "OPT.PORTEE.MODELE_TEMPS": { "valeur": "cycle_semaines" },
+    "CAL.ANNEE.SEMAINES_ALTERNEES": { "valeur": 2 },
+    "HUM.BESOIN.MINEURS": { "valeur": true },
+    "HUM.REGLE.ENCADREMENT": { "valeur": true },
+    "MAT.VOL.DUREE_MIN": { "valeur": 55 },
+    "MAT.VOL.DUREE_REC": { "valeur": 55 },
+    "MAT.VOL.DUREE_MAX": { "valeur": 120 },
+    "ENS.CHARGE.MAX_H_JOUR": { "valeur": 420 },
+    "HOR.REGLE.MAX_H_JOUR_GROUPE": { "valeur": 480 },
+    "HOR.REGLE.MAX_CONSECUTIVES": { "valeur": 240 },
+    "HOR.REGLE.TROUS": { "poids": 15 },
+    "MAT.REGLE.ALIGNEMENT": { "valeur": true },
+    "GRP.REGLE.OPTIONS_INCOMPATIBLES": { "valeur": 0, "poids": 80 },
+    "PED.COGN.DIFFICILES_SUIVIES": { "valeur": true, "poids": 15 },
+    "PED.COGN.DIFFICILES_REPARTIES": { "valeur": true, "poids": 15 },
+    "PED.COGN.ALTERNANCE_DOMAINES": { "valeur": true, "poids": 5 },
+    "PED.ORG.EXAMENS_NATIONAUX": { "valeur": true, "poids": 15 },
+    "PED.ORG.ACCOMPAGNEMENT": { "valeur": 60, "poids": 5 },
+    "PRF.APP.REPARTITION_MATIERES": { "valeur": true, "poids": 12 }
+  }
+}

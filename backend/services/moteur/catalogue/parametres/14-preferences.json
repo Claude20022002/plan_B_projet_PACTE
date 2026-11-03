@@ -1,0 +1,27 @@
+{
+  "code": "PRF", "nom": "Préférences et qualité de vie",
+  "groupes": [
+    { "code": "ENS", "nom": "Vœux des enseignants",
+      "defauts": { "role": "regle", "niveaux": "I", "cible": "enseignant", "force": "souple", "priorite": 4, "validite": "periode", "modifiable": "personne", "etat": "absent", "type": "structure" },
+      "parametres": [
+        { "code": "CRENEAUX_PREFERES", "nom": "Créneaux préférés", "desc": "Récompense une séance posée sur un créneau préféré.", "poids": 1, "etat": "solveur", "regle_solveur": "Vœu : créneau préféré", "ref": "Disponibilite.preference", "src": "5.45 14.5 18B.4 17D.7" },
+        { "code": "CRENEAUX_EVITER", "nom": "Créneaux à éviter", "desc": "Pénalise une séance posée sur un créneau à éviter.", "poids": 3, "etat": "solveur", "regle_solveur": "Vœu : créneau à éviter", "ref": "Disponibilite.preference", "src": "5.46" },
+        { "code": "JOURS_PREFERES", "nom": "Jours préférés", "desc": "Récompense les séances de ces jours.", "type": "liste_jours", "poids": 1, "src": "5.47" },
+        { "code": "JOURS_EVITER", "nom": "Jours à éviter", "desc": "Pénalise les séances de ces jours.", "type": "liste_jours", "poids": 3, "src": "5.48" },
+        { "code": "MATIN", "nom": "Préférence pour le matin", "desc": "Vise les créneaux du matin.", "type": "booleen", "poids": 1, "src": "5.49" },
+        { "code": "APRES_MIDI", "nom": "Préférence pour l'après-midi", "desc": "Vise les créneaux de l'après-midi.", "type": "booleen", "poids": 1, "src": "5.50" },
+        { "code": "REGROUPES", "nom": "Préférence pour les cours regroupés", "desc": "Concentre ses séances sur peu de jours.", "type": "booleen", "poids": 3, "src": "5.51 14.3" },
+        { "code": "JOURNEE_CONTINUE", "nom": "Préférence pour les journées continues", "desc": "Réduit ses trous.", "type": "booleen", "poids": 2, "src": "5.52 14.1 18B.8" },
+        { "code": "JOURNEE_PAUSES", "nom": "Préférence pour des journées avec pauses", "desc": "Garde des pauses entre ses séances.", "type": "booleen", "poids": 2, "src": "5.53" },
+        { "code": "CAMPUS", "nom": "Préférence de campus", "desc": "Vise ce campus quand le choix est libre.", "type": "reference", "poids": 1, "etat": "base", "ref": "Enseignant.id_campus_prefere", "src": "5.54" },
+        { "code": "SALLE", "nom": "Préférence de salle", "desc": "Vise cette salle quand le choix est libre.", "type": "reference", "poids": 1, "src": "5.55" },
+        { "code": "JOURNEE_LONGUE", "nom": "Journée trop longue pour un enseignant", "desc": "Amplitude quotidienne à ne pas dépasser.", "type": "duree_min", "poids": 3, "niveaux": "GPI", "modifiable": "etablissement", "src": "14.2" }
+      ] },
+    { "code": "APP", "nom": "Qualité de vie des apprenants",
+      "defauts": { "role": "regle", "niveaux": "GP", "force": "souple", "force_reglable": true, "priorite": 4, "validite": "periode", "etat": "absent", "type": "booleen", "defaut": false },
+      "parametres": [
+        { "code": "REPARTITION_MATIERES", "nom": "Répartir équitablement les matières", "desc": "Chaque matière se répartit sur la semaine plutôt que sur un seul bloc.", "poids": 6, "src": "18B.5 16B.10" },
+        { "code": "SPORT_PRESERVE", "nom": "Préserver les activités sportives", "desc": "Le sport n'est pas la variable d'ajustement.", "poids": 3, "src": "14.12" }
+      ] }
+  ]
+}
