@@ -19,6 +19,8 @@ const ConfigurationEtablissement = sequelize.define(
         expediteur_nom: { type: DataTypes.STRING(100), allowNull: true },
         adresse_reponse: { type: DataTypes.STRING(255), allowNull: true },
         modele_edt: { type: DataTypes.STRING(20), allowNull: false, defaultValue: "planner" },
+        // ClassQuiz pour cette école (lot ME-0c, migration 0057) : éteint pour une installation neuve
+        classquiz_actif: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     },
     {
         tableName: "ConfigurationEtablissement",

@@ -5,6 +5,8 @@ import {
     Salle,
     Creneau,
     Users,
+    Enseignement,
+    CoursComposante,
 } from "../models/index.js";
 import { Op } from "sequelize";
 import { asyncHandler } from "../middleware/asyncHandler.js";
@@ -271,6 +273,8 @@ export const getAffectationsByEnseignant = asyncHandler(async (req, res) => {
             },
             { model: Salle, as: "salle" },
             { model: Creneau, as: "creneau" },
+            // Modalité : la fiche propose le lien de visio pour une séance à distance (lot EC-11)
+            { model: Enseignement, as: "enseignement", attributes: ["id_enseignement"], include: [{ model: CoursComposante, as: "composante", attributes: ["modalite"] }] },
         ],
         limit,
         offset,
@@ -304,6 +308,8 @@ export const getAffectationsByGroupe = asyncHandler(async (req, res) => {
             },
             { model: Salle, as: "salle" },
             { model: Creneau, as: "creneau" },
+            // Modalité : la fiche propose le lien de visio pour une séance à distance (lot EC-11)
+            { model: Enseignement, as: "enseignement", attributes: ["id_enseignement"], include: [{ model: CoursComposante, as: "composante", attributes: ["modalite"] }] },
         ],
         limit,
         offset,
