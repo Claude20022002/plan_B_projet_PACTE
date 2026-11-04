@@ -97,3 +97,9 @@ Sources :
 | P-44 | 4 nov. | Contenu de la démonstration en six temps : identité de l'école, classes et matières, emploi du temps généré, changement notifié, appel sur téléphone, modules prévus annoncés comme tels. | 04 | proposée |
 | P-45 | 4 nov. | Questions à poser au directeur (administratif, emploi du temps, impayés, outils, Massar, parents, budget, conditions d'un pilote). | 04, rapport | proposée |
 | P-46 | 4 nov. | Ajuster l'école fictive au profil de l'école du directeur (ville, effectifs, langues). | 04 | proposée ; dépend des informations du chef de projet |
+
+### Fusions
+
+| N° | Date | Proposition | Source | Statut |
+| --- | --- | --- | --- | --- |
+| P-47 | 4 nov. | Ordre de fusion :<br>1. `b/socle-neutre` et `b/etude-marche` (documentation) ;<br>2. #141 (ME-0c serveur, migration 0057, groupe A), puis #144 (EC-11, 0058), puis ME-0c écrans, dans l'ordre des numéros de migration ;<br>3. #148 (EC-9, 0059) en dernier, après résolution de son conflit avec #141 par le groupe B (`ConfigurationEtablissement.js`). | conv. | proposée |
