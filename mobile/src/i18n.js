@@ -73,6 +73,8 @@ const fr = {
       initialement: 'Prévue au départ',
       nouvelleDate: 'Nouveau créneau',
       supports: 'Supports du cours',
+      rejoindre: 'Rejoindre sur {{domaine}}',
+      visioPasEncore: 'Séance à distance : le lien de visio n’est pas encore donné.',
     },
     bibliotheque: {
       mesCours: 'Mes cours',
@@ -471,6 +473,8 @@ const en = {
       initialement: 'Originally',
       nouvelleDate: 'New slot',
       supports: 'Course materials',
+      rejoindre: 'Join on {{domaine}}',
+      visioPasEncore: 'Remote session: the video link has not been given yet.',
     },
     bibliotheque: {
       mesCours: 'My courses',

@@ -39,6 +39,12 @@ const Affectation = sequelize.define(
             type: DataTypes.INTEGER,
             allowNull: true,
         },
+        // Lien de visioconférence d'une séance à distance (lot EC-11, migration 0058) : posé par
+        // l'enseignant de la séance ou l'administration (services/planning/lienVisio.js)
+        lien_visio: {
+            type: DataTypes.STRING(500),
+            allowNull: true,
+        },
         // Enseignement planifié (composante × groupes) dont cette séance fait partie
         id_enseignement: {
             type: DataTypes.INTEGER,
