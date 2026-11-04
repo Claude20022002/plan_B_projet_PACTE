@@ -103,3 +103,20 @@ Sources :
 | N° | Date | Proposition | Source | Statut |
 | --- | --- | --- | --- | --- |
 | P-47 | 4 nov. | Ordre de fusion :<br>1. `b/socle-neutre` et `b/etude-marche` (documentation) ;<br>2. #141 (ME-0c serveur, migration 0057, groupe A), puis #144 (EC-11, 0058), puis ME-0c écrans, dans l'ordre des numéros de migration ;<br>3. #148 (EC-9, 0059) en dernier, après résolution de son conflit avec #141 par le groupe B (`ConfigurationEtablissement.js`). | conv. | proposée |
+
+### Code et plan produit (5 nov.)
+
+| N° | Date | Proposition | Source | Statut |
+| --- | --- | --- | --- | --- |
+| P-48 | 4 nov. | Découper les fichiers de plus de 300 lignes signalés par le lint : `ThemeContext.jsx` (dans SN-1), `DepartureBoard.jsx` (quand il devient le thème « panneau »), `App.jsx` et `Annonces.jsx` (lot à part). | conv. | proposée |
+| P-49 | 5 nov. | Créer un plan produit par fonctionnalités : cadrage, socle de la plateforme, démonstration au directeur, pack « École privée », formation professionnelle (`docs/plans/plan-produit/`). | plan-produit | à trancher |
+| P-50 | 5 nov. | Un seul tableau de suivi (`04-suivi.md`) à la place des statuts des plans d'octobre. | plan-produit § 3.1 | proposée |
+| P-51 | 5 nov. | Écrire, groupes A et B ensemble, un modèle de données du scolaire (classe, matière, responsable légal, notes, frais) avant la phase 2. | plan-produit C-5 | proposée |
+| P-52 | 5 nov. | Registre des modules à la manière d'Odoo : dépendances déclarées, liaisons qui s'activent seules, socle toujours inclus. | plan-produit F-02 | proposée |
+| P-53 | 5 nov. | Vocabulaire et nomenclatures lus dans la base selon le profil de l'école, et non plus figés dans `referentiel.js`, sur la base du catalogue du groupe A. | plan-produit F-04 | proposée |
+| P-54 | 5 nov. | Ordre du pack « École privée » : élèves et familles ; absences prévenues et espace parents ; frais ; notes et bulletins ; Massar. Emploi du temps scolaire en parallèle, arabe au fil de l'eau. | plan-produit § 3.6 | proposée |
+| P-55 | 5 nov. | Un critère de réussite produit mesurable par fonctionnalité (exemple : le bulletin d'une classe en un clic). | plan-produit | proposée |
+| P-56 | 5 nov. | Vendre la planification seule (F-11) dès qu'elle est prête, en plus du pack (recommandation du groupe A). | plan-produit § 3.8 | à trancher |
+| P-57 | 5 nov. | Supprimer les branches dont le contenu est déjà dans `main` ou abandonné, et fermer `b/v4-application` et `feature/phase-e-timefold-dev` après relecture. | plan-produit § 1.3 | proposée |
+| P-58 | 5 nov. | Pousser et fusionner les études du groupe A : `a/benchmark-modules` et `a/moteur-catalogue`. | plan-produit C-2 | proposée (groupe A) |
+| P-59 | 5 nov. | Aucun module de la phase 4 (transport, cantine, hors ligne, etc.) sans demande confirmée par au moins deux écoles. | plan-produit § 3.7 | proposée |
