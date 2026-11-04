@@ -21,7 +21,7 @@
 | Identifiant | Nom | Description | Rôle | Type | Valeur par défaut | Niveau | Obligatoire | Force | Priorité | Poids | Modifiable par | Validité | État aujourd'hui | Source |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `ETA.TAILLE.CAMPUS` | Nombre de campus | Compté depuis les campus actifs ; au-delà de 1, les trajets entrent en jeu. | indicateur | entier | — | global | non | — | 4 | — | non | generation | base (Campus) | 2.8 12.1 |
-| `ETA.TAILLE.BATIMENTS` | Nombre de bâtiments | Compté depuis les salles. | indicateur | entier | — | global | non | — | 4 | — | non | generation | base (Salle.batiment) | 2.9 |
+| `ETA.TAILLE.BATIMENTS` | Nombre de bâtiments | Compté depuis les salles, quand elles auront un bâtiment : Planner ne le connaît pas aujourd'hui. | indicateur | entier | — | global | non | — | 4 | — | non | generation | absent | 2.9 |
 | `ETA.TAILLE.SITES` | Nombre de sites géographiques | Compté depuis les sites ; à plusieurs sites, un groupe reste chez lui. | indicateur | entier | — | global | non | — | 4 | — | non | generation | plan (D-20) | 2.10 |
 | `ETA.TAILLE.DEPARTEMENTS` | Nombre de départements | Compté depuis les rattachements. | indicateur | entier | — | global | non | — | 4 | — | non | generation | base (Enseignant.departement) | 2.11 |
 | `ETA.TAILLE.FACULTES` | Nombre de facultés | Compté depuis les pôles. | indicateur | entier | — | global | non | — | 4 | — | non | generation | plan (ME-2a, Pole) | 2.12 |

@@ -6,7 +6,7 @@
       "parametres": [
         { "code": "ID", "nom": "Identifiant de la salle", "desc": "Clé stable.", "type": "texte", "role": "donnee", "obligatoire": true, "priorite": 1, "modifiable": "non", "etat": "solveur", "ref": "Salle.id_salle", "src": "6.1" },
         { "code": "NOM", "nom": "Nom ou numéro de salle", "desc": "Nom affiché.", "type": "texte", "obligatoire": true, "ref": "Salle.nom_salle", "src": "6.2 6.3" },
-        { "code": "BATIMENT", "nom": "Bâtiment", "desc": "Sert aux changements de bâtiment.", "type": "reference", "role": "donnee", "priorite": 3, "ref": "Salle.batiment", "src": "6.4" },
+        { "code": "BATIMENT", "nom": "Bâtiment", "desc": "Sert aux changements de bâtiment. Absent aujourd'hui : l'ancien champ n'est plus qu'un alias du nom du campus.", "type": "reference", "role": "donnee", "priorite": 3, "etat": "absent", "src": "6.4" },
         { "code": "ETAGE", "nom": "Étage", "desc": "Sert à l'accessibilité et aux temps de déplacement.", "type": "entier", "role": "donnee", "priorite": 3, "ref": "Salle.etage", "src": "6.5" },
         { "code": "CAMPUS", "nom": "Campus", "desc": "Donne le temps de trajet et le site.", "type": "reference", "role": "donnee", "obligatoire": true, "priorite": 1, "etat": "solveur", "ref": "Salle.id_campus", "src": "6.6" },
         { "code": "DEPARTEMENT", "nom": "Département", "desc": "Une salle peut être réservée en priorité à un département.", "type": "reference", "etat": "absent", "src": "6.7" },
