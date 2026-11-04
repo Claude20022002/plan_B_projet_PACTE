@@ -6,14 +6,15 @@ Statut au 4 novembre 2026 : **l'ordre des cibles, l'abandon de la pile de `plan.
 |---|---|
 | [benchmark.md](benchmark.md) | les concurrents, les prix, le marché, Massar, le droit, les coûts, avec leurs sources |
 | [verifications-et-consequences.md](verifications-et-consequences.md) | ce que valent les documents de ChatGPT, l'analyse détaillée de l'offre, les 28 questions ouvertes |
-| [feuille-de-route.md](feuille-de-route.md) | l'ordre des vagues autour de la Planification, et ce qui reste à arbitrer entre les deux groupes |
+| [feuille-de-route.md](feuille-de-route.md) | l'ordre des vagues, décidé le 4 novembre |
 | `docs/ecole/benchmarkChatGPT.txt`, `plan.txt` | les deux documents d'étude, corrigés |
 
 ## 1. Décisions du 4 novembre 2026
 
 | Sujet | Décision |
 |---|---|
-| Ordre des cibles | **Planification seule, puis supérieur privé, puis école complète.** Remplace la conclusion de `plan.txt` (écoles privées d'abord) |
+| Ordre des cibles | **Planification seule, en commençant par les écoles privées ; puis supérieur privé ; puis école complète ; la formation professionnelle ensuite.** Remplace la conclusion de `plan.txt` et le registre du groupe B |
+| Plusieurs écoles sur une installation | **Pas avant d'avoir fini le supérieur.** Jusque-là, une instance par client |
 | Pile technique | **Celle de `plan.txt` est abandonnée** (NestJS, PostgreSQL, Tailwind, Python, Keycloak) ; on garde l'existant |
 | Socle | **Inclus dans tout abonnement** : comptes, droits, établissement, élèves, classes, enseignants, matières, salles. Pas de Core payant |
 | École pilote | **En discussion ; le produit doit exister avant la phase pilote.** Une rencontre avec le directeur d'une école privée, de la maternelle au lycée, est prévue dans 3 à 6 semaines (registre du groupe B) |
@@ -38,7 +39,7 @@ Ce n'est pas un modèle à la carte : **une application gratuite à vie, puis to
 
 | Étape | Vendu | Cible | Reste à construire |
 |---|---|---|---|
-| **1. Planification seule** | Génération, salles, reports, remplacements, publication et notifications | toute école qui garde son outil ou travaille sur Excel | moteur (MP-1 à MP-7), import par fichiers (ME-9), profil scolaire, arabe des vues publiées à évaluer, MO-1 et MO-2 |
+| **1. Planification seule** | Génération, salles, reports, remplacements, publication et notifications | les écoles privées d'abord, qui gardent leur outil ou travaillent sur Excel ; sur instance dédiée jusqu'à la vague I | moteur (MP-1 à MP-7), import par fichiers (ME-9), profil scolaire, arabe des vues publiées à évaluer, MO-1 et MO-2 |
 | **2. Supérieur privé** | Étape 1, plus présences, examens, cours, quiz, IA | 213 établissements et 91 082 étudiants (2024-2025, extraits) | Plateforme partagée ou instance dédiée (D-01), contrats |
 | **3. École complète** | Notes, bulletins, frais, parents, arabe, fichiers Massar | environ 1,25 million d'élèves du privé | tout cela : **environ 19 jours bruts, soit 29 à 38 jours-personne**, estimation grossière ; à lancer si les entretiens le confirment |
 
@@ -121,9 +122,9 @@ La pile reste : Express, Sequelize, MySQL 8.4, React et MUI, Expo, le solveur Ja
 | IA (11 octobre) | incluse | incluse dans l'offre complète, option ailleurs, plafonds gardés (proposition) |
 | ME-15 facturation | comptes actifs × prix | modules, paliers, régularisation d'effectif |
 | Nouveau | — | **MO-1** registre des modules et droits d'accès (M) ; **MO-2** page d'abonnement et factures (M) ; **MO-3** essai avec filigrane et jeu de démonstration public (M). Estimations avant conception |
-| Priorité | V1 puis V2 | moteur et Planification d'abord (décision du 4 novembre) ; la Plateforme partagée reste nécessaire avant les petits clients, car une instance dédiée coûte plus que 199 DH (220 MAD pour un seul serveur de 4 Go) |
+| Priorité | V1 puis V2 | moteur, Planification, pilote, supérieur, puis plusieurs écoles (décision du 4 novembre). **Conséquence : pas de petites écoles à 149-199 DH avant la plateforme partagée**, car une instance dédiée coûte plus que ce prix (220 MAD pour un seul serveur de 4 Go) |
 
-Le nouvel ordre des vagues est dans [feuille-de-route.md](feuille-de-route.md), à valider.
+Le nouvel ordre des vagues est dans [feuille-de-route.md](feuille-de-route.md).
 
 ## 10. À vérifier avant de vendre ou de publier
 
