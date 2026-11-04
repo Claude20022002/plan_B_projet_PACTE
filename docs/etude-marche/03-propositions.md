@@ -23,6 +23,10 @@ Sources :
 | 4 nov. | Pas d'audit de HESTIM Planner par le groupe B. |
 | 4 nov. | Cible : **d'abord les écoles privées, ensuite la formation professionnelle**. |
 | 4 nov. | Toutes les propositions sont notées dans ce registre. |
+| 5 nov. | Le plan par fonctionnalités ne remplace pas les vagues V : un plan les fusionne, pour une équipe plus nombreuse (`docs/plans/plan-produit/04-plan-fusionne.md`). |
+| 5 nov. | La vente est mise de côté : priorité à l'optimisation du SaaS face aux problèmes des autres outils. La planification seule pourra se vendre plus tard. |
+| 5 nov. | Le groupe A pousse ses études et écrit avec B le modèle de données du scolaire (prompt fourni par B). |
+| 5 nov. | Les entretiens et la démonstration aux directeurs viennent plus tard. |
 | 4 nov. | Rencontre avec le directeur d'une école privée (maternelle au lycée) dans 3 à 6 semaines : écouter, puis montrer ; présentation courte et démonstration sur une école fictive (`04-rencontre-directeur.md`). |
 
 ## Propositions
@@ -92,11 +96,11 @@ Sources :
 | N° | Date | Proposition | Source | Statut |
 | --- | --- | --- | --- | --- |
 | P-41 | 4 nov. | Objectif « écouter, puis montrer », puis proposer d'être école pilote. | conv. | **décidée** |
-| P-42 | 4 nov. | Démonstration sur le vrai produit adapté au scolaire (option A) : nomenclatures minimales (cycles du scolaire, composante « cours », classes et demi-groupes), textes selon le type d'établissement, école fictive, emploi du temps du collège généré. | 04 | à trancher (option A, B ou C ; accord du groupe A pour le serveur) |
-| P-43 | 4 nov. | Calendrier en quatre semaines : conception, adaptation, données et solveur, scénario et répétition. | 04 | proposée |
-| P-44 | 4 nov. | Contenu de la démonstration en six temps : identité de l'école, classes et matières, emploi du temps généré, changement notifié, appel sur téléphone, modules prévus annoncés comme tels. | 04 | proposée |
-| P-45 | 4 nov. | Questions à poser au directeur (administratif, emploi du temps, impayés, outils, Massar, parents, budget, conditions d'un pilote). | 04, rapport | proposée |
-| P-46 | 4 nov. | Ajuster l'école fictive au profil de l'école du directeur (ville, effectifs, langues). | 04 | proposée ; dépend des informations du chef de projet |
+| P-42 | 4 nov. | Démonstration sur le vrai produit adapté au scolaire (option A) : nomenclatures minimales (cycles du scolaire, composante « cours », classes et demi-groupes), textes selon le type d'établissement, école fictive, emploi du temps du collège généré. | 04 | **reportée** le 5 nov. (à trancher (option A, B ou C ; accord du groupe A pour le serveur)) |
+| P-43 | 4 nov. | Calendrier en quatre semaines : conception, adaptation, données et solveur, scénario et répétition. | 04 | **reportée** le 5 nov. (proposée) |
+| P-44 | 4 nov. | Contenu de la démonstration en six temps : identité de l'école, classes et matières, emploi du temps généré, changement notifié, appel sur téléphone, modules prévus annoncés comme tels. | 04 | **reportée** le 5 nov. (proposée) |
+| P-45 | 4 nov. | Questions à poser au directeur (administratif, emploi du temps, impayés, outils, Massar, parents, budget, conditions d'un pilote). | 04, rapport | **reportée** le 5 nov. (proposée) |
+| P-46 | 4 nov. | Ajuster l'école fictive au profil de l'école du directeur (ville, effectifs, langues). | 04 | **reportée** le 5 nov. (proposée ; dépend des informations du chef de projet) |
 
 ### Fusions
 
@@ -109,14 +113,19 @@ Sources :
 | N° | Date | Proposition | Source | Statut |
 | --- | --- | --- | --- | --- |
 | P-48 | 4 nov. | Découper les fichiers de plus de 300 lignes signalés par le lint : `ThemeContext.jsx` (dans SN-1), `DepartureBoard.jsx` (quand il devient le thème « panneau »), `App.jsx` et `Annonces.jsx` (lot à part). | conv. | proposée |
-| P-49 | 5 nov. | Créer un plan produit par fonctionnalités : cadrage, socle de la plateforme, démonstration au directeur, pack « École privée », formation professionnelle (`docs/plans/plan-produit/`). | plan-produit | à trancher |
+| P-49 | 5 nov. | Créer un plan produit par fonctionnalités : cadrage, socle de la plateforme, démonstration au directeur, pack « École privée », formation professionnelle (`docs/plans/plan-produit/`). | plan-produit | **décidée** en partie : catalogue des fonctionnalités gardé, ordre dans le plan fusionné (P-60) |
 | P-50 | 5 nov. | Un seul tableau de suivi (`04-suivi.md`) à la place des statuts des plans d'octobre. | plan-produit § 3.1 | proposée |
 | P-51 | 5 nov. | Écrire, groupes A et B ensemble, un modèle de données du scolaire (classe, matière, responsable légal, notes, frais) avant la phase 2. | plan-produit C-5 | proposée |
 | P-52 | 5 nov. | Registre des modules à la manière d'Odoo : dépendances déclarées, liaisons qui s'activent seules, socle toujours inclus. | plan-produit F-02 | proposée |
 | P-53 | 5 nov. | Vocabulaire et nomenclatures lus dans la base selon le profil de l'école, et non plus figés dans `referentiel.js`, sur la base du catalogue du groupe A. | plan-produit F-04 | proposée |
 | P-54 | 5 nov. | Ordre du pack « École privée » : élèves et familles ; absences prévenues et espace parents ; frais ; notes et bulletins ; Massar. Emploi du temps scolaire en parallèle, arabe au fil de l'eau. | plan-produit § 3.6 | proposée |
 | P-55 | 5 nov. | Un critère de réussite produit mesurable par fonctionnalité (exemple : le bulletin d'une classe en un clic). | plan-produit | proposée |
-| P-56 | 5 nov. | Vendre la planification seule (F-11) dès qu'elle est prête, en plus du pack (recommandation du groupe A). | plan-produit § 3.8 | à trancher |
+| P-56 | 5 nov. | Vendre la planification seule (F-11) dès qu'elle est prête, en plus du pack (recommandation du groupe A). | plan-produit § 3.8 | **décidée** le 5 nov., mais la vente est mise de côté |
 | P-57 | 5 nov. | Supprimer les branches dont le contenu est déjà dans `main` ou abandonné, et fermer `b/v4-application` et `feature/phase-e-timefold-dev` après relecture. | plan-produit § 1.3 | proposée |
 | P-58 | 5 nov. | Pousser et fusionner les études du groupe A : `a/benchmark-modules` et `a/moteur-catalogue`. | plan-produit C-2 | proposée (groupe A) |
 | P-59 | 5 nov. | Aucun module de la phase 4 (transport, cantine, hors ligne, etc.) sans demande confirmée par au moins deux écoles. | plan-produit § 3.7 | proposée |
+| P-60 | 5 nov. | Plan fusionné : vagues V0 à V5 et fonctionnalités, six équipes (Plateforme, Moteur, Interface, Vie scolaire, Finance, Mobile et parents), lots de la vente mis de côté. | plan-produit 04 | proposée |
+| P-61 | 5 nov. | Douze exigences produit (EP-1 à EP-12), tirées des reproches faits aux autres outils, comme conditions de « terminé ». | plan-produit 04 § 4.2 | proposée |
+| P-62 | 5 nov. | Avancer en V2 ce qui servait aux grandes écoles dans les anciennes V4 et V5 : isolation, migrations par vagues, registre des écoles, choix de l'école à la connexion. | plan-produit 04 | proposée |
+| P-63 | 5 nov. | EC-3 (carnet de notes officiel) et EC-4 fusionnent dans F-13 (notes et bulletins). | plan-produit 04 | proposée |
+| P-64 | 5 nov. | Garder ME-22 (test d'intrusion) à la fin de V4, malgré la vente mise de côté. | plan-produit 04 | proposée |

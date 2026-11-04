@@ -1,5 +1,10 @@
 # 3. Plan de conception par fonctionnalités
 
+> **5 novembre, décisions du chef de projet** : ce fichier sert de **catalogue des fonctionnalités**. L'ordre et la répartition à suivre sont dans [04-plan-fusionne.md](04-plan-fusionne.md) :
+> - les vagues V sont gardées et fusionnées avec les fonctionnalités ;
+> - l'équipe est élargie ;
+> - la vente, les entretiens et la démonstration au directeur sont reportés.
+
 **Proposition du groupe B, 5 novembre 2026, à valider par le chef de projet.** Elle part des décisions du 4 novembre :
 - plusieurs écoles sur une même installation d'abord ;
 - les écoles privées comme cible, puis la formation professionnelle ;
