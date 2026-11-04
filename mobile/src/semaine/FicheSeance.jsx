@@ -1,8 +1,9 @@
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Linking, Pressable, ScrollView, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { estChangee } from '../../../shared/session.js';
+import { domaineDuLien, lienVisioValide } from '../../../shared/lienVisio.js';
 import { CIBLE_TACTILE, couleurStatut, creerStyles, espace, lineColor, useTheme } from '../theme';
 import Feuille from '../verre/Feuille';
 
@@ -79,7 +80,16 @@ export default function FicheSeance({ seance: s, fermer }) {
           {salle ? <Ligne icone={s.distanciel ? 'laptop' : 'door'}>{salle}</Ligne> : null}
           {s.teacher ? <Ligne icone="account-tie-outline">{s.teacher}</Ligne> : null}
           {s.group ? <Ligne icone="account-group-outline">{s.group}</Ligne> : null}
+          {s.aDistance && !s.lienVisio && statut !== 'annule' ? <Ligne icone="video-off-outline">{t('app.fiche.visioPasEncore')}</Ligne> : null}
         </View>
+
+        {/* Lien de visio d'une séance à distance (lot EC-11) : le domaine dit où l'on va ; seule une adresse https valide s'ouvre */}
+        {s.lienVisio && lienVisioValide(s.lienVisio) && statut !== 'annule' ? (
+          <Pressable onPress={() => Linking.openURL(s.lienVisio)} style={styles.bouton} accessibilityRole="link">
+            <MaterialCommunityIcons name="video-outline" size={20} color={theme.couleurs.surAccent} />
+            <Text style={styles.boutonTexte}>{t('app.fiche.rejoindre', { domaine: domaineDuLien(s.lienVisio) })}</Text>
+          </Pressable>
+        ) : null}
 
         {s.courseCode ? (
           <Pressable

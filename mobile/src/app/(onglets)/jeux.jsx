@@ -10,6 +10,7 @@ import ChoixPersonnage from '../../jeux/ChoixPersonnage';
 import Personnage from '../../jeux/Personnage';
 import Scene from '../../jeux/Scene';
 import { ouvrirPartie } from '../../quiz/ouvrir';
+import useClassQuiz from '../../hooks/useClassQuiz';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
@@ -18,12 +19,10 @@ import { useMargeOnglets } from '../../verre/Verre';
 const RAFRAICHISSEMENT_QUIZ_MS = 20000;
 // Écran de chaque jeu intégré
 const ECRAN_JEU = { 'terminal-linux': '/terminal' };
-// Devoirs masqués (lot D-1) : ceux que le serveur renvoie encore ne s'affichent pas
-const devoirsDe = (m) => (DEVOIRS_ACTIFS ? m.devoirs ?? [] : []);
-
-// Lecture seule : le composant applique le résultat dans le .then (aucun état modifié ici)
-const lireTout = () =>
-  Promise.allSettled([chargerActivites(), chargerHistoriqueQuiz()]).then(([activites, historique]) => ({
+// Lecture seule : le composant applique le résultat dans le .then (aucun état modifié ici). Sans le
+// service de quiz pour l'école (lot ME-0c), son historique n'est pas demandé
+const lireTout = (avecQuiz) =>
+  Promise.allSettled([chargerActivites(), avecQuiz ? chargerHistoriqueQuiz() : Promise.resolve([])]).then(([activites, historique]) => ({
     activites: activites.status === 'fulfilled' ? activites.value : null,
     historique: historique.status === 'fulfilled' ? historique.value : null,
     erreur: activites.status === 'rejected',
@@ -47,14 +46,19 @@ export default function Jeux() {
   const [rafraichit, setRafraichit] = useState(false);
   const [avatarChoisi, setAvatarChoisi] = useState(null);
   const [choix, setChoix] = useState(false);
+  // Quiz en direct et devoirs viennent du service de quiz : masqués quand l'école ne l'a pas (lot ME-0c)
+  const { actif: classQuiz } = useClassQuiz();
+  const quizDe = (m) => (classQuiz ? m.quiz ?? [] : []);
+  // Devoirs masqués (lot D-1) : ceux que le serveur renvoie encore ne s'affichent pas
+  const devoirsDe = (m) => (DEVOIRS_ACTIFS && classQuiz ? m.devoirs ?? [] : []);
 
   const charger = useCallback(
     () =>
-      lireTout().then((d) => {
+      lireTout(classQuiz).then((d) => {
         setDonnees((avant) => ({ ...d, activites: d.activites ?? avant?.activites ?? null, historique: d.historique ?? avant?.historique ?? [] }));
         setRafraichit(false);
       }),
-    []
+    [classQuiz]
   );
 
   useEffect(() => {
@@ -69,11 +73,11 @@ export default function Jeux() {
   // Score : chaque jeu compte une fois, même proposé dans plusieurs modules
   const jeux = [...new Map(modules.flatMap((m) => m.jeux).map((j) => [j.code, j])).values()];
   const total = jeux.reduce((somme, j) => ({ points: somme.points + j.progression.points, reussis: somme.reussis + j.progression.reussis }), { points: 0, reussis: 0 });
-  const rien = donnees && !donnees.erreur && !modules.some((m) => m.quiz.length || devoirsDe(m).length || m.jeux.length);
+  const rien = donnees && !donnees.erreur && !modules.some((m) => quizDe(m).length || devoirsDe(m).length || m.jeux.length);
   // Vue navigateur ou lecteur natif selon QUIZ_DANS_L_APPLICATION (quiz/ouvrir.js) ; un quiz
   // n'apparaît que lorsqu'un enseignant lance une partie dans une séance de l'étudiant
   const ouvrir = (p) => ouvrirPartie({ router, partie: p, couleurs });
-  const historique = donnees?.historique ?? [];
+  const historique = classQuiz ? donnees?.historique ?? [] : [];
   const dateCourte = (iso) => new Date(iso).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   const choisir = (nouvel) => {
@@ -113,13 +117,13 @@ export default function Jeux() {
 
         {/* Une section par module : ce que les enseignants y ont proposé */}
         {modules.map((m) => {
-          if (!m.quiz.length && !devoirsDe(m).length && !m.jeux.length) return null;
+          if (!quizDe(m).length && !devoirsDe(m).length && !m.jeux.length) return null;
           return (
             <View key={m.code}>
               <Text style={styles.section} accessibilityRole="header">
                 {m.nom}
               </Text>
-              {m.quiz.map((p) => (
+              {quizDe(m).map((p) => (
                 <View key={`quiz-${p.id}`} style={styles.ligne}>
                   <View style={[styles.lampe, { backgroundColor: couleurs.enCours, borderColor: couleurs.enCours }]} />
                   <View style={styles.contenu}>
