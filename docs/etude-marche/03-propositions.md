@@ -27,6 +27,7 @@ Sources :
 | 5 nov. | La vente est mise de côté : priorité à l'optimisation du SaaS face aux problèmes des autres outils. La planification seule pourra se vendre plus tard. |
 | 5 nov. | Le groupe A pousse ses études et écrit avec B le modèle de données du scolaire (prompt fourni par B). |
 | 5 nov. | Les entretiens et la démonstration aux directeurs viennent plus tard. |
+| 5 nov. | Il faut un site public où les utilisateurs peuvent nous contacter, comme pour les autres outils. |
 | 4 nov. | Rencontre avec le directeur d'une école privée (maternelle au lycée) dans 3 à 6 semaines : écouter, puis montrer ; présentation courte et démonstration sur une école fictive (`04-rencontre-directeur.md`). |
 
 ## Propositions
@@ -129,3 +130,4 @@ Sources :
 | P-62 | 5 nov. | Avancer en V2 ce qui servait aux grandes écoles dans les anciennes V4 et V5 : isolation, migrations par vagues, registre des écoles, choix de l'école à la connexion. | plan-produit 04 | proposée |
 | P-63 | 5 nov. | EC-3 (carnet de notes officiel) et EC-4 fusionnent dans F-13 (notes et bulletins). | plan-produit 04 | proposée |
 | P-64 | 5 nov. | Garder ME-22 (test d'intrusion) à la fin de V4, malgré la vente mise de côté. | plan-produit 04 | proposée |
+| P-65 | 5 nov. | Site public du produit en cinq lots (SP-1 conception, SP-2 vitrine, SP-3 contact et demandes, SP-4 centre d'aide, SP-5 page d'état et nouveautés), porté par une équipe SC ; sans prix tant que la vente est mise de côté ; nom de marque et domaine à trancher avant SP-2. | plan-produit 04 | proposée |

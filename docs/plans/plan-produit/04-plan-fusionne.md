@@ -23,9 +23,10 @@ Le plan 15 avait deux groupes d'une personne. Avec une équipe plus nombreuse, o
 | **VS · Vie scolaire** | `vs/` | élèves et familles, absences, notes et bulletins, examens, devoirs, Massar, lots EC de pédagogie | F-10, F-12, F-13, F-17, EC-2, EC-3, EC-4, EC-6, EC-7, EC-8 |
 | **FI · Finance** | `fi/` | frais, échéanciers, caisse, reçus, relances ; plus tard abonnements et facturation | F-14, puis ME-15 et MO-2 |
 | **MP · Mobile et parents** | `mp/` | application, espace parents, notifications, lecture hors ligne | F-15, ME-11, notifications |
+| **SC · Site et contact** | `sc/` | site public du produit, formulaire de contact et demandes, centre d'aide, page d'état, textes légaux publics | SP-1 à SP-5 (§ 4.3, « Site public ») |
 | JE · Jeux | `j/` | inchangé (contrat `jeux-pedagogiques.md`) | JC- |
 
-**Si l'équipe ne grandit pas tout de suite**, le groupe A garde PF et MO, et le groupe B prend UI, VS, FI et MP. Les branches `a/` et `b/` restent valables.
+**Si l'équipe ne grandit pas tout de suite**, le groupe A garde PF et MO, et le groupe B prend UI, VS, FI, MP et SC. Les branches `a/` et `b/` restent valables.
 
 Règles communes, celles du § 15.6 du plan 15, plus :
 - **Une table a une seule équipe propriétaire.** Une autre équipe passe par son service ou par un contrat d'API relu.
@@ -150,6 +151,34 @@ Cette vague avance l'essentiel des anciennes V4 et V5, puisque c'est désormais 
 | PF | ME-7 | un second établissement, hors du Maroc, configuré sans changer le code | plan 15 V5 | M |
 | VS | EC-10 | messagerie, si les règles de modération sont tranchées | plan 15 V5 | L, conditionnel |
 
+### Site public · en parallèle des vagues
+
+Demande du chef de projet du 5 novembre : **un site public où les écoles et les utilisateurs peuvent nous contacter**, comme ceux des autres outils.
+
+Ce site est différent de la page d'accueil d'une école dans Planner (`pages/Accueil.jsx`, option N-16 du socle neutre) : il présente **le produit**, pas une école.
+
+**Ce que montrent les sites des concurrents** (lus du 3 au 5 novembre, `docs/etude-marche/01-concurrents.md`) :
+- une page par fonction ou par module, et souvent une page par type d'école ;
+- un bouton de démonstration ou d'essai bien visible : démo de 30 minutes chez Schoolz et iLimo, essai gratuit chez Skoolly, Fedena, OpenEduCat et aSc ;
+- le contact par formulaire, téléphone et **WhatsApp** : Skoolly, Schoolz, Scoliance, Caisso ;
+- une page « sécurité et données » : hébergement au Maroc, loi 09-08, déclaration CNDP chez Schoolz et iLimo ;
+- une version arabe : Schoolz ;
+- les tarifs : Skoolly, Schoolz, Scoliance, Caisso, Eduzaas, Fedena ;
+- une FAQ, et souvent un blog ou une base d'aide (Classter).
+
+| N° | Lot | Contenu | Équipe | Vague | Taille |
+| --- | --- | --- | --- | --- | --- |
+| SP-1 | **Conception du site** | arborescence, messages (règles de `docs/etude-marche/02-arguments-marketing.md` : ne promettre que ce qui existe ou se démontre), maquettes, choix technique (site statique séparé de l'application, rapide, référencé) et hébergement | SC, UI | V2 | M |
+| SP-2 | **Site vitrine** | accueil, fonctions par module (en commençant par la planification, ce que Planner fait déjà le mieux), solutions par type d'école, sécurité et données, FAQ, à propos, mentions légales et politique de confidentialité ; français d'abord, arabe et anglais ensuite (EP-11) | SC | V3 | L |
+| SP-3 | **Contact et demandes** | formulaire (nom, école, ville, effectif, besoin, consentement), WhatsApp et courriel, accusé de réception automatique ; demandes enregistrées et suivies par l'équipe, avec un délai de réponse affiché | SC, PF (stockage, envoi de courriels) | V3 | M |
+| SP-4 | **Centre d'aide** | guides par rôle (administration, enseignant, parent, élève), questions fréquentes, vidéos courtes ; liens depuis l'application (l'aide existante de Planner, `components/aide`, y renvoie) | SC, UI | V4 | M |
+| SP-5 | **Page d'état et nouveautés** | état du service (s'appuie sur ME-21, supervision) et journal des nouveautés de chaque version | SC, PF | V4 | S |
+
+**Ce qui attend une décision avant SP-2** :
+- le **nom de la marque** (Q-29 : Jadwal ou Planner) et le **nom de domaine** ;
+- les **mentions légales** et la **politique de confidentialité**, à faire écrire par le juriste (données recueillies par le formulaire, loi 09-08) ;
+- les **tarifs** : pas de prix publié tant que la vente est mise de côté. La page parlera de « demande de démonstration » ou de « nous contacter ».
+
 ### Mis de côté (vente, sur décision du 5 novembre)
 
 Ces lots ne sont pas supprimés. Ils reviendront quand la vente reprendra :
@@ -201,7 +230,8 @@ Ce sont des **ordres de passage, pas des dates**. Les tailles (S = 0,5 j, M = 2 
 
 | N° | Question | Proposition |
 | --- | --- | --- |
-| 1 | Ce découpage en six équipes convient-il ? Combien de personnes, et dans quelles équipes ? | oui ; à défaut, A garde PF et MO, B prend UI, VS, FI et MP |
+| 1 | Ce découpage en sept équipes (six de produit, plus le site public) convient-il ? Combien de personnes, et dans quelles équipes ? | oui ; à défaut, A garde PF et MO, B prend UI, VS, FI, MP et SC |
 | 2 | Les exigences EP-1 à EP-12 deviennent-elles des conditions de « terminé » ? | oui |
 | 3 | ME-22 (test d'intrusion) reste-t-il à la fin de V4, malgré la vente mise de côté ? | oui |
 | 4 | EC-3 (carnet de notes officiel) fusionne-t-il dans F-13 ? | oui ; les règles validées par la scolarité et le juriste restent une condition |
+| 5 | Le site public : nom de la marque, nom de domaine, et qui le porte (équipe SC à créer, ou UI) ? | trancher Q-29 avant SP-2 ; à défaut d'équipe SC, l'équipe UI |
