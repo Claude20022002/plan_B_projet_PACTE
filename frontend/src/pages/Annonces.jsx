@@ -46,8 +46,16 @@ export default function Annonces() {
   const toast = useToast();
   const navigate = useNavigate();
   const { id: idOuvert } = useParams();
-  const peutEcrire = ['admin', 'enseignant'].includes(user?.role);
+  // Un enseignant n'écrit que si le serveur lui propose une portée (lot EC-5 : envoi aux classes fermé
+  // par défaut, sauf pour un responsable de filière) ; il lit toujours ce qu'il a déjà envoyé
+  const auteurPossible = ['admin', 'enseignant'].includes(user?.role);
+  const [peutEcrire, setPeutEcrire] = useState(user?.role === 'admin');
   const recoit = user?.role !== 'admin';
+
+  useEffect(() => {
+    if (user?.role !== 'enseignant') return;
+    annonceAPI.getCibles().then((c) => setPeutEcrire(c.portees.length > 0)).catch(() => setPeutEcrire(false));
+  }, [user?.role]);
 
   const [recues, setRecues] = useState(null); // { annonces, non_lues }
   const [envoyees, setEnvoyees] = useState(null);
@@ -79,8 +87,8 @@ export default function Annonces() {
   const charger = useCallback(() => {
     setErreur(false);
     if (recoit) annonceAPI.getRecues().then(setRecues).catch(() => setErreur(true));
-    if (peutEcrire) annonceAPI.getEnvoyees().then((r) => setEnvoyees(r?.data ?? [])).catch(() => setErreur(true));
-  }, [recoit, peutEcrire]);
+    if (auteurPossible) annonceAPI.getEnvoyees().then((r) => setEnvoyees(r?.data ?? [])).catch(() => setErreur(true));
+  }, [recoit, auteurPossible]);
 
   useEffect(() => {
     charger();
@@ -208,7 +216,7 @@ export default function Annonces() {
           </Panneau>
         )}
 
-        {peutEcrire && (
+        {(peutEcrire || envoyees?.length > 0) && (
           <Panneau titre={t('annonces.envoyees')} titreId="annonces-envoyees">
             {envoyees === null && chargement}
             {envoyees?.length === 0 && vide(t('annonces.aucuneEnvoyee'))}

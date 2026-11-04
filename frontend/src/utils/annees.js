@@ -39,3 +39,19 @@ export const groupesDeLAnnee = (groupes, valeur, gardes = []) => {
 /** Groupes à proposer pour une séance, un examen ou une réservation à cette date (lot ME-18). */
 export const groupesDuJour = (groupes, annees, jour, gardes = []) =>
     groupesDeLAnnee(groupes, anneeDuJour(annees, jour)?.id_annee, gardes);
+
+/** Nom d'un groupe suivi de son année (« 4A IIIA · 2026-2027 »), là où plusieurs années se mêlent. */
+export const nomEtAnnee = (g) => [g.nom_groupe, g.annee_scolaire].filter(Boolean).join(' · ');
+
+/**
+ * Groupes par nom (casse et espaces ignorés), pour un fichier d'import qui désigne le groupe par
+ * son nom : un nom peut en donner plusieurs, « 4A IIIA » de deux années par exemple.
+ */
+export const groupesParNom = (groupes) => {
+    const parNom = new Map();
+    for (const g of groupes) {
+        const cle = String(g.nom_groupe).trim().toLowerCase();
+        parNom.set(cle, [...(parNom.get(cle) ?? []), g]);
+    }
+    return parNom;
+};

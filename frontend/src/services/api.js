@@ -201,6 +201,18 @@ export const userAPI = {
     importBulk: (data) => request('/users/import', { method: 'POST', body: data }),
     // Téléphone perdu : retire la double authentification du compte et ferme ses sessions
     reinitialiserMfa: (id) => request(`/users/${id}/mfa`, { method: 'DELETE' }),
+    // Désactivation (ME-17) : aperçu de ce qu'elle touche, puis désactivation immédiate ou programmée
+    apercuDesactivation: (id, date) => request(`/users/${id}/desactivation${date ? `?date=${encodeURIComponent(date)}` : ''}`),
+    desactiver: (id, corps) => request(`/users/${id}/desactivation`, { method: 'POST', body: corps }),
+    annulerDesactivation: (id) => request(`/users/${id}/desactivation`, { method: 'DELETE' }),
+    reactiver: (id) => request(`/users/${id}/reactivation`, { method: 'POST' }),
+    anonymiser: (id) => request(`/users/${id}/anonymisation`, { method: 'POST' }),
+    // Plusieurs comptes (ids) ou tous les étudiants d'un groupe (id_groupe) ; le bilan dit le sort de chacun
+    desactiverEnLot: (corps) => request('/users/desactivations', { method: 'POST', body: corps }),
+    // Aperçu d'un lot, rien n'est modifié : `portee` est { ids } ou { id_groupe }
+    apercuLot: (portee, date) => request(`/users/desactivations/apercu?${portee.ids ? `ids=${portee.ids.join(',')}` : `id_groupe=${portee.id_groupe}`}&date=${encodeURIComponent(date)}`),
+    // Défait un lot fait par erreur : réactive les comptes et annule les désactivations programmées
+    retablirEnLot: (portee) => request('/users/reactivations', { method: 'POST', body: portee }),
 };
 
 // ==================== ENSEIGNANTS ====================
