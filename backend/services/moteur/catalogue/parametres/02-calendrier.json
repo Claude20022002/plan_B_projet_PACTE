@@ -1,0 +1,35 @@
+{
+  "code": "CAL", "nom": "Année scolaire et calendrier",
+  "groupes": [
+    { "code": "ANNEE", "nom": "Découpage de l'année",
+      "defauts": { "role": "donnee", "niveaux": "GP", "priorite": 1, "validite": "annee", "obligatoire": true },
+      "parametres": [
+        { "code": "DEBUT", "nom": "Début de l'année", "desc": "Première date enseignable.", "type": "date", "etat": "base", "ref": "AnneeUniversitaire" },
+        { "code": "FIN", "nom": "Fin de l'année", "desc": "Dernière date enseignable.", "type": "date", "etat": "base", "ref": "AnneeUniversitaire" },
+        { "code": "DECOUPAGE", "nom": "Découpage en périodes", "desc": "Semestres, trimestres, année entière ou modules intensifs.", "type": "enum", "valeurs": ["annee", "semestre", "trimestre", "module"], "defaut": "semestre", "etat": "base", "ref": "CODES_PERIODE (S1, S2 en dur)", "src": "16E.4" },
+        { "code": "PERIODES", "nom": "Périodes de l'année", "desc": "Dates de chaque période ; une génération travaille sur une période.", "type": "structure", "etat": "solveur", "ref": "Periode", "src": "3.11" },
+        { "code": "NB_SEMAINES", "nom": "Nombre de semaines d'enseignement", "desc": "Semaines utiles d'une période ; doit couvrir les volumes horaires.", "type": "entier", "etat": "base", "ref": "Periode.nb_semaines", "src": "9.11" },
+        { "code": "JOURS_ENSEIGNEMENT", "nom": "Nombre de jours d'enseignement", "desc": "Jours réellement enseignables après fériés et vacances (calculé).", "type": "entier", "obligatoire": false, "priorite": 3, "modifiable": "non", "role": "indicateur", "src": "9.12" },
+        { "code": "CALENDRIER_OFFICIEL", "nom": "Calendrier officiel", "desc": "Fournisseur de dates du pays (scolaire ou universitaire), modifiable par l'école.", "type": "reference", "obligatoire": false, "priorite": 2, "etat": "plan", "ref": "fichier 06, § 6.2", "src": "9.9 9.10 7.48" },
+        { "code": "SEMAINES_ALTERNEES", "nom": "Semaines alternées A/B", "desc": "Cycle de n semaines : une séance peut n'avoir lieu qu'une semaine sur deux. Absent du modèle actuel.", "type": "entier", "defaut": 1, "obligatoire": false, "priorite": 2 },
+        { "code": "VARIANTES_GRILLE", "nom": "Variantes datées de la grille", "desc": "Horaires réduits sur une période (ramadan, été) : mêmes rangs, autres heures.", "type": "structure", "obligatoire": false, "priorite": 2, "etat": "saisie", "ref": "Creneau.variante, ramadan.js ; ME-2a PeriodeVariante" }
+      ] },
+    { "code": "DATES", "nom": "Dates bloquantes ou réservées",
+      "defauts": { "role": "donnee", "type": "structure", "niveaux": "GP", "priorite": 1, "validite": "datee", "etat": "saisie", "ref": "Evenement (type, bloque_affectations, portée)" },
+      "parametres": [
+        { "code": "VACANCES", "nom": "Vacances", "desc": "Aucune séance : le déploiement saute ces dates.", "src": "2.31" },
+        { "code": "FERIES", "nom": "Jours fériés", "desc": "Aucune séance ; les fêtes lunaires restent à confirmer par l'école.", "src": "2.32" },
+        { "code": "JOURNEES_PEDAGO", "nom": "Journées pédagogiques", "desc": "Pas de cours pour les apprenants, enseignants occupés.", "src": "2.33" },
+        { "code": "FORMATION_PERSONNEL", "nom": "Journées de formation du personnel", "desc": "Les enseignants concernés sont indisponibles.", "src": "2.34" },
+        { "code": "EVENEMENTS", "nom": "Journées réservées aux événements", "desc": "Portes ouvertes, cérémonies : bloquent tout ou partie de l'école.", "src": "2.35" },
+        { "code": "FERMETURES", "nom": "Fermetures exceptionnelles", "desc": "Fermeture imprévue : déclenche un recalcul partiel.", "src": "2.36" },
+        { "code": "PORTEE", "nom": "Portée d'une date bloquante", "desc": "Qui elle bloque : établissement, campus, filière, niveau ou groupe.", "type": "enum", "valeurs": ["etablissement", "site", "campus", "filiere", "niveau", "groupe"], "defaut": "etablissement", "ref": "PORTEES_EVENEMENT" },
+        { "code": "A_CONFIRMER", "nom": "Date à confirmer", "desc": "Une date lunaire reste provisoire tant que l'école ne l'a pas confirmée.", "type": "booleen", "defaut": false, "priorite": 3, "ref": "Evenement.date_confirmee" }
+      ] },
+    { "code": "REGLE", "nom": "Règles de calendrier",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "priorite": 1, "obligatoire": true, "modifiable": "non", "etat": "saisie", "ref": "affectationRules.js, deploiement.js" },
+      "parametres": [
+        { "code": "FERMETURE", "nom": "Pas de séance pendant une fermeture", "desc": "Une séance posée sur une date bloquante est sautée et reportée à la suite.", "src": "17B.15 18A.8" }
+      ] }
+  ]
+}

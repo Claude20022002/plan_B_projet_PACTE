@@ -1,0 +1,56 @@
+{
+  "code": "OPT", "nom": "Pilotage du moteur",
+  "role": "Comment le moteur construit, compare et évalue un planning. Ces réglages n'entrent pas dans les règles métier.",
+  "groupes": [
+    { "code": "PORTEE", "nom": "Portée de la génération",
+      "defauts": { "role": "pilotage", "niveaux": "G", "priorite": 2, "validite": "generation", "etat": "absent" },
+      "parametres": [
+        { "code": "DATE_DEBUT", "nom": "Date de début de génération", "desc": "Rien n'est modifié avant cette date.", "type": "date", "etat": "solveur", "ref": "debutDeploiement", "src": "17.1" },
+        { "code": "DATE_FIN", "nom": "Date de fin de génération", "desc": "Rien n'est modifié après cette date.", "type": "date", "etat": "solveur", "ref": "Periode.date_fin", "src": "17.2" },
+        { "code": "HORIZON", "nom": "Période concernée", "desc": "Jour, semaine, semestre ou année : donne la forme du modèle (voir ecarts-du-solveur.md).", "type": "enum", "valeurs": ["jour", "semaine", "semestre", "annee"], "defaut": "semestre", "priorite": 1, "etat": "solveur", "ref": "semaine type déployée, seul mode actuel", "src": "17.3" },
+        { "code": "MODELE_TEMPS", "nom": "Forme du temps", "desc": "Semaine type recopiée, semaines A/B, ou dates réelles. Seule la semaine type existe aujourd'hui.", "type": "enum", "valeurs": ["semaine_type", "cycle_semaines", "dates"], "defaut": "semaine_type", "priorite": 1, "etat": "solveur", "ref": "deploiement.js" },
+        { "code": "PRIORITE_CLASSE", "nom": "Priorité par classe", "desc": "Les classes prioritaires ont le choix des meilleurs créneaux.", "type": "structure", "src": "17.9" },
+        { "code": "PRIORITE_ENSEIGNANT", "nom": "Priorité par enseignant", "desc": "Les enseignants prioritaires ont le choix des meilleurs créneaux.", "type": "structure", "src": "17.10" },
+        { "code": "PRIORITE_DEPARTEMENT", "nom": "Priorité par département", "desc": "Ordre des lots dans une grande école.", "type": "structure", "src": "17.11" },
+        { "code": "DECOUPAGE", "nom": "Génération globale ou par niveau", "desc": "Globale, ou par lots dont les ressources placées contraignent les lots suivants.", "type": "enum", "valeurs": ["globale", "filiere", "niveau", "pole"], "defaut": "globale", "etat": "solveur", "ref": "id_filieres ; ME-14 pour les lots", "src": "17.12" },
+        { "code": "ETENDUE", "nom": "Génération complète ou partielle", "desc": "Partielle : seule une partie est recalculée, le reste épinglé.", "type": "enum", "valeurs": ["complete", "partielle"], "defaut": "complete", "src": "17.13 17.29 17.30" },
+        { "code": "FIGER", "nom": "Cours figés", "desc": "Ces séances sont épinglées et le moteur les contourne.", "type": "liste_references", "etat": "solveur", "ref": "Lecon.epinglee", "src": "17.14" },
+        { "code": "PRESERVER", "nom": "Préserver un ancien planning", "desc": "Part de stabilité demandée par rapport à la version de référence.", "type": "reference", "src": "17.15" },
+        { "code": "NB_PROPOSITIONS", "nom": "Nombre de propositions", "desc": "Plusieurs scénarios à comparer.", "type": "entier", "defaut": 1, "src": "17.16" }
+      ] },
+    { "code": "CALCUL", "nom": "Calcul",
+      "defauts": { "role": "pilotage", "niveaux": "G", "priorite": 3, "validite": "generation", "modifiable": "plateforme", "etat": "absent" },
+      "parametres": [
+        { "code": "CHOIX_ENSEIGNANT", "nom": "Le moteur choisit l'enseignant", "desc": "Faux aujourd'hui : l'enseignant est fixé avant le calcul. Vrai dans une école où seul le besoin est connu.", "type": "booleen", "defaut": false, "priorite": 1, "modifiable": "etablissement", "ref": "Lecon : créneau et salle seuls" },
+        { "code": "CHOIX_GROUPE", "nom": "Le moteur compose les groupes", "desc": "Sectionnement : répartir les inscrits d'une option entre plusieurs groupes.", "type": "booleen", "defaut": false, "priorite": 2, "modifiable": "etablissement" },
+        { "code": "DUREE_MAX", "nom": "Durée du calcul", "desc": "Selon la taille du problème, de 30 à 240 s aujourd'hui.", "type": "entier", "etat": "solveur", "ref": "rapport.js, DUREE_CALCUL" },
+        { "code": "CALCULS_SIMULTANES", "nom": "Calculs simultanés", "desc": "Borne la mémoire et le processeur (2 aujourd'hui).", "type": "entier", "defaut": 2, "etat": "solveur", "ref": "solver.calculs-simultanes-max" },
+        { "code": "GRAINE", "nom": "Graine du calcul", "desc": "Rejoue un calcul à l'identique, pour comparer et déboguer.", "type": "entier" },
+        { "code": "PRESET", "nom": "Préréglage des poids", "desc": "Souple, standard ou strict ; l'école ajuste en peu, normal, beaucoup, indispensable.", "type": "enum", "valeurs": ["souple", "standard", "strict"], "defaut": "standard", "modifiable": "etablissement", "etat": "plan", "ref": "fichier 06, § 6.3" },
+        { "code": "STABILITE", "nom": "Poids de la stabilité", "desc": "Prix d'un changement par rapport au planning publié.", "type": "entier", "defaut": 10, "modifiable": "etablissement", "src": "14.20" }
+      ] },
+    { "code": "CONFLITS", "nom": "Détection",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "priorite": 2, "modifiable": "non", "obligatoire": true, "etat": "saisie", "validite": "generation" },
+      "parametres": [
+        { "code": "DETECTION", "nom": "Détection des conflits entre ressources", "desc": "Après le calcul et à chaque modification, tout conflit est listé avec sa raison et l'écran qui le corrige.", "ref": "rapport.js, Conflit", "src": "14.19" }
+      ] },
+    { "code": "IND", "nom": "Indicateurs de qualité",
+      "defauts": { "role": "indicateur", "niveaux": "GP", "priorite": 3, "validite": "generation", "modifiable": "non", "etat": "absent" },
+      "parametres": [
+        { "code": "SALLES", "nom": "Taux d'utilisation des salles", "desc": "Heures occupées rapportées aux heures ouvertes.", "type": "pourcentage", "etat": "base", "ref": "statistiques", "src": "17D.1" },
+        { "code": "ENSEIGNANTS", "nom": "Taux d'utilisation des enseignants", "desc": "Heures placées rapportées au service.", "type": "pourcentage", "src": "17D.2" },
+        { "code": "CONFLITS", "nom": "Nombre de conflits", "desc": "Toujours zéro sur ce qui est créé ; le reste est listé comme non placé.", "type": "entier", "etat": "saisie", "ref": "rapport.js, resume", "src": "17D.3" },
+        { "code": "TROUS", "nom": "Nombre de trous", "desc": "Rangs vides dans les journées des groupes.", "type": "entier", "src": "17D.4" },
+        { "code": "DEPLACEMENTS", "nom": "Déplacements inutiles", "desc": "Trajets évitables.", "type": "entier", "src": "17D.5" },
+        { "code": "EQUILIBRE_JOURS", "nom": "Équilibre des heures par jour", "desc": "Écart entre le jour le plus chargé et le moins chargé.", "type": "decimal", "src": "17D.6" },
+        { "code": "PREFERENCES", "nom": "Respect des préférences", "desc": "Part des vœux tenus.", "type": "pourcentage", "src": "17D.7" },
+        { "code": "VOLUMES", "nom": "Respect des volumes horaires", "desc": "Part du volume prévu réellement placée.", "type": "pourcentage", "etat": "saisie", "ref": "rapport.js", "src": "17D.8" },
+        { "code": "TARDIFS", "nom": "Nombre de cours tardifs", "desc": "Séances après l'heure limite.", "type": "entier", "src": "17D.9" },
+        { "code": "CONSECUTIFS", "nom": "Nombre de cours consécutifs", "desc": "Blocs au-delà de la longueur demandée.", "type": "entier", "src": "17D.10" },
+        { "code": "CHARGE", "nom": "Équilibre de charge entre enseignants", "desc": "Écart entre services comparables.", "type": "decimal", "src": "17D.11" },
+        { "code": "CHANGEMENTS_SALLE", "nom": "Nombre de changements de salle", "desc": "Changements évitables dans les journées.", "type": "entier", "src": "17D.12" },
+        { "code": "COUT", "nom": "Coût global du planning", "desc": "Somme des coûts renseignés.", "type": "montant", "src": "17D.13" },
+        { "code": "SATISFACTION", "nom": "Satisfaction des utilisateurs", "desc": "Mesurée après coup par un questionnaire : le calcul ne peut pas la prédire.", "type": "pourcentage", "src": "17D.14" }
+      ] }
+  ]
+}

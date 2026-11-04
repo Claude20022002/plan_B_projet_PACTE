@@ -1,0 +1,56 @@
+{
+  "code": "PED", "nom": "Pédagogie",
+  "groupes": [
+    { "code": "COGN", "nom": "Organisation cognitive",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": false, "niveaux": "GP", "force": "souple", "force_reglable": true, "priorite": 3, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "CONCENTRATION", "nom": "Matières exigeantes aux bons moments", "desc": "Les matières à forte charge visent les créneaux favorables.", "poids": 15, "src": "8.1 18B.1" },
+        { "code": "CRENEAUX_FAVORABLES", "nom": "Créneaux favorables", "desc": "Quels rangs conviennent le mieux à la concentration, selon l'âge.", "type": "structure", "src": "8.5", "role": "donnee" },
+        { "code": "DIFFICILES_SUIVIES", "nom": "Éviter les matières difficiles à la suite", "desc": "Deux matières à forte charge ne se suivent pas.", "poids": 12, "src": "8.2 16B.6" },
+        { "code": "ALTERNANCE_THEO_PRAT", "nom": "Alterner théorie et pratique", "desc": "Sur la journée d'un groupe, varier les natures.", "poids": 5, "src": "8.3 16A.4" },
+        { "code": "ALTERNANCE_DOMAINES", "nom": "Alterner sciences et lettres", "desc": "Sur la journée d'un groupe, varier les domaines.", "poids": 4, "src": "8.4 16B.2" },
+        { "code": "CHARGE_QUOTIDIENNE", "nom": "Plafond de charge cognitive par jour", "desc": "Somme des charges des matières d'une journée.", "type": "entier", "poids": 10, "src": "8.6 16B.12 16A.2" },
+        { "code": "PAUSES_AGE", "nom": "Pauses adaptées à l'âge", "desc": "Durée continue maximale selon l'attention de l'âge.", "type": "duree_min", "poids": 25, "priorite": 2, "src": "8.7 16A.3" },
+        { "code": "TRAVAIL_AUTONOME", "nom": "Plages de travail autonome", "desc": "Réserve d'heures libres dans la semaine du groupe.", "type": "duree_min", "poids": 3, "priorite": 4, "src": "8.8" },
+        { "code": "DIFFICILES_REPARTIES", "nom": "Matières difficiles réparties", "desc": "Elles ne se concentrent pas sur un seul jour.", "poids": 10, "src": "7.38 14.11" },
+        { "code": "SIESTE", "nom": "Temps de repos ou de sieste", "desc": "Plage de repos à garder libre selon l'âge et l'organisation.", "type": "plage_horaire", "force": "strict", "priorite": 2, "src": "16A.6 3D.1" },
+        { "code": "FONDAMENTAUX_MATIN", "nom": "Fondamentaux répartis", "desc": "Lecture, écriture, calcul présents chaque jour.", "poids": 15, "src": "16A.12 16A.14 16B.6 16B.10" },
+        { "code": "EVEIL", "nom": "Activités d'éveil", "desc": "Activités d'éveil et de repos dans la journée.", "poids": 4, "priorite": 4, "src": "16A.7" }
+      ] },
+    { "code": "PROG", "nom": "Progression pédagogique",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": false, "niveaux": "GP", "force": "souple", "force_reglable": true, "priorite": 3, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "CHAPITRES", "nom": "Ordre des chapitres", "desc": "Les séances se suivent dans l'ordre du programme, sur les dates.", "poids": 5, "src": "8.11 8.19 8.20 9.8" },
+        { "code": "CM_AVANT_TD", "nom": "Cours avant TD et TP", "desc": "Dans la semaine, le CM précède les TD et TP du même module.", "defaut": true, "poids": 5, "etat": "solveur", "regle_solveur": "CM avant TD et TP du même module", "ref": "cmAvantTd", "src": "8.13" },
+        { "code": "TD_AVANT_TP", "nom": "TD avant TP", "desc": "Le TD précède le TP correspondant quand c'est nécessaire.", "poids": 4, "src": "8.14" },
+        { "code": "COURS_AVANT_EVALUATION", "nom": "Cours avant les évaluations", "desc": "Le volume prévu avant une évaluation est atteint à sa date.", "poids": 10, "src": "8.15" },
+        { "code": "REVISIONS", "nom": "Séances de révision", "desc": "Réserve des séances avant les épreuves.", "type": "entier", "poids": 4, "priorite": 4, "src": "8.16 16C.10 14.16" },
+        { "code": "CONSOLIDATION", "nom": "Séances de consolidation", "desc": "Réserve des séances de reprise.", "type": "entier", "poids": 3, "priorite": 4, "src": "8.17" },
+        { "code": "RATTRAPAGE", "nom": "Séances de rattrapage", "desc": "Réserve de créneaux pour rattraper.", "type": "entier", "poids": 3, "priorite": 4, "src": "8.18" }
+      ] },
+    { "code": "ORG", "nom": "Organisation spécifique",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": false, "niveaux": "GPI", "cible": "groupe", "force": "souple", "force_reglable": true, "priorite": 3, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "ENSEIGNANT_REFERENT", "nom": "Stabilité de l'enseignant principal", "desc": "La classe garde le même enseignant pour la plupart de ses séances.", "defaut": false, "poids": 40, "priorite": 2, "src": "3D.1" },
+        { "code": "SALLE_FIXE", "nom": "Stabilité de la salle", "desc": "La classe garde sa salle, sauf matière spécialisée.", "poids": 30, "priorite": 2, "src": "16A.10" },
+        { "code": "ROTATION_ENSEIGNANTS", "nom": "Rotation des enseignants", "desc": "Limite le nombre d'enseignants différents vus dans une journée.", "type": "entier", "poids": 3, "priorite": 4, "src": "16B.2 3D.2" },
+        { "code": "SPORT_INFRA", "nom": "Sport selon les installations", "desc": "Le sport suit la disponibilité des installations et s'éloigne du repas.", "poids": 6, "src": "8.23 16A.8 16B.7" },
+        { "code": "LABO", "nom": "Activités de laboratoire groupées", "desc": "Les séances de laboratoire d'un module sont regroupées.", "poids": 4, "src": "8.24 8.21 3D.2 16B.5 16C.6" },
+        { "code": "INTERDISCIPLINAIRE", "nom": "Activités interdisciplinaires", "desc": "Deux matières alignées pour une activité commune.", "poids": 2, "priorite": 5, "src": "8.28" },
+        { "code": "INTERVENTIONS", "nom": "Interventions extérieures", "desc": "Plages fixes dictées par un intervenant extérieur.", "type": "structure", "force": "strict", "priorite": 2, "src": "8.29 11.14 11.15 16E.18" },
+        { "code": "HEURE_VIE_CLASSE", "nom": "Heures de vie de classe", "desc": "Plage commune du professeur principal et de sa classe.", "type": "duree_min", "poids": 3, "priorite": 4, "src": "16B.9" },
+        { "code": "ACCOMPAGNEMENT", "nom": "Accompagnement personnalisé", "desc": "Réserve d'heures d'accompagnement ou de préparation aux concours.", "type": "duree_min", "poids": 3, "priorite": 4, "src": "16B.8 16C.8 16C.9" },
+        { "code": "MATIERES_PAR_JOUR", "nom": "Nombre de matières par jour", "desc": "Plafond de matières différentes dans une journée.", "type": "entier", "poids": 6, "src": "16A.2" },
+        { "code": "EXAMENS_NATIONAUX", "nom": "Préparation aux examens nationaux", "desc": "Le volume des matières d'examen est tenu avant les dates officielles.", "poids": 8, "src": "16C.5 3D.3" }
+      ] },
+    { "code": "PERIODE", "nom": "Périodes hors cours",
+      "defauts": { "role": "donnee", "type": "plage_dates", "niveaux": "PI", "cible": "groupe", "priorite": 2, "validite": "datee", "etat": "saisie", "ref": "Evenement.type_evenement = stage" },
+      "parametres": [
+        { "code": "STAGES", "nom": "Périodes de stage et d'observation", "desc": "Le groupe n'a pas cours : le déploiement saute ces dates.", "src": "8.30 15.19 16C.12 16D.15 16E.16 3D.4" },
+        { "code": "ALTERNANCE", "nom": "Calendrier d'alternance", "desc": "Semaines en entreprise et semaines à l'école.", "type": "structure", "etat": "absent", "ref": null, "src": "16D.7 16D.14" },
+        { "code": "INTENSIF", "nom": "Formations intensives", "desc": "Toute la matière sur quelques semaines : module à part, sans semaine type commune.", "type": "booleen", "etat": "absent", "ref": null, "src": "16D.4 3D.4" },
+        { "code": "CARTE", "nom": "Cours à la carte", "desc": "Chaque apprenant compose son parcours : conflits par personne, non par classe.", "type": "booleen", "etat": "absent", "ref": null, "src": "16D.9 3D.4" },
+        { "code": "MOBILITE", "nom": "Mobilité académique", "desc": "Élèves absents ou accueillis pendant une période.", "type": "structure", "etat": "absent", "ref": null, "src": "16E.17" }
+      ] }
+  ]
+}
