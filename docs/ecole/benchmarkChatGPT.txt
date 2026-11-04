@@ -588,7 +588,7 @@ Positionnement premium avec fonctionnalités avancées
 
 Valider mes orientations
 
-**Décisions du 4 novembre 2026, qui remplacent la recommandation d'origine (commencer par les écoles privées) :** vendre d'abord la Planification seule, puis le supérieur privé, puis l'offre scolaire complète ; socle inclus ; le produit doit exister avant la phase pilote. Voir docs/plans/modele-economique/README.md.
+**Décisions des 4 et 5 novembre 2026 :** écoles privées d'abord, puis formation professionnelle ; plusieurs écoles sur une installation en premier ; vente mise de côté ; le socle est inclus dans tout abonnement. Voir docs/plans/plan-produit/04-plan-fusionne.md.
 
 Le véritable objectif est de construire une plateforme dont les établissements peuvent commencer à utiliser une seule fonctionnalité, puis augmenter progressivement leur utilisation et leur abonnement.
 

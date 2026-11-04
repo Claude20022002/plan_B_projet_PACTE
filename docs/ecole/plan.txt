@@ -1,6 +1,6 @@
 # Business Model & Product Strategy — ERP scolaire modulaire pour l'Afrique
 
-> **Document d'étude rédigé par ChatGPT, corrigé le 4 novembre 2026.** Les corrections portent sur les faits vérifiés et sur les décisions du chef de projet : ordre des cibles (Planification, supérieur privé, puis école complète), abandon de la pile technique d'origine, socle inclus, produit prêt avant la phase pilote. Les prix restent des hypothèses à confronter à des écoles. Références : docs/plans/modele-economique/README.md et benchmark.md.
+> **Document d'étude rédigé par ChatGPT, corrigé le 4 novembre 2026.** Les corrections portent sur les faits vérifiés. Il reste la référence du produit, et le plan à suivre en est tiré : docs/plans/plan-produit/04-plan-fusionne.md. Décisions des 4 et 5 novembre : plusieurs écoles sur une installation en premier ; écoles privées, puis formation professionnelle ; vente mise de côté ; pile inchangée pendant l'étude du groupe A. Les prix restent des hypothèses. Corrections et sources : docs/plans/modele-economique/.
 
 Modèle hybride
 
@@ -415,7 +415,7 @@ Tout School Professional, plus :
 
 Valeur séparée sur la grille d'origine : 1 818 DH/mois (et non 1 650).
 
-Ces trois offres ne doivent pas être des produits techniquement différents : elles doivent être des configurations commerciales du même ERP. Décision du 4 novembre 2026 : elles ne se publient pas avant l'étape de l'offre scolaire complète, car notes, frais et parents n'existent pas encore.
+Ces trois offres ne doivent pas être des produits techniquement différents : elles doivent être des configurations commerciales du même ERP.
 
 ### Extension des prix selon la taille
 
@@ -639,9 +639,9 @@ Je recommande de commencer par un monolithe modulaire, avec des frontières fonc
 
 Cela réduira les coûts d'infrastructure et la complexité de développement. Les composants particulièrement exigeants pourront être séparés par la suite.
 
-## 16. Pile technique retenue (décision du 4 novembre 2026)
+## 16. Pile technique actuelle, inchangée pendant l'étude
 
-La pile proposée à l'origine (NestJS, PostgreSQL, TypeScript, Tailwind, Python et FastAPI, Keycloak, BullMQ) est **abandonnée** : une réécriture coûterait des mois sans gain pour un client. On garde l'existant.
+La pile proposée à l'origine était NestJS, PostgreSQL, TypeScript, Tailwind, Python et FastAPI, Keycloak, BullMQ. **Rien ne change tant que l'étude du groupe A n'a pas conclu** (décision du 4 novembre 2026). Le tableau décrit ce qui tourne aujourd'hui.
 
 | Couche                | Technologie recommandée               |
 | --------------------- | ------------------------------------- |
@@ -759,7 +759,7 @@ Précisions (lecture, pas un avis juridique) : la loi 09-08 ne contient aucune r
 
 Je recommande une progression en six phases.
 
-Décision du 4 novembre 2026 : cet ordre est remplacé. D'abord la Planification seule, puis le supérieur privé, puis l'offre scolaire complète. **Le produit doit exister avant la phase pilote**, et l'école pilote reste en discussion. Les délais ci-dessous supposaient une équipe de 8 fonctions ; il y a aujourd'hui une personne par groupe (R-5).
+Décisions des 4 et 5 novembre 2026 : cet ordre est remplacé par les vagues V0 à V5 de docs/plans/plan-produit/04-plan-fusionne.md. Les délais ci-dessous supposaient une équipe de 8 fonctions.
 
 ## Roadmap générale
 
@@ -847,7 +847,7 @@ Ces délais supposent une équipe dédiée et une priorité donnée au produit. 
 
 Le développement du produit et son développement commercial doivent avancer ensemble.
 
-Réserve : ce tableau suppose des entretiens et des pilotes dès les premiers mois. L'école pilote est en discussion, et aucune école extérieure n'a encore réagi à un prix.
+Décision du 5 novembre 2026 : la vente, les entretiens et la démonstration aux directeurs viennent plus tard. Ce tableau n'est pas suivi pour l'instant.
 
 | Période    | Objectif commercial           | Résultat visé                |
 | ---------- | ----------------------------- | ---------------------------- |
@@ -1008,7 +1008,7 @@ Certains rôles peuvent être cumulés au début.
 
 Je ne développerais pas les 40 ou 50 modules simultanément.
 
-Décision du 4 novembre 2026 : le premier produit commercialisable est la Planification seule, non les neuf modules ci-dessous. Notes et bulletins, frais et paiements n'existent pas dans Planner et viendront avec l'offre scolaire complète.
+Décision du 5 novembre 2026 : priorité à l'optimisation du produit, avant toute vente (docs/plans/plan-produit/04-plan-fusionne.md). Le pack « École privée » est la vague V4. Notes et bulletins, frais et paiements n'existent pas encore dans Planner.
 
 Je construirais un premier produit suffisamment complet pour être commercialisé, puis je financerais progressivement son extension grâce aux abonnements.
 
@@ -1048,7 +1048,7 @@ Interface commerciale
 
 ### 25. Exploiter les travaux déjà réalisés
 
-Pas de nouveau dépôt : Planner continue dans son dépôt (décision du 4 novembre 2026). Audit fait : élèves, classes, enseignants, matières, salles, présences par QR et génération existent ; notes, bulletins, frais, parents, arabe et Massar manquent.
+État des lieux fait (docs/plans/plan-produit/01-etat-des-lieux.md) : élèves, classes, enseignants, matières, salles, présences par QR et génération existent ; notes, bulletins, frais, parents, arabe et Massar manquent. Planner continue dans son dépôt tant que l'étude de la pile n'a pas conclu.
 
 Tu as déjà exploré la gestion des salles, cours, enseignants et étudiants, ainsi que la présence par QR Code. Certains composants peuvent devenir les premières briques du nouvel ERP, à condition de les rendre génériques et multi-établissements.
 
@@ -1126,7 +1126,7 @@ Je pense que le meilleur positionnement n'est pas de devenir le logiciel scolair
 
 Il faut devenir l'ERP scolaire modulaire qui offre le meilleur rapport entre fonctionnalités, prix, adaptabilité et facilité d'utilisation.
 
-Décision du chef de projet du 4 novembre 2026, qui remplace la recommandation d'origine (commencer par les écoles privées) : vendre d'abord la Planification seule, puis le supérieur privé, puis l'offre scolaire complète, en partant de ce que Planner sait déjà faire.
+Décisions du chef de projet des 4 et 5 novembre 2026 : commencer par les écoles privées, puis la formation professionnelle, avec plusieurs écoles sur une installation en premier. La vente est mise de côté : on optimise d'abord le produit.
 
 Cela évite de développer un produit immense avant d'avoir trouvé les premiers clients payants.
 

@@ -1,23 +1,23 @@
 # Modèle économique par modules
 
-Statut au 4 novembre 2026 : **l'ordre des cibles, l'abandon de la pile de `plan.txt` et le socle inclus sont décidés** (§ 1). Les prix restent des **hypothèses** : aucune école extérieure n'a encore réagi à un prix.
+Statut : **étude du groupe A. La vente est mise de côté** (décision du 5 novembre 2026) : la priorité est d'optimiser le produit. Le plan à suivre est `docs/plans/plan-produit/04-plan-fusionne.md`. Cette étude reste la référence pour le marché, les prix et les coûts, quand la vente reprendra. Les prix sont des **hypothèses** : aucune école extérieure n'a encore réagi à un prix.
 
 | Lire | Pour |
 |---|---|
 | [benchmark.md](benchmark.md) | les concurrents, les prix, le marché, Massar, le droit, les coûts, avec leurs sources |
 | [verifications-et-consequences.md](verifications-et-consequences.md) | ce que valent les documents de ChatGPT, l'analyse détaillée de l'offre, les 28 questions ouvertes |
-| [feuille-de-route.md](feuille-de-route.md) | l'ordre des vagues, décidé le 4 novembre |
+| [feuille-de-route.md](feuille-de-route.md) | ancien ordre des vagues, remplacé par le plan fusionné ; gardé pour l'historique |
 | `docs/ecole/benchmarkChatGPT.txt`, `plan.txt` | les deux documents d'étude, corrigés |
 
-## 1. Décisions du 4 novembre 2026
+## 1. Décisions des 4 et 5 novembre 2026
 
 | Sujet | Décision |
 |---|---|
-| Ordre des cibles | **Planification seule, en commençant par les écoles privées ; puis supérieur privé ; puis école complète ; la formation professionnelle ensuite.** Remplace la conclusion de `plan.txt` et le registre du groupe B |
-| Plusieurs écoles sur une installation | **Pas avant d'avoir fini le supérieur.** Jusque-là, une instance par client |
-| Pile technique | **Celle de `plan.txt` est abandonnée** (NestJS, PostgreSQL, Tailwind, Python, Keycloak) ; on garde l'existant |
+| Ordre des cibles | **Écoles privées d'abord, de la maternelle au lycée, puis formation professionnelle.** La vente est mise de côté. La planification seule pourra se vendre plus tard |
+| Plusieurs écoles sur une installation | **Première priorité** (vague V2 du plan fusionné) |
+| Pile technique | **Rien ne change tant que l'étude du groupe A n'a pas conclu** ; sa recommandation est au § 8 |
 | Socle | **Inclus dans tout abonnement** : comptes, droits, établissement, élèves, classes, enseignants, matières, salles. Pas de Core payant |
-| École pilote | **En discussion ; le produit doit exister avant la phase pilote.** Une rencontre avec le directeur d'une école privée, de la maternelle au lycée, est prévue dans 3 à 6 semaines (registre du groupe B) |
+| École pilote | **Pas choisie.** Les entretiens et la démonstration aux directeurs viennent plus tard |
 
 ## 2. L'essentiel
 
@@ -36,6 +36,8 @@ Ce n'est pas un modèle à la carte : **une application gratuite à vie, puis to
 **Aucune étude publique solide** ne compare les modules et le tout compris sur le churn ou le revenu. Ce choix reste un pari à mesurer.
 
 ## 4. Quoi vendre, et dans quel ordre
+
+*Analyse du 4 novembre : l'ordre ci-dessous ne s'applique plus (§ 1). Elle reste utile quand la vente reprendra.*
 
 | Étape | Vendu | Cible | Reste à construire |
 |---|---|---|---|
@@ -108,7 +110,7 @@ Le détail, affirmation par affirmation, est dans [verifications-et-consequences
 
 ## 8. La pile, et deux échéances
 
-La pile reste : Express, Sequelize, MySQL 8.4, React et MUI, Expo, le solveur Java, OIDC (`oidc-provider`), une base par école (D-01). Le **Module Registry** est le seul vrai ajout. Sa première brique existe : `services/etablissement/fonctionnalites.js` (PR #141).
+Recommandation du groupe A, l'étude continue. La pile reste : Express, Sequelize, MySQL 8.4, React et MUI, Expo, le solveur Java, OIDC (`oidc-provider`), une base par école (D-01). Le **Module Registry** est le seul vrai ajout. Sa première brique existe : `services/etablissement/fonctionnalites.js` (PR #141).
 
 **Timefold.** Community reste sous Apache 2.0, mais en 2.x `ScoreAnalysis` est réservé à l'édition payante et il faut Spring Boot 4. Or `EmploiDuTempsController.java` l'utilise, sur 1.15.0 et Spring Boot 3.3.5. La ligne 1.x finirait début 2027 (extrait, à confirmer). Aucun prix du solveur n'est publié. Trois chemins : monter en 1.35.0 et tenir jusqu'à la fin de la ligne ; passer en 2.x Community avec un compte rendu maison, ce que l'évaluateur indépendant prépare ; payer une licence au prix inconnu, qui ne rentre pas dans 149 à 899 DH sans avoir été chiffrée.
 
@@ -122,9 +124,9 @@ La pile reste : Express, Sequelize, MySQL 8.4, React et MUI, Expo, le solveur Ja
 | IA (11 octobre) | incluse | incluse dans l'offre complète, option ailleurs, plafonds gardés (proposition) |
 | ME-15 facturation | comptes actifs × prix | modules, paliers, régularisation d'effectif |
 | Nouveau | — | **MO-1** registre des modules et droits d'accès (M) ; **MO-2** page d'abonnement et factures (M) ; **MO-3** essai avec filigrane et jeu de démonstration public (M). Estimations avant conception |
-| Priorité | V1 puis V2 | moteur, Planification, pilote, supérieur, puis plusieurs écoles (décision du 4 novembre). **Conséquence : pas de petites écoles à 149-199 DH avant la plateforme partagée**, car une instance dédiée coûte plus que ce prix (220 MAD pour un seul serveur de 4 Go) |
+| Priorité | V1 puis V2 | voir `docs/plans/plan-produit/04-plan-fusionne.md` : plusieurs écoles en V2, pack « École privée » en V4 |
 
-Le nouvel ordre des vagues est dans [feuille-de-route.md](feuille-de-route.md).
+L'ordre des vagues est dans `docs/plans/plan-produit/04-plan-fusionne.md`. [feuille-de-route.md](feuille-de-route.md) n'est plus suivie.
 
 ## 10. À vérifier avant de vendre ou de publier
 

@@ -19,7 +19,7 @@ Planner ne peut plus se présenter comme le seul à générer les emplois du tem
 
 Toute page d'éditeur sur son propre produit reste une **déclaration commerciale**, même marquée [L] : aucun logiciel n'a été essayé, aucune démonstration vue. Pour les coûts, seuls le CGI 2026 et l'IGOC 2026 ont été lus en texte intégral ; les autres pages [L] de cette partie l'ont été sous forme résumée, et chaque prix reste à relire à la main avant publication. Rien ici n'est un avis juridique.
 
-Sont pris comme acquis, et non rediscutés, les choix du chef de projet du 4 novembre 2026 : vendre d'abord la Planification seule, puis le supérieur privé, puis l'offre scolaire complète ; abandonner la pile de `plan.txt` ; inclure le socle au lieu d'un Core payant ; l'école pilote reste en discussion et le produit doit exister avant la phase pilote.
+Depuis ce relevé, le chef de projet a décidé : écoles privées d'abord, puis formation professionnelle ; plusieurs écoles sur une installation en première priorité ; vente mise de côté ; pile inchangée pendant l'étude du groupe A (`docs/plans/plan-produit/04-plan-fusionne.md`). Les passages qui parlent de l'offre Planification sont à lire comme une étude.
 
 ## Vingt éditeurs lisibles au Maroc, douze avec un prix public
 

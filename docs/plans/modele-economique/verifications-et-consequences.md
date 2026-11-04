@@ -56,7 +56,7 @@ Deux précisions sur le périmètre du contrôle. **Aucun des deux documents ne 
 
 ## Conséquences pour l'offre
 
-**Cette section est une analyse, pas une décision.** Elle ne rouvre pas les choix du 4 novembre. Elle porte sur la première grille (Planification à 149, 199, 299 et 599 DH) ; le README retient depuis 449 et 899 DH comme valeurs à tester pour les deux derniers paliers.
+**Cette section est une analyse, pas une décision.** Écrite avant les décisions du 5 novembre : la vente est désormais mise de côté, et elle ne vaut que pour le jour où elle reprendra. Elle porte sur la première grille (Planification à 149, 199, 299 et 599 DH) ; le README retient depuis 449 et 899 DH comme valeurs à tester pour les deux derniers paliers.
 
 ### La promesse doit passer de « nous l'avons » à « nous le montrons »
 
