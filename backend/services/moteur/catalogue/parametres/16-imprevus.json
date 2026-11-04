@@ -1,0 +1,34 @@
+{
+  "code": "IMP", "nom": "Imprévus et gestion dynamique",
+  "role": "Ce qui arrive après la publication : le moteur répare sans tout recommencer.",
+  "groupes": [
+    { "code": "ACTION", "nom": "Modifications",
+      "defauts": { "role": "gestion", "type": "booleen", "defaut": true, "niveaux": "G", "priorite": 3, "validite": "permanent", "etat": "saisie" },
+      "parametres": [
+        { "code": "MANUEL", "nom": "Modification manuelle", "desc": "Une séance se modifie à la main, repasse par les règles, et peut être forcée avec une justification tracée.", "ref": "affectationRules.js, force", "src": "17.17" },
+        { "code": "AUTOMATIQUE", "nom": "Déplacement automatique", "desc": "Le système propose un nouveau créneau, sans choix d'heure à la main.", "ref": "report par le solveur, décision du 21 octobre", "src": "17.18 17.24" },
+        { "code": "REMPLACE_ENSEIGNANT", "nom": "Remplacement d'un enseignant", "desc": "Trouve un enseignant libre et compétent.", "etat": "absent", "src": "17.19" },
+        { "code": "REMPLACE_SALLE", "nom": "Remplacement d'une salle", "desc": "Trouve une salle libre et adaptée.", "ref": "imprévus de l'administration", "src": "17.20" },
+        { "code": "AJOUT", "nom": "Ajout d'une séance", "desc": "Une séance s'ajoute après coup.", "src": "17.21" },
+        { "code": "SUPPRESSION", "nom": "Suppression d'une séance", "desc": "Une séance se retire ; son volume revient à placer.", "src": "17.22" },
+        { "code": "ANNULATION", "nom": "Annulation d'un cours", "desc": "La séance reste visible comme annulée.", "src": "17.23" }
+      ] },
+    { "code": "CAUSE", "nom": "Causes",
+      "defauts": { "role": "gestion", "type": "structure", "niveaux": "G", "priorite": 2, "validite": "datee", "etat": "saisie" },
+      "parametres": [
+        { "code": "ABSENCE", "nom": "Absences imprévues", "desc": "Liste les séances touchées et propose report ou remplacement.", "ref": "imprévus", "src": "17.25" },
+        { "code": "PANNE_SALLE", "nom": "Pannes de salles", "desc": "Liste les séances touchées et propose une autre salle.", "ref": "imprévus", "src": "17.26" },
+        { "code": "PANNE_MATERIEL", "nom": "Indisponibilités de matériel", "desc": "Comme une panne, pour un équipement seul.", "etat": "absent", "src": "17.27" },
+        { "code": "FERMETURE", "nom": "Fermetures exceptionnelles", "desc": "Journée annulée : toutes les séances du jour sont à reprogrammer.", "ref": "imprévus", "src": "17.28" }
+      ] },
+    { "code": "CYCLE", "nom": "Cycle d'une version",
+      "defauts": { "role": "gestion", "niveaux": "G", "priorite": 2, "validite": "permanent", "etat": "base" },
+      "parametres": [
+        { "code": "HISTORIQUE", "nom": "Conservation de l'historique", "desc": "Chaque modification garde sa trace.", "type": "booleen", "defaut": true, "ref": "HistoriqueAffectation", "src": "17.31" },
+        { "code": "COMPARAISON", "nom": "Comparaison entre versions", "desc": "Ce qui bouge entre deux versions, séance par séance.", "type": "booleen", "defaut": true, "etat": "absent", "src": "17.32" },
+        { "code": "VALIDATION", "nom": "Validation par un responsable", "desc": "Une version attend sa validation avant de partir.", "type": "booleen", "defaut": true, "ref": "publication par l'administration", "src": "17.33" },
+        { "code": "PUBLICATION", "nom": "Publication d'une nouvelle version", "desc": "Rend la version visible.", "type": "booleen", "defaut": true, "ref": "EnvoiEdt, PlanningSnapshot", "src": "17.34" },
+        { "code": "NOTIFICATION", "nom": "Notification des personnes concernées", "desc": "Seuls ceux dont le planning change sont prévenus.", "type": "booleen", "defaut": true, "ref": "Notification", "src": "17.35" }
+      ] }
+  ]
+}

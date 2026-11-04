@@ -1,0 +1,52 @@
+{
+  "code": "ETA", "nom": "Établissement",
+  "groupes": [
+    { "code": "ID", "nom": "Identification",
+      "defauts": { "role": "contexte", "niveaux": "G", "priorite": 5, "validite": "permanent", "etat": "absent" },
+      "parametres": [
+        { "code": "NOM", "nom": "Nom de l'établissement", "desc": "Nom affiché dans les emplois du temps et les exports.", "type": "texte", "obligatoire": true, "etat": "base", "ref": "ConfigurationEtablissement.nom", "src": "2.1" },
+        { "code": "TYPE", "nom": "Type d'établissement", "desc": "Nature de l'école ; propose le profil pédagogique de départ.", "type": "enum", "valeurs": ["primaire", "college", "lycee", "formation", "ecole_superieure", "universite"], "role": "donnee", "obligatoire": true, "priorite": 1, "src": "2.2" },
+        { "code": "NIVEAUX", "nom": "Niveaux d'enseignement proposés", "desc": "Une école peut en couvrir plusieurs : chacun suit alors son propre profil.", "type": "liste", "role": "donnee", "priorite": 2, "src": "2.3" },
+        { "code": "STATUT", "nom": "Statut public ou privé", "desc": "Choisit les règles administratives applicables.", "type": "enum", "valeurs": ["public", "prive"], "src": "2.4 9.24" },
+        { "code": "PAYS", "nom": "Pays", "desc": "Choisit le calendrier et les règles du pays ; aucune règle de pays n'est écrite dans le moteur.", "type": "texte", "role": "donnee", "obligatoire": true, "priorite": 1, "etat": "plan", "ref": "fichier 06, § 6.2", "src": "2.5 9.25" },
+        { "code": "VILLE", "nom": "Région et ville", "desc": "Sert au calendrier local et aux fériés régionaux.", "type": "texte", "src": "2.6" },
+        { "code": "LANGUE", "nom": "Langue d'enseignement", "desc": "Langue principale ; une matière peut en préciser une autre.", "type": "texte", "src": "2.7" },
+        { "code": "FUSEAU", "nom": "Fuseau horaire", "desc": "Heure de l'école : les règles de « date passée » et de « jour » s'y réfèrent.", "type": "texte", "role": "donnee", "obligatoire": true, "priorite": 2, "etat": "base", "ref": "APP_TIMEZONE" },
+        { "code": "PROFIL", "nom": "Profil pédagogique", "desc": "Jeu de valeurs de départ du moteur : primaire, collège, lycée, formation ou université.", "type": "enum", "valeurs": ["primaire", "college", "lycee", "formation", "universite"], "role": "donnee", "obligatoire": true, "priorite": 1, "niveaux": "GP" }
+      ] },
+    { "code": "TAILLE", "nom": "Taille (comptée, jamais saisie)",
+      "defauts": { "role": "indicateur", "type": "entier", "niveaux": "G", "modifiable": "non", "priorite": 4, "validite": "generation", "etat": "base" },
+      "parametres": [
+        { "code": "CAMPUS", "nom": "Nombre de campus", "desc": "Compté depuis les campus actifs ; au-delà de 1, les trajets entrent en jeu.", "ref": "Campus", "src": "2.8 12.1" },
+        { "code": "BATIMENTS", "nom": "Nombre de bâtiments", "desc": "Compté depuis les salles, quand elles auront un bâtiment : Planner ne le connaît pas aujourd'hui.", "etat": "absent", "src": "2.9" },
+        { "code": "SITES", "nom": "Nombre de sites géographiques", "desc": "Compté depuis les sites ; à plusieurs sites, un groupe reste chez lui.", "etat": "plan", "ref": "D-20", "src": "2.10" },
+        { "code": "DEPARTEMENTS", "nom": "Nombre de départements", "desc": "Compté depuis les rattachements.", "ref": "Enseignant.departement", "src": "2.11" },
+        { "code": "FACULTES", "nom": "Nombre de facultés", "desc": "Compté depuis les pôles.", "etat": "plan", "ref": "ME-2a, Pole", "src": "2.12" },
+        { "code": "FILIERES", "nom": "Nombre de filières", "desc": "Compté depuis l'offre de formation.", "ref": "Filiere", "src": "2.13" },
+        { "code": "CYCLES", "nom": "Nombre de cycles de formation", "desc": "Compté depuis l'offre de formation.", "ref": "Filiere.cycle", "src": "2.14" },
+        { "code": "NIVEAUX", "nom": "Nombre de niveaux scolaires", "desc": "Compté depuis les groupes.", "ref": "Groupe.niveau", "src": "2.15" },
+        { "code": "CLASSES", "nom": "Nombre de classes", "desc": "Taille du problème : classes à planifier dans cette génération.", "ref": "Groupe", "src": "2.16 17.4" },
+        { "code": "APPRENANTS", "nom": "Nombre d'apprenants", "desc": "Taille du problème : au-delà d'un seuil, la génération se fait par lots.", "ref": "Etudiant", "src": "2.17" },
+        { "code": "ENSEIGNANTS", "nom": "Nombre d'enseignants", "desc": "Taille du problème : enseignants concernés par la génération.", "ref": "Enseignant", "src": "2.18 17.5" },
+        { "code": "PERSONNELS", "nom": "Nombre de personnels administratifs", "desc": "Compté ; utile pour les surveillances assurées par l'administration.", "src": "2.19" },
+        { "code": "SALLES", "nom": "Nombre de salles disponibles", "desc": "Taille du problème : salles proposées à la génération.", "ref": "Salle", "src": "17.6" },
+        { "code": "MATIERES", "nom": "Nombre de matières", "desc": "Taille du problème : matières à planifier.", "ref": "Cours", "src": "17.7" },
+        { "code": "CRENEAUX", "nom": "Nombre de créneaux", "desc": "Taille du problème : créneaux proposés à la génération.", "ref": "Creneau", "src": "17.8 7.9" }
+      ] },
+    { "code": "ORGA", "nom": "Organisation",
+      "defauts": { "role": "donnee", "niveaux": "GP", "priorite": 2, "validite": "annee" },
+      "parametres": [
+        { "code": "JOURS_OUVERTS", "nom": "Jours d'ouverture", "desc": "Jours où une séance peut avoir lieu.", "type": "liste_jours", "defaut": ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi"], "obligatoire": true, "priorite": 1, "etat": "base", "ref": "Creneau.jour_semaine", "src": "2.21 2.22" },
+        { "code": "HEURE_OUVERTURE", "nom": "Heure d'ouverture", "desc": "Aucune séance ni préparation avant cette heure.", "type": "heure", "src": "2.23 7.1" },
+        { "code": "HEURE_FERMETURE", "nom": "Heure de fermeture", "desc": "Aucune séance ni rangement après cette heure.", "type": "heure", "src": "2.24 7.2" },
+        { "code": "VACATIONS", "nom": "Nombre de vacations quotidiennes", "desc": "Double vacation : deux équipes de classes se partagent les salles dans la journée.", "type": "entier", "defaut": 1, "src": "2.25" },
+        { "code": "DEMI_JOURNEES", "nom": "Organisation en matinée et après-midi", "desc": "La journée se coupe en deux demi-journées séparées par le repas.", "type": "booleen", "defaut": true, "etat": "solveur", "ref": "probleme.js, APRES_MIDI (en dur à 12 h 30)", "src": "2.26" },
+        { "code": "JOURNEE_CONTINUE", "nom": "Journée continue", "desc": "Pas de longue coupure : la pause du midi est courte ou absente.", "type": "booleen", "defaut": false, "src": "2.27" },
+        { "code": "HORAIRES_DECALES", "nom": "Horaires décalés", "desc": "Plusieurs groupes commencent à des heures différentes.", "type": "booleen", "defaut": false, "src": "2.28" },
+        { "code": "COURS_SOIR", "nom": "Cours du soir", "desc": "Une grille du soir existe pour certains parcours.", "type": "booleen", "defaut": false, "etat": "base", "ref": "Filiere.regime", "src": "2.29 16D.5" },
+        { "code": "COURS_WEEKEND", "nom": "Cours du week-end", "desc": "Une grille du week-end existe pour certains parcours.", "type": "booleen", "defaut": false, "etat": "base", "ref": "Filiere.regime", "src": "2.30 16D.6" },
+        { "code": "EQUIPES", "nom": "Équipes pédagogiques", "desc": "Enseignants regroupés par équipe ; une plage commune peut leur être réservée.", "type": "structure", "priorite": 4, "src": "2.20" },
+        { "code": "REGIME", "nom": "Rythme de formation", "desc": "Initiale, continue, alternance... : chaque rythme a sa grille horaire.", "type": "reference", "niveaux": "P", "obligatoire": true, "priorite": 1, "etat": "solveur", "ref": "Filiere.regime, ME-2a Rythme", "src": "16D.1 16D.2 16D.3 16D.4 16D.7" }
+      ] }
+  ]
+}

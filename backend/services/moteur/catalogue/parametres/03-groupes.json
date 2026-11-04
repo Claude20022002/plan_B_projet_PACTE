@@ -1,0 +1,63 @@
+{
+  "code": "GRP", "nom": "Classes, groupes et apprenants",
+  "groupes": [
+    { "code": "ID", "nom": "Identification et rattachement",
+      "defauts": { "role": "donnee", "niveaux": "I", "cible": "groupe", "priorite": 3, "validite": "annee", "etat": "base" },
+      "parametres": [
+        { "code": "ID", "nom": "Identifiant de classe", "desc": "Clé stable de la classe ou du groupe.", "type": "texte", "obligatoire": true, "priorite": 1, "modifiable": "non", "etat": "solveur", "ref": "Groupe.id_groupe", "src": "3.1" },
+        { "code": "NOM", "nom": "Nom de classe", "desc": "Nom affiché ; unique dans une année.", "type": "texte", "obligatoire": true, "ref": "Groupe.nom_groupe", "src": "3.2" },
+        { "code": "NIVEAU", "nom": "Niveau scolaire", "desc": "CP, 3e, L2... : le profil applicable peut en dépendre.", "type": "reference", "obligatoire": true, "priorite": 2, "ref": "Groupe.niveau", "src": "3.3" },
+        { "code": "CYCLE", "nom": "Cycle d'enseignement", "desc": "Prépa, licence, ingénieur...", "type": "reference", "ref": "Filiere.cycle", "src": "3.4" },
+        { "code": "FILIERE", "nom": "Filière", "desc": "Rattachement à l'offre de formation ; donne le rythme, donc la grille.", "type": "reference", "ref": "Groupe.id_filiere", "src": "3.5 16C.1 16E.5" },
+        { "code": "OPTION", "nom": "Option", "desc": "Option suivie par ce groupe.", "type": "reference", "etat": "absent", "src": "3.6 16C.2 16E.7" },
+        { "code": "SPECIALITE", "nom": "Spécialité", "desc": "Spécialité ou spécialisation du groupe.", "type": "reference", "etat": "absent", "src": "3.7 16C.1 16E.7" },
+        { "code": "SECTION", "nom": "Section", "desc": "Subdivision d'un niveau.", "type": "texte", "etat": "absent", "src": "3.8" },
+        { "code": "PROMOTION", "nom": "Promotion", "desc": "Groupe racine : un CM de promotion occupe tous ses TD et TP.", "type": "reference", "etat": "solveur", "ref": "Groupe.type_groupe", "src": "3.9" },
+        { "code": "ANNEE_ETUDE", "nom": "Année d'étude", "desc": "Rang dans le cursus.", "type": "entier", "ref": "Groupe.annee", "src": "3.10" },
+        { "code": "ANNEE_SCOLAIRE", "nom": "Année scolaire du groupe", "desc": "Sépare les groupes de deux années.", "type": "reference", "obligatoire": true, "priorite": 1, "ref": "Groupe.id_annee (ME-18)" }
+      ] },
+    { "code": "HIER", "nom": "Hiérarchie des groupes",
+      "defauts": { "role": "donnee", "type": "reference", "niveaux": "I", "cible": "groupe", "priorite": 1, "validite": "annee", "etat": "solveur", "ref": "Groupe.id_groupe_parent, groupes.js" },
+      "parametres": [
+        { "code": "PRINCIPAL", "nom": "Groupe principal", "desc": "Groupe parent ; le conflit se propage de la promotion aux TD et TP.", "src": "3.12" },
+        { "code": "SOUS_GROUPE", "nom": "Sous-groupe", "desc": "Groupe le plus fin : c'est sa journée qui est évaluée (heures, trous, campus).", "src": "3.13" },
+        { "code": "TP", "nom": "Groupe de travaux pratiques", "desc": "Demi-groupe de TP.", "src": "3.14 16E.12" },
+        { "code": "TD", "nom": "Groupe de travaux dirigés", "desc": "Groupe de TD.", "src": "3.15 16E.11" },
+        { "code": "LANGUES", "nom": "Groupe de langues", "desc": "Regroupement transversal : ses membres viennent de plusieurs classes. Hors de la hiérarchie actuelle.", "etat": "absent", "ref": null, "src": "3.16 16B.3" },
+        { "code": "SPECIALISATION", "nom": "Groupe de spécialisation", "desc": "Regroupement transversal par spécialité.", "etat": "absent", "ref": null, "src": "3.17 16C.4 16B.4" },
+        { "code": "OPTIONS", "nom": "Groupe d'options", "desc": "Regroupement transversal par option : les groupes qui partagent un élève ne peuvent pas être simultanés.", "etat": "absent", "ref": null, "src": "3.18" },
+        { "code": "INSCRIPTIONS", "nom": "Inscriptions individuelles aux groupes", "desc": "Quels élèves suivent quels groupes : seule source fiable des conflits entre options.", "type": "structure", "etat": "base", "ref": "Appartenir", "src": "3.26" }
+      ] },
+    { "code": "EFF", "nom": "Effectifs",
+      "defauts": { "role": "donnee", "type": "entier", "niveaux": "PI", "cible": "groupe", "priorite": 3, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "TOTAL", "nom": "Nombre total d'apprenants", "desc": "Effectif utilisé par la capacité des salles.", "obligatoire": true, "priorite": 1, "etat": "solveur", "ref": "Groupe.effectif", "src": "3.19" },
+        { "code": "MIN", "nom": "Effectif minimum", "desc": "En dessous, le groupe n'ouvre pas ou fusionne.", "src": "3.20 16D.10" },
+        { "code": "MAX", "nom": "Effectif maximum", "desc": "Au-dessus, le groupe doit être dédoublé.", "src": "3.21 16D.10" },
+        { "code": "CAPACITE_PEDAGO", "nom": "Capacité pédagogique de la classe", "desc": "Plafond pédagogique, distinct de la capacité de la salle.", "src": "3.22" },
+        { "code": "PRESENTS", "nom": "Présents habituels", "desc": "Effectif réel constaté ; permet une salle plus petite si l'école l'accepte.", "src": "3.23" },
+        { "code": "PAR_SOUS_GROUPE", "nom": "Élèves par sous-groupe", "desc": "Taille visée lors du découpage en TD ou TP.", "src": "3.24" },
+        { "code": "ACCOMPAGNEMENT", "nom": "Élèves à accompagnement particulier", "desc": "Peut imposer un encadrant ou une salle accessible.", "src": "3.25" },
+        { "code": "REPARTITION_MIXTE", "nom": "Répartition filles/garçons", "desc": "Sert seulement si l'organisation l'exige (vestiaires, sport).", "priorite": 5, "src": "3.27" },
+        { "code": "INSCRITS_OPTION", "nom": "Inscrits par option", "desc": "Effectif d'une option (compté) ; dimensionne sa salle.", "src": "3.28" }
+      ] },
+    { "code": "DISPO", "nom": "Disponibilités et suivi",
+      "defauts": { "role": "donnee", "niveaux": "PI", "cible": "groupe", "priorite": 3, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "CLASSE", "nom": "Disponibilité de la classe", "desc": "Créneaux où la classe peut avoir cours.", "type": "structure", "src": "3.29" },
+        { "code": "GROUPE", "nom": "Disponibilité par groupe", "desc": "Créneaux propres à un groupe (alternants, stagiaires).", "type": "structure", "src": "3.30 16D.14" },
+        { "code": "MUTUALISES", "nom": "Cours communs ou mutualisés", "desc": "Un enseignement suivi par plusieurs classes ou filières à la même heure.", "type": "liste_references", "priorite": 2, "etat": "solveur", "ref": "EnseignementGroupe", "src": "3.33 3.34 16C.7 16E.13 8.26" },
+        { "code": "EXTRASCOLAIRE", "nom": "Activités extrascolaires", "desc": "Créneaux réguliers occupés hors des cours.", "type": "structure", "src": "3.35" },
+        { "code": "DISPENSES", "nom": "Dispenses", "desc": "Élèves dispensés d'une activité : le conflit ne compte plus pour eux.", "type": "structure", "src": "3.39" }
+      ] },
+    { "code": "REGLE", "nom": "Règles des groupes",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "priorite": 1, "obligatoire": true, "modifiable": "non", "etat": "absent" },
+      "parametres": [
+        { "code": "CONFLIT", "nom": "Une classe n'a qu'un cours à la fois", "desc": "Aucune séance simultanée pour un groupe, hiérarchie comprise.", "etat": "solveur", "regle_solveur": "Groupe déjà pris", "ref": "ContraintesEmploiDuTemps.conflitGroupe", "src": "17B.2 18A.2" },
+        { "code": "CONFLIT_ELEVES", "nom": "Groupes partageant des élèves", "desc": "Deux groupes hors hiérarchie (langues, options) ne se chevauchent pas s'ils partagent un élève.", "src": "17B.8 3.40 17B.13 14.15" },
+        { "code": "OPTIONS_INCOMPATIBLES", "nom": "Conflits entre options, tolérance", "desc": "Part d'élèves laissés sans leur choix d'option si tout ne peut pas tenir.", "type": "pourcentage", "defaut": 0, "force": "souple", "force_reglable": true, "poids": 60, "priorite": 2, "obligatoire": false, "modifiable": "etablissement", "niveaux": "GP", "src": "16C.2" },
+        { "code": "EFFECTIFS_BORNES", "nom": "Effectifs dans les bornes", "desc": "Un groupe sous son minimum ou au-dessus de son maximum est signalé avant le calcul.", "force": "souple", "force_reglable": true, "poids": 5, "priorite": 3, "obligatoire": false, "modifiable": "etablissement", "src": "16D.10" },
+        { "code": "SITE", "nom": "Un groupe reste sur son site", "desc": "Une séance d'un groupe n'a lieu que dans une salle d'un campus de son site.", "etat": "plan", "ref": "D-20, ME-25" }
+      ] }
+  ]
+}

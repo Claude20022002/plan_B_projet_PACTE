@@ -1,0 +1,25 @@
+{
+  "theme": "Objectifs qui se contredisent : augmenter l'un coûte à l'autre, leurs poids s'arbitrent ensemble",
+  "dependances": [
+    { "type": "tension", "de": "HOR.REGLE.TROUS", "vers": "MAT.REGLE.JOURS_DIFFERENTS", "pourquoi": "Compacter les journées concentre ; étaler sur la semaine crée des journées courtes et trouées." },
+    { "type": "tension", "de": "HOR.REGLE.TROUS", "vers": "PRF.ENS.JOURNEE_PAUSES", "pourquoi": "Ce qui est un trou pour le groupe peut être la pause voulue par l'enseignant." },
+    { "type": "tension", "de": "HOR.REGLE.TROUS", "vers": "PED.COGN.DIFFICILES_SUIVIES", "pourquoi": "Écarter deux matières difficiles sans trou demande une matière légère disponible." },
+    { "type": "tension", "de": "SAL.REGLE.TAILLE_ADAPTEE", "vers": "HOR.REGLE.CHANGEMENT_SALLE", "pourquoi": "La salle la mieux ajustée à chaque cours oblige à changer de salle." },
+    { "type": "tension", "de": "SAL.REGLE.TAILLE_ADAPTEE", "vers": "PED.ORG.SALLE_FIXE", "pourquoi": "Une classe qui garde sa salle ne la libère pas pour un groupe qui y tiendrait mieux." },
+    { "type": "tension", "de": "SAL.REGLE.TAILLE_ADAPTEE", "vers": "HOR.REGLE.UN_CAMPUS_PAR_JOUR", "pourquoi": "La salle ajustée peut être sur l'autre campus." },
+    { "type": "tension", "de": "PRF.ENS.REGROUPES", "vers": "MAT.REGLE.JOURS_DIFFERENTS", "pourquoi": "Un enseignant qui veut tout sur deux jours empêche d'étaler ses matières." },
+    { "type": "tension", "de": "PRF.ENS.REGROUPES", "vers": "PRF.APP.REPARTITION_MATIERES", "pourquoi": "Même tension, vue du groupe." },
+    { "type": "tension", "de": "PRF.ENS.REGROUPES", "vers": "HOR.REGLE.EQUILIBRE_SEMAINE", "pourquoi": "Regrouper un enseignant charge certains jours." },
+    { "type": "tension", "de": "PED.COGN.CONCENTRATION", "vers": "PRF.ENS.CRENEAUX_PREFERES", "pourquoi": "Les créneaux favorables aux élèves ne sont pas toujours ceux que veulent les enseignants." },
+    { "type": "tension", "de": "PED.COGN.CONCENTRATION", "vers": "HOR.REGLE.EQUILIBRE_SEMAINE", "pourquoi": "Viser le matin pour les matières exigeantes charge les matinées." },
+    { "type": "tension", "de": "HOR.REGLE.COURS_TARDIFS", "vers": "HOR.REGLE.EQUILIBRE_SEMAINE", "pourquoi": "Refuser les fins de journée resserre les heures disponibles." },
+    { "type": "tension", "de": "HOR.REGLE.JOURNEE_LONGUE", "vers": "PRF.ENS.REGROUPES", "pourquoi": "Regrouper allonge les journées." },
+    { "type": "tension", "de": "HUM.REGLE.EQUITE", "vers": "PRF.ENS.CRENEAUX_PREFERES", "pourquoi": "Tenir tous les vœux d'un enseignant peut déséquilibrer les charges." },
+    { "type": "tension", "de": "HUM.REGLE.EQUITE", "vers": "FIN.REGLE.MINIMISER_COUT", "pourquoi": "Le moins cher n'est pas le mieux réparti." },
+    { "type": "tension", "de": "PED.ORG.ENSEIGNANT_REFERENT", "vers": "FIN.REGLE.MINIMISER_COUT", "pourquoi": "Garder le même enseignant peut coûter plus cher qu'un vacataire." },
+    { "type": "tension", "de": "OPT.CALCUL.STABILITE", "vers": "HOR.REGLE.TROUS", "pourquoi": "Toute amélioration d'un planning publié coûte des changements pour les personnes." },
+    { "type": "tension", "de": "OPT.CALCUL.STABILITE", "vers": "PRF.ENS.CRENEAUX_PREFERES", "pourquoi": "Le même arbitrage, face aux vœux." },
+    { "type": "tension", "de": "PED.ORG.LABO", "vers": "PRF.APP.REPARTITION_MATIERES", "pourquoi": "Grouper les TP en blocs longs va contre leur répartition sur la semaine." },
+    { "type": "tension", "de": "EXA.REGLE.ESPACEMENT_CLASSE", "vers": "EXA.REGLE.MAX_EPREUVES_JOUR", "pourquoi": "Espacer allonge la session d'examens." }
+  ]
+}

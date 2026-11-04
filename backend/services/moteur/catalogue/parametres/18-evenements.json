@@ -1,0 +1,27 @@
+{
+  "code": "EVT", "nom": "Activités et événements",
+  "role": "Absent de la liste des 16 familles de para.txt, mais présent dans sa section 15 : gardé. Chaque événement réserve des créneaux sans détruire le planning.",
+  "groupes": [
+    { "code": "NATURE", "nom": "Nature de l'événement",
+      "defauts": { "role": "donnee", "type": "structure", "niveaux": "GP", "priorite": 3, "validite": "datee", "etat": "saisie", "ref": "Evenement.type_evenement" },
+      "parametres": [
+        { "code": "SPORT", "nom": "Activités et compétitions sportives", "desc": "Récurrentes ou datées.", "src": "15.1 15.15" },
+        { "code": "CLUBS", "nom": "Clubs et associations", "desc": "Clubs scolaires, universitaires, associations : plage commune à garder libre.", "etat": "absent", "ref": null, "src": "15.2 15.3 15.4" },
+        { "code": "REUNIONS", "nom": "Réunions", "desc": "Pédagogiques, de département ou de coordination : les participants sont occupés.", "src": "15.5 15.8 15.9" },
+        { "code": "CONSEILS", "nom": "Conseils de classe et de discipline", "desc": "Les membres du conseil sont occupés.", "etat": "absent", "ref": null, "src": "15.6 15.7" },
+        { "code": "CONFERENCES", "nom": "Conférences, séminaires, ateliers", "desc": "Remplacent ou suspendent des cours.", "src": "15.10 15.11 15.12" },
+        { "code": "OUVERTURE", "nom": "Portes ouvertes et journées culturelles", "desc": "Bloquent tout ou partie de l'école.", "src": "15.13 15.14" },
+        { "code": "SORTIES", "nom": "Sorties, voyages, visites d'entreprises", "desc": "Le groupe est absent ; ses enseignants peuvent être mobilisés.", "src": "15.16 15.17 15.18" },
+        { "code": "PFE", "nom": "Projets de fin d'études", "desc": "Plages réservées dans la semaine du groupe.", "src": "15.20 16E.15" },
+        { "code": "CEREMONIES", "nom": "Cérémonies de remise de diplômes", "desc": "Mobilisent salles et personnel.", "src": "15.22" },
+        { "code": "FORMATIONS", "nom": "Formations du personnel", "desc": "Les personnes concernées sont occupées.", "src": "15.23" },
+        { "code": "SENSIBILISATION", "nom": "Activités de sensibilisation", "desc": "Plage ponctuelle.", "src": "15.24" },
+        { "code": "ORIENTATION", "nom": "Journées d'orientation", "desc": "Plage ponctuelle pour certains niveaux.", "src": "15.25 16C.11" }
+      ] },
+    { "code": "REGLE", "nom": "Règle des événements",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "priorite": 2, "obligatoire": true, "modifiable": "non", "etat": "saisie", "validite": "datee", "ref": "Evenement.bloque_affectations" },
+      "parametres": [
+        { "code": "RESPECTES", "nom": "Événements bloquants respectés", "desc": "Une séance ne chevauche pas un événement qui concerne son groupe, son enseignant ou sa salle." }
+      ] }
+  ]
+}

@@ -66,7 +66,7 @@ Un fournisseur est une fonction pure `(dateDebut, dateFin) → événements` plu
 
 **Préréglages** : « souple » (vœux et confort pèsent peu, tout se place), « standard » (les poids actuels de HESTIM), « strict » (confort fort, calcul plus long). L'école part d'un préréglage puis ajuste une règle si elle le veut ; elle ne règle jamais un nombre brut : l'écran propose « peu, normal, beaucoup, indispensable », traduits en poids.
 
-**Remis en question** : laisser l'école rendre « dure » une règle souple ? Non. Une règle dure en trop rend le problème insoluble sans dire pourquoi ; « indispensable » est un poids très fort, que le rapport de génération signale quand il n'est pas tenu.
+**Remis en question** : laisser l'école rendre « dure » une règle souple ? Non. Une règle dure en trop rend le problème insoluble sans dire pourquoi ; « indispensable » est un poids très fort, que le rapport de génération signale quand il n'est pas tenu. **Amendé le 4 novembre 2026** : un profil pédagogique ou la Plateforme peut rendre une règle stricte, l'école non (D-09).
 
 ## 6.4 Taille des établissements
 
