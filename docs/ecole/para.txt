@@ -1,0 +1,861 @@
+1. Les grandes catégories de paramètres
+Référentiel de planification
+01
+Établissement
+
+
+02
+Année scolaire
+
+
+03
+Classes et groupes
+
+
+04
+Matières
+
+
+05
+Enseignants
+
+
+06
+Salles et locaux
+
+
+07
+Horaires
+
+
+08
+Pédagogie
+
+
+09
+Contraintes humaines
+
+
+10
+Ressources
+
+
+11
+Réglementation
+
+
+12
+Logistique
+
+
+13
+Examens
+
+
+14
+Préférences
+
+
+15
+Optimisation IA
+
+
+16
+Imprévus
+
+
+
+
+16 familles de paramètres à prendre en compte dans le système.
+
+2. Paramètres liés à l'établissement
+Ils définissent le cadre général dans lequel le planning doit être généré.
+A. Identification et organisation
+1. Nom de l'établissement.
+2. Type d'établissement.
+3. Niveau d'enseignement.
+4. Statut public ou privé.
+5. Pays.
+6. Région et ville.
+7. Langue d'enseignement.
+8. Nombre de campus.
+9. Nombre de bâtiments.
+10. Nombre de sites géographiques.
+11. Nombre de départements.
+12. Nombre de facultés.
+13. Nombre de filières.
+14. Nombre de cycles de formation.
+15. Nombre de niveaux scolaires.
+16. Nombre de classes.
+17. Nombre d'étudiants.
+18. Nombre d'enseignants.
+19. Nombre de personnels administratifs.
+20. Organisation en équipes pédagogiques.
+B. Fonctionnement de l'établissement
+21. Jours d'ouverture.
+22. Jours de fermeture.
+23. Horaires d'ouverture.
+24. Horaires de fermeture.
+25. Nombre de vacations quotidiennes.
+26. Organisation en matinée et après-midi.
+27. Fonctionnement en journée continue.
+28. Fonctionnement en horaires décalés.
+29. Organisation en cours du soir.
+30. Organisation en cours du week-end.
+31. Calendrier des vacances.
+32. Jours fériés.
+33. Journées pédagogiques.
+34. Journées de formation du personnel.
+35. Journées réservées aux événements.
+36. Périodes de fermeture exceptionnelle.
+3. Paramètres liés aux classes, groupes et apprenants
+C'est l'une des catégories les plus importantes.
+A. Identification des classes
+1. Identifiant de classe.
+2. Nom de classe.
+3. Niveau scolaire.
+4. Cycle d'enseignement.
+5. Filière.
+6. Option.
+7. Spécialité.
+8. Section.
+9. Promotion.
+10. Année d'étude.
+11. Semestre.
+12. Groupe principal.
+13. Sous-groupe.
+14. Groupe de travaux pratiques.
+15. Groupe de travaux dirigés.
+16. Groupe de langues.
+17. Groupe de spécialisation.
+18. Groupe d'options.
+B. Effectifs
+19. Nombre total d'apprenants.
+20. Effectif minimum.
+21. Effectif maximum.
+22. Capacité pédagogique de la classe.
+23. Nombre d'élèves présents habituellement.
+24. Nombre d'élèves par sous-groupe.
+25. Nombre d'élèves nécessitant un accompagnement particulier.
+26. Répartition des élèves entre groupes.
+27. Répartition filles/garçons lorsque cela est pertinent pour l'organisation.
+28. Nombre d'étudiants inscrits à chaque option.
+C. Disponibilités des apprenants
+29. Disponibilité de la classe.
+30. Disponibilité par groupe.
+31. Cours obligatoires.
+32. Cours facultatifs.
+33. Cours communs entre plusieurs classes.
+34. Cours mutualisés entre filières.
+35. Activités extrascolaires.
+36. Temps de transport entre deux campus.
+37. Temps de pause nécessaire.
+38. Contraintes individuelles d'accessibilité.
+39. Dispenses de certaines activités.
+40. Conflits entre enseignements optionnels.
+D. Paramètres propres aux différents niveaux
+- Primaire : stabilité de l'enseignant principal, alternance des activités, temps d'attention, activités d'éveil et de repos.
+- Collège : rotation des matières, groupes de langues, travaux pratiques, équilibre entre disciplines.
+- Lycée : filières, spécialités, options, préparation aux examens, mutualisation des enseignements.
+- Écoles privées : groupes de formation, parcours personnalisés, cours intensifs, formations professionnelles.
+- Universités : UE, ECUE, crédits ECTS ou système équivalent, parcours, semestres, groupes de TD, groupes de TP, cours magistraux mutualisés, enseignements inter-filières.
+4. Paramètres liés aux matières et enseignements
+Chaque matière doit posséder ses propres caractéristiques.
+A. Identification
+1. Code de la matière.
+2. Nom de la matière.
+3. Discipline.
+4. Domaine pédagogique.
+5. Niveau concerné.
+6. Filière concernée.
+7. Caractère obligatoire ou facultatif.
+8. Matière principale ou secondaire.
+9. Matière théorique ou pratique.
+10. Matière transversale.
+11. Matière mutualisée.
+12. Matière optionnelle.
+B. Volume horaire
+13. Volume horaire hebdomadaire.
+14. Volume horaire mensuel.
+15. Volume horaire annuel.
+16. Volume horaire semestriel.
+17. Nombre total de séances.
+18. Durée minimale d'une séance.
+19. Durée maximale d'une séance.
+20. Durée recommandée d'une séance.
+21. Nombre de séances par semaine.
+22. Nombre minimum de séances par semaine.
+23. Nombre maximum de séances par jour.
+24. Nombre de séances consécutives autorisées.
+25. Répartition théorique/pratique.
+26. Répartition cours magistraux/TD/TP.
+C. Contraintes pédagogiques
+27. Matière nécessitant une salle spécialisée.
+28. Matière nécessitant un laboratoire.
+29. Matière nécessitant un ordinateur.
+30. Matière nécessitant un équipement particulier.
+31. Matière nécessitant un espace extérieur.
+32. Matière nécessitant une installation sportive.
+33. Matière nécessitant un effectif réduit.
+34. Matière nécessitant plusieurs enseignants.
+35. Matière nécessitant un assistant pédagogique.
+36. Matière nécessitant un prérequis.
+37. Matière devant être enseignée avant une autre.
+38. Matière devant être répartie sur plusieurs jours.
+39. Matière nécessitant des séances consécutives.
+40. Matière nécessitant une alternance théorie/pratique.
+41. Matière devant être enseignée le matin.
+42. Matière déconseillée en fin de journée.
+43. Matière nécessitant une fréquence minimale.
+44. Matière avec progression pédagogique séquentielle.
+D. Relations entre matières
+45. Matières incompatibles simultanément pour un même groupe.
+46. Matières devant être programmées dans un ordre précis.
+47. Matières devant être espacées.
+48. Matières devant être regroupées.
+49. Matières partageant le même enseignant.
+50. Matières partageant le même laboratoire.
+51. Matières ayant des horaires communs.
+52. Matières pouvant être mutualisées.
+53. Matières ayant des dépendances pédagogiques.
+5. Paramètres liés aux enseignants et intervenants
+Un moteur performant doit considérer les enseignants comme des ressources humaines ayant des contraintes individuelles.
+A. Informations professionnelles
+1. Identifiant de l'enseignant.
+2. Nom et prénom.
+3. Département de rattachement.
+4. Spécialité.
+5. Disciplines enseignées.
+6. Qualifications.
+7. Diplômes.
+8. Statut professionnel.
+9. Type de contrat.
+10. Temps plein ou temps partiel.
+11. Volume horaire contractuel.
+12. Volume horaire maximum autorisé.
+13. Volume horaire minimum souhaité.
+14. Ancienneté.
+15. Responsable pédagogique ou coordinateur.
+16. Enseignant permanent ou vacataire.
+17. Enseignant externe.
+18. Enseignant intervenant sur plusieurs campus.
+B. Disponibilités
+19. Disponibilité par jour.
+20. Disponibilité par créneau.
+21. Heure de début de disponibilité.
+22. Heure de fin de disponibilité.
+23. Jours d'indisponibilité.
+24. Demi-journées indisponibles.
+25. Congés programmés.
+26. Absences prévues.
+27. Disponibilité en soirée.
+28. Disponibilité le week-end.
+29. Disponibilité pendant les vacances.
+30. Disponibilité sur certains campus uniquement.
+31. Temps de déplacement entre établissements.
+32. Temps nécessaire entre deux interventions.
+C. Charge de travail
+33. Nombre maximum d'heures par jour.
+34. Nombre maximum d'heures par semaine.
+35. Nombre minimum d'heures par jour.
+36. Nombre maximum de séances consécutives.
+37. Nombre minimum de pauses.
+38. Temps de repos entre deux journées.
+39. Nombre maximum de classes différentes par jour.
+40. Nombre maximum de groupes par jour.
+41. Nombre maximum de TP par semaine.
+42. Répartition des heures entre les différents niveaux.
+43. Répartition des heures entre les différents établissements.
+44. Répartition des heures entre cours théoriques et pratiques.
+D. Préférences personnelles
+45. Créneaux préférés.
+46. Créneaux à éviter.
+47. Jours préférés.
+48. Jours à éviter.
+49. Préférence pour les cours du matin.
+50. Préférence pour les cours de l'après-midi.
+51. Préférence pour les cours regroupés.
+52. Préférence pour les journées continues.
+53. Préférence pour les journées avec pauses.
+54. Préférence pour un campus particulier.
+55. Préférence pour une salle particulière.
+E. Contraintes particulières
+56. Enseignant partagé entre plusieurs départements.
+57. Enseignant intervenant dans plusieurs établissements.
+58. Enseignant responsable de classe.
+59. Enseignant encadrant des projets.
+60. Enseignant chargé de travaux pratiques.
+61. Enseignant chargé des examens.
+62. Enseignant ayant des responsabilités administratives.
+63. Enseignant ayant des heures de permanence.
+64. Enseignant nécessitant un assistant.
+65. Enseignant nécessitant du matériel spécifique.
+6. Paramètres liés aux salles et infrastructures
+La disponibilité d'un enseignant ne signifie pas qu'une salle adaptée est disponible.
+A. Identification des salles
+1. Identifiant de la salle.
+2. Nom de la salle.
+3. Numéro de salle.
+4. Bâtiment.
+5. Étage.
+6. Campus.
+7. Département.
+8. Type de salle.
+9. Salle de cours.
+10. Amphithéâtre.
+11. Laboratoire.
+12. Salle informatique.
+13. Salle de langues.
+14. Salle de sport.
+15. Atelier.
+16. Bibliothèque.
+17. Salle polyvalente.
+18. Salle d'examen.
+19. Salle de visioconférence.
+B. Capacité et caractéristiques
+20. Capacité maximale.
+21. Capacité minimale.
+22. Nombre de places assises.
+23. Nombre de tables.
+24. Nombre d'ordinateurs.
+25. Nombre de postes de travail.
+26. Nombre de prises électriques.
+27. Connexion Internet.
+28. Vidéoprojecteur.
+29. Tableau interactif.
+30. Tableau classique.
+31. Système audio.
+32. Climatisation.
+33. Ventilation.
+34. Éclairage.
+35. Accessibilité aux personnes à mobilité réduite.
+36. Mobilier spécialisé.
+37. Équipement de laboratoire.
+38. Équipement sportif.
+39. Équipement de sécurité.
+C. Disponibilité
+40. Créneaux disponibles.
+41. Créneaux réservés.
+42. Horaires d'ouverture.
+43. Horaires de fermeture.
+44. Temps de préparation.
+45. Temps de nettoyage.
+46. Temps de maintenance.
+47. Périodes d'indisponibilité.
+48. Réservation prioritaire.
+49. Réservation récurrente.
+50. Disponibilité exceptionnelle.
+D. Relations entre salles
+51. Distance entre deux salles.
+52. Temps de déplacement.
+53. Distance entre bâtiments.
+54. Distance entre campus.
+55. Accessibilité des parcours.
+56. Disponibilité d'un équipement partagé.
+57. Possibilité de diviser une salle.
+58. Possibilité de fusionner plusieurs salles.
+59. Possibilité de changer de configuration.
+60. Compatibilité de la salle avec une matière.
+7. Paramètres liés aux horaires et créneaux
+C'est ici que le moteur commence réellement à construire l'emploi du temps.
+A. Organisation temporelle
+1. Heure d'ouverture.
+2. Heure de fermeture.
+3. Heure de début des cours.
+4. Heure de fin des cours.
+5. Durée d'une période.
+6. Durée d'une séance.
+7. Intervalle entre deux séances.
+8. Nombre de créneaux quotidiens.
+9. Nombre de créneaux hebdomadaires.
+10. Durée de la pause du matin.
+11. Durée de la pause du midi.
+12. Durée de la pause de l'après-midi.
+13. Heure de début de la pause déjeuner.
+14. Heure de fin de la pause déjeuner.
+15. Durée de transition entre les cours.
+16. Temps de déplacement entre les salles.
+17. Temps de préparation des enseignants.
+18. Temps de rangement du matériel.
+B. Types de créneaux
+19. Créneaux fixes.
+20. Créneaux flexibles.
+21. Créneaux réservés aux matières principales.
+22. Créneaux réservés aux activités sportives.
+23. Créneaux réservés aux TP.
+24. Créneaux réservés aux TD.
+25. Créneaux réservés aux examens.
+26. Créneaux réservés aux activités extrascolaires.
+27. Créneaux réservés aux réunions.
+28. Créneaux réservés aux formations.
+29. Créneaux réservés aux cours de soutien.
+30. Créneaux réservés aux projets.
+C. Contraintes de répartition
+31. Nombre maximum d'heures de cours par jour.
+32. Nombre minimum d'heures par jour.
+33. Nombre maximum d'heures consécutives.
+34. Nombre minimum d'heures entre deux séances d'une matière.
+35. Nombre maximum de séances d'une matière par jour.
+36. Nombre maximum de séances d'une matière par semaine.
+37. Répartition équitable des matières sur la semaine.
+38. Répartition des matières difficiles sur les différents jours.
+39. Éviter les journées trop longues.
+40. Éviter les journées avec un seul cours isolé.
+41. Éviter les trous dans l'emploi du temps.
+42. Éviter les changements de salle trop fréquents.
+43. Éviter les changements de bâtiment.
+44. Limiter les cours tardifs.
+45. Respecter les créneaux de transport scolaire.
+46. Respecter les heures de prière lorsque l'organisation de l'établissement le nécessite.
+47. Respecter les périodes de repas.
+48. Respecter les contraintes locales du calendrier.
+8. Paramètres pédagogiques avancés
+C'est une catégorie particulièrement importante, car deux emplois du temps peuvent respecter toutes les disponibilités tout en ayant une qualité pédagogique très différente.
+A. Organisation cognitive
+1. Placer les matières demandant le plus de concentration aux moments les plus favorables.
+2. Éviter plusieurs matières difficiles consécutives.
+3. Alterner matières théoriques et pratiques.
+4. Alterner matières scientifiques et littéraires lorsque pertinent.
+5. Respecter le rythme d'apprentissage.
+6. Éviter une surcharge cognitive quotidienne.
+7. Prévoir des pauses adaptées à l'âge.
+8. Préserver des plages de travail autonome.
+9. Répartir les matières sur plusieurs jours.
+10. Respecter les temps d'assimilation entre deux enseignements.
+B. Progression pédagogique
+11. Respecter l'ordre des chapitres.
+12. Respecter les prérequis.
+13. Programmer les cours avant les TD correspondants.
+14. Programmer les TD avant les TP lorsque nécessaire.
+15. Programmer les cours avant les évaluations.
+16. Prévoir des séances de révision.
+17. Prévoir des séances de consolidation.
+18. Prévoir des séances de rattrapage.
+19. Respecter la progression du programme officiel.
+20. Respecter les objectifs pédagogiques de chaque période.
+C. Organisation spécifique
+21. Regrouper les TP en séances longues.
+22. Éviter de fractionner certaines activités pratiques.
+23. Programmer les activités sportives selon les infrastructures disponibles.
+24. Prévoir les activités de laboratoire.
+25. Prévoir les séances de projet.
+26. Programmer les cours mutualisés.
+27. Prévoir les cours de soutien.
+28. Prévoir les activités interdisciplinaires.
+29. Prévoir les interventions extérieures.
+30. Prévoir les périodes d'observation et de stage.
+9. Paramètres administratifs et réglementaires
+Ces paramètres sont essentiels pour éviter de générer des emplois du temps théoriquement possibles mais non conformes.
+1. Durée légale ou réglementaire du travail enseignant.
+2. Durée maximale quotidienne de travail.
+3. Durée maximale hebdomadaire.
+4. Temps de repos obligatoire.
+5. Temps de pause obligatoire.
+6. Volume horaire officiel par matière.
+7. Volume horaire officiel par niveau.
+8. Programme national.
+9. Calendrier scolaire officiel.
+10. Calendrier universitaire.
+11. Nombre minimum de semaines d'enseignement.
+12. Nombre de jours d'enseignement.
+13. Obligations de présence.
+14. Règles de sécurité des locaux.
+15. Capacité réglementaire des salles.
+16. Règles d'encadrement des élèves.
+17. Ratio enseignant/apprenants.
+18. Réglementation des travaux pratiques.
+19. Conditions d'accueil des mineurs.
+20. Obligations d'accessibilité.
+21. Règles concernant les examens.
+22. Règles de validation des enseignements.
+23. Contraintes spécifiques aux formations accréditées.
+24. Règles propres aux établissements publics ou privés.
+25. Règles du pays concerné.
+Important : ces règles doivent être configurables par pays, type d'établissement et niveau d'enseignement. Il ne faut pas coder en dur des règles marocaines, françaises ou congolaises dans le moteur central.
+10. Paramètres liés aux examens et évaluations
+1. Dates des examens.
+2. Dates des contrôles continus.
+3. Dates des devoirs surveillés.
+4. Dates des examens pratiques.
+5. Dates des soutenances.
+6. Dates des examens de rattrapage.
+7. Durée des épreuves.
+8. Nombre d'épreuves par jour.
+9. Temps de préparation des salles.
+10. Nombre de surveillants nécessaires.
+11. Disponibilité des surveillants.
+12. Capacité des salles d'examen.
+13. Répartition des candidats.
+14. Espacement entre deux examens d'une même classe.
+15. Espacement entre deux examens d'un même étudiant.
+16. Disponibilité des jurys.
+17. Disponibilité des enseignants examinateurs.
+18. Disponibilité des laboratoires.
+19. Besoin de matériel spécialisé.
+20. Temps de correction.
+21. Périodes de délibération.
+22. Dates de publication des résultats.
+11. Paramètres liés aux ressources humaines complémentaires
+Il ne faut pas limiter le moteur aux enseignants.
+1. Assistants pédagogiques.
+2. Techniciens de laboratoire.
+3. Surveillants.
+4. Encadrants sportifs.
+5. Conseillers pédagogiques.
+6. Responsables de filière.
+7. Coordinateurs de formation.
+8. Responsables de département.
+9. Personnel informatique.
+10. Personnel de sécurité.
+11. Personnel de nettoyage.
+12. Personnel de maintenance.
+13. Intervenants externes.
+14. Conférenciers.
+15. Professionnels invités.
+16. Tuteurs.
+17. Encadrants de projets.
+18. Membres de jury.
+19. Responsables de stages.
+Chaque personne peut avoir des disponibilités, des compétences, des horaires de travail et des contraintes propres.
+12. Paramètres logistiques et géographiques
+Ces facteurs deviennent déterminants pour les établissements possédant plusieurs bâtiments ou campus.
+1. Nombre de campus.
+2. Distance entre les campus.
+3. Temps de déplacement entre campus.
+4. Moyen de transport.
+5. Disponibilité des transports scolaires.
+6. Temps de trajet des enseignants.
+7. Temps de trajet des étudiants.
+8. Circulation entre bâtiments.
+9. Temps nécessaire pour changer de salle.
+10. Accessibilité des bâtiments.
+11. Disponibilité des ascenseurs.
+12. Disponibilité des parkings.
+13. Disponibilité des équipements mobiles.
+14. Transport du matériel pédagogique.
+15. Disponibilité des salles communes.
+16. Horaires de fermeture des bâtiments.
+17. Contraintes de sécurité.
+18. Conditions météorologiques pour les activités extérieures.
+19. Disponibilité des installations sportives.
+20. Coût de fonctionnement de certaines infrastructures.
+13. Paramètres financiers et budgétaires
+Ils sont souvent oubliés dans les générateurs d'emplois du temps.
+1. Budget de fonctionnement.
+2. Coût horaire des enseignants vacataires.
+3. Coût des heures supplémentaires.
+4. Coût de location des salles.
+5. Coût d'utilisation des laboratoires.
+6. Coût des équipements.
+7. Coût des déplacements entre campus.
+8. Coût des activités externes.
+9. Budget des formations.
+10. Disponibilité financière pour recruter des intervenants supplémentaires.
+11. Coût des heures de surveillance.
+12. Coût des ressources énergétiques.
+13. Coût des changements de planning.
+Le moteur pourrait comparer plusieurs scénarios et proposer celui qui minimise les coûts sans compromettre les contraintes pédagogiques.
+14. Paramètres liés aux préférences et à la qualité de vie
+Ce sont des paramètres qui ne sont pas toujours obligatoires, mais qui améliorent considérablement la qualité du planning.
+Pour les enseignants
+- Réduire les trous entre les cours.
+- Éviter les journées trop longues.
+- Regrouper les cours sur certains jours.
+- Limiter les déplacements.
+- Respecter les préférences horaires.
+- Éviter les cours trop tôt ou trop tard.
+- Équilibrer les charges entre enseignants.
+Pour les apprenants
+- Réduire les journées excessivement chargées.
+- Éviter les longues périodes sans cours.
+- Éviter les cours tardifs.
+- Répartir les matières difficiles.
+- Préserver les activités sportives.
+- Préserver les temps de repas.
+- Éviter les déplacements inutiles.
+- Éviter les conflits entre options.
+- Préserver les temps de révision.
+Pour l'administration
+- Simplifier les changements de salles.
+- Faciliter la surveillance.
+- Réduire les conflits de ressources.
+- Éviter les changements fréquents de planning.
+- Faciliter le remplacement des enseignants.
+15. Paramètres liés aux activités extrascolaires et événements
+Un emploi du temps doit aussi tenir compte de ce qui ne relève pas directement des cours.
+1. Activités sportives.
+2. Clubs scolaires.
+3. Clubs universitaires.
+4. Associations étudiantes.
+5. Réunions pédagogiques.
+6. Conseils de classe.
+7. Conseils de discipline.
+8. Réunions de département.
+9. Réunions de coordination.
+10. Conférences.
+11. Séminaires.
+12. Ateliers.
+13. Journées portes ouvertes.
+14. Journées culturelles.
+15. Compétitions sportives.
+16. Sorties pédagogiques.
+17. Voyages scolaires.
+18. Visites d'entreprises.
+19. Stages professionnels.
+20. Projets de fin d'études.
+21. Soutenances.
+22. Cérémonies de remise de diplômes.
+23. Formations du personnel.
+24. Activités de sensibilisation.
+25. Journées d'orientation.
+Il faut pouvoir réserver des créneaux à ces événements sans détruire l'ensemble du planning.
+16. Paramètres spécifiques à chaque type d'établissement
+Les mêmes règles ne peuvent pas être appliquées à un enfant de primaire et à un étudiant de master.
+
+
+
+
+
+
+
+
+
+A. Primaire
+- Enseignant principal de la classe.
+- Nombre de matières quotidiennes.
+- Durée d'attention des enfants.
+- Alternance des activités.
+- Temps de récréation.
+- Temps de sieste selon l'âge et l'organisation.
+- Activités d'éveil.
+- Activités sportives.
+- Temps de repas.
+- Stabilité de la salle.
+- Temps de transition.
+- Répartition des matières fondamentales.
+- Encadrement des élèves.
+- Temps de lecture et d'écriture.
+
+
+
+
+
+
+
+
+
+
+
+
+B. Collège
+- Enseignants spécialisés par discipline.
+- Rotation des enseignants.
+- Groupes de langues.
+- Groupes de sciences.
+- Travaux pratiques.
+- Répartition des matières fondamentales.
+- Activités sportives.
+- Accompagnement scolaire.
+- Heures de vie de classe.
+- Équilibre des matières sur la semaine.
+- Gestion des salles spécialisées.
+- Prévention de la surcharge quotidienne.
+
+
+
+
+
+
+
+
+
+
+
+
+C. Lycée
+- Filières et spécialités.
+- Options facultatives.
+- Enseignements communs.
+- Groupes de spécialité.
+- Préparation aux examens nationaux.
+- Travaux pratiques.
+- Enseignements mutualisés.
+- Accompagnement personnalisé.
+- Préparation aux concours.
+- Révisions et devoirs surveillés.
+- Orientation scolaire.
+- Stages et projets.
+
+
+
+
+
+
+
+
+
+
+
+
+D. Écoles privées et centres de formation
+- Formations initiales.
+- Formations continues.
+- Formations professionnelles.
+- Formations intensives.
+- Sessions du soir.
+- Sessions du week-end.
+- Formations en alternance.
+- Formateurs externes.
+- Cours à la carte.
+- Groupes à effectifs variables.
+- Formation en présentiel.
+- Formation hybride.
+- Formation à distance.
+- Disponibilité des entreprises partenaires.
+- Gestion des périodes de stage.
+
+
+
+
+
+
+
+
+
+
+
+
+E. Universités et écoles d'ingénieurs
+- Unités d'enseignement (UE).
+- Éléments constitutifs (ECUE).
+- Crédits académiques.
+- Semestres.
+- Filières et parcours.
+- Tronc commun.
+- Options et spécialisations.
+- Cours magistraux (CM).
+- Travaux dirigés (TD).
+- Travaux pratiques (TP).
+- Groupes de TD.
+- Groupes de TP.
+- Enseignements mutualisés.
+- Projets tutorés.
+- Projets de fin d'études.
+- Stages.
+- Mobilité académique.
+- Intervenants professionnels.
+- Soutenances et jurys.
+- Cours hybrides et distanciels.
+
+
+
+17. Paramètres techniques propres au moteur de génération
+Maintenant, nous arrivons à une dimension souvent négligée : le moteur doit également savoir comment construire, comparer, valider et améliorer les emplois du temps.
+A. Paramètres de génération
+1. Date de début de génération.
+2. Date de fin de génération.
+3. Période concernée : jour, semaine, semestre ou année.
+4. Nombre de classes à planifier.
+5. Nombre d'enseignants concernés.
+6. Nombre de salles disponibles.
+7. Nombre de matières.
+8. Nombre de créneaux.
+9. Priorité de génération par classe.
+10. Priorité de génération par enseignant.
+11. Priorité de génération par département.
+12. Génération globale ou par niveau.
+13. Génération complète ou partielle.
+14. Possibilité de figer certains cours.
+15. Possibilité de préserver un ancien planning.
+16. Possibilité de générer plusieurs propositions.
+B. Gestion des conflits
+Le moteur doit pouvoir détecter au minimum :
+- Un enseignant affecté à deux cours simultanément.
+- Une classe ayant deux cours simultanés.
+- Une salle utilisée par deux groupes simultanément.
+- Une salle dont la capacité est insuffisante.
+- Une matière affectée à un enseignant non qualifié.
+- Un enseignant indisponible.
+- Une salle indisponible.
+- Un conflit entre deux groupes partageant des étudiants.
+- Un déplacement géographiquement impossible.
+- Une durée de cours incorrecte.
+- Un volume horaire hebdomadaire non respecté.
+- Une pause obligatoire non respectée.
+- Un conflit entre deux options suivies par le même étudiant.
+- Un TP programmé sans laboratoire disponible.
+- Un cours programmé pendant une période de fermeture.
+- Une séance programmée en dehors des heures autorisées.
+C. Gestion des modifications
+17. Modification manuelle d'un cours.
+18. Déplacement automatique d'un cours.
+19. Remplacement d'un enseignant.
+20. Remplacement d'une salle.
+21. Ajout d'une séance.
+22. Suppression d'une séance.
+23. Annulation d'un cours.
+24. Reprogrammation d'un cours.
+25. Gestion des absences imprévues.
+26. Gestion des pannes de salles.
+27. Gestion des indisponibilités de matériel.
+28. Gestion des fermetures exceptionnelles.
+29. Recalcul partiel du planning.
+30. Recalcul global.
+31. Conservation de l'historique.
+32. Comparaison entre versions.
+33. Validation par un responsable.
+34. Publication d'une nouvelle version.
+35. Notification des personnes concernées.
+D. Paramètres d'optimisation
+Le moteur doit aussi pouvoir mesurer la qualité d'un planning.
+- Taux d'utilisation des salles.
+- Taux d'utilisation des enseignants.
+- Nombre de conflits.
+- Nombre de trous dans les emplois du temps.
+- Nombre de déplacements inutiles.
+- Équilibre des heures par jour.
+- Respect des préférences.
+- Respect des volumes horaires.
+- Nombre de cours tardifs.
+- Nombre de cours consécutifs.
+- Équilibre de charge entre enseignants.
+- Nombre de changements de salles.
+- Coût global du planning.
+- Taux de satisfaction des utilisateurs.
+
+18. La distinction fondamentale : contraintes obligatoires et préférences
+C'est probablement la décision architecturale la plus importante pour ton générateur.
+
+Il ne faut surtout pas traiter tous les paramètres de la même manière.
+
+Je recommande de les diviser en deux grandes catégories.
+A. Contraintes strictes (Hard Constraints)
+Non négociables
+Le moteur ne doit jamais produire un planning qui enfreint ces règles.
+
+Exemples :
+- Un enseignant ne peut pas donner deux cours simultanément.
+- Une classe ne peut pas assister à deux cours simultanément.
+- Une salle ne peut pas accueillir deux cours simultanément.
+- L'effectif ne doit pas dépasser la capacité de la salle.
+- Un enseignant doit être qualifié pour la matière.
+- Un cours doit respecter son volume horaire.
+- Une salle spécialisée doit être disponible pour un TP.
+- Un cours ne peut pas être programmé pendant une fermeture.
+- Les temps de déplacement doivent être réalisables.
+- Les horaires réglementaires doivent être respectés.
+B. Contraintes souples (Soft Constraints)
+Optimisables
+Le moteur peut les enfreindre si nécessaire, mais doit chercher à obtenir le meilleur résultat possible.
+
+Exemples :
+- Préférer les cours difficiles le matin.
+- Réduire les trous dans les emplois du temps.
+- Éviter les journées trop longues.
+- Respecter les préférences des enseignants.
+- Répartir équitablement les matières.
+- Limiter les déplacements.
+- Éviter les cours tardifs.
+- Favoriser les journées continues.
+- Éviter les changements fréquents de salles.
+- Équilibrer les charges de travail.

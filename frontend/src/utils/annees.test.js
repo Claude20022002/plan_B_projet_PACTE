@@ -4,7 +4,7 @@
  */
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { TOUTES, anneeDuJour, anneeEnCours, filtreAnnee, groupesDeLAnnee, groupesDuJour, valeurRetenue } from './annees.js';
+import { TOUTES, anneeDuJour, anneeEnCours, filtreAnnee, groupesDeLAnnee, groupesDuJour, groupesParNom, nomEtAnnee, valeurRetenue } from './annees.js';
 
 const passee = { id_annee: 1, libelle: '2025-2026', date_debut: '2025-09-01', date_fin: '2026-08-31', active: false };
 const courante = { id_annee: 2, libelle: '2026-2027', date_debut: '2026-09-01', date_fin: '2027-08-31', active: false };
@@ -54,4 +54,13 @@ test('un groupe déjà choisi reste proposé, même d\'une autre année', () => 
     assert.deepEqual(noms(groupesDuJour(groupes, [passee, courante], '2027-01-04', [10])), [10, 20, 30]);
     assert.deepEqual(noms(groupesDeLAnnee(groupes, TOUTES)), [10, 20, 30]);
     assert.deepEqual(noms(groupesDeLAnnee(groupes, '1', ['10'])), [10, 30]);
+});
+
+test("import : un nom peut désigner les groupes de plusieurs années, l'année les distingue", () => {
+    const parNom = groupesParNom(groupes.map((g) => ({ ...g, annee_scolaire: g.id_annee === 1 ? '2025-2026' : '2026-2027' })));
+    assert.deepEqual(noms(parNom.get('4a iiia')), [10, 20]);
+    assert.deepEqual(noms(parNom.get('promo spéciale')), [30]);
+    assert.equal(parNom.get('5a iiia'), undefined);
+    assert.equal(nomEtAnnee({ nom_groupe: '4A IIIA', annee_scolaire: '2026-2027' }), '4A IIIA · 2026-2027');
+    assert.equal(nomEtAnnee({ nom_groupe: '4A IIIA', annee_scolaire: null }), '4A IIIA');
 });

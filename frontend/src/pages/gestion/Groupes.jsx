@@ -24,6 +24,7 @@ import ConfirmDialog from '../../components/common/ConfirmDialog';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
 import SelecteurAnnee from '../../components/common/SelecteurAnnee';
 import GroupeDialog from '../../components/groupes/GroupeDialog';
+import DesactiverGroupe from '../../components/comptes/DesactiverGroupe';
 import EmptyState from '../../design-system/components/EmptyState';
 import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
@@ -31,7 +32,7 @@ import { filiereAPI, groupeAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { useAuth } from '../../contexts/AuthContext';
 import useAnneeChoisie from '../../hooks/useAnneeChoisie';
-import { TOUTES } from '../../utils/annees';
+import { TOUTES, anneeEnCours } from '../../utils/annees';
 import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { exportToExcelLazy } from '../../utils/lazyExports';
@@ -80,8 +81,9 @@ export default function Groupes() {
     const [aSupprimer, setASupprimer] = useState(null);
     const [importOuvert, setImportOuvert] = useState(false);
 
-    // Année scolaire proposée pour un nouveau groupe : celle choisie, sinon l'année en cours
-    const anneeScolaire = annee?.libelle ?? anneeScolaireCourante();
+    // Année scolaire proposée pour un nouveau groupe : celle choisie, sinon l'année en cours (même
+    // règle que le serveur) ; le calcul par la date ne sert que s'il n'existe aucune année
+    const anneeScolaire = annee?.libelle ?? anneeEnCours(annees)?.libelle ?? anneeScolaireCourante();
 
     useEffect(() => {
         (async () => {
@@ -355,6 +357,7 @@ export default function Groupes() {
                                                 <IconButton size="small" onClick={() => ouvrir({ groupe })} aria-label={t('ref.common.editItem', { name: groupe.nom_groupe })}>
                                                     <Edit fontSize="small" />
                                                 </IconButton>
+                                                {user?.role === 'admin' && <DesactiverGroupe groupe={groupe} />}
                                                 <IconButton size="small" color="error" onClick={() => setASupprimer(groupe)} aria-label={t('ref.common.deleteItem', { name: groupe.nom_groupe })}>
                                                     <Delete fontSize="small" />
                                                 </IconButton>
