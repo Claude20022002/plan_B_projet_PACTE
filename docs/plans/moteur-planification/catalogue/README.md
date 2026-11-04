@@ -17,12 +17,12 @@
 
 | Famille | Nom | Paramètres | Règles | Absents du code |
 |---|---|---|---|---|
-| [ETA](ETA.md) | Établissement | 35 | 0 | 12 |
+| [ETA](ETA.md) | Établissement | 35 | 0 | 13 |
 | [CAL](CAL.md) | Année scolaire et calendrier | 18 | 1 | 2 |
 | [GRP](GRP.md) | Classes, groupes et apprenants | 38 | 5 | 21 |
 | [MAT](MAT.md) | Matières et enseignements | 64 | 16 | 38 |
 | [ENS](ENS.md) | Enseignants et intervenants | 49 | 17 | 30 |
-| [SAL](SAL.md) | Salles et infrastructures | 44 | 10 | 24 |
+| [SAL](SAL.md) | Salles et infrastructures | 44 | 10 | 25 |
 | [HOR](HOR.md) | Horaires et créneaux | 39 | 16 | 28 |
 | [PED](PED.md) | Pédagogie | 35 | 29 | 33 |
 | [HUM](HUM.md) | Contraintes humaines | 11 | 7 | 10 |

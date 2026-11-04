@@ -32,6 +32,21 @@ describe("catalogue du moteur : paramètres", () => {
         expect([...dansLeCatalogue].sort()).toEqual([...dansLeCode].sort());
     });
 
+    test("chaque colonne citée par le catalogue existe vraiment dans son modèle", () => {
+        const dossier = path.join(RACINE, "backend/models");
+        const modeles = new Set(readdirSync(dossier).map((f) => f.replace(".js", "")));
+        const fausses = [];
+        for (const p of parametres) {
+            for (const [, modele, colonne] of (p.ref ?? "").matchAll(/\b([A-Z][A-Za-z]+)\.([a-z_]+)\b/g)) {
+                if (!modeles.has(modele)) continue;
+                const source = readFileSync(path.join(dossier, `${modele}.js`), "utf8");
+                const declaration = source.match(new RegExp(`\\b${colonne}\\s*:\\s*(\\{[^}]*|[^,\\n]*)`));
+                if (!declaration || declaration[1].includes("VIRTUAL")) fausses.push(`${p.id} : ${modele}.${colonne}`);
+            }
+        }
+        expect(fausses).toEqual([]);
+    });
+
     test("une règle de pays n'a jamais de valeur écrite dans le catalogue", () => {
         const fixees = parametres.filter((p) => p.categorie === "REG" && p.role !== "regle" && p.defaut !== null);
         expect(fixees.map((p) => p.id)).toEqual([]);

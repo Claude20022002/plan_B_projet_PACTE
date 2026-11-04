@@ -18,7 +18,7 @@
       "defauts": { "role": "indicateur", "type": "entier", "niveaux": "G", "modifiable": "non", "priorite": 4, "validite": "generation", "etat": "base" },
       "parametres": [
         { "code": "CAMPUS", "nom": "Nombre de campus", "desc": "Compté depuis les campus actifs ; au-delà de 1, les trajets entrent en jeu.", "ref": "Campus", "src": "2.8 12.1" },
-        { "code": "BATIMENTS", "nom": "Nombre de bâtiments", "desc": "Compté depuis les salles.", "ref": "Salle.batiment", "src": "2.9" },
+        { "code": "BATIMENTS", "nom": "Nombre de bâtiments", "desc": "Compté depuis les salles, quand elles auront un bâtiment : Planner ne le connaît pas aujourd'hui.", "etat": "absent", "src": "2.9" },
         { "code": "SITES", "nom": "Nombre de sites géographiques", "desc": "Compté depuis les sites ; à plusieurs sites, un groupe reste chez lui.", "etat": "plan", "ref": "D-20", "src": "2.10" },
         { "code": "DEPARTEMENTS", "nom": "Nombre de départements", "desc": "Compté depuis les rattachements.", "ref": "Enseignant.departement", "src": "2.11" },
         { "code": "FACULTES", "nom": "Nombre de facultés", "desc": "Compté depuis les pôles.", "etat": "plan", "ref": "ME-2a, Pole", "src": "2.12" },

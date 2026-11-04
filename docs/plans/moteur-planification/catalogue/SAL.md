@@ -8,7 +8,7 @@
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | `SAL.ID.ID` | Identifiant de la salle | Clé stable. | donnee | texte | — | individuel (salle) | oui | — | 1 | — | non | permanent | solveur (Salle.id_salle) | 6.1 |
 | `SAL.ID.NOM` | Nom ou numéro de salle | Nom affiché. | contexte | texte | — | individuel (salle) | oui | — | 4 | — | etablissement | permanent | base (Salle.nom_salle) | 6.2 6.3 |
-| `SAL.ID.BATIMENT` | Bâtiment | Sert aux changements de bâtiment. | donnee | reference | — | individuel (salle) | non | — | 3 | — | etablissement | permanent | base (Salle.batiment) | 6.4 |
+| `SAL.ID.BATIMENT` | Bâtiment | Sert aux changements de bâtiment. Absent aujourd'hui : l'ancien champ n'est plus qu'un alias du nom du campus. | donnee | reference | — | individuel (salle) | non | — | 3 | — | etablissement | permanent | absent | 6.4 |
 | `SAL.ID.ETAGE` | Étage | Sert à l'accessibilité et aux temps de déplacement. | donnee | entier | — | individuel (salle) | non | — | 3 | — | etablissement | permanent | base (Salle.etage) | 6.5 |
 | `SAL.ID.CAMPUS` | Campus | Donne le temps de trajet et le site. | donnee | reference | — | individuel (salle) | oui | — | 1 | — | etablissement | permanent | solveur (Salle.id_campus) | 6.6 |
 | `SAL.ID.DEPARTEMENT` | Département | Une salle peut être réservée en priorité à un département. | contexte | reference | — | individuel (salle) | non | — | 4 | — | etablissement | permanent | absent | 6.7 |

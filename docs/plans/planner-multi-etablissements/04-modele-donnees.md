@@ -141,7 +141,6 @@ erDiagram
     CAMPUS ||--o{ RESSOURCE_MOBILE : stocke
     RYTHME ||--o{ PLAGE_RESTREINTE : "restreint"
     VERSION_PARAMETRES ||--o{ VALEUR_PARAMETRE : fixe
-    VERSION_PARAMETRES ||--o{ REGLAGE_CONTRAINTE : "règle"
     IMPORT_LOT ||--o{ IMPORT_LIGNE : contient
     USERS ||--o{ HABILITATION : "a"
     USERS ||--o{ OCCUPATION_EXTERNE : "est occupé ailleurs"
@@ -215,14 +214,13 @@ erDiagram
     }
     VALEUR_PARAMETRE {
         int id_version PK
-        string cle PK
+        string cle PK "catalogue du moteur"
+        string portee PK "etablissement, cycle, niveau, filiere, cible individuelle"
+        string id_portee PK "vide pour l'établissement"
         json valeur
-    }
-    REGLAGE_CONTRAINTE {
-        int id_version PK
-        string contrainte PK
-        boolean active
+        string force "strict, souple ; plateforme seulement"
         int poids
+        boolean retiree
     }
     IMPORT_LOT {
         int id_import PK

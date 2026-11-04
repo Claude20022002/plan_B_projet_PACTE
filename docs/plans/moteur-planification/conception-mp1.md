@@ -1,6 +1,6 @@
 # Conception de MP-1 : les valeurs résolues
 
-Statut : **premier morceau écrit (calcul et contrôles), base de données à valider.** Groupe A, 4 novembre 2026. Rien n'est encore lu par la génération : la production ne change pas.
+Statut : **écrit et testé ; table unique et migration 0061 validées par le chef de projet le 4 novembre 2026.** Rien n'est encore lu par la génération : `ParametresPlanning` en reste la source jusqu'à MP-5.
 
 MP-1 répond à une question : **pour cette cible, à cette date, quelle valeur s'applique, avec quelle force et quel poids, et d'où vient-elle ?** Il rejoint ME-2b (versions datées, D-07).
 
@@ -11,7 +11,11 @@ MP-1 répond à une question : **pour cette cible, à cette date, quelle valeur 
 | `backend/services/moteur/valeurs/resolution.js` | `lignesEnVigueur`, `resoudreParametre`, `resoudreTout`, `regleActive` : fonctions pures, sans base |
 | `backend/services/moteur/valeurs/ecriture.js` | `controlerEcriture` : droits, portée, type, force, poids, bornes ; chaque refus a un code et une phrase |
 | `backend/services/moteur/valeurs/anciensParametres.js` | correspondance entre `ParametresPlanning` et le catalogue, unités comprises |
-| `backend/tests/utils/valeursMoteur.test.js` | règles ci-dessous, et non-régression de l'école pilote |
+| `backend/services/moteur/valeurs/lecture.js` | lignes en base, valeurs comptées (`ETA.TAILLE`), valeurs en vigueur pour une cible et une date |
+| `backend/services/moteur/valeurs/versions.js` | créer, appliquer, abandonner, annuler une version |
+| `backend/migrations/0061-valeurs-parametres.js`, `models/VersionParametres.js`, `models/ValeurParametre.js` | les deux tables |
+| `backend/routes/moteurValeursRoutes.js`, `controllers/moteurValeursController.js` | les routes du § 7 |
+| `backend/tests/utils/valeursMoteur.test.js`, `tests/integration/valeursMoteur.test.js` | règles ci-dessous, cycle d'une version, non-régression de l'école d'origine |
 
 ## 2. Qui l'emporte
 
@@ -57,7 +61,7 @@ Avec le profil université, des tests vérifient :
 
 Ces tests ne prouvent pas encore que **le problème envoyé au solveur** reste identique : ce critère de ME-2a sera à tenir quand `probleme.js` lira ces valeurs (MP-5).
 
-## 6. La base de données, à valider
+## 6. La base de données
 
 ```mermaid
 erDiagram
@@ -82,30 +86,37 @@ erDiagram
     }
 ```
 
-**Écart proposé avec le fichier 04** : `VALEUR_PARAMETRE` gagne la portée, et `REGLAGE_CONTRAINTE` disparaît. Une règle est un paramètre comme un autre, et deux tables obligeraient à résoudre deux fois.
+**Écart validé avec le fichier 04, mis à jour** : `VALEUR_PARAMETRE` gagne la portée, et `REGLAGE_CONTRAINTE` disparaît. Une règle est un paramètre comme un autre, et deux tables obligeraient à résoudre deux fois.
 
-| Sujet | Choix proposé |
+| Sujet | Choix |
 |---|---|
-| Numéro de migration | **0061**. Le groupe B demande 0060 pour le socle neutre (#150), et 0059 est pris par EC-9. À confirmer dans le canal de l'équipe |
+| Numéro de migration | **0061**. 0059 est pris par EC-9 et 0060 réservé au socle neutre (#150) |
 | `id_portee` | `VARCHAR`, chaîne vide pour l'établissement : MySQL n'applique pas l'unicité sur un `NULL`. Les identifiants sont lus en chaîne, à normaliser côté `cible`, car la comparaison est stricte |
 | Immuabilité (I-D5) | pas de route de modification ; annuler crée une version avec `retiree` |
-| École d'origine | migration : une version initiale dans le passé, profil `universite`, plus les valeurs **modifiées** de `ParametresPlanning`, converties. Une installation neuve n'a aucune ligne (lignée de ME-0c) |
+| École d'origine | migration : une version initiale datée du jour, profil `universite`, plus les valeurs **modifiées** de `ParametresPlanning`, converties. Une base sans compte n'a aucune ligne (même test que 0057) |
 | Lectures | `lireParametres` et `affectationRules.js` ne bougent pas : un seul chemin à la fois. Ils basculent avec MP-5 |
 
-## 7. Le contrat pour le groupe B, à écrire avant les écrans
+## 7. Le contrat pour le groupe B
+
+Réservé à l'administration, qui écrit au niveau « établissement ». Tout refus suit le format de l'API : `{ message, code, violations: [{ cle, portee, id_portee, code, message }] }`.
 
 | Route | Rôle |
 |---|---|
-| `GET /api/moteur/valeurs?date=&cible=` | valeurs résolues, origine, règles actives, alertes |
-| `POST /api/moteur/versions` | crée un brouillon ; rend les refus de `controlerEcriture` avec leurs codes |
-| `POST /api/moteur/versions/:id/appliquer` | applique ; aucune modification ensuite |
+| `GET /api/moteur/valeurs?date=&niveau=&filiere=&enseignant=...` | `{ date, profil, valeurs: [{ id, valeur, force, poids, origine }], actives, alertes }` |
+| `GET /api/moteur/versions` | les 100 dernières, avec leurs réglages |
+| `POST /api/moteur/versions` | `{ libelle, date_effet, lignes: [{ cle, portee, id_portee, valeur, poids, retiree }] }` : crée un brouillon, sans effet |
+| `POST /api/moteur/versions/:id/appliquer` | applique d'un coup, après avoir refait les contrôles ; 409 si ce n'est pas un brouillon |
+| `POST /api/moteur/versions/:id/abandonner` | abandonne un brouillon, qui reste dans l'historique |
+| `POST /api/moteur/versions/:id/annuler` | crée la version inverse ; 409 si une version plus récente touche le même réglage, ou si elle est déjà annulée |
+
+Codes de refus : `non_modifiable`, `droit_insuffisant`, `portee_interdite`, `type_invalide`, `hors_liste`, `regle_obligatoire`, `force_figee`, `force_interdite`, `poids_interdit`, `poids_invalide`, `borne_depassee`, `parametre_inconnu`, `doublon`, `cible_invalide`, `ligne_vide`. Hors liste : `DATE_EFFET_PASSEE`, `DATE_EFFET_INVALIDE`, `VERSION_VIDE`.
+
+**Limites connues** : le niveau « plateforme » (force d'une règle, règles d'un pays) n'a pas de route, faute de Plateforme : ces réglages attendent ME-4. L'existence de la cible (`id_portee`) n'est pas contrôlée : une valeur orpheline est sans effet. Le relevé du code a aussi montré que **Planner ne connaît pas les bâtiments** (`Salle.batiment` n'est qu'un alias du campus) : le catalogue est corrigé, et un test vérifie désormais chaque colonne qu'il cite.
 
 L'aperçu d'impact (quelles séances bougent) reste à ME-2b. Les trois classes de D-07 (présentation, prospectif, structurel) ne sont pas encore dans le catalogue : à ajouter pour que l'aperçu ne s'applique qu'aux réglages structurels.
 
-## 8. Reste à faire dans MP-1
+## 8. Suite
 
-1. Valider le § 6 et réserver le numéro de migration.
-2. Migration, modèles, `lecture.js`, routes, tests d'intégration (base de test rapide).
-3. Relecture du contrat par le groupe B.
-
-Effort restant estimé : M.
+1. Relecture du contrat par le groupe B, avant ses écrans.
+2. MP-5 : `probleme.js` et `affectationRules.js` lisent ces valeurs, avec le test du problème identique. D'ici là, un seul chemin de lecture.
+3. Ajouter au catalogue les trois classes de D-07 (§ 7), pour l'aperçu de ME-2b.
