@@ -108,8 +108,9 @@ export const navigationFor = (user) => {
       {
         items: [
           { key: 'nav.board', icon: <BoardIcon />, path: '/dashboard/enseignant' },
-          // Annonces aux classes : pas d'entrée tant que l'envoi est fermé (lot EC-5)
-          ...(ANNONCES_ENSEIGNANTS_ACTIVES ? [{ key: 'nav.announcements', icon: <Campaign />, path: '/annonces' }] : []),
+          // Annonces aux classes : pas d'entrée tant que l'envoi est fermé (lot EC-5), sauf pour le
+          // responsable de filière, qui écrit à sa filière même envoi fermé (relecture de A)
+          ...(ANNONCES_ENSEIGNANTS_ACTIVES || estResponsable(user) ? [{ key: 'nav.announcements', icon: <Campaign />, path: '/annonces' }] : []),
           { key: 'nav.timetable', icon: <ViewWeek />, path: '/emploi-du-temps/enseignant' },
           { key: 'nav.myClasses', icon: <Groups />, path: '/mes-classes' },
           { key: 'nav.myQuizzes', icon: <QuizIcon />, path: '/studio-quiz' },

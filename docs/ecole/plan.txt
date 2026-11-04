@@ -1,0 +1,1146 @@
+# Business Model & Product Strategy — ERP scolaire modulaire pour l'Afrique
+
+Modèle hybride
+
+Marché africain
+
+ERP modulaire
+
+Positionnement Value
+
+Document stratégique · Version 1.0 · Novembre 2026
+
+Votre orientation est désormais claire : construire un ERP éducatif africain, inspiré du modèle économique d'Odoo, commercialisé sous forme de modules indépendants et de packs, avec une politique tarifaire compétitive.
+
+Je recommande de ne pas concevoir ce produit comme un simple logiciel de gestion scolaire.
+
+Il doit devenir une plateforme technologique capable d'accompagner un établissement tout au long de son évolution, depuis une petite école primaire jusqu'à un groupe scolaire ou une université.
+
+Le modèle doit permettre à un établissement :
+
+- De commencer avec deux ou trois modules.
+- D'ajouter des fonctionnalités à mesure que ses besoins évoluent.
+- De conserver toutes ses données dans un environnement unique.
+- De connecter des modules développés par votre entreprise.
+- De bénéficier des mises à jour sans devoir racheter le logiciel.
+
+C'est la logique Odoo, adaptée au secteur éducatif africain.
+
+# PARTIE I — POSITIONNEMENT ET STRATÉGIE DE MARCHÉ
+
+## 1. Vision du produit
+
+# Un ERP. Plusieurs établissements. Des modules à la carte.
+
+Vision :
+
+Devenir une plateforme de référence pour la digitalisation et la gestion des établissements éducatifs en Afrique, en proposant des outils professionnels, interconnectés, accessibles financièrement et adaptés aux réalités locales.
+
+Proposition de valeur :
+
+« Chaque établissement construit son propre environnement de gestion en activant uniquement les modules dont il a besoin, sans multiplier les logiciels ni les fournisseurs. »
+
+## 2. Segmentation du marché
+
+Il faut éviter de considérer l'Afrique comme un marché homogène. Les besoins, les moyens financiers, les infrastructures et les réglementations diffèrent fortement d'un pays à l'autre.
+
+Je propose quatre segments commerciaux.
+
+| Segment | Clients                                | Besoin principal                      |
+| ------- | -------------------------------------- | ------------------------------------- |
+| S1      | Écoles primaires et préscolaires       | Gestion quotidienne                   |
+| S2      | Collèges et lycées                     | Gestion pédagogique et administrative |
+| S3      | Écoles privées et centres de formation | Gestion intégrée et rentabilité       |
+| S4      | Universités et écoles d'ingénieurs     | Gestion académique complexe           |
+
+### Priorité géographique
+
+Je recommande une expansion progressive :
+
+Phase 1
+
+Maroc
+
+Marché pilote, validation du produit, premiers clients et références commerciales.
+
+Phase 2
+
+Afrique francophone
+
+Sénégal, Côte d'Ivoire, Cameroun et RDC. Adapter les devises, la comptabilité, les calendriers et les moyens de paiement.
+
+Phase 3
+
+Afrique anglophone
+
+Ghana, Kenya et Nigeria. Localisation linguistique, intégrations et réglementation spécifiques.
+
+Phase 4
+
+Extension continentale
+
+Afrique du Sud, Afrique de l'Est et autres marchés selon les opportunités commerciales.
+
+Pourquoi cet ordre ?
+
+Le Maroc peut servir de terrain de validation. Ensuite, les marchés francophones permettent de réutiliser une partie des interfaces et du support, mais pas nécessairement les règles administratives et comptables.
+
+L'anglais et les marchés anglophones doivent être intégrés dans l'architecture dès le départ, sans forcément être commercialisés dès le lancement.
+
+## 3. Ce que révèle le benchmark africain
+
+Les concurrents montrent que le marché est déjà suffisamment mature pour accepter plusieurs modèles économiques.
+
+Voici quelques références particulièrement intéressantes :
+
+| Concurrent | Proposition et prix publiés                                                     |
+| ---------- | ------------------------------------------------------------------------------- |
+| Msingi     | Tous les modules dans chaque formule ; 250 à 350 KSh par élève et par trimestre |
+| Go4School  | 14 modules, 9 espaces, Mobile Money, français/anglais et comptabilité OHADA     |
+| Kanda OS   | 25 000, 55 000 et 120 000 FCFA/mois selon l'effectif                            |
+| UOS        | 15 000 FCFA/mois jusqu'à 500 étudiants, 20 000 jusqu'à 3 000                    |
+| Logesco    | School à partir de 100 000 FCFA ; MyUniversity à partir de 400 000 FCFA         |
+| Skoolly    | 4 à 6 DH par élève et par mois                                                  |
+| Eduzaas    | 233 à 1 624 DH/mois au Maroc, selon la formule                                  |
+
+Sources : pages officielles de [Msingi](https://msingi.io/?utm_source=chatgpt.com), [Go4School](https://www.go4school.net/?utm_source=chatgpt.com), [Kanda OS](https://kandaos.com/en/?utm_source=chatgpt.com), [UOS](https://www.uos.sn/pricing?utm_source=chatgpt.com), [Logesco](https://logesco.org/tarifs/?utm_source=chatgpt.com), [Skoolly](https://skoolly.ma/?utm_source=chatgpt.com) et [Eduzaas](https://eduzaas.com/fr-ma/pricing?utm_source=chatgpt.com).&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://msingi.io\&sz=32)
+
+School Management Platform Built for Africa+6
+
+
+
+### Les enseignements à tirer
+
+1. Msingi démontre qu'une offre complète avec tous les modules peut être vendue à un tarif lié à l'effectif.
+2. Go4School montre l'intérêt d'une forte localisation africaine : comptabilité OHADA, Mobile Money et bilinguisme.
+3. Kanda OS démontre l'intérêt du mode hors ligne et d'une tarification par tranche d'effectif.
+4. UOS montre qu'il existe une stratégie tarifaire spécifique au supérieur.
+5. Skoolly démontre que la tarification par élève est déjà compréhensible par les écoles marocaines.
+
+Notre différenciation : combiner une architecture modulaire à la Odoo, une tarification transparente, des modules indépendants et une véritable adaptation aux établissements africains.
+
+# PARTIE II — LE BUSINESS MODEL
+
+## 4. Le modèle économique retenu
+
+Je recommande un modèle hybride composé de cinq sources de revenus.
+
+## Architecture des revenus
+
+1\. Abonnements Core
+
+Récurrent
+
+Accès à la plateforme, gestion des comptes, sécurité, permissions et infrastructure commune.
+
+2\. Abonnements aux modules
+
+Récurrent
+
+Chaque établissement paie uniquement les fonctionnalités activées.
+
+3\. Packs commerciaux
+
+Récurrent
+
+Ensembles de modules proposés avec une remise par rapport à l'achat individuel.
+
+4\. Services professionnels
+
+Ponctuel
+
+Installation, migration, formation, personnalisation et accompagnement.
+
+5\. Services complémentaires
+
+Variable
+
+SMS, WhatsApp, stockage supplémentaire, API avancées, hébergement dédié et support premium.
+
+## 5. Comment fonctionne la facturation ?
+
+Il faut distinguer trois notions :
+
+- Le Core : accès à la plateforme.
+- Les modules : fonctionnalités souscrites.
+- La capacité : nombre d'élèves, nombre de campus et volume de données autorisés.
+
+Je recommande de facturer principalement par établissement et par tranche d'effectif, plutôt que par utilisateur.
+
+Pourquoi ?
+
+Un établissement peut avoir 500 élèves, 40 enseignants, 3 administrateurs et 500 parents. Facturer chacun de ces utilisateurs séparément rendrait le modèle difficile à comprendre.
+
+Le prix doit donc être prévisible.
+
+### Les tranches d'effectifs
+
+| Tranche    | Effectif actif |
+| ---------- | -------------- |
+| Micro      | Jusqu'à 150    |
+| Small      | 151–300        |
+| Medium     | 301–800        |
+| Large      | 801–2 000      |
+| Enterprise | Plus de 2 000  |
+
+L'effectif doit être calculé sur les élèves ou étudiants effectivement inscrits pour la période académique concernée.
+
+Pour le supérieur, on ajoutera une métrique complémentaire : les étudiants actifs, les campus, les facultés et les volumes d'enseignements.
+
+## 6. Règles commerciales
+
+Je recommande les règles suivantes :
+
+- Abonnement mensuel sans engagement long.
+- Abonnement annuel avec remise de 15 à 20 %.
+- Essai gratuit de 14 à 30 jours.
+- Activation immédiate des modules après paiement.
+- Désactivation sans suppression des données.
+- Export des données à tout moment.
+- Remise pour les groupes scolaires.
+- Remise pour les établissements partenaires.
+- Tarifs locaux dans chaque pays.
+- Facturation séparée des services consommables.
+
+Une règle particulièrement importante : un client qui désactive un module doit pouvoir le réactiver sans perdre son historique.
+
+# PARTIE III — CATALOGUE COMMERCIAL DES MODULES
+
+## 7. Architecture du catalogue
+
+Je recommande de structurer les modules en 8 grandes familles commerciales.
+
+# Module Marketplace
+
+Catalogue fonctionnel de la plateforme
+
+[Intellimis Lite | Affordable School ERP for Every School](https://images.openai.com/static-rsc-4/0Peo0wzlAnV_nYA3EoiU0Gz4a9infT_ySNCbnVlZr0c-1GAQCd_1mMpap9UYu4f1BpG563lpmlfxHHuYcUlt1m4ZW96DZDrDrE7sZtfvjSvyWXKKGLATtf5u-VM3ksPbUZHp3YZldU6wBgsLM1c-nl_DkL2Tj0ry-1nio5E1zBQ?purpose=inline)
+
+01\. Administration
+
+Élèves, inscriptions, dossiers, documents.
+
+[Innova - Plateforme de Gestion Scolaire 100% Algérienne | Logiciel École](https://images.openai.com/static-rsc-4/sfm--yaBgUGsaWg-vzyGPq34GnHheTXdNgtv3TxdQlmU3FR2nC76oSJGF9KNHc4L9yL3IVnsKrVLwz-6mrNyjdBvCkrsRBWX9FDrewMhnWnhJubO2_n14_kbs0x6qK51SEzwKGpCc0XCB12Ioo2mfNLXUlcu4IuMDW4u76bN4rg?purpose=inline)
+
+02\. Pédagogie
+
+Notes, bulletins, examens, compétences.
+
+[AI School Timetable Generator — Conflict-Free Scheduling | EduMark](https://images.openai.com/static-rsc-4/3WOMzQ_iR5S46qTt5jiVmVaqwFEfQF46lC8LSi7VO1Thx8yutD7INtzCw0sr-lCb4RB0Yj6XQi3B43uK_2Yo_uz7Agw3LxAqwTdhppBonSQLgAKsKd3gmaV4oCpRiftMAHhDV5v-XXOojjQ6ytMuQ0NxnH2gmmADB0AU89HyRzc?purpose=inline)
+
+03\. Planification
+
+Emplois du temps, salles, ressources.
+
+[Minassa - Logiciel de Gestion Scolaire N°1 au Maroc | ERP Écoles Privées](https://images.openai.com/static-rsc-4/DCWw-HUqGgzNKSUu03cdAhwtrTNrzjZVbYWLoBfwEoWxnBsROYTlyfeBGb54sCsnUFbS6FJut8MNX97LPcaZeuR_iFvIwGgloDp57u664z2AL4An8MI50nX26oT28sjllqrpN7mC0vHBVVHtCw8-97aNvSuB_pGK-CDmrRN95uo?purpose=inline)
+
+04\. Finance
+
+Frais, paiements, comptabilité.
+
+[Go4School - Solution de Gestion Scolaire Complète | Écoles Cameroun & Afrique Subsaharienne](https://images.openai.com/static-rsc-4/umqnAxXIM3EwceItUWG1BB4CmJ2pwc0FEx53VLtFviSi02a2a9bCCU2bMd1URrCE43MRDqRZmGumPihJR398d8h_CqU_IUYf1qHXqwHtwvaqNLpVvj3VBMhD5iVAOvvfZu7w0c3rFqVPHNNd2J4x2VxwUPogaAV4hAYq838VNB0?purpose=inline)
+
+05\. Ressources humaines
+
+Enseignants, personnel, paie.
+
+[Parent portal](https://images.openai.com/static-rsc-4/4aag2LgebAyycjZqBaDLxdtoA1FPglwN-vYL4JUJJV-B-D-cvDKB-xPcNGvTF0m-IOWU1P_8yDj2FLW-VxKSDkECU2TQMne8Ou82DYfSUB9-e7IMk73xlaEOblrXDGk51Y5LCqa0aupCoh4-Yn7zXeeS-qAeV-5m39x7KaUsbMA?purpose=inline)
+
+06\. Communication
+
+Parents, élèves, enseignants, notifications.
+
+[LittleMove: #1 AI-Powered Transport Solution for Schools & Colleges](https://images.openai.com/static-rsc-4/_ZTo8s3vtDVZvXQlyD8M1E8R0CxuGHFPhKCtA6hFcqJMtNoSz_yZ7pIfZeyqBDao5vsGP88CH34IThe83FN0DCGavQHg1AcsXnecs7CLhdgxBeSYkl1qCHmac5bnVqK_r80LXZPPsobdDsfwN-kj60UdtetHuvb3V66MZaEzKeU?purpose=inline)
+
+07\. Logistique
+
+Transport, cantine, équipements.
+
+[LMS Analytics | Data-Driven Learning Analytics and Performance Growth](https://images.openai.com/static-rsc-4/ZAAwk122M5SyakQa9D4yDXdGj8hbUFMA0I7Zyfmo84EDYUaOCSGoQcUyFSQilbgMqQycpf88BSyEV3A9hhbhgBvjYsY3kocepRqwUuDOJO5phJu0F1ftCbJ377-lbiribtkPIWGVs9gRr1OoRZmYqaSzJ2Ifijr2-Ce6CDVrHao?purpose=inline)
+
+08\. Digital et intelligence
+
+LMS, IA, statistiques, API.
+
+## 8. Catalogue détaillé et prix des modules
+
+Voici la première grille tarifaire que je recommande de tester.
+
+Les prix sont exprimés en MAD HT par mois, pour un établissement avec un campus et jusqu'à 300 apprenants actifs. Ils constituent des hypothèses de lancement, pas des prix définitifs.
+
+### A. Administration scolaire
+
+| Module              | Fonctionnalités principales              | Prix/mois |
+| ------------------- | ---------------------------------------- | --------- |
+| Core Platform       | Comptes, rôles, sécurité, API de base    | 149 DH    |
+| Student Management  | Dossiers et inscriptions des élèves      | 69 DH     |
+| Admissions          | Candidatures, préinscriptions, admission | 49 DH     |
+| Document Management | Documents, attestations, archivage       | 49 DH     |
+| Class Management    | Classes, niveaux, groupes                | 49 DH     |
+
+### B. Gestion pédagogique
+
+| Module                | Fonctionnalités principales           | Prix/mois |
+| --------------------- | ------------------------------------- | --------- |
+| Attendance            | Présences, retards, absences, QR Code | 49 DH     |
+| Gradebook             | Notes, moyennes, bulletins            | 69 DH     |
+| Examination           | Examens, sessions, jurys              | 69 DH     |
+| Skills & Competencies | Compétences et évaluations            | 69 DH     |
+| Academic Progress     | Progression pédagogique               | 79 DH     |
+
+### C. Planification et optimisation
+
+| Module                | Fonctionnalités principales                    | Prix/mois |
+| --------------------- | ---------------------------------------------- | --------- |
+| Timetable Basic       | Création et gestion des emplois du temps       | 99 DH     |
+| Timetable AI / Solver | Génération optimisée, contraintes et scénarios | 149 DH    |
+| Room Management       | Gestion et réservation des salles              | 49 DH     |
+| Resource Management   | Matériel et équipements pédagogiques           | 49 DH     |
+| Substitution          | Remplacement des enseignants absents           | 69 DH     |
+
+### D. Gestion financière
+
+| Module            | Fonctionnalités principales       | Prix/mois |
+| ----------------- | --------------------------------- | --------- |
+| School Fees       | Frais de scolarité et échéanciers | 99 DH     |
+| Payments          | Encaissements, reçus et impayés   | 69 DH     |
+| Accounting        | Comptabilité adaptée au pays      | 149 DH    |
+| Budget Management | Budgets et dépenses               | 79 DH     |
+| Payroll           | Calcul de la paie selon le pays   | 149 DH    |
+
+### E. Ressources humaines
+
+| Module                 | Fonctionnalités principales      | Prix/mois |
+| ---------------------- | -------------------------------- | --------- |
+| Staff Management       | Dossiers et contrats             | 79 DH     |
+| Teacher Management     | Affectations et charges horaires | 79 DH     |
+| Leave Management       | Congés et absences du personnel  | 49 DH     |
+| Recruitment            | Candidatures et recrutements     | 69 DH     |
+| Performance Management | Évaluation du personnel          | 69 DH     |
+
+### F. Communication
+
+| Module              | Fonctionnalités principales | Prix/mois          |
+| ------------------- | --------------------------- | ------------------ |
+| Parent Portal       | Espace parents              | 49 DH              |
+| Student Portal      | Espace élèves et étudiants  | 49 DH              |
+| Teacher Portal      | Espace enseignants          | 49 DH              |
+| Messaging           | Messagerie interne          | 49 DH              |
+| Notification Center | Notifications et alertes    | 39 DH              |
+| SMS / WhatsApp      | Communication externe       | Selon consommation |
+
+### G. Logistique et services
+
+| Module           | Fonctionnalités principales  | Prix/mois |
+| ---------------- | ---------------------------- | --------- |
+| Transport        | Bus, chauffeurs, circuits    | 99 DH     |
+| Canteen          | Cantine et restauration      | 49 DH     |
+| Library          | Gestion de bibliothèque      | 49 DH     |
+| Hostel           | Internat et hébergement      | 79 DH     |
+| Healthcare       | Infirmerie et suivi autorisé | 69 DH     |
+| Inventory        | Stocks et fournitures        | 69 DH     |
+| Asset Management | Équipements et maintenance   | 69 DH     |
+
+### H. Digital et intelligence
+
+| Module       | Fonctionnalités principales     | Prix/mois |
+| ------------ | ------------------------------- | --------- |
+| LMS          | Cours et apprentissage en ligne | 99 DH     |
+| Assignments  | Devoirs et travaux              | 49 DH     |
+| Online Exams | Examens en ligne                | 99 DH     |
+| Analytics    | Tableaux de bord et indicateurs | 99 DH     |
+| AI Assistant | Assistant intelligent éducatif  | 149 DH    |
+| Advanced API | Intégrations externes           | 99 DH     |
+| Multi-campus | Gestion de plusieurs sites      | 199 DH    |
+
+Les modules peuvent avoir des dépendances. Le catalogue commercial devra préciser les prérequis, les limites d'utilisation et les fonctionnalités comprises. Les services SMS, WhatsApp, paiements et IA peuvent générer des frais variables supplémentaires.
+
+## 9. Comment éviter que les prix des modules deviennent trop élevés ?
+
+C'est un problème majeur du modèle modulaire.
+
+Si un établissement achète individuellement 15 modules, la facture peut devenir supérieure à celle d'un ERP tout-en-un concurrent.
+
+La solution est de proposer des packs qui regroupent les modules avec des réductions significatives.
+
+Je propose trois niveaux principaux.
+
+## 10. Les packs commerciaux
+
+Pack 01
+
+# School Start
+
+# 249 DH / mois
+
+Jusqu'à 300 élèves · 1 établissement
+
+Pour les établissements qui souhaitent abandonner les fichiers Excel et le papier.\
+Modules inclus :
+
+- Core Platform
+- Student Management
+- Admissions
+- Attendance
+- Class Management
+- Document Management
+
+Valeur séparée indicative : 413 DH/mois.
+
+Pack recommandé
+
+# School Professional
+
+# 549 DH / mois
+
+Jusqu'à 300 élèves · 1 établissement
+
+Pour les écoles qui veulent centraliser leur gestion administrative, pédagogique et financière.\
+Tout School Start, plus :
+
+- Timetable Basic
+- Gradebook
+- Examination
+- School Fees
+- Payments
+- Teacher Management
+- Parent Portal
+- Messaging
+
+Valeur séparée indicative : 826 DH/mois.
+
+Pack complet
+
+# School Enterprise
+
+# 899 DH / mois
+
+Jusqu'à 300 élèves · 1 établissement
+
+Pour les établissements qui souhaitent digitaliser presque toutes leurs opérations.\
+Tout School Professional, plus :
+
+- Timetable AI / Solver
+- LMS
+- HR Management
+- Payroll
+- Transport
+- Canteen
+- Analytics
+- Advanced API
+
+Valeur séparée indicative : environ 1 650 DH/mois.
+
+Ces trois offres ne doivent pas être des produits techniquement différents : elles doivent être des configurations commerciales du même ERP.
+
+### Extension des prix selon la taille
+
+Pour les packs de référence, voici une grille de départ à tester :
+
+| Effectif      | School Start | Professional | Enterprise |
+| ------------- | ------------ | ------------ | ---------- |
+| Jusqu'à 150   | 199 DH       | 449 DH       | 749 DH     |
+| 151–300       | 249 DH       | 549 DH       | 899 DH     |
+| 301–800       | 379 DH       | 849 DH       | 1 399 DH   |
+| 801–2 000     | 599 DH       | 1 299 DH     | 2 199 DH   |
+| Plus de 2 000 | Sur devis    | Sur devis    | Sur devis  |
+
+Ces tarifs sont des hypothèses commerciales. Ils doivent être testés avec des établissements réels avant leur publication.
+
+### 11. Offre spéciale pour les universités
+
+Je déconseille de simplement appliquer les packs scolaires aux universités.
+
+Le supérieur implique des besoins différents :
+
+- Gestion des facultés et départements.
+- UE et ECUE.
+- Semestres et crédits.
+- Inscription pédagogique.
+- Affectation des étudiants aux groupes.
+- Cours magistraux, TD et TP.
+- Examens et délibérations.
+- Stages et soutenances.
+- Projets de fin d'études.
+- Mobilité académique.
+- Gestion des enseignants vacataires.
+
+Je propose donc une famille commerciale distincte :
+
+| Offre                   | Prix mensuel indicatif |
+| ----------------------- | ---------------------- |
+| University Core         | 499 DH                 |
+| University Academic     | 999 DH                 |
+| University Professional | 1 499 DH               |
+| University Enterprise   | Sur devis              |
+
+Ces prix sont des hypothèses pour une première étude de marché, avec des plafonds d'effectifs et de campus à définir.
+
+Le module de planification universitaire pourrait être vendu indépendamment aux établissements qui ont déjà un ERP.
+
+# PARTIE IV — LES REVENUS ET LA RENTABILITÉ
+
+## 12. Les services complémentaires
+
+Les abonnements ne doivent pas être votre seule source de revenus.
+
+| Service                       | Prix indicatif          |
+| ----------------------------- | ----------------------- |
+| Installation standard         | 500–1 000 DH            |
+| Migration des données         | 500–2 000 DH            |
+| Formation du personnel        | 500–1 500 DH/session    |
+| Personnalisation simple       | À partir de 500 DH      |
+| Développement spécifique      | Sur devis               |
+| Hébergement dédié             | À partir de 499 DH/mois |
+| Support premium               | À partir de 199 DH/mois |
+| Intégration API personnalisée | Sur devis               |
+| Stockage supplémentaire       | Selon volume            |
+| Notifications SMS             | Selon consommation      |
+
+L'onboarding standard pourrait être offert pour les abonnements annuels afin de faciliter l'acquisition des clients.
+
+Attention : les coûts réels de migration, de formation et de support doivent être suivis pour éviter que les petits contrats deviennent déficitaires.
+
+## 13. Simulation de revenus
+
+Prenons un scénario illustratif après une première phase de commercialisation.
+
+## Simulation de 100 établissements
+
+Scénario hypothétique, pas une prévision de ventes.
+
+Enterprise
+
+Professional
+
+School Start
+
+| Pack         | Clients | Prix   | MRR       |
+| ------------ | ------- | ------ | --------- |
+| Start        | 40      | 249 DH | 9 960 DH  |
+| Professional | 40      | 549 DH | 21 960 DH |
+| Enterprise   | 20      | 899 DH | 17 980 DH |
+
+Revenu mensuel récurrent total
+
+# 49 900 DH
+
+Soit 598 800 DH de revenu annualisé récurrent (ARR), hors prestations et consommation.
+
+### Quelques scénarios de croissance
+
+| Établissements | MRR moyen de 499 DH | ARR          |
+| -------------- | ------------------- | ------------ |
+| 25             | 12 475 DH           | 149 700 DH   |
+| 50             | 24 950 DH           | 299 400 DH   |
+| 100            | 49 900 DH           | 598 800 DH   |
+| 250            | 124 750 DH          | 1 497 000 DH |
+| 500            | 249 500 DH          | 2 994 000 DH |
+| 1 000          | 499 000 DH          | 5 988 000 DH |
+
+Il s'agit du chiffre d'affaires récurrent brut, pas du bénéfice.
+
+### Les indicateurs à surveiller
+
+- MRR : revenu mensuel récurrent.
+- ARR : revenu annuel récurrent.
+- ARPA : revenu moyen par établissement.
+- CAC : coût d'acquisition d'un client.
+- LTV : valeur financière d'un client sur sa durée de vie.
+- Churn : taux de résiliation.
+- Module Attach Rate : nombre moyen de modules achetés par établissement.
+- Gross Margin : marge brute après coûts directs.
+- Net Revenue Retention : évolution des revenus issus des clients existants.
+
+Je viserais à terme une marge brute SaaS supérieure à 70 %, tout en mesurant séparément les prestations de services.
+
+# PARTIE V — ARCHITECTURE TECHNIQUE DU PRODUIT
+
+## 14. Une architecture réellement modulaire
+
+Il faut faire une distinction essentielle : vendre des modules séparément ne signifie pas développer plusieurs applications indépendantes.
+
+Je recommande un système centralisé dans lequel chaque module possède son propre périmètre fonctionnel, mais partage les données communes.
+
+## Architecture logicielle cible
+
+Applications clientes
+
+Web Admin · Enseignant · Étudiant · Parent · Mobile
+
+API Gateway / Backend
+
+Authentification · Autorisations · API · Rate limiting
+
+Core Platform
+
+Multi-tenancy
+
+Identity & Access
+
+Module Registry
+
+Billing & Entitlements
+
+Audit & Logs
+
+Notifications
+
+Configuration pays
+
+API & Integrations
+
+Modules métier
+
+SIS
+
+Pédagogie
+
+Planning
+
+Finance
+
+RH
+
+LMS
+
+Transport
+
+Communication
+
+Analytics
+
+Infrastructure commune
+
+PostgreSQL · Redis · Stockage objet · Queue de tâches · Sauvegardes
+
+## 15. Les composants techniques à développer
+
+| Composant            | Responsabilité                          |
+| -------------------- | --------------------------------------- |
+| Core Engine          | Fonctionnement général de la plateforme |
+| Tenant Manager       | Isolation des établissements            |
+| Module Registry      | Activation et désactivation des modules |
+| Subscription Manager | Gestion des abonnements                 |
+| Permission Engine    | Autorisations par rôle                  |
+| Workflow Engine      | Automatisation des processus            |
+| Notification Engine  | Notifications et communication          |
+| Integration Engine   | Connexion aux systèmes externes         |
+| Reporting Engine     | Rapports et indicateurs                 |
+| Audit Engine         | Traçabilité des actions                 |
+
+### Le Module Registry est particulièrement important
+
+Il doit permettre de :
+
+1. Déclarer un nouveau module.
+2. Définir ses fonctionnalités.
+3. Déclarer ses dépendances.
+4. Définir son prix.
+5. Définir les établissements compatibles.
+6. Activer le module pour un établissement.
+7. Désactiver le module sans perdre les données.
+8. Gérer ses versions.
+9. Contrôler les droits d'accès.
+10. Vérifier la validité de son abonnement.
+
+Je recommande de commencer par un monolithe modulaire, avec des frontières fonctionnelles strictes, plutôt que de développer immédiatement une architecture en microservices.
+
+Cela réduira les coûts d'infrastructure et la complexité de développement. Les composants particulièrement exigeants pourront être séparés par la suite.
+
+## 16. Stack technologique recommandée
+
+Compte tenu de ton expérience avec React, Node.js, MySQL et tes projets de planification, voici une architecture cohérente.
+
+| Couche                | Technologie recommandée               |
+| --------------------- | ------------------------------------- |
+| Frontend              | React + TypeScript                    |
+| UI                    | Tailwind CSS + composants accessibles |
+| Backend principal     | Node.js + NestJS                      |
+| Moteur d'optimisation | Python + FastAPI                      |
+| Base de données       | PostgreSQL                            |
+| Cache                 | Redis                                 |
+| File de tâches        | BullMQ / Redis                        |
+| Stockage documentaire | S3 compatible                         |
+| Authentification      | Keycloak ou solution OIDC             |
+| Application mobile    | React Native, à terme                 |
+| Infrastructure        | Docker + Linux                        |
+| CI/CD                 | GitHub Actions                        |
+| Monitoring            | Prometheus + Grafana                  |
+| Documentation API     | OpenAPI / Swagger                     |
+
+### Le moteur d'emploi du temps
+
+Je ferais de ce module un composant techniquement indépendant.
+
+Architecture proposée :
+
+- Backend principal : NestJS.
+- Service d'optimisation : Python.
+- Algorithme : Google OR-Tools CP-SAT.
+- Base de données : PostgreSQL.
+- Communication : API interne et traitement asynchrone.
+
+Cela permettra de faire évoluer le moteur sans perturber les autres modules.
+
+## 17. Les fonctionnalités techniques indispensables au marché africain
+
+C'est un point sur lequel je ne ferais aucun compromis.
+
+### A. Mode hors ligne
+
+Certains établissements ne disposent pas d'une connexion Internet stable.
+
+Il faut prévoir :
+
+- Application web progressive (PWA).
+- Cache local des informations autorisées.
+- Saisie des présences hors ligne.
+- Saisie des notes hors ligne.
+- Synchronisation différée.
+- Gestion des conflits de synchronisation.
+- Indicateurs de synchronisation.
+
+Tu as déjà travaillé sur la présence par QR Code dans ton produit scolaire : je recommande de capitaliser sur ce travail pour construire l'un des premiers modules commercialisables.&#x20;
+
+### B. Localisation géographique
+
+Le Core doit gérer :
+
+- Plusieurs devises.
+- Plusieurs langues.
+- Fuseaux horaires.
+- Formats de dates.
+- Calendriers scolaires.
+- Années académiques.
+- Systèmes de notation.
+- Formats de documents.
+- Règles comptables.
+- Règles de paie.
+- Moyens de paiement locaux.
+
+Ne crée surtout pas un ERP différent pour chaque pays. Crée des configurations pays et des extensions métier.
+
+### C. Paiements
+
+Il faut construire une couche d'abstraction pour connecter différents prestataires.
+
+Exemples :
+
+- Cartes bancaires.
+- Virements.
+- Mobile Money.
+- Paiements par QR.
+- Paiements en espèces avec rapprochement.
+- Paiements fractionnés.
+
+Attention : Paystack ne couvre pas tous les pays africains. Sa documentation distingue notamment ses marchés actifs, ses canaux Mobile Money et ses déploiements en bêta. Il ne faut donc pas baser toute l'architecture sur un seul prestataire.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://support.paystack.com\&sz=32)
+
+support.paystack.com+1
+
+
+
+Je recommande une architecture `Payment Provider Adapter` qui permettra de connecter les prestataires disponibles pays par pays.
+
+### D. Sécurité et conformité
+
+Vous allez manipuler des données particulièrement sensibles, notamment celles des mineurs.
+
+Il faut prévoir dès la première version :
+
+- Isolation des données entre établissements.
+- Chiffrement des données sensibles.
+- Contrôle d'accès granulaire.
+- Journalisation des opérations.
+- Authentification multifacteur pour les administrateurs.
+- Sauvegardes automatiques.
+- Procédures de restauration.
+- Gestion des consentements.
+- Export et suppression des données selon les règles applicables.
+- Gestion des durées de conservation.
+- Contrôle des accès aux dossiers médicaux et disciplinaires.
+
+La conformité doit être étudiée pays par pays : au Maroc, par exemple, la loi 09-08 et les formalités auprès de la CNDP sont à prendre en compte.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.cndp.ma\&sz=32)
+
+Cndp+1
+
+
+
+# PARTIE VI — ROADMAP COMMERCIALE ET TECHNIQUE
+
+## 18. Plan de développement sur 24 mois
+
+Je recommande une progression en six phases.
+
+## Roadmap générale
+
+1. Phase 0 — Étude et conception
+
+   0–2 mois
+
+   Produit, marché, architecture
+   - Interviews avec des établissements.
+   - Analyse des concurrents.
+   - Définition des personas.
+   - Catalogue définitif des modules.
+   - Maquette de la marketplace.
+   - Validation des prix.
+   - Architecture du Core.
+2. Phase 1 — Core Platform
+
+   2–4 mois
+
+   Fondations techniques
+   - Authentification.
+   - Multi-tenancy.
+   - Gestion des établissements.
+   - Permissions.
+   - Module Registry.
+   - Billing.
+   - API.
+   - Audit logs.
+3. Phase 2 — MVP scolaire
+
+   4–7 mois
+
+   Premiers modules commercialisables
+   - Gestion des élèves.
+   - Admissions.
+   - Classes et groupes.
+   - Absences et QR Code.
+   - Notes et bulletins.
+   - Emplois du temps.
+   - Gestion des enseignants.
+   - Portails utilisateurs.
+4. Phase 3 — Pilotes commerciaux
+
+   7–10 mois
+
+   Validation terrain au Maroc
+   - 3 à 5 établissements pilotes.
+   - Importation Excel.
+   - Tests de charge.
+   - Paiements.
+   - Mode hors ligne.
+   - Formation des utilisateurs.
+   - Collecte des retours.
+   - Première facturation.
+5. Phase 4 — Commercialisation
+
+   10–15 mois
+
+   Lancement et croissance
+   - Marketplace commerciale.
+   - Packs Start, Professional et Enterprise.
+   - Finance et comptabilité.
+   - RH et paie.
+   - LMS.
+   - Communication.
+   - Partenariats commerciaux.
+   - Acquisition de clients.
+6. Phase 5 — Expansion africaine
+
+   15–24 mois
+
+   Internationalisation
+   - Adaptation à deux ou trois nouveaux pays.
+   - Comptabilité locale.
+   - Moyens de paiement locaux.
+   - Partenaires et revendeurs.
+   - Support multilingue.
+   - Multi-campus.
+   - Modules universitaires.
+   - API partenaires.
+
+Ces délais supposent une équipe dédiée et une priorité donnée au produit. Il faudra les réajuster selon la taille de l'équipe, le niveau de maturité des composants existants et le budget.
+
+## 19. Roadmap commerciale
+
+Le développement du produit et son développement commercial doivent avancer ensemble.
+
+| Période    | Objectif commercial           | Résultat visé                |
+| ---------- | ----------------------------- | ---------------------------- |
+| Mois 1–2   | Étude terrain                 | 30 entretiens                |
+| Mois 3–4   | Prospection et démonstrations | 10 établissements intéressés |
+| Mois 5–7   | Pilotes                       | 3 à 5 écoles                 |
+| Mois 8–10  | Première commercialisation    | 5 à 10 clients payants       |
+| Mois 11–15 | Acquisition                   | 20 à 40 clients              |
+| Mois 16–20 | Partenariats                  | 2 marchés supplémentaires    |
+| Mois 21–24 | Expansion                     | 50 à 100 clients cumulés     |
+
+Ce sont des objectifs de pilotage à valider, pas des garanties de croissance.
+
+### Canaux d'acquisition
+
+1. Prospection directe auprès des directeurs d'établissements.
+2. Démonstrations personnalisées.
+3. Partenariats avec des cabinets de conseil éducatif.
+4. Partenariats avec des intégrateurs informatiques.
+5. Réseaux d'établissements privés.
+6. Associations et fédérations scolaires.
+7. LinkedIn.
+8. Webinaires de démonstration.
+9. Recommandation entre établissements.
+10. Programme de revendeurs locaux.
+
+Je recommande une stratégie commerciale très concrète : ne pas vendre un ERP abstrait, mais montrer combien d'heures administratives l'établissement peut économiser grâce à chaque module.
+
+# PARTIE VII — ORGANISATION DU PRODUIT ET GESTION DES MODULES
+
+## 20. Comment organiser le développement des modules ?
+
+Je recommande de distinguer quatre types de modules.
+
+| Type         | Description                             | Exemple                            |
+| ------------ | --------------------------------------- | ---------------------------------- |
+| Core         | Indispensable au fonctionnement général | Authentification                   |
+| Standard     | Développé et maintenu par vous          | Gestion des élèves                 |
+| Advanced     | Fonctionnalités spécialisées            | Optimisation IA des horaires       |
+| Country Pack | Adaptation nationale                    | Comptabilité OHADA, paie marocaine |
+
+Chaque module doit posséder une fiche technique et commerciale.
+
+### Exemple de fiche produit
+
+TIMETABLE AI
+
+Module commercialisable
+
+[Horarium.ai - Efficient Timetable Creation for Elementary, Middle, and High Schools | Quick and Easy Timetable Creation - Horarium](https://images.openai.com/static-rsc-4/Di1uza_ffKyvSCTg1bbNWGjTEvPIfc-XulliBfHWnW_GZIGmPdrHUHQ8Q0ew46hmoGUmhWikzVIDcq3OTgFqH9VP3tGJWk_zMj9lzt-0SUiWSxL_vSljKOwfGjt5QVMKZBtMYljzK3-SHT7P2QBShlJz0-0-8laTFw9wWoW4mHg?purpose=inline)
+
+[horarium.ai](https://horarium.ai/?utm_source=chatgpt.com)
+
+Description
+
+Génération et optimisation automatique des emplois du temps scolaires et universitaires.
+
+Fonctionnalités
+
+- Génération automatique.
+- Gestion des enseignants.
+- Gestion des salles.
+- Gestion des disponibilités.
+- Contraintes strictes et souples.
+- Détection des conflits.
+- Comparaison de plusieurs scénarios.
+- Modification manuelle.
+- Recalcul partiel.
+- Export PDF et Excel.
+
+Dépendances
+
+- Core Platform.
+- Gestion des classes.
+- Gestion des enseignants.
+- Gestion des matières.
+- Gestion des salles.
+
+Prix indicatif
+
+# 149 DH / mois
+
+Jusqu'à 300 élèves · 1 établissement · Hors pack
+
+Chaque module devra avoir :
+
+- Un identifiant unique.
+- Un nom commercial.
+- Une description.
+- Une version.
+- Des dépendances.
+- Des permissions.
+- Un tarif.
+- Des limites d'utilisation.
+- Une documentation.
+- Un historique de modifications.
+- Une politique de support.
+
+## 21. Faut-il ouvrir la marketplace à des développeurs externes ?
+
+Oui, mais pas immédiatement.
+
+Je recommande trois étapes :
+
+Étape 1 — Marketplace propriétaire
+
+Seuls vos développeurs créent et commercialisent les modules. Cela permet de contrôler la qualité et la cohérence.
+
+Étape 2 — Partenaires techniques
+
+Des entreprises partenaires peuvent développer des intégrations et extensions avec votre API.
+
+Étape 3 — Marketplace ouverte
+
+Des développeurs indépendants peuvent publier leurs propres modules, avec validation, certification, gestion des versions et partage de revenus.
+
+À terme, vous pourriez prélever une commission de 15 à 25 % sur les ventes des modules tiers. Ce pourcentage reste une hypothèse à tester.
+
+C'est une évolution intéressante du modèle Odoo, mais elle ne doit pas devenir une priorité avant d'avoir un produit central stable.
+
+# PARTIE VIII — LES RISQUES À ANTICIPER
+
+## 22. Les principaux risques du business model
+
+| Risque                         | Conséquence                       | Réponse                            |
+| ------------------------------ | --------------------------------- | ---------------------------------- |
+| Trop de modules au lancement   | Retard et coûts élevés            | Commencer avec 8–10 modules        |
+| Prix trop bas                  | Rentabilité insuffisante          | Calculer les coûts par client      |
+| Dépendances complexes          | Modules difficiles à maintenir    | Core et contrats d'interface       |
+| Mauvaise connexion Internet    | Utilisateurs bloqués              | Mode hors ligne                    |
+| Différences réglementaires     | Non-conformité                    | Country Packs                      |
+| Mauvaise migration des données | Perte de confiance                | Outils d'importation et validation |
+| Modules peu adoptés            | Faible revenu par client          | Étudier les usages                 |
+| Personnalisations excessives   | Produit difficile à faire évoluer | Configuration plutôt que forks     |
+| Concurrence tarifaire          | Guerre des prix                   | Différenciation fonctionnelle      |
+| Fuite de données               | Risque majeur                     | Sécurité et isolation multi-tenant |
+
+## 23. Organisation de l'équipe
+
+Pour une première version, je recommande une équipe relativement compacte.
+
+| Fonction                | Responsabilité                |
+| ----------------------- | ----------------------------- |
+| Product Manager         | Vision, priorités, catalogue  |
+| Architecte / Tech Lead  | Architecture et qualité       |
+| Développeur Backend     | Core, API, modules            |
+| Développeur Frontend    | Interface et marketplace      |
+| Développeur Python / IA | Optimisation et intelligence  |
+| QA / DevOps             | Tests, déploiement, sécurité  |
+| Business Developer      | Prospection et ventes         |
+| Customer Success        | Formation, migration, support |
+
+Certains rôles peuvent être cumulés au début.
+
+# PARTIE IX — MES RECOMMANDATIONS FINALES
+
+## 24. Ce que je construirais réellement en premier
+
+Je ne développerais pas les 40 ou 50 modules simultanément.
+
+Je construirais un premier produit suffisamment complet pour être commercialisé, puis je financerais progressivement son extension grâce aux abonnements.
+
+# MVP commercial recommandé
+
+Priorité de développement
+
+Core Platform
+
+- Multi-tenant.
+- Authentification et permissions.
+- Gestion des établissements.
+- Module Registry.
+- Gestion des abonnements.
+- Notifications et audit.
+
+Les 9 premiers modules
+
+1. Gestion des élèves et inscriptions.
+2. Gestion des classes et groupes.
+3. Présences et absences avec QR Code.
+4. Gestion des enseignants.
+5. Gestion des matières.
+6. Gestion des salles.
+7. Générateur d'emplois du temps.
+8. Notes et bulletins.
+9. Gestion des frais et paiements.
+
+Interface commerciale
+
+- Catalogue de modules.
+- Activation et désactivation.
+- Abonnements.
+- Factures.
+- Gestion des capacités.
+- Tableau de bord d'administration.
+
+### 25. Exploiter les travaux déjà réalisés
+
+Je te conseille de commencer par un audit technique de tes travaux autour de HESTIM Planner / PACTE avant de créer un nouveau dépôt.
+
+Tu as déjà exploré la gestion des salles, cours, enseignants et étudiants, ainsi que la présence par QR Code. Certains composants peuvent devenir les premières briques du nouvel ERP, à condition de les rendre génériques et multi-établissements.&#x20;
+
+Il faut notamment éviter de conserver des règles spécifiques à HESTIM dans le Core.
+
+## 26. Les cinq décisions que je considère comme non négociables
+
+1. Une seule plateforme centrale : les modules doivent partager les mêmes référentiels et données.
+2. Une architecture multi-tenant : chaque établissement doit avoir un espace isolé.
+3. Une tarification locale : les prix doivent être adaptés au pouvoir d'achat et à la concurrence de chaque marché, pas simplement convertis depuis le dirham.
+4. Une modularité réelle : un client doit pouvoir acheter un seul module sans être obligé de prendre un ERP complet.
+5. Une conception évolutive : les modules doivent pouvoir être développés, commercialisés et maintenus indépendamment.
+
+# 27. Tableau de pilotage du projet
+
+Voici les décisions et livrables que je recommande de suivre pour transformer cette stratégie en projet exécutable.
+
+Plan de lancement
+
+0/20 tâches
+
+Stratégie
+
+Définir le nom et le positionnement de la marque
+
+Choisir les deux premiers marchés pilotes
+
+Interroger 30 établissements
+
+Valider les prix avec des clients potentiels
+
+Définir les segments et personas
+
+Produit
+
+Finaliser le catalogue des modules
+
+Définir les dépendances entre modules
+
+Définir le Core Platform
+
+Définir les packs commerciaux
+
+Rédiger les spécifications fonctionnelles
+
+Technique
+
+Auditer HESTIM Planner / PACTE
+
+Définir l'architecture multi-tenant
+
+Concevoir le Module Registry
+
+Développer le gestionnaire d'abonnements
+
+Définir les API et contrats de modules
+
+Commercialisation
+
+Créer le site vitrine
+
+Créer les démonstrations produit
+
+Préparer les contrats et CGU
+
+Identifier les établissements pilotes
+
+Définir le processus d'onboarding
+
+&#x20;Copier le plan de lancement
+
+## Ma conclusion stratégique
+
+Je pense que le meilleur positionnement n'est pas de devenir le logiciel scolaire le moins cher d'Afrique.
+
+Il faut devenir l'ERP scolaire modulaire qui offre le meilleur rapport entre fonctionnalités, prix, adaptabilité et facilité d'utilisation.
+
+Il y a toutefois une décision que je prendrais immédiatement : commencer par le marché des écoles privées, avec un Core solide et un premier catalogue de modules scolaires, puis développer les fonctionnalités universitaires comme une extension structurée.
+
+Cela vous permettra d'éviter de développer un produit immense avant d'avoir trouvé vos premiers clients payants.
+
+La prochaine étape que je recommande est de transformer ce business model en un véritable cahier des charges produit et technique, avec le catalogue définitif des modules, les dépendances, les règles de facturation, le modèle de données et les spécifications du Core Platform. C'est ce document qui devra servir de référence à toute l'équipe de développement.
