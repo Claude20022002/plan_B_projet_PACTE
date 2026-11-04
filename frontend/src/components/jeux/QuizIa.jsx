@@ -11,17 +11,22 @@ import ListeMesQuiz from '../quiz/mesQuiz/ListeMesQuiz';
 import ListeQuizStudio from '../quiz/mesQuiz/ListeQuizStudio';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
 import { localeEcran } from '../../utils/dates';
+import useClassQuiz from '../../hooks/useClassQuiz';
 
 /**
  * « Mes quiz » de l'enseignant (page Activités, avec les devoirs) : « Créer un quiz » ouvre la
  * création du Studio quiz, où un sujet ou un document suffit, sans classe ni module (R-9). Puis les
  * quiz générés pour l'ancien service, à relire avant leur création, les quiz du Studio (à diffuser
  * d'ici, code et QR code), puis tous les quiz du service de quiz, modifiables depuis Planner (IA-5).
+ * Sans le service de quiz pour l'école (lot ME-0c), seuls les quiz du Studio restent.
  * @param {{ donnerEnDevoir?: (generation) => void }} props
  */
 export default function PanneauQuizIa({ donnerEnDevoir }) {
   const { t, i18n } = useTranslation();
-  const [generations, setGenerations] = useState(null);
+  const { actif: classQuiz } = useClassQuiz();
+  const [toutesGenerations, setGenerations] = useState(null);
+  // Les générations se créent dans le service de quiz : masquées quand il est éteint
+  const generations = classQuiz ? toutesGenerations : [];
   const [ouverte, setOuverte] = useState(null); // { id, titre } de la génération relue
   const [nbStudio, setNbStudio] = useState(null); // quiz du Studio (null : pas encore chargés)
   const monte = useRef(true);
@@ -79,7 +84,7 @@ export default function PanneauQuizIa({ donnerEnDevoir }) {
           </LignePanneau>
         ))}
         <ListeQuizStudio onNombre={setNbStudio} />
-        <ListeMesQuiz />
+        {classQuiz && <ListeMesQuiz />}
       </Panneau>
       <RelireQuiz
         id={ouverte?.id ?? null}
