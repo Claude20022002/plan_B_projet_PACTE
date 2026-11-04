@@ -1,98 +1,243 @@
 # Benchmark des outils existants et de leurs offres
 
-Relevé le 4 novembre 2026 sur les pages officielles, par lecture automatique du texte des pages. **Ce sont des prix affichés**, pas des devis, et ils changent : à recontrôler à la main avant de citer un chiffre à un client. Quand une page n'a pas pu confirmer un chiffre, c'est écrit. Les conclusions sont dans [le README](README.md).
+Reprend et corrige le premier relevé du 4 novembre 2026. La lecture des documents d'étude, les conséquences pour l'offre et les questions ouvertes sont dans [verifications-et-consequences.md](verifications-et-consequences.md) ; les décisions et la proposition, dans [le README](README.md).
 
-## 1. Maroc : les concurrents directs
+Planner ne peut plus se présenter comme le seul à générer les emplois du temps : cinq éditeurs marocains (**Acadelta, SchoolApp, Minassa, Tayssir, Caisso**) l'annoncent, dont Caisso dans un ERP à **242 DH HT par mois** au renouvellement. **Aucun concurrent n'a été testé** : ce sont des promesses, et aucune page lue ne décrit une génération tenant compte des CM, TD, TP ou de volumes semestriels. Le marché compte au moins 20 éditeurs dont le site a pu être lu, 12 avec un prix public, pour **1 247 627 élèves du privé en 2024-2025** et **7 564 établissements en 2023-2024**, sans doute 4 400 à 6 000 structures réelles (estimation). Aucune API officielle de Massar n'a été trouvée ; la voie défendable reste l'échange de fichiers. Côté droit, l'école est en lecture normale responsable du traitement et l'éditeur sous-traitant, la loi 09-08 n'a aucune règle propre aux mineurs, et les États-Unis ne figurent pas sur la liste CNDP de 2015 ; les lois 59-21 et 59-24 n'ont été vues qu'en extraits. Sur un scénario de coût fait d'hypothèses, l'offre Planification du README passe **sous son coût à 800 et 2 000 élèves** et le support, plus que le serveur, décide de la marge. Les deux documents d'étude sont justes sur la plupart des prix marocains, faux sur Go4School (13 modules et 11 espaces) et Eduzaas (649 MAD), invérifiables sur aSc ; leur phrase sur Paystack est exacte, et aucun des deux ne parle de Timefold ni de Java. Enfin, la ligne Timefold 2.x rend payante l'analyse de score que Planner utilise, et le paquet Maven d'OR-Tools ne convient pas directement à l'image Alpine actuelle.
 
-| Outil | Modèle | Prix affiché | Ce qu'il promet | EDT automatique ? | Massar |
-|---|---|---|---|---|---|
-| [Skoolly](https://skoolly.ma/) | par élève | Starter 4 DH (100 élèves au plus), Pro 5 DH, Élite 6 DH, par élève et par mois ; −10 % à l'année ; essai 30 j | « Élèves, paiements et emplois du temps dans une seule plateforme » | non annoncé (création « intuitive ») | non mentionné |
-| [Scoliance](https://scoliance.com/) | palier + modules | Starter 400 DH (100), Pro 700 DH (500), Enterprise 1 500 DH (1 000) HT/mois ; +50 élèves : 50 DH ; **modules à la carte dès 70 DH** ; SMS 0,60 DH ; −10 % à l'année | « Votre école, enfin intelligente » ; déploiement en 48 h | ambigu (« générez vos EDT en quelques clics ») | non mentionné |
-| [Schoolz](https://schoolz.ma/tarifs/) | palier | dès 500 MAD (100), 900 MAD (300), 1 400 MAD (500) ; au-delà, devis. Installation et formation incluses | « Simple et transparente », sans frais cachés | non précisé | non mentionné |
-| [Eduzaas](https://eduzaas.com/fr-ma/pricing) | palier | 233 MAD (300), 649 MAD (1 500), 1 624 MAD (illimité) ; **à l'année seulement, payé en dollars** ; essai 14 j | Plateforme complète à limites progressives | non mentionné | non mentionné |
-| [Caisso](https://caisso.ma/tarifs/ecoles/) | forfait, élèves illimités | Essentiel 700 DH/an la 1re année (puis 1 600), ou 150 DH/mois. Avancé 1 300 DH/an (puis 2 900), ou 300 DH/mois. HT. Installation et reprise incluses | Vient de la caisse : « Vous encaissez le jour même » ; reçus FR/AR | **oui, annoncé** (pack Avancé, FR/AR) | reprise des listes à l'ouverture |
-| [iLimo](https://ilimo.ma/fr/tarifs) | devis | aucun prix fixe ; 3 formules selon effectif (200, 400, illimité) ; Analytics 390 MAD/mois | Sur mesure, sans engagement long, installation offerte, conformité 09-08 | non mentionné | **connecteur inclus** dès Starter |
-| [SchoolSoft](https://schoolsoft.ma/tarifs.html) | devis | aucun prix publié | ERP marocain, support FR/AR | non mentionné | outils Massar en Pro |
-| [OpenEduCat au Maroc](https://openeducat.org/fr/solutions/school-management-system-in-morocco/) | modules + utilisateurs | Community gratuite à héberger soi-même ; Enterprise pour 500 élèves : **25 000 à 60 000 MAD/an** | Interface arabe, français, anglais ; hébergement au Maroc | non relevé | import et export de fichiers, **pas de synchronisation** |
+## Comment lire ce rapport
 
-### Le même établissement, à plusieurs tailles
+**Sauf date indiquée, toutes les pages ont été consultées le 4 novembre 2026.** Les prix sont des prix affichés, jamais des devis. Conversions : cours de référence de Bank Al-Maghrib du 3 novembre 2026, 1 USD = 9,8261 MAD et 1 EUR = 10,9904 MAD ([BAM](https://www.bkam.ma/Marches/Principaux-indicateurs/Marche-des-changes/Cours-de-change/Cours-de-reference)) ; pour les monnaies africaines, taux de marché du 3 novembre 2026, 1 MAD = 59,64 FCFA = 13,22 KSh = 136,90 ₦ = 267,59 TSh ([ExchangeRate-API](https://open.er-api.com/v6/latest/MAD)).
 
-En DH par mois, calculé depuis les prix ci-dessus. **Les périmètres diffèrent** : ce tableau situe un prix, il ne compare pas des produits équivalents. HT ou TTC ne sont pas toujours précisés.
+| Marqueur | Sens |
+|---|---|
+| **[L]** | page ou texte lu directement à la date de consultation |
+| **[E]** | extrait de moteur de recherche seul, page non ouverte : **à ne pas citer sans contrôle** |
+| **[V]** | contenu d'un concurrent, partenaire, revendeur ou intégrateur intéressé |
+| **[T]** | tiers (agrégateur, comparatif, presse) |
+| **[M]** | mesuré directement sur un fichier, du code ou une adresse |
+| **[A]** | donnée de plus de trois ans |
 
-| Offre | 100 | 300 | 500 | 1 000 | 1 500 |
-|---|---|---|---|---|---|
-| Caisso Avancé, au renouvellement (ou sans engagement : 300) | 242 | 242 | 242 | 242 | 242 |
-| Eduzaas | 233 | 233 | 649 | 649 | 649 |
-| Scoliance | 400 | 700 | 700 | 1 500 | 2 000 (Enterprise + 10 packs) |
-| Schoolz (« à partir de ») | 500 | 900 | 1 400 | devis | devis |
-| Skoolly Pro | 500 | 1 500 | 2 500 | 5 000 | 7 500 |
-| OpenEduCat Enterprise (fourchette) | — | — | 2 083 à 5 000 | — | — |
-| *`plan.txt`, School Professional* | *449* | *549* | *849* | *1 299* | *1 299* |
-| *`plan.txt`, School Enterprise* | *749* | *899* | *1 399* | *2 199* | *2 199* |
-| *Offre actuelle de Planner (5,40 MAD par compte, 7,5 % de personnel en plus, fichier 13)* | *581* | *1 742* | *2 903* | *5 805* | *8 708* |
+Toute page d'éditeur sur son propre produit reste une **déclaration commerciale**, même marquée [L] : aucun logiciel n'a été essayé, aucune démonstration vue. Pour les coûts, seuls le CGI 2026 et l'IGOC 2026 ont été lus en texte intégral ; les autres pages [L] de cette partie l'ont été sous forme résumée, et chaque prix reste à relire à la main avant publication. Rien ici n'est un avis juridique.
 
-## 2. Afrique francophone et anglophone
+Sont pris comme acquis, et non rediscutés, les choix du chef de projet du 4 novembre 2026 : vendre d'abord la Planification seule, puis le supérieur privé, puis l'offre scolaire complète ; abandonner la pile de `plan.txt` ; inclure le socle au lieu d'un Core payant ; l'école pilote reste en discussion et le produit doit exister avant la phase pilote.
 
-| Outil | Modèle | Prix affiché | À retenir |
+## Vingt éditeurs lisibles au Maroc, douze avec un prix public
+
+Le marché compte bien plus que les huit noms du premier relevé, avec des entrants à bas prix et une offre gratuite. Tous les prix ci-dessous sont [L] sauf mention, et s'entendent par mois sauf mention.
+
+| Éditeur | Prix relevé | Base fiscale | Points notables |
 |---|---|---|---|
-| [Kanda OS](https://kandaos.com/en/) | palier | 25 000 FCFA (150), 55 000 (600), 120 000 (2 000), dès 250 000 (illimité, multi-site), par mois | **Saisie des notes et présences hors ligne dès la 1re formule** ; offre séparée pour le supérieur ; Congo, RDC, Cameroun, Gabon, Tchad, Centrafrique, Sénégal |
-| [Go4School](https://www.go4school.net/) | modules, sur devis | aucun prix | 13 modules, dont 5 de socle ; Mobile Money ; plan comptable OHADA ; français et anglais ; Cameroun |
-| [Logesco](https://logesco.org/tarifs/) | selon élèves | School dès 100 000 FCFA ; MyUniversity dès 400 000 FCFA, **soit School × 4** ; période non dite | Le supérieur vaut 4 fois le scolaire ; huit pays francophones |
-| [UOS](https://www.uos.sn/pricing) | palier | 15 000 FCFA (500 étudiants), 20 000 FCFA (3 000) par mois | Vise le supérieur à prix très bas |
-| [Msingi](https://msingi.io/) | par élève, par trimestre | 250 à 350 KSh | **Tout l'ERP dans chaque formule** ; seuls les portails changent ; Kenya, 5 écoles annoncées |
+| [Skoolly](https://skoolly.ma/tarifs) | Starter 4 DH/élève (100 au plus), Pro 5 DH, Élite 6 DH ; −10 % à l'année ; essai 30 j | non dite | « Emplois du temps avancés » dès Pro ; WhatsApp en sus ; carte bientôt |
+| [Scoliance](https://scoliance.com/) | Starter 400 DH (100), Pro 700 (500), Enterprise 1 500 (1 000 par établissement) ; +50 élèves : 50 DH ; modules dès 70 DH, liste non publiée ; SMS 0,60 DH ; −10 % à l'année | HT | EDT complets dès Pro |
+| [Schoolz](https://schoolz.ma/tarifs/) | « indicatifs », dès 500 MAD (100), 900 (300), 1 400 (500) ; devis au-delà | non dite | toutes fonctions à chaque taille, installation incluse |
+| [Eduzaas](https://eduzaas.com/fr-ma/pricing) | 233 MAD (300), 649 (1 500), 1 624 (illimité), facturé à l'année et en USD ; essai 14 j | hors taxes locales | aucune ligne « emploi du temps » dans la grille |
+| [Caisso](https://caisso.ma/tarifs/ecoles/) | Essentiel 700 DH/an la 1re année, puis 1 600, ou 150 DH/mois ; Avancé 1 300 DH/an, puis 2 900, ou 300 DH/mois ; élèves illimités | HT | EDT automatique en Avancé ; installation et reprise incluses ; paiement en ligne et SMS hors pack |
+| [Acadelta](https://www.acadelta.com/tarifs) | 400 DH (100), +3 DH/élève jusqu'à 300, +2 DH jusqu'à 800 ; devis au-delà | HT, TVA 20 % en sus | sans paliers |
+| [EduSchoolConnect](https://dev.eduschoolconnect.com/tarifs) | 199 MAD (100), 299, 449, 599, 699 (500), 799, 899 (700) ; devis au-delà ; essai 7 j | HT, TVA 20 % en sus | tous modules ; **mise en place facturée une fois, sur devis, non remboursable** ; page lue sur un sous-domaine « dev » |
+| [Qalam](https://www.appqalam.com/) | Essentiel 499 dh ou 4 990/an (300) ; Premium 999 ou 9 990/an (illimité) ; engagement 12 mois ; −50 % à vie avant le 31 décembre | non dite | cartes « via Stripe » (voir plus bas) |
+| [Mon Ecole PRO](https://monecole.aitouali.com/tarifs) | 300 MAD (150), 450 (300), 800 (800) | non dite | |
+| [SchoolMA](https://www.schoolma.net/) | Démo 0 MAD (10), 300 (50), 800 (illimité) | non dite | « 68 modules » |
+| [E-Madrassati](https://creaweb.ma/application-web/application-emadrassati/) | 1 950 DH HT/an « au lieu de 4 950 » | HT | agence web, vend aussi des caisses |
+| [OpenEduCat Maroc](https://openeducat.org/fr/solutions/school-management-system-in-morocco/) | Community gratuite ; Enterprise pour 500 élèves : 25 000 à 60 000 MAD/an | non dite | modules et paquets d'utilisateurs |
+| [Tayssir](https://tayssir.school/) | BASIC « gratuite à vie » (2 administrateurs, fonctions avancées limitées) ; PREMIUM sur devis | | EDT dans l'offre gratuite : non précisé |
+| [iLimo](https://ilimo.ma/fr/tarifs), [SchoolApp](https://schoolapp.ma/), [Minassa](https://minassa.ma/), [SchoolSoft](https://schoolsoft.ma/tarifs.html), [E-Schools](https://e-schools.ma/fr), [EduConnect](https://edu-connect.ma/), [Medrassa](https://medrassa.ma/) | aucun prix public (iLimo : Analytics 390 MAD/mois) | | |
 
-## 3. Références internationales
+Odoo est aussi vendu par un intégrateur : pack dès 7 900 DH de mise en place, module emploi du temps à 2 500 DH, Enterprise à 280 DH/utilisateur/mois ([Oasis Technocloud](https://oasistechnocloud.com/blog/logiciel-gestion-ecole-maroc/)) [V]. GOOBELO, relevé surtout en Afrique francophone, propose le Maroc dans son formulaire, dès 15 000 FCFA/mois, soit environ 252 MAD ([GOOBELO](https://www.goobelo.com/)) [L]. Ne reposent que sur des extraits, et ne sont pas retenus : DataSchool, Edumanage (« à partir de 500 » sans unité), Organiscol (plus de 500 écoles revendiquées, mais domaine injoignable le 4 novembre), Madrassati, My Madrassati, Moujtahid, Attadbir ([dataschool.ma](https://dataschool.ma/), [Edumanage](https://edumanage.space/), [organiscol.com](https://organiscol.com/)) [E]. « SchoolManager » à 10 000-25 000 DH/an et « ProNote » à 8 000-20 000 DH/an ne sont que des chiffres d'un vendeur concurrent, sans source primaire ([Oasis Technocloud](https://oasistechnocloud.com/blog/logiciel-gestion-ecole-maroc/)) [V].
 
-| Outil | Modèle | Prix affiché | À retenir |
+En DH par mois, calculé depuis ces prix. **Les périmètres et les bases fiscales diffèrent** : ce tableau situe un prix, il ne compare pas des produits équivalents.
+
+| Offre | 100 | 300 | 500 | 800 | Génération annoncée |
+|---|---:|---:|---:|---:|---|
+| Caisso Avancé, renouvellement (1re année : 108 ; sans engagement : 300) | 242 | 242 | 242 | 242 | oui |
+| Eduzaas | 233 | 233 | 649 | 649 | non |
+| EduSchoolConnect | 199 | 449 | 699 | devis | non |
+| Mon Ecole PRO | 300 | 450 | 800 | 800 | non |
+| Qalam, au mois, hors remise | 499 | 499 | 999 | 999 | non |
+| SchoolMA | 800 | 800 | 800 | 800 | ambigu |
+| Scoliance | 400 | 700 | 700 | 1 000 (Pro + 6 packs) ou 1 500 | ambigu |
+| Acadelta | 400 | 1 000 | 1 400 | 2 000 | oui |
+| Schoolz (« à partir de ») | 500 | 900 | 1 400 | devis | non |
+| Skoolly Pro | 500 | 1 500 | 2 500 | 4 000 | non |
+
+Les preuves de clientèle sont faibles et toutes déclaratives. Tayssir revendique « 50+ écoles » et nomme quatre établissements ([Tayssir](https://tayssir.school/)) ; SchoolApp « 50+ établissements » et 15 000 élèves, avec des témoignages à noms abrégés ([SchoolApp](https://schoolapp.ma/)) ; SchoolMA « 37+ » et 5 230 élèves ([SchoolMA](https://www.schoolma.net/)) ; Acadelta cite un seul client, Pole Academy, en précisant que le retour reprend ce que l'école lui a communiqué ([Acadelta](https://www.acadelta.com/cas-client-pole-academy)). Scoliance et Minassa ont des témoignages **dans un commentaire HTML, donc non affichés** [M] ([Scoliance](https://scoliance.com/), [Minassa](https://minassa.ma/)) ; ceux d'Eduzaas sont signalés comme « illustratifs » ([Eduzaas](https://eduzaas.com/fr-ma)). **Aucun avis indépendant n'a été trouvé.**
+
+Plusieurs acteurs paraissent très jeunes, ce qui reste une lecture indirecte. Skoolly est au nom d'un auto-entrepreneur dont le numéro est « en cours d'attribution » ([mentions, 14 mai 2026](https://skoolly.ma/mentions-legales)). Schoolz, porté par ThinkWeb SARL (2012), est « en cours de lancement auprès d'un premier cercle » ([Schoolz](https://schoolz.ma/a-propos/)). L'application parents de Minassa n'est pas sortie et aucune identité légale n'a été trouvée ([Minassa](https://minassa.ma/)). La page de SchoolSoft laisse visible : « Les modules, limites et prix sont à définir dans votre grille commerciale finale » ([SchoolSoft](https://schoolsoft.ma/tarifs.html)). Les RC et ICE sont ceux que déclarent les sites : aucun contrôle au registre du commerce n'a été fait.
+
+Trois capacités discriminent. L'**arabe** : Schoolz et Acadelta écrivent que leur plateforme est en français ([Schoolz](https://schoolz.ma/logiciel-gestion-scolaire-maroc/), [Acadelta](https://www.acadelta.com/a-propos)), alors qu'iLimo, Qalam, E-Schools et EduSchoolConnect affirment une interface arabe, sans écran vu. Le **paiement en ligne des familles** n'est nettement écrit que chez Eduzaas, Qalam et OpenEduCat (CMI et M2T annoncés) ; Caisso le met hors pack. Or Qalam annonce des cartes « via Stripe » ([Qalam](https://www.appqalam.com/)) alors que le Maroc ne figure pas dans la liste des pays de Stripe ([Stripe](https://stripe.com/global)) : le montage réel n'est pas établi. Le **hors ligne** et le **supérieur** sont absents : aucune page marocaine lue n'annonce de saisie hors ligne ; aucune ne décrit CM, TD, TP, parcours ou campus universitaires, Schoolz citant seulement des types de séances « cours, TD, TP, contrôle » pour des niveaux de la maternelle au lycée ([Schoolz](https://schoolz.ma/fonctionnalites/)), et Skoolly excluant les universités ([Skoolly](https://skoolly.ma/a-propos)).
+
+## Cinq éditeurs annoncent la génération, et aucun n'a été testé
+
+La distinction utile sépare **placer les cours** et **détecter les conflits**, que les pages mélangent. Aucun éditeur n'emploie le mot « solveur ».
+
+| Éditeur | Ce qui est écrit [L] | Prix lié | Réserve |
 |---|---|---|---|
-| [Odoo](https://www.odoo.com/pricing) | par utilisateur | **One App Free** : 0 $, une application, utilisateurs illimités. Standard : 8,95 US$ par utilisateur et par mois (au lieu de 11,20). Custom : 16,40 US$ (au lieu de 20,40). Remise de 12 mois | **Toutes les applications incluses dans les formules payantes : Odoo ne vend pas ses modules à la carte** (voir README, § 2). Mise en place facturée à part |
-| [OpenEduCat](https://www.openeducat.org/fr/pricing/) | plateforme + modules + utilisateurs | modules dès 69 $/an ; plus de 70 modules ; Community LGPL gratuite | Le plus proche du modèle à la carte ; pas de prix par étudiant |
-| [Fedena](https://fedena.com/pricing-and-plans) | forfait annuel | 999, 1 399, 1 699 $/an | Utilisateurs illimités ; installation et formation incluses |
-| [Classter](https://www.classter.com/pricing/) | par étudiant et module | Core 8,50 €, Academics & LMS 6,50 €, Surveys 6,50 € par étudiant et par an | Sur devis ; exemple de la page incohérent (voir § 5) |
+| [Acadelta](https://www.acadelta.com/emploi-du-temps-automatique-ecole) | « génère automatiquement l'emploi du temps de toutes les classes » ; « calcule plusieurs solutions et retient la meilleure » ; environ 45 s, 4 à 5 min pour une centaine de classes, jusqu'à 10 min | 1 000 DH HT à 300 élèves | Annonce la plus détaillée ; règles citées limitées aux disponibilités et aux doubles placements, **pas de salles** sur cette page ; inclusion dans le tarif déduite de l'absence de paliers |
+| [SchoolApp](https://schoolapp.ma/fonctionnalites.html) | « Génération automatique sous contraintes (salles, enseignants, créneaux) » | formule PLATINUM seule, sans prix | |
+| [Minassa](https://minassa.ma/) | « Générez vos emplois du temps automatiquement » ; maquette « Génération IA » | aucun | application parents pas lancée, identité non trouvée |
+| [Tayssir](https://tayssir.school/) | « l'IA crée des plannings optimisés » ; modification manuelle possible ([gestion](https://tayssir.school/gestion.php)) | gratuit ou devis, non précisé | « IA » sans méthode |
+| [Caisso](https://caisso.ma/tarifs/ecoles/) | « Emploi du temps généré automatiquement (FR/AR) » ; [« le générateur remplit les classes »](https://caisso.ma/blog/logiciel-emploi-du-temps-scolaire-maroc/) | Avancé : 108 DH/mois la 1re année, 242 ensuite, 300 sans engagement | **Le même article décrit aussi un remplissage manuel** (« vous choisissez la matière, l'enseignant et la salle », 11 juillet 2026) |
 
-## 4. Emplois du temps seuls, et gratuits
+Sont **ambigus** : Scoliance, « Générez et publiez vos EDT en quelques clics », dont le blog ne dit pas que le logiciel place les cours ([Scoliance](https://scoliance.com/), [blog](https://scoliance.com/blog/emploi-du-temps-scolaire-eviter-les-conflits-des-la-rentree)) ; SchoolMA, « Planning automatique des cours », alors que son catalogue ne décrit qu'un tirage des plannings ([SchoolMA](https://www.schoolma.net/), [catalogue](https://www.schoolma.net/fonctionnalites)) ; l'intégrateur Odoo, dont la phrase peut se lire comme une simple détection ([Oasis Technocloud](https://oasistechnocloud.com/blog/logiciel-gestion-ecole-maroc/)) [V] ; DataSchool et Edumanage, en extraits seulement ([DataSchool](https://dataschool.ma/logiciel-scolaire-au-maroc/), [Edumanage](https://edumanage.space/)) [E]. **Skoolly, Schoolz et EduConnect décrivent un éditeur manuel** avec détection de conflits ([Skoolly](https://skoolly.ma/fonctionnalites), [Schoolz](https://schoolz.ma/fonctionnalites/), [EduConnect](https://edu-connect.ma/)). iLimo, SchoolSoft, Eduzaas, EduSchoolConnect, E-Schools, Medrassa, Mon Ecole PRO et E-Madrassati ne font que mentionner ou afficher l'emploi du temps ([iLimo](https://ilimo.ma/fr), [SchoolSoft](https://schoolsoft.ma/solution.html), [Eduzaas](https://eduzaas.com/fr-ma/features), [EduSchoolConnect](https://eduschoolconnect.com/fonctionnalites)) ; le mot n'apparaît pas sur la page d'accueil lue de Qalam ([Qalam](https://www.appqalam.com/)).
 
-| Outil | Prix | À retenir |
+Acadelta est le plus crédible à ce stade parce qu'il publie des temps et un compromis, ce qui ne prouve pas la qualité. Le seul moyen de trancher est une démonstration sur un jeu de données identique et imposé, chez Acadelta, SchoolApp, Minassa, Tayssir, Caisso et Scoliance.
+
+## L'Afrique vend surtout scolarité et frais, à des prix très bas
+
+Parmi les pages lues, **seul Novacole annonce un emploi du temps automatique**. Deux offres kényanes l'annoncent en extraits, EduMyles ([EduMyles](https://edumyles.vercel.app/solutions/secondary-schools)) et Leada ([Leada](https://leada.it.com/pricing/)) [E]. Zeraki a « testé » un module en 2022-2023, sans lancement confirmé ([Zeraki](https://www.zeraki.app/post/zeraki-a-kenyan-edtech-providing-digital-solutions-for-school-admin-raises-1-8m)). L'absence sur une page ne prouve pas l'absence dans le produit.
+
+| Éditeur | Prix affiché | Par élève et par an, en MAD (calcul) | À retenir |
+|---|---|---:|---|
+| [Kanda OS](https://kandaos.com/en/pricing) [L] | 25 000 (150), 55 000 (600), 120 000 (2 000), dès 250 000 FCFA/mois, HT ; à l'année, 10 mois payés pour 12. Campus : 49 000 (500), 119 000 (2 000), 279 000 (5 000), dès 590 000 | 28,0 / 15,4 / 10,1 au plafond | Saisie hors ligne des notes et présences, après connexion initiale ; 7 pays |
+| [Go4School](https://www.go4school.net/) [L] | sur devis | | **13 modules, 11 espaces**, Mobile Money, OHADA, FR et EN |
+| [Logesco](https://logesco.org/tarifs/logesco-school/) [L] | 100 000 (500), 150 000 (1 000), 250 000 (2 000) FCFA ; MyUniversity [dès 400 000](https://logesco.org/tarifs/) ; installation 50 000 « payable une seule fois » | 3,4 / 2,5 / 2,1 **si annuel** | **Période du tarif non dite : ni « paiement unique » ni « abonnement » ne sont établis** |
+| [UOS](https://www.uos.sn/pricing) [L] | 15 000 (500), 20 000 (3 000) FCFA/mois | 6,0 / 1,3 au plafond | Starter pour « petites universités et écoles » |
+| [Msingi](https://msingi.io/) [L] | 250 à 350 KSh/élève/trimestre, tout l'ERP ; installation non chiffrée | 56,7 à 79,4 (3 trimestres supposés) | Kenya, 5 écoles nommées |
+| [Novacole](https://novacole.com/) [L] | 200, 400, 600 FCFA HT/élève/an | 3,4 / 6,7 / 10,1 | 170+ écoles déclarées ; EDT automatique, Mobile Money, SYSCOHADA |
+| [GestEcole](https://gest-ecole.com/) [L] | 500 FCFA/élève/an, tout inclus | 8,4 | FR, AR, EN avec droite à gauche |
+| [Lakoli](https://lakoli.com/) [L] | 75 FCFA/élève/mois | 15,1 | Côte d'Ivoire, 300+ déclarés |
+| [1ECOLE](https://1ecole.com/) [L] | 2 000 FCFA/élève/an, mise en service 50 000 | 33,5 | Côte d'Ivoire |
+| [ShuleSoft](https://www.shulesoft.co/pricing) [L] | 10 000 TSh/élève/an en Tanzanie, 5 $ ailleurs ; **modules à la carte** de 1 000 à 4 000 TSh, dont la somme (13 000) dépasse le groupé | 37,4 / 49,1 | 600+ écoles déclarées |
+| [SAFSIMS](https://safsims.com/pricing/) [L] | ₦1 000 à 3 000 ou KSh 100 à 300 /élève/trimestre ; gratuit jusqu'à 50 | 21,9 à 68,1 | Prix contradictoires sur [une page ancienne](https://safsims.com/the-best-school-management-system-in-kenya/) [E] |
+| [Zeraki](https://www.zeraki.app/), [Edves](https://www.edves.com/) [L] | aucun prix | | Compteurs illisibles ou anciens chez Zeraki |
+| [Eduvate](https://www.eduvate.app/), [KAKO](https://www.gbaiba.com/) [E] | 9 000 FCFA HT/mois (50) ; 15 000 FCFA/mois | | pages non lisibles |
+
+EducMaster n'est pas un concurrent commercial : c'est une plateforme ministérielle béninoise, financée par une retenue de 50 FCFA par élève ([La Nouvelle Tribune](https://lanouvelletribune.info/2025/12/benin-50-fcfa-par-eleve-demandes-pour-assurer-le-fonctionnement-deducmaster/)) [L]. Au Nigeria, les prix de SchoolViewers, Akada, SchoolKit et Edunile viennent de comparatifs intéressés ([Nairametrics](https://nairametrics.com/2026/08/19/top-5-school-management-systems-in-nigeria-what-schools-get-for-their-money/), [HeadTeacher.ng](https://www.headteacher.ng/best-school-management-software-nigeria-2026/)) [V]. Un prix ramené au plafond d'un palier flatte l'offre : à 300 élèves, le palier de Kanda revient à 30,7 MAD par élève, contre 15,4 au plafond. La concurrence au Ghana est sous-documentée, et aucune part de marché par pays n'a été trouvée.
+
+L'ordre d'expansion de `plan.txt` correspond à des faits, sans être homogène : Sénégal, Côte d'Ivoire, Cameroun et RDC sont membres de l'OHADA, mais utilisent le XOF, le XAF, le CDF et le dollar, et seul CinetPay est donné pour les quatre, sur la base d'extraits [E]. Les offres y descendent à 3 à 34 MAD par élève et par an, soit l'ordre de grandeur de la Planification du README (3,6 à 11,9 MAD selon le palier, calcul), pour un périmètre scolaire complet.
+
+## L'international montre une entrée gratuite et peu de vrais prix à la carte
+
+**Odoo** ne vend pas à la carte : une application gratuite, puis toutes les applications pour un prix par utilisateur. Vu du Maroc, en dollars US, par utilisateur et par mois ([Odoo](https://www.odoo.com/pricing), [configurateur](https://www.odoo.com/pricing-configurator?plan=standard)) [L] :
+
+| Formule | Année, 1re année | Année, courant | Mois, 1re année | Mois, courant |
+|---|---:|---:|---:|---:|
+| One App Free | 0 | 0 | 0 | 0 |
+| Standard | **7,25** | **8,95** | 9,10 | 11,20 |
+| Custom | **13,40** | **16,40** | 16,40 | 20,40 |
+| Light User | 2,90 | 2,90 | | |
+
+La remise de première année ne vaut que pour les « initial users ordered » et la mise en place est vendue à part : Success Packs de 190 $ (4 h, nouveau client) à 8 000 $ (200 h, client existant) vus du Maroc ([packs](https://www.odoo.com/pricing-packs)). **Contradiction non résolue** : deux tiers donnent 25,50 $ pour le Custom au Maroc, selon le pays de facturation ([OEC.sh, 18 octobre 2026](https://oec.sh/odoo-pricing/countries), [Aidoo, 23 septembre 2026](https://aidoo.ai/en/outils/calculateur-cout-odoo)) [T], alors que la lecture directe et un intégrateur marocain donnent 13,40 / 16,40 $ ([RMG, 31 octobre 2026](https://rmgsolutions.ma/en/ressources/odoo-pricing-morocco-2026)) [V]. Le prix réellement facturé à une entité marocaine n'est pas établi. Le « 24,90 $ » de ChatGPT existe, mais aux États-Unis ([ERP Research, juillet 2026](https://www.erpresearch.com/pricing/odoo)) [T].
+
+Le passage au prix unique date d'octobre 2022. Odoo écrit que l'ancien modèle, prix par utilisateur plus prix par application, lui faisait perdre les clients de 1 à 5 utilisateurs ([Odoo, 18 octobre 2022](https://www.odoo.com/blog/odoo-news-5/odoo-s-new-pricing-970)) : c'est un plaidoyer d'éditeur, sans chiffre de résultat. Il condamne le cumul des deux prix, pas le module en soi. Une première hausse en quatre ans, d'environ 20 % sur une partie de l'offre, a été annoncée le 24 septembre 2026 ([Brussels Times](https://www.brusselstimes.com/business/2332306/odoo-announces-e10-billion-valuation-and-a-partial-price-increase)) [T].
+
+**OpenEduCat** publie le seul vrai barème à la carte, dans le script public de son configurateur, qui n'est pas une offre contractuelle ([script](https://openeducat.org/_next/static/chunks/bc53ec808451ada1.js)) [L] : socle obligatoire 489 $/an, modules de 79 à 599 $, paquets d'utilisateurs de 29 à 5 049 $. **Le Maroc relève d'une grille moins chère** : socle 333 $, modules de 31 à 429 $, paquets de 20 à 3 389 $, module Timetable à 74 $. Le minimum technique y est de 353 $, et l'entrée de gamme réaliste de 1 100 à 1 200 $/an pour une petite école (calcul, environ 11 000 à 12 000 MAD à 10 MAD/USD). Ses pages se contredisent : modules à 69 $ en français ([FR](https://www.openeducat.org/fr/pricing/)) et à 79 $ en anglais ([EN](https://openeducat.org/pricing/)) ; « Unlimited for $2,739 » alors que le catalogue met 2 739 $ pour 10 000 utilisateurs.
+
+**Fedena** coûte 999, 1 399 et 1 699 $/an, utilisateurs illimités ; les formules ne diffèrent que par les familles de modules, et **la génération automatique n'arrive qu'en Ultimate** ([Fedena](https://fedena.com/pricing-and-plans)) [L]. **Classter** affiche sur la même page « Grand Total: €25 500 » et « Per Active Student: €21.5 » pour 1 000 étudiants, écart de 4 000 € inexpliqué ; seuls trois modules ont un prix ([Classter](https://www.classter.com/pricing/)) [L].
+
+Sur le fond du choix entre modules et tout compris, **il n'existe pas d'étude publique solide** sur le churn ou le revenu, et aucune part de modèle dans le secteur scolaire. Les chiffres qui circulent (« 32 % d'expansion » attribué à Simon-Kucher, « +20 à 30 % de valeur client » attribué à ProfitWell) n'ont pas de source primaire retrouvée ([Monetizely](https://www.getmonetizely.com/articles/modular-packaging-too-much-freedom-or-smart-design)) [V]. Le repère le moins fragile situe les options à 10-30 % du prix du produit, opinion d'expert sans méthode ([Growth Unhinged, 22 octobre 2025](https://www.growthunhinged.com/p/your-pricing-is-broken)). **Aucune donnée de conversion n'existe pour le modèle d'aSc** ni pour un logiciel scolaire ; dans le SaaS B2B américain, un essai à 8-12 % et un freemium à 3-5 % sont jugés bons ([Lenny's Newsletter, 1er août 2023](https://www.lennysnewsletter.com/p/what-is-a-good-free-to-paid-conversion)).
+
+## Les générateurs seuls plafonnent bas, et FET est gratuit
+
+Les prix officiels chiffrés sont anciens, et aucun prix d'aSc ne vient de l'éditeur.
+
+| Outil | Prix relevé | Date et preuve | Cible et forme | Essai |
+|---|---|---|---|---|
+| [FET](https://lalescu.ro/liviu/fet/) | gratuit, AGPL v3 | v7.12.0, 14 octobre 2026 [L] | école à université ; bureau ; [français et arabe](https://lalescu.ro/liviu/fet/features.html) | sans objet |
+| [aSc Timetables](http://www.ibn.lt/asc-timetables/?lang=en) | Standard 199 €, Premium 499 €, Pro 1 995 € HT, 149 €/an après 2 ans (environ 2 190, 5 480, 21 930 MAD) | distributeur lituanien, **sans date** [V] ; éditeur : [aucun montant](https://www.asctimetables.com/a/prices) [M] | primaire au supérieur ; en ligne et PC | [illimité, sans export, filigrane](https://www.asctimetables.com/a/trial-version) |
+| [EDT](https://www.index-education.com/contenu/telechargement/edt/v2023.0/pdf/Tarifs-EDT-FR-2023.pdf) | 463 à 950 € HT/an selon formule (environ 424 à 870 MAD/mois) ; aujourd'hui [sur devis](https://www.index-education.com/fr/tarifs-edt.php) | **mars 2023** [L] | secondaire, Windows ; [publication par PRONOTE](https://www.index-education.com/fr/edt-info109-fiche-produit.php) | 8 semaines |
+| [Hyperplanning](https://www.index-education.com/contenu/telechargement/hp/v2024.0/pdf/Plaquette-Commerciale-HYPERPLANNING-FR-2024.pdf) | 5 029,30 + 1 890 € HT/an pour une configuration (environ 6 340 MAD/mois) | **30 janvier 2024** [L] | supérieur, hébergé ou installé | 8 semaines |
+| [Prime Timetable](https://www.softwaresuggest.com/prime-timetable) | 149 $/an (40 enseignants), 299 $/an (100), environ 122 et 245 MAD/mois | agrégateurs [T] ; [paliers officiels](https://primetimetable.com/pricing/) sans montant | écoles, web | 30 jours |
+| [Untis](https://www.untis.at/en/) | sur devis ; Untis Express [351 €](https://www.capterra.com/p/124609/Untis-Express/) [E] | [L] | écoles | 3 mois |
+| [Celcat](https://www.celcat.com/) | sur devis ; [48 815 £ « a licence »](https://www.applytosupply.digitalmarketplace.service.gov.uk/g-cloud/services/849552944755278), date inconnue [E] | [L] | universités, SaaS | |
+| [Syllabus Plus](https://bidstats.uk/tenders/2024/W14/819855790) | environ 32 000 £ pour un an, un contrat public | 2024 [T] | supérieur | |
+| [UniTime](https://www.unitime.org/) | gratuit, libre | [L] | universités, à héberger | démo |
+| [Lantiv](https://www.capterra.co.uk/software/12420/lantiv-timetabler) | dès 49 $/utilisateur [E] ; prix [à la demande](https://www.appvizer.es/organizacion-planificacion/planificacion/lantiv-timetabler) selon un autre tiers | | écoles, cloud | |
+| [Horarium](https://horarium.ai/pricing) | montants illisibles ; palier gratuit | [L] | primaire à lycée, web | palier gratuit |
+
+Mimosa à 558 $ « par mois » ([SoftwareSuggest](https://www.softwaresuggest.com/mimosa/pricing)) [T] ressemble à un prix de licence mal classé et ne doit pas être cité. Mindjin reste introuvable : site injoignable, aucune donnée. Pour aSc, les autres sources divergent (Pro à RM 20 890 en [Malaisie](https://boy2099.com.my/), R$ 18 000 au [Brésil](https://tubarao.shopping.marketup.com/categoria/asc-timetables-4/1), 699 $ chez [SoftwareSuggest](https://www.softwaresuggest.com/asctimetables)) : **le prix dépend du pays et du distributeur, et aucun chiffre applicable au Maroc n'existe**. L'argument du README sur aSc doit tenir compte de sa [page française](https://www.asctimetables.com/timetables_fr.html) : version en ligne, remplacements avec proposition d'un remplaçant, publication sur le site et les téléphones (déclarations de l'éditeur ; « 200 000 écoles » non vérifié).
+
+Une seule référence marocaine nommée a été trouvée pour un produit importé : **HEC Rabat dans la liste clients d'Hyperplanning de 2024**, présence actuelle non vérifiée ([plaquette](https://www.index-education.com/contenu/telechargement/hp/v2024.0/pdf/Plaquette-Commerciale-HYPERPLANNING-FR-2024.pdf)). Aucun revendeur marocain d'aSc, d'EDT ou d'Untis n'a été trouvé. FET présente en revanche des indices nets d'usage : des exemples de lycées marocains dans un paquet Linux ([pkgdex](https://pkgdex.org/mageia/9/x86_64/core-release/fet-5.37.5-4.mga9.rpm.html)) [E], et surtout FET_EDIT_PRINT_MOROCCO, application libre qui permet de retoucher et d'imprimer ses résultats, avec le **système matin et après-midi marocain** (v1.4.3, septembre 2026, 64 téléchargements dans la semaine) ([SourceForge](https://sourceforge.net/projects/fet-edit-print-morocco/)) [L]. Ce projet indique ce qui manque à FET aux yeux d'utilisateurs marocains, sans chiffrer leur nombre.
+
+## Le marché : 1,25 million d'élèves, mais moins de clients que d'« établissements »
+
+| Mesure | Valeur | Année | Source |
+|---|---:|---|---|
+| Élèves du privé (primaire 851 583, collégial 244 181, qualifiant 151 863) | **1 247 627** | 2024-2025 | [Fiche MEN](https://www.men.gov.ma/sites/default/files/statistique_2024-25%20VF%20%282%29.pdf) [L], colonnes réalignées par addition |
+| Préscolaire privé | 209 013 | 2024-2025 | idem |
+| Classes ; enseignants | 58 618 ; 82 669 | 2024-2025 | idem |
+| Établissements privés | **7 564** | 2023-2024 | [Femmes du Maroc, 19 septembre 2025](https://femmesdumaroc.com/reportage/dossier/lenseignement-prive-marocain-a-la-loupe), citant le ministère [T] |
+| Établissements nationaux, puis étrangers | 6 922, puis 54 | 2019-2020 | [Avis A/1/21](https://www.conseil-concurrence.ma//wp-content/uploads/2021/11/Avis-du-Conseil-de-la-Concurrence-Avis-A.1.21-Scolaire-FR-web.pdf), p. 24-25 [L][A] |
+| Part dans les trois régions de tête | 60,28 % ; deux tiers en 2023-2024 | 2019-2020 ; 2023-2024 | avis [A] ; [Femmes du Maroc](https://femmesdumaroc.com/reportage/dossier/lenseignement-prive-marocain-a-la-loupe) |
+| Élèves du privé | 1 266 723 | 2025-2026 | extrait sans page isolée [E] ; arrondi à 1,26 million dans [Le Brief](https://www.lebrief.ma/rentree-scolaire-2025-effectifs-records-et-ecoles-pionnieres-100123660/) [T] |
+| Supérieur privé : étudiants | **91 082** (79 309 un an plus tôt) | 2024-2025 | [Aujourd'hui le Maroc](https://aujourdhui.ma/societe/effectifs-des-etudiants-et-des-enseignants-filieres-capacite-daccueil-les-chiffres-cles-de-lenseignement-superieur-public-et-prive-au-maroc) [E] ; la somme des disciplines d'[Etudiant.ma, 18 octobre 2025](https://www.etudiant.ma/articles/enseignement-suprieur-au-maroc-les-chiffres-cls-2024-2025) [T] redonne ce total |
+| Supérieur privé : établissements | **213** (210 un an plus tôt) | 2024-2025 | [Aujourd'hui le Maroc](https://aujourdhui.ma/societe/effectifs-des-etudiants-et-des-enseignants-filieres-capacite-daccueil-les-chiffres-cles-de-lenseignement-superieur-public-et-prive-au-maroc) [E] ; rapport ministériel non lu |
+| Frais annuels | 4 000 à 40 000 DH ; moyenne déclarée de 11 943 DH | 2021 ; 2017-2018 | [Avis A/1/21](https://www.conseil-concurrence.ma//wp-content/uploads/2021/11/Avis-du-Conseil-de-la-Concurrence-Avis-A.1.21-Scolaire-FR-web.pdf), p. 49, 53-54 [L][A] |
+
+Le calcul donne environ 165 élèves et 8 classes par « établissement », en mélangeant deux années. **Ce chiffre ne décrit probablement pas un client.** Dans l'avis, 40,5 % des établissements n'offrent que le primaire et 13,3 % couvrent les trois cycles, alors que la somme des cycles (3 815 + 1 817 + 993 = 6 625) reste inférieure aux 6 922 unités : les deux séries ne peuvent pas décrire la même unité. Si 7 564 compte des unités par cycle, le marché représenterait de l'ordre de **4 400 à 6 000 structures de 210 à 285 élèves**. C'est une estimation à faire confirmer par le ministère, pas un fait. L'avis contient d'autres incohérences (6 382 contre 6 922 établissements, personnel à 401 335, 141 424 ou 104 533) et son « 185,91 élèves » n'est pas reproductible. Aucune répartition régionale ni par taille n'existe après 2020 dans ce qui a été lu. Le « 70 % de petits à moyens » est une déclaration professionnelle sans seuil.
+
+La croissance ralentit : environ 2,2 % par an en établissements sur quatre ans, puis environ +1,5 % d'élèves de 2024-2025 à 2025-2026, part stable autour de 15 % (calculs, le dernier sur un chiffre [E]). Attention au piège : les 1 300 000 élèves cités par le ministre en mai 2025 concernent les **écoles pionnières du public** ([Maroc Hebdo](https://www.maroc-hebdo.com/article/enseignement-prive-le-ministere-oblige-les-ecoles-privees-a-signer-des-contrats-ecrits-avec-les-parents-deleves)). Le supérieur privé est environ 14 fois plus petit en élèves, avec environ 430 étudiants en moyenne (calcul). Tayssir et SchoolApp, à une cinquantaine d'établissements déclarés, portent les chiffres contrôlables les plus élevés : le marché paraît peu équipé, sous réserve de ces déclarations.
+
+Les vacataires formeraient 50 % du corps enseignant selon la FEP en 2023 ([Le360](https://fr.le360.ma/economie/enseignement-prive-voici-pourquoi-les-frais-de-scolarite-vont-augmenter-des-la-prochaine-rentree-273617/)) [E], à comparer aux 80 % de permanents exigés selon l'avis (p. 58-59) [A] : c'est un cas central pour un générateur. La FEP (CGEM) est la seule fédération confirmée ; aucune source lue ne confirme l'ANEP. Aucun appel d'offres public visant les écoles privées n'a été trouvé, et le travail sur ce point reste léger.
+
+## Massar : fichiers oui, API introuvable, obligation jamais lue dans le texte
+
+**Aucune API officielle, documentation technique, procédure d'autorisation ni liste d'éditeurs agréés n'a été trouvée.** Massar possède nativement l'export et l'import Excel des notes ([manuel de juin 2013](https://ia600101.us.archive.org/11/items/tarbiapress-18012014_201401/MASSAR-Manuel%20d'utilisateur-fr.pdf)) [L][A] ; la note 128*15 décrit ce circuit ([Tarbawiat](https://www.tarbawiat.com/2021/05/blog-post_20.html)) [T][A]. Le gabarit actuel reste à vérifier.
+
+**Aucun texte lu n'énonce en termes généraux que le privé doit utiliser Massar**, et aucune note ministérielle n'a été lue dans son original. Sont attestés : « Massar est appliqué à l'enseignement public comme au privé », selon le ministère ([Hespress, 2 février 2014](https://www.hespress.com/%D9%88%D9%87%D9%85%D9%8A-%D9%85%D8%B3%D8%A7%D8%B1-%D8%AA%D9%87%D9%85%D9%91%D9%8F-%D8%A7%D9%84%D9%82%D8%B7%D8%A7%D8%B9%D9%8A%D9%86-%D8%A7%D9%84%D8%B9%D8%A7%D9%85-%D9%88%D8%A7%D9%84%D8%AE-158490.html)) [T][A] ; l'enregistrement est une « condition indispensable pour passer les examens nationaux » ([Le360, 18 septembre 2025](https://fr.le360.ma/societe/ecoles-privees-des-eleves-exclus-du-systeme-massar_QKRSETCKDFFJHPEAFFGH7RMOVY/)) [T]. La note 2994/26 du 17 septembre 2026 sur la mise à jour quotidienne des absences **ne mentionne pas le privé** dans l'article lu ([Akhir Saa](https://www.akhirsaa.com/%D9%88%D8%B2%D8%A7%D8%B1%D8%A9-%D8%A7%D9%84%D8%AA%D8%B1%D8%A8%D9%8A%D8%A9-%D8%AA%D8%B4%D8%AF%D8%AF-%D8%A7%D9%84%D8%AE%D9%86%D8%A7%D9%82-%D8%B9%D9%84%D9%89-%D8%BA%D9%8A%D8%A7%D8%A8-%D8%A7%D9%84%D8%AA/)) [T]. L'usage paraît donc obligatoire de fait pour les notes et l'accès aux examens dans les écoles agréées du programme national ; pour les absences et les emplois du temps en privé, rien ne permet de l'affirmer. Les vendeurs se contredisent, sans citer de texte : « obligatoire pour toutes les écoles privées » ([E-Schools](https://e-schools.ma/fr/blog/comment-choisir-le-meilleur-logiciel-de-gestion-scolaire-en-2026)) [V], « conventionnés » ([Wizaide](https://wizaide.com/glossaire/massar/)) [V].
+
+| Éditeur | Ce qui est écrit (déclaration) | Lecture |
 |---|---|---|
-| [aSc Timetables](https://www.asctimetables.com/) | **non vérifié** : la page officielle n'a livré aucun chiffre, et les revendeurs se contredisent | **Essai illimité sans export, avec filigrane : on ne paie qu'après avoir vu le résultat.** Version en ligne et version PC hors ligne ; remplacements, registre de classe ; assistant IA |
-| [FET](https://lalescu.ro/liviu/fet/) | **gratuit**, libre (AGPL v3), version du 14 octobre 2026 | Génère pour école, lycée, université. Concurrent réel d'un module payant : il faut gagner sur la saisie, la publication, les notifications |
-| [EDT (Index Éducation)](https://www.index-education.com/fr/tarifs-edt.php), Untis | sur devis | Prix non publiés ; EDT distribué en France, Suisse, Belgique, États-Unis d'après sa page |
+| [Caisso](https://caisso.ma/blog/importer-notes-massar/) | « Aucun logiciel privé n'est officiellement connecté à MASSAR, et Caisso ne s'y connecte pas » ; remplit le modèle Excel de notes ; [reprise de listes](https://caisso.ma/tarifs/ecoles/) | Fichiers ; concurrent, donc pas une preuve pour le secteur |
+| [SchoolSoft](https://schoolsoft.ma/massar.html) | Import et export structurés, « sans revendiquer une API officielle » ; [« Fonctions prévues »](https://schoolsoft.ma/integration-massar.html) | Fichiers, à venir |
+| [OpenEduCat](https://openeducat.org/solutions/school-management-system-in-morocco/) | « today, you import and export, you do not push live » ; API qui dépendrait d'une autorisation AREF | Fichiers ; **autorisation confirmée par aucune source publique** |
+| [iLimo](https://ilimo.ma/fr) | « génère automatiquement les fichiers d'inscriptions, de notes et d'absences » | Fichiers |
+| [EduSchoolConnect](https://eduschoolconnect.com/) | « sans connexion à votre compte MASSAR » | Fichiers |
+| [Acadelta](https://www.acadelta.com/massar), [SchoolApp](https://schoolapp.ma/), [Minassa](https://minassa.ma/), [Oasis](https://oasistechnocloud.com/blog/logiciel-gestion-ecole-maroc/) | import, export | Fichiers |
+| [Tayssir](https://tayssir.school/) | « synchronisation native et bidirectionnelle » | **Contredit les précédents ; à vérifier en démonstration** |
+| [E-Schools](https://e-schools.ma/fr), [SchoolMA](https://www.schoolma.net/) | « dans les deux sens » ; « Synchronisation Massar Directe », et [« certifié 100% conforme »](https://www.schoolma.net/faq), sans dire par qui | Idem |
+| [Schoolation](https://chromewebstore.google.com/detail/dilgpmabjhlhkpedjjicfogjohibkmlj) | Extension Chrome qui remplit les pages de Massar, 0 avis ; [accès à massar.men.gov.ma](https://extscope.org/extension/dilgpmabjhlhkpedjjicfogjohibkmlj) [T] | Remplissage de page, le schéma le plus exposé |
+| [BeeNet](https://beenet.app/fr/blog/waliye-massar-app-for-parents-what-schools-still-need/), [Schoolz](https://schoolz.ma/logiciel-gestion-scolaire-maroc/) | « ne se connecte pas à Massar » ; code Massar sur les bulletins | Aucun lien |
 
-## 5. Ce que la proposition de ChatGPT contient d'inexact
+Massar est absent des pages lues de Skoolly, Scoliance, Eduzaas et Qalam. Le Code pénal punit l'accès frauduleux à un système de traitement automatisé (art. 607-3, loi 07-03) ([Fiscamaroc](https://www.fiscamaroc.com/fr/penal/diverses-infractions-et-leur-sanction-1026/de-latteinte-aux-systemes-de-traitement-automatise-1043.htm)) [E, version consolidée non vérifiée], et une synchronisation pourrait constituer une « interconnexion » soumise à autorisation (art. 12-1-f de la loi 09-08). Aucune sanction visant un connecteur n'a été trouvée. Pour l'offre Planification, rien de cela ne bloque : Massar compte surtout pour l'étape scolaire complète.
 
-| Affirmation | Relevé sur la page officielle |
-|---|---|
-| Odoo : 24,90 $ par utilisateur | **8,95 et 16,40 US$** à la consultation (le prix peut dépendre du pays) |
-| OpenEduCat : modules dès 79 $, plateforme à 489 $ | **dès 69 $** ; les 489 $ et les paliers **non retrouvés** (le configurateur ne se charge pas) |
-| Classter : total de 21 500 € | la page affiche **25 500 €**, tout en disant 21,5 € × 1 000 étudiants : la page elle-même se contredit de 4 000 € |
-| Eduzaas Growth : 641 DH | **649 MAD** ; omis : à l'année seulement, paiement en dollars |
-| aSc : 399, 499, 995, 3 995 $ | **non vérifiés** |
-| Go4School : 14 modules | **13** |
-| Scoliance, Schoolz, Caisso | **offres d'entrée omises** : Scoliance Starter 400 DH, Schoolz 500 MAD, Caisso 150 et 300 DH/mois |
-| Images d'illustration | plusieurs portent le nom d'un **autre** produit (« Minassa » sur iLimo, « Eduzia » sur Eduzaas, « Sikolo » sur Scoliance, « Cleezo » sur Caisso) : à ne pas réutiliser |
+## Le droit : école responsable, éditeur exposé, mineurs sans règle propre
 
-Les autres prix relus concordent (Skoolly, Fedena, Kanda OS, UOS, Logesco, Msingi).
+**Loi 09-08.** Le texte a été lu dans [une copie hébergée par ID4Africa](https://www.id4africa.com/main/files/Morocco_Loi_09_08.pdf), pas au Bulletin officiel : les références sont à collationner. L'école détermine les finalités et les moyens (art. 1) : elle est, en lecture normale d'un SaaS, responsable du traitement, et l'éditeur sous-traitant, lié par un contrat écrit, n'agissant que sur instruction et portant aussi la sécurité (art. 23, 25, 26). Ce partage est une interprétation : il bascule si l'éditeur réutilise les données à ses fins, par exemple statistiques ou entraînement d'IA. **L'autorisation préalable remplace la déclaration** pour les données sensibles dont la santé, les infractions, l'interconnexion de fichiers et **les données comportant le numéro de CIN** (art. 12-1). Le récépissé est délivré sous 24 heures (art. 19). La CNDP classe en autorisation la gestion RH et le contrôle d'accès biométrique ([CNDP](https://www.cndp.ma/procedures-de-notification-process/)) [L]. Une version de Planner sans CIN ni donnée de santé réduirait donc la charge de l'école, sous réserve de la CNDP.
 
-## 6. Le marché marocain et Massar
+**Mineurs.** Une recherche dans le texte ne trouve ni « mineur », ni « enfant », ni « tuteur » ; seule l'incapacité de consentir apparaît (art. 4, 21). **Aucune délibération propre aux écoles, aux élèves ou aux mineurs n'a été trouvée.** Le consentement passerait par le parent selon le droit commun, non étudié ici. Le guide CNDP-ministère sur la vidéosurveillance vise les établissements sous tutelle, et sa transposition au privé n'est pas écrite ([guide](https://www.cndp.ma/wp-content/uploads/2023/01/guide_CNDP_VS_MEN_fr.pdf)) [L, non daté, avec des mentions « (A insérer…) »]. La délibération 478-2013 rend très difficile un pointage biométrique d'élèves ([délibération](https://www.cndp.ma/wp-content/uploads/2023/01/deliberation-n-478-2013-01-11-2013.pdf)) [L][A] : le QR paraît préférable, à confirmer.
 
-- **Taille** : 6 922 établissements scolaires privés en 2019-2020, 35,71 % du total, plus de 60 % de ceux à programme national à Casablanca-Settat, Rabat-Salé-Kénitra et Fès-Meknès ; plus d'un million d'élèves, 15 % du total ([Le360, d'après le Conseil de la concurrence](https://fr.le360.ma/economie/enseignement-prive-au-maroc-le-nombre-detablissements-scolaires-a-double-en-10-ans-249214/)). **Chiffres de cinq ans.** Soit environ 150 élèves par établissement, en moyenne grossière : un marché de petites structures.
-- **Massar** : aucune documentation officielle d'une API ouverte aux éditeurs n'a été trouvée. D'après OpenEduCat, la synchronisation directe dépend d'une autorisation de l'AREF : « today, you import and export, you do not push live ». Le « connecteur » des concurrents n'a pas pu être examiné. **À demander à l'AREF** : l'accès et l'obligation réelle des écoles privées.
+**Sanctions (même copie).** 10 000 à 100 000 DH pour un fichier sans formalité (art. 52) ; 3 mois à 1 an et 20 000 à 200 000 DH pour défaut de sécurité (art. 58), transfert irrégulier (art. 60) ou usage abusif causé même par négligence, **y compris par le sous-traitant** (art. 61) ; 50 000 à 300 000 DH pour des données sensibles sans consentement exprès (art. 57). Pour une personne morale, les amendes doublent, et la fermeture de l'établissement est possible (art. 64). Aucune statistique de sanction effective n'a été trouvée. Une refonte de la loi est annoncée, sans texte ni calendrier retrouvés ([TelQuel, 10 avril 2026](https://telquel.ma/2026/04/10/omar-seghrouchni-cndp-la-souverainete-nest-ni-plus-ni-moins-que-le-respect-de-la-vie-privee-des-etats_1983898)) [E].
 
-## 7. Ce que Planner a déjà, en face du marché
+**Hébergement et transferts.** Un transfert exige un État à protection suffisante (art. 43) ou, sinon, une dérogation dont l'autorisation motivée de la CNDP sur clauses contractuelles (art. 44). La [délibération 236-2015](https://www.cndp.ma/wp-content/uploads/2023/12/deliberation-n-236-2015-18-12-2015.pdf) [L][A] liste 32 États, dont la France, l'Allemagne, la Finlande, le Royaume-Uni et la Suisse, tout en maintenant une **notification à la CNDP** ; **les États-Unis et la Croatie n'y figurent pas**, et aucune mise à jour n'a été recherchée au-delà. Le formulaire F-118 prévoit le sous-traitant comme destinataire ([CNDP](https://www.cndp.ma/wp-content/uploads/2023/12/CNDP-Transfert-Etranger.pdf)) [L]. Un prestataire américain ou une API d'IA traitant des données identifiantes aux États-Unis relèverait donc de l'art. 44 (analyse). Skoolly déclare Vercel et Railway aux États-Unis et Supabase dans l'Union ([mentions](https://skoolly.ma/mentions-legales)), SchoolApp AWS, région non dite ([mentions](https://schoolapp.ma/mentions-legales.html)), alors que Schoolz et Medrassa annoncent le Maroc. Pour Planner, la région réelle de chaque sous-traitant, sauvegarde et IA comprises, reste à vérifier.
 
-Relevé dans le code de `main` (`927cee5`).
+**Loi 05-20.** La règle « exclusivement hébergées sur le territoire national » (art. 11) figure dans la section propre aux **entités publiques**, et sa sanction vise les responsables d'entités et d'infrastructures vitales (art. 49) ([loi 05-20](https://www.dgssi.gov.ma/sites/default/files/legislative/brochure/2023-03/loi%2005-20.pdf)) [L]. Ses « données sensibles » ne sont pas celles de la loi 09-08. Une école privée ne paraît donc pas directement visée, aucun indice ne la classant comme infrastructure vitale, sous réserve d'un juriste. En revanche, un éditeur de SaaS peut être un « prestataire de services numériques » (art. 1, 2), avec journaux conservés un an, déclaration d'incidents et contrôles (art. 26 à 34), et 100 000 à 200 000 DH d'amende (art. 50) ; le [décret 2-24-921](https://adala.justice.gov.ma/api/uploads/2025/09/25/D%C3%A9cret%20n%C2%B0%202-24-921%20relatif%20au%20recours%20aux%20prestataires%20de%20services%20Cloud%20par%20les%20entit%C3%A9s%20et%20les%20infrastructures%20d'importance%20vitale%20disposant%20d-1758813129327.pdf) [L] cite le SaaS comme service cloud. Le statut exact n'est tranché par aucun texte lu. Vendre à une AREF ou à une université publique change le régime.
 
-| Attendu du marché | Dans Planner |
-|---|---|
-| Élèves, classes, enseignants, matières, salles | **oui** |
-| Présences, appel par QR | **oui** |
-| Génération automatique de l'emploi du temps, conflits, reports | **oui**, et c'est le point fort : parmi les pages marocaines lues, seul Caisso l'annonce clairement |
-| Examens, surveillances, réservations, annonces | **oui** |
-| Espace de cours, quiz, IA, jeux, bibliothèque | **oui** (au-delà de la plupart des concurrents) |
-| Application mobile | **oui**, sans parents |
-| **Notes et bulletins** | **non** : aucun fichier serveur ; « moyenne » n'existe que pour les quiz |
-| **Frais, paiements, reçus** | **non** |
-| **Portail parents** | **non** : les rôles sont administrateur, enseignant, étudiant |
-| **Arabe** | **non** : français et anglais |
-| **Massar** | **non** |
-| Saisie hors ligne | **à évaluer** : l'application a un cache, pas de saisie différée établie |
+**Lois 59-21 et 59-24 : tout repose sur des extraits ou sur la presse.** La loi 59-21 aurait été publiée au B.O. n° 7485 du 23 février 2026 ([La Juridithèque](https://lajuriditheque.ma/categories/personnes/articles/26-03-7733)) [E, page réservée aux abonnés] et abrogerait les lois 04-00, 05-00 et 06-00 ([TelQuel](https://telquel.ma/2025/09/26/projet-de-loi-59-21-un-nouveau-cap-pour-lenseignement-scolaire_1953961)) [E]. Elle attendrait 35 décrets ([Médias24, 4 mars 2026](https://medias24.com/2026/03/04/education-les-nouvelles-lois-sur-lecole-et-luniversite-publiees-au-bulletin-officiel-1637257/)) [E], dont l'état est inconnu. **En juillet 2026, le ministère citait l'art. 51 de la 59.21 pendant que les académies rappelaient la 06.00** ([TelQuel](https://telquel.ma/instant-t/2026/07/21/ecoles-privees-le-ministere-rappelle-linterdiction-de-vendre-les-manuels-scolaires_1999931)) [E] : les deux coexistent de fait, et ne pas figer l'une ou l'autre dans un texte commercial est prudent. Pour le privé, la presse rapporte sur le texte voté un contrat écrit avec les parents, la transparence des frais, des commissions régionales de contrôle et des amendes ([Les Infos, 11 décembre 2025](https://www.lesinfos.ma/article/149640450-Enseignement%20priv%C3%A9%20:%20la%20loi%2059.21%20met%20fin%20aux%20pratiques%20abusives)) [T]. La loi 59-24 abrogerait la loi 01-00 sur le supérieur, avec des **dates contradictoires** : publication au 11 février 2026 ([MBA.ma](https://www.mba.ma/reforme-enseignement-superieur-maroc-loi-59-24/)) [E], adoption finale le 27 février dans un autre extrait, publication rapportée le 4 mars ([Médias24](https://medias24.com/2026/03/04/education-les-nouvelles-lois-sur-lecole-et-luniversite-publiees-au-bulletin-officiel-1637257/)) [E]. **Le texte intégral d'aucune des deux n'a été lu.** Or le supérieur privé est la deuxième cible.
+
+**Horaires.** Aucune obligation de tenir ou de déposer un emploi du temps n'a été trouvée, sans pouvoir l'exclure, le texte complet de la loi 06-00 et le décret 2-00-1015 n'ayant pas été lus. L'AREF contrôle les documents relatifs à l'établissement, au personnel et aux élèves (art. 22, [extraits de la loi 06-00](https://www.axl.cefan.ulaval.ca/afrique/maroc-loi-06-2000.htm)) [L]. Les charges de 30, 24 et 21 heures sont celles du **public**, et l'arrêté prévu n'a jamais été publié, sauf pour les agrégés ([CSEFRS, juillet 2023](https://www.csefrs.ma/wp-content/uploads/2023/07/Rapport-metier-de-lenseignant-V-Fr.pdf)) [L] : ces limites doivent rester paramétrables. Les grilles officielles par matière au collège et au qualifiant n'ont pas été trouvées.
+
+## Les coûts : le serveur pèse peu, le support décide
+
+Les prix de cette section sont en MAD aux cours de BAM du 3 novembre 2026.
+
+| Poste | Prix unitaire | Source |
+|---|---|---|
+| VPS 16 Go | Hetzner CPX42 769 ; Clouder (Rabat) 1 200 ; DigitalOcean 943 ; Scaleway environ 900 [E] ; OVH 24 Go « à partir de » 230, engagement non vérifié | [Hetzner](https://www.hetzner.com/cloud/regular-performance/), [Clouder](https://www.clouder.ma/en/vps-server) [V], [DigitalOcean](https://www.digitalocean.com/pricing/droplets), [Scaleway](https://www.scaleway.com/en/pricing/virtual-instances/), [OVH](https://www.ovhcloud.com/en/vps/) |
+| VPS 4 Go | Hetzner CPX22 220 ; OVH VPS-1 42 ; Clouder 500 | idem ; [OVH France](https://www.ovhcloud.com/fr/vps/) |
+| Stockage objet | Hetzner 6,49 €/mois avec 1 To ; Backblaze B2 **68 MAD/To** | [Hetzner](https://www.hetzner.com/storage/object-storage/), [Backblaze](https://www.backblaze.com/cloud-storage/pricing) |
+| Hébergeurs marocains certifiés | **aucun prix public** : inwi, N+ONE, Maroc Telecom, Medasys, Atlas | [inwi](https://inwi.ma/en/entreprise/cloud-maroc) ; devis nécessaires |
+| SMS | 0,20 à 0,42 [E] ; 0,60 à 0,79 ([EnvoiSMS, 2 octobre 2026](https://envoisms.ma/fr/blog/sms-vs-whatsapp-vs-rcs-maroc/)) [V] ; Twilio **2,20** | [Bulk SMS Maroc](https://bulksmsmaroc.com/), [MoroccoSMS](https://www.moroccosms.com/), [Twilio, octobre 2026](https://www.twilio.com/en-us/sms/pricing/ma) |
+| WhatsApp, depuis le 1er octobre 2026 | utilitaire **0,23** ; marketing 0,41 ; authentification hors Maroc 0,80 | [Nonito, relevé du 11 octobre 2026](https://www.nonito.io/whatsapp-business-api-pricing/morocco) [T] ; changement confirmé par [Meta](https://developers.facebook.com/docs/whatsapp/pricing), grille de Meta non lue |
+| Courriel, les 1 000 | Amazon SES 0,98 ; Mailgun Basic 14,7 | [AWS](https://aws.amazon.com/ses/pricing/), [Mailgun](https://www.mailgun.com/pricing/) |
+| IA, par million de jetons | Haiku 5.5 : 0,10 $ et 0,50 $ jusqu'à 100 000 jetons, 0,50 $ et 2,50 $ au-delà ; environ 0,077 MAD par quiz (hypothèse 40 000 + 4 000 jetons, +30 %) | [Anthropic](https://platform.claude.com/docs/en/about-claude/pricing) |
+| Paiement en ligne | YouCan Pay **3,9 % + 2 MAD**, plafond de 5 000 MAD/jour relevable | [YouCan Pay](https://youcanpay.com/pricing?lang=fr) |
+| Salaires bruts mensuels | support 4 500-9 000 ; commercial B2B 6 000-10 000 + 20 000-60 000/an ; développeur 8 500-32 000 ; charges 21,09 % | [Jobsquare, 17 mai 2026](https://www.jobsquare.ma/blog/salaires-informatique-maroc-grille/), [1er septembre 2026](https://www.jobsquare.ma/blog/metier-commercial-maroc/), [Weepo, 31 août 2026](https://weepo.ma/blog/salaire-moyen-maroc) [T], sans échantillon publié |
+
+**Encaisser.** Le Maroc n'est pas dans la liste des pays de [Stripe](https://stripe.com/global). Le CMI et ses banques ne signent plus de contrats de passerelle en ligne depuis la décision du 31 octobre 2024 ([Conseil de la concurrence](https://conseil-concurrence.ma/wp-content/uploads/2024/09/Communique-CMI.pdf), [Médias24](https://medias24.com/2024/11/04/naps-cmi-les-engagements-des-banques-officiellement-valides/)) : les guides qui proposent un contrat CMI direct semblent périmés. Rien de postérieur à mai 2025 n'a été trouvé. Le virement sur facture en MAD reste le choix par défaut d'un contrat annuel. Aucune donnée n'existe sur les habitudes réelles de paiement des écoles.
+
+**Fiscalité et change** ([CGI 2026](https://www.finances.gov.ma/Publication/dgi/2025/CGI-2026-FR.pdf), [IGOC 2026](https://www.oc.gov.ma/sites/default/files/reglementation/pdf/2026-01/IGOC%202026.pdf)) [L]. TVA 20 % (art. 99-A), IS 20 % sous 100 millions de DH de bénéfice (art. 19-I). Point absent du travail antérieur : **retenue à la source de 10 %** sur les prestations de non-résidents (art. 15-X, 19-III-B), qui renchérit de 11,1 % Hetzner, Backblaze, AWS ou Anthropic si elle s'applique et que le fournisseur facture net ; conventions et qualification du SaaS non vérifiées. Carte à l'étranger plafonnée à **50 000 MAD/an** pour une société nouvelle, 200 000 ensuite selon l'impôt payé, 2 000 000 pour les jeunes entreprises labellisées ADD ; abonnements étrangers payables d'avance jusqu'à 12 mois ; recettes d'export rapatriées sous 90 jours. Un règlement d'au moins 20 000 MAD autrement que par moyen scriptural coûte 6 % au vendeur (art. 193). Vente à l'État ou à un très grand groupe : retenue de 75 % de la TVA pour une liste qui nomme la location de licences de logiciels (art. 117-V). Auto-entrepreneur : 200 000 MAD/an au plus et retenue de 30 % au-delà de 80 000 MAD par client (art. 42 bis, 73) ; ce n'est pas un statut viable pour ce produit (analyse). Facture électronique : avant-projet envoyé en avril 2026, rien de publié au 5 septembre 2026 ([Manageo](https://www.manageo.io/blog/facture-electronique-maroc-ce-qui-est-vraiment-acte/)) [T]. **Le régime de TVA des frais de scolarité reste ouvert** : l'avis de 2021 dit que la TVA ne s'applique pas au chiffre d'affaires pédagogique [A], mais le CGI n'a livré que l'exonération de la restauration, du transport et des loisirs (art. 91). Si l'école ne déduit pas, 199 DH HT lui coûtent réellement 238,80 DH.
+
+**Scénario par école. Ce tableau est un calcul sur des hypothèses, pas une mesure.** Seuls les prix unitaires sont relevés. Hypothèses principales : plateforme Hetzner (CPX42 + CPX22, 989 MAD) partagée par 8 000 ou 3 000 comptes payants, capacité non mesurée ; comptes = élèves × 3 000 / 2 790, sans parents ; 100 Mo de fichiers et 140 Mo de sauvegarde par compte ; 6 courriels par compte et par mois ; solveur à la demande de 0,5 à 10 h par mois ; support à 75 MAD/h pour 0,5 à 5 h par mois ; ni retenue de 10 %, ni marge de change, ni monitoring. Salaires de développement, vente, comptable et mise en place sont exclus. ME-14a et ME-21 doivent remplacer ces quantités.
+
+| MAD HT par mois | 150 élèves | 300 | 800 | 2 000 |
+|---|---:|---:|---:|---:|
+| Hébergement (8 000 / 3 000 comptes) | 21 / 54 | 42 / 109 | 112 / 290 | 281 / 724 |
+| Sauvegardes, courriel, solveur | 3 | 6 | 18 | 44 |
+| Support | 38 | 75 | 188 | 375 |
+| **Total (8 000 / 3 000 comptes)** | **62 / 95** | **123 / 190** | **318 / 495** | **700 / 1 143** |
+| Total si le support triple la première année | 137 / 170 | 273 / 340 | 693 / 870 | 1 450 / 1 893 |
+| Client Planification à usage réduit (20 % de l'hébergement, des sauvegardes et du courriel ; 8 000 comptes) | 43 | 86 | 217 | 449 |
+| Hors total : IA, usage typique / au plafond | 37 / 169 | 74 / 339 | 198 / 903 | 495 / 2 259 |
+| Hors total : 1 SMS par compte et par mois à 0,30 | 48 | 97 | 258 | 645 |
+
+Un hébergement OVH ramènerait la ligne serveur à 0,27 fois si les prix « à partir de » tiennent ; Clouder au Maroc la porterait à 1,7 fois ; une offre marocaine certifiée reste inconnue. Un commercial salarié (environ 181 000 MAD/an, hypothèse) mettrait environ 119 mois à se rembourser à 199 MAD et 20 écoles signées par an, 30 mois à 80 écoles (calcul sur la marge de 76 MAD du scénario) : **la Planification ne supporte pas la vente directe**.

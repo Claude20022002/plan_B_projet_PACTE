@@ -1,5 +1,7 @@
 # Étude de benchmark concurrentiel : ERP scolaire modulaire
 
+> **Document d'étude rédigé par ChatGPT, corrigé le 4 novembre 2026.** Prix relus sur les pages officielles ce jour-là, prix affichés, pas des devis. Le benchmark de référence, plus complet (20 éditeurs marocains), avec ses sources et ses réserves, est docs/plans/modele-economique/benchmark.md. Aucun concurrent n'a été testé. Les recommandations ci-dessous restent celles de ChatGPT, sauf là où une décision du chef de projet est indiquée.
+
 Étude de marché – Novembre 2026
 
 Je pense que ce changement de modèle économique est pertinent. Vous passez d'une logique de vente d'un logiciel scolaire complet à une logique de plateforme modulaire dans laquelle chaque établissement construit son propre environnement en fonction de ses besoins et de son budget.
@@ -22,8 +24,6 @@ Précision méthodologique : les tarifs ci-dessous sont ceux affichés par les �
 
 ## A. Concurrents internationaux
 
-[Why is Odoo the Best SME Business Management Software?](https://images.openai.com/static-rsc-4/Rm-OqgwiCjxPZovciqlGTXu0xrrfkHzeFGp1muHOjDYuw6YwKWtaJzLj4gCAWox_EqCx4ytDVLnelwWlPqOwXXnNZ9GWm2AcmRHsR7siSZDlU0-Lp_Oj-goEaREaZhrOtynX70HFi8C5w7EowbNXqKaZ6cCYvL5PGLUeqE96T9Y?purpose=inline)
-
 1\. Odoo
 
 Référence du modèle économique
@@ -37,15 +37,9 @@ Proposition de vente : une plateforme unique avec des centaines d'applications i
 - Site web, e-commerce, marketing.
 - Personnalisation et développement de modules.\
   Modèle économique : abonnement par utilisateur, avec accès à toutes les applications dans les formules payantes.\
-  Prix affiché : à partir de 24,90 $/utilisateur/mois sur la formule annuelle promotionnelle consultée. Une application gratuite avec utilisateurs illimités est également proposée.
+  Prix vus du Maroc (par utilisateur et par mois, en US$) : Standard 8,95 à l'année, 11,20 au mois ; Custom 16,40 à l'année, 20,40 au mois ; remise de 1re année à 7,25 et 13,40, pour les utilisateurs commandés au départ. Les 24,90 $ d'origine correspondent aux États-Unis. Le prix réellement facturé à une entité marocaine n'est pas établi (deux tiers citent 25,50 $ pour le Custom). Une application gratuite avec utilisateurs illimités est également proposée.
 
-  [Site officiel et tarifs](https://www.odoo.com/pricing?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://www.odoo.com\&sz=32)
-
-  Discover Odoo Plans
-
-[OpenEduCat - Pricing, Features, and Details in 2026](https://images.openai.com/static-rsc-4/AXfgcS3ggXCsfynvsXLglUznrnW5poCh1P0N5HtugTwzQkICEumFqqDA_Mx_FdIAzaKC-0iJoenjQXIJueCOqP3O7CM8nvyF12OmoGiHgkC_DT3mMIxA62fTssx9GxH23N1czYek4vHZNc4SUnVS5rEF4JcIYADu2jKuAJjtSK0?purpose=inline)
+  [Site officiel et tarifs](https://www.odoo.com/pricing)
 
 2\. OpenEduCat
 
@@ -53,7 +47,7 @@ Concurrent le plus proche du concept modulaire
 
 ERP éducatif · International
 
-Proposition de vente : un ERP éducatif composé de plus de 70 modules.
+Proposition de vente : un ERP éducatif composé de plus de 70 modules (annonce de l'éditeur ; 54 modules dans le catalogue lu).
 
 - Admissions, étudiants, enseignants.
 - Emplois du temps, examens, notes.
@@ -68,15 +62,9 @@ Proposition de vente : un ERP éducatif composé de plus de 70 modules.
 - Modules avancés : 499 $/an.
 - LMS : 499 $/an.
 - Packs utilisateurs supplémentaires facturés séparément.\
-  Il existe aussi une édition communautaire open source.
+  Il existe aussi une édition communautaire open source. Le Maroc relève d'une grille plus basse : plateforme 333 $, modules de 31 à 429 $, paquets d'utilisateurs de 20 à 3 389 $. Barème lu dans le script public du configurateur, pas une offre contractuelle. La page française indique encore « dès 69 $ ».
 
-  [Tarification officielle](https://www.openeducat.org/fr/pricing/?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://www.openeducat.org\&sz=32)
-
-  OpenEduCat
-
-[Fedena Company Profile Funding & Investors | YourStory](https://images.openai.com/static-rsc-4/b0V09w9K-FNyVkrjc8qeZB63Oan8ZwE5v2zeXZ6_cIdvZgTE39EPTUpq3DJozSY3SxMqUOI1_0d8N9wpVZ1LXSOyIAa_WNhhrjGkcmDlFmCUN35QB75hVNQwVFsu8EiDeNCeXh0s6OJD-sSexixLrdsPwVWdai6lCaegxChwK0U?purpose=inline)
+  [Tarification officielle](https://www.openeducat.org/fr/pricing/)
 
 3\. Fedena
 
@@ -95,15 +83,9 @@ Proposition de vente : une gestion complète des établissements dans une seule 
 - Standard : 999 $.
 - Premium : 1 399 $.
 - Ultimate : 1 699 $.\
-  Les formules comprennent l'hébergement cloud, la formation et le support. Une offre Enterprise existe également.
+  Les formules comprennent l'hébergement cloud, la formation et le support. Une offre Enterprise existe également. La génération automatique de l'emploi du temps n'arrive qu'en Ultimate. Prix pour le web seul ; web et mobile sur demande.
 
-  [Tarifs Fedena](https://fedena.com/pricing-and-plans?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://fedena.com\&sz=32)
-
-  Pricing and Plans - Fedena
-
-[Classter Reviews 2026: Details, Pricing, & Features | G2](https://images.openai.com/static-rsc-4/JScX_tE2c5A3wzpxbtRKkkcjoWPJH062CunNEk67EESh5qjwpQ066UAYn9Xh83euDZKS40JL-tJeLHWG36AMv8foCjWQMV0GuJUTJXxKkVBwijVuciMQ0AGzbnjqSNjAHd8ZKD7LwstW7nohofzFi1uoelKA9KuvajufBfiiNVs?purpose=inline)
+  [Tarifs Fedena](https://fedena.com/pricing-and-plans)
 
 4\. Classter
 
@@ -121,19 +103,15 @@ Proposition de vente : centraliser les processus académiques, administratifs et
 - Core : 8,50 €/étudiant.
 - Academics & LMS : 6,50 €/étudiant.
 - Surveys & Quizzes : 6,50 €/étudiant.
-- Total : 21 500 €/an, soit 21,50 €/étudiant/an.
+- Total calculé : 21 500 €/an, soit 21,50 €/étudiant/an. La page affiche aussi « Grand Total: €25 500 » : écart de 4 000 € inexpliqué.
 
-  [Tarifs Classter](https://www.classter.com/pricing/?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://www.classter.com\&sz=32)
-
-  Classter
+  [Tarifs Classter](https://www.classter.com/pricing/)
 
 ## B. Concurrents présents sur le marché marocain
 
 Cette catégorie est particulièrement importante, car elle représente vos concurrents commerciaux directs.
 
-[Skoolly – Logiciel de gestion scolaire pour écoles privées au Maroc](https://images.openai.com/static-rsc-4/AlvEKPhuWqPIeDOegDfsD8MzReacekkNPrYDJ_03mh9WPKFz46AxNrh_OQvqLKng5siSG_EsqmtYNdXhwXLRJb39ddzaekEAqJY4Z6mfTUB3ly2ArG6rY3tklY0XKhJGCiUmcL9nlMMhVip3xQ3Ysb1lWZYAewMay95HmtvdyWc?purpose=inline)
+Liste complétée le 4 novembre 2026 : les éditeurs ci-dessous ne sont qu'une partie du marché. Acadelta, SchoolApp, Minassa, Tayssir, SchoolMA, E-Schools, EduSchoolConnect, Qalam, EduConnect, Mon Ecole PRO, E-Madrassati et Medrassa sont aussi actifs (voir docs/plans/modele-economique/benchmark.md).
 
 5\. Skoolly
 
@@ -153,14 +131,9 @@ Proposition de vente : simplicité, digitalisation et tarification par élève.
 - Élite : 6 DH/élève/mois.
 - Essai gratuit de 30 jours.\
   Exemple : 200 élèves en Pro = 1 000 DH/mois.
+  Emploi du temps : éditeur manuel en glisser-déposer avec détection de conflits ; aucune génération automatique annoncée.
 
-  [Site officiel Skoolly](https://skoolly.ma/?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://skoolly.ma\&sz=32)
-
-  Skoolly
-
-[Minassa - Logiciel de Gestion Scolaire N°1 au Maroc | ERP Écoles Privées](https://images.openai.com/static-rsc-4/YE14fgWwB5A4YdJFptYjcf5ITORiSH2Njw1BWdZ9zZP1VyEVUbXDVQUDInCh8-PBUhbnQZiv23-JZKUan7RTVCRs4HuJkSLGJGuwJEW-s40nNZtpACKsn_MxTSo2U4HbqvwjP0Knk3FFV_no4Tu-P7VUQw5Eb9bY8ECkGo-SIXI?purpose=inline)
+  [Site officiel Skoolly](https://skoolly.ma/)
 
 6\. iLimo\
 Proposition de vente : gestion scolaire complète et accompagnement des établissements.
@@ -169,19 +142,13 @@ Proposition de vente : gestion scolaire complète et accompagnement des établis
 - Examens et leçons.
 - Finance et mensualités.
 - Portail parents et élèves.
-- Connecteur Massar.
+- Connecteur Massar : génération de fichiers selon l'éditeur ; aucune API officielle de Massar n'a été trouvée.
 - Transport, communication et documents.
 - RH et analytics.\
   Modèle économique : trois niveaux Starter, Standard et Premium, selon l'effectif et les modules.\
   Prix : sur devis. L'éditeur annonce notamment un module Analytics à 390 DH/mois sur Standard.
 
-  [Offres iLimo](https://ilimo.ma/fr/tarifs?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://ilimo.ma\&sz=32)
-
-  iLimo
-
-[Eduzia — AI-Powered Learning Operations Platform](https://images.openai.com/static-rsc-4/I9bYwyHqAxr9ABSzVrDslTnuXApjLRa52Q7Zb77mR6un9_S7BWzoBF9QQdHj_Atru6UWRaefQ2lX0vCSsHFoxrx12jwurFaFJL0IRFE2-sFCCOFowZIOORhtpdR3UlskPyY7aoC8T2reQeuHbcpKeFZPcRCeLEXNcAA2K1ymmus?purpose=inline)
+  [Offres iLimo](https://ilimo.ma/fr/tarifs)
 
 7\. Eduzaas\
 Proposition de vente : une plateforme intégrée avec une tarification accessible et des limites d'effectifs progressives.
@@ -195,17 +162,11 @@ Proposition de vente : une plateforme intégrée avec une tarification accessibl
 - API et suivi du bus sur Enterprise.\
   Prix Maroc affichés :
 - Starter : 233 DH/mois, jusqu'à 300 élèves.
-- Growth : 641 DH/mois, jusqu'à 1 500 élèves.
+- Growth : 649 DH/mois, jusqu'à 1 500 élèves.
 - Enterprise : 1 624 DH/mois, élèves illimités.
-- Essai gratuit de 14 jours.
+- Essai gratuit de 14 jours. Facturation annuelle affichée, paiement en dollars (2 790, 7 790, 19 490 MAD/an). Aucune génération automatique annoncée.
 
-  [Tarifs Eduzaas Maroc](https://eduzaas.com/fr-ma/pricing?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://eduzaas.com\&sz=32)
-
-  Eduzaas
-
-[SIKOLO | Applications de gestion des établissements scolaire](https://images.openai.com/static-rsc-4/Wg9FiiMV5P4I5dRqd-GdkquCNs9FBgPGRgJC4Nxm5rtAeY8pFvGiLiTNs2vVXq-0dc-BHYnslAUNiQsvTjMR5T-yme8rd6y_fLmBdHetKlBcAs6nVqDBJUEDOvnhZ-sY5d_GT5u6xzQjLWRVJuD__prkh8bD-Op4JMrzNNIgd_A?purpose=inline)
+  [Tarifs Eduzaas Maroc](https://eduzaas.com/fr-ma/pricing)
 
 8\. Scoliance\
 Proposition de vente : gestion complète des opérations d'une école.
@@ -218,18 +179,13 @@ Proposition de vente : gestion complète des opérations d'une école.
 - Portail parents et enseignants.
 - Gestion multi-établissements.\
   Prix publiés :
+- Starter : 400 DH/mois HT, jusqu'à 100 élèves.
 - Pro : 700 DH/mois HT, jusqu'à 500 élèves.
 - Enterprise : 1 500 DH/mois HT, jusqu'à 1 000 élèves.
 - Modules supplémentaires : à partir de 70 DH/mois HT.
 - Pack de 50 élèves supplémentaires : 50 DH/mois HT.
 
-  [Site officiel Scoliance](https://scoliance.com/?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://scoliance.com\&sz=32)
-
-  Logiciel de gestion scolaire au Maroc
-
-[Schoolz — Logiciel de Gestion Scolaire Assisté par l'IA au Maroc](https://images.openai.com/static-rsc-4/-4Wnc8eA935y1RJ5tPL4joqz5LFZQjUwCus6wuGBW-BTWSOzw3YVVFRR1Ch0l_Op18rFsymlvP5jlP6SubY3Q5NjCXx5ykwLblX2QxsKFXYRlpx9WQMDvt_dMAO2au3nbqwa2e3khnxm-bP2vADDIJtQRqkd1bGx4DmDXgfSQUc?purpose=inline)
+  [Site officiel Scoliance](https://scoliance.com/)
 
 9\. Schoolz\
 Proposition de vente : plateforme cloud de gestion des élèves, parents et enseignants.
@@ -240,17 +196,12 @@ Proposition de vente : plateforme cloud de gestion des élèves, parents et ense
 - Communication.
 - Applications mobiles.\
   Prix indicatifs affichés :
+- Jusqu'à 100 élèves : à partir de 500 DH/mois.
 - 101 à 300 élèves : à partir de 900 DH/mois.
 - 301 à 500 élèves : à partir de 1 400 DH/mois.
 - Groupes scolaires : sur devis.
 
-  [Tarifs Schoolz](https://schoolz.ma/tarifs/?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://schoolz.ma\&sz=32)
-
-  Schoolz
-
-[Cleezo Class – Smart School Management Software](https://images.openai.com/static-rsc-4/gAcl6TdfWyxVUea_yVURPeoVWgxYYq0MHT0Pv026j_4QXZE8w1QbsTW7woOWA_myLrzn_KQtRuzSm1isL-pHvcJwhRZvePyDI8jB_8Xa49k26lDTojFIhnv6pK6YQ-pJxWarMJYKCufgrbMvs6uGxvdLHi0Zmh-Q3FWORRLvJoA?purpose=inline)
+  [Tarifs Schoolz](https://schoolz.ma/tarifs/)
 
 10\. Caisso Scolarité\
 Proposition de vente : gestion opérationnelle et financière simple, avec des tarifs très accessibles.
@@ -259,22 +210,17 @@ Proposition de vente : gestion opérationnelle et financière simple, avec des t
 - Paiements et reçus bilingues français-arabe.
 - Impayés et caisse.
 - Notes et bulletins.
-- Emploi du temps automatique.
+- Emploi du temps automatique annoncé, pack Avancé seulement, non testé (un article de l'éditeur décrit aussi un remplissage manuel).
 - Absences et transport.
 - Application parents.\
   Prix de lancement affichés :
 - École Essentiel : 700 DH/an.
 - École Avancé : 1 300 DH/an.
+- Sans engagement : 150 et 300 DH/mois.
 - Prix normaux annoncés : 1 600 et 2 900 DH/an.
 - RH/paie marocaine et pointage en options.
 
-  [Tarifs Caisso](https://caisso.ma/tarifs/ecoles/?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://caisso.ma\&sz=32)
-
-  Caisso+1
-
-[Logga in på Schoolsoft | Ösby Naturbruksgymnasium](https://images.openai.com/static-rsc-4/xPeo0fcGIAHrUeZfKwTIR7VNI5OgqUehF-lojk_4mgDGI07xxj5G7QxE-FSxox7KYxHHjqZaH8UWH83YPGzLk_Yd1ctmM510EDr5bYVtky_NZSWu7bRKUmbtN2JOJ0o07DEW4SElYhkG8g6u9x-seL2bdjyEQtYeX7wWWT1mAW8?purpose=inline)
+  [Tarifs Caisso](https://caisso.ma/tarifs/ecoles/)
 
 11\. SchoolSoft Maroc\
 Proposition de vente : centralisation des fonctions administratives, pédagogiques et financières.
@@ -283,21 +229,15 @@ Proposition de vente : centralisation des fonctions administratives, pédagogiqu
 - Frais et paiements.
 - Notes et bulletins.
 - Espace parents.
-- Transport et outils Massar.
+- Transport et outils Massar (fonctions « prévues » selon l'éditeur, par fichiers, sans API revendiquée).
 - Multi-sites et reporting.\
   Prix : devis personnalisé selon les modules, l'effectif et les établissements.
 
-  [Offres SchoolSoft](https://schoolsoft.ma/tarifs.html?utm_source=chatgpt.com)
-
-  [image](https://www.google.com/s2/favicons?domain=https://schoolsoft.ma\&sz=32)
-
-  SchoolSoft
+  [Offres SchoolSoft](https://schoolsoft.ma/tarifs.html)
 
 ## C. Concurrents spécialisés dans la génération des emplois du temps
 
 Cette catégorie mérite une analyse séparée, car votre moteur de planification pourrait devenir un produit indépendant, vendu même aux établissements qui possèdent déjà un autre ERP.
-
-[aSc TimeTables - Download - Softpedia](https://images.openai.com/static-rsc-4/QUmkFbSfCok_4aQz0moV0Pae7_0YnmlyH2qLzD_ucpnmj3-bfyxMarWd-JVPp0RBvGpB7X8q8ECYXL0mpyBeL41O4s99FRbkuemvjLE_V4VFB6q7o0cteZsIaReUqprBnEwAHm6NYmodQd_wk_x7d7eKHZbm4_mEAea99xaWlU4?purpose=inline)
 
 12\. aSc Timetables
 
@@ -308,20 +248,11 @@ Concurrent direct sur le planning
 - Gestion des contraintes.
 - Emplois du temps individuels.
 - Accès mobile et services EduPage.\
-  Prix affichés :
-- Écoles primaires : 399 $ en paiement unique.
-- Standard : 499 $.
-- Premium : 995 $.
-- Pro : 3 995 $.
-- Maintenance annuelle à partir de la troisième année : 79 $.
+Prix : **les chiffres d'origine (399, 499, 995, 3 995 $, maintenance 79 $) n'ont pas pu être confirmés** : la page officielle n'affiche aucun montant. Un distributeur lituanien, sans date, donne Standard 199 €, Premium 499 €, Pro 1 995 € HT, puis 149 €/an après 2 ans. Les grilles varient selon le pays, et aucun prix applicable au Maroc n'a été trouvé.
 
 La version d'essai permet de générer un planning, mais limite les exports et ajoute un filigrane.
 
-[Tarification officielle](https://www.asctimetables.com/a/prices?utm_source=chatgpt.com)
-
-[image](https://www.google.com/s2/favicons?domain=https://www.asctimetables.com\&sz=32)
-
-aScTimetables
+[Page officielle, sans montant](https://www.asctimetables.com/a/prices)
 
 Ce concurrent est particulièrement intéressant : il vend une fonction métier très précise, sans obliger l'établissement à acheter un ERP scolaire complet.
 
@@ -336,9 +267,9 @@ Voici une comparaison des offres et de leurs modèles tarifaires.
 | Skoolly    | Par élève                     | 4–6 DH/mois                  |
 | iLimo      | Sur devis                     | Non publié                   |
 | Eduzaas    | Par palier d'effectif         | 233–1 624 DH/mois            |
-| Scoliance  | Par établissement et capacité | 700–1 500 DH/mois            |
-| Schoolz    | Par effectif                  | Dès 900 DH/mois              |
-| Caisso     | Forfait annuel                | 700–1 300 DH/an en lancement |
+| Scoliance  | Par établissement et capacité | 400–1 500 DH/mois            |
+| Schoolz    | Par effectif                  | Dès 500 DH/mois              |
+| Caisso     | Forfait annuel ou mensuel     | 700–1 300 DH/an en lancement, 1 600–2 900 ensuite, ou 150–300 DH/mois |
 | SchoolSoft | Sur devis                     | Non publié                   |
 
 Sources : pages tarifaires des éditeurs citées précédemment.
@@ -395,6 +326,8 @@ Vendre un moteur de génération d'emplois du temps indépendant
 
 La plupart des ERP scolaires incluent des fonctions de planning dans une offre plus large. Vous pouvez proposer un moteur spécialisé à un établissement qui ne souhaite pas remplacer son logiciel actuel.
 
+Correction : la génération automatique n'est plus un manque du marché. Acadelta, SchoolApp, Minassa, Tayssir et Caisso l'annoncent (aucun n'a été testé). L'angle qui reste à vérifier est la vente seule, sans changer de logiciel : aucune page marocaine relevée ne la présente, sous réserve de SchoolApp et de Scoliance.
+
 Avantage : marché potentiel plus large, intégrations possibles avec d'autres outils.
 
 Opportunité 2
@@ -409,7 +342,7 @@ Une spécialisation sur le marché marocain
 
 - Français et arabe.
 - Calendriers scolaires marocains.
-- Intégration Massar lorsque les interfaces et autorisations le permettent.
+- Échange de fichiers avec Massar : aucune API ni procédure d'agrément n'a été trouvée, et l'obligation exacte des écoles privées reste à confirmer auprès de l'AREF.
 - Gestion des frais en dirhams.
 - Règles de paie locales.
 - Documents administratifs adaptés.
@@ -419,9 +352,9 @@ Opportunité 4
 
 Une tarification transparente
 
-Beaucoup de concurrents marocains demandent de contacter leur équipe commerciale pour obtenir un devis.
+Correction : cet argument est faible. 12 des 19 éditeurs marocains lus publient déjà un prix, 7 restent sur devis.
 
-Afficher publiquement les prix des modules, les limites et les options pourrait devenir un argument commercial.
+Afficher les prix reste nécessaire pour un produit qui se vend sans commercial, mais ne différencie plus.
 
 # 5. Le modèle économique que je recommande
 
@@ -487,6 +420,8 @@ Puis six mois plus tard, ajouter le module Finance sans changer de plateforme.
 ## B. Exemple de grille tarifaire à tester
 
 Voici une première hypothèse commerciale en dirhams marocains, et non des tarifs définitifs validés par une étude de disposition à payer.
+
+Décision du 4 novembre 2026 : le socle (comptes, droits, établissement, élèves, classes, enseignants, matières, salles) est inclus dans tout abonnement. Les lignes correspondantes ci-dessous ne sont plus vendues à part.
 
 | Module                  | Prix mensuel indicatif |
 | ----------------------- | ---------------------- |
@@ -653,8 +588,8 @@ Positionnement premium avec fonctionnalités avancées
 
 Valider mes orientations
 
-Ma recommandation actuelle : commencer par les écoles privées au Maroc, adopter un modèle hybride, proposer un ERP propriétaire avec des modules indépendants et des packs, puis étendre progressivement le marché aux universités et à d'autres pays africains.
+**Décisions du 4 novembre 2026, qui remplacent la recommandation d'origine (commencer par les écoles privées) :** vendre d'abord la Planification seule, puis le supérieur privé, puis l'offre scolaire complète ; socle inclus ; le produit doit exister avant la phase pilote. Voir docs/plans/modele-economique/README.md.
 
 Le véritable objectif est de construire une plateforme dont les établissements peuvent commencer à utiliser une seule fonctionnalité, puis augmenter progressivement leur utilisation et leur abonnement.
 
-C'est cette logique d'adoption progressive qui peut faire de votre projet un véritable SaaS modulaire, plutôt qu'un simple logiciel de gestion scolaire.&#x20;
+C'est cette logique d'adoption progressive qui peut faire de votre projet un véritable SaaS modulaire, plutôt qu'un simple logiciel de gestion scolaire.

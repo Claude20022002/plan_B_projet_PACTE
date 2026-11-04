@@ -1,154 +1,136 @@
 # Modèle économique par modules
 
-Statut : **le principe est décidé par le chef de projet (4 novembre 2026) ; tout le reste de ce document est une proposition à valider**. Il s'appuie sur [le benchmark](benchmark.md) et relit deux documents d'étude : `docs/ecole/benchmarkChatGPT.txt` et `docs/ecole/plan.txt`.
+Statut au 4 novembre 2026 : **l'ordre des cibles, l'abandon de la pile de `plan.txt` et le socle inclus sont décidés** (§ 1). Les prix restent des **hypothèses** : aucune école extérieure n'a encore réagi à un prix.
 
-## 1. L'essentiel
-
-1. **Le principe tient** : des modules, des paliers d'effectif, des packs. Le marché le comprend déjà, Scoliance le pratique à partir de 70 DH.
-2. **Odoo n'est pas le modèle qu'on croit** : il ne vend pas ses modules à la carte. Ce qu'il faut lui prendre, c'est l'entrée sans friction, pas la grille (§ 2).
-3. **La vraie arme est l'emploi du temps automatique** : Planner l'a déjà, et parmi les pages marocaines lues, une seule l'annonce clairement (Caisso). Il peut se vendre seul, dès maintenant, à condition de corriger le piège des dépendances (§ 3).
-4. **Viser les écoles privées avec un ERP complet demande un gros chantier** : notes, bulletins, frais, parents, arabe et Massar manquent. Ce sont les tickets d'entrée du marché (benchmark, § 7).
-5. **`plan.txt` ne doit pas être suivi tel quel** : ses totaux de packs sont faux, ses prix du haut de grille divisent par 3 à 5 ce que l'offre actuelle facturerait à un grand établissement, et il propose de réécrire toute la pile technique (§ 5 et 6).
-
-## 2. Ce qu'Odoo fait vraiment
-
-Depuis sa [page de prix](https://www.odoo.com/pricing) : **une application gratuite à vie, utilisateurs illimités** ; puis **toutes les applications** pour un prix unique, **par utilisateur** ; la mise en place est vendue à part, souvent par des partenaires.
-
-| | Odoo | `plan.txt` |
-|---|---|---|
-| Unité de prix | l'utilisateur | l'établissement et son effectif |
-| Choix des modules | tout est inclus | 44 modules payants un par un, plus les SMS |
-| Entrée | gratuite, une application | essai de 14 à 30 jours |
-| Revenu de mise en place | partenaires | prestations à 500-2 000 DH |
-
-**Ce qu'on en garde** : l'adoption progressive sur une seule base ; une entrée qui ne demande aucune décision d'achat ; les prix publics ; le réseau de partenaires, plus tard. **Ce qu'on n'en garde pas** : le prix par utilisateur. Toutes les offres marocaines facturent à l'effectif ou au forfait, et le plan a raison de ne pas faire payer chaque enseignant.
-
-## 3. Le piège des dépendances
-
-`plan.txt` annonce le module Timetable AI à **149 DH/mois**, vendable seul. Mais ses dépendances doivent être achetées aussi :
-
-| Module requis (sa propre fiche) | Prix |
+| Lire | Pour |
 |---|---|
-| Timetable AI | 149 |
-| Core Platform | 149 |
-| Class Management | 49 |
-| Teacher Management | 79 |
-| Room Management | 49 |
-| « Gestion des matières » | **absent du catalogue**, aucun prix |
-| **Total réel** | **475 DH/mois** |
+| [benchmark.md](benchmark.md) | les concurrents, les prix, le marché, Massar, le droit, les coûts, avec leurs sources |
+| [verifications-et-consequences.md](verifications-et-consequences.md) | ce que valent les documents de ChatGPT, l'analyse détaillée de l'offre, les 28 questions ouvertes |
+| [feuille-de-route.md](feuille-de-route.md) | l'ordre des vagues autour de la Planification, et ce qui reste à arbitrer entre les deux groupes |
+| `docs/ecole/benchmarkChatGPT.txt`, `plan.txt` | les deux documents d'étude, corrigés |
 
-Soit 3 fois le prix affiché, et **plus que tout Caisso Avancé** (242 à 300 DH), ou 68 % de Scoliance Pro complet (700 DH). Un client qui découvre ce total à la commande perd confiance, et cela contredit la « tarification transparente » proposée.
+## 1. Décisions du 4 novembre 2026
 
-**Recommandation : le socle n'est pas à vendre.** Comptes, droits, établissement, élèves, classes, enseignants, matières et salles sont inclus dans tout abonnement. On vend ce qui est au-dessus. C'est plus simple, et tous les modules ont de toute façon besoin de ces données.
+| Sujet | Décision |
+|---|---|
+| Ordre des cibles | **Planification seule, puis supérieur privé, puis école complète.** Remplace la conclusion de `plan.txt` (écoles privées d'abord) |
+| Pile technique | **Celle de `plan.txt` est abandonnée** (NestJS, PostgreSQL, Tailwind, Python, Keycloak) ; on garde l'existant |
+| Socle | **Inclus dans tout abonnement** : comptes, droits, établissement, élèves, classes, enseignants, matières, salles. Pas de Core payant |
+| École pilote | **En discussion ; le produit doit exister avant la phase pilote.** Une rencontre avec le directeur d'une école privée, de la maternelle au lycée, est prévue dans 3 à 6 semaines (registre du groupe B) |
 
-## 4. Proposition : quoi vendre, à quel prix
+## 2. L'essentiel
 
-### Trois étapes, pas 44 modules
+1. **Le principe tient** : des modules, des paliers d'effectif, des packs. Scoliance vend déjà des modules à la carte dès 70 DH.
+2. **« Le moteur que les autres n'ont pas » n'est plus défendable** : Acadelta, SchoolApp, Minassa, Tayssir et Caisso annoncent une génération automatique, Caisso dans un ERP à 242 DH par mois. **Aucun n'a été testé**, et aucune page lue ne vend de CM, TD, TP ou de volumes semestriels. Il faut donc montrer, pas affirmer.
+3. **Le marché est encombré et peu prouvé** : au moins 20 éditeurs lisibles au Maroc, 12 avec un prix public, une offre gratuite (Tayssir), des preuves de clientèle faibles, aucun avis indépendant trouvé.
+4. **Le support décide de la marge, pas le serveur.** Sur un scénario d'hypothèses, la première grille passait sous son coût à 800 et 2 000 élèves (§ 5).
+5. **Deux échéances techniques pèsent sur la première vente** : la fin de Timefold 1.x, annoncée début 2027, et la compatibilité d'OR-Tools avec notre image Alpine (§ 8).
 
-`plan.txt` le dit lui-même (« commencer avec 8 à 10 modules ») ; avec une personne par groupe (R-5), il faut être plus strict encore.
+## 3. Ce qu'Odoo fait vraiment
+
+Ce n'est pas un modèle à la carte : **une application gratuite à vie, puis toutes les applications, à un prix par utilisateur** ; la mise en place se vend à part, de 190 à 8 000 $ vue du Maroc. Odoo a abandonné le cumul d'un prix par utilisateur et d'un prix par application en **octobre 2022**, en disant qu'il perdait ainsi les clients de 1 à 5 utilisateurs. C'est le plaidoyer d'un éditeur, sans chiffre de résultat, et il condamne le cumul des deux prix plutôt que le module en soi.
+
+**Ce qu'on en garde** : l'adoption progressive sur une seule base ; une entrée sans décision d'achat ; le prix public. **Ce qu'on n'en garde pas** : le prix par utilisateur, car presque toutes les offres marocaines lues facturent à l'effectif ou au forfait.
+
+**Aucune étude publique solide** ne compare les modules et le tout compris sur le churn ou le revenu. Ce choix reste un pari à mesurer.
+
+## 4. Quoi vendre, et dans quel ordre
 
 | Étape | Vendu | Cible | Reste à construire |
 |---|---|---|---|
-| **1. Planification seule** | Emploi du temps automatique, salles, reports, remplacements | toute école avec un outil existant ou Excel | import simple (ME-9), profil de l'école pilote, facturation par module |
-| **2. Supérieur privé** | Étape 1, plus présences, examens, cours, quiz, IA | ce que Planner sait faire aujourd'hui | Plateforme ou instance dédiée (D-01), contrats |
-| **3. École privée complète** | Notes, bulletins, frais, parents, arabe, export Massar | primaire, collège, lycée | tout cela (§ 7) ; **à lancer seulement si les entretiens le confirment** |
+| **1. Planification seule** | Génération, salles, reports, remplacements, publication et notifications | toute école qui garde son outil ou travaille sur Excel | moteur (MP-1 à MP-7), import par fichiers (ME-9), profil scolaire, arabe des vues publiées à évaluer, MO-1 et MO-2 |
+| **2. Supérieur privé** | Étape 1, plus présences, examens, cours, quiz, IA | 213 établissements et 91 082 étudiants (2024-2025, extraits) | Plateforme partagée ou instance dédiée (D-01), contrats |
+| **3. École complète** | Notes, bulletins, frais, parents, arabe, fichiers Massar | environ 1,25 million d'élèves du privé | tout cela : **environ 19 jours bruts, soit 29 à 38 jours-personne**, estimation grossière ; à lancer si les entretiens le confirment |
 
-Cet ordre diffère de la conclusion de `plan.txt` (« commencer par les écoles privées »), pour une raison simple : il part de ce qui existe. Les étapes 1 et 2 se vendent bien plus tôt, et leurs revenus financent la 3.
+### Le produit avant la phase pilote
 
-### Grille à tester
+L'école pilote n'étant pas choisie, **les preuves ne peuvent pas dépendre d'elle**. Le produit est prêt pour un pilote quand :
 
-**Hypothèses de lancement, en DH HT par mois**, à confronter à de vrais directeurs d'école avant toute publication. Socle inclus.
+1. une école peut, sans nous, importer ses données, générer, corriger et publier ;
+2. un **jeu de démonstration public** est généré, avec des temps mesurés. Il contient ce que les pages marocaines laissent dans l'ombre : vacataires, salles spécialisées, double vacation matin et après-midi, surplus horaire du privé. Il sert aussi à vérifier les concurrents ;
+3. un **essai** existe à la manière d'aSc : génération gratuite, export bloqué et filigrane, nombre de calculs plafonné ;
+4. le contrat de sous-traitance et la liste des sous-traitants et de leurs pays sont prêts (§ 9).
 
-| Effectif | Planification | École (étape 3) | Complet |
-|---|---|---|---|
-| Jusqu'à 150 | 149 | 449 | 749 |
-| 151 à 300 | 199 | 549 | 899 |
-| 301 à 800 | 299 | 849 | 1 399 |
-| 801 à 2 000 | 599 | **1 799** | **2 999** |
-| Plus de 2 000 | devis | devis | devis |
+L'existant reste un atout : les données et la production de l'école d'origine servent à mesurer et à ne pas régresser.
 
-- **Planification** : moins cher que les offres complètes à chaque palier, sauf Caisso au-dessus de 300 élèves. Justifié : il ne remplace pas l'outil en place.
-- **École et Complet** : les montants de `plan.txt` jusqu'à 800 élèves. Le palier 801-2 000 est relevé : voir § 5.
-- **Supérieur** : la même grille **multipliée par 3, à tester**. Logesco applique × 4. Pour un établissement de la taille de l'école pilote (768 comptes), Complet × 3 donne 4 197 DH, proche des 4 147 DH de l'offre actuelle. Les 1 499 DH de `plan.txt` diviseraient ce revenu par près de 3.
-- **Modules isolés** : gardés pour ajouter un module à un pack. Prix de `plan.txt` en repère, avec des packs à **25 à 35 % de remise** plutôt que 40 à 50 % (§ 5).
-- **Facturation** : contrat annuel par défaut (Q-17, et le budget des écoles est annuel), mensuel sans engagement à +20 %. En dirhams : Eduzaas fait payer en dollars, c'est un argument pour nous.
+## 5. Grille à tester
 
-### L'entrée à la manière d'aSc plutôt que d'Odoo
+**Hypothèses, en DH HT par mois, socle inclus. À faire réagir en entretien, pas à publier.**
 
-**Essai sans limite de durée : on prépare et on génère son emploi du temps gratuitement, l'export est bloqué et l'impression porte un filigrane.** On paie quand le résultat convient. aSc le fait déjà, et il répond au budget marketing nul : le produit se montre seul. Un gratuit permanent à la Odoo coûterait trop cher en support et en calcul tant que ces coûts ne sont pas mesurés. Limiter le nombre de générations de l'essai protège le serveur.
+| Effectif | Planification | Coût estimé, usage réduit | Repères (périmètres différents) |
+|---|---:|---:|---|
+| Jusqu'à 150 | **149** | 43 | Caisso 108 puis 242 ; Eduzaas 233 ; EduSchoolConnect 299 ; Mon Ecole PRO 300 |
+| 151 à 300 | **199** | 86 | Caisso 108 puis 242 ; Eduzaas 233 ; EduSchoolConnect 449 ; Mon Ecole PRO 450 ; Qalam 499 |
+| 301 à 800 | **449** (au lieu de 299) | 217 | Caisso 242 ; Qalam 999 ; Scoliance 1 000-1 500 ; Acadelta 2 000 |
+| 801 à 2 000 | **899** (au lieu de 599) | 449 | Caisso 242 ; SchoolMA 800 ; Qalam 999 ; Eduzaas 1 624 |
+| Plus de 2 000 | devis | | |
 
-### L'argumentaire
+Le coût est celui du scénario de `benchmark.md` au **haut de palier** : plateforme remplie à 8 000 comptes, peu de support, hors IA et hors SMS. **Ce sont des hypothèses, jamais des mesures.** Dans le scénario complet, le coût atteint encore 71 et 78 % du prix sur les deux derniers paliers : **le prix seul ne suffit pas sans libre-service**.
 
-| Face à | Ce qu'on dit |
+Cette grille n'est pas la moins chère, et ne le sera pas : une école prête à changer d'outil obtient chez Caisso un ERP avec génération annoncée pour moins, ou à peine plus. **Elle ne se justifie que face à une école qui garde son outil, ou dont le besoin dépasse ce que ces pages promettent.**
+
+- **École et Complet** (étape 3) : non publiées avant cette étape. Les 549, 1 799 et 2 999 DH du premier projet sont fragilisés par Qalam, SchoolMA, Eduzaas et EduSchoolConnect, à périmètres non vérifiés.
+- **Supérieur** : sur devis pour l'instant. **Rien ne permet de fixer un multiple** : Logesco applique × 4, Kanda Campus est proche de × 1, Hyperplanning coûte environ 6 340 MAD/mois pour une configuration (2024).
+- **Facturation** : contrat annuel par défaut, virement sur facture en MAD ; mensuel à tarif majoré. Si les écoles ne déduisent pas la TVA, c'est le prix TTC qu'elles comparent : à clarifier avec l'expert-comptable.
+- **Vente** : sans commercial salarié. Sur le même scénario, il mettrait de 30 à 119 mois à se rembourser à 199 DH.
+- **IA** : plafonds maintenus. À 2 000 élèves, le coût va de 495 à 2 259 MAD/mois selon l'usage.
+
+## 6. La promesse
+
+Une formulation défendable, à tester : **« un emploi du temps généré, publié et tenu à jour, sans changer de logiciel scolaire »**, avec des temps mesurés sur un jeu de données publié.
+
+| Face à | Ce qu'on peut dire | Réserve |
+|---|---|---|
+| Excel | Un emploi du temps sans conflit, publié à chacun | à chiffrer une fois mesuré |
+| ERP en place sans génération annoncée (Skoolly, Schoolz, Eduzaas...) | Gardez-le, ajoutez la planification | import par fichiers ; aucune API de ces ERP n'est établie |
+| Les cinq qui annoncent la génération | Montrons-le sur le même jeu de données | seul un essai tranche ; aucune comparaison publique sans avis juridique |
+| FET (gratuit, français et arabe) | Hébergé, publication, notifications, remplacements | la qualité du résultat n'a pas été comparée |
+| aSc | Le prix local reste à vérifier | aSc a une page française, une version en ligne et les remplacements |
+| Supérieur | CM, TD, TP, volumes, plusieurs campus : une différence **vendue** | pas une absence prouvée chez les autres |
+
+**À proscrire** : « seul », « N°1 », « le moins cher », « IA » sans méthode.
+
+**Un manque visible** : Caisso et FET affichent le français et l'arabe, et Planner n'a pas l'arabe. À trancher pour le scolaire, dès l'étape 1 sur les emplois du temps imprimés si le besoin se confirme.
+
+## 7. Ce qui reste faux dans les documents d'étude
+
+Le détail, affirmation par affirmation, est dans [verifications-et-consequences.md](verifications-et-consequences.md). Les plus lourdes de conséquences :
+
+| Point | Corrigé |
 |---|---|
-| Excel | Un emploi du temps sans conflit, sans y passer des semaines |
-| ERP déjà en place (Skoolly, Scoliance...) | Gardez-le. Ajoutez le moteur qu'il n'a pas |
-| FET (gratuit) | Même résultat sans expertise ; publication et notifications à chaque changement |
-| aSc | En français, hébergé pour vous, prix local, et les reports sont gérés |
-| Caisso (très bas prix) | Il vient de la caisse ; nous venons de la planification. Plusieurs campus, CM, TD, TP |
+| Timetable AI à 149 DH « vendu seul » | 475 DH avec ses dépendances, d'où le socle inclus |
+| Valeur des packs : 413, 826, environ 1 650 DH | 414, 996 et 1 818 DH, soit 40, 45 et 51 % de remise |
+| Marché « mature » ; transparence comme différence | une page de prix ne prouve pas l'adoption ; 12 éditeurs publient déjà |
+| Plafond du marché | sur 4 400 à 6 000 structures (estimation), 10 % à 199 DH font 1,05 à 1,43 M DH/an ; à 499 DH, 2,6 à 3,6 M DH/an. Un ordre de grandeur, pas une prévision |
+| Mise en place à 500-2 000 DH | souvent offerte par les concurrents ; les 6 000 et 15 000 MAD de Q-28 ne tiennent pas pour une petite école sans libre-service |
+| Revenu sur grands comptes | 2,8 à 5,3 fois moins qu'avec l'offre actuelle (5,40 MAD par compte) |
 
-**À ne pas promettre** : « moins cher du marché » (Caisso et Eduzaas sont imbattables, et le coût par client n'est pas mesuré), ni « IA » sans preuve. La comparaison de `plan.txt` sur les heures gagnées est bonne, mais elle doit se mesurer d'abord à l'école pilote.
+## 8. La pile, et deux échéances
 
-## 5. Ce qui est faux ou risqué dans `plan.txt`
+La pile reste : Express, Sequelize, MySQL 8.4, React et MUI, Expo, le solveur Java, OIDC (`oidc-provider`), une base par école (D-01). Le **Module Registry** est le seul vrai ajout. Sa première brique existe : `services/etablissement/fonctionnalites.js` (PR #141).
 
-| Point | Dans le document | Réalité |
+**Timefold.** Community reste sous Apache 2.0, mais en 2.x `ScoreAnalysis` est réservé à l'édition payante et il faut Spring Boot 4. Or `EmploiDuTempsController.java` l'utilise, sur 1.15.0 et Spring Boot 3.3.5. La ligne 1.x finirait début 2027 (extrait, à confirmer). Aucun prix du solveur n'est publié. Trois chemins : monter en 1.35.0 et tenir jusqu'à la fin de la ligne ; passer en 2.x Community avec un compte rendu maison, ce que l'évaluateur indépendant prépare ; payer une licence au prix inconnu, qui ne rentre pas dans 149 à 899 DH sans avoir été chiffrée.
+
+**OR-Tools.** Le paquet Maven requiert glibc et notre image est `eclipse-temurin:21-jre-alpine` : il faudra sans doute une image glibc. Aucun essai n'a été fait. L'explication d'une infaisabilité par CP-SAT n'est réduite qu'en monofil et sans objectif, donc dans une passe séparée. **Aucune comparaison publiée de CP-SAT et de Timefold n'a été trouvée sur l'emploi du temps** : l'essai prévu sur nos données reste nécessaire (`docs/plans/moteur-planification/ecarts-du-solveur.md`, branche `a/moteur-catalogue`).
+
+## 9. Ce que cela change dans le plan
+
+| Sujet | Avant | Après |
 |---|---|---|
-| Valeur de School Professional | 826 DH | **996 DH** (somme de ses propres modules) |
-| Valeur de School Enterprise | environ 1 650 DH | **1 818 DH**, en comptant Staff pour « HR Management », qui n'existe pas au catalogue |
-| Remise des packs | non dite | **40 %, 45 % et 51 %** : avec de tels écarts, personne n'achète à la carte, et le prix des modules ne sert plus de repère |
-| Catalogue complet | non dit | **3 516 DH/mois** pour 300 élèves, soit 2 à 15 fois les offres marocaines complètes |
-| Haut de grille | Enterprise 801-2 000 : 2 199 DH ; University Professional : 1 499 DH | **Revenu divisé par 3 à 5 sur les grands comptes**, comparé à l'offre actuelle (Q-15) : l'école pilote passerait de 4 147 à 1 499 DH ; 2 000 élèves, de 11 610 à 2 199 DH. Skoolly facture 7 500 DH à 1 500 élèves |
-| Mise en place | 500 à 2 000 DH | Q-28 a validé **6 000 et 15 000 MAD**. Et iLimo, Schoolz, Caisso, Fedena l'**offrent**. Elle ne peut donc tenir que si l'import et l'assistant sont en libre-service (ME-9, ME-10) |
-| IA | Module à 149 DH | Décision du 11 octobre : IA incluse. À 330 comptes, le coût va de 76 MAD (usage typique) à 347 MAD (tous au plafond), d'après le fichier 13, § 13.4. **Les plafonds doivent rester** |
-| Équipe | 8 fonctions, 24 mois | une personne par groupe (R-5) : chaque jalon est à refaire |
-| Simulation | 598 800 DH/an pour 100 écoles | Chiffre d'affaires brut, sans aucun coût. Elle dépend de 100 clients payants, dont aucun n'existe |
-
-Ordre de grandeur du plafond marocain, à titre de **prudence et non de prévision** : 10 % des 6 922 établissements (chiffre de 2019-2020) à 499 DH font environ 4,1 millions de DH par an. Le marché existe, mais à ce prix, il n'autorise ni beaucoup de support, ni beaucoup de vente directe par école.
-
-**Le coût par client n'est pas connu.** Sans lui, aucune marge ne peut être affirmée, et l'objectif de 70 % de marge brute de `plan.txt` reste un souhait. **Une instance dédiée n'est pas compatible avec 199 DH par mois** : les petits clients supposent la Plateforme partagée, donc les vagues V4 et V5 (15 canaux d'isolation à fermer, dont 4 critiques).
-
-## 6. La pile technique : ne pas réécrire
-
-`plan.txt` propose NestJS, PostgreSQL, TypeScript, Tailwind, Python et Keycloak. **Recommandation : refuser.** Le même document demande pourtant d'auditer l'existant d'abord (§ 25), et parle de monolithe modulaire, ce que D-17 a déjà retenu.
-
-| Proposé | Existant | Décision proposée |
-|---|---|---|
-| NestJS | Express, 74 fichiers de modèles, suites de tests | garder |
-| PostgreSQL | MySQL, dont le passage à 8.4 vient d'être préparé | garder |
-| Tailwind | MUI 7 et le langage visuel de `DESIGN.md` | garder |
-| Keycloak | Planner est déjà fournisseur d'identité OIDC | garder |
-| Python + CP-SAT | Timefold en Java ; CP-SAT existe aussi en Java | **mesure en cours** (`docs/plans/moteur-planification`), sans changer de langage par principe |
-| Multi-tenant | une base par école (D-01), audit d'isolation fait | garder |
-
-Une réécriture coûterait des mois sans gain pour un client. Seul le **Module Registry** est vraiment nouveau, et sa première brique existe : la fonctionnalité par école de ME-0c (`services/etablissement/fonctionnalites.js`, PR #141) et l'interrupteur de EC-5.
-
-## 7. Ce que cela change dans le plan
-
-| Sujet | Avant | Après (proposé) |
-|---|---|---|
-| Prix (Q-15, Q-17) | 4,99 MAD net par compte actif | paliers d'effectif par offre. **À amender dans le fichier 13 après validation** |
-| IA (11 octobre) | incluse | incluse dans Complet ; option ailleurs ; plafonds gardés |
+| Prix (Q-15, Q-17) | 4,99 MAD net par compte actif | paliers d'effectif par offre. **Le fichier 13 s'amendera quand la grille sera confrontée à des écoles** |
+| IA (11 octobre) | incluse | incluse dans l'offre complète, option ailleurs, plafonds gardés (proposition) |
 | ME-15 facturation | comptes actifs × prix | modules, paliers, régularisation d'effectif |
-| Nouveau | — | **MO-1** registre des modules et droits d'accès (M) ; **MO-2** page d'abonnement et factures (M) |
-| Étape 3, à décider | — | Notes et bulletins (L), frais et paiements (L, sans doute plus), portail parents (M), arabe sur le site et l'application (L), export Massar (M) |
+| Nouveau | — | **MO-1** registre des modules et droits d'accès (M) ; **MO-2** page d'abonnement et factures (M) ; **MO-3** essai avec filigrane et jeu de démonstration public (M). Estimations avant conception |
+| Priorité | V1 puis V2 | moteur et Planification d'abord (décision du 4 novembre) ; la Plateforme partagée reste nécessaire avant les petits clients, car une instance dédiée coûte plus que 199 DH (220 MAD pour un seul serveur de 4 Go) |
 
-L'étape 3 représente environ **19 jours bruts, soit 29 à 38 jours-personne réels** avec la règle du plan (§ 12.7) ; MO-1 et MO-2, nécessaires dès l'étape 1, ajoutent 4 jours bruts. **Estimation grossière**, avant conception : les frais, avec échéanciers et reçus, peuvent dépasser un L.
+Le nouvel ordre des vagues est dans [feuille-de-route.md](feuille-de-route.md), à valider.
 
-## 8. Décisions à prendre
+## 10. À vérifier avant de vendre ou de publier
 
-| # | Question | Recommandation |
-|---|---|---|
-| 1 | Ordre des cibles : Planification seule, puis supérieur, puis écoles complètes ; ou écoles privées d'abord, comme `plan.txt` ? | **Planification d'abord** : c'est ce qui se vend le plus tôt |
-| 2 | La pile de `plan.txt` est-elle abandonnée ? | **Oui** |
-| 3 | Socle inclus plutôt que Core à 149 DH ? | **Oui** |
-| 4 | La grille du § 4 sert-elle de base aux entretiens ? | **Oui**, à confronter à 10 écoles avant publication |
-| 5 | Qui fait les entretiens, et quelle école pilote (Q-25) ? | Chef de projet. C'est le point qui bloque le plus : aucune école extérieure n'a encore donné son avis sur un prix |
+Les 28 questions, avec qui peut répondre, sont dans [verifications-et-consequences.md](verifications-et-consequences.md#questions-ouvertes). Celles qui naissent **dès la première vente** :
 
-## 9. À vérifier avant de publier un prix
-
-- Relire à la main chaque prix du benchmark, avec une capture datée.
-- Coût mensuel réel d'un client : hébergement, calcul du solveur, stockage, support (ME-14a et ME-21 donneront une partie).
-- TVA, facturation en dollars ou en dirhams : expert-comptable.
-- Massar : accès et obligation réelle auprès de l'AREF.
-- Le droit de comparer publiquement à des concurrents nommés : les textes de vente ne les citent pas sans avis juridique.
-- Données des mineurs dès l'étape 3 : CNDP et loi 09-08.
+- **Droit** : contrat de sous-traitance (art. 23 et suivants de la loi 09-08) ; données d'enseignants et d'élèves dès l'étape 1, pas seulement à l'étape 3 ; région réelle de chaque sous-traitant, sauvegardes et IA comprises (les États-Unis ne figurent pas sur la liste CNDP de 2015) ; statut au regard de la loi 05-20 ; textes intégraux des lois 59-21 et 59-24. Rien de ce dossier n'est un avis juridique.
+- **Fiscalité** : retenue de 10 % sur les prestations de non-résidents, plafond de carte à 50 000 MAD/an pour une société nouvelle, statut d'auto-entrepreneur inadapté, TVA déductible ou non pour l'école, facture électronique.
+- **Encaissement** : le virement par défaut. Stripe ne liste pas le Maroc, et le CMI et ses banques ne signent plus de contrats de passerelle en ligne depuis octobre 2024.
+- **Coûts réels** : ME-14a et ME-21 doivent remplacer les hypothèses (comptes par serveur, temps de solveur, tickets par école).
+- **Prix** : relire à la main chaque prix du benchmark, avec une capture datée, avant de le citer. Les confronter à 10 écoles dès que la discussion avance.

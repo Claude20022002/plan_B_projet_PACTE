@@ -1,5 +1,7 @@
 # Business Model & Product Strategy — ERP scolaire modulaire pour l'Afrique
 
+> **Document d'étude rédigé par ChatGPT, corrigé le 4 novembre 2026.** Les corrections portent sur les faits vérifiés et sur les décisions du chef de projet : ordre des cibles (Planification, supérieur privé, puis école complète), abandon de la pile technique d'origine, socle inclus, produit prêt avant la phase pilote. Les prix restent des hypothèses à confronter à des écoles. Références : docs/plans/modele-economique/README.md et benchmark.md.
+
 Modèle hybride
 
 Marché africain
@@ -89,37 +91,31 @@ L'anglais et les marchés anglophones doivent être intégrés dans l'architectu
 
 ## 3. Ce que révèle le benchmark africain
 
-Les concurrents montrent que le marché est déjà suffisamment mature pour accepter plusieurs modèles économiques.
+Les concurrents publient plusieurs modèles économiques ; une page de prix ne prouve pas l'adoption.
 
 Voici quelques références particulièrement intéressantes :
 
 | Concurrent | Proposition et prix publiés                                                     |
 | ---------- | ------------------------------------------------------------------------------- |
 | Msingi     | Tous les modules dans chaque formule ; 250 à 350 KSh par élève et par trimestre |
-| Go4School  | 14 modules, 9 espaces, Mobile Money, français/anglais et comptabilité OHADA     |
-| Kanda OS   | 25 000, 55 000 et 120 000 FCFA/mois selon l'effectif                            |
-| UOS        | 15 000 FCFA/mois jusqu'à 500 étudiants, 20 000 jusqu'à 3 000                    |
-| Logesco    | School à partir de 100 000 FCFA ; MyUniversity à partir de 400 000 FCFA         |
+| Go4School  | 13 modules, 11 espaces, Mobile Money, français/anglais et comptabilité OHADA ; prix sur devis |
+| Kanda OS   | 25 000, 55 000, 120 000 et dès 250 000 FCFA/mois selon l'effectif ; offre Campus à part |
+| UOS        | 15 000 FCFA/mois jusqu'à 500 étudiants, 20 000 jusqu'à 3 000 ; Starter pour « petites universités et écoles » |
+| Logesco    | School à partir de 100 000 FCFA ; MyUniversity à partir de 400 000 FCFA ; période du tarif non dite |
 | Skoolly    | 4 à 6 DH par élève et par mois                                                  |
 | Eduzaas    | 233 à 1 624 DH/mois au Maroc, selon la formule                                  |
 
-Sources : pages officielles de [Msingi](https://msingi.io/?utm_source=chatgpt.com), [Go4School](https://www.go4school.net/?utm_source=chatgpt.com), [Kanda OS](https://kandaos.com/en/?utm_source=chatgpt.com), [UOS](https://www.uos.sn/pricing?utm_source=chatgpt.com), [Logesco](https://logesco.org/tarifs/?utm_source=chatgpt.com), [Skoolly](https://skoolly.ma/?utm_source=chatgpt.com) et [Eduzaas](https://eduzaas.com/fr-ma/pricing?utm_source=chatgpt.com).&#x20;
-
-[image](https://www.google.com/s2/favicons?domain=https://msingi.io\&sz=32)
-
-School Management Platform Built for Africa+6
-
-
+Sources : pages officielles de [Msingi](https://msingi.io/), [Go4School](https://www.go4school.net/), [Kanda OS](https://kandaos.com/en/), [UOS](https://www.uos.sn/pricing), [Logesco](https://logesco.org/tarifs/), [Skoolly](https://skoolly.ma/) et [Eduzaas](https://eduzaas.com/fr-ma/pricing).
 
 ### Les enseignements à tirer
 
 1. Msingi démontre qu'une offre complète avec tous les modules peut être vendue à un tarif lié à l'effectif.
 2. Go4School montre l'intérêt d'une forte localisation africaine : comptabilité OHADA, Mobile Money et bilinguisme.
-3. Kanda OS démontre l'intérêt du mode hors ligne et d'une tarification par tranche d'effectif.
-4. UOS montre qu'il existe une stratégie tarifaire spécifique au supérieur.
-5. Skoolly démontre que la tarification par élève est déjà compréhensible par les écoles marocaines.
+3. Kanda OS montre l'intérêt d'une saisie hors ligne des notes et présences (après connexion initiale) et d'une tarification par tranche d'effectif.
+4. Le supérieur se vend à part chez plusieurs acteurs (Kanda Campus, Logesco MyUniversity), mais à des niveaux de prix qui divergent : aucun multiple n'est établi. UOS vise aussi les écoles.
+5. Skoolly publie un prix par élève : cela montre que ce modèle est proposé, pas qu'il est adopté (aucun client publié).
 
-Notre différenciation : combiner une architecture modulaire à la Odoo, une tarification transparente, des modules indépendants et une véritable adaptation aux établissements africains.
+Notre différenciation à vérifier : au Maroc, cinq éditeurs annoncent déjà la génération automatique et 12 publient leurs prix. L'angle restant : un emploi du temps généré, publié et tenu à jour, vendu seul, avec des preuves publiées, sans changer de logiciel scolaire.
 
 # PARTIE II — LE BUSINESS MODEL
 
@@ -193,7 +189,7 @@ Pour le supérieur, on ajoutera une métrique complémentaire : les étudiants a
 
 Je recommande les règles suivantes :
 
-- Abonnement mensuel sans engagement long.
+- Contrat annuel par défaut (le budget des écoles est annuel) ; mensuel sans engagement à tarif majoré (proposition).
 - Abonnement annuel avec remise de 15 à 20 %.
 - Essai gratuit de 14 à 30 jours.
 - Activation immédiate des modules après paiement.
@@ -216,49 +212,33 @@ Je recommande de structurer les modules en 8 grandes familles commerciales.
 
 Catalogue fonctionnel de la plateforme
 
-[Intellimis Lite | Affordable School ERP for Every School](https://images.openai.com/static-rsc-4/0Peo0wzlAnV_nYA3EoiU0Gz4a9infT_ySNCbnVlZr0c-1GAQCd_1mMpap9UYu4f1BpG563lpmlfxHHuYcUlt1m4ZW96DZDrDrE7sZtfvjSvyWXKKGLATtf5u-VM3ksPbUZHp3YZldU6wBgsLM1c-nl_DkL2Tj0ry-1nio5E1zBQ?purpose=inline)
-
 01\. Administration
 
 Élèves, inscriptions, dossiers, documents.
-
-[Innova - Plateforme de Gestion Scolaire 100% Algérienne | Logiciel École](https://images.openai.com/static-rsc-4/sfm--yaBgUGsaWg-vzyGPq34GnHheTXdNgtv3TxdQlmU3FR2nC76oSJGF9KNHc4L9yL3IVnsKrVLwz-6mrNyjdBvCkrsRBWX9FDrewMhnWnhJubO2_n14_kbs0x6qK51SEzwKGpCc0XCB12Ioo2mfNLXUlcu4IuMDW4u76bN4rg?purpose=inline)
 
 02\. Pédagogie
 
 Notes, bulletins, examens, compétences.
 
-[AI School Timetable Generator — Conflict-Free Scheduling | EduMark](https://images.openai.com/static-rsc-4/3WOMzQ_iR5S46qTt5jiVmVaqwFEfQF46lC8LSi7VO1Thx8yutD7INtzCw0sr-lCb4RB0Yj6XQi3B43uK_2Yo_uz7Agw3LxAqwTdhppBonSQLgAKsKd3gmaV4oCpRiftMAHhDV5v-XXOojjQ6ytMuQ0NxnH2gmmADB0AU89HyRzc?purpose=inline)
-
 03\. Planification
 
 Emplois du temps, salles, ressources.
-
-[Minassa - Logiciel de Gestion Scolaire N°1 au Maroc | ERP Écoles Privées](https://images.openai.com/static-rsc-4/DCWw-HUqGgzNKSUu03cdAhwtrTNrzjZVbYWLoBfwEoWxnBsROYTlyfeBGb54sCsnUFbS6FJut8MNX97LPcaZeuR_iFvIwGgloDp57u664z2AL4An8MI50nX26oT28sjllqrpN7mC0vHBVVHtCw8-97aNvSuB_pGK-CDmrRN95uo?purpose=inline)
 
 04\. Finance
 
 Frais, paiements, comptabilité.
 
-[Go4School - Solution de Gestion Scolaire Complète | Écoles Cameroun & Afrique Subsaharienne](https://images.openai.com/static-rsc-4/umqnAxXIM3EwceItUWG1BB4CmJ2pwc0FEx53VLtFviSi02a2a9bCCU2bMd1URrCE43MRDqRZmGumPihJR398d8h_CqU_IUYf1qHXqwHtwvaqNLpVvj3VBMhD5iVAOvvfZu7w0c3rFqVPHNNd2J4x2VxwUPogaAV4hAYq838VNB0?purpose=inline)
-
 05\. Ressources humaines
 
 Enseignants, personnel, paie.
-
-[Parent portal](https://images.openai.com/static-rsc-4/4aag2LgebAyycjZqBaDLxdtoA1FPglwN-vYL4JUJJV-B-D-cvDKB-xPcNGvTF0m-IOWU1P_8yDj2FLW-VxKSDkECU2TQMne8Ou82DYfSUB9-e7IMk73xlaEOblrXDGk51Y5LCqa0aupCoh4-Yn7zXeeS-qAeV-5m39x7KaUsbMA?purpose=inline)
 
 06\. Communication
 
 Parents, élèves, enseignants, notifications.
 
-[LittleMove: #1 AI-Powered Transport Solution for Schools & Colleges](https://images.openai.com/static-rsc-4/_ZTo8s3vtDVZvXQlyD8M1E8R0CxuGHFPhKCtA6hFcqJMtNoSz_yZ7pIfZeyqBDao5vsGP88CH34IThe83FN0DCGavQHg1AcsXnecs7CLhdgxBeSYkl1qCHmac5bnVqK_r80LXZPPsobdDsfwN-kj60UdtetHuvb3V66MZaEzKeU?purpose=inline)
-
 07\. Logistique
 
 Transport, cantine, équipements.
-
-[LMS Analytics | Data-Driven Learning Analytics and Performance Growth](https://images.openai.com/static-rsc-4/ZAAwk122M5SyakQa9D4yDXdGj8hbUFMA0I7Zyfmo84EDYUaOCSGoQcUyFSQilbgMqQycpf88BSyEV3A9hhbhgBvjYsY3kocepRqwUuDOJO5phJu0F1ftCbJ377-lbiribtkPIWGVs9gRr1OoRZmYqaSzJ2Ifijr2-Ce6CDVrHao?purpose=inline)
 
 08\. Digital et intelligence
 
@@ -270,15 +250,17 @@ Voici la première grille tarifaire que je recommande de tester.
 
 Les prix sont exprimés en MAD HT par mois, pour un établissement avec un campus et jusqu'à 300 apprenants actifs. Ils constituent des hypothèses de lancement, pas des prix définitifs.
 
+Décision du 4 novembre 2026 : le socle (comptes, droits, établissement, élèves, classes, enseignants, matières, salles) est inclus dans tout abonnement. Les modules concernés sont signalés ; leur prix d'origine reste indiqué pour mémoire.
+
 ### A. Administration scolaire
 
 | Module              | Fonctionnalités principales              | Prix/mois |
 | ------------------- | ---------------------------------------- | --------- |
-| Core Platform       | Comptes, rôles, sécurité, API de base    | 149 DH    |
-| Student Management  | Dossiers et inscriptions des élèves      | 69 DH     |
+| Core Platform       | Comptes, rôles, sécurité, API de base    | Inclus (origine : 149 DH) |
+| Student Management  | Dossiers et inscriptions des élèves      | Inclus (origine : 69 DH) |
 | Admissions          | Candidatures, préinscriptions, admission | 49 DH     |
 | Document Management | Documents, attestations, archivage       | 49 DH     |
-| Class Management    | Classes, niveaux, groupes                | 49 DH     |
+| Class Management    | Classes, niveaux, groupes                | Inclus (origine : 49 DH) |
 
 ### B. Gestion pédagogique
 
@@ -296,7 +278,7 @@ Les prix sont exprimés en MAD HT par mois, pour un établissement avec un campu
 | --------------------- | ---------------------------------------------- | --------- |
 | Timetable Basic       | Création et gestion des emplois du temps       | 99 DH     |
 | Timetable AI / Solver | Génération optimisée, contraintes et scénarios | 149 DH    |
-| Room Management       | Gestion et réservation des salles              | 49 DH     |
+| Room Management       | Salles incluses ; la réservation reste à chiffrer | Inclus (origine : 49 DH) |
 | Resource Management   | Matériel et équipements pédagogiques           | 49 DH     |
 | Substitution          | Remplacement des enseignants absents           | 69 DH     |
 
@@ -315,7 +297,7 @@ Les prix sont exprimés en MAD HT par mois, pour un établissement avec un campu
 | Module                 | Fonctionnalités principales      | Prix/mois |
 | ---------------------- | -------------------------------- | --------- |
 | Staff Management       | Dossiers et contrats             | 79 DH     |
-| Teacher Management     | Affectations et charges horaires | 79 DH     |
+| Teacher Management     | Affectations et charges horaires | Inclus (origine : 79 DH) |
 | Leave Management       | Congés et absences du personnel  | 49 DH     |
 | Recruitment            | Candidatures et recrutements     | 69 DH     |
 | Performance Management | Évaluation du personnel          | 69 DH     |
@@ -387,7 +369,7 @@ Modules inclus :
 - Class Management
 - Document Management
 
-Valeur séparée indicative : 413 DH/mois.
+Valeur séparée sur la grille d'origine : 414 DH/mois.
 
 Pack recommandé
 
@@ -409,7 +391,7 @@ Tout School Start, plus :
 - Parent Portal
 - Messaging
 
-Valeur séparée indicative : 826 DH/mois.
+Valeur séparée sur la grille d'origine : 996 DH/mois (et non 826).
 
 Pack complet
 
@@ -424,18 +406,20 @@ Tout School Professional, plus :
 
 - Timetable AI / Solver
 - LMS
-- HR Management
+- Staff Management
 - Payroll
 - Transport
 - Canteen
 - Analytics
 - Advanced API
 
-Valeur séparée indicative : environ 1 650 DH/mois.
+Valeur séparée sur la grille d'origine : 1 818 DH/mois (et non 1 650).
 
-Ces trois offres ne doivent pas être des produits techniquement différents : elles doivent être des configurations commerciales du même ERP.
+Ces trois offres ne doivent pas être des produits techniquement différents : elles doivent être des configurations commerciales du même ERP. Décision du 4 novembre 2026 : elles ne se publient pas avant l'étape de l'offre scolaire complète, car notes, frais et parents n'existent pas encore.
 
 ### Extension des prix selon la taille
+
+Réserve : sur un scénario de coûts (hypothèses, pas des mesures), le haut de grille ne tient pas, et il se situe au-dessus de plusieurs offres découvertes depuis (Qalam, SchoolMA, EduSchoolConnect). Voir le README du modèle économique.
 
 Pour les packs de référence, voici une grille de départ à tester :
 
@@ -477,6 +461,7 @@ Je propose donc une famille commerciale distincte :
 | University Enterprise   | Sur devis              |
 
 Ces prix sont des hypothèses pour une première étude de marché, avec des plafonds d'effectifs et de campus à définir.
+Repères relevés : Hyperplanning, environ 6 340 MAD/mois pour une configuration (2024) ; Kanda Campus, environ 1 995 MAD/mois à 2 000 étudiants ; UOS, 252 à 335 MAD/mois. Aucun multiple par rapport au scolaire n'est établi.
 
 Le module de planification universitaire pourrait être vendu indépendamment aux établissements qui ont déjà un ERP.
 
@@ -500,6 +485,8 @@ Les abonnements ne doivent pas être votre seule source de revenus.
 | Notifications SMS             | Selon consommation      |
 
 L'onboarding standard pourrait être offert pour les abonnements annuels afin de faciliter l'acquisition des clients.
+
+Réserve : Schoolz, Caisso, iLimo et Fedena incluent la mise en place, Eduzaas n'annonce aucun frais ; EduSchoolConnect, 1ECOLE et Logesco la facturent. Les forfaits validés le 24 octobre (Q-28 : 6 000 et 15 000 MAD) ne sont pas tenables pour une petite école sans import en libre-service.
 
 Attention : les coûts réels de migration, de formation et de support doivent être suivis pour éviter que les petits contrats deviennent déficitaires.
 
@@ -555,6 +542,8 @@ Il s'agit du chiffre d'affaires récurrent brut, pas du bénéfice.
 - Net Revenue Retention : évolution des revenus issus des clients existants.
 
 Je viserais à terme une marge brute SaaS supérieure à 70 %, tout en mesurant séparément les prestations de services.
+
+Réserve : aucune marge n'est mesurée. Dans le scénario de coûts, l'offre Planification va de 41 à 191 % du prix selon la taille et l'usage. Le support pèse plus que le serveur, et un commercial salarié ne se rembourse pas sur cette offre.
 
 # PARTIE V — ARCHITECTURE TECHNIQUE DU PRODUIT
 
@@ -614,7 +603,7 @@ Analytics
 
 Infrastructure commune
 
-PostgreSQL · Redis · Stockage objet · Queue de tâches · Sauvegardes
+MySQL 8.4 (une base par école, D-01) · Stockage objet (MinIO) · Sauvegardes
 
 ## 15. Les composants techniques à développer
 
@@ -650,26 +639,26 @@ Je recommande de commencer par un monolithe modulaire, avec des frontières fonc
 
 Cela réduira les coûts d'infrastructure et la complexité de développement. Les composants particulièrement exigeants pourront être séparés par la suite.
 
-## 16. Stack technologique recommandée
+## 16. Pile technique retenue (décision du 4 novembre 2026)
 
-Compte tenu de ton expérience avec React, Node.js, MySQL et tes projets de planification, voici une architecture cohérente.
+La pile proposée à l'origine (NestJS, PostgreSQL, TypeScript, Tailwind, Python et FastAPI, Keycloak, BullMQ) est **abandonnée** : une réécriture coûterait des mois sans gain pour un client. On garde l'existant.
 
 | Couche                | Technologie recommandée               |
 | --------------------- | ------------------------------------- |
-| Frontend              | React + TypeScript                    |
-| UI                    | Tailwind CSS + composants accessibles |
-| Backend principal     | Node.js + NestJS                      |
-| Moteur d'optimisation | Python + FastAPI                      |
-| Base de données       | PostgreSQL                            |
-| Cache                 | Redis                                 |
-| File de tâches        | BullMQ / Redis                        |
-| Stockage documentaire | S3 compatible                         |
-| Authentification      | Keycloak ou solution OIDC             |
-| Application mobile    | React Native, à terme                 |
+| Frontend              | React 19 + Vite (JavaScript)          |
+| UI                    | MUI 7 et le langage visuel de DESIGN.md |
+| Backend principal     | Node.js + Express + Sequelize         |
+| Moteur d'optimisation | Service Java 21 ; Timefold en place, OR-Tools CP-SAT à mesurer |
+| Base de données       | MySQL 8.4, une base par école (D-01)  |
+| Cache                 | Redis pour les services annexes seulement ; absent du serveur Planner |
+| File de tâches        | à décider si le besoin apparaît (ME-14 : file par établissement) |
+| Stockage documentaire | MinIO (compatible S3)                 |
+| Authentification      | Planner est déjà fournisseur d'identité OIDC (oidc-provider) |
+| Application mobile    | React Native avec Expo, déjà en service |
 | Infrastructure        | Docker + Linux                        |
 | CI/CD                 | GitHub Actions                        |
-| Monitoring            | Prometheus + Grafana                  |
-| Documentation API     | OpenAPI / Swagger                     |
+| Supervision           | Sonde hébergée, décision du 30 octobre (ME-21) |
+| Documentation API     | docs/api ; OpenAPI à évaluer          |
 
 ### Le moteur d'emploi du temps
 
@@ -677,10 +666,10 @@ Je ferais de ce module un composant techniquement indépendant.
 
 Architecture proposée :
 
-- Backend principal : NestJS.
-- Service d'optimisation : Python.
-- Algorithme : Google OR-Tools CP-SAT.
-- Base de données : PostgreSQL.
+- Backend principal : Express.
+- Service d'optimisation : Java 21, déjà un service à part.
+- Algorithme : Timefold en place ; CP-SAT à mesurer sur les données de Planner. CP-SAT a un paquet Maven officiel (Apache 2.0), mais il requiert glibc alors que l'image actuelle est Alpine. Timefold 2.x rend payante l'analyse de score que Planner utilise, et la ligne 1.x finirait début 2027.
+- Base de données : MySQL.
 - Communication : API interne et traitement asynchrone.
 
 Cela permettra de faire évoluer le moteur sans perturber les autres modules.
@@ -703,7 +692,7 @@ Il faut prévoir :
 - Gestion des conflits de synchronisation.
 - Indicateurs de synchronisation.
 
-Tu as déjà travaillé sur la présence par QR Code dans ton produit scolaire : je recommande de capitaliser sur ce travail pour construire l'un des premiers modules commercialisables.&#x20;
+Tu as déjà travaillé sur la présence par QR Code dans ton produit scolaire : je recommande de capitaliser sur ce travail pour construire l'un des premiers modules commercialisables.
 
 ### B. Localisation géographique
 
@@ -721,7 +710,7 @@ Le Core doit gérer :
 - Règles de paie.
 - Moyens de paiement locaux.
 
-Ne crée surtout pas un ERP différent pour chaque pays. Crée des configurations pays et des extensions métier.
+Ne crée surtout pas un ERP différent pour chaque pays. Crée des configurations pays et des extensions métier. Au Maroc, il faut y ajouter l'arabe, absent de Planner aujourd'hui, et l'échange de fichiers avec Massar : aucune API officielle ni procédure d'agrément n'a été trouvée.
 
 ### C. Paiements
 
@@ -736,13 +725,9 @@ Exemples :
 - Paiements en espèces avec rapprochement.
 - Paiements fractionnés.
 
-Attention : Paystack ne couvre pas tous les pays africains. Sa documentation distingue notamment ses marchés actifs, ses canaux Mobile Money et ses déploiements en bêta. Il ne faut donc pas baser toute l'architecture sur un seul prestataire.&#x20;
+Attention : Paystack ne couvre pas tous les pays africains. Sa documentation distingue notamment ses marchés actifs, ses canaux Mobile Money et ses déploiements en bêta. Il ne faut donc pas baser toute l'architecture sur un seul prestataire.
 
-[image](https://www.google.com/s2/favicons?domain=https://support.paystack.com\&sz=32)
-
-support.paystack.com+1
-
-
+Vérifié le 4 novembre 2026 : l'API de Paystack liste 7 pays (Nigeria, Ghana, Afrique du Sud, Kenya, Côte d'Ivoire ; Égypte et Rwanda en pilote), sans le Maroc. Stripe ne liste pas le Maroc. Au Maroc, le CMI et ses banques ne signent plus de contrats de passerelle en ligne depuis la décision du 31 octobre 2024 ; YouCan Pay facture 3,9 % + 2 MAD. Le Mobile Money reste marginal chez les commerçants marocains. L'OHADA compte 17 États, dont Sénégal, Côte d'Ivoire, Cameroun et RDC, sans le Maroc, le Ghana, le Kenya ni le Nigeria.
 
 Je recommande une architecture `Payment Provider Adapter` qui permettra de connecter les prestataires disponibles pays par pays.
 
@@ -764,19 +749,17 @@ Il faut prévoir dès la première version :
 - Gestion des durées de conservation.
 - Contrôle des accès aux dossiers médicaux et disciplinaires.
 
-La conformité doit être étudiée pays par pays : au Maroc, par exemple, la loi 09-08 et les formalités auprès de la CNDP sont à prendre en compte.&#x20;
+La conformité doit être étudiée pays par pays : au Maroc, par exemple, la loi 09-08 et les formalités auprès de la CNDP sont à prendre en compte.
 
-[image](https://www.google.com/s2/favicons?domain=https://www.cndp.ma\&sz=32)
-
-Cndp+1
-
-
+Précisions (lecture, pas un avis juridique) : la loi 09-08 ne contient aucune règle propre aux mineurs ; la CIN, la santé et les infractions imposent une autorisation préalable ; les États-Unis ne figurent pas sur la liste CNDP de 2015 ; la loi 05-20 peut viser un éditeur SaaS comme prestataire de services numériques ; les lois 59-21 (scolaire) et 59-24 (supérieur) changent le cadre, leurs textes intégraux restant à lire. Ces questions naissent dès le premier contrat, pas seulement à l'étape scolaire.
 
 # PARTIE VI — ROADMAP COMMERCIALE ET TECHNIQUE
 
 ## 18. Plan de développement sur 24 mois
 
 Je recommande une progression en six phases.
+
+Décision du 4 novembre 2026 : cet ordre est remplacé. D'abord la Planification seule, puis le supérieur privé, puis l'offre scolaire complète. **Le produit doit exister avant la phase pilote**, et l'école pilote reste en discussion. Les délais ci-dessous supposaient une équipe de 8 fonctions ; il y a aujourd'hui une personne par groupe (R-5).
 
 ## Roadmap générale
 
@@ -864,6 +847,8 @@ Ces délais supposent une équipe dédiée et une priorité donnée au produit. 
 
 Le développement du produit et son développement commercial doivent avancer ensemble.
 
+Réserve : ce tableau suppose des entretiens et des pilotes dès les premiers mois. L'école pilote est en discussion, et aucune école extérieure n'a encore réagi à un prix.
+
 | Période    | Objectif commercial           | Résultat visé                |
 | ---------- | ----------------------------- | ---------------------------- |
 | Mois 1–2   | Étude terrain                 | 30 entretiens                |
@@ -912,9 +897,7 @@ TIMETABLE AI
 
 Module commercialisable
 
-[Horarium.ai - Efficient Timetable Creation for Elementary, Middle, and High Schools | Quick and Easy Timetable Creation - Horarium](https://images.openai.com/static-rsc-4/Di1uza_ffKyvSCTg1bbNWGjTEvPIfc-XulliBfHWnW_GZIGmPdrHUHQ8Q0ew46hmoGUmhWikzVIDcq3OTgFqH9VP3tGJWk_zMj9lzt-0SUiWSxL_vSljKOwfGjt5QVMKZBtMYljzK3-SHT7P2QBShlJz0-0-8laTFw9wWoW4mHg?purpose=inline)
-
-[horarium.ai](https://horarium.ai/?utm_source=chatgpt.com)
+[horarium.ai](https://horarium.ai/)
 
 Description
 
@@ -943,9 +926,9 @@ Dépendances
 
 Prix indicatif
 
-# 149 DH / mois
+# 199 DH / mois
 
-Jusqu'à 300 élèves · 1 établissement · Hors pack
+De 151 à 300 élèves · 1 établissement · Socle inclus · Hypothèse à tester (149 DH annoncés à l'origine, soit 475 DH réels avec les dépendances)
 
 Chaque module devra avoir :
 
@@ -1004,13 +987,15 @@ C'est une évolution intéressante du modèle Odoo, mais elle ne doit pas deveni
 
 Pour une première version, je recommande une équipe relativement compacte.
 
+Réserve : l'équipe réelle est d'une personne par groupe (R-5).
+
 | Fonction                | Responsabilité                |
 | ----------------------- | ----------------------------- |
 | Product Manager         | Vision, priorités, catalogue  |
 | Architecte / Tech Lead  | Architecture et qualité       |
 | Développeur Backend     | Core, API, modules            |
 | Développeur Frontend    | Interface et marketplace      |
-| Développeur Python / IA | Optimisation et intelligence  |
+| Développeur moteur (Java) / IA | Optimisation et intelligence  |
 | QA / DevOps             | Tests, déploiement, sécurité  |
 | Business Developer      | Prospection et ventes         |
 | Customer Success        | Formation, migration, support |
@@ -1022,6 +1007,8 @@ Certains rôles peuvent être cumulés au début.
 ## 24. Ce que je construirais réellement en premier
 
 Je ne développerais pas les 40 ou 50 modules simultanément.
+
+Décision du 4 novembre 2026 : le premier produit commercialisable est la Planification seule, non les neuf modules ci-dessous. Notes et bulletins, frais et paiements n'existent pas dans Planner et viendront avec l'offre scolaire complète.
 
 Je construirais un premier produit suffisamment complet pour être commercialisé, puis je financerais progressivement son extension grâce aux abonnements.
 
@@ -1061,9 +1048,9 @@ Interface commerciale
 
 ### 25. Exploiter les travaux déjà réalisés
 
-Je te conseille de commencer par un audit technique de tes travaux autour de HESTIM Planner / PACTE avant de créer un nouveau dépôt.
+Pas de nouveau dépôt : Planner continue dans son dépôt (décision du 4 novembre 2026). Audit fait : élèves, classes, enseignants, matières, salles, présences par QR et génération existent ; notes, bulletins, frais, parents, arabe et Massar manquent.
 
-Tu as déjà exploré la gestion des salles, cours, enseignants et étudiants, ainsi que la présence par QR Code. Certains composants peuvent devenir les premières briques du nouvel ERP, à condition de les rendre génériques et multi-établissements.&#x20;
+Tu as déjà exploré la gestion des salles, cours, enseignants et étudiants, ainsi que la présence par QR Code. Certains composants peuvent devenir les premières briques du nouvel ERP, à condition de les rendre génériques et multi-établissements.
 
 Il faut notamment éviter de conserver des règles spécifiques à HESTIM dans le Core.
 
@@ -1131,7 +1118,7 @@ Identifier les établissements pilotes
 
 Définir le processus d'onboarding
 
-&#x20;Copier le plan de lancement
+Copier le plan de lancement
 
 ## Ma conclusion stratégique
 
@@ -1139,8 +1126,8 @@ Je pense que le meilleur positionnement n'est pas de devenir le logiciel scolair
 
 Il faut devenir l'ERP scolaire modulaire qui offre le meilleur rapport entre fonctionnalités, prix, adaptabilité et facilité d'utilisation.
 
-Il y a toutefois une décision que je prendrais immédiatement : commencer par le marché des écoles privées, avec un Core solide et un premier catalogue de modules scolaires, puis développer les fonctionnalités universitaires comme une extension structurée.
+Décision du chef de projet du 4 novembre 2026, qui remplace la recommandation d'origine (commencer par les écoles privées) : vendre d'abord la Planification seule, puis le supérieur privé, puis l'offre scolaire complète, en partant de ce que Planner sait déjà faire.
 
-Cela vous permettra d'éviter de développer un produit immense avant d'avoir trouvé vos premiers clients payants.
+Cela évite de développer un produit immense avant d'avoir trouvé les premiers clients payants.
 
 La prochaine étape que je recommande est de transformer ce business model en un véritable cahier des charges produit et technique, avec le catalogue définitif des modules, les dépendances, les règles de facturation, le modèle de données et les spécifications du Core Platform. C'est ce document qui devra servir de référence à toute l'équipe de développement.
