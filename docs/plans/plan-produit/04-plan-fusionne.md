@@ -1,5 +1,7 @@
 # 4. Plan de développement fusionné : vagues et fonctionnalités, pour une équipe élargie
 
+> **À revoir** : le 4 novembre au soir, le chef de projet a placé « plusieurs écoles sur une installation » **après le supérieur**, et la planification seule en premier (`docs/plans/modele-economique/feuille-de-route.md`, § 1 ; registre). La V2 ci-dessous, qui avançait « plusieurs écoles », doit être déplacée. Le reste du plan (équipes, exigences, site public) n'est pas touché.
+
 **Proposition du groupe B, 5 novembre 2026, à valider.** Elle répond aux décisions du chef de projet du 5 novembre :
 
 1. **Fusionner** les fonctionnalités du fichier 3 avec les vagues V0 à V5 du plan 15, pour une équipe plus nombreuse qui se répartit les tâches.
@@ -175,7 +177,7 @@ Ce site est différent de la page d'accueil d'une école dans Planner (`pages/Ac
 | SP-5 | **Page d'état et nouveautés** | état du service (s'appuie sur ME-21, supervision) et journal des nouveautés de chaque version | SC, PF | V4 | S |
 
 **Ce qui attend une décision avant SP-2** :
-- le **nom de la marque** (Q-29 : Jadwal ou Planner) et le **nom de domaine** ;
+- le **nom de domaine** (le nom du produit est tranché le 5 novembre : **Planner**) ;
 - les **mentions légales** et la **politique de confidentialité**, à faire écrire par le juriste (données recueillies par le formulaire, loi 09-08) ;
 - les **tarifs** : pas de prix publié tant que la vente est mise de côté. La page parlera de « demande de démonstration » ou de « nous contacter ».
 
@@ -234,4 +236,4 @@ Ce sont des **ordres de passage, pas des dates**. Les tailles (S = 0,5 j, M = 2 
 | 2 | Les exigences EP-1 à EP-12 deviennent-elles des conditions de « terminé » ? | oui |
 | 3 | ME-22 (test d'intrusion) reste-t-il à la fin de V4, malgré la vente mise de côté ? | oui |
 | 4 | EC-3 (carnet de notes officiel) fusionne-t-il dans F-13 ? | oui ; les règles validées par la scolarité et le juriste restent une condition |
-| 5 | Le site public : nom de la marque, nom de domaine, et qui le porte (équipe SC à créer, ou UI) ? | trancher Q-29 avant SP-2 ; à défaut d'équipe SC, l'équipe UI |
+| 5 | Le site public : nom de domaine, et qui le porte (équipe SC à créer, ou UI) ? Le nom est Planner (5 novembre) | domaine à choisir avant SP-2 ; à défaut d'équipe SC, l'équipe UI |
