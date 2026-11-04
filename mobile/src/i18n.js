@@ -73,6 +73,8 @@ const fr = {
       initialement: 'Prévue au départ',
       nouvelleDate: 'Nouveau créneau',
       supports: 'Supports du cours',
+      rejoindre: 'Rejoindre sur {{domaine}}',
+      visioPasEncore: 'Séance à distance : le lien de visio n’est pas encore donné.',
     },
     bibliotheque: {
       mesCours: 'Mes cours',
@@ -232,6 +234,9 @@ const fr = {
     jeux: {
       titre: 'Jeux',
       enCours: 'Quiz en cours',
+      // Service de quiz éteint pour l’école (lot ME-0c)
+      quizFerme: 'Les quiz en direct de ce service ne sont pas ouverts pour votre établissement.',
+      quizFermeAide: 'Les quiz de vos enseignants par code ou QR code, et les jeux, restent disponibles.',
       code: 'Code {{pin}}',
       rejoindre: 'Rejoindre',
       vide: "Aucune partie en cours. Quand votre enseignant lance un quiz pendant la séance, vous êtes prévenu ici.",
@@ -471,6 +476,8 @@ const en = {
       initialement: 'Originally',
       nouvelleDate: 'New slot',
       supports: 'Course materials',
+      rejoindre: 'Join on {{domaine}}',
+      visioPasEncore: 'Remote session: the video link has not been given yet.',
     },
     bibliotheque: {
       mesCours: 'My courses',
@@ -630,6 +637,9 @@ const en = {
     jeux: {
       titre: 'Games',
       enCours: 'Quiz in progress',
+      // Quiz service off for the school (ME-0c)
+      quizFerme: 'Live quizzes from this service are not open for your school.',
+      quizFermeAide: 'Your teachers’ quizzes by code or QR code, and the games, are still available.',
       code: 'Code {{pin}}',
       rejoindre: 'Join',
       vide: 'No game in progress. When your teacher launches a quiz during class, you will be notified here.',

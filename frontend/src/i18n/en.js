@@ -1212,6 +1212,12 @@ const en = {
   },
   jeux: {
     buts: { verifier: 'Check understanding', entrainer: 'Practice' },
+    // Address opened while live quizzes are not open for the school (ME-0c)
+    quizFerme: {
+      titre: 'Live quizzes from this service are not open for your school',
+      aide: 'Your quizzes in “My quizzes” and the games are still available.',
+      retour: 'Go to activities',
+    },
     titre: 'Activities',
     sousTitre: 'Quizzes, homework and games chosen by your teachers, course by course: to check what you understood or to practise.',
     sousTitre_sansDevoirs: 'Quizzes and games chosen by your teachers, course by course: to check what you understood or to practise.',
@@ -1558,6 +1564,22 @@ const en = {
     details: 'View details',
     titreDetails: 'Conflict details',
     marquerResolu: 'Mark as resolved',
+  },
+  // Video link of a remote session (EC-11)
+  visio: {
+    rejoindre: 'Join on {{domaine}}',
+    pasEncore: 'Remote session: the video link has not been given yet.',
+    champ: 'Video conference link',
+    aide: 'Meet, Teams, Zoom… Students see it right away in their timetable.',
+    enregistre: 'Link saved.',
+    retirer: 'Remove the link',
+    refus: {
+      longueur: 'Link too long (500 characters at most).',
+      adresse: 'This is not a web address: paste the full meeting link.',
+      https: 'The link must start with https://',
+      hote: 'The link must point to a public site (for example meet.google.com).',
+      identifiants: 'The link must not contain a user name or password.',
+    },
   },
   annees: {
     selecteur: 'Academic year',
