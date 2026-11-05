@@ -6,9 +6,22 @@ Deux parties. La première décrit le **serveur de production** (le VPS de `plan
 
 Toutes les commandes du serveur se lancent en `root`. Le chef de projet les lance lui-même. Les scripts sont dans `deploy/vps/` ; chacun explique son rôle dans son en-tête.
 
+### Mettre en ligne par la commande (lot ME-0b)
+
+Conception et diagrammes : `docs/plans/planner-multi-etablissements/conception-me0b-deploiement.md`. Après chaque fusion sur `main`, la CI publie, une fois tous les contrôles verts, les images du serveur, du site, du solveur et des scripts d'exploitation sur `ghcr.io/claude20022002`, au nom du commit. Il n'y a rien à construire sur le PC.
+
+1. **Choisir le commit** : celui de la fusion sur `main` dont le job « Publier » de la CI est vert (onglet Actions). Le commit court (7 caractères) ou complet (40) convient.
+2. **Répéter sans rien changer** : `bash /opt/hestim/deploy/vps/deployer.sh --essai <commit>` (tire les images et vérifie qu'elles portent ce commit).
+3. **Mettre en ligne**, hors des heures de cours : `bash /opt/hestim/deploy/vps/deployer.sh <commit>`. La commande s'arrête sans rien toucher si une image manque ou porte un autre commit ; sinon elle sauvegarde la base, remplace les images (les anciennes restent en `:avant-<date>`), met à jour les scripts d'exploitation, redémarre le serveur (migrations), le site et le solveur (seulement si ses sources ont changé), vérifie que le serveur et le site annoncent ce commit, puis affiche le retour arrière.
+4. **Revenir à la version précédente** : `bash /opt/hestim/deploy/vps/deployer.sh --retour` (historique dans `/opt/hestim/deploy/versions.log`). Restaurer la base reste une décision : la commande est affichée à la fin de chaque mise en ligne.
+
+**Une seule fois, avant la première mise en ligne** : copier `deploy/vps/deployer.sh` et `deploy/vps/deploiement-commun.sh` dans `/opt/hestim/deploy/vps/` (`scp`) ; ensuite, la commande se met à jour elle-même avec les autres scripts. Vérifier dans GitHub (Packages) que les quatre images `hestim-*` sont **publiques** ; sinon, sur le serveur, `docker login ghcr.io` avec un jeton en lecture seule (`read:packages`).
+
+StudyLib et ClassQuiz ne sont pas concernés : ils se mettent toujours à jour par paquet (`--studylib`, `--classquiz`, `--quiz-seul` ci-dessous).
+
 ### Mettre à jour par paquet
 
-Un paquet `majNN` ne contient que le code. Il se superpose aux images déjà en ligne.
+Un paquet `majNN` ne contient que le code. Il se superpose aux images déjà en ligne. Depuis ME-0b, c'est la voie de StudyLib et de ClassQuiz, et le retour arrière du lot.
 
 1. **Sur le PC, construire le site depuis PowerShell** (Git Bash réécrirait `/api` en chemin Windows) :
    `cd frontend; $env:VITE_API_URL="/api"; npm run build`
