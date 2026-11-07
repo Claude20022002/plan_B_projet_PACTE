@@ -27,7 +27,7 @@ export const preparerGeneration = async (racine, admin, grille) => {
   await m.Enseignant.update({ statut: "vacataire" }, { where: { id_user: vacataire.id_user } });
 
   const gandhi = await m.Campus.findOne({ where: { code: "G" } });
-  const filiere = await m.Filiere.create({ code_filiere: "GEN", nom_filiere: "Génération", id_campus_prefere: gandhi.id_campus });
+  const filiere = await m.Filiere.create({ code_filiere: "GEN", nom_filiere: "Génération" });
   const promo = await m.Groupe.create({ nom_groupe: "4A GEN", niveau: "4ème année", annee: 4, effectif: 40, annee_scolaire: "2026-2027", type_groupe: "promotion", id_filiere: filiere.id_filiere });
   const td = await m.Groupe.create({ nom_groupe: "GEN-4A-TD1", niveau: "4ème année", annee: 4, effectif: 20, annee_scolaire: "2026-2027", type_groupe: "td", id_groupe_parent: promo.id_groupe, id_filiere: filiere.id_filiere });
   const salle = await m.Salle.create({ nom_salle: "G-GEN1", type_salle: "Salle de cours", capacite: 50, id_campus: gandhi.id_campus });

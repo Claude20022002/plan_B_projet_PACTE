@@ -4,6 +4,8 @@
  * Importé statiquement par les pages ; exportExcel.js (XLSX) reste on-demand.
  */
 
+import { origineDe } from '../components/reports/format';
+
 export const COLS_ENSEIGNANTS = [
     { header: 'Nom',          accessor: r => r.user?.nom || r.nom || '',          width: 20 },
     { header: 'Prénom',       accessor: r => r.user?.prenom || r.prenom || '',    width: 20 },
@@ -73,7 +75,8 @@ export const COLS_DEMANDES_REPORT = [
     { header: 'Email enseignant', accessor: r => r.enseignant?.email || '',                     width: 30 },
     { header: 'Cours',            accessor: r => r.affectation?.cours?.nom_cours || '',         width: 35 },
     { header: 'Groupe',           accessor: r => r.affectation?.groupe?.nom_groupe || '',       width: 14 },
-    { header: 'Date originale',   accessor: r => r.affectation?.date_seance ? new Date(r.affectation.date_seance).toLocaleDateString('fr-FR') : '', width: 16 },
+    // Date d'avant le report : la séance d'une demande approuvée a déjà changé de date
+    { header: 'Date originale',   accessor: r => { const { date } = origineDe(r, new Map()); return date ? new Date(date).toLocaleDateString('fr-FR') : ''; }, width: 16 },
     { header: 'Nouvelle date',    accessor: r => r.nouvelle_date ? new Date(r.nouvelle_date).toLocaleDateString('fr-FR') : '', width: 16 },
     { header: 'Motif',            accessor: r => r.motif || '',                                 width: 40 },
     { header: 'Statut',           accessor: r => r.statut_demande || '',                        width: 14 },

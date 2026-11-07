@@ -35,6 +35,7 @@ import { fetchAll } from '../../utils/fetchAll';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_ENSEIGNANTS } from '../../utils/exportColumns';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 const STATUTS = ['permanent', 'vacataire'];
 const FICHE_VIDE = {
@@ -77,7 +78,7 @@ export default function Enseignants() {
     const [aSupprimer, setASupprimer] = useState(null);
     const [importOuvert, setImportOuvert] = useState(false);
 
-    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const nombre = useMemo(() => new Intl.NumberFormat(localeEcran(i18n.language), { maximumFractionDigits: 1 }), [i18n.language]);
 
     const charger = useCallback(async () => {
         try {

@@ -6,6 +6,7 @@ import { ds } from '../../../design-system/tokens';
 import { Capitales, LignePanneau } from '../../jeux/Panneau';
 import { boutonPanneau } from '../../jeux/styles';
 import EditerQuizDialog from './EditerQuizDialog';
+import { localeEcran } from '../../../utils/dates';
 
 /**
  * Lignes « Dans le service de quiz » du panneau « Mes quiz » (IA-5) : tous les quiz de l'enseignant,
@@ -29,7 +30,7 @@ export default function ListeMesQuiz() {
   }, [charger]);
 
   if (!quiz.length) return null;
-  const date = (iso) => (iso ? new Date(iso).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }) : '');
+  const date = (iso) => (iso ? new Date(iso).toLocaleDateString(localeEcran(i18n.language), { day: 'numeric', month: 'short' }) : '');
 
   return (
     <>

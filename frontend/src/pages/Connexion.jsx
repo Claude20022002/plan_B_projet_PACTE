@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link as RouterLink, useNavigate, useSearchParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Alert, Box, Button, CircularProgress, Link, TextField, Typography } from '@mui/material';
@@ -39,6 +39,12 @@ export default function Connexion() {
   const [defi, setDefi] = useState(null);
   const [code, setCode] = useState('');
   const [erreurCode, setErreurCode] = useState('');
+  // Le bouton d'envoi est désactivé pendant la requête : le focus tombait sur <body> et un lecteur
+  // d'écran n'annonçait pas l'erreur (M-13). Il va sur le message.
+  const messageErreur = useRef(null);
+  useEffect(() => {
+    if (errorKey) messageErreur.current?.focus();
+  }, [errorKey]);
 
   const allerApres = (data) => {
     // Le rôle vient du compte : aucune saisie de « fonction » n'est demandée
@@ -135,7 +141,7 @@ export default function Connexion() {
           <TitreEcran titre={t('login.title')} sousTitre={t('login.subtitle')} />
 
           {errorKey && (
-            <Alert severity="error" sx={{ mb: 2.5 }}>
+            <Alert ref={messageErreur} tabIndex={-1} severity="error" sx={{ mb: 2.5, outline: 'none' }}>
               {t(errorKey)}
             </Alert>
           )}

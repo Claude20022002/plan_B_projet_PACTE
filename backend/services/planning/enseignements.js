@@ -10,11 +10,8 @@ import {
     Groupe,
     Periode,
 } from "../../models/index.js";
-import { anneeDepuisNiveau, periodeDuSemestre } from "../../config/referentiel.js";
+import { anneeDepuisNiveau, normaliserAnnee, periodeDuSemestre } from "../../config/referentiel.js";
 import { contientParentEtEnfant } from "./groupes.js";
-
-/** « 2025/2026 », « 2025-2026 » → « 2025-2026 » (les deux écritures existent dans les données). */
-const normaliserAnnee = (valeur) => String(valeur || "").replace("/", "-").trim();
 
 // Groupes d'un enseignement avec la composante que chacun suit d'après sa maquette
 const GROUPES_AVEC_ORIGINE = { model: Groupe, as: "groupes", through: { attributes: ["id_composante_origine"] } };

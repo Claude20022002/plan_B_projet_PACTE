@@ -7,6 +7,8 @@ import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { affectationAPI, coursAPI, groupeAPI, salleAPI, creneauAPI, enseignantAPI, imprevuAPI } from '../../services/api';
 import { exporterToutesLesSeances } from '../../utils/exportSeances';
 import { useAuth } from '../../contexts/AuthContext';
+import useAnnees from '../../hooks/useAnnees';
+import { groupesDuJour } from '../../utils/annees';
 import { useConfirmation } from '../../contexts/ConfirmationContext';
 import { useTranslation } from 'react-i18next';
 import ViolationsDialog from '../../components/planning/ViolationsDialog';
@@ -47,6 +49,7 @@ export default function Affectations() {
         creneaux: [],
         enseignants: [],
     });
+    const annees = useAnnees();
 
     useEffect(() => {
         loadOptions();
@@ -304,7 +307,8 @@ export default function Affectations() {
                     />
                 </Paper>
 
-                <SeanceDialog open={open} editing={editing} formik={formik} options={options} onClose={() => setOpen(false)} />
+                {/* Les groupes de l'année de la séance (lot ME-18) : « 4A IIIA » n'apparaît plus deux fois */}
+                <SeanceDialog open={open} editing={editing} formik={formik} options={{ ...options, groupes: groupesDuJour(options.groupes, annees ?? [], formik.values.date_seance, [formik.values.id_groupe]) }} onClose={() => setOpen(false)} />
             </Box>
             <ViolationsDialog violations={violations?.liste} onClose={() => setViolations(null)} onForcer={violations?.forcer} />
             {/* Assistant de créneaux (I8) : déplacer une séance sur un créneau déjà vérifié */}

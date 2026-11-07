@@ -5,6 +5,7 @@ import { PhonelinkSetup } from '@mui/icons-material';
 import { presenceAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Changements de téléphone demandés par les étudiants depuis l'application (R-10). Accepter lie le
@@ -19,7 +20,7 @@ export default function DemandesTelephone({ onDecision }) {
     const [aRefuser, setARefuser] = useState(null);
     const [motif, setMotif] = useState('');
 
-    const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
+    const locale = localeEcran(i18n.language);
     const dateHeure = (valeur) => (valeur ? new Date(valeur).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'short' }) : '-');
 
     const charger = useCallback(async () => {

@@ -6,6 +6,9 @@ import EnhancedTimetable from '../../components/emploi-du-temps/EnhancedTimetabl
 import TimetableExportMenu from '../../components/emploi-du-temps/TimetableExportMenu';
 import { affectationAPI, enseignantAPI, groupeAPI } from '../../services/api';
 import { fetchAll } from '../../utils/fetchAll';
+import SelecteurAnnee from '../../components/common/SelecteurAnnee';
+import useAnneeChoisie from '../../hooks/useAnneeChoisie';
+import { groupesDeLAnnee } from '../../utils/annees';
 import { dansJours } from '../../../../shared/dates.js';
 import { ds } from '../../design-system/tokens';
 import OngletsEmploisDuTemps from '../../components/gestion/OngletsEmploisDuTemps';
@@ -28,6 +31,9 @@ export default function EmploiDuTempsAdmin() {
   const [enseignant, setEnseignant] = useState(null);
   const [affectations, setAffectations] = useState([]);
   const [error, setError] = useState(false);
+  // Groupes de l'année choisie (lot ME-18), plus celui affiché
+  const { annees, valeur: valeurAnnee, choisir: choisirAnnee } = useAnneeChoisie();
+  const groupesProposes = groupesDeLAnnee(groupes, valeurAnnee, [groupe?.id_groupe]);
 
   useEffect(() => {
     (async () => {
@@ -85,11 +91,12 @@ export default function EmploiDuTempsAdmin() {
           <ToggleButton value="enseignant">{t('timetable.filterTeacher')}</ToggleButton>
           <ToggleButton value="all">{t('timetable.filterAll')}</ToggleButton>
         </ToggleButtonGroup>
+        {scope === 'groupe' && <SelecteurAnnee annees={annees} valeur={valeurAnnee} onChange={choisirAnnee} />}
         {scope === 'groupe' && (
           <Autocomplete
             size="small"
             sx={{ minWidth: 220 }}
-            options={groupes}
+            options={groupesProposes}
             value={groupe}
             onChange={(_, value) => setGroupe(value)}
             getOptionLabel={(g) => g.nom_groupe}

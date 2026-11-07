@@ -16,7 +16,6 @@ import {
     DialogTitle,
     DialogContent,
     DialogActions,
-    Typography,
     FormControl,
     InputLabel,
     Select,
@@ -24,13 +23,15 @@ import {
     Alert,
     Snackbar,
 } from '@mui/material';
-import { Add, Edit, Delete, Search, UploadFile, ArrowBack, Download } from '@mui/icons-material';
+import { Add, Edit, Delete, Search, UploadFile, Download } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { etudiantAPI, userAPI, groupeAPI } from '../../services/api';
 import { useFormik } from 'formik';
 import * as yup from 'yup';
-import { useNavigate } from 'react-router-dom';
 import ImportCsvDialog from '../../components/common/ImportCsvDialog';
+import SelecteurAnnee from '../../components/common/SelecteurAnnee';
+import useAnneeChoisie from '../../hooks/useAnneeChoisie';
+import { groupesParNom, nomEtAnnee } from '../../utils/annees';
 import { exportToExcelLazy } from '../../utils/lazyExports';
 import { COLS_ETUDIANTS } from '../../utils/exportColumns';
 import { List, ListItem, ListItemText, CircularProgress } from '@mui/material';
@@ -67,28 +68,25 @@ export default function Etudiants() {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [importOuvert, setImportOuvert] = useState(false);
-    const navigate = useNavigate();
+    const { annees, valeur: valeurAnnee, annee, filtre, choisir: choisirAnnee } = useAnneeChoisie();
 
     useEffect(() => {
         loadEtudiants();
         loadUsers();
-        loadGroupes();
     }, [page, rowsPerPage]);
+
+    // Groupes de l'année choisie (lot ME-18) : le formulaire et l'import ne confondent plus
+    // « 4A IIIA » de deux années différentes
+    useEffect(() => {
+        if (valeurAnnee === null) return;
+        groupeAPI.getTous(filtre).then(setGroupes).catch((error) => console.error('Erreur:', error));
+    }, [valeurAnnee, filtre]);
 
     const loadUsers = async () => {
         try {
             const data = await userAPI.getTous();
             const etudiantsUsers = data.filter((u) => u.role === 'etudiant');
             setUsers(etudiantsUsers);
-        } catch (error) {
-            console.error('Erreur:', error);
-        }
-    };
-
-    const loadGroupes = async () => {
-        try {
-            const data = await groupeAPI.getTous();
-            setGroupes(data);
         } catch (error) {
             console.error('Erreur:', error);
         }
@@ -165,20 +163,29 @@ export default function Etudiants() {
         }
     };
 
+    // Ligne refusée quand son nom ne désigne pas un seul groupe : inconnu, ou porté par plusieurs
+    // groupes (avec « Toutes les années », « 4A IIIA » de deux années : on ne choisit pas au hasard)
+    const erreurGroupe = (groupe, trouves) => {
+        if (!trouves.length) return annee ? t('etudiants.groupeInconnuAnnee', { groupe, annee: annee.libelle }) : t('etudiants.groupeInconnu', { groupe });
+        const annees = [...new Set(trouves.map((g) => g.annee_scolaire))];
+        return annees.length > 1 ? t('etudiants.groupePlusieursAnnees', { groupe, annees: annees.join(', ') }) : t('etudiants.groupeHomonyme', { groupe });
+    };
+
     // Groupe désigné par son nom (casse et espaces ignorés) ; l'import serveur traite le reste du
     // fichier et ses erreurs (par email) sont ramenées aux lignes
     const importer = async (lignes) => {
-        const parNom = new Map(groupes.map((g) => [String(g.nom_groupe).trim().toLowerCase(), g.id_groupe]));
+        const parNom = groupesParNom(groupes);
         const erreurs = [];
         const valides = [];
         lignes.forEach((l, index) => {
             const propre = Object.fromEntries(Object.entries(l).map(([k, v]) => [k, typeof v === 'string' ? v.trim() : v]));
             const nomGroupe = String(propre.groupe ?? '').toLowerCase();
-            if (nomGroupe && !parNom.has(nomGroupe)) {
-                erreurs.push({ ligne: index + 2, libelle: propre.email, message: t('etudiants.groupeInconnu', { groupe: propre.groupe }) });
+            const trouves = parNom.get(nomGroupe) ?? [];
+            if (nomGroupe && trouves.length !== 1) {
+                erreurs.push({ ligne: index + 2, libelle: propre.email, message: erreurGroupe(propre.groupe, trouves) });
                 return;
             }
-            valides.push({ ...propre, email: String(propre.email ?? '').toLowerCase(), id_groupe: nomGroupe ? parNom.get(nomGroupe) : null });
+            valides.push({ ...propre, email: String(propre.email ?? '').toLowerCase(), id_groupe: nomGroupe ? trouves[0].id_groupe : null });
         });
         if (valides.length) {
             const reponse = await etudiantAPI.importEtudiants(valides);
@@ -199,6 +206,15 @@ export default function Etudiants() {
     };
 
 
+    // Fiche d'un étudiant d'une autre année : son groupe reste proposé, pour ne pas l'effacer
+    const groupesProposes =
+        editing?.groupe && !groupes.some((g) => g.id_groupe === editing.id_groupe)
+            ? [...groupes, { ...editing.groupe, id_groupe: editing.id_groupe }]
+            : groupes;
+    // L'année à côté du nom dès qu'elle n'est pas celle choisie : avec « Toutes les années », deux
+    // « 4A IIIA » restent distincts dans le menu
+    const libelleGroupe = (g) => (String(g.id_annee) === String(valeurAnnee) ? g.nom_groupe : nomEtAnnee(g));
+
     const filteredEtudiants = etudiants.filter(
         (etu) =>
             etu.user?.nom?.toLowerCase().includes(search.toLowerCase()) ||
@@ -209,21 +225,10 @@ export default function Etudiants() {
     return (
         <DashboardLayout>
             <Box>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button
-                            startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined"
-                            size="small"
-                        >
-                            {t('common.back')}
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            {t('etudiants.titre')}
-                        </Typography>
-                    </Box>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
+                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
+                    {/* Le titre est celui de la mise en page, et le menu y ramène : plus de « Retour » ni de « Gestion des… » (recette, m-1 et m-2) */}
+                    <SelecteurAnnee annees={annees} valeur={valeurAnnee} onChange={choisirAnnee} />
+                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
                         <Button
                             variant="outlined"
                             startIcon={<UploadFile />}
@@ -376,9 +381,9 @@ export default function Etudiants() {
                                         label={t('etudiants.colonnes.groupe')}
                                         error={formik.touched.id_groupe && Boolean(formik.errors.id_groupe)}
                                     >
-                                        {groupes.map((groupe) => (
+                                        {groupesProposes.map((groupe) => (
                                             <MenuItem key={groupe.id_groupe} value={groupe.id_groupe}>
-                                                {groupe.nom_groupe}
+                                                {libelleGroupe(groupe)}
                                             </MenuItem>
                                         ))}
                                     </Select>

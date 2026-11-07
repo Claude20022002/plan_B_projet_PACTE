@@ -2,6 +2,7 @@ import { Box, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import { ds } from '../../design-system/tokens';
 import { FlapTiles } from '../../design-system/board';
+import { identiteEcole } from '../../services/etablissement';
 
 /**
  * Panneau de présentation des écrans publics (connexion, mot de passe) : ce que l'outil affiche,
@@ -11,16 +12,18 @@ import { FlapTiles } from '../../design-system/board';
 export default function PanneauAccueil() {
   const { t } = useTranslation();
   const lines = t('login.boardLines', { returnObjects: true });
+  const ecole = identiteEcole();
+  const sansEcole = ecole.nom_court === 'Planner';
 
   return (
     <Box sx={{ bgcolor: ds.board.frame, p: '10px', borderRadius: `${ds.radius.lg}px`, width: '100%', maxWidth: 560 }}>
       <Box sx={{ px: 1, pb: 1.25, display: 'flex', justifyContent: 'space-between', color: ds.nav.letter, fontFamily: ds.font.board, fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
         <span>{t('login.boardTitle')}</span>
-        <span>HESTIM</span>
+        <span>{ecole.nom_court}</span>
       </Box>
       <Box sx={{ bgcolor: ds.board.ground, borderRadius: `${ds.radius.md}px`, px: { md: 3, lg: 4 }, py: 4 }}>
-        <FlapTiles value="HESTIM" size="clamp(2.25rem, 4.4vw, 3.75rem)" />
-        <Box sx={{ mt: 1.25 }}>
+        {!sansEcole && <FlapTiles value={ecole.nom_court.toUpperCase()} size="clamp(2.25rem, 4.4vw, 3.75rem)" />}
+        <Box sx={{ mt: sansEcole ? 0 : 1.25 }}>
           <FlapTiles value="PLANNER" size="clamp(2.25rem, 4.4vw, 3.75rem)" color={ds.brand.orange} />
         </Box>
         <Box component="ul" sx={{ listStyle: 'none', m: 0, mt: 4, p: 0, borderTop: `1px solid ${ds.board.seam}` }}>
@@ -48,7 +51,7 @@ export default function PanneauAccueil() {
           ))}
         </Box>
         <Typography sx={{ mt: 3, color: ds.board.letterDim, fontSize: '0.9375rem' }}>
-          {t('app.school')}
+          {ecole.nom}
         </Typography>
       </Box>
     </Box>

@@ -6,6 +6,7 @@ import { Alert, Box, Button, Checkbox, Container, FormControlLabel, Paper, Stack
 import { authAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { ds } from '../design-system/tokens';
+import useTitreOnglet from '../hooks/useTitreOnglet';
 
 const messageDe = (error) => error?.response?.data?.error || error?.message || '';
 
@@ -66,6 +67,7 @@ function CodesSecours({ codes, onFini }) {
  */
 export default function Securite() {
     const { t } = useTranslation();
+    useTitreOnglet(t('securite.titre'));
     const navigate = useNavigate();
     const { user, loading, checkAuth, logout } = useAuth();
     const [etat, setEtat] = useState(null);

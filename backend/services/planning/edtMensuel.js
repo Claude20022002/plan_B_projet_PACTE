@@ -18,7 +18,9 @@ import {
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS, jourDe, minutes, seChevauchent } from "./affectationRules.js";
 import { ancetres } from "./groupes.js";
+import { appliquerVersionPubliee } from "../calendrier/versionPubliee.js";
 import { appliquerRamadan } from "./ramadan.js";
+import { identite } from "../etablissement/identite.js";
 
 /**
  * Emploi du temps mensuel au format HESTIM (phase P4), calqué sur l'EDT officiel d'octobre 2026
@@ -67,12 +69,13 @@ const intitules = (groupe, periode) => {
 };
 
 /** Un événement bloquant concerne-t-il la classe (et quelles heures) ? */
-const evenementDeLaClasse = (e, { groupe, idsGroupes }) => {
+const evenementDeLaClasse = (e, { groupe, idsGroupes, campusDuMois }) => {
     switch (e.portee) {
         case "etablissement":
             return true;
         case "campus":
-            return groupe.filiere?.id_campus_prefere === e.id_cible;
+            // La classe n'a pas de campus : elle est concernée si elle a cours dans ce campus ce mois-ci
+            return campusDuMois.has(e.id_cible);
         case "filiere":
             return groupe.id_filiere === e.id_cible;
         case "niveau":
@@ -84,7 +87,9 @@ const evenementDeLaClasse = (e, { groupe, idsGroupes }) => {
     }
 };
 
-export const edtMensuel = async ({ id_groupe, mois }) => {
+export const edtMensuel = async ({ id_groupe, mois, publication = null }) => {
+    // Préfixe des salles du format officiel (« HESTIM-GANDHI ») : le nom court de l'école
+    const prefixeCampus = (await identite()).nom_court.toUpperCase();
     if (!/^\d{4}-\d{2}$/.test(String(mois || ""))) throw new ErreurMetier("Mois attendu au format AAAA-MM", 400);
     const groupe = await Groupe.findByPk(id_groupe, { include: [{ model: Filiere, as: "filiere" }] });
     if (!groupe) throw new ErreurMetier("Groupe introuvable", 404);
@@ -115,10 +120,13 @@ export const edtMensuel = async ({ id_groupe, mois }) => {
 
     // Séances du mois de la classe : directes, ou d'un enseignement qui réunit la classe
     const enseignementsDeLaClasse = (await EnseignementGroupe.findAll({ where: { id_groupe: idsGroupes }, attributes: ["id_enseignement"] })).map((l) => l.id_enseignement);
-    const seances = await Affectation.findAll({
-        where: {
+    // Pour un étudiant (`publication` : les lignes publiées de sa classe), les séances publiées telles que publiées
+    const parPublication = publication ? { id_affectation: [...publication.keys()] } : null;
+    const chargees = await Affectation.findAll({
+        where: parPublication ?? {
             date_seance: { [Op.between]: [premier, dernier] },
-            statut: STATUTS_ACTIFS,
+            // Les séances à reprogrammer (R-1) restent à leur date d'origine, avec la mention « Reportée »
+            statut: [...STATUTS_ACTIFS, "a_reprogrammer"],
             [Op.or]: [{ id_groupe: idsGroupes }, ...(enseignementsDeLaClasse.length ? [{ id_enseignement: enseignementsDeLaClasse }] : [])],
         },
         include: [
@@ -136,7 +144,9 @@ export const edtMensuel = async ({ id_groupe, mois }) => {
             },
         ],
     });
-    await appliquerRamadan(seances);
+    const seances = publication
+        ? (await appliquerVersionPubliee(chargees, publication)).filter((x) => x.statut !== "annule" && x.date_seance >= premier && x.date_seance <= dernier)
+        : await appliquerRamadan(chargees);
 
     // (P.S) / (D.S) : première et dernière séance de chaque enseignement, toutes dates confondues
     const cleEnseignement = (s) => (s.id_enseignement ? `e${s.id_enseignement}` : `c${s.id_cours}|g${s.id_groupe}`);
@@ -146,7 +156,7 @@ export const edtMensuel = async ({ id_groupe, mois }) => {
     const toutes = ids.length
         ? await Affectation.findAll({ where: { id_enseignement: ids, statut: STATUTS_ACTIFS }, attributes: ["id_affectation", "id_enseignement", "id_cours", "id_groupe", "date_seance"], include: [{ model: Creneau, as: "creneau", attributes: ["rang"] }] })
         : [];
-    for (const s of [...toutes, ...seances.filter((x) => !x.id_enseignement)]) {
+    for (const s of [...toutes, ...seances.filter((x) => !x.id_enseignement && x.statut !== "a_reprogrammer")]) {
         const cle = cleEnseignement(s);
         const b = bornes.get(cle) || { premiere: s, derniere: s };
         if (ordre(s) < ordre(b.premiere)) b.premiere = s;
@@ -156,7 +166,7 @@ export const edtMensuel = async ({ id_groupe, mois }) => {
 
     const evenements = (
         await Evenement.findAll({ where: { bloque_affectations: true, date_debut: { [Op.lte]: dernier }, date_fin: { [Op.gte]: premier } } })
-    ).filter((e) => evenementDeLaClasse(e, { groupe, idsGroupes }));
+    ).filter((e) => evenementDeLaClasse(e, { groupe, idsGroupes, campusDuMois: new Set(seances.map((s) => s.salle?.id_campus).filter(Boolean)) }));
 
     const cellulesDuJour = (date) => {
         const jour = jourDe(date);
@@ -169,7 +179,9 @@ export const edtMensuel = async ({ id_groupe, mois }) => {
             let courante = null;
             for (const c of colonnes) {
                 const evt = evts.find((e) => !e.heure_debut || seChevauchent(c, e));
-                const seance = duJour.find((s) => s.creneau.rang === c.rang || (s.creneau.jour_semaine === jour && seChevauchent(c, s.creneau)));
+                const surLeRang = (s) => s.creneau.rang === c.rang || (s.creneau.jour_semaine === jour && seChevauchent(c, s.creneau));
+                // Une séance à reprogrammer a libéré sa place : celle qui l'a prise passe avant
+                const seance = duJour.find((s) => surLeRang(s) && s.statut !== "a_reprogrammer") ?? duJour.find(surLeRang);
                 let cellule;
                 if (evt) {
                     cellule = { type: "evenement", cle: `ev${evt.id_evenement}`, titre: evt.titre, type_evenement: evt.type_evenement };
@@ -179,12 +191,13 @@ export const edtMensuel = async ({ id_groupe, mois }) => {
                     const distanciel = seance.enseignement?.composante?.modalite === "distanciel" || !seance.salle;
                     cellule = {
                         type: "seance",
-                        cle: `${cleEnseignement(seance)}|${seance.id_user_enseignant}|${seance.id_salle ?? "dist"}`,
+                        // Une séance reportée ne fusionne pas avec une séance voisine qui a lieu
+                        cle: `${cleEnseignement(seance)}|${seance.id_user_enseignant}|${seance.id_salle ?? "dist"}${seance.statut === "a_reprogrammer" ? "|r" : ""}`,
                         id_affectations: [seance.id_affectation],
                         matiere: seance.enseignement?.libelle || seance.cours?.nom_cours,
                         type_composante: seance.enseignement?.composante?.type ?? null,
                         enseignants: [nomEnseignant(seance.enseignant), ...co].join(" / "),
-                        salle: distanciel ? null : { campus: `HESTIM-${String(seance.salle.campus?.nom ?? "").toUpperCase()}`, detail: `${seance.salle.etage != null ? `Étage ${seance.salle.etage} - ` : ""}${seance.salle.nom_salle}` },
+                        salle: distanciel ? null : { campus: `${prefixeCampus}-${String(seance.salle.campus?.nom ?? "").toUpperCase()}`, detail: `${seance.salle.etage != null ? `Étage ${seance.salle.etage} - ` : ""}${seance.salle.nom_salle}` },
                         distanciel,
                         mention: seance.enseignement?.composante?.mention ?? null,
                         premiere_seance: b?.premiere.id_affectation === seance.id_affectation,

@@ -1,13 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { Box } from '@mui/material';
 import { keyframes } from '@mui/system';
+import { visuallyHidden } from '@mui/utils';
 import { ds } from '../tokens';
 
 /**
  * Caractères posés sur des tuiles de volet (charnière au milieu), pour les horaires
  * et les codes de salle. Quand la valeur change, chaque tuile bascule à son tour :
  * c'est le même geste que FlapText, porté par la matière du panneau.
- * Le texte reste lisible tel quel par les lecteurs d'écran ; mouvement réduit = instantané.
+ * Les lecteurs d'écran lisent le texte entier, caché à l'œil, et jamais les tuiles : un
+ * aria-label sur un <span> (rôle « text », inexistant) donnait « 0 9 : 0 0 » ou « G-S03 G-S03 »
+ * selon le lecteur (recette du 20 octobre, M-13). Mouvement réduit = instantané.
  */
 
 const flip = keyframes`
@@ -68,8 +71,6 @@ export default function FlapTiles({ value, size = '1rem', variant = 'board', col
   return (
     <Box
       component="span"
-      aria-label={text}
-      role="text"
       sx={{
         display: 'inline-flex',
         gap: '0.08em',
@@ -83,6 +84,9 @@ export default function FlapTiles({ value, size = '1rem', variant = 'board', col
         ...sx,
       }}
     >
+      <Box component="span" sx={visuallyHidden}>
+        {text}
+      </Box>
       {chars.map((char, i) => {
         const isSeparator = char === ':' || char === ' ' || char === '-' || char === '.';
         return (

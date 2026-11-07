@@ -128,7 +128,7 @@ export const THEMES = {
       annule: '#DC2626',
     },
     volet: { fond: '#DBEAFE', lettre: '#1E3A8A', charniere: 'transparent' },
-    statuts: { planifie: '#334155', confirme: '#15803D', reporte: '#B45309', annule: '#DC2626', realise: '#64748B' },
+    statuts: { planifie: '#334155', confirme: '#15803D', reporte: '#B45309', a_reprogrammer: '#B45309', annule: '#DC2626', realise: '#64748B' },
     // Scène des jeux : décor Kenney (silhouettes teintées) derrière le personnage du joueur
     // Verre dépoli (barre d'onglets, feuilles) : teinte du flou, couleur du voile, liseré
     verre: { teinte: 'light', rgb: '255, 255, 255', bord: 'rgba(15, 23, 42, 0.08)' },
@@ -156,7 +156,7 @@ export const THEMES = {
       annule: '#F87171',
     },
     volet: { fond: '#1E3A8A', lettre: '#DBEAFE', charniere: 'transparent' },
-    statuts: { planifie: '#E2E8F0', confirme: '#4ADE80', reporte: '#FB923C', annule: '#F87171', realise: '#94A3B8' },
+    statuts: { planifie: '#E2E8F0', confirme: '#4ADE80', reporte: '#FB923C', a_reprogrammer: '#FB923C', annule: '#F87171', realise: '#94A3B8' },
     // Scène des jeux : décor Kenney (silhouettes teintées) derrière le personnage du joueur
     // Verre dépoli (barre d'onglets, feuilles) : teinte du flou, couleur du voile, liseré
     verre: { teinte: 'dark', rgb: '15, 23, 42', bord: 'rgba(255, 255, 255, 0.08)' },

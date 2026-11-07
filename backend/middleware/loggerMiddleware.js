@@ -17,6 +17,14 @@ export const urlMasquee = (url = "") =>
 morgan.token("url", (req) => urlMasquee(req.originalUrl || req.url));
 
 /**
+ * École de la requête dans chaque ligne de journal (lot ME-21 : journaux par école). Une seule école
+ * par installation aujourd'hui : ETABLISSEMENT_NOM, ou « defaut » ; le contexte d'établissement
+ * (D-03, ME-3a) posera req.etablissement.
+ */
+export const etablissementDe = (req) => req.etablissement?.nom ?? process.env.ETABLISSEMENT_NOM ?? "defaut";
+morgan.token("etablissement", etablissementDe);
+
+/**
  * Configuration du logger Morgan
  * Format différent selon l'environnement
  */
@@ -27,7 +35,7 @@ const devFormat =
 
 // Format pour la production (plus concis)
 const prodFormat =
-    ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length]';
+    ':remote-addr - :remote-user [:date[clf]] ":method :url HTTP/:http-version" :status :res[content-length] :response-time ms etablissement=:etablissement';
 
 /**
  * Middleware de logging avec Morgan
@@ -49,6 +57,7 @@ export const errorLogger = (err, req, res, next) => {
         method: req.method,
         url: urlMasquee(req.originalUrl),
         ip: req.ip,
+        etablissement: etablissementDe(req),
         user: req.user ? req.user.id_user : "non authentifié",
         error: err.message,
         stack: process.env.NODE_ENV === "development" ? err.stack : undefined,

@@ -1,7 +1,6 @@
 /**
  * Service API centralisé pour communiquer avec le backend
  */
-import { typeDuFichier } from '../utils/fichiers';
 import { fetchAll } from '../utils/fetchAll';
 
 // Même origine que le frontend : proxy Vite en dev, nginx en production
@@ -202,6 +201,18 @@ export const userAPI = {
     importBulk: (data) => request('/users/import', { method: 'POST', body: data }),
     // Téléphone perdu : retire la double authentification du compte et ferme ses sessions
     reinitialiserMfa: (id) => request(`/users/${id}/mfa`, { method: 'DELETE' }),
+    // Désactivation (ME-17) : aperçu de ce qu'elle touche, puis désactivation immédiate ou programmée
+    apercuDesactivation: (id, date) => request(`/users/${id}/desactivation${date ? `?date=${encodeURIComponent(date)}` : ''}`),
+    desactiver: (id, corps) => request(`/users/${id}/desactivation`, { method: 'POST', body: corps }),
+    annulerDesactivation: (id) => request(`/users/${id}/desactivation`, { method: 'DELETE' }),
+    reactiver: (id) => request(`/users/${id}/reactivation`, { method: 'POST' }),
+    anonymiser: (id) => request(`/users/${id}/anonymisation`, { method: 'POST' }),
+    // Plusieurs comptes (ids) ou tous les étudiants d'un groupe (id_groupe) ; le bilan dit le sort de chacun
+    desactiverEnLot: (corps) => request('/users/desactivations', { method: 'POST', body: corps }),
+    // Aperçu d'un lot, rien n'est modifié : `portee` est { ids } ou { id_groupe }
+    apercuLot: (portee, date) => request(`/users/desactivations/apercu?${portee.ids ? `ids=${portee.ids.join(',')}` : `id_groupe=${portee.id_groupe}`}&date=${encodeURIComponent(date)}`),
+    // Défait un lot fait par erreur : réactive les comptes et annule les désactivations programmées
+    retablirEnLot: (portee) => request('/users/reactivations', { method: 'POST', body: portee }),
 };
 
 // ==================== ENSEIGNANTS ====================
@@ -426,6 +437,8 @@ export const affectationAPI = {
     create: (data) => request('/affectations', { method: 'POST', body: data }),
     update: (id, data) => request(`/affectations/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/affectations/${id}`, { method: 'DELETE' }),
+    // Lien de visio d'une séance à distance (lot EC-11) : null le retire
+    lienVisio: (id, lien) => request(`/affectations/${id}/lien-visio`, { method: 'PUT', body: { lien_visio: lien } }),
 };
 
 // ==================== CONFLITS ====================
@@ -498,6 +511,12 @@ export const demandeReportAPI = {
     delete: (id) => request(`/demandes-report/${id}`, { method: 'DELETE' }),
     // extra : { forcer, justification } pour approuver un report malgré les règles (admin)
     traiter: (id, action, extra = {}) => request(`/demandes-report/${id}/traiter`, { method: 'PATCH', body: { action, ...extra } }),
+    // Réponse de l'enseignant à un report validé : { action: 'accepter' } ou { action: 'proposer', nouvelle_date, id_creneau }
+    confirmer: (id, corps) => request(`/demandes-report/${id}/confirmer`, { method: 'PATCH', body: corps }),
+    // Report à une date ultérieure (R-1, admin) : accepter sans date, puis fixer la date
+    // (corps : { date, id_creneau?, id_salle?, forcer?, justification? }) ; l'enseignant confirme ensuite
+    plusTard: (id) => request(`/demandes-report/${id}/plus-tard`, { method: 'PATCH' }),
+    reprogrammer: (id, corps) => request(`/demandes-report/${id}/reprogrammer`, { method: 'PATCH', body: corps }),
 };
 
 // ==================== DISPONIBILITÉS ====================
@@ -676,14 +695,9 @@ export const devoirsAPI = {
 };
 
 // ==================== QUIZ GÉNÉRÉS PAR L'IA (enseignants) ====================
+// Les générations déjà faites pour ClassQuiz : à relire et à créer. Un nouveau quiz se génère
+// dans le Studio (studioAPI.generer), sans classe ni module (R-9).
 export const quizIaAPI = {
-    // { disponible, max_par_jour, restantes }
-    disponibilite: () => request('/quiz-ia/disponibilite'),
-    // Support (PDF, DOCX, PPTX) et réglages { id_cours, id_groupe?, plage?, nombre, type, difficulte, langue, temps } → { id_generation, statut }
-    generer: (fichier, params) =>
-        request(avecQuery('/quiz-ia/generations', { ...params, nom: fichier.name }), { method: 'POST', body: fichier, headers: { 'Content-Type': typeDuFichier(fichier) } }),
-    // Sans document, à partir d'un sujet (« Créer un quiz ») : seulement si disponibilite() annonce { sujet: true }
-    genererSurSujet: (sujet, params) => request(avecQuery('/quiz-ia/generations', { ...params, sujet }), { method: 'POST' }),
     lister: () => request('/quiz-ia/generations'),
     // { id_generation, statut: en_cours | pret | erreur | creation | cree, erreur, questions, nom_source, id_quiz_classquiz }
     etat: (id) => request(`/quiz-ia/generations/${encodeURIComponent(id)}`),

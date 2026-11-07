@@ -1,6 +1,6 @@
 import { resetDatabase, closeDatabase, createUser, createPlanningFixture, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Annonce, AnneeUniversitaire, Appartenir, CoursComposante, Enseignement, EnseignementEnseignant, Groupe, Notification, Periode, ResponsableFiliere } from "../../models/index.js";
+import { Affectation, Annonce, AnneeUniversitaire, Appartenir, CoursComposante, Enseignement, EnseignementEnseignant, Groupe, Notification, Periode, ResponsableFiliere } from "../../models/index.js";
 
 /**
  * Annonces ciblées (R1) : l'administration écrit à n'importe quelle portée, un responsable à sa
@@ -84,6 +84,16 @@ describe("Publier", () => {
         const ids = (await Notification.findAll({ where: { lien: `/annonces/${res.body.id}` } })).map((n) => n.id_user);
         expect(ids).toEqual(expect.arrayContaining([etudiant.id_user, etudiantTp.id_user, enseignant.id_user]));
         expect(ids).not.toContain(responsable.id_user);
+    });
+
+    test("un campus : les classes qui y ont cours dans les 30 jours (une filière n'a pas de campus)", async () => {
+        // Le groupe a cours dans une semaine dans une salle du campus ; l'autre groupe n'y a pas cours
+        const dans7Jours = new Date(Date.now() + 7 * 86400000).toISOString().slice(0, 10);
+        await Affectation.create({ ...fixture.affectation.get({ plain: true }), id_affectation: undefined, date_seance: dans7Jours });
+        const res = await (await loginAs(admin)).send("post", "/api/annonces", { titre: "Travaux", corps: "Ascenseur en panne.", portee: "campus", id_cible: fixture.salle.id_campus });
+        expect(res.status).toBe(201);
+        const ids = (await Notification.findAll({ where: { lien: `/annonces/${res.body.id}` } })).map((n) => n.id_user).sort();
+        expect(ids).toEqual([etudiant.id_user, etudiantTp.id_user].sort());
     });
 
     test("refusé à un étudiant ; titre requis ; cible vide → 422", async () => {
@@ -175,5 +185,52 @@ describe("Supprimer", () => {
         expect((await (await loginAs(enseignant)).send("delete", `/api/annonces/${idAnnonceGroupe}`)).status).toBe(204);
         expect(await Annonce.findByPk(idAnnonceGroupe)).toBeNull();
         expect(await Notification.count({ where: { lien: `/annonces/${idAnnonceGroupe}` } })).toBe(0);
+    });
+});
+
+describe("Envoi aux classes fermé (lot EC-5)", () => {
+    // Fermé le temps du bloc, rouvert ensuite : les autres blocs testent l'envoi ouvert
+    beforeAll(() => {
+        process.env.ANNONCES_ENSEIGNANTS_ACTIVES = "false";
+    });
+    afterAll(() => {
+        process.env.ANNONCES_ENSEIGNANTS_ACTIVES = "true";
+    });
+
+    test("un enseignant n'écrit plus à sa classe : 403, aucune annonce ni notification créée", async () => {
+        const avant = await Annonce.count();
+        const res = await (await loginAs(enseignant)).send("post", "/api/annonces", { titre: "Salle changée", corps: "Le TD a lieu en LABO02.", portee: "groupe", id_cible: fixture.groupe.id_groupe });
+        expect(res.status).toBe(403);
+        expect(res.body.code).toBe("ANNONCES_CLASSES_FERMEES");
+        expect(await Annonce.count()).toBe(avant);
+    });
+
+    test("ses cibles sont vides : le site masque « Nouvelle annonce »", async () => {
+        const prof = (await (await loginAs(enseignant)).get("/api/annonces/cibles")).body;
+        expect(prof).toMatchObject({ portees: [], publics: [], groupes: [] });
+    });
+
+    test("il lit toujours ses annonces reçues et ce qu'il a envoyé avant la fermeture", async () => {
+        const prof = await loginAs(enseignant);
+        expect((await prof.get("/api/annonces")).status).toBe(200);
+        expect((await prof.get("/api/annonces/envoyees")).status).toBe(200);
+    });
+
+    test("le responsable de filière écrit toujours à sa filière et à ses groupes ; l'administration aussi", async () => {
+        const resp = await loginAs(responsable);
+        expect((await resp.get("/api/annonces/cibles")).body.portees).toEqual(["filiere", "niveau", "groupe"]);
+        const aGroupe = await resp.send("post", "/api/annonces", { titre: "Rattrapage", corps: "Séance de rattrapage vendredi.", portee: "groupe", id_cible: fixture.groupe.id_groupe });
+        expect(aGroupe.status).toBe(201);
+        const adm = await (await loginAs(admin)).send("post", "/api/annonces", { titre: "Information", corps: "Rentrée le 14.", portee: "etablissement" });
+        expect(adm.status).toBe(201);
+    });
+
+    test("rouvert, l'enseignant écrit de nouveau à sa classe", async () => {
+        process.env.ANNONCES_ENSEIGNANTS_ACTIVES = "true";
+        const prof = await loginAs(enseignant);
+        expect((await prof.get("/api/annonces/cibles")).body.portees).toEqual(["groupe"]);
+        const res = await prof.send("post", "/api/annonces", { titre: "Salle changée", corps: "Le TD a lieu en LABO02.", portee: "groupe", id_cible: fixture.groupe.id_groupe });
+        expect(res.status).toBe(201);
+        process.env.ANNONCES_ENSEIGNANTS_ACTIVES = "false";
     });
 });

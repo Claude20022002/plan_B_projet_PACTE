@@ -37,9 +37,12 @@ describe("TOTP", () => {
         expect(verifierCode(SECRET_RFC, undefined, { maintenant })).toBeNull();
     });
 
-    test("adresse otpauth pour le QR code", () => {
-        expect(adresseOtpauth({ secret: "ABC", compte: "admin@hestim.ma" })).toBe(
+    test("adresse otpauth pour le QR code : au nom de l'école, « Planner » par défaut (ME-11)", () => {
+        expect(adresseOtpauth({ secret: "ABC", compte: "admin@hestim.ma", emetteur: "HESTIM Planner" })).toBe(
             "otpauth://totp/HESTIM%20Planner%3Aadmin%40hestim.ma?secret=ABC&issuer=HESTIM%20Planner&algorithm=SHA1&digits=6&period=30"
+        );
+        expect(adresseOtpauth({ secret: "ABC", compte: "admin@ecole.test" })).toBe(
+            "otpauth://totp/Planner%3Aadmin%40ecole.test?secret=ABC&issuer=Planner&algorithm=SHA1&digits=6&period=30"
         );
     });
 });

@@ -26,11 +26,12 @@ const CODES_PAR_STATUT = {
 /** Rend le code par défaut d'un statut HTTP (ERREUR_SERVEUR pour un statut inconnu de 500 et plus). */
 export const codeDuStatut = (statut) => CODES_PAR_STATUT[statut] ?? (statut >= 500 ? "ERREUR_SERVEUR" : "REQUETE_INVALIDE");
 
-/** Rend le corps d'une erreur au format commun ; `code` et `violations` sont facultatifs. */
-export const corpsErreur = (statut, message, { code, violations } = {}) => ({
+/** Rend le corps d'une erreur au format commun ; `code`, `violations` et `donnees` (champs en plus) sont facultatifs. */
+export const corpsErreur = (statut, message, { code, violations, donnees } = {}) => ({
     message,
     code: code ?? codeDuStatut(statut),
     ...(violations?.length ? { violations } : {}),
+    ...(donnees ?? {}),
 });
 
 /** Répond une erreur au format commun. */

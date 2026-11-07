@@ -6,18 +6,26 @@ import { CameraView, useCameraPermissions } from 'expo-camera';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../board/Ecran';
 import { planner } from '../api/client';
-import { chargerConfigQuiz, chargerPartiesQuiz, rejoindreSessionJeu } from '../api/donnees';
+import { chargerPartiesQuiz, rejoindreQuizStudio, rejoindreSessionJeu } from '../api/donnees';
+import { sourceClassQuiz } from '../quiz/classQuiz';
+import { ecranDuQuiz } from '../quiz/direct';
 import { origineDe, partieDuPin, pinScanne } from '../quiz/scan';
 import { codeSessionScanne, ecranDeSession } from '../jeux/session';
+import { cheminQuiz, codeQuizScanne } from '../quiz/studio';
+import { ouvrirSurLeWeb } from '../espaces/ouvrir';
 import { ouvrirPartie as ouvrirLaPartie } from '../quiz/ouvrir';
 import { proposerChangement } from '../telephone/etat';
 import { QUIZ_DANS_L_APPLICATION } from '../../../shared/fonctions.js';
+import { ressembleAPartie } from '../../../shared/classQuiz.js';
 import { CIBLE_TACTILE, creerStyles, useTheme } from '../theme';
 
 /**
- * Scan du QR affiché par l'enseignant. Appel (I1) : la présence est enregistrée aussitôt. Quiz :
- * la partie s'ouvre si elle est lancée dans l'une de mes séances (quiz/scan.js, quiz/ouvrir.js). Un seul envoi par
- * code lu ; en cas d'erreur (code expiré, autre groupe), l'étudiant peut scanner de nouveau.
+ * Scan du QR affiché par l'enseignant. Appel (I1) : la présence est enregistrée aussitôt. Quiz du
+ * Studio : en direct, l'écran natif du joueur (quiz-direct/[id].jsx, SC-1c) ; sinon il s'ouvre sur
+ * le site, déjà connecté (quiz/studio.js). Partie ClassQuiz : elle s'ouvre si
+ * elle est lancée dans l'une de mes séances (quiz/scan.js, quiz/ouvrir.js). Jeu lancé en classe :
+ * jeux/session.js. C'est la seule porte de l'étudiant vers les quiz et les jeux (R-10). Un seul
+ * envoi par code lu ; en cas d'erreur (code expiré, autre groupe), l'étudiant peut scanner de nouveau.
  */
 export default function Scanner() {
   const { couleurs } = useTheme();
@@ -33,10 +41,12 @@ export default function Scanner() {
   const origineQuiz = useRef(null);
 
   useEffect(() => {
-    origineQuiz.current = chargerConfigQuiz()
-      .then((c) => (c?.actif ? origineDe(c.url) : null))
-      .catch(() => null);
+    // Source commune (lot ME-0c) : éteint pour l'école, ou configuration illisible, l'origine est nulle
+    origineQuiz.current = sourceClassQuiz.lire().then((c) => (c.actif ? origineDe(c.url) : null));
   }, []);
+
+  // Vue navigateur ouverte : le scanner se ferme derrière elle (au retour, l'étudiant retrouve l'application)
+  const fermerDerriere = () => (router.canGoBack() ? router.back() : router.replace('/'));
 
   const ouvrirPartie = async (pin, origine) => {
     const partie = partieDuPin(await chargerPartiesQuiz(), pin, origine);
@@ -46,10 +56,8 @@ export default function Scanner() {
     }
     partieOuverte.current = true;
     await ouvrirLaPartie({ router, partie, couleurs, remplacer: true });
-    // Vue navigateur : le scanner se ferme derrière elle (au retour, l'étudiant retrouve l'application)
     if (QUIZ_DANS_L_APPLICATION) return;
-    if (router.canGoBack()) router.back();
-    else router.replace('/');
+    fermerDerriere();
   };
 
   const lu = async ({ data }) => {
@@ -65,10 +73,29 @@ export default function Scanner() {
         router.replace(ecranJeu);
         return;
       }
+      // Quiz du Studio : en direct, l'écran de l'application (SC-1c) ; sinon le site l'ouvre (code
+      // inconnu ou expiré, il le dit lui-même)
+      const codeQuiz = codeQuizScanne(data);
+      if (codeQuiz) {
+        partieOuverte.current = true;
+        const ecranDirect = ecranDuQuiz(await rejoindreQuizStudio(codeQuiz).catch(() => null));
+        if (ecranDirect) {
+          router.replace(ecranDirect);
+          return;
+        }
+        await ouvrirSurLeWeb(cheminQuiz(codeQuiz), couleurs);
+        fermerDerriere();
+        return;
+      }
       const origine = await origineQuiz.current;
       const pin = pinScanne(data, origine);
       if (pin) {
         await ouvrirPartie(pin, origine);
+        return;
+      }
+      // QR d'une partie alors que le service de quiz est éteint pour l'école : rien ne s'ouvre (C-6)
+      if (!origine && ressembleAPartie(data)) {
+        setResultat({ ok: false, texte: t('app.jeux.quizFerme') });
         return;
       }
       const r = await planner('/presences/scanner', { method: 'POST', body: { code: data } });

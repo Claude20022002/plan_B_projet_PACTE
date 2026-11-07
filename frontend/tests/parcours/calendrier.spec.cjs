@@ -19,7 +19,7 @@ test("calendrier : fériés du Maroc, date confirmée, fermeture créée, modifi
 
   // Les fériés du Maroc en un clic ; les fêtes religieuses arrivent estimées, à confirmer
   await page.getByRole("button", { name: "Ajouter les fériés du Maroc" }).click();
-  await expect(page.getByText(/événement\(s\) ajouté\(s\), dont \d+ à confirmer/)).toBeVisible();
+  await expect(page.getByText(/^Événements ajoutés : \d+, dont \d+ à confirmer/)).toBeVisible();
   const aConfirmer = page.getByRole("row").filter({ has: page.getByRole("button", { name: "Confirmer" }) });
   const avant = await aConfirmer.count();
   expect(avant).toBeGreaterThan(0);

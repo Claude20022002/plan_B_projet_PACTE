@@ -83,7 +83,8 @@ const ROUTES = [
     ["admin", "/api/examens/mes-surveillances", 3],
     ["admin", `/api/suivi/modules?id_periode=${periode.id_periode}`, 7],
     ["admin", `/api/suivi/enseignants?mois=${mois}`, 4],
-    ["admin", `/api/preparation?id_periode=${periode.id_periode}`, 11],
+    // 12 depuis M-4 (PR #71) : une lecture des mois publiés (EnvoisEdt), une seule quel que soit le nombre de filières
+    ["admin", `/api/preparation?id_periode=${periode.id_periode}`, 12],
     ["admin", `/api/enseignements?id_periode=${periode.id_periode}`, 3],
     ["admin", "/api/annonces/envoyees", 2],
     ["admin", "/api/presences/signalements", 3],
@@ -99,7 +100,8 @@ const ROUTES = [
     ["etudiant", `/api/emplois-du-temps/moi?du=${debut}&au=${finMois}`, 11],
     ["etudiant", `/api/emplois-du-temps/etudiant/${etudiant.id_user}?date_debut=${debut}&date_fin=${finMois}`, 5],
     ["etudiant", "/api/activites", 16],
-    ["etudiant", "/api/devoirs", 8],
+    // 7 depuis ME-18 : les groupes de l'étudiant (année en cours comprise) lus une seule fois
+    ["etudiant", "/api/devoirs", 7],
     ["etudiant", "/api/annonces", 6],
     ["etudiant", "/api/quiz/parties/en-cours", 2],
     ["etudiant", "/api/presences/miennes", 2],

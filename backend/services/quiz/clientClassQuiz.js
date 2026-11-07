@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { ErreurMetier } from "../planning/enseignements.js";
+import { exigerClassQuiz } from "../etablissement/fonctionnalites.js";
 
 /**
  * Client du fork ClassQuiz (l'espace « Quiz » dans les écrans) : requêtes signées vers ses routes
@@ -63,8 +64,14 @@ let client = async (chemin, corps = null) => {
     return reponse.json();
 };
 
-/** Appelle le fork et rend sa réponse JSON : lecture si `corps` est absent, écriture sinon. */
-export const appelerClassQuiz = (chemin, corps = null) => client(chemin, corps);
+/**
+ * Appelle le fork et rend sa réponse JSON : lecture si `corps` est absent, écriture sinon. Refusé
+ * (503) quand ClassQuiz est éteint pour l'école (lot ME-0c), même avec un client de test.
+ */
+export const appelerClassQuiz = async (chemin, corps = null) => {
+    await exigerClassQuiz();
+    return client(chemin, corps);
+};
 
 /** Tests : remplace l'appel à ClassQuiz ((chemin, corps) → données) */
 export const definirClientClassQuiz = (remplacant) => {

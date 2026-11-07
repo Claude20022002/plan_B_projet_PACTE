@@ -23,6 +23,7 @@ import { routesMotDePasse } from './routes/motDePasse';
 import PageSkeleton    from './components/common/PageSkeleton';
 import AuthSkeleton    from './components/common/AuthSkeleton';
 import ErrorBoundary   from './components/common/ErrorBoundary';
+import { SURVEILLANCES_ACTIVES } from '../../shared/fonctions.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LAZY IMPORTS — 1 chunk par groupe logique
@@ -59,6 +60,7 @@ const GenerationAuto     = lazy(() => import('./pages/gestion/GenerationAutomati
 const Campus             = lazy(() => import('./pages/gestion/Campus'));
 const Calendrier         = lazy(() => import('./pages/gestion/Calendrier'));
 const ParametresPlanning = lazy(() => import('./pages/gestion/ParametresPlanning'));
+const IdentiteEcole      = lazy(() => import('./pages/gestion/IdentiteEcole'));
 const Enseignements      = lazy(() => import('./pages/gestion/Enseignements'));
 
 // ── Emplois du temps (chunk "calendar" — FullCalendar isolé) ─────────────
@@ -88,7 +90,7 @@ const Suivi          = lazy(() => import('./pages/gestion/Suivi'));
 const Preparation    = lazy(() => import('./pages/gestion/Preparation'));
 const SignalementsPresence = lazy(() => import('./pages/gestion/SignalementsPresence'));
 const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
-const Jeux           = lazy(() => import('./pages/jeux/Jeux'));
+const Jeux           = lazy(() => import('./pages/jeux/AccueilJeux'));
 const JeuTerminal    = lazy(() => import('./pages/jeux/JeuTerminal'));
 const DevoirJouer    = lazy(() => import('./pages/jeux/DevoirJouer'));
 const SessionJeu     = lazy(() => import('./pages/jeux/SessionJeu'));
@@ -100,6 +102,8 @@ const EditeurQuiz    = lazy(() => import('./pages/studio/EditeurQuiz'));
 const ResultatsQuiz  = lazy(() => import('./pages/studio/Resultats'));
 const QuizEtudiant   = lazy(() => import('./pages/studio/Quiz'));
 const Epreuve        = lazy(() => import('./pages/studio/Epreuve'));
+const DirectProjection = lazy(() => import('./pages/studio/DirectProjection'));
+const DirectJoueur   = lazy(() => import('./pages/studio/DirectJoueur'));
 const NotFound       = lazy(() => import('./pages/NotFound'));
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -250,6 +254,11 @@ export default function App() {
               <AppPage><ParametresPlanning /></AppPage>
             </PrivateRoute>
           } />
+          <Route path="/gestion/identite" element={
+            <PrivateRoute requiredRole="admin">
+              <AppPage><IdentiteEcole /></AppPage>
+            </PrivateRoute>
+          } />
 
           {/* ── Emplois du temps (FullCalendar lazy) ──────────────────── */}
           <Route path="/gestion/emplois-du-temps" element={
@@ -375,6 +384,17 @@ export default function App() {
               <AppPage><ResultatsQuiz /></AppPage>
             </PrivateRoute>
           } />
+          {/* Quiz en direct : l'enseignant projette, l'étudiant joue (lot SC-1b) */}
+          <Route path="/studio-quiz/direct/:id" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><DirectProjection /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/quiz/direct/:id" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><DirectJoueur /></AppPage>
+            </PrivateRoute>
+          } />
           <Route path="/studio-quiz/:id" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><EditeurQuiz /></AppPage>
@@ -446,7 +466,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/mes-examens" element={
-            <PrivateRoute requiredRole={['etudiant', 'admin']}>
+            <PrivateRoute requiredRole={SURVEILLANCES_ACTIVES ? ['etudiant', 'admin'] : 'etudiant'}>
               <AppPage><MesExamens /></AppPage>
             </PrivateRoute>
           } />

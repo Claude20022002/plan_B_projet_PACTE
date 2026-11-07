@@ -4,9 +4,11 @@ import { useTranslation } from 'react-i18next';
 import { Alert, Box, Chip, List, ListItem, ListItemButton, ListItemText, Paper, Skeleton } from '@mui/material';
 import EmptyState from '../../design-system/components/EmptyState';
 import { espaceCoursAPI } from '../../services/espaceCours';
+import { localeEcran } from '../../utils/dates';
+// La date de l'école, pas celle du fuseau du navigateur (faux entre 23 h et minuit avec une base de fuseaux ancienne)
+import { aujourdhui } from '../../../../shared/dates.js';
 
 const COULEUR = { a_faire: 'default', ouvert: 'info', ferme: 'success' };
-const aujourdhui = () => new Date().toLocaleDateString('en-CA');
 
 /**
  * Onglet « Appel » d'une classe (lot E-7) : ses séances, la plus récente d'abord, avec l'état de
@@ -18,7 +20,7 @@ export default function OngletAppel({ idCours, idGroupe }) {
   const navigate = useNavigate();
   const [seances, setSeances] = useState(null);
   const [erreur, setErreur] = useState(false);
-  const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
+  const locale = localeEcran(i18n.language);
 
   useEffect(() => {
     espaceCoursAPI.appels(idCours, idGroupe).then(setSeances).catch(() => setErreur(true));

@@ -12,6 +12,7 @@ import { lireDescription, lireEtiquettes, lireReglages, lireTitre } from "./regl
  */
 
 export const QUESTIONS_MAX = 200;
+// Format figé (D-11) : l'import refuse tout autre format ; le changer rendrait illisibles les anciens exports
 export const FORMAT_EXPORT = "hestim-studio-quiz";
 
 export const exigerEnseignant = (user) => {
@@ -56,6 +57,7 @@ export const vueQuestion = (q) => ({
     explication: q.explication,
     id_media: q.id_media,
     extrait: q.extrait,
+    duree_s: q.duree_s ?? null,
     donnees: q.donnees,
     a_relire: q.a_relire,
     origine: q.origine,

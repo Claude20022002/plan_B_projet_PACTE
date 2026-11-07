@@ -8,6 +8,7 @@ import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { journalSecuriteAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 const PAR_PAGE = 50;
 // Événements qui demandent l'attention : blocage, vol de session probable, droits changés
@@ -28,7 +29,7 @@ export default function JournalSecurite() {
     const [resultat, setResultat] = useState({ total: 0, evenements: [] });
     const [loading, setLoading] = useState(true);
 
-    const locale = i18n.language?.startsWith('en') ? 'en-GB' : 'fr-FR';
+    const locale = localeEcran(i18n.language);
     const dateHeure = (valeur) => new Date(valeur).toLocaleString(locale, { dateStyle: 'short', timeStyle: 'medium' });
 
     useEffect(() => {

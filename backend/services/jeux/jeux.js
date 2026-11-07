@@ -1,5 +1,6 @@
 import { Appartenir, Cours, CoursComposante, Enseignement, EnseignementEnseignant, EnseignementGroupe, Groupe, JeuModule, JeuProfil, JeuProgression, Users } from "../../models/index.js";
 import { ancetres } from "../planning/groupes.js";
+import { groupesDeLAnnee } from "../annees/annees.js";
 import { peutGererFiliere } from "../planning/droits.js";
 import { butEtNotion } from "../activites/but.js";
 import { ErreurMetier } from "../planning/enseignements.js";
@@ -20,16 +21,11 @@ const jeuOuErreur = (code) => {
     return jeu;
 };
 
-/** Identifiants des groupes de l'étudiant et de leurs groupes parents (TP → TD → promotion). */
-export const groupesDeLEtudiant = async (idUser) => {
-    const directs = (await Appartenir.findAll({ where: { id_user_etudiant: idUser }, include: [{ model: Groupe, as: "groupe" }] }))
-        .map((a) => a.groupe)
-        .filter(Boolean);
-    if (!directs.length) return [];
-    const tous = await Groupe.findAll({ where: { id_filiere: [...new Set(directs.map((g) => g.id_filiere))] } });
-    const parId = new Map(tous.map((g) => [g.id_groupe, g]));
-    return [...new Set(directs.flatMap((g) => [g.id_groupe, ...ancetres(g, parId).map((a) => a.id_groupe)]))];
-};
+/**
+ * Identifiants des groupes de l'étudiant **de l'année en cours** et de leurs groupes parents
+ * (TP → TD → promotion). Règle unique : services/annees/annees.js (lot ME-18).
+ */
+export const groupesDeLEtudiant = (idUser, options = {}) => groupesDeLAnnee(idUser, options);
 
 const coursDesEnseignements = async (idsEnseignements) => {
     if (!idsEnseignements.length) return [];
@@ -41,10 +37,13 @@ const coursDesEnseignements = async (idsEnseignements) => {
     return [...new Set(enseignements.map((e) => e.composante.id_cours))];
 };
 
-/** Modules (cours) suivis par un étudiant ou enseignés par un enseignant ; [] pour l'administration. */
-export const modulesDuJoueur = async (user) => {
+/**
+ * Modules (cours) suivis par un étudiant ou enseignés par un enseignant ; [] pour l'administration.
+ * `groupes` : groupes de l'étudiant déjà lus par l'appelant (évite de les relire, 3 requêtes).
+ */
+export const modulesDuJoueur = async (user, { groupes: groupesLus } = {}) => {
     if (user.role === "etudiant") {
-        const groupes = await groupesDeLEtudiant(user.id_user);
+        const groupes = groupesLus ?? (await groupesDeLEtudiant(user.id_user));
         if (!groupes.length) return [];
         const liens = await EnseignementGroupe.findAll({ where: { id_groupe: groupes }, attributes: ["id_enseignement"] });
         return coursDesEnseignements(liens.map((l) => l.id_enseignement));

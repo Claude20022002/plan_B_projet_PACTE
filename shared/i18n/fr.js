@@ -7,6 +7,8 @@ const partage = {
     planifie: 'Planifiée',
     confirme: 'Confirmée',
     reporte: 'Reportée',
+    // Report accepté sans date (R-1) : la séance reste à sa date d'origine, signalée
+    a_reprogrammer: 'Reportée · date à venir',
     annule: 'Annulée',
     realise: 'Réalisée',
     live: 'En cours',
@@ -43,7 +45,6 @@ const partage = {
     confirm: 'Confirmer',
     confirmed: 'Confirmée',
     requestReport: 'Demander un report',
-    launchQuiz: 'Lancer un quiz',
     openTimetable: "Voir l'emploi du temps",
     changesTitle: 'Changements récents',
     noChanges: "Aucun changement depuis votre dernière visite.",

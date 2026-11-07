@@ -1,0 +1,4 @@
+# Image hestim-exploitation (Dockerfile.exploitation) : ni les paquets majNN, ni les tests du script
+paquets/
+tests/
+Dockerfile.exploitation

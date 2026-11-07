@@ -1,0 +1,34 @@
+{
+  "code": "RES", "nom": "Ressources humaines complémentaires et matérielles",
+  "role": "Tout ce qu'une séance peut mobiliser en plus d'un enseignant et d'une salle.",
+  "groupes": [
+    { "code": "ROLE", "nom": "Rôles de personnel à planifier",
+      "defauts": { "role": "donnee", "type": "liste_references", "niveaux": "GI", "cible": "personne", "priorite": 4, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "ASSISTANTS", "nom": "Assistants pédagogiques", "desc": "Personnes mobilisables pour une séance qui demande un assistant.", "src": "11.1" },
+        { "code": "TECHNICIENS", "nom": "Techniciens de laboratoire", "desc": "Présence requise pour certains TP.", "src": "11.2" },
+        { "code": "SURVEILLANTS", "nom": "Surveillants", "desc": "Mobilisés pour les examens et les permanences.", "etat": "base", "ref": "Surveillance", "src": "11.3" },
+        { "code": "ENCADRANTS_SPORT", "nom": "Encadrants sportifs", "desc": "Présence requise pour le sport.", "src": "11.4" },
+        { "code": "CONSEILLERS", "nom": "Conseillers pédagogiques", "desc": "Disponibilités à connaître pour les rencontres.", "priorite": 5, "src": "11.5" },
+        { "code": "RESPONSABLES", "nom": "Responsables de filière, de département, coordinateurs", "desc": "Valident les plannings de leur portée.", "etat": "base", "ref": "ResponsableFiliere", "src": "11.6 11.7 11.8" },
+        { "code": "INFORMATIQUE", "nom": "Personnel informatique", "desc": "Présence pour certaines salles ou épreuves.", "priorite": 5, "src": "11.9" },
+        { "code": "SECURITE", "nom": "Personnel de sécurité", "desc": "Sa présence peut borner l'ouverture des bâtiments.", "priorite": 5, "src": "11.10" },
+        { "code": "ENTRETIEN", "nom": "Personnel de nettoyage et de maintenance", "desc": "Ses horaires donnent les temps de nettoyage et de maintenance.", "priorite": 5, "src": "11.11 11.12" },
+        { "code": "TUTEURS", "nom": "Tuteurs", "desc": "Disponibilités pour le tutorat.", "priorite": 5, "src": "11.16" },
+        { "code": "JURYS", "nom": "Membres de jury", "desc": "Disponibilités des jurys de soutenance.", "priorite": 3, "src": "11.18 10.16 16E.19" },
+        { "code": "STAGES", "nom": "Responsables de stages", "desc": "Disponibilités pour les visites et les soutenances.", "priorite": 5, "src": "11.19" }
+      ] },
+    { "code": "MATERIEL", "nom": "Matériel mobile",
+      "defauts": { "role": "donnee", "niveaux": "G", "priorite": 4, "validite": "periode", "etat": "plan", "ref": "ME-2a RessourceMobile" },
+      "parametres": [
+        { "code": "MOBILE", "nom": "Équipements mobiles", "desc": "Chariot de portables : quantité par campus.", "type": "structure", "src": "12.13" },
+        { "code": "TRANSPORT", "nom": "Transport du matériel", "desc": "Marge entre deux usages sur deux lieux.", "type": "duree_min", "etat": "absent", "ref": null, "src": "12.14" }
+      ] },
+    { "code": "REGLE", "nom": "Règles des ressources",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": false, "niveaux": "G", "force": "strict", "force_reglable": true, "priorite": 3, "etat": "absent" },
+      "parametres": [
+        { "code": "PERSONNEL_REQUIS", "nom": "Personnel requis présent", "desc": "Une séance qui demande un assistant, un technicien ou un encadrant ne se place que s'il est libre.", "src": "4.35" },
+        { "code": "MATERIEL_MOBILE", "nom": "Matériel mobile disponible", "desc": "Le nombre de séances simultanées ne dépasse pas la quantité sur le campus.", "src": "12.13 6.56" }
+      ] }
+  ]
+}

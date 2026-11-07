@@ -1,6 +1,6 @@
 # HESTIM Planner — application mobile étudiant
 
-Expo SDK 54 · expo-router 6 · JavaScript. Android d'abord (APK EAS, puis Play Store).
+Expo SDK 57 · expo-router 57 · React Native 0.86 · JavaScript. Android d'abord (APK EAS, puis Play Store).
 
 L'application lit l'emploi du temps et les alertes dans **Planner**, et les supports de cours,
 avis de stage et idées de projets dans **StudyLib** (`/biblio`), avec le même jeton de connexion.

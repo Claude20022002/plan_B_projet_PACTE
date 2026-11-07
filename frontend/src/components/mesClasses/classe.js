@@ -2,6 +2,7 @@
  * Libellés communs aux écrans de « Mes classes » : nom d'une classe, prochaine séance, temps
  * restant avant la fin d'une séance (pour le rappel de l'appel).
  */
+import { instantEcole } from '../../../../shared/dates.js';
 
 /** Clé stable d'une classe : un module enseigné à un groupe */
 export const cleClasse = (c) => `${c.id_cours}:${c.id_groupe}`;
@@ -9,8 +10,8 @@ export const cleClasse = (c) => `${c.id_cours}:${c.id_groupe}`;
 /** « Module · Groupe » */
 export const nomClasse = (c) => `${c.nom_cours} · ${c.nom_groupe}`;
 
-/** Minutes avant la fin de la séance (négatif une fois finie) */
-export const minutesAvantFin = (seance, maintenant) => Math.ceil((new Date(`${seance.date}T${seance.heure_fin}:00`) - maintenant) / 60000);
+/** Minutes avant la fin de la séance (négatif une fois finie), à l'heure de l'école */
+export const minutesAvantFin = (seance, maintenant) => Math.ceil((instantEcole(seance.date, seance.heure_fin) - maintenant) / 60000);
 
 /** « En cours jusqu'à 15:15 · G-S05 » ou « Prochaine séance : lun. 20 oct. à 09:00 · G-S05 » */
 export const libelleSeance = (c, t, locale) => {

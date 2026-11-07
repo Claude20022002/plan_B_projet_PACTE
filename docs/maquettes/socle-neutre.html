@@ -1,0 +1,691 @@
+<title>Maquettes du socle neutre</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Barlow:wght@400;600&family=Barlow+Condensed:wght@500;600;700&display=swap">
+<style>
+/* Page de revue : un bandeau de réglages, un cadre « bureau » pleine largeur, puis le téléphone et les notes côte à côte */
+:root {
+  --page: #E9ECEF; --carte: #FFFFFF; --encre: #14171C; --encre2: #525A66;
+  --filet: #D3D8DE; --sel: #14171C; --sur-sel: #FFFFFF; --cadre: #DCE0E5; --focus-page: #2563EB;
+  --police: "Inter", "Segoe UI", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --page: #0A0C0F; --carte: #12161B; --encre: #E8EBEF; --encre2: #9AA3AE;
+    --filet: #262C34; --sel: #E8EBEF; --sur-sel: #0A0C0F; --cadre: #1A1F26; --focus-page: #60A5FA; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --page: #0A0C0F; --carte: #12161B; --encre: #E8EBEF; --encre2: #9AA3AE;
+  --filet: #262C34; --sel: #E8EBEF; --sur-sel: #0A0C0F; --cadre: #1A1F26; --focus-page: #60A5FA; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; background: var(--page); color: var(--encre); font-family: var(--police); font-size: 14px; line-height: 1.5;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.page { max-width: 1320px; margin: 0 auto; display: grid; gap: 20px; }
+h1 { font-size: 26px; line-height: 1.2; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.intro { margin: 6px 0 0; color: var(--encre2); max-width: 72ch; }
+.meta { margin: 4px 0 0; color: var(--encre2); font-size: 13px; }
+:focus-visible { outline: 2px solid var(--focus-page); outline-offset: 2px; }
+
+.ecrans { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px; }
+.ecrans button {
+  flex: none; font: inherit; font-size: 13px; border: 1px solid var(--filet); background: var(--carte); color: var(--encre);
+  border-radius: 8px; padding: 7px 12px; cursor: pointer; display: flex; gap: 8px; align-items: baseline;
+}
+.ecrans button b { font-weight: 600; font-variant-numeric: tabular-nums; }
+.ecrans button[aria-pressed="true"] { background: var(--sel); color: var(--sur-sel); border-color: var(--sel); }
+
+.reglages { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: center; }
+.reglage { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.reglage > span { color: var(--encre2); font-size: 13px; }
+.seg { display: inline-flex; border: 1px solid var(--filet); border-radius: 8px; overflow: hidden; background: var(--carte); }
+.seg button { font: inherit; font-size: 13px; border: 0; background: transparent; color: var(--encre); padding: 6px 12px; cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--filet); }
+.seg button[aria-pressed="true"] { background: var(--sel); color: var(--sur-sel); }
+.seg button:disabled { opacity: .45; cursor: not-allowed; }
+.indice { color: var(--encre2); font-size: 12.5px; }
+
+.cadre { margin: 0; background: var(--cadre); border: 1px solid var(--filet); border-radius: 12px; padding: 10px; display: grid; gap: 8px; min-width: 0; }
+.cadre figcaption { font-size: 12px; color: var(--encre2); padding-inline: 4px; }
+.bas { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: start; }
+@media (max-width: 860px) { .bas { grid-template-columns: minmax(0, 1fr); } }
+.telephone { width: fit-content; max-width: 100%; }
+.notes { background: var(--carte); border: 1px solid var(--filet); border-radius: 12px; padding: 18px 20px; display: grid; gap: 12px; min-width: 0; }
+.notes h2 { margin: 0; font-size: 17px; }
+.notes p { margin: 0; color: var(--encre2); max-width: 68ch; }
+.notes ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px; }
+.notes li { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 8px; }
+.notes li code { font-family: ui-monospace, "Cascadia Mono", Consolas, monospace; font-size: 12px; font-weight: 600; color: var(--encre); }
+.notes .essai { border-top: 1px solid var(--filet); padding-top: 12px; color: var(--encre); }
+
+/* ——— L'écran maquetté : tout passe par les jetons --s-* posés par le script ——— */
+.screen {
+  position: relative; container-type: inline-size; overflow: hidden; border-radius: 8px;
+  background: var(--s-fond); color: var(--s-texte); font-family: var(--s-police); font-size: 14px; line-height: 1.5;
+  font-variant-numeric: tabular-nums;
+}
+.bureau .screen { min-height: 640px; }
+.telephone .screen { width: 375px; max-width: 100%; min-height: 720px; }
+.screen button, .screen input, .screen select { font: inherit; color: inherit; }
+.screen :focus-visible { outline: 2px solid var(--s-focus); outline-offset: 2px; }
+.lbl { font-family: var(--s-police-label); text-transform: var(--s-casse); letter-spacing: var(--s-espace); }
+
+.app { display: grid; grid-template-columns: 240px minmax(0, 1fr); min-height: inherit; }
+.rail { background: var(--s-rail-fond); color: var(--s-rail-texte); border-right: 1px solid var(--s-rail-filet); display: flex; flex-direction: column; gap: 18px; padding: 16px 12px; }
+.marque { display: flex; gap: 10px; align-items: center; padding: 4px 6px; }
+.marque b { display: block; font-weight: 600; font-size: 15px; line-height: 1.2; }
+.marque span { display: block; font-size: 12px; color: var(--s-rail-texte2); }
+.rail nav { display: grid; gap: 2px; }
+.rail .groupe { font-size: 11.5px; color: var(--s-rail-texte2); padding: 10px 10px 4px; }
+.item { display: flex; align-items: center; gap: 10px; min-height: 38px; padding: 0 10px; border: 0; border-radius: var(--s-rayon); background: transparent; color: var(--s-rail-texte); text-align: left; cursor: pointer; width: 100%; font-weight: 500; }
+.item:hover { background: var(--s-rail-survol); }
+.item[aria-current="page"] { background: var(--s-rail-actif-fond); color: var(--s-rail-actif-texte); font-weight: 600; }
+.rail .pied { margin-top: auto; font-size: 12.5px; color: var(--s-rail-texte2); padding: 8px 10px 0; border-top: 1px solid var(--s-rail-filet); }
+.main { display: flex; flex-direction: column; min-width: 0; }
+.topbar { display: none; align-items: center; gap: 12px; height: 56px; padding: 0 12px; background: var(--s-rail-fond); color: var(--s-rail-texte); border-bottom: 1px solid var(--s-rail-filet); }
+.topbar .marque { padding: 0; }
+.icone-btn { width: 40px; height: 40px; display: grid; place-items: center; border: 0; background: transparent; border-radius: var(--s-rayon); cursor: pointer; color: inherit; }
+.bandeau { display: flex; gap: 10px; align-items: center; padding: 9px 32px; background: var(--s-surface2); border-bottom: 1px solid var(--s-filet); color: var(--s-texte2); font-size: 13px; }
+.point { width: 8px; height: 8px; border-radius: 50%; background: var(--s-texte3); flex: none; }
+.contenu { padding: 28px 32px 40px; display: grid; gap: 22px; align-content: start; }
+.tabbar { display: none; margin-top: auto; position: sticky; bottom: 0; background: var(--s-surface); border-top: 1px solid var(--s-filet); }
+.tabbar button { flex: 1; border: 0; background: transparent; display: grid; justify-items: center; gap: 2px; padding: 8px 0 10px; font-size: 11.5px; color: var(--s-texte2); cursor: pointer; min-height: 56px; }
+.tabbar button[aria-current="page"] { color: var(--s-principale); font-weight: 600; }
+.voile-tiroir { display: none; }
+@container (max-width: 899px) {
+  .app { grid-template-columns: minmax(0, 1fr); }
+  .rail { display: none; position: absolute; inset: 0 auto 0 0; width: 264px; z-index: 6; box-shadow: 0 8px 28px rgba(0,0,0,.28); }
+  .app.ouvert .rail { display: flex; }
+  .app.ouvert .voile-tiroir { display: block; position: absolute; inset: 0; background: rgba(0,0,0,.32); z-index: 5; border: 0; }
+  .topbar { display: flex; }
+  .bandeau { padding-inline: 16px; }
+  .contenu { padding: 20px 16px 28px; }
+}
+@container (max-width: 599px) {
+  .tabbar { display: flex; }
+  .item { min-height: 44px; }
+}
+
+h2.titre { margin: 0; font-size: 24px; line-height: 1.25; font-weight: 600; letter-spacing: -0.01em; text-wrap: balance; }
+.panneau-theme h2.titre { font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 700; font-size: 28px; letter-spacing: .01em; }
+.sous { margin: 4px 0 0; color: var(--s-texte2); max-width: 64ch; }
+.carte { background: var(--s-surface); border: 1px solid var(--s-filet); border-radius: var(--s-rayon-carte); }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; min-height: 40px; padding: 0 16px; border-radius: var(--s-rayon); border: 1px solid var(--s-filet2); background: var(--s-surface); color: var(--s-texte); font-weight: 600; cursor: pointer; }
+.btn.principal { background: var(--s-principale); border-color: var(--s-principale); color: var(--s-sur-principale); }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+.btn .lbl { font-weight: 600; }
+@container (max-width: 599px) { .btn { min-height: 44px; } }
+a.lien, button.lien { color: var(--s-lien); text-decoration: underline; text-underline-offset: 2px; background: none; border: 0; padding: 0; cursor: pointer; font-weight: 500; }
+
+.etat { display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: 4px; font-size: 12px; font-weight: 600; white-space: nowrap; }
+.etat[data-e="planifie"] { color: var(--e-planifie); background: var(--e-planifie-bg); }
+.etat[data-e="confirme"] { color: var(--e-confirme); background: var(--e-confirme-bg); }
+.etat[data-e="reporte"] { color: var(--e-reporte); background: var(--e-reporte-bg); }
+.etat[data-e="annule"] { color: var(--e-annule); background: var(--e-annule-bg); }
+
+/* M-1 connexion */
+.connexion { min-height: inherit; display: grid; place-items: center; padding: 32px 16px; }
+.connexion .carte { width: min(380px, 100%); padding: 28px; display: grid; gap: 18px; }
+.panneau-theme .connexion .carte { border: 6px solid var(--s-cadre); }
+.champ { display: grid; gap: 6px; }
+.champ label { font-weight: 500; font-size: 13px; }
+.champ input, .champ select { height: 40px; padding: 0 12px; border: 1px solid var(--s-filet2); border-radius: var(--s-rayon); background: var(--s-surface); min-width: 0; width: 100%; }
+@container (max-width: 599px) { .champ input, .champ select { height: 44px; } }
+.ligne-langue { display: flex; justify-content: center; gap: 12px; color: var(--s-texte3); font-size: 12.5px; }
+
+/* M-2 mise en place */
+.mep { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: 20px; align-items: start; }
+@container (max-width: 899px) { .mep { grid-template-columns: minmax(0, 1fr); } }
+.etapes { list-style: none; margin: 0; padding: 0; }
+.etapes li + li { border-top: 1px solid var(--s-filet); }
+.etape { width: 100%; display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px 16px; border: 0; background: transparent; text-align: left; cursor: pointer; }
+.etape:hover { background: var(--s-surface2); }
+.rond { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 600; border: 1px solid var(--s-filet2); color: var(--s-texte2); }
+.etape.fait .rond { background: var(--s-principale); border-color: var(--s-principale); color: var(--s-sur-principale); }
+.etape.courante { background: var(--s-voile); }
+.etape b { display: block; font-weight: 600; }
+.etape small { color: var(--s-texte2); font-size: 12.5px; }
+.temps { color: var(--s-texte3); font-size: 12.5px; white-space: nowrap; }
+.progression { height: 6px; border-radius: 3px; background: var(--s-surface2); overflow: hidden; }
+.progression i { display: block; height: 100%; background: var(--s-principale); }
+.cote { padding: 18px; display: grid; gap: 10px; }
+.cote h3, .bloc h3 { margin: 0; font-size: 15px; font-weight: 600; }
+.cote p { margin: 0; color: var(--s-texte2); font-size: 13px; }
+.toast { position: absolute; left: 50%; bottom: 72px; transform: translateX(-50%); background: var(--s-texte); color: var(--s-fond); padding: 8px 14px; border-radius: 6px; font-size: 13px; z-index: 8; width: max-content; max-width: calc(100% - 32px); }
+
+/* M-3 identité */
+.identite { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+@container (max-width: 899px) { .identite { grid-template-columns: minmax(0, 1fr); } }
+.formulaire { padding: 20px; display: grid; gap: 16px; }
+.deux { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+@container (max-width: 599px) { .deux { grid-template-columns: 1fr; } }
+.couleur { display: flex; gap: 8px; }
+.couleur input[type="color"] { width: 44px; padding: 2px; flex: none; }
+.aide { font-size: 12.5px; color: var(--s-texte3); margin: 0; }
+.erreur { font-size: 12.5px; color: var(--e-annule); margin: 0; font-weight: 500; }
+.choix-theme { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.choix-theme label { display: grid; gap: 8px; padding: 10px; border: 1px solid var(--s-filet2); border-radius: var(--s-rayon-carte); cursor: pointer; }
+.choix-theme input { position: absolute; opacity: 0; pointer-events: none; }
+.choix-theme label:has(input:checked) { border-color: var(--s-principale); box-shadow: inset 0 0 0 1px var(--s-principale); }
+.choix-theme label:has(input:focus-visible) { outline: 2px solid var(--s-focus); outline-offset: 2px; }
+.mini { height: 54px; border-radius: 4px; display: grid; grid-template-columns: 30% 1fr; overflow: hidden; border: 1px solid var(--s-filet); }
+.depot { display: flex; gap: 12px; align-items: center; padding: 12px; border: 1px dashed var(--s-filet2); border-radius: var(--s-rayon-carte); }
+.apercu { padding: 16px; display: grid; gap: 14px; }
+.apercu .mini-rail { border-radius: 6px; padding: 10px; display: grid; gap: 4px; }
+.actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+
+/* M-4 page vide */
+.onglets { display: flex; gap: 4px; overflow-x: auto; border-bottom: 1px solid var(--s-filet); }
+.onglet { flex: none; border: 0; background: transparent; padding: 10px 12px; color: var(--s-texte2); cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; display: flex; gap: 6px; align-items: center; }
+.onglet[aria-current="page"] { color: var(--s-texte); border-bottom-color: var(--s-accent-ou-principale); font-weight: 600; }
+.vide { padding: 40px 24px; display: grid; justify-items: center; text-align: center; gap: 12px; }
+.vide .pictogramme { width: 52px; height: 52px; border-radius: 12px; display: grid; place-items: center; background: var(--s-surface2); color: var(--s-texte2); }
+.vide h3 { margin: 0; font-size: 18px; font-weight: 600; }
+.vide p { margin: 0; color: var(--s-texte2); max-width: 52ch; }
+.vide .actions { justify-content: center; }
+
+/* M-5 en préparation */
+.attente { min-height: inherit; display: grid; place-items: center; padding: 32px 20px; text-align: center; }
+.attente > div { max-width: 420px; display: grid; gap: 14px; justify-items: center; }
+.attente h2 { margin: 0; font-size: 22px; font-weight: 600; text-wrap: balance; }
+.attente p { margin: 0; color: var(--s-texte2); }
+
+/* M-6 tableau du jour */
+.tableau { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 20px; align-items: start; }
+@container (max-width: 899px) { .tableau { grid-template-columns: minmax(0, 1fr); } }
+.prochaine { padding: 18px 20px; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center; }
+.salle-grande { font-size: 40px; font-weight: 700; line-height: 1; letter-spacing: -0.02em; }
+.prochaine .quand { color: var(--e-confirme); font-weight: 600; font-size: 13px; }
+.prochaine .quoi { font-size: 17px; font-weight: 600; margin: 2px 0; }
+.prochaine .qui { color: var(--s-texte2); font-size: 13px; }
+.etiquette { font-size: 12px; color: var(--s-texte3); font-weight: 500; }
+table.seances { width: 100%; border-collapse: collapse; }
+.seances th { text-align: left; font-size: 12px; font-weight: 600; color: var(--s-texte2); padding: 10px 14px; background: var(--s-surface2); border-bottom: 1px solid var(--s-filet); }
+.seances td { padding: 12px 14px; border-bottom: 1px solid var(--s-filet); vertical-align: middle; }
+.seances tr:last-child td { border-bottom: 0; }
+.seances tr.vedette td { background: var(--s-voile); }
+.seances .cours { display: flex; gap: 8px; align-items: center; font-weight: 500; }
+.carre { width: 9px; height: 9px; border-radius: 2px; flex: none; }
+.seances tr.annulee .cours span { text-decoration: line-through; text-decoration-color: var(--e-annule); color: var(--s-texte2); }
+.seances .ancienne { color: var(--s-texte3); text-decoration: line-through; font-size: 12px; margin-left: 6px; }
+.seances .meta-tel { display: none; }
+.flash { animation: flash 1.4s ease-out; border-radius: 4px; }
+@keyframes flash { 0%, 30% { background: var(--e-reporte-bg); box-shadow: 0 0 0 4px var(--e-reporte-bg); } 100% { background: transparent; box-shadow: 0 0 0 4px transparent; } }
+@media (prefers-reduced-motion: reduce) { .flash { animation: none; } }
+@container (max-width: 599px) {
+  .seances thead { display: none; }
+  .seances tr { display: grid; grid-template-columns: 48px minmax(0, 1fr) auto; gap: 2px 10px; padding: 12px 14px; border-bottom: 1px solid var(--s-filet); }
+  .seances tr:last-child { border-bottom: 0; }
+  .seances td { padding: 0; border: 0; background: none !important; }
+  .seances tr.vedette { background: var(--s-voile); }
+  .seances td.c-ens, .seances td.c-salle { display: none; }
+  .seances .meta-tel { display: block; grid-column: 2 / 4; color: var(--s-texte2); font-size: 12.5px; }
+  .prochaine { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+}
+.changements { padding: 16px; display: grid; gap: 12px; }
+.avis { display: grid; grid-template-columns: 8px minmax(0, 1fr); gap: 10px; font-size: 13px; }
+.avis .point { margin-top: 6px; }
+.avis b { font-weight: 600; }
+.avis p { margin: 0; color: var(--s-texte2); }
+
+/* M-7 panneau des départs : une seule matière, sombre dans les deux modes */
+.board { background: var(--s-cadre); border-radius: 6px; padding: 8px; }
+.board-tete { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 4px 6px 10px; color: #FFFFFF; font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; font-size: 15px; flex-wrap: wrap; }
+.board-sol { background: #0B0B0D; color: #F2F1EC; border-radius: 4px; overflow-x: auto; }
+.board table { width: 100%; border-collapse: collapse; font-family: "Barlow Condensed", "Arial Narrow", sans-serif; font-weight: 600; text-transform: uppercase; letter-spacing: .04em; font-size: 16px; }
+.board th { color: #A6A6AC; font-size: 12px; letter-spacing: .14em; text-align: left; padding: 10px 10px 8px; border-bottom: 1px solid #2C2C30; font-weight: 600; }
+.board td { padding: 10px; border-bottom: 1px solid #2C2C30; }
+.board tr:last-child td { border-bottom: 0; }
+.board .lampe { width: 10px; height: 10px; border-radius: 50%; background: #3A3A40; display: inline-block; }
+.board .lampe.vive { background: #3FCB74; }
+.tuile { display: inline-block; min-width: .72em; text-align: center; background: #212124; border-radius: 2px; margin-right: 2px; padding: 0 1px; background-image: linear-gradient(transparent calc(50% - .5px), #000 calc(50% - .5px), #000 calc(50% + .5px), transparent calc(50% + .5px)); }
+.board .sec { color: #A6A6AC; font-size: 13px; display: block; letter-spacing: .02em; }
+.board .st-planifie { color: #F2F1EC; } .board .st-reporte { color: #F26322; } .board .st-annule { color: #FF5A5F; }
+.board tr.annulee .nom { text-decoration: line-through; text-decoration-color: #FF5A5F; color: #A6A6AC; }
+@container (max-width: 599px) { .board table { font-size: 14px; } .board .c-ens { display: none; } .board th, .board td { padding: 8px 6px; } }
+</style>
+
+<div class="page">
+  <header>
+    <h1>Maquettes du socle neutre</h1>
+    <p class="intro">Ce que montre Planner avant et après sa mise en place pour un établissement. Les deux cadres affichent le même écran : il se recompose selon la largeur (rail à partir de 900 px, onglets du bas sous 600 px). Sur un petit écran, le cadre « bureau » passe donc lui aussi en mise en page téléphone.</p>
+    <p class="meta">Groupe B · 3 novembre 2026 · règles dans <code>conception-socle-neutre-groupe-b.md</code> · école de démonstration fictive</p>
+  </header>
+
+  <nav class="ecrans" aria-label="Écrans" id="ecrans"></nav>
+
+  <div class="reglages">
+    <div class="reglage"><span>Identité de l’école</span>
+      <div class="seg" role="group" aria-label="Identité de l’école">
+        <button type="button" data-reg="identite" data-val="non">Pas encore réglée</button>
+        <button type="button" data-reg="identite" data-val="oui">Réglée</button>
+      </div>
+    </div>
+    <div class="reglage"><span>Thème de l’école</span>
+      <div class="seg" role="group" aria-label="Thème de l’école">
+        <button type="button" data-reg="theme" data-val="neutre">Neutre</button>
+        <button type="button" data-reg="theme" data-val="panneau">Panneau des départs</button>
+      </div>
+    </div>
+    <div class="reglage"><span>Mode de la personne</span>
+      <div class="seg" role="group" aria-label="Mode clair ou sombre">
+        <button type="button" data-reg="mode" data-val="clair">Clair</button>
+        <button type="button" data-reg="mode" data-val="sombre">Sombre</button>
+      </div>
+    </div>
+    <span class="indice" id="indice"></span>
+  </div>
+
+  <figure class="cadre bureau"><figcaption>Bureau (largeur de la page)</figcaption><div class="screen" id="ecran-bureau"></div></figure>
+  <div class="bas">
+    <figure class="cadre telephone"><figcaption>Téléphone · 375 px</figcaption><div class="screen" id="ecran-tel"></div></figure>
+    <aside class="notes" id="notes" aria-live="polite"></aside>
+  </div>
+</div>
+
+<script>
+(() => {
+  // ——— Jetons des deux thèmes (conception, « Jetons du thème neutre ») ———
+  const THEMES = {
+    neutre: {
+      clair: { fond: '#F7F8FA', surface: '#FFFFFF', surface2: '#F1F3F6', filet: '#E3E6EB', filet2: '#C9CED6', texte: '#111827', texte2: '#4B5563', texte3: '#6B7280', principale: '#1F2937', voile: '#EEF0F3', focus: '#2563EB' },
+      sombre: { fond: '#0E1116', surface: '#161A21', surface2: '#1D222B', filet: '#272D37', filet2: '#39414E', texte: '#F3F4F6', texte2: '#C2C8D0', texte3: '#9AA3AF', principale: '#E5E7EB', voile: '#232933', focus: '#60A5FA' },
+    },
+    panneau: {
+      clair: { fond: '#F3F4F7', surface: '#FFFFFF', surface2: '#EEF0F5', filet: '#DADDE5', filet2: '#B9BECB', texte: '#0D1326', texte2: '#3F4759', texte3: '#5F6778', principale: '#1F2937', voile: '#E8ECF7', focus: '#2563EB' },
+      sombre: { fond: '#0B0B0D', surface: '#161618', surface2: '#212124', filet: '#2C2C30', filet2: '#3A3A40', texte: '#F2F1EC', texte2: '#B4B4BA', texte3: '#9C9CA3', principale: '#E5E7EB', voile: '#212124', focus: '#60A5FA' },
+    },
+  };
+  const ETATS = {
+    clair: { planifie: ['#3F4759', '#EEF0F5'], confirme: ['#137D3F', '#E7F4EC'], reporte: ['#B4410C', '#FDEFE7'], annule: ['#B5161C', '#FCE8E9'] },
+    sombre: { planifie: ['#C2C8D0', '#262B34'], confirme: ['#3FCB74', '#163322'], reporte: ['#F58A4F', '#3A2216'], annule: ['#FF7A7E', '#3A1A1C'] },
+  };
+  const LIGNES = ['#3B63E0', '#1592C9', '#0F8A7E', '#7048C9', '#B03A8C', '#46508F'];
+
+  const etat = {
+    ecran: 'm1', identite: false, mode: matchMedia('(prefers-color-scheme: dark)').matches ? 'sombre' : 'clair',
+    ecole: { nom: 'École Exemple', court: 'Exemple', pays: 'Maroc', principale: '#0F5E59', accent: '#7C3AED', theme: 'neutre' },
+    brouillon: null, faites: new Set(), toast: '', tiroir: false,
+  };
+  etat.brouillon = { ...etat.ecole };
+
+  // ——— Couleurs : mélange, luminance, contraste (même calcul que shared/couleurs.js, simplifié) ———
+  const rvb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
+  const hex = (c) => '#' + c.map((v) => Math.round(v).toString(16).padStart(2, '0')).join('').toUpperCase();
+  const melanger = (a, b, t) => { const x = rvb(a), y = rvb(b); return hex(x.map((v, i) => v + (y[i] - v) * t)); };
+  const lum = (h) => { const [r, g, b] = rvb(h).map((v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }); return 0.2126 * r + 0.7152 * g + 0.0722 * b; };
+  const contraste = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
+  const valide = (h) => /^#[0-9A-Fa-f]{6}$/.test(h);
+  const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // Écrans qui supposent l'école ouverte (identité réglée), et écran qui impose le panneau
+  const OUVERTS = new Set(['m6', 'm7']);
+  const identiteVisible = () => OUVERTS.has(etat.ecran) || etat.identite;
+  const themeEffectif = () => (etat.ecran === 'm7' ? 'panneau' : identiteVisible() ? etat.ecole.theme : 'neutre');
+
+  const jetonsDe = (theme, mode, ecole) => {
+    const t = { ...THEMES[theme][mode] };
+    let cadre = '#1F2937';
+    let accent = null;
+    if (ecole) {
+      const p = ecole.principale;
+      t.principale = mode === 'clair' ? p : melanger(p, '#FFFFFF', 0.55);
+      t.voile = mode === 'clair' ? melanger(p, '#FFFFFF', 0.9) : melanger(p, t.surface, 0.78);
+      cadre = p;
+      accent = ecole.accent;
+    }
+    const surP = contraste(t.principale, '#FFFFFF') >= 4.5 ? '#FFFFFF' : '#111827';
+    const lien = ecole ? t.principale : (mode === 'clair' ? '#1D4ED8' : '#93C5FD');
+    const v = {
+      '--s-fond': t.fond, '--s-surface': t.surface, '--s-surface2': t.surface2, '--s-filet': t.filet, '--s-filet2': t.filet2,
+      '--s-texte': t.texte, '--s-texte2': t.texte2, '--s-texte3': t.texte3, '--s-principale': t.principale, '--s-sur-principale': surP,
+      '--s-voile': t.voile, '--s-focus': t.focus, '--s-lien': lien, '--s-cadre': cadre, '--s-accent-ou-principale': accent && mode === 'clair' ? accent : t.principale,
+      '--s-accent': accent || t.principale,
+    };
+    if (theme === 'panneau') {
+      Object.assign(v, {
+        '--s-police': '"Barlow", "Segoe UI", system-ui, sans-serif', '--s-police-label': '"Barlow Condensed", "Arial Narrow", sans-serif',
+        '--s-casse': 'uppercase', '--s-espace': '0.06em', '--s-rayon': '3px', '--s-rayon-carte': '4px',
+        '--s-rail-fond': cadre, '--s-rail-texte': '#FFFFFF', '--s-rail-texte2': 'rgba(255,255,255,.66)', '--s-rail-filet': 'rgba(255,255,255,.12)',
+        '--s-rail-survol': 'rgba(255,255,255,.07)', '--s-rail-actif-fond': 'rgba(255,255,255,.14)', '--s-rail-actif-texte': '#FFFFFF',
+      });
+    } else {
+      Object.assign(v, {
+        '--s-police': '"Inter", "Segoe UI", system-ui, sans-serif', '--s-police-label': '"Inter", "Segoe UI", system-ui, sans-serif',
+        '--s-casse': 'none', '--s-espace': 'normal', '--s-rayon': '6px', '--s-rayon-carte': '8px',
+        '--s-rail-fond': t.surface, '--s-rail-texte': t.texte2, '--s-rail-texte2': t.texte3, '--s-rail-filet': t.filet,
+        '--s-rail-survol': t.surface2, '--s-rail-actif-fond': t.voile, '--s-rail-actif-texte': ecole ? t.principale : t.texte,
+      });
+    }
+    for (const [k, [c, f]] of Object.entries(ETATS[mode])) { v[`--e-${k}`] = c; v[`--e-${k}-bg`] = f; }
+    return v;
+  };
+
+  // ——— Pictogrammes ———
+  const P = {
+    depart: 'M4 6h16M4 12h16M4 18h10', config: 'M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6zM12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9 7 7M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1',
+    personnes: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21v-1a7 7 0 0 1 14 0v1M16 3.5a4 4 0 0 1 0 7M22 21v-1a6 6 0 0 0-4-5.6', compte: 'M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10zM3 22a9 9 0 0 1 18 0',
+    tableau: 'M3 4h18v16H3zM3 9h18M9 9v11', semaine: 'M3 5h18v16H3zM3 10h18M8 3v4M16 3v4', alertes: 'M6 16v-5a6 6 0 0 1 12 0v5l2 2H4zM10 21h4',
+    cours: 'M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4z', annonces: 'M3 10v4h4l6 4V6L7 10zM17 9a4 4 0 0 1 0 6', salle: 'M4 21V4h11v17M15 8h5v13M8 8h3M8 12h3M8 16h3',
+    import: 'M12 3v12M7 10l5 5 5-5M4 21h16', plus: 'M12 5v14M5 12h14', check: 'M5 12.5 10 17 19 7', menu: 'M4 7h16M4 12h16M4 17h16', examens: 'M9 4h6l1 2h3v15H5V6h3zM9 12l2 2 4-4',
+    biblio: 'M4 4h4v16H4zM10 4h4v16h-4zM16 5l3.5-1 2.5 15.5-3.5 1z', image: 'M3 5h18v14H3zM3 16l5-5 4 4 3-3 6 6M15.5 9.5h.01',
+  };
+  const ico = (n, s = 18) => `<svg viewBox="0 0 24 24" width="${s}" height="${s}" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${P[n]}"/></svg>`;
+
+  // Logo de Planner (une grille horaire dont une case est pleine) ou monogramme de l'école
+  const logoPlanner = (s = 32) => `<svg width="${s}" height="${s}" viewBox="0 0 32 32" aria-hidden="true"><rect x="1" y="1" width="30" height="30" rx="7" fill="var(--s-texte)"/><g fill="var(--s-fond)"><rect x="7" y="7" width="8" height="8" rx="1.5"/><rect x="17" y="7" width="8" height="8" rx="1.5" opacity=".45"/><rect x="7" y="17" width="8" height="8" rx="1.5" opacity=".45"/><rect x="17" y="17" width="8" height="8" rx="1.5" opacity=".45"/></g></svg>`;
+  const logoEcole = (ecole, s = 32) => `<span aria-hidden="true" style="width:${s}px;height:${s}px;border-radius:7px;display:grid;place-items:center;background:${ecole.principale};color:#fff;font-weight:700;font-size:${Math.round(s * 0.5)}px;position:relative;flex:none">${esc((ecole.court || '?').charAt(0).toUpperCase())}<i style="position:absolute;right:-3px;bottom:-3px;width:${Math.round(s / 3)}px;height:${Math.round(s / 3)}px;border-radius:50%;background:${ecole.accent};border:2px solid var(--s-surface)"></i></span>`;
+  const marque = (ecole, sous) => ecole
+    ? `<div class="marque">${logoEcole(ecole)}<div><b>${esc(ecole.court)}</b><span>${esc(sous || 'Planner')}</span></div></div>`
+    : `<div class="marque">${logoPlanner()}<div><b>Planner</b><span>${esc(sous || 'Planification des cours')}</span></div></div>`;
+
+  // ——— Coquille commune : rail (bureau), barre du haut et tiroir (tablette), onglets du bas (téléphone) ———
+  const coquille = ({ ecole, menu, actif, contenu, bandeau, onglets, role }) => {
+    const items = menu.map((g) => `${g.groupe ? `<div class="groupe lbl">${esc(g.groupe)}</div>` : ''}${g.items.map((i) => `<button type="button" class="item lbl" data-go="${i.go || ''}" ${i.id === actif ? 'aria-current="page"' : ''}>${ico(i.ico)}<span>${esc(i.lib)}</span></button>`).join('')}`).join('');
+    return `<div class="app ${etat.tiroir ? 'ouvert' : ''}">
+      <aside class="rail" aria-label="Menu">${marque(ecole, role)}<nav>${items}</nav><div class="pied">${esc(role)}</div></aside>
+      <button type="button" class="voile-tiroir" data-action="tiroir" aria-label="Fermer le menu"></button>
+      <div class="main">
+        <header class="topbar"><button type="button" class="icone-btn" data-action="tiroir" aria-label="Ouvrir le menu">${ico('menu', 22)}</button>${marque(ecole, role)}</header>
+        ${bandeau ? `<div class="bandeau"><span class="point" aria-hidden="true"></span>${bandeau}</div>` : ''}
+        <main class="contenu">${contenu}</main>
+        ${onglets ? `<nav class="tabbar" aria-label="Onglets">${onglets.map((o) => `<button type="button" class="lbl" ${o.id === actif ? 'aria-current="page"' : ''}>${ico(o.ico, 20)}<span>${esc(o.lib)}</span></button>`).join('')}</nav>` : ''}
+      </div>
+      ${etat.toast ? `<div class="toast" role="status">${esc(etat.toast)}</div>` : ''}
+    </div>`;
+  };
+  const MENU_CONFIG = [{ items: [
+    { id: 'mep', lib: 'Mise en place', ico: 'depart', go: 'm2' }, { id: 'config', lib: 'Configuration', ico: 'config', go: 'm4' },
+    { id: 'personnes', lib: 'Personnes', ico: 'personnes' }, { id: 'compte', lib: 'Mon compte', ico: 'compte' },
+  ] }];
+  const BANDEAU_CONFIG = 'Établissement en configuration · les enseignants et les étudiants ne sont pas encore prévenus.';
+  const ecoleAffichee = () => (identiteVisible() ? etat.ecole : null);
+
+  // ——— Écrans ———
+  const ETAPES = [
+    ['Identité', 'nom, logo, couleurs, thème', '3 min'], ['Modèle d’établissement', 'le plus proche du vôtre', '1 min'], ['Campus', 'nom, ville, temps de trajet', '3 min'],
+    ['Calendrier', 'année, périodes, vacances, fériés', '5 min'], ['Grilles horaires', 'la journée type', '5 min'], ['Règles', 'souple, standard ou strict', '2 min'],
+    ['Données', 'classeur Excel ou feuille par feuille', 'variable'], ['Personnes', 'comptes et date des invitations', '5 min'], ['Contrôle global', 'ce qui reste à corriger', '5 min'],
+  ];
+
+  const ecrans = {
+    m1: () => {
+      const e = ecoleAffichee();
+      return `<div class="connexion"><div class="carte">
+        <div style="display:flex;gap:12px;align-items:center">${e ? logoEcole(e, 40) : logoPlanner(40)}<div><div style="font-weight:600;font-size:16px">${e ? esc(e.nom) : 'Planner'}</div><div style="color:var(--s-texte3);font-size:12.5px">${e ? esc(e.court) + ' Planner' : 'Planification des cours et des salles'}</div></div></div>
+        <div><h2 class="titre" style="font-size:22px">Se connecter</h2><p class="sous" style="font-size:13px">Utilisez l’adresse que votre établissement vous a donnée.</p></div>
+        <div class="champ"><label for="${this_id('mel')}">Adresse e-mail</label><input id="${this_id('mel')}" type="email" placeholder="prenom.nom@exemple.org" autocomplete="off"></div>
+        <div class="champ"><label for="${this_id('mdp')}">Mot de passe</label><input id="${this_id('mdp')}" type="password" value="motdepasse"></div>
+        <button type="button" class="btn principal lbl" data-action="connexion">Se connecter</button>
+        <button type="button" class="lien" style="justify-self:center">Mot de passe oublié ?</button>
+        <div class="ligne-langue"><span>Français</span><span>·</span><span>English</span></div>
+      </div></div>`;
+    },
+    m2: () => {
+      const n = etat.faites.size;
+      const premiere = ETAPES.findIndex((_, i) => !etat.faites.has(i));
+      const liste = ETAPES.map(([t, d, m], i) => {
+        const fait = etat.faites.has(i);
+        return `<li><button type="button" class="etape ${fait ? 'fait' : ''} ${i === premiere ? 'courante' : ''}" data-etape="${i}">
+          <span class="rond">${fait ? ico('check', 14) : i + 1}</span><span><b>${esc(t)}</b><small>${esc(d)}</small></span><span class="temps">${fait ? 'fait' : m}</span></button></li>`;
+      }).join('');
+      const contenu = `<div><h2 class="titre">Mise en place</h2><p class="sous">Réglez votre établissement une étape à la fois. Chaque étape est enregistrée dès que vous la quittez ; vous pouvez en sauter une et y revenir.</p></div>
+        <div class="mep">
+          <div class="carte" style="overflow:hidden">
+            <div style="padding:16px 16px 12px;display:grid;gap:8px"><div style="display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap"><b>${n} étape${n > 1 ? 's' : ''} sur 9</b><span class="temps">environ ${Math.max(0, 29 - n * 3)} min restantes, hors données</span></div><div class="progression"><i style="width:${(n / 9) * 100}%"></i></div></div>
+            <ol class="etapes">${liste}</ol>
+          </div>
+          <div style="display:grid;gap:14px">
+            <div class="carte cote"><h3>Commencer</h3><p>${premiere >= 0 ? `Prochaine étape : ${esc(ETAPES[premiere][0].toLowerCase())}.` : 'Toutes les étapes sont faites.'}</p><button type="button" class="btn principal lbl" data-etape="${Math.max(premiere, 0)}">${n ? 'Reprendre' : 'Commencer'}</button></div>
+            <div class="carte cote"><h3>Ouvrir Planner</h3><p>Disponible quand le contrôle global ne signale plus d’erreur bloquante. Les invitations partent à ce moment-là.</p><button type="button" class="btn lbl" disabled>Ouvrir Planner</button></div>
+          </div>
+        </div>`;
+      return coquille({ ecole: ecoleAffichee(), menu: MENU_CONFIG, actif: 'mep', contenu, bandeau: BANDEAU_CONFIG, role: 'Administration' });
+    },
+    m3: () => {
+      const b = etat.brouillon;
+      const contenu = `<div><button type="button" class="lien" data-go="m2">← Mise en place</button><h2 class="titre" style="margin-top:6px">Étape 1 sur 9 · Identité</h2><p class="sous">Ce que verront les enseignants, les étudiants et les familles. Tout reste modifiable ensuite dans Configuration.</p></div>
+        <div class="identite">
+          <div class="carte formulaire">
+            <div class="deux">
+              <div class="champ"><label for="${this_id('nom')}">Nom de l’établissement</label><input id="${this_id('nom')}" data-champ="nom" value="${esc(b.nom)}"></div>
+              <div class="champ"><label for="${this_id('court')}">Nom court</label><input id="${this_id('court')}" data-champ="court" value="${esc(b.court)}" maxlength="30"><p class="aide">Affiché comme « ${esc(b.court)} Planner ».</p></div>
+            </div>
+            <div class="champ"><label for="${this_id('pays')}">Pays</label><select id="${this_id('pays')}" data-champ="pays">${['Maroc', 'France', 'Sénégal', 'Côte d’Ivoire', 'Belgique', 'Autre'].map((p) => `<option ${p === b.pays ? 'selected' : ''}>${esc(p)}</option>`).join('')}</select><p class="aide">Planner en déduit le fuseau, les langues, le week-end et les jours fériés.</p></div>
+            <div class="champ"><span style="font-weight:500;font-size:13px">Logo</span><div class="depot">${logoEcole(b, 40)}<div style="display:grid;gap:2px"><button type="button" class="lien" style="justify-self:start">Choisir une image</button><span class="aide">PNG, JPEG ou WebP, 512 Ko au plus.</span></div></div></div>
+            <div class="deux">
+              <div class="champ"><label for="${this_id('p')}">Couleur principale</label><div class="couleur"><input type="color" data-champ="principale" value="${b.principale}" aria-label="Choisir la couleur principale"><input id="${this_id('p')}" data-champ="principale" value="${b.principale}" maxlength="7"></div><p class="erreur" data-msg="principale" hidden></p><p class="aide">Boutons, rubrique active, liens.</p></div>
+              <div class="champ"><label for="${this_id('a')}">Couleur d’accent</label><div class="couleur"><input type="color" data-champ="accent" value="${b.accent}" aria-label="Choisir la couleur d’accent"><input id="${this_id('a')}" data-champ="accent" value="${b.accent}" maxlength="7"></div><p class="aide">Marque seulement : pastille du logo, onglet actif.</p></div>
+            </div>
+            <fieldset class="champ" style="border:0;padding:0;margin:0"><legend style="font-weight:500;font-size:13px;margin-bottom:6px">Thème</legend>
+              <div class="choix-theme">
+                <label><input type="radio" name="${this_id('theme')}" data-champ="theme" value="neutre" ${b.theme === 'neutre' ? 'checked' : ''}><span class="mini" style="background:#FFFFFF"><i style="background:#F1F3F6;border-right:1px solid #E3E6EB"></i><i></i></span><span><b>Neutre</b><br><span class="aide">Plat et clair, casse normale.</span></span></label>
+                <label><input type="radio" name="${this_id('theme')}" data-champ="theme" value="panneau" ${b.theme === 'panneau' ? 'checked' : ''}><span class="mini" style="background:#0B0B0D"><i data-mini-cadre style="background:${b.principale}"></i><i style="background:linear-gradient(#212124 0 0) 8px 10px/60% 6px no-repeat,linear-gradient(#212124 0 0) 8px 24px/45% 6px no-repeat"></i></span><span><b>Panneau des départs</b><br><span class="aide">Tableau sombre, capitales, volets.</span></span></label>
+              </div>
+            </fieldset>
+            <div class="actions"><button type="button" class="btn lbl" data-go="m2">Passer cette étape</button><button type="button" class="btn principal lbl" data-action="enregistrer">Enregistrer et continuer</button></div>
+          </div>
+          <div class="carte apercu" data-apercu>${apercu()}</div>
+        </div>`;
+      return coquille({ ecole: ecoleAffichee(), menu: MENU_CONFIG, actif: 'mep', contenu, bandeau: BANDEAU_CONFIG, role: 'Administration' });
+    },
+    m4: () => {
+      const sections = [['Identité et marque', 'm3', etat.faites.has(0)], ['Campus'], ['Salles', null, false, true], ['Offre de formation'], ['Calendrier'], ['Grilles horaires'], ['Règles de génération'], ['Fonctionnalités'], ['Personnes']];
+      const onglets = sections.map(([t, go, fait, actif]) => `<button type="button" class="onglet" ${go ? `data-go="${go}"` : ''} ${actif ? 'aria-current="page"' : ''}>${fait ? ico('check', 14) : ''}${esc(t)}</button>`).join('');
+      const contenu = `<div><h2 class="titre">Configuration</h2><p class="sous">Tout ce qui rend Planner propre à votre établissement, section par section.</p></div>
+        <div class="onglets" role="navigation" aria-label="Sections">${onglets}</div>
+        <div class="carte vide">
+          <span class="pictogramme">${ico('salle', 26)}</span>
+          <h3>Aucune salle pour l’instant</h3>
+          <p>Les salles servent à placer les séances : capacité, type (cours, laboratoire, amphithéâtre) et équipements. Ajoutez-les une par une, ou importez le fichier Excel de votre établissement.</p>
+          <div class="actions"><button type="button" class="btn principal lbl">${ico('import')}Importer un fichier Excel</button><button type="button" class="btn lbl">${ico('plus')}Ajouter une salle</button></div>
+          <button type="button" class="lien">Télécharger le modèle de fichier (feuilles « Salles », « Types de salle », « Équipements »)</button>
+        </div>`;
+      return coquille({ ecole: ecoleAffichee(), menu: MENU_CONFIG, actif: 'config', contenu, bandeau: BANDEAU_CONFIG, role: 'Administration' });
+    },
+    m5: () => {
+      const e = ecoleAffichee();
+      return `<div class="attente"><div>
+        ${e ? logoEcole(e, 48) : logoPlanner(48)}
+        <h2>${e ? esc(e.nom) + ' prépare Planner' : 'Votre établissement prépare Planner'}</h2>
+        <p>Vos cours, vos salles et vos changements d’horaire apparaîtront ici à l’ouverture, prévue le <b>lundi 4 janvier 2027</b>. Vous recevrez un message ce jour-là.</p>
+        <p style="font-size:13px">Rien à faire d’ici là.</p>
+        <button type="button" class="btn lbl">Se déconnecter</button>
+      </div></div>`;
+    },
+    m6: () => coquille({
+      ecole: etat.ecole, actif: 'tableau', role: 'Étudiante · L1 · TD 2',
+      menu: [{ items: [
+        { id: 'tableau', lib: 'Tableau', ico: 'tableau' }, { id: 'semaine', lib: 'Semaine', ico: 'semaine' }, { id: 'annonces', lib: 'Annonces', ico: 'annonces' },
+        { id: 'cours', lib: 'Mes cours', ico: 'cours' }, { id: 'examens', lib: 'Mes examens', ico: 'examens' }, { id: 'biblio', lib: 'Bibliothèque', ico: 'biblio' },
+      ] }],
+      onglets: [{ id: 'tableau', lib: 'Tableau', ico: 'tableau' }, { id: 'semaine', lib: 'Semaine', ico: 'semaine' }, { id: 'alertes', lib: 'Alertes', ico: 'alertes' }, { id: 'compte', lib: 'Compte', ico: 'compte' }],
+      contenu: themeEffectif() === 'panneau' ? tableauPanneau() : tableauNeutre(),
+    }),
+    m7: () => ecrans.m6(),
+  };
+
+  const SEANCES = [
+    { h: '09:00', f: '10:30', cours: 'Algèbre linéaire', l: 0, salle: 'B-12', ens: 'Mme Benali', e: 'planifie', lib: 'À l’heure', vedette: true },
+    { h: '11:00', f: '12:30', cours: 'Physique générale', l: 1, salle: 'B-07', avant: 'A-03', ens: 'M. Haddad', e: 'reporte', lib: 'Salle changée' },
+    { h: '13:30', f: '15:00', cours: 'Anglais professionnel', l: 3, salle: 'C-01', ens: 'Mme Laurent', e: 'annule', lib: 'Annulée' },
+    { h: '15:15', f: '16:45', cours: 'Projet tutoré', l: 2, salle: 'Lab 2', ens: 'M. Diallo', e: 'planifie', lib: 'À l’heure' },
+  ];
+  const avis = `<div class="carte changements" aria-label="Changements récents"><h3 class="lbl" style="margin:0;font-size:14px;font-weight:600">Changements récents</h3>
+    <div class="avis"><span class="point" style="background:var(--e-reporte)"></span><div><b>Physique générale · 11:00</b><p>Salle changée : A-03 → B-07.</p></div></div>
+    <div class="avis"><span class="point" style="background:var(--e-annule)"></span><div><b>Anglais professionnel · 13:30</b><p>Annulé par l’enseignante. La séance sera reprogrammée.</p></div></div></div>`;
+  const tableauNeutre = () => {
+    const lignes = SEANCES.map((s) => `<tr class="${s.vedette ? 'vedette' : ''} ${s.e === 'annule' ? 'annulee' : ''}">
+      <td>${s.h}</td><td><div class="cours"><i class="carre" style="background:${LIGNES[s.l]}"></i><span>${esc(s.cours)}</span></div></td>
+      <td class="c-salle"><span class="${s.avant ? 'flash' : ''}">${esc(s.salle)}</span>${s.avant ? `<span class="ancienne">${esc(s.avant)}</span>` : ''}</td>
+      <td class="c-ens">${esc(s.ens)}</td><td><span class="etat lbl" data-e="${s.e}">${esc(s.lib)}</span></td>
+      <td class="meta-tel"><span class="${s.avant ? 'flash' : ''}">${esc(s.salle)}</span>${s.avant ? ` <s>${esc(s.avant)}</s>` : ''} · ${esc(s.ens)}</td></tr>`).join('');
+    return `<div><h2 class="titre">Aujourd’hui</h2><p class="sous">Mardi 10 novembre</p></div>
+      <div class="tableau">
+        <div style="display:grid;gap:16px;min-width:0">
+          <div class="carte prochaine"><div><div class="etiquette lbl">Salle</div><div class="salle-grande">B-12</div><div class="etiquette">Bâtiment B · 1er étage</div></div>
+            <div><div class="quand">Dans 25 min · 09:00 – 10:30</div><div class="quoi">Algèbre linéaire</div><div class="qui">Mme Benali · TD 2</div></div></div>
+          <div class="carte" style="overflow:hidden"><table class="seances"><thead><tr><th class="lbl">Heure</th><th class="lbl">Cours</th><th class="lbl">Salle</th><th class="lbl">Enseignant</th><th class="lbl">Statut</th></tr></thead><tbody>${lignes}</tbody></table></div>
+        </div>
+        ${avis}
+      </div>`;
+  };
+  const tuiles = (t) => [...t].map((c) => (c === ':' || c === ' ' || c === '-' ? `<span>${c === ' ' ? '&nbsp;' : c}</span>` : `<span class="tuile">${esc(c)}</span>`)).join('');
+  const tableauPanneau = () => {
+    const lignes = SEANCES.map((s) => `<tr class="${s.e === 'annule' ? 'annulee' : ''}">
+      <td style="width:22px"><span class="lampe ${s.vedette ? 'vive' : ''}"></span></td><td style="width:74px">${tuiles(s.h)}</td>
+      <td><span class="nom">${esc(s.cours)}</span><span class="sec"><i class="carre" style="background:${LIGNES[s.l]};display:inline-block;margin-right:6px"></i>${esc(s.ens)}</span></td>
+      <td>${tuiles(s.salle)}</td><td class="c-ens st-${s.e}" style="text-align:right">${esc(s.lib)}</td></tr>`).join('');
+    return `<div><h2 class="titre">Aujourd’hui</h2><p class="sous">Mardi 10 novembre</p></div>
+      <div class="tableau">
+        <div class="board"><div class="board-tete"><span>Départs · mardi 10 nov.</span><span>${tuiles('08:35')}</span></div>
+          <div class="board-sol"><table><thead><tr><th></th><th>Heure</th><th>Cours</th><th>Salle</th><th class="c-ens" style="text-align:right">Statut</th></tr></thead><tbody>${lignes}</tbody></table></div></div>
+        ${avis}
+      </div>`;
+  };
+
+  // Aperçu de l'étape Identité : un bout de rail, un bouton, un lien, les états (qui ne changent pas)
+  const apercu = () => {
+    const b = etat.brouillon;
+    const ok = valide(b.principale) && valide(b.accent);
+    const v = ok ? jetonsDe(b.theme, etat.mode, b) : jetonsDe('neutre', etat.mode, null);
+    const style = Object.entries(v).map(([k, x]) => `${k}:${x}`).join(';');
+    return `<div style="${style};display:grid;gap:14px;color:var(--s-texte)">
+      <h3 style="margin:0;font-size:15px;font-weight:600">Aperçu</h3>
+      <div class="mini-rail" style="background:var(--s-rail-fond);border:1px solid var(--s-rail-filet);color:var(--s-rail-texte);font-family:var(--s-police)">
+        <div class="marque" style="padding:2px 4px 8px">${logoEcole(b, 28)}<div><b style="font-size:14px">${esc(b.court)}</b><span style="color:var(--s-rail-texte2)">Planner</span></div></div>
+        <span class="item lbl" aria-current="page" style="cursor:default">${ico('tableau')}Tableau</span>
+        <span class="item lbl" style="cursor:default">${ico('semaine')}Semaine</span>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-family:var(--s-police)"><span class="btn principal lbl" style="cursor:default">Enregistrer</span><span style="color:var(--s-lien);text-decoration:underline">Voir le détail</span></div>
+      <div style="display:grid;gap:6px"><span class="aide">Les couleurs d’état ne changent pas :</span><div style="display:flex;gap:6px;flex-wrap:wrap"><span class="etat lbl" data-e="confirme">Confirmée</span><span class="etat lbl" data-e="reporte">Reportée</span><span class="etat lbl" data-e="annule">Annulée</span></div></div>
+    </div>`;
+  };
+
+  // Identifiants uniques par cadre (les deux cadres affichent le même formulaire)
+  let cadreCourant = 'b';
+  function this_id(n) { return `${cadreCourant}-${n}`; }
+
+  // ——— Notes de revue ———
+  const REGLES = {
+    'P-1': 'Simple : une action principale par écran ; le menu ne montre que ce qui sert maintenant.',
+    'P-5': 'Progressif : l’école prend forme à mesure qu’elle se règle.',
+    'N-1': 'Installation neuve : « Planner », sans nom, logo ni couleur d’école.',
+    'N-2': 'Le thème (neutre ou panneau) est un réglage de l’école ; chaque personne garde clair, sombre ou automatique.',
+    'N-3': 'Deux couleurs d’école : la principale sur le bouton, la rubrique active et les liens ; jamais sur un état.',
+    'N-4': 'Sans couleurs d’école, une encre ardoise ; seuls les états et les filières ont une teinte.',
+    'N-7': 'Thème neutre : une valeur qui change est surlignée un instant, sans volets.',
+    'N-8': 'Contraste AA vérifié ; une couleur principale trop claire est refusée.',
+    'N-9': 'Trois largeurs : téléphone, tablette, bureau ; rail à partir de 900 px.',
+    'N-10': 'Sous 600 px, une table devient une liste empilée.',
+    'N-12': 'En configuration : menu réduit à Mise en place, Configuration, Personnes, Mon compte.',
+    'N-13': 'Enseignant ou étudiant avant l’ouverture : une seule page, « en préparation ».',
+    'N-14': '« Ouvrir Planner » termine l’assistant ; refusé tant qu’il reste une erreur bloquante.',
+    'N-15': 'Page vide qui guide vers la section ou l’import qui la remplit.',
+    'N-16': 'Page d’accueil publique éteinte par défaut : l’adresse mène à la connexion.',
+    'N-19': 'Une école déjà en service garde son identité et prend le thème panneau.',
+  };
+  const NOTES = {
+    m1: { court: 'Connexion', titre: 'M-1 · Connexion', texte: 'Première page d’une installation neuve. Sans identité réglée, elle dit « Planner » et rien d’autre ; une fois l’identité enregistrée, elle prend le nom, le logo et la couleur principale de l’école.', essai: 'Basculez « Identité de l’école » : rien d’autre que le nom, le logo et la couleur du bouton ne change.', regles: ['N-1', 'N-4', 'N-16'] },
+    m2: { court: 'Mise en place', titre: 'M-2 · Mise en place', texte: 'L’administrateur d’une école neuve arrive ici. Quatre entrées de menu seulement. Chaque étape est enregistrée en la quittant ; « Ouvrir Planner » reste fermé tant que le contrôle global n’est pas propre.', essai: 'Cliquez sur l’étape 1 pour ouvrir le formulaire d’identité. En largeur tablette, le menu passe dans un tiroir.', regles: ['P-1', 'N-12', 'N-14'] },
+    m3: { court: 'Identité', titre: 'M-3 · Étape « Identité »', texte: 'Le premier passage dans la section « Identité et marque » du panneau. L’aperçu suit chaque changement ; les couleurs d’état ne bougent pas.', essai: 'Essayez une couleur principale claire (#F5D90A) : elle est refusée. « Enregistrer et continuer » applique l’identité à toute la coquille.', regles: ['N-3', 'N-8', 'N-2', 'P-5'] },
+    m4: { court: 'Page vide', titre: 'M-4 · Page de configuration vide', texte: 'Une section sans données dit ce qui manque et mène à l’import ou à la saisie. Les sections du panneau (§ 5.5) sont des onglets ; une section faite porte une coche.', essai: 'L’onglet « Identité et marque » ramène au formulaire de M-3.', regles: ['N-15', 'P-1'] },
+    m5: { court: 'En préparation', titre: 'M-5 · Étudiant avant l’ouverture', texte: 'Un compte qui existe déjà mais dont l’école n’est pas ouverte ne voit qu’une page. Aucune donnée partielle, pas de menu.', essai: 'Avec l’identité réglée, la page prend le nom et le logo de l’école.', regles: ['N-13', 'P-5'] },
+    m6: { court: 'Tableau du jour', titre: 'M-6 · Tableau du jour d’une étudiante', texte: 'Après l’ouverture, aux couleurs de l’école fictive. La séance qui change est surlignée un instant ; l’annulée est barrée. Sous 600 px, la table devient une liste et les onglets passent en bas.', essai: 'Basculez le thème de l’école sur « Panneau des départs » pour comparer avec M-7.', regles: ['N-3', 'N-7', 'N-9', 'N-10'] },
+    m7: { court: 'Thème panneau', titre: 'M-7 · Le même tableau, thème « Panneau des départs »', texte: 'Le style actuel de Planner devient un thème que l’école choisit. Le cadre prend sa couleur principale ; les états gardent leurs couleurs.', essai: 'C’est le thème que prendrait automatiquement une école déjà en service (N-19).', regles: ['N-2', 'N-19'] },
+  };
+
+  // ——— Rendu ———
+  const cadres = [['b', document.getElementById('ecran-bureau')], ['t', document.getElementById('ecran-tel')]];
+  const appliquerJetons = () => {
+    const v = jetonsDe(themeEffectif(), etat.mode, ecoleAffichee());
+    for (const [, el] of cadres) {
+      for (const [k, x] of Object.entries(v)) el.style.setProperty(k, x);
+      el.classList.toggle('panneau-theme', themeEffectif() === 'panneau');
+    }
+  };
+  const rendre = () => {
+    appliquerJetons();
+    for (const [id, el] of cadres) { cadreCourant = id; el.innerHTML = ecrans[etat.ecran](); }
+    document.getElementById('ecrans').innerHTML = Object.entries(NOTES).map(([k, n], i) => `<button type="button" data-ecran="${k}" aria-pressed="${k === etat.ecran}"><b>M-${i + 1}</b>${esc(n.court)}</button>`).join('');
+    const n = NOTES[etat.ecran];
+    document.getElementById('notes').innerHTML = `<h2>${esc(n.titre)}</h2><p>${esc(n.texte)}</p><ul>${n.regles.map((r) => `<li><code>${r}</code><span>${esc(REGLES[r])}</span></li>`).join('')}</ul><p class="essai">${esc(n.essai)}</p>`;
+    const force = OUVERTS.has(etat.ecran);
+    document.querySelectorAll('[data-reg]').forEach((b) => {
+      const v = b.dataset.val, r = b.dataset.reg;
+      const actuel = r === 'identite' ? (identiteVisible() ? 'oui' : 'non') : r === 'theme' ? themeEffectif() : etat.mode;
+      b.setAttribute('aria-pressed', String(v === actuel));
+      b.disabled = (r === 'identite' && force) || (r === 'theme' && (etat.ecran === 'm7' || !identiteVisible()));
+    });
+    document.getElementById('indice').textContent = force ? 'Cet écran suppose l’école ouverte.' : !identiteVisible() ? 'Avant la mise en place, le thème est toujours neutre.' : '';
+    verifierCouleurs();
+  };
+
+  const verifierCouleurs = () => {
+    const p = etat.brouillon.principale;
+    const r = valide(p) ? contraste(p, '#FFFFFF') : 0;
+    const msg = !valide(p) ? 'Écrivez une couleur au format #RRVVBB.' : r < 4.5 ? `Trop claire pour du texte blanc : contraste ${r.toFixed(1).replace('.', ',')}:1, il faut 4,5:1. Choisissez une teinte plus foncée.` : '';
+    document.querySelectorAll('[data-msg="principale"]').forEach((el) => { el.textContent = msg; el.hidden = !msg; });
+    document.querySelectorAll('[data-action="enregistrer"]').forEach((el) => { el.disabled = Boolean(msg) || !valide(etat.brouillon.accent); });
+    return !msg;
+  };
+
+  let minuteurToast;
+  const annoncer = (t) => { etat.toast = t; rendre(); clearTimeout(minuteurToast); minuteurToast = setTimeout(() => { etat.toast = ''; rendre(); }, 2600); };
+  const aller = (ecran) => { etat.ecran = ecran; etat.tiroir = false; etat.toast = ''; try { history.replaceState(null, '', '#' + ecran); } catch { /* lien sans ancre */ } rendre(); };
+
+  document.addEventListener('click', (ev) => {
+    const t = ev.target.closest('button, [data-go]');
+    if (!t) return;
+    if (t.dataset.ecran) return aller(t.dataset.ecran);
+    if (t.dataset.reg) {
+      const { reg, val } = t.dataset;
+      if (reg === 'identite') etat.identite = val === 'oui';
+      if (reg === 'theme') { etat.ecole.theme = val; etat.brouillon.theme = val; }
+      if (reg === 'mode') etat.mode = val;
+      return rendre();
+    }
+    if (t.dataset.etape !== undefined) {
+      const i = Number(t.dataset.etape);
+      if (i === 0) return aller('m3');
+      if (i === 6) return aller('m4');
+      return annoncer(`L’étape « ${ETAPES[i][0]} » sera maquettée avec ME-10.`);
+    }
+    if (t.dataset.go) return aller(t.dataset.go);
+    if (t.dataset.action === 'tiroir') { etat.tiroir = !etat.tiroir; return rendre(); }
+    if (t.dataset.action === 'enregistrer') {
+      if (!verifierCouleurs()) return;
+      etat.ecole = { ...etat.brouillon }; etat.identite = true; etat.faites.add(0);
+      return aller('m2');
+    }
+    if (t.dataset.action === 'connexion') return aller(etat.identite ? 'm6' : 'm2');
+  });
+
+  // Saisie de l'étape Identité : on met à jour l'aperçu et l'autre cadre sans redessiner le formulaire
+  const saisir = (ev) => {
+    const champ = ev.target.dataset?.champ;
+    if (!champ) return;
+    let val = ev.target.value;
+    if (champ === 'principale' || champ === 'accent') val = val.toUpperCase();
+    etat.brouillon[champ] = val;
+    document.querySelectorAll(`[data-champ="${champ}"]`).forEach((el) => {
+      if (el === ev.target) return;
+      if (el.type === 'radio') el.checked = el.value === val;
+      else if (el.type !== 'color' || valide(val)) el.value = el.type === 'color' ? val.toLowerCase() : val;
+    });
+    document.querySelectorAll('[data-apercu]').forEach((el) => { el.innerHTML = apercu(); });
+    document.querySelectorAll('[data-mini-cadre]').forEach((el) => { if (valide(etat.brouillon.principale)) el.style.background = etat.brouillon.principale; });
+    verifierCouleurs();
+  };
+  document.addEventListener('input', saisir);
+  document.addEventListener('change', saisir);
+
+  const depuisAncre = () => { const h = location.hash.slice(1); if (ecrans[h]) { etat.ecran = h; } rendre(); };
+  addEventListener('hashchange', depuisAncre);
+  depuisAncre();
+})();
+</script>

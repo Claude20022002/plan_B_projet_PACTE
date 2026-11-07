@@ -3,7 +3,7 @@
  * Partagé par le serveur (validation, correction), le site (éditeur, joueur) et l'application.
  *
  * Chaque question a la même enveloppe :
- *   { type, enonce, points, explication?, id_media?, extrait?: { debut, fin }, donnees }
+ *   { type, enonce, points, explication?, id_media?, extrait?: { debut, fin }, duree_s?, donnees }
  * et `donnees` dépend du type (décrit dans TYPES ci-dessous). Les identifiants des options
  * (« o1 », « p2 »…) sont stables : les réponses des étudiants et le mélange s'y réfèrent.
  */
@@ -20,6 +20,8 @@ export const LIMITES = {
     reponseLibre: 5000,
     points: { min: 0, max: 100 },
     zones: 6,
+    // Temps pour répondre en direct, en secondes (vide : celui de la diffusion) ; mêmes bornes que le direct
+    duree: { min: 5, max: 120 },
 };
 
 /**
@@ -185,8 +187,10 @@ export const validerQuestion = (q) => {
             if (!Number.isFinite(debut) || debut < 0 || (fin !== null && (!Number.isFinite(fin) || fin <= debut))) throw new Error("Extrait : la fin doit suivre le début");
             extrait = { debut: Math.round(debut * 10) / 10, fin: fin === null ? null : Math.round(fin * 10) / 10 };
         }
+        const dureeS = q.duree_s === undefined || q.duree_s === null || q.duree_s === "" ? null : Math.round(nombre(q.duree_s));
+        if (dureeS !== null && (!Number.isFinite(dureeS) || dureeS < LIMITES.duree.min || dureeS > LIMITES.duree.max)) throw new Error(`Durée : de ${LIMITES.duree.min} à ${LIMITES.duree.max} secondes`);
         const donnees = VALIDATEURS[q.type](q.donnees ?? {});
-        return { ok: true, question: { type: q.type, enonce, points: Math.round(points * 100) / 100, explication, id_media: idMedia, extrait, donnees } };
+        return { ok: true, question: { type: q.type, enonce, points: Math.round(points * 100) / 100, explication, id_media: idMedia, extrait, duree_s: dureeS, donnees } };
     } catch (erreur) {
         return { ok: false, raison: erreur.message };
     }
@@ -194,7 +198,7 @@ export const validerQuestion = (q) => {
 
 /** Question vide d'un type, prête pour l'éditeur. */
 export const questionVide = (type) => {
-    const base = { type, enonce: "", points: 1, explication: "", id_media: null, extrait: null };
+    const base = { type, enonce: "", points: 1, explication: "", id_media: null, extrait: null, duree_s: null };
     const options = [
         { id: "o1", texte: "" },
         { id: "o2", texte: "" },

@@ -2,6 +2,7 @@
  * Extraction du texte des supports (services/ia/extraction.js). Les fichiers d'exemple sont
  * fabriqués par tests/helpers/supports.js : aucun binaire dans le dépôt.
  */
+import JSZip from "jszip";
 import { extraireSupport, lirePlage, MOTS_MAX } from "../../services/ia/extraction.js";
 import { DOCX, PDF, PPTX, creerDocx, creerPdf, creerPptx, phrase } from "../helpers/supports.js";
 
@@ -89,6 +90,29 @@ describe("Contrôles du fichier", () => {
         await expect(extraireSupport({ contenu: Buffer.alloc(0), type: PDF })).rejects.toMatchObject({ status: 400 });
         await expect(extraireSupport({ contenu: Buffer.alloc(21 * 1024 * 1024), type: PDF })).rejects.toMatchObject({ status: 413 });
     });
+
+    test("bombe zip dont la taille déclarée ment : refusée sans tout décompresser", async () => {
+        const zip = new JSZip();
+        zip.file("ppt/slides/slide1.xml", Buffer.alloc(210 * 1024 * 1024, 0x41));
+        const piege = Buffer.from(await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
+        // Taille décompressée annoncée : 1 000 octets (en-tête local et répertoire central)
+        for (let i = 0; i < piege.length - 30; i++) {
+            if (piege.readUInt32LE(i) === 0x04034b50) piege.writeUInt32LE(1000, i + 22);
+            if (piege.readUInt32LE(i) === 0x02014b50) piege.writeUInt32LE(1000, i + 24);
+        }
+        expect(piege.length).toBeLessThan(1024 * 1024);
+        await expect(extraireSupport({ contenu: piege, type: PPTX })).rejects.toMatchObject({ status: 413 });
+
+        // Taille annoncée fausse mais contenu modeste : illisible, pas de plantage
+        const petit = new JSZip();
+        petit.file("ppt/slides/slide1.xml", "<p:sld/>".repeat(1000));
+        const faux = Buffer.from(await petit.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
+        for (let i = 0; i < faux.length - 30; i++) {
+            if (faux.readUInt32LE(i) === 0x04034b50) faux.writeUInt32LE(10, i + 22);
+            if (faux.readUInt32LE(i) === 0x02014b50) faux.writeUInt32LE(10, i + 24);
+        }
+        await expect(extraireSupport({ contenu: faux, type: PPTX })).rejects.toMatchObject({ status: 422 });
+    }, 60000);
 });
 
 describe("lirePlage", () => {

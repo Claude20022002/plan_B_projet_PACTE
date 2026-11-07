@@ -7,7 +7,7 @@ import { sessionsJeuAPI } from '../../services/api';
 
 /**
  * Arrivée par le QR code d'une session de jeu (/jeux/session/<code>, retour ici après la connexion)
- * ou par le code saisi dans « Activités ». En mode individuel, l'étudiant arrive dans le jeu ; en
+ * ou par le code saisi dans « Quiz ». En mode individuel, l'étudiant arrive dans le jeu ; en
  * mode collectif, sur le tableau de la classe, où il envoie ses réponses.
  */
 export default function RejoindreJeu() {
@@ -33,7 +33,7 @@ export default function RejoindreJeu() {
         {erreur ? (
           <>
             <Alert severity="warning">{erreur}</Alert>
-            <Button component={RouterLink} to="/jeux" variant="contained">{t('jeux.tous')}</Button>
+            <Button component={RouterLink} to="/quiz" variant="contained">{t('studio.joueur.autreCode')}</Button>
           </>
         ) : (
           <CircularProgress aria-label={t('sessionsJeu.rejoindre.enCours')} />

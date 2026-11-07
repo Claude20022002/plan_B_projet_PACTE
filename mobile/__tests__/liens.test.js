@@ -14,8 +14,20 @@ test('quiz : la partie en cours ou ses résultats, sinon la page Activités', ()
 test('annonce, emploi du temps, liens externes', () => {
   expect(ecranDeLien('/annonces/7')).toBe('/annonce/7');
   expect(ecranDeLien('/emploi-du-temps/etudiant')).toBe('/semaine');
+  // Report de séance : la semaine de la nouvelle date
+  expect(ecranDeLien('/emploi-du-temps/etudiant?date=2026-11-30')).toBe('/semaine?date=2026-11-30');
+  expect(ecranDeLien('/emploi-du-temps/enseignant?date=2026-11-30')).toBe('/semaine?date=2026-11-30');
+  expect(ecranDeLien('/emploi-du-temps/etudiant?date=demain')).toBe('/semaine');
   expect(ecranDeLien('https://pirate.test')).toBe('/alertes');
   expect(ecranDeLien(undefined)).toBe('/alertes');
+});
+
+test('nouveau sondage : l’écran du cours de la classe (lot EC-9)', () => {
+  expect(ecranDeLien('/mes-cours/3/17')).toBe('/cours/3-17');
+  // Identifiants manquants ou autre chose que des nombres : pas d'écran précis
+  expect(ecranDeLien('/mes-cours/3')).toBe('/alertes');
+  expect(ecranDeLien('/mes-cours/3/x')).toBe('/alertes');
+  expect(ecranDeLien('/mes-cours')).toBe('/alertes');
 });
 
 test('seules les alertes qui mènent à un écran précis sont cliquables', () => {

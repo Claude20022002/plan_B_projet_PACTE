@@ -10,6 +10,7 @@ import { enseignantAPI, serviceAPI } from '../services/api';
 import { useAuth } from '../contexts/AuthContext';
 import { useToast } from '../contexts/ToastContext';
 import { ds, lineColor } from '../design-system/tokens';
+import { localeEcran } from '../utils/dates';
 
 const SECTIONS = ['propose', 'accepte', 'refuse'];
 
@@ -26,7 +27,7 @@ export default function MesServices() {
     const [loading, setLoading] = useState(true);
     const [refus, setRefus] = useState(null);
 
-    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const nombre = useMemo(() => new Intl.NumberFormat(localeEcran(i18n.language), { maximumFractionDigits: 1 }), [i18n.language]);
 
     const charger = useCallback(async () => {
         if (!user?.id_user) return;

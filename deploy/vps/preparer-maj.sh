@@ -118,7 +118,12 @@ cp -r frontend/dist "$TRAVAIL/site/dist"
 cp frontend/nginx.conf "$TRAVAIL/site/nginx.conf"
 # Scripts d'exploitation à jour (renommage, mots de passe de démonstration…)
 mkdir -p "$TRAVAIL/deploy-vps"
-cp deploy/vps/*.mjs deploy/vps/appliquer-maj.sh deploy/vps/appliquer-quiz.sh deploy/vps/nettoyer-paquets.sh deploy/vps/sauvegarder.sh "$TRAVAIL/deploy-vps/"
+cp deploy/vps/*.mjs "$TRAVAIL/deploy-vps/"
+# Tous les scripts du serveur, sauf celui-ci (il tourne sur le PC) : un script qui en charge un
+# autre (sauvegarder.sh → sauvegarde-commun.sh) ne part jamais sans lui
+for script in deploy/vps/*.sh; do
+    [ "$(basename "$script")" = preparer-maj.sh ] || cp "$script" "$TRAVAIL/deploy-vps/"
+done
 # Aiguillage interne : appliqué seulement s'il a changé (relais /socket.io/ du lot CQ-1)
 cp deploy/vps/Caddyfile.vps "$TRAVAIL/deploy-vps/"
 # Contenus de démonstration (retours de stage et leurs photos)

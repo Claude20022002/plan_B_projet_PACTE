@@ -4,6 +4,7 @@ import { visuallyHidden } from '@mui/utils';
 import { useTranslation } from 'react-i18next';
 import { ds, lineColor } from '../tokens';
 import { formatDayLabel, phaseDeLaLigne, toLocalISODate } from '../../utils/session';
+import { localeEcran } from '../../utils/dates';
 import FlapTiles from './FlapTiles';
 import FlapText from './FlapText';
 import StatusFlap from './StatusFlap';
@@ -20,6 +21,7 @@ const LAMP_COLORS = {
   live: ds.board.live,
   next: ds.board.live,
   reporte: ds.board.delayed,
+  a_reprogrammer: ds.board.delayed,
   annule: ds.board.cancelled,
 };
 
@@ -29,7 +31,7 @@ function Clock({ language }) {
     const id = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(id);
   }, []);
-  const label = new Intl.DateTimeFormat(language, { hour: '2-digit', minute: '2-digit' }).format(now);
+  const label = new Intl.DateTimeFormat(localeEcran(language), { hour: '2-digit', minute: '2-digit' }).format(now);
   return <FlapText value={label} />;
 }
 

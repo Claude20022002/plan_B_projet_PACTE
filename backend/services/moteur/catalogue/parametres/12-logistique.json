@@ -1,0 +1,36 @@
+{
+  "code": "LOG", "nom": "Logistique et géographie",
+  "groupes": [
+    { "code": "TRAJET", "nom": "Trajets",
+      "defauts": { "role": "donnee", "niveaux": "G", "priorite": 2, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "CAMPUS_MATRICE", "nom": "Temps de trajet entre campus", "desc": "Minutes par paire de campus ; à défaut, la valeur par défaut.", "type": "matrice", "priorite": 1, "etat": "solveur", "ref": "TrajetCampus", "src": "12.3 3.36 5.31 6.54 6.53" },
+        { "code": "CAMPUS_DEFAUT", "nom": "Temps de trajet par défaut", "desc": "Pour une paire non renseignée.", "type": "duree_min", "defaut": 30, "priorite": 1, "etat": "solveur", "ref": "trajet_inter_campus_defaut_minutes" },
+        { "code": "DISTANCE", "nom": "Distance entre campus", "desc": "Kilomètres, pour les coûts de déplacement.", "type": "distance_km", "priorite": 4, "src": "12.2" },
+        { "code": "MOYEN", "nom": "Moyen de transport", "desc": "Change le temps et le coût du trajet.", "type": "texte", "priorite": 4, "src": "12.4" },
+        { "code": "TRAJET_ENSEIGNANT", "nom": "Temps de trajet des enseignants", "desc": "Entre son domicile, un autre établissement et le campus.", "type": "duree_min", "niveaux": "GI", "cible": "enseignant", "priorite": 3, "src": "12.6" },
+        { "code": "TRAJET_ELEVE", "nom": "Temps de trajet des élèves", "desc": "Peut borner le début et la fin de journée.", "type": "duree_min", "niveaux": "GP", "priorite": 4, "src": "12.7" },
+        { "code": "BATIMENTS", "nom": "Circulation entre bâtiments", "desc": "Minutes par paire de bâtiments.", "type": "matrice", "priorite": 3, "src": "12.8 6.51 6.53" },
+        { "code": "PARCOURS", "nom": "Accessibilité des parcours", "desc": "Un parcours sans ascenseur allonge ou interdit un déplacement.", "type": "matrice", "priorite": 4, "src": "6.55 12.11" }
+      ] },
+    { "code": "SITE", "nom": "Lieux et accès",
+      "defauts": { "role": "donnee", "niveaux": "G", "priorite": 4, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "ASSOCIES", "nom": "Campus associés ou dissociés", "desc": "Des campus associés partagent élèves et salles ; un campus dissocié forme un site.", "type": "structure", "priorite": 2, "etat": "plan", "ref": "D-20, ME-25" },
+        { "code": "TRANSPORTS_SCOLAIRES", "nom": "Transports scolaires", "desc": "Horaires des cars.", "type": "structure", "priorite": 2, "src": "12.5" },
+        { "code": "PARKINGS", "nom": "Disponibilité des parkings", "desc": "Information ; n'entre pas dans le calcul.", "type": "entier", "role": "contexte", "priorite": 5, "src": "12.12" },
+        { "code": "SALLES_COMMUNES", "nom": "Salles communes", "desc": "Salles partagées entre départements.", "type": "liste_references", "src": "12.15" },
+        { "code": "FERMETURE_BATIMENTS", "nom": "Fermeture des bâtiments", "desc": "Heure de fermeture propre à un bâtiment.", "type": "heure", "priorite": 2, "src": "12.16" },
+        { "code": "SECURITE", "nom": "Contraintes de sécurité", "desc": "Accès limité à certaines heures ou à certains publics.", "type": "structure", "priorite": 2, "src": "12.17" },
+        { "code": "METEO", "nom": "Activités extérieures et météo", "desc": "Une activité dehors prévoit une salle de repli ; pas de prévision dans le moteur.", "type": "reference", "src": "12.18" },
+        { "code": "INSTALLATIONS_SPORT", "nom": "Installations sportives", "desc": "Disponibles par plage, parfois hors de l'école.", "type": "structure", "priorite": 3, "src": "12.19" }
+      ] },
+    { "code": "REGLE", "nom": "Règles de déplacement",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "priorite": 1, "obligatoire": true, "modifiable": "non", "etat": "absent" },
+      "parametres": [
+        { "code": "TRAJET_REALISABLE", "nom": "Temps de trajet réalisable", "desc": "Deux séances sur deux campus laissent le temps du trajet.", "etat": "solveur", "regle_solveur": "Temps de trajet entre campus", "ref": "trajetEntreCampus", "src": "17B.9 18A.9" },
+        { "code": "DEPLACEMENTS_INUTILES", "nom": "Limiter les déplacements", "desc": "Réduit les trajets inutiles d'un enseignant ou d'un groupe.", "defaut": false, "force": "souple", "force_reglable": true, "poids": 6, "priorite": 4, "obligatoire": false, "modifiable": "etablissement", "src": "14.4 14.14 17D.5 18B.6" },
+        { "code": "MEME_CAMPUS_ENSEIGNANT", "nom": "Un campus par jour pour un enseignant", "desc": "Réduit les allers-retours d'un enseignant.", "defaut": false, "force": "souple", "force_reglable": true, "poids": 4, "priorite": 4, "obligatoire": false, "modifiable": "etablissement" }
+      ] }
+  ]
+}

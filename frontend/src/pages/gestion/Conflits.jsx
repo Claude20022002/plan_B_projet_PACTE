@@ -5,13 +5,13 @@ import {
     Chip, Dialog, DialogTitle, DialogContent, DialogActions,
     Typography, Alert, Card, CardContent, Grid,
 } from '@mui/material';
-import { CheckCircle, Visibility, ArrowBack, Warning, CheckCircleOutline } from '@mui/icons-material';
+import { CheckCircle, Visibility, Warning, CheckCircleOutline } from '@mui/icons-material';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import { conflitAPI, affectationAPI } from '../../services/api';
-import { useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ds } from '../../design-system/tokens';
+import { localeEcran } from '../../utils/dates';
 
 // ── Palette, par code de segment (libellés : conflits.segments.<code>) ─────────
 const COLORS = {
@@ -35,7 +35,6 @@ function CustomTooltip({ active, payload }) {
 /** Conflits de planification (administration) : répartition, liste, détail et résolution. */
 export default function Conflits() {
     const { t, i18n } = useTranslation();
-    const navigate = useNavigate();
 
     // ── Tableau ───────────────────────────────────────────────────────────────
     const [conflits,       setConflits]       = useState([]);
@@ -121,17 +120,8 @@ export default function Conflits() {
             <Box>
 
                 {/* ── En-tête ──────────────────────────────────────────── */}
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', mb: 3 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                        <Button startIcon={<ArrowBack />}
-                            onClick={() => navigate('/dashboard/admin')}
-                            variant="outlined" size="small">
-                            {t('common.back')}
-                        </Button>
-                        <Typography variant="h5" fontWeight="bold">
-                            {t('conflits.titre')}
-                        </Typography>
-                    </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', mb: 3 }}>
+                    {/* Le titre est celui de la mise en page, et le menu y ramène : plus de « Retour » ni de « Gestion des… » (recette, m-1 et m-2) */}
                     <Box sx={{ display: 'flex', gap: 1 }}>
                         {[
                             { key: 'all',         label: t('conflits.filtres.tous'),       color: 'primary' },
@@ -292,7 +282,7 @@ export default function Conflits() {
                                     </TableCell>
                                     <TableCell>{c.description}</TableCell>
                                     <TableCell>
-                                        {new Date(c.date_detection).toLocaleDateString(i18n.language)}
+                                        {new Date(c.date_detection).toLocaleDateString(localeEcran(i18n.language))}
                                     </TableCell>
                                     <TableCell>
                                         <Chip
@@ -341,7 +331,7 @@ export default function Conflits() {
                                 <Typography><strong>{t('conflits.colonnes.description')} :</strong> {selected.description}</Typography>
                                 <Typography>
                                     <strong>{t('conflits.colonnes.detection')} :</strong>{' '}
-                                    {new Date(selected.date_detection).toLocaleString(i18n.language)}
+                                    {new Date(selected.date_detection).toLocaleString(localeEcran(i18n.language))}
                                 </Typography>
                                 <Typography>
                                     <strong>{t('conflits.colonnes.statut')} :</strong>{' '}
@@ -352,7 +342,7 @@ export default function Conflits() {
                                 {selected.resolu && selected.date_resolution && (
                                     <Typography>
                                         <strong>{t('conflits.resoluLe')} :</strong>{' '}
-                                        {new Date(selected.date_resolution).toLocaleString(i18n.language)}
+                                        {new Date(selected.date_resolution).toLocaleString(localeEcran(i18n.language))}
                                     </Typography>
                                 )}
                             </Box>

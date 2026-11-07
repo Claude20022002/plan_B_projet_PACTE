@@ -1,14 +1,21 @@
 import { Op } from "sequelize";
-import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, EnseignementGroupe, Evenement, Filiere, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
+import { Affectation, Appartenir, Cours, CoursComposante, Creneau, Enseignement, Evenement, Groupe, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle, Users } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { ancetres } from "./groupes.js";
-import { appliquerRamadan } from "./ramadan.js";
+import { campusDesGroupes } from "./campusDesSeances.js";
+import { appliquerVersionPubliee, lignesDesClasses } from "../calendrier/versionPubliee.js";
+import { filtrerParAnnee } from "../annees/annees.js";
 
 /**
  * Emploi du temps de l'étudiant connecté (application mobile, phase D2) : les séances de ses
  * groupes ET de leurs groupes parents (le CM de la promotion d'un étudiant de TD), y compris
  * celles mutualisées avec d'autres groupes. Les séances annulées restent visibles : le panneau
  * les affiche comme telles. Rien d'autre que ce que l'étudiant voit sur le web.
+ *
+ * L'étudiant voit la version publiée par l'administration (« Publier et envoyer » de l'EDT du mois,
+ * qui garde un EnvoiEdt par classe) : rien d'un mois jamais publié, et les changements en masse
+ * seulement après la publication suivante (décisions du chef de projet, 21 octobre 2026). Les
+ * événements et examens publiés restent visibles.
  */
 
 const DATE = /^\d{4}-\d{2}-\d{2}$/;
@@ -28,11 +35,12 @@ const TYPES_EVENEMENT_ETUDIANT = ["vacances", "examen", "ferie", "ramadan", "sta
 
 /**
  * Événements du calendrier qui concernent l'étudiant (vacances, jours fériés, examens, stage…) :
- * ceux de l'établissement, du campus de sa filière, de sa filière, de son niveau ou de ses groupes.
+ * ceux de l'établissement, des campus où il a cours sur la période, de sa filière, de son niveau ou
+ * de ses groupes.
  */
 const evenementsDeLEtudiant = async (groupes, debut, fin) => {
     const filieres = [...new Set(groupes.map((g) => g.id_filiere))];
-    const campus = (await Filiere.findAll({ where: { id_filiere: filieres }, attributes: ["id_campus_prefere"] })).map((f) => f.id_campus_prefere).filter(Boolean);
+    const campus = await campusDesGroupes(groupes.map((g) => g.id_groupe), debut, fin);
     const niveaux = [...new Set(groupes.map((g) => g.niveau).filter(Boolean))];
     const evenements = await Evenement.findAll({
         where: {
@@ -94,7 +102,9 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
     if ((new Date(fin) - new Date(debut)) / 864e5 > JOURS_MAX) throw new ErreurMetier(`Période trop longue (${JOURS_MAX} jours au plus)`, 400);
 
     const appartenances = await Appartenir.findAll({ where: { id_user_etudiant: idUser }, include: [{ model: Groupe, as: "groupe" }] });
-    const directs = appartenances.map((a) => a.groupe).filter(Boolean);
+    // Les groupes des années qui recouvrent ces dates (lot ME-18) : l'an passé reste consultable,
+    // sans mélanger une année avec la suivante
+    const directs = await filtrerParAnnee(appartenances.map((a) => a.groupe).filter(Boolean), { du: debut, au: fin });
     if (!directs.length) return { du: debut, au: fin, groupes: [], seances: [], evenements: [], examens: [] };
 
     // Groupes de l'étudiant et leurs ancêtres (TP → TD → promotion), dans leurs filières
@@ -102,20 +112,11 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
     const parId = new Map(tous.map((g) => [g.id_groupe, g]));
     const ids = [...new Set(directs.flatMap((g) => [g.id_groupe, ...ancetres(g, parId).map((a) => a.id_groupe)]))];
 
-    // Enseignements mutualisés qui réunissent l'un de ces groupes
-    const mutualises = (await EnseignementGroupe.findAll({ where: { id_groupe: ids }, attributes: ["id_enseignement"] })).map((e) => e.id_enseignement);
-
-    // Deux lectures dans les index (groupe + date, enseignement + date) plutôt qu'un OR, qui fait
-    // parcourir à MySQL toutes les séances de l'école sur la période ; puis les séances par clé
-    const plage = { date_seance: { [Op.between]: [debut, fin] } };
-    const [parGroupe, parMutualisation] = await Promise.all([
-        Affectation.findAll({ where: { ...plage, id_groupe: ids }, attributes: ["id_affectation"], raw: true }),
-        mutualises.length ? Affectation.findAll({ where: { ...plage, id_enseignement: mutualises }, attributes: ["id_affectation"], raw: true }) : [],
-    ]);
-    const idsSeances = [...new Set([...parGroupe, ...parMutualisation].map((s) => s.id_affectation))];
-
-    const seances = !idsSeances.length ? [] : await Affectation.findAll({
-        where: { id_affectation: idsSeances },
+    // Ce que l'administration a publié pour ses classes (versionPubliee.js) : un mois jamais publié
+    // ne montre rien, et un changement en masse non publié ne se voit pas encore
+    const lignes = await lignesDesClasses(directs.map((g) => g.id_groupe), debut, fin);
+    const chargees = !lignes.size ? [] : await Affectation.findAll({
+        where: { id_affectation: [...lignes.keys()] },
         include: [
             { model: Cours, as: "cours", attributes: ["id_cours", "code_cours", "nom_cours", "type_cours", "id_filiere"] },
             { model: Groupe, as: "groupe", attributes: ["id_groupe", "nom_groupe", "id_filiere"] },
@@ -126,14 +127,9 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
             { model: Creneau, as: "creneauInitial", attributes: ["heure_debut", "heure_fin"], required: false },
             { model: Enseignement, as: "enseignement", attributes: ["id_enseignement"], include: [{ model: CoursComposante, as: "composante", attributes: ["type", "modalite", "mention"] }] },
         ],
-        order: [
-            ["date_seance", "ASC"],
-            [{ model: Creneau, as: "creneau" }, "heure_debut", "ASC"],
-            // Séances simultanées (groupes différents) : ordre stable
-            ["id_affectation", "ASC"],
-        ],
     });
-    await appliquerRamadan(seances);
+    // Date, heure, salle et enseignant publiés ; triées par date puis heure (horaires du Ramadan compris)
+    const seances = await appliquerVersionPubliee(chargees, lignes);
     const [evenements, examens] = await Promise.all([evenementsDeLEtudiant(ids.map((id) => parId.get(id)).filter(Boolean), debut, fin), examensDeLEtudiant(ids, debut, fin)]);
 
     return {
@@ -159,6 +155,8 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
                 creneau: creneau ? { heure_debut: creneau.heure_debut, heure_fin: creneau.heure_fin } : null,
                 creneauInitial: creneauInitial ? { heure_debut: creneauInitial.heure_debut, heure_fin: creneauInitial.heure_fin } : null,
                 enseignement: composante ? { composante: { type: composante.type, modalite: composante.modalite, mention: composante.mention } } : null,
+                // Lien de visio d'une séance à distance (lot EC-11) : hors version publiée, il se voit tout de suite
+                lien_visio: json.lien_visio ?? null,
             };
         }),
         evenements,

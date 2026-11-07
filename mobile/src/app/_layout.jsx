@@ -8,10 +8,12 @@ import { BarlowCondensed_500Medium, BarlowCondensed_600SemiBold, BarlowCondensed
 import { Inter_400Regular, Inter_500Medium, Inter_600SemiBold, Inter_700Bold } from '@expo-google-fonts/inter';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 // Initialise les traductions au chargement du module
-import { restaurerLangue } from '../i18n';
+import { nommerEcole, restaurerLangue } from '../i18n';
 import { AuthProvider } from '../auth/AuthContext';
 import { restaurerTheme, ThemeProvider, useTheme } from '../theme';
-import IntroLogo from '../intro/IntroLogo';
+import IntroLogo, { aUneIntro } from '../intro/IntroLogo';
+import { chargerIdentite, identiteEcole } from '../ecole';
+import { appliquerMarque } from '../marque';
 import { ecranDeLien } from '../alertes/liens';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
@@ -19,6 +21,7 @@ SplashScreen.preventAutoHideAsync().catch(() => {});
 export default function Racine() {
   const router = useRouter();
   const [langueChargee, setLangueChargee] = useState(false);
+  const [ecoleChargee, setEcoleChargee] = useState(false);
   const [preferenceTheme, setPreferenceTheme] = useState(null);
   const [policesChargees] = useFonts({
     Barlow_400Regular,
@@ -35,11 +38,18 @@ export default function Racine() {
   useEffect(() => {
     restaurerLangue().finally(() => setLangueChargee(true));
     restaurerTheme().then(setPreferenceTheme);
+    // L'école avant le premier écran : nom dans les textes, couleurs sur les thèmes
+    chargerIdentite()
+      .then((identite) => {
+        nommerEcole(identite);
+        appliquerMarque(identite);
+      })
+      .finally(() => setEcoleChargee(true));
   }, []);
 
   useEffect(() => {
-    if (policesChargees && langueChargee && preferenceTheme) SplashScreen.hideAsync().catch(() => {});
-  }, [policesChargees, langueChargee, preferenceTheme]);
+    if (policesChargees && langueChargee && ecoleChargee && preferenceTheme) SplashScreen.hideAsync().catch(() => {});
+  }, [policesChargees, langueChargee, ecoleChargee, preferenceTheme]);
 
   // Toucher une notification ouvre l'écran correspondant
   useEffect(() => {
@@ -50,7 +60,7 @@ export default function Racine() {
     return () => abonnement.remove();
   }, [router]);
 
-  if (!policesChargees || !langueChargee || !preferenceTheme) return null;
+  if (!policesChargees || !langueChargee || !ecoleChargee || !preferenceTheme) return null;
 
   return (
     <SafeAreaProvider>
@@ -66,10 +76,11 @@ export default function Racine() {
 // L'animation du logo n'est jouée qu'au lancement de l'application
 let introJouee = false;
 
-/** Navigation de l'application, aux couleurs du thème choisi ; le logo s'assemble par-dessus au lancement */
+/** Navigation de l'application, aux couleurs du thème choisi ; le logo de l'école pilote s'assemble par-dessus au lancement */
 function Pile() {
   const { couleurs, barreStatut, polices } = useTheme();
-  const [intro, setIntro] = useState(!introJouee);
+  const ecole = identiteEcole();
+  const [intro, setIntro] = useState(!introJouee && aUneIntro(ecole.nom_court));
   const finIntro = useCallback(() => {
     introJouee = true;
     setIntro(false);
@@ -78,7 +89,7 @@ function Pile() {
     <>
       <StatusBar style={intro ? 'light' : barreStatut} />
       <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: couleurs.fond }, animation: 'fade' }} />
-      {intro ? <IntroLogo titre="HESTIM Planner" police={polices.panneauGras} onFin={finIntro} /> : null}
+      {intro ? <IntroLogo titre={ecole.produit} police={polices.panneauGras} onFin={finIntro} /> : null}
     </>
   );
 }

@@ -2,6 +2,7 @@ import { Appartenir, Cours, Filiere, Groupe } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { avecDescendants } from "../planning/groupes.js";
 import { peutViserClasse } from "../planning/mesClasses.js";
+import { groupesDeLAnnee } from "../annees/annees.js";
 
 /**
  * Droits sur l'espace de cours d'une classe (module, groupe). Deux questions seulement, testées à
@@ -44,19 +45,7 @@ export const classeAutorisee = async (user, idCours, idGroupe, { gerer = false }
 };
 
 /**
- * Groupes dont un étudiant voit les classes : les siens et leurs ancêtres (promotion d'un TD,
- * TD d'un TP). Rend une liste d'identifiants.
+ * Groupes dont un étudiant voit les classes : les siens **de l'année en cours** et leurs ancêtres
+ * (promotion d'un TD, TD d'un TP). Règle unique : services/annees/annees.js (lot ME-18).
  */
-export const groupesVisiblesPar = async (user) => {
-    const siens = (await Appartenir.findAll({ where: { id_user_etudiant: user.id_user }, attributes: ["id_groupe"], raw: true })).map((a) => a.id_groupe);
-    const vus = new Set(siens);
-    let aRemonter = siens;
-    while (aRemonter.length) {
-        const parents = (await Groupe.findAll({ where: { id_groupe: aRemonter }, attributes: ["id_groupe_parent"], raw: true }))
-            .map((g) => g.id_groupe_parent)
-            .filter((id) => id && !vus.has(id));
-        parents.forEach((id) => vus.add(id));
-        aRemonter = parents;
-    }
-    return [...vus];
-};
+export const groupesVisiblesPar = (user, options = {}) => groupesDeLAnnee(user.id_user, options);

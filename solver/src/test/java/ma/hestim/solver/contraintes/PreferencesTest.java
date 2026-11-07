@@ -9,25 +9,8 @@ import ma.hestim.solver.domain.Lecon;
 import ma.hestim.solver.domain.Parametres;
 import ma.hestim.solver.domain.Salle;
 
-/** Préférences (souples) de la semaine type : campus, rythme de la semaine, journées, salles. */
+/** Préférences (souples) de la semaine type : rythme de la semaine, journées, salles. */
 class PreferencesTest extends GrilleDeTest {
-
-    @Test
-    void campusDeLaFiliere() {
-        // La filière préfère Gandhi (campus 1) : une salle de Stendhal (campus 2) est pénalisée, une
-        // fois par leçon (le vérificateur compte les pénalités, pas leur poids de 2 points souples)
-        Lecon ailleurs = lecon(lun1, st, Set.of(10L), Set.of(100L));
-        ailleurs.setCampusPrefere(1L);
-        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(1);
-        ailleurs.setSalle(g1);
-        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(ailleurs).penalizesBy(0);
-
-        // Une filière sans campus préféré, ou une leçon sans salle, ne coûte rien
-        Lecon sansPreference = lecon(lun1, st, Set.of(11L), Set.of(101L));
-        Lecon sansSalle = lecon(lun1, null, Set.of(12L), Set.of(102L));
-        sansSalle.setCampusPrefere(1L);
-        verifier.verifyThat(ContraintesEmploiDuTemps::campusDeLaFiliere).given(sansPreference, sansSalle).penalizesBy(0);
-    }
 
     @Test
     void rythmeDeLaSemaine() {

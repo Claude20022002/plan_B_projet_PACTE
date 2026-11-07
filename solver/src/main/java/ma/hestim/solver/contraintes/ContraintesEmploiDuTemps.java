@@ -77,7 +77,6 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
                 trajetEntreCampus(factory),
                 // Préférences
                 unSeulCampusParJour(factory),
-                campusDeLaFiliere(factory),
                 memeEnseignementMemeJour(factory),
                 cmAvantTd(factory),
                 trousDansLaJournee(factory),
@@ -247,13 +246,6 @@ public class ContraintesEmploiDuTemps implements ConstraintProvider {
                 .filter((journee, campus) -> campus > 1)
                 .penalize(HardSoftScore.ofSoft(10), (journee, campus) -> campus - 1)
                 .asConstraint("Un seul campus par jour pour un groupe");
-    }
-
-    Constraint campusDeLaFiliere(ConstraintFactory factory) {
-        return factory.forEach(Lecon.class)
-                .filter(l -> l.getSalle() != null && l.getCampusPrefere() != null && !l.getCampusPrefere().equals(l.getSalle().getCampusId()))
-                .penalize(HardSoftScore.ofSoft(2))
-                .asConstraint("Campus de la filière");
     }
 
     Constraint memeEnseignementMemeJour(ConstraintFactory factory) {

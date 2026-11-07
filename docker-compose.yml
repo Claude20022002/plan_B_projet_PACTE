@@ -20,7 +20,8 @@ services:
 
   # ── MySQL ────────────────────────────────────────────────────────────────
   mysql:
-    image: mysql:8.0
+    # MySQL 8.4 LTS (lot ME-0e) : version fixée, une mise à jour de MySQL est une décision, pas un « docker pull »
+    image: mysql:8.4.13
     container_name: hestim_mysql
     restart: unless-stopped
     environment:

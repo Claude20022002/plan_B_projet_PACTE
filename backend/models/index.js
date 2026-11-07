@@ -39,8 +39,13 @@ import Presence from "./Presence.js";
 import SignalementPresence from "./SignalementPresence.js";
 import AppareilEtudiant from "./AppareilEtudiant.js";
 import DemandeTelephone from "./DemandeTelephone.js";
+import ConfigurationEtablissement from "./ConfigurationEtablissement.js";
+import Desactivation from "./Desactivation.js";
 import SectionCours from "./SectionCours.js";
 import SupportCours from "./SupportCours.js";
+import Sondage from "./Sondage.js";
+import SondageChoix from "./SondageChoix.js";
+import SondageParticipation from "./SondageParticipation.js";
 import MfaCodeSecours from "./MfaCodeSecours.js";
 import JournalSecurite from "./JournalSecurite.js";
 import GenerationQuiz from "./GenerationQuiz.js";
@@ -70,6 +75,7 @@ import EnseignementEnseignant from "./EnseignementEnseignant.js";
 import ResponsableFiliere from "./ResponsableFiliere.js";
 import { MediaQuiz, Questionnaire, QuestionQuiz, SessionQuiz, TentativeQuiz, UsageIaQuiz, relierStudio } from "./studio.js";
 import { ParticipationJeu, PropositionJeu, SessionJeu, relierSessionsJeu } from "./sessionsJeu.js";
+import { JoueurDirect, ReponseDirect, relierQuizDirect } from "./quizDirect.js";
 
 // ==================== RELATIONS USER ====================
 
@@ -383,12 +389,14 @@ TrajetCampus.belongsTo(Campus, { foreignKey: "id_campus_b", as: "campus_b" });
 // Année universitaire -> Période (1:n)
 AnneeUniversitaire.hasMany(Periode, { foreignKey: "id_annee", as: "periodes", onDelete: "CASCADE" });
 Periode.belongsTo(AnneeUniversitaire, { foreignKey: "id_annee", as: "annee" });
+// Année universitaire -> Groupe (1:n, lot ME-18) ; « annee » est déjà l'année d'études du groupe
+AnneeUniversitaire.hasMany(Groupe, { foreignKey: "id_annee", as: "groupes" });
+Groupe.belongsTo(AnneeUniversitaire, { foreignKey: "id_annee", as: "anneeUniversitaire" });
 
 Evenement.belongsTo(Users, { foreignKey: "id_user_createur", as: "createur", targetKey: "id_user" });
 
 // ==================== OFFRE DE FORMATION (phase P2) ====================
 
-Filiere.belongsTo(Campus, { foreignKey: "id_campus_prefere", as: "campus_prefere" });
 Cours.belongsTo(Users, { foreignKey: "id_responsable", as: "responsable", targetKey: "id_user" });
 
 // Cours (module) -> CoursComposante (CM, TD, TP, Projet)
@@ -450,6 +458,10 @@ DemandeReport.belongsTo(Affectation, {
     foreignKey: "id_affectation",
     as: "affectation",
 });
+// Créneau et salle retenus pour le report
+DemandeReport.belongsTo(Creneau, { foreignKey: "id_creneau_nouveau", as: "creneauNouveau", constraints: false });
+DemandeReport.belongsTo(Creneau, { foreignKey: "id_creneau_origine", as: "creneauOrigine", constraints: false });
+DemandeReport.belongsTo(Salle, { foreignKey: "id_salle_nouvelle", as: "salleNouvelle", constraints: false });
 
 // Affectation -> HistoriqueAffectation (1:n)
 Affectation.hasMany(HistoriqueAffectation, {
@@ -553,6 +565,9 @@ SignalementPresence.belongsTo(Affectation, { foreignKey: "id_affectation", as: "
 Users.hasOne(AppareilEtudiant, { foreignKey: "id_user", as: "appareilAppel", onDelete: "CASCADE" });
 DemandeTelephone.belongsTo(Users, { foreignKey: "id_user", as: "etudiant", targetKey: "id_user" });
 DemandeTelephone.belongsTo(Users, { foreignKey: "id_user_admin", as: "admin", targetKey: "id_user" });
+// Historique des désactivations d'un compte (lot ME-17)
+Users.hasMany(Desactivation, { foreignKey: "id_user", as: "desactivations", onDelete: "CASCADE" });
+Desactivation.belongsTo(Users, { foreignKey: "id_auteur", as: "auteur", targetKey: "id_user" });
 
 // Espace de cours d'une classe (docs/plans/espace-de-cours.md)
 SectionCours.hasMany(SupportCours, { foreignKey: "id_section", as: "supports", onDelete: "CASCADE" });
@@ -560,6 +575,13 @@ SupportCours.belongsTo(SectionCours, { foreignKey: "id_section", as: "section" }
 SupportCours.belongsTo(Users, { foreignKey: "id_user_auteur", as: "auteur", targetKey: "id_user" });
 SectionCours.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
 SectionCours.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
+
+// Sondage de l'enseignant à sa classe (lot EC-9) : choix et participations, sans lien entre les deux
+Sondage.hasMany(SondageChoix, { foreignKey: "id_sondage", as: "choix", onDelete: "CASCADE" });
+SondageChoix.belongsTo(Sondage, { foreignKey: "id_sondage", as: "sondage" });
+Sondage.hasMany(SondageParticipation, { foreignKey: "id_sondage", as: "participations", onDelete: "CASCADE" });
+Sondage.belongsTo(Cours, { foreignKey: "id_cours", as: "cours" });
+Sondage.belongsTo(Groupe, { foreignKey: "id_groupe", as: "groupe" });
 
 // Double authentification
 Users.hasMany(MfaCodeSecours, { foreignKey: "id_user", as: "codesSecours", onDelete: "CASCADE" });
@@ -592,6 +614,9 @@ relierStudio({ Users });
 
 // Sessions de jeu lancées en classe (migration 0045)
 relierSessionsJeu({ Users, Cours });
+
+// Quiz en direct du Studio (migration 0046)
+relierQuizDirect({ Users, SessionQuiz });
 
 // Export de tous les modèles
 export {
@@ -651,7 +676,12 @@ export {
     SignalementPresence,
     AppareilEtudiant,
     DemandeTelephone,
+    ConfigurationEtablissement,
+    Desactivation,
     SectionCours,
+    Sondage,
+    SondageChoix,
+    SondageParticipation,
     SupportCours,
     MfaCodeSecours,
     JournalSecurite,
@@ -673,4 +703,6 @@ export {
     SessionJeu,
     ParticipationJeu,
     PropositionJeu,
+    JoueurDirect,
+    ReponseDirect,
 };
