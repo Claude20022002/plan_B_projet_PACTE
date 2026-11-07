@@ -23,7 +23,7 @@ Ce que les utilisateurs reprochent aux produits installés : ce sont les portes 
 
 D'après le README de main et le menu du site (`frontend/src/components/layouts/navigation.jsx`) au 4 novembre 2026. Ce sont les seuls arguments utilisables aujourd'hui, sous réserve de les montrer en démonstration.
 
-1. **Génération automatique sous contraintes** (solveur Timefold) : salles, enseignants, groupes, disponibilités, trajets entre campus, règles strictes et souples, versions réactivables. Au Maroc, seul Caisso annonce une génération, sans en décrire les règles.
+1. **Génération automatique sous contraintes** (solveur Timefold) : salles, enseignants, groupes, disponibilités, trajets entre campus, règles strictes et souples, versions réactivables. **Planner n'est pas le seul à l'annoncer** : au Maroc, cinq éditeurs annoncent une génération automatique, à savoir Acadelta, SchoolApp, Minassa, Tayssir et Caisso. Caisso la propose dans un ERP à 242 DH par mois. Aucun de ces produits n'a été essayé (benchmark du groupe A, `docs/plans/modele-economique/benchmark.md`, corrigé le 5 novembre). L'argument n'est donc pas « nous générons et les autres non ». Il est dans ce que la génération sait faire et qui se démontre : règles strictes et souples, CM, TD et TP, groupes emboîtés, plusieurs campus, reports. Aucune page lue ne décrit ces points chez les autres.
 2. **Les cours, TD et TP et les groupes emboîtés** du supérieur, cours mutualisés, enseignants vacataires et leurs disponibilités.
 3. **Le report de séance de bout en bout** : l'enseignant demande, la scolarité valide, les étudiants sont prévenus, le changement est publié.
 4. **Plusieurs campus** avec temps de trajet.
@@ -48,7 +48,7 @@ D'après le README de main et le menu du site (`frontend/src/components/layouts/
 | --- | --- |
 | « Votre logiciel est-il en arabe ? » | non, français et anglais ; l'arabe est prévu (question ouverte de la conception) |
 | « Vous gérez les frais et les paiements ? » | pas encore ; c'est un module prévu par `plan.txt` (School Fees, Payments) |
-| « Vous êtes plus cher que Skoolly ou Schoolz. » | ils ne génèrent pas l'emploi du temps ; le module de planification se vend aussi seul (`plan.txt`, § 11) |
+| « Vous êtes plus cher que Skoolly ou Schoolz. » | leurs pages ne montrent pas de génération automatique, seulement une saisie avec contrôle des conflits chez Schoolz ; la planification se vend aussi seule. Face à Caisso, Acadelta, SchoolApp, Minassa ou Tayssir, qui l'annoncent, il faut montrer la génération sur un cas réel |
 | « Vous avez des clients ? » | une école en service (HESTIM) ; ne citer son nom qu'avec son accord |
 | « Où sont mes données ? » | hébergement et conformité loi 09-08 à préciser (Q-23) ; Schoolz et iLimo l'affichent déjà |
 
