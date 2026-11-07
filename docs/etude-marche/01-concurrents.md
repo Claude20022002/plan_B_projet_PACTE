@@ -45,7 +45,7 @@ Ce que presque tous annoncent, et qu'un acheteur marocain demandera dès la dém
 
 | | Planner | Produits marocains | ERP internationaux | aSc |
 | --- | --- | --- | --- | --- |
-| Génération sous contraintes dures et souples | **oui** (Timefold, versions réactivables) | non, sauf Caisso (sans détail) | OpenEduCat, Fedena Ultimate (contraintes peu décrites) | **oui** |
+| Génération sous contraintes dures et souples | **oui** (Timefold, versions réactivables) | annoncée par cinq éditeurs, Acadelta, SchoolApp, Minassa, Tayssir et Caisso, sans règles décrites et non essayée (benchmark du groupe A, corrigé le 5 nov.) ; pas chez les onze produits de cette analyse, sauf Caisso | OpenEduCat, Fedena Ultimate (contraintes peu décrites) | **oui** |
 | Structure du supérieur : CM/TD/TP, groupes emboîtés, cours mutualisés, vacataires | **oui** | non | en partie | en partie |
 | Plusieurs campus, temps de trajet | **oui** | non | non annoncé | non annoncé |
 | Report demandé par l'enseignant, validé, notifié ; publication des changements | **oui** | non | remplacements | remplacements |
