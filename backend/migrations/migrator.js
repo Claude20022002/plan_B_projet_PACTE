@@ -9,20 +9,24 @@ const migrationsDir = path.dirname(fileURLToPath(import.meta.url));
  * Migrations versionnées du schéma (seule source de vérité de la base).
  * Fichiers : migrations/NNNN-nom.js, exportant up({ context }) et down({ context }) ;
  * context = { queryInterface, sequelize }. Historique dans la table SequelizeMeta.
+ * migrateurPour : les mêmes migrations sur la base d'un autre établissement (essai de ME-3a).
  */
-export const migrator = new Umzug({
-    migrations: {
-        glob: ["[0-9][0-9][0-9][0-9]-*.js", { cwd: migrationsDir }],
-        resolve: ({ name, path: filePath, context }) => ({
-            name,
-            up: async () => (await import(pathToFileURL(filePath).href)).up(context),
-            down: async () => (await import(pathToFileURL(filePath).href)).down(context),
-        }),
-    },
-    context: { queryInterface: sequelize.getQueryInterface(), sequelize },
-    storage: new SequelizeStorage({ sequelize }),
-    logger: process.env.NODE_ENV === "test" ? undefined : console,
-});
+export const migrateurPour = (connexion) =>
+    new Umzug({
+        migrations: {
+            glob: ["[0-9][0-9][0-9][0-9]-*.js", { cwd: migrationsDir }],
+            resolve: ({ name, path: filePath, context }) => ({
+                name,
+                up: async () => (await import(pathToFileURL(filePath).href)).up(context),
+                down: async () => (await import(pathToFileURL(filePath).href)).down(context),
+            }),
+        },
+        context: { queryInterface: connexion.getQueryInterface(), sequelize: connexion },
+        storage: new SequelizeStorage({ sequelize: connexion }),
+        logger: process.env.NODE_ENV === "test" ? undefined : console,
+    });
+
+export const migrator = migrateurPour(sequelize);
 
 /** Applique toutes les migrations en attente (idempotent). */
 export const runMigrations = () => migrator.up();

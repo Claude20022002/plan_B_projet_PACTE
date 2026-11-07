@@ -55,6 +55,7 @@ import devoirRoutes from "./routes/devoirRoutes.js";
 import journalSecuriteRoutes from "./routes/journalSecuriteRoutes.js";
 import quizIaRoutes from "./routes/quizIaRoutes.js";
 import espaceCoursRoutes from "./routes/espaceCoursRoutes.js";
+import sondageRoutes from "./routes/sondageRoutes.js";
 import etablissementRoutes from "./routes/etablissementRoutes.js";
 import studioQuizRoutes from "./routes/studioQuizRoutes.js";
 import passationRoutes from "./routes/passationRoutes.js";
@@ -71,6 +72,7 @@ import {
     notFound,
     optionalAuth,
 } from "./middleware/index.js";
+import { choisirEtablissement } from "./middleware/etablissementMiddleware.js";
 
 dotenv.config();
 
@@ -106,6 +108,9 @@ app.use(
         credentials: true,
     })
 );
+
+// Établissement de la requête (D-03, essai de ME-3a) : avant tout accès à la base
+app.use(choisirEtablissement);
 
 // Fournisseur OpenID Connect (ClassQuiz) : avant les lecteurs de corps, qu'oidc-provider gère
 // lui-même ; hors CSRF (le client s'authentifie par son secret sur /token)
@@ -189,6 +194,7 @@ app.use("/api/journal-securite", journalSecuriteRoutes);
 app.use("/api/quiz-ia", quizIaRoutes);
 // Espace de cours des classes (docs/plans/espace-de-cours.md) : /classes, /sections-cours, /supports-cours
 app.use("/api", espaceCoursRoutes);
+app.use("/api", sondageRoutes);
 app.use("/api", etablissementRoutes);
 // Studio quiz : moteur de quiz natif (docs/plans/studio-quiz.md)
 app.use("/api/studio-quiz", studioQuizRoutes);

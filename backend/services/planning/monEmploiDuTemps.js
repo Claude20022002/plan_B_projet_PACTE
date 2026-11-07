@@ -155,6 +155,8 @@ export const seancesDeLEtudiant = async (idUser, { du, au, aujourdhui }) => {
                 creneau: creneau ? { heure_debut: creneau.heure_debut, heure_fin: creneau.heure_fin } : null,
                 creneauInitial: creneauInitial ? { heure_debut: creneauInitial.heure_debut, heure_fin: creneauInitial.heure_fin } : null,
                 enseignement: composante ? { composante: { type: composante.type, modalite: composante.modalite, mention: composante.mention } } : null,
+                // Lien de visio d'une séance à distance (lot EC-11) : hors version publiée, il se voit tout de suite
+                lien_visio: json.lien_visio ?? null,
             };
         }),
         evenements,
