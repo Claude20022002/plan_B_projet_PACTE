@@ -144,6 +144,13 @@ Par ordre chronologique. Une décision remplacée reste dans le tableau, avec ce
 | P-64 | 5 nov. | Garder ME-22 (test d'intrusion) à la fin de V4, malgré la vente mise de côté. | plan-produit 04 | proposée |
 | P-65 | 5 nov. | Site public du produit en cinq lots (SP-1 conception, SP-2 vitrine, SP-3 contact et demandes, SP-4 centre d'aide, SP-5 page d'état et nouveautés), porté par une équipe SC ; sans prix tant que la vente est mise de côté ; nom de marque et domaine à trancher avant SP-2. | plan-produit 04 | proposée ; **nom tranché le 5 nov. : Planner** ; domaine et textes légaux restent à trancher |
 | P-66 | 5 nov. | Relecture du contrat de MP-1 (§ 7 de `conception-mp1.md`) par le groupe B : route du catalogue pour les écrans, modification d'un brouillon, liste des versions sans leurs lignes, contrôle de la version de base à l'application, formes de `actives` et `alertes`, journal de sécurité, textes traduits par code (`docs/plans/plan-produit/relecture-mp1-contrat.md`). | relecture | proposée (groupe A) |
+| P-67 | 5 nov. | C-5 : réutiliser les tables du supérieur plutôt que les doubler. | conception C-5, Q-1 à Q-3 | à trancher |
+| P-68 | 5 nov. | C-5 : responsable légal à part, compte facultatif ; un seul compte plateforme, chaque école ne voit que sa fiche. | conception C-5, Q-4, Q-5 | à trancher |
+| P-69 | 5 nov. | C-5 : une table `Inscription` par élève et par année. | conception C-5, Q-6 | à trancher |
+| P-70 | 5 nov. | C-5 : ni CIN obligatoire, ni données de santé dans le socle ; code Massar facultatif. | conception C-5, Q-7 | à trancher (CNDP) |
+| P-71 | 5 nov. | C-5 : note absente distincte d'un zéro ; note verrouillée par période ; paiement et reçu jamais modifiés. | conception C-5, Q-8, Q-9 | à trancher (scolarité, juriste, expert-comptable) |
+| P-72 | 5 nov. | C-5 : tables des notes et des frais communes au supérieur, éteintes par le registre des modules. | conception C-5, Q-10 | à trancher |
+| P-73 | 5 nov. | Réserver les migrations 0062 à 0079 pour C-5 ; 0060 reste au socle neutre, 0061 à MP-1. | conception C-5, Q-12 | à trancher |
 | P-74 | 5 nov. | Corriger le fichier 04 selon la revue d'architecte : jalon de V2, moteur, canaux, tailles. | plan-produit 06 § 6.8 | à trancher |
 | P-75 | 5 nov. | Séparer la personne (élève) de son compte dans C-5 : aujourd'hui, `Users.email` et `password_hash` sont obligatoires. | plan-produit 06, B-2 | à trancher |
 | P-76 | 5 nov. | Fixer un effectif, un budget et une date cible : la rentrée de septembre 2027 ; recalculer les tailles de V4 après C-5. | plan-produit 06, B-5 | à trancher |
@@ -153,3 +160,4 @@ Par ordre chronologique. Une décision remplacée reste dans le tableau, avec ce
 | P-80 | 5 nov. | Base neuve sans données d'école (campus de la migration 0003) ; canal d'isolation I-16 : réglages globaux à l'installation ; sauvegarde par école. | plan-produit 06, B-1, B-3 | à trancher |
 | P-81 | 5 nov. | Ajouter au plan les lots du moteur : MP-1 à MP-4, décision sur Timefold, levée des limites ; ME-14a sur un jeu scolaire. | plan-produit 06, B-4 | à trancher |
 | P-82 | 5 nov. | Clore l'étude de la pile en V1 ; mesurer D-01 sur 200 bases ; aucune donnée réelle de mineur avant le contrat, la CNDP et ME-22. | plan-produit 06, A-1, A-4, A-5 | à trancher |
+| P-83 | 5 nov. | Garder `a/mp1-valeurs` (valeurs versionnées, migration 0061) et l'ouvrir en PR avant F-04. | groupe A | proposée (groupe A) |
