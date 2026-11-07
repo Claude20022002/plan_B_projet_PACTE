@@ -12,23 +12,35 @@ Sources :
 
 ## Décisions du chef de projet
 
-| Date | Décision |
-| --- | --- |
-| 3 nov. | Le style par défaut devient neutre et plat ; le « panneau des départs » devient un thème au choix de l'école. |
-| 3 nov. | Maquettes en HTML cliquable, plus un document de conception. |
-| 3 nov. | Démonstration sur une école fictive neutre, au lieu de HESTIM. |
-| 4 nov. | `docs/ecole/plan.txt` (ERP scolaire modulaire pour l'Afrique) remplace le plan 15 comme référence, mais reste à structurer. |
-| 4 nov. | Le groupe A mène d'abord une étude sur la pile technique : rien ne change d'ici là. |
-| 4 nov. | Plusieurs écoles sur une même installation (multi-établissements) devient la première priorité. |
-| 4 nov. | Pas d'audit de HESTIM Planner par le groupe B. |
-| 4 nov. | Cible : **d'abord les écoles privées, ensuite la formation professionnelle**. |
-| 4 nov. | Toutes les propositions sont notées dans ce registre. |
-| 5 nov. | Le plan par fonctionnalités ne remplace pas les vagues V : un plan les fusionne, pour une équipe plus nombreuse (`docs/plans/plan-produit/04-plan-fusionne.md`). |
-| 5 nov. | La vente est mise de côté : priorité à l'optimisation du SaaS face aux problèmes des autres outils. La planification seule pourra se vendre plus tard. |
-| 5 nov. | Le groupe A pousse ses études et écrit avec B le modèle de données du scolaire (prompt fourni par B). |
-| 5 nov. | Les entretiens et la démonstration aux directeurs viennent plus tard. |
-| 5 nov. | Il faut un site public où les utilisateurs peuvent nous contacter, comme pour les autres outils. |
-| 4 nov. | Rencontre avec le directeur d'une école privée (maternelle au lycée) dans 3 à 6 semaines : écouter, puis montrer ; présentation courte et démonstration sur une école fictive (`04-rencontre-directeur.md`). |
+Par ordre chronologique. Une décision remplacée reste dans le tableau, avec ce qui la remplace.
+
+| Date | Décision | En vigueur ? |
+| --- | --- | --- |
+| 3 nov. | Le style par défaut devient neutre et plat ; le « panneau des départs » devient un thème au choix de l'école. | oui |
+| 3 nov. | Maquettes en HTML cliquable, plus un document de conception. | oui |
+| 3 nov. | Démonstration sur une école fictive neutre, au lieu de HESTIM. | oui |
+| 4 nov. | `docs/ecole/plan.txt` (ERP scolaire modulaire pour l'Afrique) remplace le plan 15 comme référence, mais reste à structurer. | **remplacée** le 4 nov. au soir |
+| 4 nov. | Le groupe A mène d'abord une étude sur la pile technique : rien ne change d'ici là. | **tranchée** le 4 nov. au soir |
+| 4 nov. | Plusieurs écoles sur une même installation (multi-établissements) devient la première priorité. | **remplacée** le 4 nov. au soir |
+| 4 nov. | Pas d'audit de HESTIM Planner par le groupe B. | oui |
+| 4 nov. | Cible : **d'abord les écoles privées, ensuite la formation professionnelle**. | **précisée** le 4 nov. au soir |
+| 4 nov. | Toutes les propositions sont notées dans ce registre. | oui |
+| 4 nov. | Rencontre avec le directeur d'une école privée (maternelle au lycée) dans 3 à 6 semaines : écouter, puis montrer ; présentation courte et démonstration sur une école fictive (`04-rencontre-directeur.md`). | **reportée** le 5 nov. |
+| 4 nov. (soir) | **Cible** : la **planification seule**, en commençant par les écoles privées ; puis le supérieur privé ; puis l'école complète. La formation professionnelle vient après. | oui |
+| 4 nov. (soir) | **Priorité** : plusieurs écoles sur une même installation, **pas avant d'avoir fini le supérieur**. Sans plateforme partagée, chaque client a sa propre instance : les premières écoles payantes sont le pilote et le supérieur privé, pas les petites écoles à 149-199 DH. | oui |
+| 4 nov. (soir) | **Pile** : celle de `plan.txt` (NestJS, PostgreSQL, Tailwind, OR-Tools en Python, Keycloak) est **abandonnée**. On garde Express, MySQL, MUI et Timefold. | oui |
+| 4 nov. (soir) | **Référence** : `plan.txt`, corrigé, reste une étude. `docs/plans/modele-economique/` (groupe A) fait foi pour les décisions et l'ordre. | oui |
+| 4 nov. (soir) | **Prix** : la grille du README du modèle économique, à tester. Elle remplace le prix de travail de 9,99 MAD par élève. | oui (vente mise de côté le 5 nov.) |
+| 4 nov. (soir) | **Argument** : « au Maroc, seul Caisso annonce la génération » est faux. Cinq éditeurs l'annoncent. | corrigé le 5 nov. dans 01 et 02 |
+| 4 nov. (soir) | MP-1 : table unique des valeurs du moteur, migration **0061**. | oui |
+| 5 nov. | Le plan par fonctionnalités ne remplace pas les vagues V : un plan les fusionne, pour une équipe plus nombreuse (`docs/plans/plan-produit/04-plan-fusionne.md`). | oui ; **son ordre est à revoir** pour suivre la priorité du 4 nov. au soir (P-60, P-62) |
+| 5 nov. | La vente est mise de côté : priorité à l'optimisation du SaaS face aux problèmes des autres outils. La planification seule pourra se vendre plus tard. | oui |
+| 5 nov. | Le groupe A pousse ses études et écrit avec B le modèle de données du scolaire (prompt fourni par B). | oui |
+| 5 nov. | Les entretiens et la démonstration aux directeurs viennent plus tard. | oui |
+| 5 nov. | Il faut un site public où les utilisateurs peuvent nous contacter, comme pour les autres outils. | oui |
+| 5 nov. | **Le nom du produit est Planner** (Q-29 tranchée). | oui |
+| 5 nov. | **Migrations** : la **0060** reste réservée au socle neutre (SN-2), MP-1 prend la **0061**. | oui |
+| 5 nov. | Le groupe B relit le contrat des routes de MP-1 (§ 7 de `conception-mp1.md`) avant d'écrire ses écrans. | relecture faite le 5 nov. (P-66) |
 
 ## Propositions
 
@@ -46,16 +58,16 @@ Sources :
 | P-08 | 3 nov. | Une fonction partagée par le site et l'application, `construireTheme`, au lieu de modifier les jetons sur place. | socle | proposée |
 | P-09 | 3 nov. | Découpage en lots SN-1 à SN-5, migration 0060 à réserver. | socle | proposée ; numéro à confirmer avec A |
 | P-10 | 4 nov. | Arabe et écriture de droite à gauche prévus dès SN-1 : propriétés logiques CSS, police arabe en complément d'Inter. | socle question 6, 01 § 6 | proposée ; **devient nécessaire** avec la cible des écoles privées |
-| P-11 | 4 nov. | Garder la pile actuelle (Express, MySQL, Timefold) plutôt que NestJS, PostgreSQL et OR-Tools. | conv. | à trancher (étude du groupe A) |
+| P-11 | 4 nov. | Garder la pile actuelle (Express, MySQL, Timefold) plutôt que NestJS, PostgreSQL et OR-Tools. | conv. | **décidée** le 4 nov. au soir : la pile de plan.txt est abandonnée |
 
 ### Marché, positionnement, prix
 
 | N° | Date | Proposition | Source | Statut |
 | --- | --- | --- | --- | --- |
-| P-12 | 4 nov. | Positionner Planner comme planificateur du supérieur privé, branché sur les logiciels de frais existants. | 01 § 6 | **écartée** le 4 nov. (écoles privées d'abord) |
-| P-13 | 4 nov. | Viser d'abord le supérieur privé et la formation professionnelle. | rapport | **écartée** en partie : la formation professionnelle vient en second |
-| P-14 | 4 nov. | Ne pas construire les frais, le transport ni la cantine maintenant. | 01 § 6 | **à revoir** : le rapport montre que les frais sont le ticket d'entrée des écoles privées |
-| P-15 | 4 nov. | Le prix de travail de 9,99 MAD par élève et par mois est au-dessus du marché marocain (0,4 à 6) ; prévoir une offre « emploi du temps seul ». | 01 § 5 | à trancher, avec la grille de `plan.txt` |
+| P-12 | 4 nov. | Positionner Planner comme planificateur du supérieur privé, branché sur les logiciels de frais existants. | 01 § 6 | écartée le 4 nov., puis **reprise en partie** le 4 nov. au soir : le supérieur privé vient en deuxième, après la planification seule pour les écoles privées |
+| P-13 | 4 nov. | Viser d'abord le supérieur privé et la formation professionnelle. | rapport | **remplacée** le 4 nov. au soir : planification seule (écoles privées), puis supérieur privé, puis école complète ; formation professionnelle ensuite |
+| P-14 | 4 nov. | Ne pas construire les frais, le transport ni la cantine maintenant. | 01 § 6 | **décidée de fait** le 4 nov. au soir : on vend d'abord la planification seule ; frais et école complète viennent en troisième |
+| P-15 | 4 nov. | Le prix de travail de 9,99 MAD par élève et par mois est au-dessus du marché marocain (0,4 à 6) ; prévoir une offre « emploi du temps seul ». | 01 § 5 | **remplacée** le 4 nov. au soir : grille du modèle économique du groupe A, à tester ; vente mise de côté le 5 nov. |
 | P-16 | 4 nov. | Essai gratuit sans carte bancaire. | 01 § 6 | proposée (rejoint `plan.txt`, § 6) |
 | P-17 | 4 nov. | Chronométrer la mise en route avec deux personnes extérieures, puis l'annoncer (« installé en moins d'une heure »). | 01 § 6, 02 | proposée |
 | P-18 | 4 nov. | Import et export MASSAR. | 01 § 6, rapport | proposée ; vérifier d'abord s'il existe un format d'échange officiel |
@@ -121,16 +133,17 @@ Sources :
 | P-53 | 5 nov. | Vocabulaire et nomenclatures lus dans la base selon le profil de l'école, et non plus figés dans `referentiel.js`, sur la base du catalogue du groupe A. | plan-produit F-04 | proposée |
 | P-54 | 5 nov. | Ordre du pack « École privée » : élèves et familles ; absences prévenues et espace parents ; frais ; notes et bulletins ; Massar. Emploi du temps scolaire en parallèle, arabe au fil de l'eau. | plan-produit § 3.6 | proposée |
 | P-55 | 5 nov. | Un critère de réussite produit mesurable par fonctionnalité (exemple : le bulletin d'une classe en un clic). | plan-produit | proposée |
-| P-56 | 5 nov. | Vendre la planification seule (F-11) dès qu'elle est prête, en plus du pack (recommandation du groupe A). | plan-produit § 3.8 | **décidée** le 5 nov., mais la vente est mise de côté |
+| P-56 | 5 nov. | Vendre la planification seule (F-11) dès qu'elle est prête, en plus du pack (recommandation du groupe A). | plan-produit § 3.8 | **décidée** le 4 nov. au soir (planification seule en premier) ; vente mise de côté le 5 nov. |
 | P-57 | 5 nov. | Supprimer les branches dont le contenu est déjà dans `main` ou abandonné, et fermer `b/v4-application` et `feature/phase-e-timefold-dev` après relecture. | plan-produit § 1.3 | proposée |
 | P-58 | 5 nov. | Pousser et fusionner les études du groupe A : `a/benchmark-modules` et `a/moteur-catalogue`. | plan-produit C-2 | proposée (groupe A) |
 | P-59 | 5 nov. | Aucun module de la phase 4 (transport, cantine, hors ligne, etc.) sans demande confirmée par au moins deux écoles. | plan-produit § 3.7 | proposée |
-| P-60 | 5 nov. | Plan fusionné : vagues V0 à V5 et fonctionnalités, six équipes (Plateforme, Moteur, Interface, Vie scolaire, Finance, Mobile et parents), lots de la vente mis de côté. | plan-produit 04 | proposée |
+| P-60 | 5 nov. | Plan fusionné : vagues V0 à V5 et fonctionnalités, six équipes (Plateforme, Moteur, Interface, Vie scolaire, Finance, Mobile et parents), lots de la vente mis de côté. | plan-produit 04 | proposée ; **ordre à revoir** : la priorité du 4 nov. au soir place « plusieurs écoles » après le supérieur, et la planification seule en premier |
 | P-61 | 5 nov. | Douze exigences produit (EP-1 à EP-12), tirées des reproches faits aux autres outils, comme conditions de « terminé ». | plan-produit 04 § 4.2 | proposée |
-| P-62 | 5 nov. | Avancer en V2 ce qui servait aux grandes écoles dans les anciennes V4 et V5 : isolation, migrations par vagues, registre des écoles, choix de l'école à la connexion. | plan-produit 04 | proposée |
+| P-62 | 5 nov. | Avancer en V2 ce qui servait aux grandes écoles dans les anciennes V4 et V5 : isolation, migrations par vagues, registre des écoles, choix de l'école à la connexion. | plan-produit 04 | **contraire** à la décision du 4 nov. au soir (plusieurs écoles pas avant d'avoir fini le supérieur) : à retirer du plan fusionné |
 | P-63 | 5 nov. | EC-3 (carnet de notes officiel) et EC-4 fusionnent dans F-13 (notes et bulletins). | plan-produit 04 | proposée |
 | P-64 | 5 nov. | Garder ME-22 (test d'intrusion) à la fin de V4, malgré la vente mise de côté. | plan-produit 04 | proposée |
-| P-65 | 5 nov. | Site public du produit en cinq lots (SP-1 conception, SP-2 vitrine, SP-3 contact et demandes, SP-4 centre d'aide, SP-5 page d'état et nouveautés), porté par une équipe SC ; sans prix tant que la vente est mise de côté ; nom de marque et domaine à trancher avant SP-2. | plan-produit 04 | proposée |
+| P-65 | 5 nov. | Site public du produit en cinq lots (SP-1 conception, SP-2 vitrine, SP-3 contact et demandes, SP-4 centre d'aide, SP-5 page d'état et nouveautés), porté par une équipe SC ; sans prix tant que la vente est mise de côté ; nom de marque et domaine à trancher avant SP-2. | plan-produit 04 | proposée ; **nom tranché le 5 nov. : Planner** ; domaine et textes légaux restent à trancher |
+| P-66 | 5 nov. | Relecture du contrat de MP-1 (§ 7 de `conception-mp1.md`) par le groupe B : route du catalogue pour les écrans, modification d'un brouillon, liste des versions sans leurs lignes, contrôle de la version de base à l'application, formes de `actives` et `alertes`, journal de sécurité, textes traduits par code (`docs/plans/plan-produit/relecture-mp1-contrat.md`). | relecture | proposée (groupe A) |
 | P-74 | 5 nov. | Corriger le fichier 04 selon la revue d'architecte : jalon de V2, moteur, canaux, tailles. | plan-produit 06 § 6.8 | à trancher |
 | P-75 | 5 nov. | Séparer la personne (élève) de son compte dans C-5 : aujourd'hui, `Users.email` et `password_hash` sont obligatoires. | plan-produit 06, B-2 | à trancher |
 | P-76 | 5 nov. | Fixer un effectif, un budget et une date cible : la rentrée de septembre 2027 ; recalculer les tailles de V4 après C-5. | plan-produit 06, B-5 | à trancher |
