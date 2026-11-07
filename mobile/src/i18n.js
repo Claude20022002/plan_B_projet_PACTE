@@ -76,6 +76,14 @@ const fr = {
       rejoindre: 'Rejoindre sur {{domaine}}',
       visioPasEncore: 'Séance à distance : le lien de visio n’est pas encore donné.',
     },
+    // Sondage de l’enseignant à sa classe (lot EC-9)
+    sondages: {
+      etiquette: 'Sondage',
+      repondre: 'Répondre',
+      anonyme: 'Votre réponse est anonyme : votre enseignant ne voit que le total de chaque choix.',
+      dejaRepondu: 'Réponse envoyée, merci. Elle reste anonyme.',
+      echec: 'Votre réponse n’a pas pu être envoyée. Réessayez dans un instant.',
+    },
     bibliotheque: {
       mesCours: 'Mes cours',
       coursIndisponible: 'Ce cours n’est pas disponible pour le moment.',
@@ -478,6 +486,14 @@ const en = {
       supports: 'Course materials',
       rejoindre: 'Join on {{domaine}}',
       visioPasEncore: 'Remote session: the video link has not been given yet.',
+    },
+    // Teacher's poll to their class (EC-9)
+    sondages: {
+      etiquette: 'Poll',
+      repondre: 'Answer',
+      anonyme: 'Your answer is anonymous: your teacher only sees the total for each choice.',
+      dejaRepondu: 'Answer sent, thank you. It stays anonymous.',
+      echec: 'Your answer could not be sent. Try again in a moment.',
     },
     bibliotheque: {
       mesCours: 'My courses',
