@@ -12,6 +12,7 @@ Groupe B, 5 novembre 2026. Demande du chef de projet :
 | [01-etat-des-lieux.md](01-etat-des-lieux.md) | ce que contient Planner ; couverture du catalogue de `plan.txt` ; les 30 branches non fusionnées et ce qu'il faut en faire ; le plan 15 face à la réalité |
 | [02-plans-et-saas-comparables.md](02-plans-et-saas-comparables.md) | lecture critique des plans du projet ; comment Untis, EduPage, Odoo, Classter et les ERP marocains découpent leur produit ; principes retenus |
 | [03-plan-par-fonctionnalites.md](03-plan-par-fonctionnalites.md) | le catalogue des fonctionnalités (F-01 à F-22), leur contenu, ce qui existe déjà, leur critère de réussite |
+| [relecture-mp1-contrat.md](relecture-mp1-contrat.md) | relecture par le groupe B du contrat des routes de MP-1 (valeurs du moteur), avant les écrans |
 | [04-plan-fusionne.md](04-plan-fusionne.md) | **le plan à suivre** (décisions du 5 novembre) : fonctionnalités et vagues V0 à V5 fusionnées ; sept équipes, dont celle du site public ; douze exigences produit tirées des problèmes des autres outils ; lots mis de côté avec la vente |
 
 ## En bref
