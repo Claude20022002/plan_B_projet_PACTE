@@ -49,6 +49,52 @@ Composition `Keynote` (`src/Keynote.tsx`), sans repère ni barre de progression.
 - **Fin** : ni plateformes ni adresse. L'application n'est pas sur les stores, et `planner.hestim.ma` n'existe pas.
 - **Bande-son** : synthétisée comme les autres (`composer-musique.py` : `section_froid`, `section_chaos`, `section_revelation`). Pour le niveau d'un film de lancement, une vraie piste sous licence (même nom de fichier) ferait la plus grande différence.
 
+## « Lancement » (17 octobre 2026) : le film dans le genre des lancements de logiciels
+
+Inspiré des quatre vidéos de référence fournies (ClickUp 4.0 et trois vidéos d'Asana), sans rien leur emprunter : textes, personnages et images sont les nôtres.
+- **Une voix off continue** : 192 mots, sans trou de plus d'une seconde sauf le silence voulu avant le logo.
+- **Des plans de 1,5 à 4 s**, avec une typographie animée pour les mots-clés.
+- **Des cartes d'interface en perspective** sur les quatre couleurs de l'emblème : marine, orange, vert, rouge.
+- **De petits personnages muets** dans le décor.
+
+Composition `Lancement` (`src/lancement/`) : le minutage des scènes est tiré de la voix (`src/lancement/voix.json`).
+
+| Fichier | Format | Commande |
+| --- | --- | --- |
+| `out/lancement.mp4` | 1920 × 1080, environ 67 s, voix `public/audio/lancement/voix.mp3`, musique `musique.mp3` (120 BPM) | `npm run render:lancement` |
+
+| Scène | Couleur | Ce qu'on voit |
+| --- | --- | --- |
+| Accroche | clair | « Lundi, 8 h 02. », G-S05 barré puis G-S03, la pluie de messages, la classe devant la mauvaise porte |
+| Éparpillé | clair | Quatre outils reliés, puis les liens cassent : « Aucun ne se parle. » |
+| Révélation | clair | L'emblème, le nom, « Toute la vie de l'école, une seule application. » |
+| Planification | marine | Préparation (halo sur « 0 conflit ouvert »), « Jamais en double » (salle, enseignant, groupe), le mois au format officiel |
+| Changement | orange | Le panneau, le cours passé à « Reportée », puis l'alerte sur le téléphone |
+| Étudiant | vert | Trois téléphones : la salle, la semaine, le mois |
+| Appel | rouge | L'appel projeté, puis le QR sur le téléphone de l'enseignant |
+| Relié | clair | Six fonctions reliées à l'emblème : « Un seul compte. » |
+| Chiffres | marine | 2 620 séances placées, 0 salle réservée deux fois (semestre de démonstration) |
+| Fin | clair | Le nom, la promesse, « Demandez votre démo », les personnages qui saluent |
+
+Changer le texte : `src/lancement/script.json`, puis `python scripts/voix-promo.py src/lancement/script.json` et `python scripts/musique-lancement.py` ; les scènes suivent seules.
+
+## « Keynote » en 1 min 20 (17 octobre 2026)
+
+La Keynote, plan pour plan, avec quatre preuves de plus sur de vraies captures, dans la même mise en scène. Composition `Keynote80` (`src/Keynote80.tsx`). La Keynote de 62 s ne change pas.
+
+| Fichier | Format | Commande |
+| --- | --- | --- |
+| `out/keynote-1m20.mp4` | 1920 × 1080, 80 s (160 temps), son `public/audio/keynote-1m20.wav` | `npm run render:keynote80` |
+
+| Ajout | Début | Titre | Capture |
+| --- | --- | --- | --- |
+| Après la salle trouvée | 0:19 | Tout le campus, sur un écran. | `admin-01-tableau` |
+| Après les jeux | 0:54 | Le semestre, préparé en huit étapes. | `admin-02-preparation` (« 7. Revue · 0 conflit(s) ouvert(s) ») |
+| | 0:59 | Au format officiel de l'école. | `admin-04b-edt-mensuel-classe` |
+| | 1:03 | Chaque heure faite est comptée. | `admin-05b-heures-du-mois` |
+
+La fin passe de 6 à 7 s. Les réserves de la Keynote restent valables (plan des jeux, quiz sur maquette, « 90 S » du plan des chiffres non mesuré). La capture de la génération (`web-08`) a été écartée : son cadrage montrait aussi « −142 règles dures enfreintes » et une liste « Semaine type en conflit ».
+
 ## « Direction » (lot V-2, premier montage du 13 octobre 2026)
 
 La vidéo pour ceux qui décident et paient, d'après `../script-video-vendeur.md` (§ 5) : une promesse, trois preuves, ce que l'école y gagne, une action. Composition `Direction` (`src/Direction.tsx`).
