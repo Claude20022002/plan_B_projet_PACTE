@@ -128,5 +128,8 @@ export const arreterGeneration = async (idSession) => {
 /** Avancement tenu en mémoire pendant le déploiement (voir `executer`), ou null. */
 export const progressionEnMemoire = (idSession) => enCours.get(Number(idSession))?.progression ?? null;
 
+/** Supervision (lot ME-21) : nombre de générations en cours dans ce processus. */
+export const generationsEnCours = () => enCours.size;
+
 /** Pour les tests : attend la fin d'une génération lancée dans ce processus. */
 export const attendreGeneration = async (idSession) => enCours.get(Number(idSession))?.promesse;
