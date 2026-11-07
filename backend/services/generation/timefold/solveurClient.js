@@ -50,6 +50,15 @@ export const etatCalcul = (id) => appeler(`/timetables/${encodeURIComponent(id)}
 
 export const arreterCalcul = (id) => appeler(`/timetables/${encodeURIComponent(id)}`, { method: "DELETE" });
 
+/** Supervision (lot ME-21) : le service répond-il sur /health (public, sans jeton) ? Délai court. */
+export const solveurJoignable = async () => {
+    try {
+        return (await fetch(`${base()}/health`, { signal: AbortSignal.timeout(3000) })).ok;
+    } catch {
+        return false;
+    }
+};
+
 const attendre = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
