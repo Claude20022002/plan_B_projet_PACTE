@@ -11,7 +11,10 @@ import SaisieDialog from '../components/espaceCours/SaisieDialog';
 import BibliothequeDialog from '../components/espaceCours/BibliothequeDialog';
 import OngletAppel from '../components/espaceCours/OngletAppel';
 import OngletEleves from '../components/espaceCours/OngletEleves';
+import OngletSondages from '../components/espaceCours/OngletSondages';
+import SondagesOuverts from '../components/espaceCours/SondagesOuverts';
 import useEspaceCours from '../hooks/useEspaceCours';
+import useSondages from '../hooks/useSondages';
 import { espaceCoursAPI } from '../services/espaceCours';
 import { useAuth } from '../contexts/AuthContext';
 
@@ -21,6 +24,8 @@ const ONGLETS = ['supports', 'appel', 'eleves'];
  * Espace de cours d'une classe (docs/plans/espace-de-cours.md, § 5.2). L'enseignant y a trois
  * onglets : les supports rangés en sections, l'appel (séances et bilans) et les élèves (taux de
  * présence, export) ; l'onglet est gardé dans l'adresse. L'étudiant ne voit que les supports.
+ * Quand l'école a allumé les sondages (lot EC-9), l'enseignant a un quatrième onglet, et l'étudiant
+ * voit les sondages ouverts au-dessus des supports.
  */
 export default function EspaceClasse() {
   const { idCours, idGroupe } = useParams();
@@ -43,12 +48,14 @@ export default function EspaceClasse() {
   };
 
   const { espace, erreur, charger, ouvrir, actionSupport, actionSection, nouvelleSection } = useEspaceCours(idCours, idGroupe, saisir);
+  const sondages = useSondages(idCours, idGroupe);
   // Section où épingler un document de la Bibliothèque (lot E-9) ; null : fenêtre fermée
   const [epinglerDans, setEpinglerDans] = useState(null);
   const agirSurSection = (nom, section) => (nom === 'bibliotheque' ? setEpinglerDans(section) : actionSection(nom, section));
   const gere = Boolean(espace?.gere);
   const sections = espace?.sections ?? [];
-  const onglet = gere && ONGLETS.includes(parametres.get('onglet')) ? parametres.get('onglet') : 'supports';
+  const onglets = sondages.actif ? [...ONGLETS, 'sondages'] : ONGLETS;
+  const onglet = gere && onglets.includes(parametres.get('onglet')) ? parametres.get('onglet') : 'supports';
   const retour = user?.role === 'etudiant' ? { libelle: t('espaceCours.mesCours'), chemin: '/mes-cours' } : { libelle: t('classes.page.titre'), chemin: '/mes-classes' };
   const nomFichier = espace ? `presences-${espace.classe.code_cours}-${espace.classe.nom_groupe}.csv` : 'presences.csv';
 
@@ -60,6 +67,7 @@ export default function EspaceClasse() {
 
   const supports = (
     <>
+      {!gere && sondages.actif && <SondagesOuverts sondages={sondages.sondages} onRecharger={sondages.charger} />}
       {espace && sections.length === 0 && (
         <EmptyState
           title={t(gere ? 'espaceCours.videEnseignant' : 'espaceCours.videEtudiant')}
@@ -121,7 +129,7 @@ export default function EspaceClasse() {
           allowScrollButtonsMobile
           sx={{ mb: 2, borderBottom: 1, borderColor: 'divider' }}
         >
-          {ONGLETS.map((o) => (
+          {onglets.map((o) => (
             <Tab key={o} value={o} label={t(`espaceCours.onglets.${o}`)} sx={{ textTransform: 'none', fontSize: '0.9375rem' }} />
           ))}
         </Tabs>
@@ -130,6 +138,7 @@ export default function EspaceClasse() {
       {espace && onglet === 'supports' && supports}
       {gere && onglet === 'appel' && <OngletAppel idCours={idCours} idGroupe={idGroupe} />}
       {gere && onglet === 'eleves' && <OngletEleves idCours={idCours} idGroupe={idGroupe} nomFichier={nomFichier} />}
+      {gere && onglet === 'sondages' && <OngletSondages idCours={idCours} idGroupe={idGroupe} sondages={sondages.sondages} onRecharger={sondages.charger} />}
 
       <SaisieDialog
         ouvert={Boolean(saisie)}
