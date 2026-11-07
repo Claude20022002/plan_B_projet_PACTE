@@ -1,8 +1,10 @@
 name: CI HESTIM Planner
 
 # Vérifications à chaque push sur main et à chaque pull request vers main.
-# Pas de déploiement automatique : la production tourne sur le VPS (une seule origine Docker,
-# mises à jour par paquets : deploy/vps/preparer-maj.sh puis appliquer-maj.sh sur le serveur).
+# Pas de déploiement automatique : après une fusion sur main et tous les contrôles verts, la CI
+# publie les images (job publier-images, lot ME-0b) ; le chef de projet les met en ligne sur le VPS
+# par « deploy/vps/deployer.sh <commit> ». Les paquets majNN (preparer-maj.sh, appliquer-maj.sh)
+# restent possibles pour StudyLib et ClassQuiz, et comme retour arrière du lot.
 # Les anciens déploiements Railway et Vercel ont été retirés (décision du 2 octobre 2026).
 on:
   push:
@@ -256,3 +258,87 @@ jobs:
             frontend/playwright-report-parcours/
             frontend/test-results/
           retention-days: 7
+
+  # ── 6. Scripts d'exploitation du serveur (lot ME-0b) ─────────────────────
+  # La commande de mise en ligne (deploy/vps/deployer.sh) essayée sur un faux Docker : refus avant
+  # tout changement, vérification des versions, historique et retour arrière
+  test-scripts:
+    name: Scripts d'exploitation
+    runs-on: ubuntu-24.04
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: ShellCheck
+        run: shellcheck -x deploy/vps/deployer.sh deploy/vps/deploiement-commun.sh deploy/vps/tests/tester-deployer.sh
+
+      - name: Tests de deployer.sh
+        run: bash deploy/vps/tests/tester-deployer.sh
+
+  # ── 7. Publication des images (lot ME-0b) ────────────────────────────────
+  # Seulement après une fusion sur main et tous les contrôles verts : une image publiée a passé la
+  # suite complète et les parcours. Étiquetées par le commit (complet et court) et « main » ; le
+  # serveur les tire par « deployer.sh <commit> », qui vérifie l'étiquette revision.
+  # Conception : docs/plans/planner-multi-etablissements/conception-me0b-deploiement.md
+  publier-images:
+    name: Publier ${{ matrix.image }}
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [build-frontend, test-backend, test-mobile, test-solver, test-parcours, test-scripts]
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - image: backend
+            contexte: backend
+            dockerfile: backend/Dockerfile
+          - image: frontend
+            contexte: frontend
+            dockerfile: frontend/Dockerfile
+          - image: solver
+            contexte: solver
+            dockerfile: solver/Dockerfile
+          - image: exploitation
+            contexte: deploy/vps
+            dockerfile: deploy/vps/Dockerfile.exploitation
+
+    steps:
+      - uses: actions/checkout@v7
+
+      # Noms d'images en minuscules (GHCR) ; « planner.source » : l'arbre des sources de l'image,
+      # pour ne pas redémarrer le solveur quand il n'a pas changé
+      - name: Registre, commit court et sources
+        run: |
+          echo "REGISTRE=ghcr.io/${GITHUB_REPOSITORY_OWNER,,}" >> "$GITHUB_ENV"
+          echo "COURT=${GITHUB_SHA::7}" >> "$GITHUB_ENV"
+          echo "SOURCES=$(git rev-parse "HEAD:${{ matrix.contexte }}")" >> "$GITHUB_ENV"
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Construire et publier hestim-${{ matrix.image }}
+        uses: docker/build-push-action@v6
+        with:
+          context: ${{ matrix.contexte }}
+          file: ${{ matrix.dockerfile }}
+          # Code partagé avec le web et le mobile (COPY --from=shared du serveur et du site)
+          build-contexts: shared=shared
+          build-args: |
+            VERSION_PLANNER=${{ github.sha }}
+            VITE_API_URL=/api
+          labels: |
+            org.opencontainers.image.revision=${{ github.sha }}
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            planner.source=${{ env.SOURCES }}
+          tags: |
+            ${{ env.REGISTRE }}/hestim-${{ matrix.image }}:${{ github.sha }}
+            ${{ env.REGISTRE }}/hestim-${{ matrix.image }}:${{ env.COURT }}
+            ${{ env.REGISTRE }}/hestim-${{ matrix.image }}:main
+          push: true
