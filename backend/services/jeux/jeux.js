@@ -37,10 +37,13 @@ const coursDesEnseignements = async (idsEnseignements) => {
     return [...new Set(enseignements.map((e) => e.composante.id_cours))];
 };
 
-/** Modules (cours) suivis par un étudiant ou enseignés par un enseignant ; [] pour l'administration. */
-export const modulesDuJoueur = async (user) => {
+/**
+ * Modules (cours) suivis par un étudiant ou enseignés par un enseignant ; [] pour l'administration.
+ * `groupes` : groupes de l'étudiant déjà lus par l'appelant (évite de les relire, 3 requêtes).
+ */
+export const modulesDuJoueur = async (user, { groupes: groupesLus } = {}) => {
     if (user.role === "etudiant") {
-        const groupes = await groupesDeLEtudiant(user.id_user);
+        const groupes = groupesLus ?? (await groupesDeLEtudiant(user.id_user));
         if (!groupes.length) return [];
         const liens = await EnseignementGroupe.findAll({ where: { id_groupe: groupes }, attributes: ["id_enseignement"] });
         return coursDesEnseignements(liens.map((l) => l.id_enseignement));

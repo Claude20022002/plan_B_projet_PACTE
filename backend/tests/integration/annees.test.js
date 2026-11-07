@@ -53,6 +53,26 @@ describe("L'année d'un groupe", () => {
         await g.update({ annee_scolaire: "promo spéciale" });
         expect(g.id_annee).toBeNull();
     });
+
+    test("se rattache à l'année déclarée après lui, ou renommée pour lui correspondre", async () => {
+        const filiere = await Filiere.create({ code_filiere: "ANS", nom_filiere: "Année suivante" });
+        const avance = await Groupe.create({ nom_groupe: "ANS-1A", niveau: "1A", effectif: 20, annee_scolaire: "2027/2028", id_filiere: filiere.id_filiere });
+        const autre = await Groupe.create({ nom_groupe: "ANS-2A", niveau: "2A", effectif: 20, annee_scolaire: "2028-2029", id_filiere: filiere.id_filiere });
+        expect(avance.id_annee).toBeNull();
+        const suivante = await AnneeUniversitaire.create({ libelle: "2027-2028", date_debut: "2027-09-01", date_fin: "2028-08-31" });
+        try {
+            expect((await Groupe.findByPk(avance.id_groupe)).id_annee).toBe(suivante.id_annee);
+            expect((await Groupe.findByPk(autre.id_groupe)).id_annee).toBeNull();
+            await suivante.update({ date_fin: "2028-07-31" });
+            expect((await Groupe.findByPk(autre.id_groupe)).id_annee).toBeNull();
+            await suivante.update({ libelle: "2028-2029" });
+            expect((await Groupe.findByPk(autre.id_groupe)).id_annee).toBe(suivante.id_annee);
+        } finally {
+            await Groupe.destroy({ where: { id_filiere: filiere.id_filiere } });
+            await filiere.destroy();
+            await suivante.destroy();
+        }
+    });
 });
 
 describe("Les groupes d'un étudiant", () => {

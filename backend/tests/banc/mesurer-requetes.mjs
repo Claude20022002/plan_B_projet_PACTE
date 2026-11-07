@@ -100,7 +100,8 @@ const ROUTES = [
     ["etudiant", `/api/emplois-du-temps/moi?du=${debut}&au=${finMois}`, 11],
     ["etudiant", `/api/emplois-du-temps/etudiant/${etudiant.id_user}?date_debut=${debut}&date_fin=${finMois}`, 5],
     ["etudiant", "/api/activites", 16],
-    ["etudiant", "/api/devoirs", 8],
+    // 7 depuis ME-18 : les groupes de l'étudiant (année en cours comprise) lus une seule fois
+    ["etudiant", "/api/devoirs", 7],
     ["etudiant", "/api/annonces", 6],
     ["etudiant", "/api/quiz/parties/en-cours", 2],
     ["etudiant", "/api/presences/miennes", 2],

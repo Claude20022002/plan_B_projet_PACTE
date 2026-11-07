@@ -35,10 +35,11 @@ export const envoyerPreavis = async (jour = aujourdhui()) => {
         try {
             await sendEmail({
                 to: user.email,
-                subject: "Votre accès à Planner prendra fin bientôt",
+                // {{produit}} et {{ecole}} : remplacés par sendEmail (« HESTIM Planner », « HESTIM »), ME-11
+                subject: "Votre accès à {{produit}} prendra fin bientôt",
                 text:
-                    `Bonjour ${user.prenom},\n\nVotre accès à Planner prendra fin le ${texteDate(user.desactivation_prevue_le)}.\n` +
-                    "Pensez à enregistrer ce dont vous avez besoin avant cette date. Pour toute question, écrivez à la scolarité.\n",
+                    `Bonjour ${user.prenom},\n\nVotre accès à {{produit}} prendra fin le ${texteDate(user.desactivation_prevue_le)}.\n` +
+                    "Pensez à enregistrer ce dont vous avez besoin avant cette date. Pour toute question, écrivez à la scolarité de {{ecole}}.\n",
             });
             await user.update({ preavis_envoye_le: new Date() });
             envoyes += 1;

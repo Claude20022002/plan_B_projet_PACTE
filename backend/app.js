@@ -54,9 +54,12 @@ import devoirRoutes from "./routes/devoirRoutes.js";
 import journalSecuriteRoutes from "./routes/journalSecuriteRoutes.js";
 import quizIaRoutes from "./routes/quizIaRoutes.js";
 import espaceCoursRoutes from "./routes/espaceCoursRoutes.js";
+import sondageRoutes from "./routes/sondageRoutes.js";
 import etablissementRoutes from "./routes/etablissementRoutes.js";
 import studioQuizRoutes from "./routes/studioQuizRoutes.js";
 import passationRoutes from "./routes/passationRoutes.js";
+import supervisionRoutes from "./routes/supervisionRoutes.js";
+import { mesurerRequetes } from "./middleware/mesureMiddleware.js";
 import { MONTAGE as OIDC_MONTAGE } from "./services/oidc/provider.js";
 
 // Import des middlewares
@@ -85,6 +88,9 @@ const app = express();
 app.set("trust proxy", Number(process.env.TRUST_PROXY_HOPS ?? 1));
 
 // ==================== MIDDLEWARES GLOBAUX ====================
+
+// Durée et code de chaque requête, pour la supervision (lot ME-21) : en tout premier
+app.use(mesurerRequetes);
 
 // Sécurité
 app.use(securityHeaders);
@@ -140,6 +146,9 @@ app.use(exigerChangementMotDePasse);
 // Administrateur sans double authentification : rien d'autre tant qu'elle n'est pas configurée
 app.use(exigerDoubleAuthentification);
 
+// Supervision (lot ME-21) : lue par la sonde extérieure, sans compte ; avant les routeurs montés sur
+// /api qui demandent une connexion
+app.use("/api/supervision", supervisionRoutes);
 app.use("/api/auth", authRoutes);
 // JWKS (public) et référentiel pour StudyLib (jeton de service) : connexion unique, phase C
 app.use("/api", integrationRoutes);
@@ -187,6 +196,7 @@ app.use("/api/journal-securite", journalSecuriteRoutes);
 app.use("/api/quiz-ia", quizIaRoutes);
 // Espace de cours des classes (docs/plans/espace-de-cours.md) : /classes, /sections-cours, /supports-cours
 app.use("/api", espaceCoursRoutes);
+app.use("/api", sondageRoutes);
 app.use("/api", etablissementRoutes);
 // Studio quiz : moteur de quiz natif (docs/plans/studio-quiz.md)
 app.use("/api/studio-quiz", studioQuizRoutes);
@@ -200,10 +210,12 @@ app.get("/", (req, res) => {
     });
 });
 
-// Route de santé (health check)
+// Route de santé (health check). « version » : le commit de l'image (PLANNER_VERSION, posé à la
+// construction par la CI) ; la commande de mise en ligne le compare au commit demandé (lot ME-0b)
 app.get("/health", (req, res) => {
     res.json({
         status: "healthy",
+        version: process.env.PLANNER_VERSION || null,
         timestamp: new Date().toISOString(),
         uptime: process.uptime(),
     });

@@ -6,9 +6,22 @@ Deux parties. La première décrit le **serveur de production** (le VPS de `plan
 
 Toutes les commandes du serveur se lancent en `root`. Le chef de projet les lance lui-même. Les scripts sont dans `deploy/vps/` ; chacun explique son rôle dans son en-tête.
 
+### Mettre en ligne par la commande (lot ME-0b)
+
+Conception et diagrammes : `docs/plans/planner-multi-etablissements/conception-me0b-deploiement.md`. Après chaque fusion sur `main`, la CI publie, une fois tous les contrôles verts, les images du serveur, du site, du solveur et des scripts d'exploitation sur `ghcr.io/claude20022002`, au nom du commit. Il n'y a rien à construire sur le PC.
+
+1. **Choisir le commit** : celui de la fusion sur `main` dont le job « Publier » de la CI est vert (onglet Actions). Le commit court (7 caractères) ou complet (40) convient.
+2. **Répéter sans rien changer** : `bash /opt/hestim/deploy/vps/deployer.sh --essai <commit>` (tire les images et vérifie qu'elles portent ce commit).
+3. **Mettre en ligne**, hors des heures de cours : `bash /opt/hestim/deploy/vps/deployer.sh <commit>`. La commande s'arrête sans rien toucher si une image manque ou porte un autre commit ; sinon elle sauvegarde la base, remplace les images (les anciennes restent en `:avant-<date>`), met à jour les scripts d'exploitation, redémarre le serveur (migrations), le site et le solveur (seulement si ses sources ont changé), vérifie que le serveur et le site annoncent ce commit, puis affiche le retour arrière.
+4. **Revenir à la version précédente** : `bash /opt/hestim/deploy/vps/deployer.sh --retour` (historique dans `/opt/hestim/deploy/versions.log`). Restaurer la base reste une décision : la commande est affichée à la fin de chaque mise en ligne.
+
+**Une seule fois, avant la première mise en ligne** : copier `deploy/vps/deployer.sh` et `deploy/vps/deploiement-commun.sh` dans `/opt/hestim/deploy/vps/` (`scp`) ; ensuite, la commande se met à jour elle-même avec les autres scripts. Vérifier dans GitHub (Packages) que les quatre images `hestim-*` sont **publiques** ; sinon, sur le serveur, `docker login ghcr.io` avec un jeton en lecture seule (`read:packages`).
+
+StudyLib et ClassQuiz ne sont pas concernés : ils se mettent toujours à jour par paquet (`--studylib`, `--classquiz`, `--quiz-seul` ci-dessous).
+
 ### Mettre à jour par paquet
 
-Un paquet `majNN` ne contient que le code. Il se superpose aux images déjà en ligne.
+Un paquet `majNN` ne contient que le code. Il se superpose aux images déjà en ligne. Depuis ME-0b, c'est la voie de StudyLib et de ClassQuiz, et le retour arrière du lot.
 
 1. **Sur le PC, construire le site depuis PowerShell** (Git Bash réécrirait `/api` en chemin Windows) :
    `cd frontend; $env:VITE_API_URL="/api"; npm run build`
@@ -32,6 +45,17 @@ Pour un correctif du moteur (le code Python de `../ClassQuiz`) qui ne doit pas a
 4. **Lire les contrôles**, copier la commande de retour arrière affichée, puis jouer une partie d'essai.
 
 Si les dépendances Python du quiz (`Pipfile`) ont changé, ce paquet ne suffit pas : il faut une nouvelle image de l'API.
+
+### Allumer ou éteindre ClassQuiz pour l'école (lot ME-0c)
+
+ClassQuiz est une fonctionnalité de l'établissement (`ConfigurationEtablissement.classquiz_actif`, migration 0057). Une installation neuve part éteinte ; la base de HESTIM, qui avait déjà des comptes, est restée allumée. Éteint, Planner ne lance plus de partie, refuse le webhook et la connexion par OpenID Connect, et `/api/quiz/config` répond `actif: false` (l'espace « Quiz » disparaît du sélecteur). Les conteneurs du quiz, eux, tournent toujours : les arrêter est une autre décision.
+
+Sur le serveur (`1` pour allumer, `0` pour éteindre), puis redémarrer le serveur de Planner, qui garde la ligne de l'école en mémoire :
+
+```bash
+echo UPDATE ConfigurationEtablissement SET classquiz_actif=1 WHERE id=1 | docker exec -i hestim_mysql sh -c 'MYSQL_PWD=$MYSQL_ROOT_PASSWORD mysql -uroot $MYSQL_DATABASE'
+docker restart hestim_backend
+```
 
 ### Quand les dépendances changent
 
@@ -203,13 +227,14 @@ Après le passage à MySQL 8.4 (lot ME-0e), remplacer `mysql:8.0-debian` par `pe
 
    ```bash
    ssh root@<serveur> "docker run -d --name essai_restauration --network none -e MYSQL_ROOT_PASSWORD=essai mysql:8.0"
-   # attendre 30 s que MySQL démarre, puis, depuis le PC :
+   # attendre 30 s que MySQL démarre, puis, depuis le PC, dans Git Bash
+   # (sous Windows PowerShell 5.1, un | entre deux programmes abîme les données binaires) :
    gpg -d mysql-<date>.sql.gz.gpg | ssh root@<serveur> "gunzip | docker exec -i -e MYSQL_PWD=essai essai_restauration mysql -uroot"
    ssh root@<serveur> "docker exec -e MYSQL_PWD=essai essai_restauration mysql -uroot -N -e 'SHOW DATABASES'"
    ```
 
    Comparer le nombre de comptes (`SELECT COUNT(*) FROM <base de Planner>.Users`) avec la production : l'écart doit se limiter aux comptes créés depuis la nuit.
-3. Lister l'archive des fichiers sur le PC (`gpg -d fichiers-bibliotheque-<date>.tar.gz.gpg | tar -tzf - | wc -l`) et comparer au volume (`ssh root@<serveur> "docker run --rm --volumes-from hestim_minio:ro alpine:3.20 find /data -type f | wc -l"`).
+3. Compter les documents de l'archive et du volume, sans les dossiers ni les fichiers internes de MinIO (`.minio.sys`, dont la corbeille `tmp/.trash` change d'elle-même d'heure en heure : le 29 octobre, elle faisait 6 fichiers d'écart). Sur le PC : `gpg -d fichiers-bibliotheque-<date>.tar.gz.gpg | tar -tzf - | grep -v '/$' | grep -vc '^\./\.minio\.sys/'` ; sur le serveur : `ssh root@<serveur> "docker run --rm --volumes-from hestim_minio:ro alpine:3.20 find /data -type f -not -path '/data/.minio.sys/*' | wc -l"`. Les deux nombres sont égaux, à l'écart près des documents déposés depuis la nuit. Pour expliquer un écart, comparer les deux listes nom par nom (triées avec `LC_ALL=C sort`, puis `comm -3`).
 4. Nettoyer : `ssh root@<serveur> "docker rm -f essai_restauration && rm -rf /root/essai"`.
 5. **Écrire le résultat** dans `docs/recette/essais-restauration.md` : date, fichiers utilisés, nombres comparés, durée, problème rencontré. Un essai non écrit n'a pas eu lieu.
 
@@ -223,6 +248,79 @@ bash /opt/hestim/deploy/vps/nettoyer-paquets.sh /root --supprimer
 ```
 
 Il ne touche ni aux sauvegardes de la base (`/root/sauvegardes`), ni aux images `avant-image-majNN`, ni aux archives d'images. À ne lancer qu'une fois la mise à jour en cours validée par la recette : les paquets et images supprimés sont ceux qui permettraient un retour plus ancien.
+
+### Passer à MySQL 8.4 (lot ME-0e)
+
+MySQL 8.0 n'est plus suivi depuis avril 2026 ; 8.4 est la version suivie à long terme. Le passage est une **mise à niveau sur place** : MySQL 8.4 ouvre le dossier de données de 8.0 et le met à jour lui-même au premier démarrage. Il ne se défait pas sur place (8.4 ne redescend pas en 8.0) : le retour arrière passe par une copie du dossier faite juste avant.
+
+Essayé le 26 octobre 2026 sur le PC : schéma de Planner et données de démonstration créés en 8.0.46, puis ouverts par 8.4.13 ; mise à niveau sans erreur, les 69 tables gardent la même empreinte (`CHECKSUM TABLE`), comptes en `caching_sha2_password` acceptés, aucune migration en attente, suite d'intégration complète verte (461 tests) ; mémoire au repos avec `mysql.cnf` : 157 Mo en 8.0, 139 à 182 Mo en 8.4 (limite du conteneur : 512 Mo).
+
+**1. Répéter sur une copie des vraies données** (sans arrêt, rien n'est modifié), quelques jours avant :
+
+```bash
+bash /opt/hestim/deploy/vps/essayer-mysql84.sh ; echo "code $?"
+```
+
+Attendu : « RÉPÉTITION RÉUSSIE », code 0. Le script vérifie aussi qu'aucun compte n'utilise `mysql_native_password`, désactivé par défaut en 8.4. S'il en signale un : `ALTER USER '<nom>'@'<hôte>' IDENTIFIED WITH caching_sha2_password BY '<son mot de passe>';` avant le passage. Récupérer l'image à l'avance : `docker pull mysql:8.4.13`.
+
+**2. Le passage**, dans la fenêtre du dimanche matin (environ 15 minutes d'arrêt), dans `/opt/hestim` avec `COMPOSE` comme plus haut :
+
+```bash
+# Une sauvegarde fraîche, sortie du serveur (code 0 attendu)
+bash /opt/hestim/deploy/vps/sauvegarder.sh ; echo "code $?"
+# Plus aucune écriture
+$COMPOSE stop backend studylib studylib-queue studylib-scheduler
+# Arrêt lent : InnoDB vide tout avant de changer de version
+docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -e "SET GLOBAL innodb_fast_shutdown = 0"'
+$COMPOSE stop mysql
+# Copie du dossier de données de 8.0, MySQL arrêté : c'est le retour arrière
+VOL=$(docker inspect -f '{{range .Mounts}}{{if eq .Destination "/var/lib/mysql"}}{{.Name}}{{end}}{{end}}' hestim_mysql)
+docker volume create hestim_mysql80_avant84
+docker run --rm --network none -v "$VOL":/de:ro -v hestim_mysql80_avant84:/vers alpine:3.20 cp -a /de/. /vers/
+```
+
+Les paquets majNN ne livrent pas `docker-compose.yml` et `appliquer-maj.sh` ne relance jamais MySQL : l'image ne change qu'ici, à la main.
+
+```bash
+sed -i 's#^\( *image: \)mysql:8\.0$#\1mysql:8.4.13#' /opt/hestim/docker-compose.yml
+grep -n 'image: mysql' /opt/hestim/docker-compose.yml   # une seule ligne, mysql:8.4.13
+$COMPOSE up -d mysql
+docker logs -f hestim_mysql    # attendre « Server upgrade from '80046' to '80413' completed » puis « ready for connections », Ctrl+C
+docker exec hestim_mysql sh -c 'MYSQL_PWD="$MYSQL_ROOT_PASSWORD" mysql -uroot -N -e "SELECT VERSION()"'   # 8.4.13
+$COMPOSE up -d backend studylib studylib-queue studylib-scheduler
+```
+
+Recette courte : connexion, emploi du temps d'un étudiant, un document de la Bibliothèque, puis `bash /opt/hestim/deploy/vps/sauvegarder.sh` (code 0). Garder le volume `hestim_mysql80_avant84` deux semaines, puis `docker volume rm hestim_mysql80_avant84`.
+
+**Retour arrière** (tout ce qui a été saisi depuis le passage est perdu : décider vite) :
+
+```bash
+$COMPOSE stop backend studylib studylib-queue studylib-scheduler mysql
+docker run --rm --network none -v hestim_mysql80_avant84:/de:ro -v "$VOL":/vers alpine:3.20 sh -c 'find /vers -mindepth 1 -delete && cp -a /de/. /vers/'
+sed -i 's#^\( *image: \)mysql:8\.4\.13$#\1mysql:8.0#' /opt/hestim/docker-compose.yml
+$COMPOSE up -d mysql
+$COMPOSE up -d backend studylib studylib-queue studylib-scheduler
+```
+
+Pendant l'arrêt, la tâche `*/15` de `sauvegarder-journaux.sh` peut échouer une fois (MySQL arrêté) : sans effet, la sauvegarde fraîche du début couvre ce moment ; la lancer à la main après la recette. Après le passage, les journaux binaires continuent sans rupture (même identifiant de serveur, même suite de numéros), et l'essai de restauration du mois se fait dans un MySQL jetable `mysql:8.4.13` (un export de 8.4 ne se relit pas à coup sûr en 8.0). Pour les rejouer (« Revenir à une heure précise »), l'outil `mysqlbinlog` 8.4 vient de l'image `percona/percona-server:8.4` (8.4.11, vérifié le 26 octobre) : l'image `mysql:8.4` ne le contient pas.
+
+### Supervision (lot ME-21)
+
+Conception et diagrammes : `docs/plans/planner-multi-etablissements/conception-me21-supervision.md`. Une sonde hébergée (Better Stack ou UptimeRobot) interroge Planner depuis l'extérieur et prévient la personne d'astreinte par courriel et par notification sur le téléphone. Aucune donnée d'élève ne sort : la sonde ne lit que des codes HTTP et des mots-clés.
+
+1. **Sur le serveur, une fois** : ajouter à `/opt/hestim/.env.docker` le jeton des mesures et le nom de l'école dans les journaux, puis recréer le conteneur du serveur de Planner (un simple redémarrage ne relit pas `.env.docker`) :
+   ```bash
+   echo "SUPERVISION_TOKEN=$(openssl rand -hex 32)" >> /opt/hestim/.env.docker
+   echo "ETABLISSEMENT_NOM=hestim" >> /opt/hestim/.env.docker
+   cd /opt/hestim && docker compose --env-file .env.docker -f docker-compose.yml -f deploy/vps/docker-compose.vps.yml up -d --no-deps --force-recreate backend
+   ```
+2. **Dans le service de sonde** : créer les moniteurs du tableau du § 3 de la conception (site, `/api/supervision/sante` en code 200, les mots-clés `"solveur":"ok"` et `"erreurs":"ok"`, la bibliothèque), à l'intervalle le plus court de l'offre ; les alertes vont au courriel et à l'application du service sur le téléphone d'astreinte (notifications autorisées la nuit).
+3. **Battements des sauvegardes** : créer dans la sonde deux tâches attendues (sauvegarde de nuit chaque jour vers 02:15, journaux binaires toutes les 15 minutes), puis mettre leurs adresses dans `/root/hestim-sauvegarde.conf` (`BATTEMENT=…`, `BATTEMENT_JOURNAUX=…`). Lancer une fois `sauvegarder.sh` à la main et vérifier que la sonde a reçu le battement.
+4. **Page d'état publique** : les moniteurs du site, de l'API et de la bibliothèque ; la maintenance du dimanche (06 h à 09 h) s'y annonce 48 heures avant.
+5. **Essai de panne de nuit** (critère du lot), un dimanche dans la fenêtre de maintenance, **sans** la déclarer dans la sonde : noter l'heure, `docker pause hestim_backend`, attendre la notification sur le téléphone, `docker unpause hestim_backend`. L'alerte doit arriver en moins de 5 minutes ; noter le résultat dans `docs/recette/essais-supervision.md`.
+
+Mesures à la demande (trafic, temps de réponse, erreurs, courriels en échec, générations, connexions MySQL), sur le serveur :
+`docker exec hestim_backend sh -c 'wget -qO- --header "X-Supervision-Jeton: $SUPERVISION_TOKEN" http://localhost:5000/api/supervision/mesures'`
 
 ---
 

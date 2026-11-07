@@ -90,7 +90,9 @@ test("IIIA : 3A et 4A placées ensemble sans conflit, chaque étudiant voit sa p
   for (const [nom, compte, attendu, absent] of profils) {
     const vue = await (await browser.newContext({ locale: "fr-FR" })).newPage();
     await seConnecter(vue, { email: compte.email, motDePasse, role: "etudiant" });
-    await vue.goto("/emploi-du-temps/mensuel");
+    // Le mois publié, pas le mois courant : le semestre d'essai commence le premier lundi après demain,
+    // qui tombe dans le mois suivant dès la fin du mois (le parcours échouait le 26 octobre 2026)
+    await vue.goto(`/emploi-du-temps/mensuel?mois=${semaine[0].slice(0, 7)}`);
     await expect(vue.getByText(attendu).first(), `${nom} voit ${attendu}`).toBeVisible({ timeout: 20_000 });
     await expect(vue.getByText(absent), `${nom} ne voit pas ${absent}`).toHaveCount(0);
     await testInfo.attach(`emploi du temps ${nom}`, { body: await vue.screenshot({ fullPage: true }), contentType: "image/png" });

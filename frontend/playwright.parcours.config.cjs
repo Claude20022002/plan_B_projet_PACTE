@@ -40,7 +40,13 @@ module.exports = defineConfig({
     trace: "retain-on-failure",
     screenshot: "only-on-failure",
   },
-  projects: [{ name: "chromium", use: { ...devices["Desktop Chrome"] } }],
+  projects: [
+    { name: "chromium", testIgnore: "**/iiia.spec.cjs", use: { ...devices["Desktop Chrome"] } },
+    // IIIA génère deux promotions sur tout le semestre et prend des salles que d'autres parcours
+    // supposent libres (report.spec garde la salle de sa séance du 4 janvier : la 4A l'occupait
+    // chaque lundi de janvier, plus aucun créneau libre). Il passe donc en dernier, sur la même base.
+    { name: "iiia", testMatch: "**/iiia.spec.cjs", dependencies: ["chromium"], use: { ...devices["Desktop Chrome"] } },
+  ],
   webServer: [
     ...(solveurExterne
       ? []

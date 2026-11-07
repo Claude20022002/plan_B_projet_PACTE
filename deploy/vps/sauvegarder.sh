@@ -29,6 +29,9 @@
 #                                        verrouillage d'objet de B2 (Object Lock).
 #   FICHIERS=oui                         « non » : bases seulement, sans l'archive des fichiers (par
 #                                        exemple pour une seconde tâche, plus fréquente)
+#   BATTEMENT=https://…                  adresse de battement de la sonde (lot ME-21), appelée quand
+#                                        tout est fait et sorti du serveur ; la sonde alerte sinon
+#   BATTEMENT_JOURNAUX=https://…         la même chose pour sauvegarder-journaux.sh
 # La clé privée (ou, dans l'ancien mode, la phrase) doit être gardée AILLEURS que sur le serveur :
 # sans elle, aucune sauvegarde ne se relit. Restauration : DEPLOIEMENT.md, « Sauvegarde quotidienne ».
 #
@@ -123,3 +126,5 @@ fi
 
 [ "$ECHECS" -eq 0 ] || { journal "ÉCHEC : au moins un export manque"; exit 1; }
 [ "$SORTIES" -eq 1 ] || exit 3
+# Tout est fait et hors du serveur : battement vers la sonde (lot ME-21)
+battre "$BATTEMENT"

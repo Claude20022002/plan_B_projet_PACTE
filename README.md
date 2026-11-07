@@ -83,7 +83,7 @@ construit depuis ce chemin.
 ### Prérequis
 
 - Node.js 22 et npm
-- MySQL 8 (local, ou `docker run -d --name hestim_mysql -e MYSQL_ROOT_PASSWORD=… -p 3306:3306 mysql:8.0`)
+- MySQL 8.4 (local, ou `docker run -d --name hestim_mysql -e MYSQL_ROOT_PASSWORD=… -p 3306:3306 mysql:8.4.13`)
 - Facultatif : Java 21 et Maven pour le service de génération
 
 ### Installation
@@ -167,7 +167,7 @@ l'hôte, le solveur et StudyLib seulement sur le réseau interne.
 | StudyLib | `cd ../StudyLib && php artisan test` | 124 tests |
 
 Les tests d'intégration attendent un MySQL de test, par exemple :
-`docker run -d --name hestim_mysql_test -e MYSQL_ROOT_PASSWORD=test_root -e MYSQL_DATABASE=hestim_test -p 3307:3306 mysql:8.0`
+`docker run -d --name hestim_mysql_test -e MYSQL_ROOT_PASSWORD=test_root -e MYSQL_DATABASE=hestim_test -p 3307:3306 mysql:8.4.13`
 (valeurs par défaut de [`backend/tests/integration/setupEnv.js`](backend/tests/integration/setupEnv.js)).
 
 ---

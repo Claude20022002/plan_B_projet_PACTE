@@ -13,6 +13,8 @@ import { TableSkeleton } from '../design-system/components/PremiumSkeleton';
 import { enseignantAPI, groupeAPI, imprevuAPI, reservationAPI, salleAPI } from '../services/api';
 import { useToast } from '../contexts/ToastContext';
 import { fetchAll } from '../utils/fetchAll';
+import useAnnees from '../hooks/useAnnees';
+import { groupesDuJour } from '../utils/annees';
 import { aujourdhui } from '../../../shared/dates.js';
 
 const PERIODES = ['avenir', 'passee', 'toutes'];
@@ -38,6 +40,7 @@ export default function Reservations() {
     const [violations, setViolations] = useState(null);
     const [refus, setRefus] = useState(null);
     const [assistant, setAssistant] = useState(false);
+    const annees = useAnnees();
 
     const charger = useCallback(async () => {
         try {
@@ -136,6 +139,10 @@ export default function Reservations() {
     };
 
     const duree = form ? Math.max(15, minutes(form.heure_fin) - minutes(form.heure_debut)) : 60;
+    // Les classes de l'année de la réservation (lot ME-18), plus celles déjà choisies
+    const referencesDuJour = form
+        ? { ...references, groupes: groupesDuJour(references.groupes, annees ?? [], form.date, form.groupes.map((g) => g.id_groupe)) }
+        : references;
 
     return (
         <DashboardLayout>
@@ -165,7 +172,7 @@ export default function Reservations() {
                 )}
             </Paper>
 
-            <ReservationDialog form={form} setForm={setForm} references={references} onClose={() => setForm(null)} onEnregistrer={() => enregistrer()} onTrouverCreneau={() => setAssistant(true)} />
+            <ReservationDialog form={form} setForm={setForm} references={referencesDuJour} onClose={() => setForm(null)} onEnregistrer={() => enregistrer()} onTrouverCreneau={() => setAssistant(true)} />
 
             <AssistantCreneauxDialog
                 open={assistant}

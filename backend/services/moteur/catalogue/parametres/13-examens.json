@@ -1,0 +1,42 @@
+{
+  "code": "EXA", "nom": "Examens et évaluations",
+  "role": "Un problème voisin de celui des cours : mêmes ressources, autres variables (dates, salles multiples, surveillants).",
+  "groupes": [
+    { "code": "DATES", "nom": "Dates",
+      "defauts": { "role": "donnee", "type": "structure", "niveaux": "GP", "priorite": 2, "validite": "datee", "etat": "saisie", "ref": "SessionExamen, examens.js" },
+      "parametres": [
+        { "code": "EXAMENS", "nom": "Dates des examens", "desc": "Fixées, ou plage à placer par le moteur.", "src": "10.1" },
+        { "code": "CONTROLES", "nom": "Dates des contrôles continus", "desc": "Évaluations pendant les heures de cours.", "src": "10.2" },
+        { "code": "DEVOIRS", "nom": "Dates des devoirs surveillés", "desc": "Épreuves surveillées de la période.", "src": "10.3 16C.10" },
+        { "code": "PRATIQUES", "nom": "Dates des examens pratiques", "desc": "Demandent un laboratoire et souvent plusieurs passages.", "src": "10.4" },
+        { "code": "SOUTENANCES", "nom": "Dates des soutenances", "desc": "Passages par jury.", "src": "10.5 15.21 16E.19" },
+        { "code": "RATTRAPAGES", "nom": "Dates des rattrapages", "desc": "Session de rattrapage.", "src": "10.6" },
+        { "code": "DELIBERATION", "nom": "Périodes de délibération", "desc": "Les jurys sont occupés.", "src": "10.21", "etat": "absent", "ref": null },
+        { "code": "RESULTATS", "nom": "Publication des résultats", "desc": "Date à respecter ; fixe le temps de correction.", "type": "date", "priorite": 4, "src": "10.22", "etat": "absent", "ref": null }
+      ] },
+    { "code": "EPREUVE", "nom": "Épreuves et moyens",
+      "defauts": { "role": "donnee", "niveaux": "PI", "cible": "epreuve", "priorite": 2, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "DUREE", "nom": "Durée des épreuves", "desc": "Durée propre à l'épreuve.", "type": "duree_min", "etat": "base", "ref": "SessionExamen.heure_debut, heure_fin", "src": "10.7" },
+        { "code": "SURVEILLANTS_PAR_SALLE", "nom": "Surveillants nécessaires", "desc": "Nombre minimal par salle.", "type": "entier", "defaut": 2, "etat": "parametre", "ref": "surveillants_par_salle", "src": "10.10" },
+        { "code": "RATIO_CAPACITE", "nom": "Part de la capacité en examen", "desc": "Quand la capacité d'examen de la salle n'est pas renseignée.", "type": "pourcentage", "defaut": 50, "etat": "parametre", "ref": "ratio_capacite_examen" },
+        { "code": "REPARTITION", "nom": "Répartition des candidats", "desc": "Un groupe peut occuper plusieurs salles.", "type": "structure", "etat": "base", "ref": "SessionExamenSalle", "src": "10.13" },
+        { "code": "MATERIEL", "nom": "Matériel spécialisé", "desc": "Matériel exigé par l'épreuve.", "type": "liste_references", "src": "10.19" },
+        { "code": "CORRECTION", "nom": "Temps de correction", "desc": "Temps qui rend un enseignant moins disponible après l'épreuve.", "type": "duree_min", "priorite": 4, "src": "10.20" },
+        { "code": "ENSEIGNANTS_SURVEILLENT", "nom": "Les enseignants surveillent", "desc": "Sinon, la surveillance revient à l'administration.", "type": "booleen", "defaut": false, "niveaux": "G", "etat": "plan", "ref": "fichier 06, § 6.1" }
+      ] },
+    { "code": "REGLE", "nom": "Règles des examens",
+      "defauts": { "role": "regle", "niveaux": "GP", "force": "strict", "force_reglable": true, "priorite": 2, "validite": "periode", "etat": "absent", "type": "booleen", "defaut": true },
+      "parametres": [
+        { "code": "MAX_EPREUVES_JOUR", "nom": "Épreuves par jour", "desc": "Plafond d'épreuves par jour pour un groupe.", "type": "entier", "defaut": 2, "force": "souple", "poids": 30, "src": "10.8" },
+        { "code": "SURVEILLANTS_DISPONIBLES", "nom": "Surveillants disponibles", "desc": "Assez de surveillants libres à chaque épreuve.", "etat": "saisie", "ref": "Surveillance", "src": "10.11" },
+        { "code": "CAPACITE", "nom": "Capacité des salles d'examen", "desc": "Les candidats tiennent dans la capacité d'examen.", "force_reglable": false, "obligatoire": true, "modifiable": "non", "priorite": 1, "etat": "saisie", "ref": "services/planning/examens.js", "src": "10.12" },
+        { "code": "ESPACEMENT_CLASSE", "nom": "Espacement entre examens d'une classe", "desc": "Temps minimal entre deux épreuves d'un groupe.", "type": "duree_min", "force": "souple", "poids": 20, "src": "10.14" },
+        { "code": "ESPACEMENT_ETUDIANT", "nom": "Espacement entre examens d'un étudiant", "desc": "Le même, compté personne par personne (options comprises).", "type": "duree_min", "force": "souple", "poids": 20, "src": "10.15" },
+        { "code": "JURY_DISPONIBLE", "nom": "Jurys disponibles", "desc": "Tous les membres du jury sont libres.", "src": "10.16" },
+        { "code": "EXAMINATEURS_DISPONIBLES", "nom": "Examinateurs disponibles", "desc": "L'enseignant examinateur est libre.", "src": "10.17" },
+        { "code": "LABO_DISPONIBLE", "nom": "Laboratoires disponibles", "desc": "Le laboratoire d'un examen pratique est libre.", "src": "10.18" },
+        { "code": "PREPARATION_SALLE", "nom": "Temps de préparation des salles", "desc": "Marge avant l'épreuve.", "type": "duree_min", "src": "10.9" }
+      ] }
+  ]
+}

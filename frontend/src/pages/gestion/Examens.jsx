@@ -30,6 +30,8 @@ import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { coursAPI, examenAPI, groupeAPI, salleAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { fetchAll } from '../../utils/fetchAll';
+import useAnnees from '../../hooks/useAnnees';
+import { groupesDuJour } from '../../utils/annees';
 import { ds } from '../../design-system/tokens';
 import { localeEcran } from '../../utils/dates';
 
@@ -50,6 +52,7 @@ export default function Examens() {
     const [ref, setRef] = useState({ cours: [], groupes: [], salles: [] });
     const [dialog, setDialog] = useState(null);
     const [violations, setViolations] = useState(null);
+    const annees = useAnnees();
 
     const formatDate = useMemo(() => new Intl.DateTimeFormat(localeEcran(i18n.language), { weekday: 'short', day: 'numeric', month: 'short' }), [i18n.language]);
 
@@ -268,7 +271,7 @@ export default function Examens() {
                                 </Stack>
                                 <Autocomplete
                                     multiple
-                                    options={ref.groupes}
+                                    options={groupesDuJour(ref.groupes, annees ?? [], dialog.date, dialog.groupes.map((g) => g.id_groupe))}
                                     value={dialog.groupes}
                                     onChange={(_, v) => setDialog((d) => ({ ...d, groupes: v }))}
                                     getOptionLabel={(g) => `${g.nom_groupe} (${g.effectif})`}
