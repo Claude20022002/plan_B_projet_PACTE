@@ -70,6 +70,7 @@ import {
     notFound,
     optionalAuth,
 } from "./middleware/index.js";
+import { choisirEtablissement } from "./middleware/etablissementMiddleware.js";
 
 dotenv.config();
 
@@ -105,6 +106,9 @@ app.use(
         credentials: true,
     })
 );
+
+// Établissement de la requête (D-03, essai de ME-3a) : avant tout accès à la base
+app.use(choisirEtablissement);
 
 // Fournisseur OpenID Connect (ClassQuiz) : avant les lecteurs de corps, qu'oidc-provider gère
 // lui-même ; hors CSRF (le client s'authentifie par son secret sur /token)
