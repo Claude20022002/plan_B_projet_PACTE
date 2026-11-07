@@ -67,6 +67,8 @@ import TrajetCampus from "./TrajetCampus.js";
 import AnneeUniversitaire from "./AnneeUniversitaire.js";
 import Periode from "./Periode.js";
 import ParametrePlanning from "./ParametrePlanning.js";
+import VersionParametres from "./VersionParametres.js";
+import ValeurParametre from "./ValeurParametre.js";
 import CoursComposante from "./CoursComposante.js";
 import Enseignement from "./Enseignement.js";
 import EnseignementGroupe from "./EnseignementGroupe.js";
@@ -603,6 +605,11 @@ Annonce.hasOne(AnnoncePieceJointe, { foreignKey: "id_annonce", as: "pieceJointe"
 AnnonceDestinataire.belongsTo(Annonce, { foreignKey: "id_annonce", as: "annonce" });
 AnnonceDestinataire.belongsTo(Users, { foreignKey: "id_user", as: "user", targetKey: "id_user" });
 
+// Réglages du moteur de planification : une version et ses valeurs (lot MP-1)
+VersionParametres.hasMany(ValeurParametre, { foreignKey: "id_version", as: "valeurs", onDelete: "CASCADE" });
+ValeurParametre.belongsTo(VersionParametres, { foreignKey: "id_version", as: "version" });
+VersionParametres.belongsTo(Users, { foreignKey: "id_auteur", as: "auteur", targetKey: "id_user", onDelete: "SET NULL" });
+
 // Push (D3) : chaque notification part aussi vers les appareils du destinataire, une fois validée
 // la transaction qui l'a créée (jamais pour un changement finalement annulé).
 Notification.afterCreate((notification, options) => {
@@ -649,6 +656,8 @@ export {
     AnneeUniversitaire,
     Periode,
     ParametrePlanning,
+    VersionParametres,
+    ValeurParametre,
     CoursComposante,
     Enseignement,
     EnseignementGroupe,
