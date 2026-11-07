@@ -1,5 +1,5 @@
 import { Op } from "sequelize";
-import sequelize from "../../config/db.js";
+import { enTransaction } from "../../models/acces.js";
 import { passage } from "../taches/periodiques.js";
 import { Affectation, Appartenir, EnseignementGroupe, EnvoiEdt, Filiere, Groupe, Notification, Users } from "../../models/index.js";
 import { ErreurMetier } from "../planning/enseignements.js";
@@ -99,7 +99,7 @@ const etudiantsDe = async (idGroupe) => {
 /** Notification (et push) à chaque étudiant, puis e-mails en arrière-plan. */
 const prevenir = async (etudiants, { titre, message, texteEmail, lien }) => {
     if (!etudiants.length) return;
-    await sequelize.transaction((transaction) =>
+    await enTransaction((transaction) =>
         Notification.bulkCreate(
             etudiants.map((e) => ({ id_user: e.id_user, titre, message, type_notification: "info", lue: false, lien })),
             { transaction, individualHooks: true }
