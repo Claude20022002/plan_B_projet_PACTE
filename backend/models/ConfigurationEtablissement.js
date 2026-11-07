@@ -21,6 +21,8 @@ const ConfigurationEtablissement = sequelize.define(
         modele_edt: { type: DataTypes.STRING(20), allowNull: false, defaultValue: "planner" },
         // ClassQuiz pour cette école (lot ME-0c, migration 0057) : éteint pour une installation neuve
         classquiz_actif: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
+        // Sondages des enseignants à leurs classes (lot EC-9, migration 0059) : éteints par défaut
+        sondages_actifs: { type: DataTypes.BOOLEAN, allowNull: false, defaultValue: false },
     },
     {
         tableName: "ConfigurationEtablissement",

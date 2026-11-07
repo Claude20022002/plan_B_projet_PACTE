@@ -88,6 +88,12 @@ export const chargerEspaceCours = async (idCours, idGroupe) => planner(`/classes
 /** Adresse d'un support : le lien, ou une URL signée de 5 minutes (Planner vérifie la classe) */
 export const lienSupport = async (idSupport) => (await planner(`/supports-cours/${encodeURIComponent(idSupport)}/ouvrir`)).url;
 
+/** Sondages ouverts d'une classe (lot EC-9) : { actif, sondages: [{ question, choix, a_repondu }] } */
+export const chargerSondages = async (idCours, idGroupe) => planner(`/classes/${encodeURIComponent(idCours)}/${encodeURIComponent(idGroupe)}/sondages`);
+
+/** Réponse anonyme et définitive à un sondage */
+export const repondreSondage = (id, idChoix) => planner(`/sondages/${encodeURIComponent(id)}/reponse`, { method: 'POST', body: { id_choix: idChoix } });
+
 /** Derniers retours de stage publiés (liste légère : entreprise, poste, note, photo ou non) */
 export const chargerAvisStage = async () => (await biblio('/internship-reviews/recent'))?.data ?? [];
 
