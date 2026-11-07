@@ -1,5 +1,5 @@
 import crypto from "crypto";
-import sequelize from "../config/db.js";
+import { requete } from "../models/acces.js";
 
 /**
  * Middleware de limitation du taux de requêtes (Rate Limiting)
@@ -56,24 +56,24 @@ const magasinMemoire = () => {
 export const magasinBase = (nom) => {
     const cleDe = (cle) => `${nom}:${crypto.createHash("sha256").update(String(cle)).digest("hex")}`;
     return {
-        vider: () => sequelize.query("DELETE FROM CompteursDebit WHERE cle LIKE ?", { replacements: [`${nom}:%`] }),
+        vider: () => requete("DELETE FROM CompteursDebit WHERE cle LIKE ?", { replacements: [`${nom}:%`] }),
         compter: async (cle, fenetreMs, maintenant) => {
             const k = cleDe(cle);
-            await sequelize.query(
+            await requete(
                 `INSERT INTO CompteursDebit (cle, compteur, expire_ms) VALUES (?, 1, ?)
                  ON DUPLICATE KEY UPDATE compteur = IF(expire_ms <= ?, 1, compteur + 1), expire_ms = IF(expire_ms <= ?, ?, expire_ms)`,
                 { replacements: [k, maintenant + fenetreMs, maintenant, maintenant, maintenant + fenetreMs] }
             );
-            const [[ligne]] = await sequelize.query("SELECT compteur, expire_ms FROM CompteursDebit WHERE cle = ?", { replacements: [k] });
+            const [[ligne]] = await requete("SELECT compteur, expire_ms FROM CompteursDebit WHERE cle = ?", { replacements: [k] });
             return { count: Number(ligne.compteur), reset: Number(ligne.expire_ms) };
         },
-        retirer: (cle) => sequelize.query("UPDATE CompteursDebit SET compteur = GREATEST(compteur - 1, 0) WHERE cle = ?", { replacements: [cleDe(cle)] }),
+        retirer: (cle) => requete("UPDATE CompteursDebit SET compteur = GREATEST(compteur - 1, 0) WHERE cle = ?", { replacements: [cleDe(cle)] }),
     };
 };
 
 /** Lignes des fenêtres terminées (tâche quotidienne). Renvoie leur nombre. */
 export const purgerCompteursDebit = async (maintenant = Date.now()) => {
-    const [resultat] = await sequelize.query("DELETE FROM CompteursDebit WHERE expire_ms <= ?", { replacements: [maintenant] });
+    const [resultat] = await requete("DELETE FROM CompteursDebit WHERE expire_ms <= ?", { replacements: [maintenant] });
     return resultat?.affectedRows ?? 0;
 };
 
