@@ -294,7 +294,7 @@ Ordre : SN-2 (contrat), SN-1, SN-3, SN-5 ; SN-4 en parallèle. Fichiers neufs so
 1. **Nom de l'école fictive** de démonstration (N-18) : un nom inventé et vérifié libre (pas d'école réelle du même nom), et son pays (Maroc, France, autre).
 2. **Choix du thème par la personne** : on retire le choix par appareil (N-2). Faut-il garder une préférence personnelle « neutre » pour une école au thème `panneau` (accessibilité, goût) ?
 3. **Segments visés en premier** pour la vente : le référentiel couvre du primaire à l'université. Les modèles de l'assistant (§ 5.2) ne prévoient que l'enseignement supérieur. Ajouter collège, lycée, centre de formation change ME-10 et les règles par pays.
-4. **Nom du produit** (Q-29, Jadwal ou Planner) : le thème neutre affiche « Planner » ; il suffira de changer un texte si le nom change.
+4. **Nom du produit** : tranché le 5 novembre, c'est **Planner** (Q-29).
 5. **Migration 0060** : numéro à confirmer avec le groupe A, et qui l'écrit (SN-2).
 6. **Arabe et écriture de droite à gauche** : tous les concurrents marocains affichent l'arabe (analyse du 4 novembre, `docs/etude-marche/01-concurrents.md`, branche `b/etude-marche`). Si le Maroc reste le premier marché, le thème neutre doit le prévoir dès SN-1 : propriétés logiques CSS (`margin-inline`, `inset-inline`), icônes de direction en miroir, et une police qui couvre l'arabe (Inter ne le couvre pas : Noto Sans Arabic ou IBM Plex Sans Arabic en complément).
 7. **Positionnement** : planificateur du supérieur privé qui s'intègre aux logiciels de frais existants, ou logiciel de gestion d'école complet ? La réponse fixe les modèles de l'assistant (question 3) et le prix (analyse, § 5).

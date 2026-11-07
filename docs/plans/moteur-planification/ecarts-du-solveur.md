@@ -67,18 +67,21 @@ La demande cite OR-Tools et CP-SAT. Voici ce qui les distingue pour ce problème
 | Critère | Timefold (en place) | OR-Tools CP-SAT |
 |---|---|---|
 | Méthode | recherche locale : part d'une solution et l'améliore | programmation par contraintes : raisonne et élimine |
-| **Prouver qu'il n'y a pas de solution** | non | **oui**, avec un sous-ensemble de règles en cause (hypothèses) : répond au § « expliquer un échec » |
+| **Prouver qu'il n'y a pas de solution** | non | **oui**, avec un sous-ensemble de règles en cause (hypothèses). Il n'est réduit qu'en monofil et sans objectif, et n'est pas garanti minimal : expliquer un échec demande une passe séparée |
 | Écart à l'optimum | inconnu | une borne, donc un écart chiffré |
 | Problème très contraint | peut stagner sur des règles dures | souvent son point fort |
 | Grande taille | ajoute une règle sans multiplier les variables | variables séance × créneau × salle : **à découper**, sinon la mémoire explose |
 | Règles à calculs libres | écrites en Java, directement | à traduire en contraintes linéaires ; certaines sont pénibles |
 | Replanifier un peu | naturel : épingler et reprendre | possible (figer, indice de départ) |
-| Dans notre dépôt | 22 règles et leurs tests, déjà en service | à écrire ; bibliothèque native à embarquer dans l'image du solveur |
-| Licence, langage | Apache 2.0, Java | Apache 2.0, utilisable depuis Java |
+| Dans notre dépôt | 22 règles et leurs tests, déjà en service | à écrire ; le paquet Maven requiert glibc, et notre image `eclipse-temurin:21-jre-alpine` ne l'a pas : image à changer, chargement non essayé |
+| Licence, langage | Community sous Apache 2.0, Java ; multifil et nearby selection payants depuis le début | Apache 2.0, paquet Maven officiel pour Java |
+| Échéance | en 2.x, `ScoreAnalysis` est réservé à l'édition payante et il faut Spring Boot 4. `EmploiDuTempsController.java` l'utilise, sur 1.15.0 et Spring Boot 3.3.5. La ligne 1.x finirait début 2027 (extrait, à confirmer) ; aucun prix publié | aucune |
 
-### Recommandation : ne pas choisir sur la réputation
+Relecture du 4 novembre 2026 : **aucune comparaison publiée de CP-SAT et de Timefold n'a été trouvée sur l'emploi du temps**. ITC 2019 a été gagné par une méthode MIP sans limite de temps, ce qui ne dit rien d'un budget de quelques minutes.
 
-Les deux peuvent même se compléter : CP-SAT pour la faisabilité et l'explication, une recherche locale pour affiner. Trois pas, dans cet ordre :
+### Décision : ne pas choisir sur la réputation
+
+Le chef de projet a retenu la mesure le 4 novembre 2026. Les deux peuvent même se compléter : CP-SAT pour la faisabilité et l'explication, une recherche locale pour affiner. L'évaluateur indépendant sert aussi de repli si l'on quitte `ScoreAnalysis`. Trois pas, dans cet ordre :
 
 1. **Un modèle neutre** : le problème décrit sans vocabulaire de moteur, compilé depuis le catalogue et les valeurs résolues. Il sert quel que soit le choix.
 2. **Un évaluateur indépendant** : une fonction qui note n'importe quel planning (règles strictes tenues, score des règles souples, volumes). Sans lui, on compare le score de l'un au score de l'autre, ce qui ne veut rien dire.
