@@ -22,6 +22,14 @@ test('annonce, emploi du temps, liens externes', () => {
   expect(ecranDeLien(undefined)).toBe('/alertes');
 });
 
+test('nouveau sondage : l’écran du cours de la classe (lot EC-9)', () => {
+  expect(ecranDeLien('/mes-cours/3/17')).toBe('/cours/3-17');
+  // Identifiants manquants ou autre chose que des nombres : pas d'écran précis
+  expect(ecranDeLien('/mes-cours/3')).toBe('/alertes');
+  expect(ecranDeLien('/mes-cours/3/x')).toBe('/alertes');
+  expect(ecranDeLien('/mes-cours')).toBe('/alertes');
+});
+
 test('seules les alertes qui mènent à un écran précis sont cliquables', () => {
   expect(alerteOuvrable('/jeux?partie=1')).toBe(true);
   expect(alerteOuvrable('/annonces/3')).toBe(true);

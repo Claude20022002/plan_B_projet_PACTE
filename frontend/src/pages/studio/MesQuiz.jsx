@@ -14,6 +14,7 @@ import OuvrirPassationDialog from '../../components/studio/editeur/OuvrirPassati
 import { studioAPI } from '../../services/studioApi';
 import { pretADiffuser } from '../../components/studio/outils';
 import { useToast } from '../../contexts/ToastContext';
+import useClassQuiz from '../../hooks/useClassQuiz';
 
 /**
  * « Mes quiz » : la banque de l'enseignant (décision du 15 octobre 2026 : un quiz appartient à
@@ -73,6 +74,8 @@ function CarteQuiz({ quiz, onOuvrir, onMenu, onDiffuser }) {
 
 export default function MesQuiz() {
   const { t } = useTranslation();
+  // « Importer mes quiz » vient du service de quiz : pas monté quand l'école ne l'a pas (lot ME-0c)
+  const { actif: classQuiz } = useClassQuiz();
   const navigate = useNavigate();
   const [params, setParams] = useSearchParams();
   const toast = useToast();
@@ -157,7 +160,7 @@ export default function MesQuiz() {
   return (
     <DashboardLayout>
       <PageHeader title={t('studio.banque.titre')} subtitle={t('studio.banque.sousTitre')} actions={[{ label: t('studio.banque.creer'), variant: 'contained', startIcon: <Add />, onClick: () => setNouveau(true) }]} />
-      <ImporterClassQuiz onImporte={charger} />
+      {classQuiz && <ImporterClassQuiz onImporte={charger} />}
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ mb: 3 }} alignItems={{ sm: 'center' }}>
         <TextField
           size="small"
