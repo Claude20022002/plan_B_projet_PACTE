@@ -1,3 +1,4 @@
+# shellcheck shell=bash
 # Partie commune aux scripts de sauvegarde (sauvegarder.sh, sauvegarder-journaux.sh), lue par
 # « . sauvegarde-commun.sh » : réglages de /root/hestim-sauvegarde.conf, journal, choix du
 # chiffrement, droits des fichiers créés. Les réglages sont décrits en tête de sauvegarder.sh.
@@ -11,6 +12,10 @@ PHRASE="${PHRASE:-}"
 DESTINATION="${DESTINATION:-}"
 SUPPRESSION_DISTANTE="${SUPPRESSION_DISTANTE:-oui}"
 CONTENEUR_MYSQL="${CONTENEUR_MYSQL:-hestim_mysql}"
+# Battements vers la sonde extérieure (lot ME-21) : adresses que le service de sonde donne pour
+# une « tâche attendue » ; il alerte si le battement n'arrive pas à l'heure. Vides : rien n'est envoyé.
+BATTEMENT="${BATTEMENT:-}"
+BATTEMENT_JOURNAUX="${BATTEMENT_JOURNAUX:-}"
 
 journal() { echo "$(date '+%F %T') $*"; }
 [[ "$JOURS" =~ ^[1-9][0-9]*$ ]] || { journal "JOURS doit être un entier d'au moins 1"; exit 1; }
@@ -29,6 +34,13 @@ else
     exit 1
 fi
 umask 077
+
+# battre <adresse> : signale à la sonde que la tâche a réussi (sans adresse : rien). Un battement
+# perdu ne fait pas échouer la sauvegarde : la sonde alertera, c'est son rôle.
+battre() {
+    [ -n "$1" ] || return 0
+    curl -fsS -m 10 --retry 2 -o /dev/null "$1" || journal "ATTENTION : battement non envoyé à la sonde"
+}
 
 # chiffrer <fichier cible> : chiffre l'entrée standard vers le fichier
 chiffrer() { gpg --batch --quiet --yes "${CHIFFRER[@]}" -o "$1"; }

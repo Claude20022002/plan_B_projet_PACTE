@@ -6,7 +6,7 @@ Plateforme de planification des cours et de réservation des salles de l'école 
 (Casablanca, campus Gandhi et Stendhal), avec génération automatique des emplois du temps,
 application mobile pour les étudiants et bibliothèque de ressources partagée.
 
-Projet PACTE — cycle ingénieur 3IIIA.
+Projet Planner
 
 L'interface reprend le langage d'un **panneau des départs de gare** : chaque séance est une ligne
 (heure, cours, salle, statut), et un changement (report, annulation, changement de salle) se voit

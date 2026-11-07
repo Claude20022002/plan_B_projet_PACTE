@@ -1,0 +1,69 @@
+{
+  "code": "SAL", "nom": "Salles et infrastructures",
+  "groupes": [
+    { "code": "ID", "nom": "Identification",
+      "defauts": { "role": "contexte", "niveaux": "I", "cible": "salle", "priorite": 4, "validite": "permanent", "etat": "base" },
+      "parametres": [
+        { "code": "ID", "nom": "Identifiant de la salle", "desc": "Clé stable.", "type": "texte", "role": "donnee", "obligatoire": true, "priorite": 1, "modifiable": "non", "etat": "solveur", "ref": "Salle.id_salle", "src": "6.1" },
+        { "code": "NOM", "nom": "Nom ou numéro de salle", "desc": "Nom affiché.", "type": "texte", "obligatoire": true, "ref": "Salle.nom_salle", "src": "6.2 6.3" },
+        { "code": "BATIMENT", "nom": "Bâtiment", "desc": "Sert aux changements de bâtiment. Absent aujourd'hui : l'ancien champ n'est plus qu'un alias du nom du campus.", "type": "reference", "role": "donnee", "priorite": 3, "etat": "absent", "src": "6.4" },
+        { "code": "ETAGE", "nom": "Étage", "desc": "Sert à l'accessibilité et aux temps de déplacement.", "type": "entier", "role": "donnee", "priorite": 3, "ref": "Salle.etage", "src": "6.5" },
+        { "code": "CAMPUS", "nom": "Campus", "desc": "Donne le temps de trajet et le site.", "type": "reference", "role": "donnee", "obligatoire": true, "priorite": 1, "etat": "solveur", "ref": "Salle.id_campus", "src": "6.6" },
+        { "code": "DEPARTEMENT", "nom": "Département", "desc": "Une salle peut être réservée en priorité à un département.", "type": "reference", "etat": "absent", "src": "6.7" },
+        { "code": "TYPE", "nom": "Type de salle", "desc": "Cours, amphithéâtre, laboratoire, informatique, langues, sport, atelier, bibliothèque, polyvalente, examen, visioconférence : liste propre à l'école.", "type": "reference", "role": "donnee", "obligatoire": true, "priorite": 1, "etat": "solveur", "ref": "Salle.type_salle, TYPES_SALLE (ME-2a : TypeSalle)", "src": "6.8 6.9 6.10 6.11 6.12 6.13 6.14 6.15 6.16 6.17 6.18 6.19" }
+      ] },
+    { "code": "CARAC", "nom": "Capacité et équipements",
+      "defauts": { "role": "donnee", "niveaux": "I", "cible": "salle", "priorite": 3, "validite": "permanent", "etat": "absent" },
+      "parametres": [
+        { "code": "CAPACITE", "nom": "Capacité maximale", "desc": "Plafond de places : la règle de capacité la lit.", "type": "entier", "obligatoire": true, "priorite": 1, "etat": "solveur", "ref": "Salle.capacite", "src": "6.20 6.22" },
+        { "code": "CAPACITE_MIN", "nom": "Capacité minimale", "desc": "Effectif en dessous duquel ouvrir cette salle est du gaspillage.", "type": "entier", "src": "6.21" },
+        { "code": "CAPACITE_REGLEMENTAIRE", "nom": "Capacité réglementaire", "desc": "Plafond de sécurité : ne peut qu'abaisser la capacité.", "type": "entier", "priorite": 1, "src": "9.15" },
+        { "code": "CAPACITE_EXAMEN", "nom": "Capacité en examen", "desc": "Places utilisables en examen ; à défaut, part de la capacité.", "type": "entier", "priorite": 2, "etat": "base", "ref": "Salle.capacite_examen", "src": "10.12" },
+        { "code": "TABLES", "nom": "Nombre de tables", "desc": "Inventaire ; peut justifier une capacité.", "type": "entier", "priorite": 5, "src": "6.23" },
+        { "code": "ORDINATEURS", "nom": "Ordinateurs et postes de travail", "desc": "Nombre de postes : un TP informatique en réclame autant que d'élèves.", "type": "entier", "src": "6.24 6.25" },
+        { "code": "PRISES", "nom": "Prises électriques", "desc": "Inventaire, pour les cours sur ordinateur personnel.", "type": "entier", "priorite": 5, "src": "6.26" },
+        { "code": "EQUIPEMENTS", "nom": "Équipements présents", "desc": "Internet, vidéoprojecteur, tableau interactif ou classique, audio, mobilier et équipement spécialisés.", "type": "liste_references", "priorite": 1, "etat": "solveur", "ref": "Salle.equipements (ME-2a : Equipement, quantité)", "src": "6.27 6.28 6.29 6.30 6.31 6.36 6.37 6.38" },
+        { "code": "CONFORT", "nom": "Confort de la salle", "desc": "Climatisation, ventilation, éclairage : utile aux créneaux chauds ou tardifs.", "type": "liste", "priorite": 5, "src": "6.32 6.33 6.34" },
+        { "code": "ACCESSIBLE", "nom": "Accessible aux personnes à mobilité réduite", "desc": "Nécessaire à un groupe qui a un besoin d'accessibilité.", "type": "booleen", "priorite": 2, "src": "6.35 9.20" },
+        { "code": "SECURITE", "nom": "Équipement de sécurité", "desc": "Conditions de sécurité d'un local, prérequis de certains TP.", "type": "liste", "priorite": 2, "src": "6.39 9.14" },
+        { "code": "COMPATIBILITE", "nom": "Compatibilité salle et matière", "desc": "Liste directe, quand le type et les équipements ne suffisent pas.", "type": "liste_references", "src": "6.60" },
+        { "code": "RESERVE_DEPARTEMENT", "nom": "Réservable par", "desc": "Qui peut réserver la salle.", "type": "enum", "valeurs": ["admin", "enseignants"], "etat": "base", "ref": "Salle.reservable_par" }
+      ] },
+    { "code": "DISPO", "nom": "Disponibilité",
+      "defauts": { "role": "donnee", "niveaux": "I", "cible": "salle", "priorite": 2, "validite": "datee", "etat": "absent" },
+      "parametres": [
+        { "code": "HORS_SERVICE", "nom": "Hors service", "desc": "Salle retirée de la génération.", "type": "booleen", "defaut": false, "priorite": 1, "etat": "solveur", "ref": "Salle.disponible" },
+        { "code": "CRENEAUX", "nom": "Créneaux disponibles", "desc": "Plages où la salle peut servir.", "type": "structure", "src": "6.40" },
+        { "code": "RESERVES", "nom": "Créneaux réservés", "desc": "Réservations ponctuelles ou répétées : le déploiement les saute.", "type": "structure", "etat": "saisie", "ref": "Reservation", "src": "6.41 6.49" },
+        { "code": "HEURES", "nom": "Horaires d'ouverture de la salle", "desc": "Plage quotidienne propre à la salle.", "type": "plage_horaire", "src": "6.42 6.43" },
+        { "code": "TEMPS_PREPARATION", "nom": "Temps de préparation", "desc": "Marge avant la séance (labo, sport).", "type": "duree_min", "defaut": 0, "src": "6.44 7.18 10.9" },
+        { "code": "TEMPS_NETTOYAGE", "nom": "Temps de nettoyage", "desc": "Marge après la séance.", "type": "duree_min", "defaut": 0, "src": "6.45" },
+        { "code": "MAINTENANCE", "nom": "Temps de maintenance", "desc": "Plages récurrentes bloquées.", "type": "structure", "src": "6.46" },
+        { "code": "INDISPONIBLE", "nom": "Périodes d'indisponibilité", "desc": "Travaux, panne longue.", "type": "plage_dates", "priorite": 1, "src": "6.47" },
+        { "code": "PRIORITE", "nom": "Réservation prioritaire", "desc": "Un usage a la priorité sur cette salle.", "type": "reference", "src": "6.48" },
+        { "code": "EXCEPTION", "nom": "Disponibilité exceptionnelle", "desc": "Salle ouverte à titre exceptionnel.", "type": "plage_dates", "src": "6.50" }
+      ] },
+    { "code": "CONFIG", "nom": "Salles modulables",
+      "defauts": { "role": "donnee", "niveaux": "I", "cible": "salle", "priorite": 4, "validite": "permanent", "etat": "absent" },
+      "parametres": [
+        { "code": "DIVISIBLE", "nom": "Salle divisible", "desc": "Une salle devient deux : les deux parties et le tout s'excluent.", "type": "liste_references", "src": "6.57" },
+        { "code": "FUSIONNABLE", "nom": "Salles fusionnables", "desc": "Deux salles forment une grande salle.", "type": "liste_references", "src": "6.58" },
+        { "code": "RECONFIGURABLE", "nom": "Changement de configuration", "desc": "Une disposition en classe ou en examen change la capacité.", "type": "structure", "src": "6.59" },
+        { "code": "EQUIPEMENT_PARTAGE", "nom": "Équipement partagé", "desc": "Un matériel commun à plusieurs salles ne sert qu'à une à la fois.", "type": "liste_references", "src": "6.56" }
+      ] },
+    { "code": "REGLE", "nom": "Règles des salles",
+      "defauts": { "role": "regle", "niveaux": "G", "force": "strict", "obligatoire": true, "priorite": 1, "modifiable": "non", "type": "booleen", "defaut": true, "etat": "solveur" },
+      "parametres": [
+        { "code": "CONFLIT", "nom": "Une salle n'accueille qu'un cours à la fois", "desc": "Aucune occupation simultanée.", "regle_solveur": "Salle déjà occupée", "ref": "conflitSalle", "src": "17B.3 18A.3" },
+        { "code": "CAPACITE", "nom": "Capacité suffisante", "desc": "L'effectif ne dépasse pas la capacité.", "regle_solveur": "Capacité de la salle", "ref": "capaciteSalle", "src": "17B.4 18A.4" },
+        { "code": "TYPE", "nom": "Type de salle respecté", "desc": "Une composante qui exige un type n'a lieu que dans ce type.", "regle_solveur": "Type de salle", "ref": "typeSalle", "src": "17B.14 18A.7 16B.11" },
+        { "code": "EQUIPEMENTS", "nom": "Équipements présents", "desc": "La salle a tous les équipements demandés.", "regle_solveur": "Équipements de la salle", "ref": "equipementsSalle" },
+        { "code": "REQUISE", "nom": "Salle requise en présentiel", "desc": "Une séance en présentiel a une salle.", "regle_solveur": "Salle requise en présentiel", "ref": "salleRequise" },
+        { "code": "INDISPONIBLE", "nom": "Salle disponible", "desc": "Aucune séance sur une plage d'indisponibilité. Aujourd'hui : seul « hors service » compte au calcul, le reste au déploiement.", "etat": "saisie", "ref": "affectationRules.js", "src": "17B.7" },
+        { "code": "MODULABLE", "nom": "Salle et parties s'excluent", "desc": "Une salle divisée ou fusionnée occupe aussi ses parties.", "etat": "absent", "priorite": 3, "obligatoire": false },
+        { "code": "EFFECTIF_ORDINATEURS", "nom": "Assez de postes", "desc": "Un TP sur poste ne dépasse pas le nombre de postes de la salle.", "etat": "absent", "priorite": 2, "obligatoire": false, "force_reglable": true, "modifiable": "etablissement" },
+        { "code": "DISTANCIEL_SANS_SALLE", "nom": "Pas de salle à distance", "desc": "Une séance à distance ne bloque pas de salle.", "force": "souple", "poids": 5, "obligatoire": false, "priorite": 4, "regle_solveur": "Pas de salle en distanciel", "ref": "salleInutileEnDistanciel" },
+        { "code": "TAILLE_ADAPTEE", "nom": "Salle à la taille du groupe", "desc": "Évite les grandes salles pour de petits groupes (marge de 10 places en dur).", "force": "souple", "force_reglable": true, "poids": 1, "obligatoire": false, "priorite": 4, "modifiable": "etablissement", "regle_solveur": "Salle à la taille du groupe", "ref": "UsageDesSalles.MARGE_PLACES" }
+      ] }
+  ]
+}

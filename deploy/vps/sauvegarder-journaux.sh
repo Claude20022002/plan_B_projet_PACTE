@@ -77,3 +77,5 @@ fi
 
 [ "$ECHECS" -eq 0 ] || exit 1
 [ "$SORTIES" -eq 1 ] || exit 3
+# Journaux chiffrés et hors du serveur : battement vers la sonde (lot ME-21)
+battre "$BATTEMENT_JOURNAUX"

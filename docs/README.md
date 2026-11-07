@@ -32,6 +32,8 @@ Par où commencer, selon ce que vous venez faire. Tout ce qui est listé ici est
 | [espace-enseignant.md](plans/espace-enseignant.md) | Espace de l'enseignant |
 | [espace-de-cours.md](plans/espace-de-cours.md) | Espace de cours : supports par classe (fichiers gardés par StudyLib), appel à trois statuts, moins de pages (lots E) |
 | [studio-quiz.md](plans/studio-quiz.md) | Studio quiz : moteur de quiz natif (10 types, médias, IA, passation par QR code ou code, analyse des résultats) |
+| [sortie-classquiz.md](plans/sortie-classquiz.md) | Se passer de ClassQuiz : quiz en direct dans le Studio, import des quiz existants, retrait (lots SC, proposé le 20 octobre) |
+| [jeux-pedagogiques.md](plans/jeux-pedagogiques.md) | Contrat d'un jeu pédagogique, modes de jeu en classe, relecture des livraisons d'Alexis |
 
 ## Tester et déployer
 
