@@ -29,6 +29,7 @@ Ce dossier décrit deux transformations :
 | [17-essai-contexte.md](17-essai-contexte.md) | Essai réduit de ME-3a du 29 octobre : D-03 tient (résolveurs et `AsyncLocalStorage` sur deux bases), ce que l'essai a trouvé, conditions et reste à faire de ME-3a | Chef de projet, groupe A |
 | [18-audit-isolation.md](18-audit-isolation.md) | Audit d'isolation entre écoles du 29 octobre : 15 canaux à fermer avant une deuxième école (4 critiques), avec emplacement, gravité, preuve et lot ; ce qui est déjà isolé ; ordre proposé | Chef de projet, groupes A et B |
 | [conception-v0-groupe-b.md](conception-v0-groupe-b.md) | Conception de la vague V0 pour le groupe B : contrat d'API de ME-17, écrans, sélecteur d'année de ME-18, essai de ME-11 sur téléphone, passage de relais | Groupe B |
+| [conception-me0b-deploiement.md](conception-me0b-deploiement.md) | Conception de ME-0b : mise en ligne en une commande (images construites et publiées par la CI, `deployer.sh <commit>` sur le serveur), décisions C-1 à C-11, diagrammes UML (composants, séquence, activité, états), contrat et vérification | Chef de projet, groupe A |
 | [10-verification.md](10-verification.md) | Traçabilité, invariants testés, analyse des défaillances, contradictions trouvées et levées, relecture point par point du 23 octobre (§ 10.4.1 : 25 corrections), questions | Chef de projet |
 
 Les diagrammes sont écrits en Mermaid : GitHub les affiche directement. Ils font partie du plan : un changement de conception commence par le diagramme.
