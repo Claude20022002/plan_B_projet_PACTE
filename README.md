@@ -9,7 +9,7 @@ Planner génère et tient à jour l'emploi du temps d'une école, et fait vivre 
 - quiz et jeux pédagogiques ;
 - application mobile.
 
-Né pour une école d'ingénieurs de Casablanca (HESTIM, projet PACTE du cycle 3IIIA), il devient un produit pour **toute école**, plusieurs écoles sur une même installation.
+Né pour une école d'ingénieurs de Casablanca (HESTIM), Planner devient un produit pour **toute école**, plusieurs écoles sur une même installation.
 
 [![CI](https://github.com/Claude20022002/plan_B_projet_PACTE/actions/workflows/ci-cd.yml/badge.svg?branch=main)](https://github.com/Claude20022002/plan_B_projet_PACTE/actions/workflows/ci-cd.yml)
 ![Node.js 22](https://img.shields.io/badge/Node.js-22-339933)
