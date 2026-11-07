@@ -131,3 +131,11 @@ Sources :
 | P-63 | 5 nov. | EC-3 (carnet de notes officiel) et EC-4 fusionnent dans F-13 (notes et bulletins). | plan-produit 04 | proposée |
 | P-64 | 5 nov. | Garder ME-22 (test d'intrusion) à la fin de V4, malgré la vente mise de côté. | plan-produit 04 | proposée |
 | P-65 | 5 nov. | Site public du produit en cinq lots (SP-1 conception, SP-2 vitrine, SP-3 contact et demandes, SP-4 centre d'aide, SP-5 page d'état et nouveautés), porté par une équipe SC ; sans prix tant que la vente est mise de côté ; nom de marque et domaine à trancher avant SP-2. | plan-produit 04 | proposée |
+| P-66 | 5 nov. | Garder `a/mp1-valeurs` (valeurs versionnées, migration 0061) et l'ouvrir en PR avant F-04. | groupe A | proposée (groupe A) |
+| P-67 | 5 nov. | C-5 : réutiliser les tables du supérieur plutôt que les doubler. | conception C-5, Q-1 à Q-3 | à trancher |
+| P-68 | 5 nov. | C-5 : responsable légal à part, compte facultatif ; un seul compte plateforme, chaque école ne voit que sa fiche. | conception C-5, Q-4, Q-5 | à trancher |
+| P-69 | 5 nov. | C-5 : une table `Inscription` par élève et par année. | conception C-5, Q-6 | à trancher |
+| P-70 | 5 nov. | C-5 : ni CIN obligatoire, ni données de santé dans le socle ; code Massar facultatif. | conception C-5, Q-7 | à trancher (CNDP) |
+| P-71 | 5 nov. | C-5 : note absente distincte d'un zéro ; note verrouillée par période ; paiement et reçu jamais modifiés. | conception C-5, Q-8, Q-9 | à trancher (scolarité, juriste, expert-comptable) |
+| P-72 | 5 nov. | C-5 : tables des notes et des frais communes au supérieur, éteintes par le registre des modules. | conception C-5, Q-10 | à trancher |
+| P-73 | 5 nov. | Réserver les migrations 0062 à 0079 pour C-5 ; 0060 reste au socle neutre, 0061 à MP-1. | conception C-5, Q-12 | à trancher |
