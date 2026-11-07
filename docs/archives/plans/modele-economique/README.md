@@ -1,6 +1,6 @@
 # Modèle économique par modules
 
-Statut : **étude du groupe A. La vente est mise de côté** (décision du 5 novembre 2026) : la priorité est d'optimiser le produit. Le plan à suivre est `docs/plans/plan-produit/04-plan-fusionne.md`. Cette étude reste la référence pour le marché, les prix et les coûts, quand la vente reprendra. Les prix sont des **hypothèses** : aucune école extérieure n'a encore réagi à un prix.
+Statut : **étude du groupe A. La vente est mise de côté** (décision du 5 novembre 2026) : la priorité est d'optimiser le produit. Le plan à suivre est `docs/archives/plans/plan-produit/04-plan-fusionne.md`. Cette étude reste la référence pour le marché, les prix et les coûts, quand la vente reprendra. Les prix sont des **hypothèses** : aucune école extérieure n'a encore réagi à un prix.
 
 | Lire | Pour |
 |---|---|
@@ -114,7 +114,7 @@ Recommandation du groupe A, l'étude continue. La pile reste : Express, Sequeliz
 
 **Timefold.** Community reste sous Apache 2.0, mais en 2.x `ScoreAnalysis` est réservé à l'édition payante et il faut Spring Boot 4. Or `EmploiDuTempsController.java` l'utilise, sur 1.15.0 et Spring Boot 3.3.5. La ligne 1.x finirait début 2027 (extrait, à confirmer). Aucun prix du solveur n'est publié. Trois chemins : monter en 1.35.0 et tenir jusqu'à la fin de la ligne ; passer en 2.x Community avec un compte rendu maison, ce que l'évaluateur indépendant prépare ; payer une licence au prix inconnu, qui ne rentre pas dans 149 à 899 DH sans avoir été chiffrée.
 
-**OR-Tools.** Le paquet Maven requiert glibc et notre image est `eclipse-temurin:21-jre-alpine` : il faudra sans doute une image glibc. Aucun essai n'a été fait. L'explication d'une infaisabilité par CP-SAT n'est réduite qu'en monofil et sans objectif, donc dans une passe séparée. **Aucune comparaison publiée de CP-SAT et de Timefold n'a été trouvée sur l'emploi du temps** : l'essai prévu sur nos données reste nécessaire (`docs/plans/moteur-planification/ecarts-du-solveur.md`, branche `a/moteur-catalogue`).
+**OR-Tools.** Le paquet Maven requiert glibc et notre image est `eclipse-temurin:21-jre-alpine` : il faudra sans doute une image glibc. Aucun essai n'a été fait. L'explication d'une infaisabilité par CP-SAT n'est réduite qu'en monofil et sans objectif, donc dans une passe séparée. **Aucune comparaison publiée de CP-SAT et de Timefold n'a été trouvée sur l'emploi du temps** : l'essai prévu sur nos données reste nécessaire (`docs/conception/moteur-planification/ecarts-du-solveur.md`, branche `a/moteur-catalogue`).
 
 ## 9. Ce que cela change dans le plan
 
@@ -124,9 +124,9 @@ Recommandation du groupe A, l'étude continue. La pile reste : Express, Sequeliz
 | IA (11 octobre) | incluse | incluse dans l'offre complète, option ailleurs, plafonds gardés (proposition) |
 | ME-15 facturation | comptes actifs × prix | modules, paliers, régularisation d'effectif |
 | Nouveau | — | **MO-1** registre des modules et droits d'accès (M) ; **MO-2** page d'abonnement et factures (M) ; **MO-3** essai avec filigrane et jeu de démonstration public (M). Estimations avant conception |
-| Priorité | V1 puis V2 | voir `docs/plans/plan-produit/04-plan-fusionne.md` : plusieurs écoles en V2, pack « École privée » en V4 |
+| Priorité | V1 puis V2 | voir `docs/archives/plans/plan-produit/04-plan-fusionne.md` : plusieurs écoles en V2, pack « École privée » en V4 |
 
-L'ordre des vagues est dans `docs/plans/plan-produit/04-plan-fusionne.md`. [feuille-de-route.md](feuille-de-route.md) n'est plus suivie.
+L'ordre des vagues est dans `docs/archives/plans/plan-produit/04-plan-fusionne.md`. [feuille-de-route.md](feuille-de-route.md) n'est plus suivie.
 
 ## 10. À vérifier avant de vendre ou de publier
 

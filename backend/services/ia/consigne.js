@@ -1,5 +1,5 @@
 /**
- * Consigne donnée au modèle pour écrire un quiz (docs/plans/quiz-ia.md). Deux sources possibles :
+ * Consigne donnée au modèle pour écrire un quiz (docs/archives/plans/quiz-ia.md). Deux sources possibles :
  *  - un support de cours déposé par l'enseignant : chaque question vient du support, repère à l'appui ;
  *  - un sujet seul (demande du groupe B, 11 octobre 2026) : le modèle s'appuie sur le sujet et le nom
  *    du module. Rien ne permet alors de vérifier les questions contre un texte : elles restent un

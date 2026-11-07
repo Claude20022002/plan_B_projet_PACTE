@@ -3,7 +3,7 @@ import sequelize from "../config/db.js";
 
 /**
  * Support d'une section : un document de StudyLib (référence seulement : Planner ne garde aucun
- * fichier) ou un lien. Voir docs/plans/espace-de-cours.md, § 3.
+ * fichier) ou un lien. Voir docs/archives/plans/espace-de-cours.md, § 3.
  */
 const SupportCours = sequelize.define(
     "SupportCours",

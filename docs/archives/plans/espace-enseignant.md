@@ -1,6 +1,6 @@
 # Plan : l'espace de l'enseignant (classe, appel projeté, quiz en direct, mobile, aide)
 
-Statut : **à faire**. Rédigé le 10 octobre 2026, après la livraison de « Mes classes » et du rappel de l'appel. Ce plan complète `docs/plans/quiz-ia.md` (lots IA-4 à IA-7 et CQ-1 à CQ-3), sans le remplacer.
+Statut : **à faire**. Rédigé le 10 octobre 2026, après la livraison de « Mes classes » et du rappel de l'appel. Ce plan complète `docs/archives/plans/quiz-ia.md` (lots IA-4 à IA-7 et CQ-1 à CQ-3), sans le remplacer.
 
 ## 1. Objectif
 

@@ -1,5 +1,5 @@
 /**
- * Quiz générés par l'IA (docs/plans/quiz-ia.md, lot IA-3) : une ligne par génération.
+ * Quiz générés par l'IA (docs/archives/plans/quiz-ia.md, lot IA-3) : une ligne par génération.
  *  - contexte : enseignant, module, classe facultative (devoir à venir), source et plage ;
  *  - support_texte : texte extrait (repères compris), gardé pour régénérer une question ;
  *  - brouillon : questions relues et modifiées par l'enseignant avant création dans ClassQuiz ;

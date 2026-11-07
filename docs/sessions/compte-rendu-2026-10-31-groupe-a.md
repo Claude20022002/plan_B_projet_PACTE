@@ -1,6 +1,6 @@
 # Compte rendu de la session du groupe A, 29 au 31 octobre 2026
 
-À lire en début de la prochaine session du groupe A, puis celui du 27 au 29 octobre (`compte-rendu-2026-10-29-groupe-a.md`, même branche), avec le plan validé (`docs/plans/planner-multi-etablissements/15-plan-de-developpement.md`) et la revue d'expert (`16-revue-expert.md`). Règles inchangées : § 15.6 du plan ; **seul le chef de projet pousse le code** ; les commandes du serveur sont lancées par lui (Windows PowerShell 5.1, enveloppées dans `ssh`, sans guillemets doubles dans la commande distante, `$K` et `$H` redéfinies en tête de bloc ; `gpg` par le bash de Git). Règle nouvelle : **un test de régression avant d'annoncer** (§ 4).
+À lire en début de la prochaine session du groupe A, puis celui du 27 au 29 octobre (`compte-rendu-2026-10-29-groupe-a.md`, même branche), avec le plan validé (`docs/archives/plans/planner-multi-etablissements/15-plan-de-developpement.md`) et la revue d'expert (`16-revue-expert.md`). Règles inchangées : § 15.6 du plan ; **seul le chef de projet pousse le code** ; les commandes du serveur sont lancées par lui (Windows PowerShell 5.1, enveloppées dans `ssh`, sans guillemets doubles dans la commande distante, `$K` et `$H` redéfinies en tête de bloc ; `gpg` par le bash de Git). Règle nouvelle : **un test de régression avant d'annoncer** (§ 4).
 
 ## 1. L'essentiel
 
@@ -49,7 +49,7 @@ Vérifications locales de la session : intégration complète 499 à 514 tests s
 
 1. **Dimanche 1er novembre** : passage à MySQL 8.4 (`DEPLOIEMENT.md`, « Passer à MySQL 8.4 »), puis l'essai de restauration du mois dans un `mysql:8.4.13` jetable, ligne dans `docs/recette/essais-restauration.md`.
 2. **Pousser ME-21** (`git -C "..\travaux-planner\me21-supervision" push -u origin a/me21-supervision`), ouvrir sa PR, suivre la CI.
-3. **Fusions, dans cet ordre** : #138 ; #137 ; #141 (après relecture du groupe B) ; #142 (si décidé) ; #145 ; ME-21. **#145 et ME-21 ajoutent chacune une ligne au même endroit de `docs/plans/planner-multi-etablissements/README.md`** : petit conflit à résoudre sur la seconde.
+3. **Fusions, dans cet ordre** : #138 ; #137 ; #141 (après relecture du groupe B) ; #142 (si décidé) ; #145 ; ME-21. **#145 et ME-21 ajoutent chacune une ligne au même endroit de `docs/archives/plans/planner-multi-etablissements/README.md`** : petit conflit à résoudre sur la seconde.
 4. **Première mise en ligne par ME-0b** (maj45), un autre jour que MySQL 8.4, après la fusion de #145 et la publication des images : vérifier que les quatre images `hestim-*` sont **publiques** dans GitHub (Packages), copier une fois `deployer.sh` et `deploiement-commun.sh` dans `/opt/hestim/deploy/vps/`, `deployer.sh --essai <commit>`, puis `deployer.sh <commit>`. Le paquet majNN reste prêt en secours. Contenu : tout ce qui est fusionné depuis `3e36d46`, dont les migrations **0056** (#131) et **0057** (#141).
 5. **ME-21 côté exploitation** (chef de projet, `DEPLOIEMENT.md`, « Supervision ») : `SUPERVISION_TOKEN` et `ETABLISSEMENT_NOM` dans `.env.docker`, moniteurs de la sonde, battements des sauvegardes, page d'état, puis **l'essai de panne de nuit** (critère : alerte en moins de 5 minutes), noté dans `docs/recette/essais-supervision.md`.
 6. **ME-14a**, dernier lot V1 du groupe A : conception d'abord (avec diagrammes), comme ME-0b et ME-21.

@@ -1,6 +1,6 @@
 # Compte rendu de la session du groupe A, 26 octobre 2026
 
-À lire en début de la prochaine session du groupe A, avec le plan de développement validé (`docs/plans/planner-multi-etablissements/15-plan-de-developpement.md`) et la revue d'expert (`16-revue-expert.md`). Les règles de travail et de code restent celles de `docs/plans/assainissement.md`, § 6, et du § 15.6 du plan.
+À lire en début de la prochaine session du groupe A, avec le plan de développement validé (`docs/archives/plans/planner-multi-etablissements/15-plan-de-developpement.md`) et la revue d'expert (`16-revue-expert.md`). Les règles de travail et de code restent celles de `docs/archives/plans/assainissement.md`, § 6, et du § 15.6 du plan.
 
 ## 1. L'essentiel
 

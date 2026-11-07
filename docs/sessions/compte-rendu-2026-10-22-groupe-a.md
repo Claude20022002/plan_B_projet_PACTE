@@ -1,6 +1,6 @@
 # Compte rendu du 22 octobre 2026 (groupe A : fusions, correctif, déploiement)
 
-À lire **après** `compte-rendu-2026-10-21-soir-groupe-a.md` et avec le plan du groupe B, `docs/plans/plan-groupe-b-2026-10-22.md`. Règles de code : § 6 de `docs/plans/assainissement.md`. Règles de fusion : § 5 ci-dessous.
+À lire **après** `compte-rendu-2026-10-21-soir-groupe-a.md` et avec le plan du groupe B, `docs/archives/plans/plan-groupe-b-2026-10-22.md`. Règles de code : § 6 de `docs/archives/plans/assainissement.md`. Règles de fusion : § 5 ci-dessous.
 
 ## 1. L'essentiel
 

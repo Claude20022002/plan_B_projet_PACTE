@@ -573,7 +573,7 @@ DemandeTelephone.belongsTo(Users, { foreignKey: "id_user_admin", as: "admin", ta
 Users.hasMany(Desactivation, { foreignKey: "id_user", as: "desactivations", onDelete: "CASCADE" });
 Desactivation.belongsTo(Users, { foreignKey: "id_auteur", as: "auteur", targetKey: "id_user" });
 
-// Espace de cours d'une classe (docs/plans/espace-de-cours.md)
+// Espace de cours d'une classe (docs/archives/plans/espace-de-cours.md)
 SectionCours.hasMany(SupportCours, { foreignKey: "id_section", as: "supports", onDelete: "CASCADE" });
 SupportCours.belongsTo(SectionCours, { foreignKey: "id_section", as: "section" });
 SupportCours.belongsTo(Users, { foreignKey: "id_user_auteur", as: "auteur", targetKey: "id_user" });

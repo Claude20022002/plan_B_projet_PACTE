@@ -1,5 +1,5 @@
 /**
- * Parcours « appel d'une classe » et « Mon service » (docs/plans/espace-de-cours.md, lots E-7 et
+ * Parcours « appel d'une classe » et « Mon service » (docs/archives/plans/espace-de-cours.md, lots E-7 et
  * E-8) : depuis l'espace de la classe, l'enseignante ouvre l'appel du jour, marque une étudiante en
  * retard (trois statuts, pas d'« excusé »), termine l'appel si ce n'est fait, puis retrouve le bilan
  * dans l'onglet Élèves et l'exporte. Enfin, « Mon service » réunit ses trois pages en onglets.

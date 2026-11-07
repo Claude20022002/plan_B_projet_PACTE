@@ -1,6 +1,6 @@
 # Plan du groupe B à partir du 22 octobre 2026
 
-Écrit par le groupe A le 21 octobre au soir, à la demande du chef de projet. À lire avec `docs/sessions/compte-rendu-2026-10-21.md` (groupe B) et `compte-rendu-2026-10-21-groupe-a.md`. Règles de code : `docs/plans/assainissement.md`, § 6. Ton des textes : `docs/plans/ton-des-textes.md`.
+Écrit par le groupe A le 21 octobre au soir, à la demande du chef de projet. À lire avec `docs/sessions/compte-rendu-2026-10-21.md` (groupe B) et `compte-rendu-2026-10-21-groupe-a.md`. Règles de code : `docs/archives/plans/assainissement.md`, § 6. Ton des textes : `docs/archives/plans/ton-des-textes.md`.
 
 ## 1. Ce qui a changé depuis le compte rendu du groupe B
 

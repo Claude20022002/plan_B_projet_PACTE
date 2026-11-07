@@ -6,7 +6,7 @@ import { fadeUp, useEnter } from "../components/motion";
 import { C } from "../theme";
 
 // Des jeux qui existent dans le code : Terminal Linux (main) et cinq des neuf simulations d'Alexis
-// (branche jeux-pedagogique, docs/plans/jeux-pedagogiques.md). Ne montrer ce plan qu'une fois la
+// (branche jeux-pedagogique, docs/conception/jeux/jeux-pedagogiques.md). Ne montrer ce plan qu'une fois la
 // branche fusionnée et déployée.
 const JEUX: [string, string][] = [
   ["TERMINAL LINUX", "Informatique"],

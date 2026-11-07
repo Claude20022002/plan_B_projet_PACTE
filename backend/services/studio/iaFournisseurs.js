@@ -1,7 +1,7 @@
 import { ErreurMetier } from "../planning/enseignements.js";
 
 /**
- * Fournisseurs d'IA pour les médias du Studio quiz (docs/plans/quiz-ia.md, § 4 bis) : un par
+ * Fournisseurs d'IA pour les médias du Studio quiz (docs/archives/plans/quiz-ia.md, § 4 bis) : un par
  * nature, chacun configurable à part, car le fournisseur du texte (DeepSeek par défaut) ne fait ni
  * images, ni voix, ni transcription. Les trois parlent l'API « compatible OpenAI », la plus répandue
  * (OpenAI, Groq et d'autres pour la transcription ; OpenAI, Mistral… pour l'image et la voix).

@@ -5,7 +5,7 @@ Toutes les propositions faites par le groupe B depuis le 3 novembre 2026, avec l
 Statuts : **décidée**, **proposée** (en attente d'avis), **à trancher** (une question précise attend le chef de projet ou le groupe A), **écartée**.
 
 Sources :
-- **socle** : `docs/plans/planner-multi-etablissements/conception-socle-neutre-groupe-b.md`, branche `b/socle-neutre` ;
+- **socle** : `docs/conception/interface/conception-socle-neutre.md`, branche `b/socle-neutre` ;
 - **01**, **02** : les fichiers de ce dossier ;
 - **rapport** : le rapport de recherche du 4 novembre ;
 - **conv.** : la conversation avec le chef de projet.
@@ -29,11 +29,11 @@ Par ordre chronologique. Une décision remplacée reste dans le tableau, avec ce
 | 4 nov. (soir) | **Cible** : la **planification seule**, en commençant par les écoles privées ; puis le supérieur privé ; puis l'école complète. La formation professionnelle vient après. | oui |
 | 4 nov. (soir) | **Priorité** : plusieurs écoles sur une même installation, **pas avant d'avoir fini le supérieur**. Sans plateforme partagée, chaque client a sa propre instance : les premières écoles payantes sont le pilote et le supérieur privé, pas les petites écoles à 149-199 DH. | oui |
 | 4 nov. (soir) | **Pile** : celle de `plan.txt` (NestJS, PostgreSQL, Tailwind, OR-Tools en Python, Keycloak) est **abandonnée**. On garde Express, MySQL, MUI et Timefold. | oui |
-| 4 nov. (soir) | **Référence** : `plan.txt`, corrigé, reste une étude. `docs/plans/modele-economique/` (groupe A) fait foi pour les décisions et l'ordre. | oui |
+| 4 nov. (soir) | **Référence** : `plan.txt`, corrigé, reste une étude. `docs/archives/plans/modele-economique/` (groupe A) fait foi pour les décisions et l'ordre. | oui |
 | 4 nov. (soir) | **Prix** : la grille du README du modèle économique, à tester. Elle remplace le prix de travail de 9,99 MAD par élève. | oui (vente mise de côté le 5 nov.) |
 | 4 nov. (soir) | **Argument** : « au Maroc, seul Caisso annonce la génération » est faux. Cinq éditeurs l'annoncent. | corrigé le 5 nov. dans 01 et 02 |
 | 4 nov. (soir) | MP-1 : table unique des valeurs du moteur, migration **0061**. | oui |
-| 5 nov. | Le plan par fonctionnalités ne remplace pas les vagues V : un plan les fusionne, pour une équipe plus nombreuse (`docs/plans/plan-produit/04-plan-fusionne.md`). | oui ; **son ordre est à revoir** pour suivre la priorité du 4 nov. au soir (P-60, P-62) |
+| 5 nov. | Le plan par fonctionnalités ne remplace pas les vagues V : un plan les fusionne, pour une équipe plus nombreuse (`docs/archives/plans/plan-produit/04-plan-fusionne.md`). | oui ; **son ordre est à revoir** pour suivre la priorité du 4 nov. au soir (P-60, P-62) |
 | 5 nov. | La vente est mise de côté : priorité à l'optimisation du SaaS face aux problèmes des autres outils. La planification seule pourra se vendre plus tard. | oui |
 | 5 nov. | Le groupe A pousse ses études et écrit avec B le modèle de données du scolaire (prompt fourni par B). | oui |
 | 5 nov. | Les entretiens et la démonstration aux directeurs viennent plus tard. | oui |
@@ -126,7 +126,7 @@ Par ordre chronologique. Une décision remplacée reste dans le tableau, avec ce
 | N° | Date | Proposition | Source | Statut |
 | --- | --- | --- | --- | --- |
 | P-48 | 4 nov. | Découper les fichiers de plus de 300 lignes signalés par le lint : `ThemeContext.jsx` (dans SN-1), `DepartureBoard.jsx` (quand il devient le thème « panneau »), `App.jsx` et `Annonces.jsx` (lot à part). | conv. | proposée |
-| P-49 | 5 nov. | Créer un plan produit par fonctionnalités : cadrage, socle de la plateforme, démonstration au directeur, pack « École privée », formation professionnelle (`docs/plans/plan-produit/`). | plan-produit | **décidée** en partie : catalogue des fonctionnalités gardé, ordre dans le plan fusionné (P-60) |
+| P-49 | 5 nov. | Créer un plan produit par fonctionnalités : cadrage, socle de la plateforme, démonstration au directeur, pack « École privée », formation professionnelle (`docs/archives/plans/plan-produit/`). | plan-produit | **décidée** en partie : catalogue des fonctionnalités gardé, ordre dans le plan fusionné (P-60) |
 | P-50 | 5 nov. | Un seul tableau de suivi (`04-suivi.md`) à la place des statuts des plans d'octobre. | plan-produit § 3.1 | proposée |
 | P-51 | 5 nov. | Écrire, groupes A et B ensemble, un modèle de données du scolaire (classe, matière, responsable légal, notes, frais) avant la phase 2. | plan-produit C-5 | proposée |
 | P-52 | 5 nov. | Registre des modules à la manière d'Odoo : dépendances déclarées, liaisons qui s'activent seules, socle toujours inclus. | plan-produit F-02 | proposée |
@@ -143,7 +143,7 @@ Par ordre chronologique. Une décision remplacée reste dans le tableau, avec ce
 | P-63 | 5 nov. | EC-3 (carnet de notes officiel) et EC-4 fusionnent dans F-13 (notes et bulletins). | plan-produit 04 | proposée |
 | P-64 | 5 nov. | Garder ME-22 (test d'intrusion) à la fin de V4, malgré la vente mise de côté. | plan-produit 04 | proposée |
 | P-65 | 5 nov. | Site public du produit en cinq lots (SP-1 conception, SP-2 vitrine, SP-3 contact et demandes, SP-4 centre d'aide, SP-5 page d'état et nouveautés), porté par une équipe SC ; sans prix tant que la vente est mise de côté ; nom de marque et domaine à trancher avant SP-2. | plan-produit 04 | proposée ; **nom tranché le 5 nov. : Planner** ; domaine et textes légaux restent à trancher |
-| P-66 | 5 nov. | Relecture du contrat de MP-1 (§ 7 de `conception-mp1.md`) par le groupe B : route du catalogue pour les écrans, modification d'un brouillon, liste des versions sans leurs lignes, contrôle de la version de base à l'application, formes de `actives` et `alertes`, journal de sécurité, textes traduits par code (`docs/plans/plan-produit/relecture-mp1-contrat.md`). | relecture | proposée (groupe A) |
+| P-66 | 5 nov. | Relecture du contrat de MP-1 (§ 7 de `conception-mp1.md`) par le groupe B : route du catalogue pour les écrans, modification d'un brouillon, liste des versions sans leurs lignes, contrôle de la version de base à l'application, formes de `actives` et `alertes`, journal de sécurité, textes traduits par code (`docs/conception/moteur-planification/relecture-mp1-contrat.md`). | relecture | proposée (groupe A) |
 | P-67 | 5 nov. | C-5 : réutiliser les tables du supérieur plutôt que les doubler. | conception C-5, Q-1 à Q-3 | à trancher |
 | P-68 | 5 nov. | C-5 : responsable légal à part, compte facultatif ; un seul compte plateforme, chaque école ne voit que sa fiche. | conception C-5, Q-4, Q-5 | à trancher |
 | P-69 | 5 nov. | C-5 : une table `Inscription` par élève et par année. | conception C-5, Q-6 | à trancher |

@@ -1,5 +1,5 @@
 /**
- * Espace de cours d'une classe (docs/plans/espace-de-cours.md, lot E-2). Une classe est le couple
+ * Espace de cours d'une classe (docs/archives/plans/espace-de-cours.md, lot E-2). Une classe est le couple
  * (module, groupe) ; elle n'a pas de table. Ses supports sont rangés en sections :
  *  - SectionsCours : titre, ordre, visible ; une section « Général » est créée au premier ajout ;
  *  - SupportsCours : un document de StudyLib (id_document, jamais le fichier lui-même) ou un lien.

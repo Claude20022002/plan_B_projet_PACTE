@@ -1,6 +1,6 @@
 # 4. Plan de développement fusionné : vagues et fonctionnalités, pour une équipe élargie
 
-> **À revoir** : le 4 novembre au soir, le chef de projet a placé « plusieurs écoles sur une installation » **après le supérieur**, et la planification seule en premier (`docs/plans/modele-economique/feuille-de-route.md`, § 1 ; registre). La V2 ci-dessous, qui avançait « plusieurs écoles », doit être déplacée. Le reste du plan (équipes, exigences, site public) n'est pas touché.
+> **À revoir** : le 4 novembre au soir, le chef de projet a placé « plusieurs écoles sur une installation » **après le supérieur**, et la planification seule en premier (`docs/archives/plans/modele-economique/feuille-de-route.md`, § 1 ; registre). La V2 ci-dessous, qui avançait « plusieurs écoles », doit être déplacée. Le reste du plan (équipes, exigences, site public) n'est pas touché.
 
 **Proposition du groupe B, 5 novembre 2026, à valider.** Elle répond aux décisions du chef de projet du 5 novembre :
 

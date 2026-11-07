@@ -104,7 +104,7 @@ Le détail de V4 : F-10 de 2 à 8, F-13 de 7 à 18, F-14 de 5 à 20, F-15 de 4 �
 | N° | Incohérence | Proposition |
 |---|---|---|
 | I-1 | **Trois « références »** : `plan.txt` (« la référence »), le fichier 04 (« le plan à suivre », encore marqué « à valider », **sans PR et absent de `main`**), et `docs/README.md`, pour qui `assainissement.md` « fait foi ». Le fichier 15 fusionné renvoie à un fichier qui n'est pas sur `main` | `plan.txt` = vision ; 04 = plan ; le reste = détail technique. L'écrire dans `docs/README.md`. Ouvrir la PR de `b/plan-produit` |
-| I-2 | Une vingtaine de plans, et des statuts périmés (`assainissement` « à faire », `remarques-par-profil` « à valider ») | les archiver dans `docs/plans/archives/` avec une ligne de statut |
+| I-2 | Une vingtaine de plans, et des statuts périmés (`assainissement` « à faire », `remarques-par-profil` « à valider ») | les archiver dans `docs/archives/plans/archives/` avec une ligne de statut |
 | I-3 | Le tableau de suivi s'appelle `04-suivi.md` dans 03 et `05-suivi.md` dans 04 ; il n'existe pas, et le plan exige d'y réserver les migrations | `05-suivi.md`, à créer tout de suite : 0060 et 0061 sont déjà attribuées |
 | I-4 | **Hors ligne, trois positions** : « aucun compromis », saisie comprise (`plan.txt`, § 17) ; lecture en V4 (EP-3) ; « à la demande » (03, phase 4) | lecture seule jusqu'à ce qu'un entretien demande plus. Le corriger dans `plan.txt` |
 | I-5 | **Réglages par pays, devises, adaptateur de paiement** : exigés par `plan.txt`, présents dans aucun lot du 04 | une colonne `devise` dès F-14 ; le reste plus tard, mais écrit comme tel |

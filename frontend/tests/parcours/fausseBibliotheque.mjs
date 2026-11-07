@@ -1,5 +1,5 @@
 /**
- * Fausse Bibliothèque des parcours (espace de cours, docs/plans/espace-de-cours.md) : un petit
+ * Fausse Bibliothèque des parcours (espace de cours, docs/archives/plans/espace-de-cours.md) : un petit
  * serveur HTTP qui répond aux routes de StudyLib que Planner appelle, avec des documents gardés en
  * mémoire. Comme la vraie, elle exige le jeton de l'utilisateur (dépôt, lecture, publication,
  * retrait) et un jeton de service pour un lien ; elle sert aussi le fichier « signé ».

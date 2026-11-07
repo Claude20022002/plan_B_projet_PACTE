@@ -328,7 +328,7 @@ export default function App() {
               <AppPage><MesAffectations /></AppPage>
             </PrivateRoute>
           } />
-          {/* Espace de cours d'une classe : supports en sections (docs/plans/espace-de-cours.md) */}
+          {/* Espace de cours d'une classe : supports en sections (docs/archives/plans/espace-de-cours.md) */}
           <Route path="/mes-classes/:idCours/:idGroupe" element={
             <PrivateRoute requiredRole={['enseignant', 'admin']}>
               <AppPage><EspaceClasse /></AppPage>

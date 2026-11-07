@@ -1,6 +1,6 @@
 # Relecture du contrat de MP-1 par le groupe B
 
-5 novembre 2026. Objet : le § 7 de `docs/plans/moteur-planification/conception-mp1.md` (branche `a/mp1-valeurs`, c36e835). La relecture porte sur la conception et sur le code des routes (`moteurValeursRoutes.js`, `moteurValeursController.js`, `services/moteur/valeurs/`), avant que le groupe B écrive les écrans des réglages du moteur.
+5 novembre 2026. Objet : le § 7 de `docs/conception/moteur-planification/conception-mp1.md` (branche `a/mp1-valeurs`, c36e835). La relecture porte sur la conception et sur le code des routes (`moteurValeursRoutes.js`, `moteurValeursController.js`, `services/moteur/valeurs/`), avant que le groupe B écrive les écrans des réglages du moteur.
 
 **Rien de bloquant pour le serveur tel qu'il est.** Les points 1 à 3 bloquent en revanche les écrans : sans eux, l'écran devrait embarquer une copie du catalogue ou recréer un brouillon à chaque modification.
 

@@ -14,7 +14,7 @@ Session menée à la demande du chef de projet, sur un plan en six étapes : hyg
 2. **maj35 est prêt** (`deploy/vps/paquets/maj35.tar.gz`, commit `1a4fe46`, aucune dépendance changée, une migration 0044). Il n'est **pas appliqué**. Il ne contient pas #42 : à refaire après la fusion de #42 si l'on veut les en-têtes tout de suite.
 3. **Alexis a livré neuf simulations** sur `jeux-pedagogique` (compte GitHub `Destroya2`). Résultat de la relecture :
    - Vérifications : tests serveur 278/278, tests de l'application 50/50, build du site réussi, aucun conflit.
-   - Avant la fusion, il reste quatre corrections (§ 5 de `docs/plans/jeux-pedagogiques.md`).
+   - Avant la fusion, il reste quatre corrections (§ 5 de `docs/conception/jeux/jeux-pedagogiques.md`).
 4. **La vidéo `Keynote` (62 s) est montée** : `docs/presentation/video/out/keynote.mp4`, ignoré par git, à refaire avec `npm run render:keynote`. Le discours qui l'entoure est dans `docs/presentation/discours-keynote.md`.
 
 ## 2. Dossiers de travail

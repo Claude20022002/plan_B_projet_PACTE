@@ -68,7 +68,7 @@
 - **Contrôle côté serveur :** un devoir à la classe d'un collègue est refusé, ainsi que « tout le module » si un collègue y a une classe. Avant, il suffisait que le groupe suive le module.
 - **Interface :** le composant `SelecteurClasse` remplace le choix du module dans « Donner un devoir », avec la séance en cours ou la prochaine présélectionnée.
 
-### Quiz générés par l'IA (plan `docs/plans/quiz-ia.md`)
+### Quiz générés par l'IA (plan `docs/archives/plans/quiz-ia.md`)
 
 | Lot | État |
 |---|---|
@@ -92,7 +92,7 @@ L'enseignant **ne doit jamais quitter `planner.finadmintech.fr`** : ni saisir d'
   - « Mes quiz » et l'éditeur dans Planner ;
   - « Lancer en direct » sur la séance ;
   - l'écran du projecteur affiché par Planner, avec un WebSocket relayé par nginx sur la même origine.
-- **Détail :** `docs/plans/quiz-ia.md`, § 3 ter et lots CQ-1 à CQ-3.
+- **Détail :** `docs/archives/plans/quiz-ia.md`, § 3 ter et lots CQ-1 à CQ-3.
 - **Écarté :** servir ClassQuiz sous `/quiz/`, car son frontend utilise des adresses absolues qui entrent en conflit avec celles de Planner.
 
 **En attendant :** la première connexion à ClassQuiz et le lancement d'une partie en direct passent encore par quiz.finadmintech.fr. Pour la démo, le quiz NoSQL se **donne en devoir depuis Planner**, ce qui ne demande pas de changer de site. Seule la première connexion à ClassQuiz est faite à l'avance par l'utilisateur.

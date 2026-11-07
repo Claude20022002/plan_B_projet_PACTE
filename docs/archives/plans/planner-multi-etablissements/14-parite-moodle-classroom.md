@@ -2,7 +2,7 @@
 
 Demande du chef de projet (25 octobre 2026) : retrouver dans Planner, pour les enseignants, les fonctions de Moodle et de Classroom, « au cas où ». Ce fichier en fait l'inventaire, dit ce que Planner a déjà, et propose l'ordre dans lequel combler les écarts. **Rien n'est activé par ce plan** : chaque fonction nouvelle arrive derrière un interrupteur **par établissement** (fonctionnalités de la Plateforme, D-04), éteint par défaut. Une école qui vient de Moodle l'allume ; HESTIM garde ses décisions.
 
-Il complète `docs/plans/espace-de-cours.md` (sections, supports, appel : faits) et `docs/plans/espace-enseignant.md`. Moodle (GPL v3) et Canvas (AGPL v3) restent des sources d'idées, **jamais de code** (règle du 15 octobre).
+Il complète `docs/archives/plans/espace-de-cours.md` (sections, supports, appel : faits) et `docs/archives/plans/espace-enseignant.md`. Moodle (GPL v3) et Canvas (AGPL v3) restent des sources d'idées, **jamais de code** (règle du 15 octobre).
 
 ## 14.1 Décisions déjà prises qui encadrent ce plan
 

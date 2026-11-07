@@ -1,6 +1,6 @@
 # Compte rendu de la session du 20 octobre 2026
 
-À lire **après** `compte-rendu-2026-10-19.md`, qui reste la référence pour les sessions de jeu, le Studio quiz et la procédure de déploiement, puis `compte-rendu-2026-10-18.md` (état complet du projet). Ce compte rendu ne reprend que ce qui a changé depuis. Les règles de travail restent celles du § 4 de `compte-rendu-2026-10-11.md` ; les règles de code, celles du § 6 de `docs/plans/assainissement.md`.
+À lire **après** `compte-rendu-2026-10-19.md`, qui reste la référence pour les sessions de jeu, le Studio quiz et la procédure de déploiement, puis `compte-rendu-2026-10-18.md` (état complet du projet). Ce compte rendu ne reprend que ce qui a changé depuis. Les règles de travail restent celles du § 4 de `compte-rendu-2026-10-11.md` ; les règles de code, celles du § 6 de `docs/archives/plans/assainissement.md`.
 
 ## 1. L'essentiel
 
@@ -15,10 +15,10 @@
 | # | Sujet | Décision |
 |---|---|---|
 | 1 | Limite de requêtes de l'API | **Par compte** pour un utilisateur connecté ; par adresse IP sans compte. |
-| 2 | Contrat des jeux | **Ajouter la règle des `modes`** (`individuel`, `collectif`) à `docs/plans/jeux-pedagogiques.md`. Pas encore écrit. |
+| 2 | Contrat des jeux | **Ajouter la règle des `modes`** (`individuel`, `collectif`) à `docs/conception/jeux/jeux-pedagogiques.md`. Pas encore écrit. |
 | 3 | ClassQuiz | **Ne plus en dépendre, puis le supprimer.** Le Studio quiz aura un mode « en direct ». **Les quiz déjà créés dans ClassQuiz seront importés dans le Studio.** |
 | 4 | Plus tard | Un **mode créateur de jeux** (à la manière de Kahoot) pour simplifier l'ajout à la Bibliothèque et encourager les contributions ; **refaire l'esthétique de la bibliothèque des jeux** en s'inspirant des plateformes du marché. |
-| 5 | Textes de l'interface | **Les humaniser**, un lot par public : étudiant, enseignant, administration (groupe B). Charte : `docs/plans/ton-des-textes.md`. |
+| 5 | Textes de l'interface | **Les humaniser**, un lot par public : étudiant, enseignant, administration (groupe B). Charte : `docs/archives/plans/ton-des-textes.md`. |
 | 6 | Statut des quiz | Aujourd'hui, **des jeux pédagogiques en classe** ; plus tard, de petites épreuves. Côté étudiant : « Envoyer mes réponses », « Réessayer », et non « Rendre la copie », « Tentatives ». |
 | 7 | Demandes de report | **Seule l'administration les traite**, pas le responsable de filière. |
 | 8 | Annonces écrites par les enseignants | **Pas nécessaires pour le moment.** Le code serveur reste pour un plan futur ; **pas d'entrée « Annonces » dans le menu enseignant**. |
@@ -35,7 +35,7 @@
 
 ### 3.2 Textes humanisés (groupe B)
 
-**Charte** (`docs/plans/ton-des-textes.md`) : « vous », phrases courtes, pas de jargon (« serveur », « session », « identifiants ») ; une erreur dit ce qui s'est passé et quoi faire ; pas de « pts » ni de « (s) » ; une liste vide rassure ou propose ; le même mot partout.
+**Charte** (`docs/archives/plans/ton-des-textes.md`) : « vous », phrases courtes, pas de jargon (« serveur », « session », « identifiants ») ; une erreur dit ce qui s'est passé et quoi faire ; pas de « pts » ni de « (s) » ; une liste vide rassure ou propose ; le même mot partout.
 
 | Lot | Branche | Contenu | État |
 |---|---|---|---|
@@ -70,7 +70,7 @@ Le push est couvert par les tests automatiques, **pas encore vérifié sur un vr
 - `.git` recloné depuis GitHub ; les 115 fichiers suivis de la racine récupérés ; les sous-dossiers n'avaient pas été touchés.
 - Les objets restants de l'ancien `.git` réintégrés : **les 63 commits qui n'existaient que sur le poste sont retrouvés**. 55 sont gardés sous `refs/recup/` (anciennes remises de côté, fusions de vérification) ; les autres sont sur des branches.
 - Les 20 copies de travail rattachées au dépôt, sur les mêmes branches et les mêmes commits, sans aucun fichier modifié.
-- Deux travaux absents de GitHub ont été poussés : `b/v4-application` (refonte visuelle V-0 à V-4, `planner-b`) et `a/plan-demo-et-activites` (plan du 13 octobre, `docs/plans/demo-et-activites.md`, jamais fusionné).
+- Deux travaux absents de GitHub ont été poussés : `b/v4-application` (refonte visuelle V-0 à V-4, `planner-b`) et `a/plan-demo-et-activites` (plan du 13 octobre, `docs/archives/plans/demo-et-activites.md`, jamais fusionné).
 - ClassQuiz et StudyLib n'ont pas été touchés.
 
 **Perdu** : les fichiers non suivis de la racine du dépôt principal, au moins `.env.docker`. Il ne sert qu'à lancer toute la pile en local avec Docker Compose ; le développement local utilise `backend/.env` (intact), les paquets `majNN` excluent les `.env`, la production a le sien. À refaire depuis `.env.docker.example` si besoin.
@@ -127,7 +127,7 @@ Branches de textes : unitaires, lint et construction OK ; parcours touchés (`st
 1. Appliquer **maj40**.
 2. Ouvrir et fusionner les PR des **textes étudiant**, puis **enseignant** ; préparer maj41.
 3. **Textes administration** (groupe B), même charte.
-4. **Règle des `modes`** dans `docs/plans/jeux-pedagogiques.md`, puis prévenir Alexis avant la fusion de ses jeux.
+4. **Règle des `modes`** dans `docs/conception/jeux/jeux-pedagogiques.md`, puis prévenir Alexis avant la fusion de ses jeux.
 5. **Quiz en direct dans le Studio** (question par question au rythme de l'enseignant), puis **import des quiz de ClassQuiz** dans le Studio, puis **retrait de ClassQuiz** (écrans, conteneur, `quiz.finadmintech.fr`).
 6. Plus tard : **créateur de jeux** et **nouvelle bibliothèque des jeux**.
 

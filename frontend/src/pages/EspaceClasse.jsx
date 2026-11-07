@@ -21,7 +21,7 @@ import { useAuth } from '../contexts/AuthContext';
 const ONGLETS = ['supports', 'appel', 'eleves'];
 
 /**
- * Espace de cours d'une classe (docs/plans/espace-de-cours.md, § 5.2). L'enseignant y a trois
+ * Espace de cours d'une classe (docs/archives/plans/espace-de-cours.md, § 5.2). L'enseignant y a trois
  * onglets : les supports rangés en sections, l'appel (séances et bilans) et les élèves (taux de
  * présence, export) ; l'onglet est gardé dans l'adresse. L'étudiant ne voit que les supports.
  * Quand l'école a allumé les sondages (lot EC-9), l'enseignant a un quatrième onglet, et l'étudiant

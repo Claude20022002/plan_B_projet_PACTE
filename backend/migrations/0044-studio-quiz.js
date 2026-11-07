@@ -1,5 +1,5 @@
 /**
- * Studio quiz (docs/plans/studio-quiz.md) : le moteur de quiz natif de Planner, sans ClassQuiz.
+ * Studio quiz (docs/archives/plans/studio-quiz.md) : le moteur de quiz natif de Planner, sans ClassQuiz.
  *  - Questionnaires : la banque de l'enseignant, sans classe ni module (étiquettes libres) ;
  *  - QuestionsQuestionnaire : dix types de questions, données propres au type en JSON ;
  *  - MediasQuiz : images, audios et vidéos des questions (déposés ou produits par l'IA) ;

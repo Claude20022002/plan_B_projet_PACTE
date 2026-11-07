@@ -1,6 +1,6 @@
 # Moteur de planification : catalogue des paramètres et dépendances
 
-Statut : **décisions du chef de projet au § 7 ; l'ordre de travail suit `docs/plans/plan-produit/04-plan-fusionne.md`.** Ce dossier couvre les deux premières étapes demandées : le catalogue, puis les dépendances. L'algorithme du solveur n'a pas encore été modifié.
+Statut : **décisions du chef de projet au § 7 ; l'ordre de travail suit `docs/archives/plans/plan-produit/04-plan-fusionne.md`.** Ce dossier couvre les deux premières étapes demandées : le catalogue, puis les dépendances. L'algorithme du solveur n'a pas encore été modifié.
 
 | Lire | Pour |
 |---|---|
@@ -165,7 +165,7 @@ Le chef de projet a retenu les quatre recommandations.
 | 1 | La demande « strict ou souple » par paramètre contredisait D-09 et le § 6.3 du plan : « laisser l'école rendre dure une règle souple ? Non ». | **D-09 amendée** : le catalogue distingue 26 règles strictes verrouillées, 22 strictes réglables et 86 souples. Un **profil** ou la Plateforme peut rendre une règle stricte ; l'école, elle, choisit « indispensable » (poids très fort). | Le risque de D-09 reste entier : une règle stricte de trop rend le problème insoluble sans dire pourquoi. Le primaire a pourtant besoin de « pas de trou » en strict : c'est un choix de profil, pas de chaque école. |
 | 2 | OR-Tools remplace-t-il Timefold ? | **Mesurer avant de décider**, sur un même modèle et un même évaluateur ([détail](ecarts-du-solveur.md#4-le-choix-du-moteur)). | La principale limite actuelle n'est pas le moteur mais la forme du modèle. |
 | 3 | Quel type d'école vise-t-on en premier ? | **Écoles privées, de la maternelle au lycée, puis formation professionnelle** (décision du 4 novembre). Les profils primaire, collège, lycée et formation passent donc avant l'école pilote, qui n'est pas choisie. | Chaque profil demande ses propres données. Le coût des formes de temps (§ 2 des écarts) dépend de ce choix. |
-| 4 | Où placer le moteur dans le plan ? | **ME-14a en V1, F-04 (profils, nomenclatures) en V3, ME-14 en V5** : `docs/plans/plan-produit/04-plan-fusionne.md`. | Plusieurs écoles sur une installation passe en premier (décision du 4 novembre). |
+| 4 | Où placer le moteur dans le plan ? | **ME-14a en V1, F-04 (profils, nomenclatures) en V3, ME-14 en V5** : `docs/archives/plans/plan-produit/04-plan-fusionne.md`. | Plusieurs écoles sur une installation passe en premier (décision du 4 novembre). |
 
 ## 8. Ce qui est vérifié
 

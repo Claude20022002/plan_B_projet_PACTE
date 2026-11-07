@@ -27,10 +27,10 @@
 
 | Plan | Rôle |
 |---|---|
-| `docs/plans/assainissement.md` | **Fait foi.** Constats, fonctions abandonnées ou reportées, lots 0, A, B, D et Q, règles de travail et règles de code (§ 6). |
-| `docs/plans/remarques-par-profil.md` | Décisions du 11 octobre (§ 1), lots R, revenu (§ 5), vidéo (§ 6), idées pour plus tard (§ 9 et 10). |
-| `docs/plans/quiz-ia.md` | Quiz par l'IA et quiz dans Planner (lots IA et CQ). Plusieurs lots sont abandonnés par `assainissement.md`, § 3.2. |
-| `docs/plans/espace-enseignant.md` | Espace de l'enseignant. Même remarque. |
+| `docs/archives/plans/assainissement.md` | **Fait foi.** Constats, fonctions abandonnées ou reportées, lots 0, A, B, D et Q, règles de travail et règles de code (§ 6). |
+| `docs/archives/plans/remarques-par-profil.md` | Décisions du 11 octobre (§ 1), lots R, revenu (§ 5), vidéo (§ 6), idées pour plus tard (§ 9 et 10). |
+| `docs/archives/plans/quiz-ia.md` | Quiz par l'IA et quiz dans Planner (lots IA et CQ). Plusieurs lots sont abandonnés par `assainissement.md`, § 3.2. |
+| `docs/archives/plans/espace-enseignant.md` | Espace de l'enseignant. Même remarque. |
 
 En cas de contradiction, `assainissement.md` l'emporte. **Les plans ne sont modifiés que sur demande du chef de projet.**
 

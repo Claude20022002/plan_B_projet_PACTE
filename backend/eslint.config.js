@@ -5,7 +5,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 /**
  * ESLint du backend (lots A-4 et Q-1) : mêmes règles de base que le site (frontend/eslint.config.js).
  * Une erreur fait échouer la CI. La longueur des fichiers n'est qu'un avertissement : elle signale
- * les fichiers à découper (docs/plans/assainissement.md, § 6, « Règles de code ») sans rien bloquer.
+ * les fichiers à découper (docs/archives/plans/assainissement.md, § 6, « Règles de code ») sans rien bloquer.
  */
 const longueur = (max) => ["warn", { max, skipBlankLines: true, skipComments: true }];
 

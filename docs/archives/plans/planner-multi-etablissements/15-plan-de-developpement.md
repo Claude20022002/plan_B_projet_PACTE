@@ -2,7 +2,7 @@
 
 Statut : **validé par le chef de projet le 26 octobre 2026**, avec les corrections retenues de la revue d'expert (fichier 16, § 16.5 : R-1 à R-4 ; R-5 : une personne par groupe). Elles sont reportées ci-dessous : jalon pilote allégé (§ 15.5, V3 et « Après l'ouverture »), essai du contexte et règle de lint dès V1, lot ME-27 (installation de l'école pilote), revue de sécurité de EC-2 et EC-3 par A, calendrier (§ 15.8).
 
-**Remplacé par `docs/plans/plan-produit/04-plan-fusionne.md`** (décisions du chef de projet des 4 et 5 novembre 2026) : les vagues V0 à V5 y sont gardées et fusionnées avec les fonctionnalités. Le contenu technique des lots ci-dessous reste valable.
+**Remplacé par `docs/archives/plans/plan-produit/04-plan-fusionne.md`** (décisions du chef de projet des 4 et 5 novembre 2026) : les vagues V0 à V5 y sont gardées et fusionnées avec les fonctionnalités. Le contenu technique des lots ci-dessous reste valable.
 
 Ce fichier répartit les lots des fichiers 09, 11 et 14 entre les deux groupes, en six vagues. Chaque vague se termine par un jalon qu'on peut montrer. Le premier objectif est une **école pilote ouverte sur sa propre installation** (vague 3) ; la plateforme commune à plusieurs écoles vient ensuite (vagues 4 et 5). C'est le découpage en tranches du § 12.11, appliqué.
 
@@ -14,7 +14,7 @@ Ce fichier répartit les lots des fichiers 09, 11 et 14 entre les deux groupes, 
 | Préfixe des branches | `a/<lot>` | `b/<lot>` |
 | Possède aussi | Les contrats d'API (routes, codes d'erreur, tests d'intégration) | Les fonctions enseignant du fichier 14 (lots EC), **de bout en bout**, serveur compris (§ 15.4) |
 
-L'équipe jeux (Alexis) suit son propre contrat (`docs/plans/jeux-pedagogiques.md`) ; elle apparaît ici seulement là où elle touche A ou B.
+L'équipe jeux (Alexis) suit son propre contrat (`docs/conception/jeux/jeux-pedagogiques.md`) ; elle apparaît ici seulement là où elle touche A ou B.
 
 ## 15.2 Où on en est (26 octobre 2026)
 

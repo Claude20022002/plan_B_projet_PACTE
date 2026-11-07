@@ -1,6 +1,6 @@
 # Compte rendu de la session du groupe A, 27 au 29 octobre 2026
 
-À lire en début de la prochaine session du groupe A, après le compte rendu du 26 octobre (`compte-rendu-2026-10-26-groupe-a.md`, PR #129 si elle n'est pas fusionnée), avec le plan validé (`docs/plans/planner-multi-etablissements/15-plan-de-developpement.md`) et la revue d'expert (`16-revue-expert.md`). Les règles de travail restent celles du § 15.6 du plan, plus une nouvelle (§ 4) : **seul le chef de projet pousse le code**.
+À lire en début de la prochaine session du groupe A, après le compte rendu du 26 octobre (`compte-rendu-2026-10-26-groupe-a.md`, PR #129 si elle n'est pas fusionnée), avec le plan validé (`docs/archives/plans/planner-multi-etablissements/15-plan-de-developpement.md`) et la revue d'expert (`16-revue-expert.md`). Les règles de travail restent celles du § 15.6 du plan, plus une nouvelle (§ 4) : **seul le chef de projet pousse le code**.
 
 ## 1. L'essentiel
 

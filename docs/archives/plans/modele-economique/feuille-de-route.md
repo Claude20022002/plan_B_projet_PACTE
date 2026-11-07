@@ -1,6 +1,6 @@
 # Feuille de route autour de la Planification
 
-> **Remplacée par `docs/plans/plan-produit/04-plan-fusionne.md`** (décisions du chef de projet des 4 et 5 novembre 2026). Gardée pour l'historique et pour ses estimations. Ne pas la suivre.
+> **Remplacée par `docs/archives/plans/plan-produit/04-plan-fusionne.md`** (décisions du chef de projet des 4 et 5 novembre 2026). Gardée pour l'historique et pour ses estimations. Ne pas la suivre.
 
 Statut : **ordre décidé par le chef de projet le 4 novembre 2026** (§ 1). Elle remplace l'ordre des vagues V1 à V5 du fichier 15 ; le contenu de chaque lot reste celui du plan. Estimations avec la règle du plan : S = 0,5 j, M = 2 j, L = 5 j, multipliés par 1,5 à 2 ; une personne par groupe (R-5). **Les lots marqués « nouveau » sont estimés avant conception.**
 

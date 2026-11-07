@@ -1,6 +1,6 @@
 # Business Model & Product Strategy — ERP scolaire modulaire pour l'Afrique
 
-> **Document d'étude rédigé par ChatGPT, corrigé le 4 novembre 2026.** Les corrections portent sur les faits vérifiés. Il reste la référence du produit, et le plan à suivre en est tiré : docs/plans/plan-produit/04-plan-fusionne.md. Décisions des 4 et 5 novembre : plusieurs écoles sur une installation en premier ; écoles privées, puis formation professionnelle ; vente mise de côté ; pile inchangée pendant l'étude du groupe A. Les prix restent des hypothèses. Corrections et sources : docs/plans/modele-economique/.
+> **Document d'étude rédigé par ChatGPT, corrigé le 4 novembre 2026.** Les corrections portent sur les faits vérifiés. Il reste la référence du produit, et le plan à suivre en est tiré : docs/archives/plans/plan-produit/04-plan-fusionne.md. Décisions des 4 et 5 novembre : plusieurs écoles sur une installation en premier ; écoles privées, puis formation professionnelle ; vente mise de côté ; pile inchangée pendant l'étude du groupe A. Les prix restent des hypothèses. Corrections et sources : docs/archives/plans/modele-economique/.
 
 Modèle hybride
 
@@ -759,7 +759,7 @@ Précisions (lecture, pas un avis juridique) : la loi 09-08 ne contient aucune r
 
 Je recommande une progression en six phases.
 
-Décisions des 4 et 5 novembre 2026 : cet ordre est remplacé par les vagues V0 à V5 de docs/plans/plan-produit/04-plan-fusionne.md. Les délais ci-dessous supposaient une équipe de 8 fonctions.
+Décisions des 4 et 5 novembre 2026 : cet ordre est remplacé par les vagues V0 à V5 de docs/archives/plans/plan-produit/04-plan-fusionne.md. Les délais ci-dessous supposaient une équipe de 8 fonctions.
 
 ## Roadmap générale
 
@@ -1008,7 +1008,7 @@ Certains rôles peuvent être cumulés au début.
 
 Je ne développerais pas les 40 ou 50 modules simultanément.
 
-Décision du 5 novembre 2026 : priorité à l'optimisation du produit, avant toute vente (docs/plans/plan-produit/04-plan-fusionne.md). Le pack « École privée » est la vague V4. Notes et bulletins, frais et paiements n'existent pas encore dans Planner.
+Décision du 5 novembre 2026 : priorité à l'optimisation du produit, avant toute vente (docs/archives/plans/plan-produit/04-plan-fusionne.md). Le pack « École privée » est la vague V4. Notes et bulletins, frais et paiements n'existent pas encore dans Planner.
 
 Je construirais un premier produit suffisamment complet pour être commercialisé, puis je financerais progressivement son extension grâce aux abonnements.
 
@@ -1048,7 +1048,7 @@ Interface commerciale
 
 ### 25. Exploiter les travaux déjà réalisés
 
-État des lieux fait (docs/plans/plan-produit/01-etat-des-lieux.md) : élèves, classes, enseignants, matières, salles, présences par QR et génération existent ; notes, bulletins, frais, parents, arabe et Massar manquent. Planner continue dans son dépôt tant que l'étude de la pile n'a pas conclu.
+État des lieux fait (docs/archives/plans/plan-produit/01-etat-des-lieux.md) : élèves, classes, enseignants, matières, salles, présences par QR et génération existent ; notes, bulletins, frais, parents, arabe et Massar manquent. Planner continue dans son dépôt tant que l'étude de la pile n'a pas conclu.
 
 Tu as déjà exploré la gestion des salles, cours, enseignants et étudiants, ainsi que la présence par QR Code. Certains composants peuvent devenir les premières briques du nouvel ERP, à condition de les rendre génériques et multi-établissements.
 

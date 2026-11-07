@@ -7,7 +7,7 @@ import { TAILLE_MAX, TYPES_SUPPORTS } from "../services/ia/extraction.js";
 import { creerDansClassQuiz, disponibilite, etatGeneration, lancerGeneration, mesGenerations, modifierBrouillon, regenererQuestion } from "../services/ia/quiz.js";
 
 /**
- * Quiz générés par l'IA (enseignants) — docs/plans/quiz-ia.md
+ * Quiz générés par l'IA (enseignants) — docs/archives/plans/quiz-ia.md
  *  - GET    /api/quiz-ia/disponibilite                       service configuré, sujet seul possible, générations restantes
  *  - POST   /api/quiz-ia/generations?id_cours=&id_groupe=&plage=&nombre=&type=&difficulte=&langue=&temps=&nom=
  *                                                            corps : le support (PDF, DOCX, PPTX) → { id_generation, statut }
