@@ -27,6 +27,7 @@ Ce dossier décrit deux transformations :
 | [15-plan-de-developpement.md](15-plan-de-developpement.md) | Plan de développement pour les deux groupes : six vagues avec leur jalon, répartition A / B, charge, passages de relais, règles communes, décisions qui bloquent | Chef de projet, groupes A et B |
 | [16-revue-expert.md](16-revue-expert.md) | Revue d'expert logiciel et sécurité du 26 octobre : verdict, six corrections du plan de développement (dont un lot manquant), sept corrections de sécurité, décisions R-1 à R-8 | Chef de projet, groupes A et B |
 | [conception-v0-groupe-b.md](conception-v0-groupe-b.md) | Conception de la vague V0 pour le groupe B : contrat d'API de ME-17, écrans, sélecteur d'année de ME-18, essai de ME-11 sur téléphone, passage de relais | Groupe B |
+| [conception-me0b-deploiement.md](conception-me0b-deploiement.md) | Conception de ME-0b : mise en ligne en une commande (images construites et publiées par la CI, `deployer.sh <commit>` sur le serveur), décisions C-1 à C-11, diagrammes UML (composants, séquence, activité, états), contrat et vérification | Chef de projet, groupe A |
 | [10-verification.md](10-verification.md) | Traçabilité, invariants testés, analyse des défaillances, contradictions trouvées et levées, relecture point par point du 23 octobre (§ 10.4.1 : 25 corrections), questions | Chef de projet |
 
 Les diagrammes sont écrits en Mermaid : GitHub les affiche directement. Ils font partie du plan : un changement de conception commence par le diagramme.
