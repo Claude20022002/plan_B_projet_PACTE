@@ -1,4 +1,4 @@
-/** Simulation game page: existing navigation, panel, typography, and module access rules. */
+/** Page d'une simulation : navigation, panneau et typographie existants, avec les règles d'accès aux modules. */
 import { useEffect, useRef } from 'react';
 import { Link as RouterLink, useParams } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -12,7 +12,7 @@ import { simulationParCode } from '../../../../shared/simulations/catalogue.js';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import useSimulation from '../../hooks/useSimulation';
 
-/** Resolves only registered simulations; changing routes remounts the session. */
+/** Ne résout que les simulations enregistrées ; un changement de route remonte la session. */
 export default function JeuSimulation() {
     const { code } = useParams();
     const jeu = simulationParCode(code);

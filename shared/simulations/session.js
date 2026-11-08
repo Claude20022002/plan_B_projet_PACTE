@@ -1,7 +1,7 @@
-/** Framework-independent session store shared by React web and React Native. */
+/** Magasin de session indépendant du framework, partagé par React web et React Native. */
 import { evaluerSimulation, reponseDuFormulaire } from './moteur.js';
 
-/** Creates an observable session; injected requests retain each platform's authentication. */
+/** Crée une session observable ; les requêtes injectées conservent l'authentification de chaque plateforme. */
 export function creerSession(jeu, api) {
     let etat = { statut: 'chargement', defiId: jeu.defis[0].id, valeurs: {}, resultat: null, reussis: [], points: 0, occupe: false, erreur: null, indice: false };
     let version = 0;

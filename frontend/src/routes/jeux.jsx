@@ -1,4 +1,4 @@
-/** Game routes extracted from App so adding simulations does not grow the application shell. */
+/** Routes des jeux extraites de App pour que l'ajout de simulations n'alourdisse pas la coque de l'application. */
 import { lazy, Suspense } from 'react';
 import { Route } from 'react-router-dom';
 import PrivateRoute from '../components/common/PrivateRoute';
@@ -15,7 +15,7 @@ const ecran = (page, roles = ['etudiant', 'enseignant']) => (
 );
 
 /**
- * Returns route elements with the same role gates as the original games.
+ * Renvoie les éléments de route avec les mêmes contrôles de rôle que les jeux d'origine.
  * /jeux/:code reste après les routes fixes (sessions, direct, devoirs) pour ne jamais les masquer.
  */
 export const routesJeux = () => [

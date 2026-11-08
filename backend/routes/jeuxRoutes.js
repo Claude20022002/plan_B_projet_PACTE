@@ -59,7 +59,7 @@ router.post("/:code/defis/:idDefi/reussite", planification(async (req, res) => {
     res.status(resultat.cree ? 201 : 200).json(resultat);
 }));
 
-// The server evaluates the submitted inputs; client-supplied scores are never used.
+// Le serveur évalue les réponses soumises ; les points fournis par le client ne sont jamais utilisés.
 router.post("/:code/defis/:idDefi/essais", planification(async (req, res) => {
     const resultat = await essayerSimulation(req.user, req.params.code, req.params.idDefi, req.body?.reponse);
     res.status(resultat.cree ? 201 : 200).json(resultat);

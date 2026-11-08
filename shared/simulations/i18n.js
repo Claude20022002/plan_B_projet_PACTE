@@ -1,4 +1,4 @@
-/** Bilingual simulation UI text, shared without importing platform-specific i18n runtimes. */
+/** Textes bilingues de l'interface des simulations, partagés sans importer les moteurs i18n propres à chaque plateforme. */
 export const fr = {
     retour: 'Tous les jeux', parcours: 'Parcours', niveau: 'Niveau {{n}}', reussi: 'Réussi',
     objectif: 'Objectif pédagogique', source: 'Programme de référence', original: 'Activité originale · entraînement',
@@ -71,7 +71,7 @@ export const fr = {
     },
 };
 
-/** English strings mirror every French key, including non-color-only result labels. */
+/** Les chaînes anglaises reprennent chaque clé française, y compris les libellés de résultat qui ne reposent pas seulement sur la couleur. */
 export const en = {
     retour: 'All games', parcours: 'Learning path', niveau: 'Level {{n}}', reussi: 'Completed',
     objectif: 'Learning objective', source: 'Curriculum reference', original: 'Original activity · practice',

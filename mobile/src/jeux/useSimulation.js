@@ -7,7 +7,7 @@ const api = {
     essayer: (code, id, reponse) => planner(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(id)}/essais`, { method: 'POST', body: { reponse } }),
 };
 
-/** Native authentication stays in the existing HTTP client, outside shared game state. */
+/** L'authentification native reste dans le client HTTP existant, hors de l'état partagé du jeu. */
 export default function useSimulation(jeu) {
     const session = useMemo(() => creerSession(jeu, api), [jeu]);
     const etat = useSyncExternalStore(session.abonner, session.lire);

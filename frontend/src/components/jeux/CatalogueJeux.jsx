@@ -1,4 +1,4 @@
-/** Existing catalog rows, with separate attribution for original curriculum-aligned activities. */
+/** Lignes du catalogue existant, avec une attribution distincte pour les activités originales alignées sur le programme. */
 import { Box, Button, LinearProgress, Link, Skeleton, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
@@ -6,7 +6,7 @@ import { boutonPanneauPlein } from './styles';
 import { ds } from '../../design-system/tokens';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 
-/** Preserves catalog layout and completion indicators for both terminal and simulation games. */
+/** Conserve la disposition du catalogue et les indicateurs de progression pour le terminal comme pour les simulations. */
 export default function CatalogueJeux({ accueil, erreur, jouer }) {
     const { t, i18n } = useTranslation();
     return <Panneau titre={t('jeux.catalogue')} titreId="catalogue-titre">

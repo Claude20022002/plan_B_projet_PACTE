@@ -531,6 +531,23 @@ const DISPONIBILITES_VACATAIRES = [
     [['mardi','09:00','prefere'], ['mardi','11:00','prefere'], ['jeudi','09:00','neutre'], ['jeudi','11:00','neutre'], ['samedi','09:00','eviter']],
 ];
 
+// ── Jeux : module de démonstration par discipline ───────────────────────────
+// Le seed propose chaque jeu dans un module où sa discipline est enseignée. Les disciplines
+// sans module dédié dans la maquette de démonstration sont rattachées au module le plus proche.
+const MODULE_JEU_PAR_DISCIPLINE = {
+    algorithmique: 'IIIA-3-ASD',              // Algorithmique avancée et structures de données
+    informatique: 'CPI-1-PY',                 // Informatique de 1re année (terminal, outils)
+    robotique: 'GIL-4-P40',                   // Production 4.0 (robotique et industrie 4.0)
+    'intelligence-artificielle': 'IIIA-4-IA', // Intelligence artificielle
+    logistique: 'GIL-3-STOCK',                // Inventory Management
+    cybersecurite: 'CYB-5-INCID',             // Cybercriminalité et gestion des incidents
+    'bases-de-donnees': 'IIIA-3-ABD',         // Administration des bases de données
+    reseaux: 'IIIA-3-RES',                    // Réseaux informatiques
+    'systemes-d-exploitation': 'IIIA-3-SE',   // Systèmes d'exploitation
+    'gestion-de-projet': 'IIIA-4-GP',         // Gestion de projet
+    gestion: 'LMEO-3-CDG',                    // Contrôle de gestion (budget et coûts)
+};
+
 // ── seed() ────────────────────────────────────────────────────────────────────
 async function seed() {
     // Le seed crée des comptes de démonstration au mot de passe connu : interdit en production.
@@ -910,23 +927,43 @@ async function seed() {
         }
         console.log(`✅ ${nbDispos} disponibilités et vœux déclarés`);
 
-        // ── 15. Jeux pédagogiques proposés dans un module de démonstration ──
+        // ── 15. Jeux pédagogiques proposés dans le module de leur discipline ──
         // Le code des jeux est versionné (shared/) ; proposer un jeu dans un module est une DONNÉE en base,
         // donc absente d'un simple `git pull`. On la rejoue ici : un `npm run seed` suffit à rendre les
-        // jeux visibles aux étudiants inscrits au module (affectation idempotente, jamais en double).
-        const moduleJeux = coursMap['CPI-1-PY'];
-        if (moduleJeux) {
-            let nbJeuxProposes = 0;
-            for (const jeu of JEUX) {
-                const [, cree] = await JeuModule.findOrCreate({
-                    where: { code_jeu: jeu.code, id_cours: moduleJeux.id_cours },
-                    defaults: { but: 'entrainer', notion: null },
-                });
-                if (cree) nbJeuxProposes++;
+        // jeux visibles aux étudiants des modules concernés (affectation idempotente, jamais en double).
+        // Les propositions automatiques d'un ancien seed (tous les jeux dans CPI-1-PY) sont retirées
+        // pour que la base converge vers la répartition par discipline ; celles des enseignants restent.
+        const propositionsAttendues = [];
+        const modulesJeux = new Set();
+        const jeuxSansModule = [];
+        for (const jeu of JEUX) {
+            const codeModule = MODULE_JEU_PAR_DISCIPLINE[jeu.discipline];
+            const moduleJeu = codeModule ? coursMap[codeModule] : null;
+            if (!moduleJeu) {
+                jeuxSansModule.push(`${jeu.code} (${jeu.discipline})`);
+                continue;
             }
-            console.log(`✅ Jeux : ${JEUX.length} proposés dans ${moduleJeux.code_cours} (${nbJeuxProposes} ajoutés, ${JEUX.length - nbJeuxProposes} déjà présents)`);
-        } else {
-            console.log('⚠️ Module CPI-1-PY introuvable : jeux non proposés');
+            propositionsAttendues.push({ code_jeu: jeu.code, id_cours: moduleJeu.id_cours });
+            modulesJeux.add(moduleJeu.code_cours);
+        }
+
+        const attendues = new Set(propositionsAttendues.map((p) => `${p.code_jeu}|${p.id_cours}`));
+        const anciennes = await JeuModule.findAll({ where: { id_user_auteur: null } });
+        for (const proposition of anciennes) {
+            if (!attendues.has(`${proposition.code_jeu}|${proposition.id_cours}`)) await proposition.destroy();
+        }
+
+        let nbJeuxProposes = 0;
+        for (const { code_jeu, id_cours } of propositionsAttendues) {
+            const [, cree] = await JeuModule.findOrCreate({
+                where: { code_jeu, id_cours },
+                defaults: { but: 'entrainer', notion: null },
+            });
+            if (cree) nbJeuxProposes++;
+        }
+        console.log(`✅ Jeux : ${propositionsAttendues.length} proposés dans ${modulesJeux.size} modules (${nbJeuxProposes} ajoutés, ${propositionsAttendues.length - nbJeuxProposes} déjà présents)`);
+        if (jeuxSansModule.length) {
+            console.log(`⚠️ Jeux sans module pour leur discipline : ${jeuxSansModule.join(', ')}`);
         }
 
         // ── Récapitulatif ─────────────────────────────────────────────────────

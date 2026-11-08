@@ -17,6 +17,8 @@ jest.unstable_mockModule('../../services/planning/droits.js', () => ({ peutGerer
 jest.unstable_mockModule('../../services/planning/enseignements.js', () => ({
     ErreurMetier: class extends Error { constructor(message, status) { super(message); this.status = status; } },
 }));
+// Groupes de l'année : évite de charger le service réel et ses modèles de planning dans ce test unitaire.
+jest.unstable_mockModule('../../services/annees/annees.js', () => ({ groupesDeLAnnee: async () => [1] }));
 const { essayerSimulation } = await import('../../services/jeux/simulations.js');
 const { enregistrerReussite } = await import('../../services/jeux/jeux.js');
 const user = { id_user: 7, role: 'etudiant' };

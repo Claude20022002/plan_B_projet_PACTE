@@ -155,7 +155,7 @@ const commandesOuErreur = (commandes) => {
 export const enregistrerReussite = async (user, code, idDefi, indices, commandes) => {
     const jeu = jeuOuErreur(code);
     await jeuAccessible(user, jeu);
-    if (jeu.type !== "terminal") throw new ErreurMetier("Use the simulation attempts endpoint", 400);
+    if (jeu.type !== "terminal") throw new ErreurMetier("Utilisez la route des essais de simulation", 400);
     const defi = defiDuJeu(jeu, String(idDefi ?? ""));
     if (!defi) throw new ErreurMetier("Défi inconnu", 404);
     const n = Number(indices ?? 0);
@@ -168,7 +168,7 @@ export const enregistrerReussite = async (user, code, idDefi, indices, commandes
     return sauvegarderReussite(user, jeu, defi, n);
 };
 
-/** Stores first mastery only; both terminal and simulations use server-owned point values. */
+/** N'enregistre que la première réussite ; le terminal et les simulations utilisent les points calculés par le serveur. */
 export const sauvegarderReussite = async (user, jeu, defi, indices = 0) => {
     const [ligne, cree] = await JeuProgression.findOrCreate({
         where: { id_user: user.id_user, code_jeu: jeu.code, id_defi: defi.id },

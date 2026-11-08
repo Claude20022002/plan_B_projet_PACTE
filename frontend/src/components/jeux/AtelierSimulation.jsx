@@ -1,4 +1,4 @@
-/** Inputs and inspectable simulation results in the existing HESTIM panel materials. */
+/** Saisies et résultats de simulation inspectables, dans les panneaux HESTIM existants. */
 import { Box, Button, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, TextField, Typography } from '@mui/material';
 import { useTranslation } from 'react-i18next';
 import Panneau from './Panneau';
@@ -7,7 +7,7 @@ import { caseRobot, champsSimulation, resumeSimulation, tableauxSimulation } fro
 
 const cellule = { color: ds.board.letter, borderColor: ds.board.seam, overflowWrap: 'anywhere' };
 
-/** Renders a coordinate-labeled robot grid, with symbols instead of color-only information. */
+/** Affiche une grille de robot repérée par coordonnées, avec des symboles et non une information par la couleur seule. */
 function GrilleRobot({ defi, resultat, t }) {
     return (
         <Panneau titre={t('grille')} titreId="simulation-grille">
@@ -30,7 +30,7 @@ function GrilleRobot({ defi, resultat, t }) {
     );
 }
 
-/** Composes game-specific controls and shared tables without creating a second quiz engine. */
+/** Compose les contrôles propres à chaque jeu et les tableaux partagés, sans créer un second moteur de quiz. */
 export default function AtelierSimulation({ jeu, defi, etat, session }) {
     const { t: traduire, i18n } = useTranslation();
     const langue = String(i18n.language || 'fr').toLowerCase().startsWith('fr') ? 'fr' : 'en';

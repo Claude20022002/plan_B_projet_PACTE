@@ -2,7 +2,7 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { CIBLE_TACTILE, creerStyles } from '../theme';
 import { caseRobot, champsSimulation, resumeSimulation, tableauxSimulation } from '../../../shared/simulations/presentation.js';
 
-/** Theme-aware controls with explicit disabled/selected states and touch targets. */
+/** Contrôles adaptés au thème, avec des états désactivé/sélectionné explicites et des cibles tactiles. */
 export function BoutonSimulation({ children, onPress, disabled = false, selected = false }) {
     const s = useStyles();
     return <Pressable onPress={onPress} disabled={disabled} accessibilityRole="button"
@@ -11,7 +11,7 @@ export function BoutonSimulation({ children, onPress, disabled = false, selected
     </Pressable>;
 }
 
-/** Native labeled rows retain every table value without requiring horizontal scrolling. */
+/** Les lignes natives étiquetées gardent chaque valeur du tableau, sans défilement horizontal. */
 export default function AtelierSimulation({ jeu, defi, etat, session, t, texte = (v) => (typeof v === 'string' ? v : v?.fr ?? '') }) {
     const s = useStyles();
     const { resultat, valeurs, occupe } = etat;

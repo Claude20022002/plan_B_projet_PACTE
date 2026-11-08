@@ -9,7 +9,7 @@ import AtelierSimulation, { BoutonSimulation } from '../jeux/AtelierSimulation';
 import { simulationParCode } from '../../../shared/simulations/catalogue.js';
 import { libelle } from '../../../shared/jeux/catalogue.js';
 
-/** Registered simulations share their engine and progress with the web, not a webview. */
+/** Les simulations enregistrées partagent leur moteur et leur progression avec le web, sans webview. */
 export default function Simulation() {
     const { code } = useLocalSearchParams();
     const jeu = simulationParCode(code);
