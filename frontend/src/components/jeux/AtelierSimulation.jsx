@@ -38,6 +38,9 @@ export default function AtelierSimulation({ jeu, defi, etat, session }) {
     const t = (cle, valeurs) => traduire(`simulations.${cle}`, valeurs);
     const { resultat, valeurs, occupe } = etat;
     const programme = valeurs.programme ?? '';
+    // Disposition générique : une colonne par champ (jusqu'à 6), sans liste de moteurs codée en dur.
+    const champs = champsSimulation(jeu, defi, t, langue, bilingue);
+    const colonnes = `repeat(${Math.min(Math.max(champs.length, 1), 6)}, minmax(0, 1fr))`;
     return (
         <Stack spacing={2}>
             {jeu.moteur === 'robot' && <GrilleRobot defi={defi} resultat={resultat} t={t} />}
@@ -55,8 +58,8 @@ export default function AtelierSimulation({ jeu, defi, etat, session }) {
                     </TableContainer>
                 </Panneau>
             ))}
-            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: jeu.moteur === 'stock' ? 'repeat(3, minmax(0, 1fr))' : jeu.moteur === 'sprint' ? 'repeat(5, minmax(0, 1fr))' : (['triage', 'sql', 'reseau', 'cpu', 'budget'].includes(jeu.moteur)) ? 'repeat(4, minmax(0, 1fr))' : '1fr' }, gap: 2 }}>
-                {champsSimulation(jeu, defi, t, langue, bilingue).map((champ) => (
+            <Box sx={{ display: 'grid', gridTemplateColumns: { xs: '1fr', sm: champs.length === 1 ? '1fr' : colonnes }, gap: 2 }}>
+                {champs.map((champ) => (
                     <TextField key={champ.cle} id={`simulation-${champ.cle}`} label={champ.label} value={valeurs[champ.cle] ?? ''}
                         disabled={occupe} fullWidth type={champ.texte ? 'text' : 'number'} sx={{ '& .MuiInputBase-root': { minHeight: 44 } }}
                         onChange={(e) => session.saisir(champ.cle, e.target.value)}

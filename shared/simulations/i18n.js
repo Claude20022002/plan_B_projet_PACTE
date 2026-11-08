@@ -45,6 +45,9 @@ export const fr = {
     budgetChamp: 'Poste {{n}} — {{nom}} (fixe {{fixe}}, unité {{unite}})', budgetAide: 'Entrez la quantité pour ce poste de coût.',
     budgetLignes: 'Postes de coût', budgetNom: 'Poste', budgetFixe: 'Coût fixe', budgetUnite: 'Coût unitaire', budgetQuantite: 'Quantité', budgetCout: 'Coût total',
     budgetResume: 'Total : {{total}} MAD · Couverture min : {{couverture}} · Budget : {{budgetMax}} MAD',
+    complexiteChamp: 'Extrait {{n}} ({{id}}) — classe 1–6', complexiteAide: '1 = O(1), 2 = O(log n), 3 = O(n), 4 = O(n log n), 5 = O(n²), 6 = O(2ⁿ).',
+    complexiteExtrait: 'Extrait', complexiteCode: 'Motif', bilanComplexite: '{{correct}}/{{total}} extraits bien classés',
+    classe1: 'O(1)', classe2: 'O(log n)', classe3: 'O(n)', classe4: 'O(n log n)', classe5: 'O(n²)', classe6: 'O(2ⁿ)',
     problemes: {
         collision: 'Déplacement {{step}} : obstacle ou sortie de grille. Le robot s’est arrêté.', destination: 'La destination n’est pas atteinte.', checkpoint: 'Un passage obligatoire manque.', steps: 'Dépassé : {{max}} déplacements maximum.',
         precision: 'La précision doit atteindre {{min}} %.', recall: 'Le rappel doit atteindre {{min}} %.', cost: 'Le coût doit rester au plus à {{max}} unités.',
@@ -64,6 +67,7 @@ export const fr = {
         depassement: 'Le total {{total}} dépasse le budget {{max}} MAD.',
         couverture: 'La couverture {{couverture}} est inférieure au minimum {{min}}.',
         cout_unitaire: 'Coût unitaire {{unitaire}} dépasse le maximum {{max}}.',
+        complexite: 'Extrait {{index}} : classe attendue {{attendu}}, vous avez mis {{donne}}.',
     },
 };
 
@@ -114,6 +118,9 @@ export const en = {
     budgetChamp: 'Line {{n}} — {{nom}} (fixed {{fixe}}, unit {{unite}})', budgetAide: 'Enter the quantity for this cost line.',
     budgetLignes: 'Cost lines', budgetNom: 'Line', budgetFixe: 'Fixed cost', budgetUnite: 'Unit cost', budgetQuantite: 'Quantity', budgetCout: 'Total cost',
     budgetResume: 'Total: {{total}} MAD · Min coverage: {{couverture}} · Budget: {{budgetMax}} MAD',
+    complexiteChamp: 'Snippet {{n}} ({{id}}) — class 1–6', complexiteAide: '1 = O(1), 2 = O(log n), 3 = O(n), 4 = O(n log n), 5 = O(n²), 6 = O(2ⁿ).',
+    complexiteExtrait: 'Snippet', complexiteCode: 'Pattern', bilanComplexite: '{{correct}}/{{total}} snippets correctly classified',
+    classe1: 'O(1)', classe2: 'O(log n)', classe3: 'O(n)', classe4: 'O(n log n)', classe5: 'O(n²)', classe6: 'O(2ⁿ)',
     problemes: {
         collision: 'Move {{step}}: obstacle or grid boundary. The robot stopped.', destination: 'The destination has not been reached.', checkpoint: 'A required checkpoint is missing.', steps: 'Exceeded: at most {{max}} moves.',
         precision: 'Precision must reach {{min}}%.', recall: 'Recall must reach {{min}}%.', cost: 'Cost must be at most {{max}} units.',
@@ -133,5 +140,6 @@ export const en = {
         depassement: 'Total {{total}} exceeds the {{max}} MAD budget.',
         couverture: 'Coverage {{couverture}} is below the minimum {{min}}.',
         cout_unitaire: 'Unit cost {{unitaire}} exceeds the maximum {{max}}.',
+        complexite: 'Snippet {{index}}: expected class {{attendu}}, you entered {{donne}}.',
     },
 };

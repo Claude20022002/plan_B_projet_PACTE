@@ -4,7 +4,7 @@ import { evaluerSimulation, reponseValide, reponseDuFormulaire } from '../../../
 import { fr, en } from '../../../shared/simulations/i18n.js';
 import { caseRobot, champsSimulation, tableauxSimulation, resumeSimulation } from '../../../shared/simulations/presentation.js';
 
-const [robot, ia, stock, triage, sql, reseau, cpu, sprint, budget] = SIMULATIONS;
+const [robot, ia, stock, triage, sql, reseau, cpu, sprint, budget, bigO] = SIMULATIONS;
 const evaluer = (jeu, i, reponse) => evaluerSimulation(jeu, jeu.defis[i], reponse);
 const codes = (r) => r.problemes.map((p) => p.code);
 const solutions = [
@@ -17,6 +17,7 @@ const solutions = [
     [cpu, 0, { ordre: [1, 0, 2, 3] }], [cpu, 1, { ordre: [2, 1, 3, 0] }], [cpu, 2, { ordre: [2, 1, 3, 0] }],
     [sprint, 0, { choix: [1, 1, 1, 0, 0] }], [sprint, 1, { choix: [1, 1, 1, 0, 0] }], [sprint, 2, { choix: [1, 1, 1, 0, 0] }],
     [budget, 0, { quantites: [2, 2, 2, 2] }], [budget, 1, { quantites: [3, 3, 3, 3] }], [budget, 2, { quantites: [4, 4, 4, 4] }],
+    [bigO, 0, { classes: [1, 2, 3, 5] }], [bigO, 1, { classes: [2, 4, 3, 5] }], [bigO, 2, { classes: [6, 5, 1, 2] }],
 ];
 
 describe('Curriculum simulations', () => {
@@ -43,7 +44,7 @@ describe('Curriculum simulations', () => {
         expect(JEUX[0].defis).toHaveLength(66);
         expect(new Set(JEUX.map((j) => j.code)).size).toBe(JEUX.length);
         expect(simulationParCode('unknown')).toBeNull();
-        expect(SIMULATIONS).toHaveLength(9);
+        expect(SIMULATIONS).toHaveLength(10);
         for (const jeu of SIMULATIONS) {
             expect(jeu.defis.map((d) => d.niveau)).toEqual([1, 2, 3]);
             expect(jeu.defis.reduce((s, d) => s + d.xp, 0)).toBe(450);
