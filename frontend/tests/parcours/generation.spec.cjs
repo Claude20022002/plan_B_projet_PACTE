@@ -11,7 +11,7 @@
 const { test, expect } = require("@playwright/test");
 const { lireDonnees, seConnecter } = require("./outils.cjs");
 
-// Calcul de 30 secondes (le plus court proposé), puis déploiement sur douze semaines
+// Calcul de 30 secondes (la durée choisie par le serveur pour un petit problème), puis déploiement sur douze semaines
 test.setTimeout(240_000);
 
 /** Valeur d'un chiffre du rapport, d'après son libellé */
@@ -29,22 +29,41 @@ test("génération puis publication : le solveur respecte toutes les règles", a
   const { admin, motDePasse, generation: g } = lireDonnees();
   await seConnecter(page, { email: admin.email, motDePasse, role: "admin" });
 
-  // Lancement depuis l'écran : la période, le calcul le plus court
+  // Lancement depuis l'écran : la période, rien d'autre à régler (R-4)
   await page.goto("/gestion/generation-automatique");
   await page.getByRole("combobox", { name: "Période" }).click();
   await page.getByRole("option", { name: g.periode.libelle }).click();
-  await page.getByRole("combobox", { name: "Durée de calcul" }).click();
-  await page.getByRole("option", { name: "30 s" }).click();
   await page.getByRole("button", { name: "Lancer la génération" }).click();
-  // Le rapport affiché avant la fin est celui de la génération précédente : attendre la fin du calcul
+  // L'écran d'attente dit l'étape en cours ; le rapport affiché avant la fin est celui de la
+  // génération précédente : attendre la fin du calcul
+  await expect(page.getByRole("status").filter({ hasText: /^(Préparation|Calcul|Placement)/ })).toBeVisible();
   const arreter = page.getByRole("button", { name: "Arrêter et garder" });
   await expect(arreter).toBeVisible();
   await expect(arreter).toBeHidden({ timeout: 180_000 });
 
-  // Rapport : des séances créées, aucune règle dure enfreinte, le module sans enseignant écarté
+  // Rapport : des séances créées, aucun conflit, le module sans enseignant écarté, avec le lien qui le corrige
   await expect(chiffre(page, "séances créées")).toHaveText(/^[1-9]\d*$/, { timeout: 180_000 });
-  await expect(chiffre(page, "règles dures enfreintes")).toHaveText("0");
-  await expect(page.getByText("Module sans enseignant").first()).toBeVisible();
+  await expect(chiffre(page, "conflits")).toHaveText("0");
+  const sansEnseignant = page.getByRole("region", { name: "À corriger avant de relancer" }).getByRole("listitem").filter({ hasText: "Module sans enseignant" });
+  await expect(sansEnseignant.getByRole("link", { name: "Corriger" })).toHaveAttribute("href", /^\/gestion\/enseignements\?enseignement=\d+$/);
+
+  // Exploration : une classe à la fois, au format de l'école puis en tableau, et le PDF
+  await page.getByRole("button", { name: "Explorer les emplois du temps" }).click();
+  const explorer = page.getByRole("region", { name: "Emplois du temps générés" });
+  await expect(explorer.getByText(/^Classe 1 sur \d+$/)).toBeVisible();
+  await expect(explorer.locator(".edt-document")).toBeVisible();
+  await explorer.getByRole("button", { name: "Tableau" }).click();
+  await expect(explorer.getByRole("row")).not.toHaveCount(0);
+  await explorer.getByRole("button", { name: "Suivante" }).click();
+  await expect(explorer.getByText(/^Classe 2 sur \d+$/)).toBeVisible();
+  // Le PDF passe par la fenêtre d'impression : on compte les documents qu'elle recevrait
+  await page.evaluate(() => {
+    window.print = () => {
+      window.documentsImprimes = document.querySelectorAll(".edt-impression-seule .edt-document").length;
+    };
+  });
+  await explorer.getByRole("button", { name: /du mois$/ }).click();
+  await expect.poll(() => page.evaluate(() => window.documentsImprimes)).toBeGreaterThan(0);
 
   // Publication : la version générée est la version active du planning
   await page.getByRole("tab", { name: "Versions" }).click();

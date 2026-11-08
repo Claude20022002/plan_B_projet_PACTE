@@ -1,4 +1,4 @@
-import { findSpotlight, groupByDay, relativeTo, toBoardSession, formatHeure } from '../../shared/session.js';
+import { findSpotlight, groupByDay, phaseDeLaLigne, relativeTo, toBoardSession, formatHeure } from '../../shared/session.js';
 import { lineColor, tokens } from '../../shared/tokens.js';
 
 /** Logique partagée avec le web (shared/), exécutée ici comme sur le téléphone. */
@@ -16,6 +16,16 @@ describe('séance en vedette', () => {
     expect(findSpotlight([s2, s1], maintenant)).toEqual({ session: s1, phase: 'live' });
     expect(findSpotlight([s2, annulee], new Date(2027, 2, 2, 12, 45))).toBeNull();
     expect(findSpotlight([annulee, s2], new Date(2027, 2, 2, 10, 50))).toEqual({ session: s2, phase: 'next' });
+  });
+
+  test('plusieurs séances en même temps : chacune est « en cours » sur sa ligne', () => {
+    const autreSalle = seance(5, '2027-03-02', '09:00:00', '10:45:00');
+    const vedette = findSpotlight([s1, autreSalle, s2], maintenant);
+    expect(phaseDeLaLigne(s1, vedette, maintenant)).toBe('live');
+    expect(phaseDeLaLigne(autreSalle, vedette, maintenant)).toBe('live');
+    expect(phaseDeLaLigne(s2, vedette, maintenant)).toBeUndefined();
+    expect(phaseDeLaLigne(seance(6, '2027-03-02', '09:00:00', '10:45:00', 'annule'), vedette, maintenant)).toBeUndefined();
+    expect(phaseDeLaLigne(seance(7, '2027-03-02', '09:00:00', '10:45:00', 'reporte'), vedette, maintenant)).toBeUndefined();
   });
 
   test('regroupe par jour dans l’ordre', () => {

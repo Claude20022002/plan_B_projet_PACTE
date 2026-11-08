@@ -1,5 +1,5 @@
 import { byStart, toBoardSession, toLocalISODate } from '../../../shared/session.js';
-import { API_BIBLIO } from '../config';
+import { API_BIBLIO, API_PLANNER } from '../config';
 import { biblio, entetesAuthentifies, planner } from './client';
 
 /**
@@ -88,6 +88,12 @@ export const chargerEspaceCours = async (idCours, idGroupe) => planner(`/classes
 /** Adresse d'un support : le lien, ou une URL signée de 5 minutes (Planner vérifie la classe) */
 export const lienSupport = async (idSupport) => (await planner(`/supports-cours/${encodeURIComponent(idSupport)}/ouvrir`)).url;
 
+/** Sondages ouverts d'une classe (lot EC-9) : { actif, sondages: [{ question, choix, a_repondu }] } */
+export const chargerSondages = async (idCours, idGroupe) => planner(`/classes/${encodeURIComponent(idCours)}/${encodeURIComponent(idGroupe)}/sondages`);
+
+/** Réponse anonyme et définitive à un sondage */
+export const repondreSondage = (id, idChoix) => planner(`/sondages/${encodeURIComponent(id)}/reponse`, { method: 'POST', body: { id_choix: idChoix } });
+
 /** Derniers retours de stage publiés (liste légère : entreprise, poste, note, photo ou non) */
 export const chargerAvisStage = async () => (await biblio('/internship-reviews/recent'))?.data ?? [];
 
@@ -168,6 +174,38 @@ export const chargerProgressionJeu = (code) => planner(`/jeux/${encodeURICompone
  */
 export const enregistrerReussite = (code, idDefi, indices, commandes) =>
   planner(`/jeux/${encodeURIComponent(code)}/defis/${encodeURIComponent(idDefi)}/reussite`, { method: 'POST', body: { indices, commandes } });
+
+// ── Sessions de jeu lancées en classe (QR code projeté par l'enseignant) ───────
+
+/** Rejoindre par le code du QR : { id_session_jeu, code_jeu, mode, module, … } */
+export const rejoindreSessionJeu = (code) => planner('/sessions-jeu/rejoindre', { method: 'POST', body: { code } });
+
+/** Mode collectif : le tableau de la classe { id_defi, commandes, reussi, statut, ma_proposition } */
+export const chargerTableauJeu = (id) => planner(`/sessions-jeu/${encodeURIComponent(id)}/tableau`);
+
+/** Mode collectif : envoyer ma réponse (remplace la précédente en attente) */
+export const proposerAuTableau = (id, texte) => planner(`/sessions-jeu/${encodeURIComponent(id)}/propositions`, { method: 'POST', body: { texte } });
+
+// ── Quiz du Studio rejoints par leur code, et quiz en direct (lot SC-1c) ──────
+
+/** Rejoindre un quiz du Studio par son code : { id_session, mode, titre, … } ; mode « direct » pour un quiz en direct */
+export const rejoindreQuizStudio = (code) => planner('/passations/rejoindre', { method: 'POST', body: { code } });
+
+/** Quiz en direct : s'inscrire comme joueur, et lire l'état de la partie (même réponse que la relecture) */
+export const rejoindreDirect = (id) => planner(`/quiz-direct/${encodeURIComponent(id)}/rejoindre`, { method: 'POST' });
+
+/** Quiz en direct : l'état de la partie ; `depuis` (version déjà reçue) rend { inchange: true } s'il n'a pas changé */
+export const lireDirect = (id, depuis) =>
+  planner(`/quiz-direct/${encodeURIComponent(id)}/joueur${depuis === undefined ? '' : `?depuis=${encodeURIComponent(depuis)}`}`);
+
+/** Quiz en direct : envoyer ma réponse à la question `index` (le serveur la date et la corrige) */
+export const repondreDirect = (id, index, reponse) => planner(`/quiz-direct/${encodeURIComponent(id)}/reponses`, { method: 'POST', body: { index, reponse } });
+
+/** Image d'une question du direct : source du composant Image, avec le jeton (l'adresse est protégée) */
+export const sourceMediaDirect = (id, idMedia) => ({
+  uri: `${API_PLANNER}/quiz-direct/${encodeURIComponent(id)}/medias/${encodeURIComponent(idMedia)}`,
+  headers: entetesAuthentifies(),
+});
 
 /** Dernière demande de changement de téléphone (R-10) : { id, statut, motif, demandee_le, decidee_le }, ou null. */
 export const chargerDemandeTelephone = async () => (await planner('/presences/telephone/demande'))?.data ?? null;

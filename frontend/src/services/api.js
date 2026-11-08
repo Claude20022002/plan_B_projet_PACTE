@@ -1,7 +1,6 @@
 /**
  * Service API centralisé pour communiquer avec le backend
  */
-import { typeDuFichier } from '../utils/fichiers';
 import { fetchAll } from '../utils/fetchAll';
 
 // Même origine que le frontend : proxy Vite en dev, nginx en production
@@ -101,7 +100,10 @@ export async function request(endpoint, options = {}) {
             data = await response.json();
         } else {
             const text = await response.text();
-            data = { message: text || `Erreur ${response.status}` };
+            // Page d'erreur HTML d'un relais (nginx…) : jamais affichée telle quelle
+            const html = /^\s*</.test(text);
+            const parDefaut = response.status === 413 ? 'Fichier trop lourd pour être envoyé.' : `Erreur ${response.status}`;
+            data = { message: !text || html ? parDefaut : text };
         }
 
         if (!response.ok) {
@@ -199,6 +201,18 @@ export const userAPI = {
     importBulk: (data) => request('/users/import', { method: 'POST', body: data }),
     // Téléphone perdu : retire la double authentification du compte et ferme ses sessions
     reinitialiserMfa: (id) => request(`/users/${id}/mfa`, { method: 'DELETE' }),
+    // Désactivation (ME-17) : aperçu de ce qu'elle touche, puis désactivation immédiate ou programmée
+    apercuDesactivation: (id, date) => request(`/users/${id}/desactivation${date ? `?date=${encodeURIComponent(date)}` : ''}`),
+    desactiver: (id, corps) => request(`/users/${id}/desactivation`, { method: 'POST', body: corps }),
+    annulerDesactivation: (id) => request(`/users/${id}/desactivation`, { method: 'DELETE' }),
+    reactiver: (id) => request(`/users/${id}/reactivation`, { method: 'POST' }),
+    anonymiser: (id) => request(`/users/${id}/anonymisation`, { method: 'POST' }),
+    // Plusieurs comptes (ids) ou tous les étudiants d'un groupe (id_groupe) ; le bilan dit le sort de chacun
+    desactiverEnLot: (corps) => request('/users/desactivations', { method: 'POST', body: corps }),
+    // Aperçu d'un lot, rien n'est modifié : `portee` est { ids } ou { id_groupe }
+    apercuLot: (portee, date) => request(`/users/desactivations/apercu?${portee.ids ? `ids=${portee.ids.join(',')}` : `id_groupe=${portee.id_groupe}`}&date=${encodeURIComponent(date)}`),
+    // Défait un lot fait par erreur : réactive les comptes et annule les désactivations programmées
+    retablirEnLot: (portee) => request('/users/reactivations', { method: 'POST', body: portee }),
 };
 
 // ==================== ENSEIGNANTS ====================
@@ -423,6 +437,8 @@ export const affectationAPI = {
     create: (data) => request('/affectations', { method: 'POST', body: data }),
     update: (id, data) => request(`/affectations/${id}`, { method: 'PUT', body: data }),
     delete: (id) => request(`/affectations/${id}`, { method: 'DELETE' }),
+    // Lien de visio d'une séance à distance (lot EC-11) : null le retire
+    lienVisio: (id, lien) => request(`/affectations/${id}/lien-visio`, { method: 'PUT', body: { lien_visio: lien } }),
 };
 
 // ==================== CONFLITS ====================
@@ -495,6 +511,12 @@ export const demandeReportAPI = {
     delete: (id) => request(`/demandes-report/${id}`, { method: 'DELETE' }),
     // extra : { forcer, justification } pour approuver un report malgré les règles (admin)
     traiter: (id, action, extra = {}) => request(`/demandes-report/${id}/traiter`, { method: 'PATCH', body: { action, ...extra } }),
+    // Réponse de l'enseignant à un report validé : { action: 'accepter' } ou { action: 'proposer', nouvelle_date, id_creneau }
+    confirmer: (id, corps) => request(`/demandes-report/${id}/confirmer`, { method: 'PATCH', body: corps }),
+    // Report à une date ultérieure (R-1, admin) : accepter sans date, puis fixer la date
+    // (corps : { date, id_creneau?, id_salle?, forcer?, justification? }) ; l'enseignant confirme ensuite
+    plusTard: (id) => request(`/demandes-report/${id}/plus-tard`, { method: 'PATCH' }),
+    reprogrammer: (id, corps) => request(`/demandes-report/${id}/reprogrammer`, { method: 'PATCH', body: corps }),
 };
 
 // ==================== DISPONIBILITÉS ====================
@@ -673,14 +695,9 @@ export const devoirsAPI = {
 };
 
 // ==================== QUIZ GÉNÉRÉS PAR L'IA (enseignants) ====================
+// Les générations déjà faites pour ClassQuiz : à relire et à créer. Un nouveau quiz se génère
+// dans le Studio (studioAPI.generer), sans classe ni module (R-9).
 export const quizIaAPI = {
-    // { disponible, max_par_jour, restantes }
-    disponibilite: () => request('/quiz-ia/disponibilite'),
-    // Support (PDF, DOCX, PPTX) et réglages { id_cours, id_groupe?, plage?, nombre, type, difficulte, langue, temps } → { id_generation, statut }
-    generer: (fichier, params) =>
-        request(avecQuery('/quiz-ia/generations', { ...params, nom: fichier.name }), { method: 'POST', body: fichier, headers: { 'Content-Type': typeDuFichier(fichier) } }),
-    // Sans document, à partir d'un sujet (« Créer un quiz ») : seulement si disponibilite() annonce { sujet: true }
-    genererSurSujet: (sujet, params) => request(avecQuery('/quiz-ia/generations', { ...params, sujet }), { method: 'POST' }),
     lister: () => request('/quiz-ia/generations'),
     // { id_generation, statut: en_cours | pret | erreur | creation | cree, erreur, questions, nom_source, id_quiz_classquiz }
     etat: (id) => request(`/quiz-ia/generations/${encodeURIComponent(id)}`),
@@ -706,6 +723,24 @@ export const jeuxAPI = {
     getSuivi: (code, idCours) => request(`/jeux/${encodeURIComponent(code)}/modules/${encodeURIComponent(idCours)}/suivi`),
     // Enseignant : { data: [{ type: quiz|devoir|defis, id, date, titre, module, … }] }
     getHistorique: () => request('/jeux/historique'),
+};
+
+// ==================== SESSIONS DE JEU (lancées en classe, QR code et code) ====================
+export const sessionsJeuAPI = {
+    // Enseignant. mode : individuel (chacun sur son téléphone) | collectif (au tableau avec la classe)
+    lancer: (codeJeu, idCours, mode) => request('/sessions-jeu', { method: 'POST', body: { code_jeu: codeJeu, id_cours: idCours, mode } }),
+    ouvertes: () => request('/sessions-jeu'),
+    // { …session, participants: [{ id_user, prenom, nom, avatar, defis, points }], propositions: [{ id_proposition, texte, prenom, nom }] }
+    suivi: (id) => request(`/sessions-jeu/${encodeURIComponent(id)}`),
+    terminer: (id) => request(`/sessions-jeu/${encodeURIComponent(id)}/terminer`, { method: 'POST' }),
+    changerDefi: (id, idDefi) => request(`/sessions-jeu/${encodeURIComponent(id)}/defi`, { method: 'PUT', body: { id_defi: idDefi } }),
+    // { id_proposition } : la réponse d'un étudiant ; { texte } : la commande tapée par l'enseignant
+    jouer: (id, corps) => request(`/sessions-jeu/${encodeURIComponent(id)}/commandes`, { method: 'POST', body: corps }),
+    ecarter: (id, idProposition) => request(`/sessions-jeu/${encodeURIComponent(id)}/propositions/${encodeURIComponent(idProposition)}`, { method: 'DELETE' }),
+    // Étudiant
+    rejoindre: (code) => request('/sessions-jeu/rejoindre', { method: 'POST', body: { code } }),
+    tableau: (id) => request(`/sessions-jeu/${encodeURIComponent(id)}/tableau`),
+    proposer: (id, texte) => request(`/sessions-jeu/${encodeURIComponent(id)}/propositions`, { method: 'POST', body: { texte } }),
 };
 
 // ==================== ANNONCES CIBLÉES (R1) ====================

@@ -14,8 +14,19 @@
 import { pathToFileURL } from "node:url";
 import path from "node:path";
 
-// Semestre S1 2026-2027 à partir du lundi 19 octobre : dix semaines de cours
-const PERIODE = { code: "S1", date_debut: "2026-10-19", date_fin: "2027-01-23", nb_semaines: 14 };
+// Semestre S1 2026-2027 à partir du premier lundi après demain : la génération ne place rien avant
+// demain (règle M-2), et une date écrite en dur faisait échouer le parcours une fois passée (19 octobre
+// 2026). Quatorze semaines, dont dix de cours.
+const lundiApresDemain = () => {
+  const d = new Date();
+  d.setUTCHours(0, 0, 0, 0);
+  d.setUTCDate(d.getUTCDate() + 2);
+  d.setUTCDate(d.getUTCDate() + ((8 - d.getUTCDay()) % 7));
+  return d;
+};
+const jourIso = (date, decalage) => new Date(date.getTime() + decalage * 86400000).toISOString().slice(0, 10);
+const DEBUT = lundiApresDemain();
+const PERIODE = { code: "S1", date_debut: jourIso(DEBUT, 0), date_fin: jourIso(DEBUT, 14 * 7 - 2), nb_semaines: 14 };
 const SEMAINES = 10;
 const HEURES_DEMI_JOURNEE = 3.5;
 

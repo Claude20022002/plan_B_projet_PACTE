@@ -1,6 +1,6 @@
 jest.mock('@react-native-async-storage/async-storage', () => require('@react-native-async-storage/async-storage/jest/async-storage-mock'));
 
-import { FAMILLES, MODES, THEMES, themePour } from '../src/theme';
+import { FAMILLES, MODES, THEMES, restaurerTheme, themePour } from '../src/theme';
 
 /**
  * Thèmes : deux familles (Planner, StudyLib) en clair et en sombre, mêmes clés partout, et des
@@ -25,6 +25,10 @@ describe('Thèmes', () => {
     expect(themePour({ famille: 'studylib', mode: 'clair' }, 'dark').id).toBe('studylib-clair');
     expect(themePour({ famille: 'studylib', mode: 'sombre' }, 'light').id).toBe('studylib-sombre');
     expect(themePour({ famille: 'inconnue', mode: 'clair' }, 'light').id).toBe('planner-clair');
+  });
+
+  test('sans choix enregistré sur le téléphone, le thème Planner (recette M-11, R-11)', async () => {
+    await expect(restaurerTheme()).resolves.toEqual({ famille: 'planner', mode: 'automatique' });
   });
 
   test('quatre thèmes aux mêmes clés', () => {

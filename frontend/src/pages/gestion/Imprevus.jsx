@@ -11,6 +11,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { fetchAll } from '../../utils/fetchAll';
 import { ds } from '../../design-system/tokens';
 import { aujourdhui } from '../../../../shared/dates.js';
+import { localeEcran } from '../../utils/dates';
 
 const hhmm = (h) => String(h || '').slice(0, 5);
 const nom = (u) => (u ? `${u.prenom ?? ''} ${u.nom ?? ''}`.trim() : '');
@@ -28,7 +29,7 @@ export default function Imprevus() {
     const [assistant, setAssistant] = useState(null);
     const [violations, setViolations] = useState(null);
 
-    const formatDate = useMemo(() => new Intl.DateTimeFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { weekday: 'short', day: 'numeric', month: 'short' }), [i18n.language]);
+    const formatDate = useMemo(() => new Intl.DateTimeFormat(localeEcran(i18n.language), { weekday: 'short', day: 'numeric', month: 'short' }), [i18n.language]);
 
     useEffect(() => {
         Promise.all([fetchAll(enseignantAPI.getAll), fetchAll(salleAPI.getAll), fetchAll(filiereAPI.getAll)])

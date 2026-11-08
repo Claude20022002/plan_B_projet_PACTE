@@ -18,7 +18,7 @@ import {
 } from "../../../models/index.js";
 import { ErreurMetier } from "../../planning/enseignements.js";
 import { STATUTS_ACTIFS } from "../../planning/affectationRules.js";
-import { campusPrefereDesGroupes, groupesLies, ligneesDe } from "../../planning/groupes.js";
+import { groupesLies, ligneesDe } from "../../planning/groupes.js";
 import { lireParametres } from "../../planning/referentiel.js";
 import { avertissementsAvantGeneration } from "./avertissements.js";
 
@@ -115,8 +115,6 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
         // Groupes les plus fins concernés : la journée vue par les étudiants (heures, trous, campus)
         const feuilles = [...new Set((await Promise.all(directs.map((id) => ligneesDe(id)))).flat().map((l) => l.feuille))];
         const regime = cours.filiere?.regime ?? "initiale";
-        // Le campus de la promotion l'emporte sur celui de la filière (3A à Stendhal, 4A à Gandhi)
-        const campusPrefere = (await campusPrefereDesGroupes(directs)) ?? cours.filiere?.id_campus_prefere ?? null;
         regimes.add(regime);
         const nombre = Math.max(1, Math.min(6, composante.seances_par_semaine || 1));
         for (let n = 1; n <= nombre; n += 1) {
@@ -136,7 +134,6 @@ export const construireProbleme = async ({ id_periode, id_filieres = [], dureeSe
                 typeSalleRequis: composante.type_salle_requis || null,
                 equipementsRequis: composante.equipements_requis || [],
                 distanciel: composante.modalite === "distanciel",
-                campusPrefere,
                 epinglee: false,
             });
             index[id] = { id_enseignement: e.id_enseignement, id_cours: cours.id_cours, id_groupe: directs[0], id_user_enseignant: principal.id_user, heures_prevues: e.heures_prevues, semaine_debut: composante.semaine_debut, semaine_fin: composante.semaine_fin, seances_par_semaine: nombre, longueur: Math.max(1, Math.min(2, composante.creneaux_par_seance || 2)), module: cours.nom_cours, type: composante.type, distanciel: composante.modalite === "distanciel" };

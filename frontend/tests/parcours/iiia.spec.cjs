@@ -7,7 +7,7 @@
  * Puis chaque profil d'étudiant ne voit que les modules de sa promotion.
  */
 const { test, expect } = require("@playwright/test");
-const { lireDonnees, seConnecter } = require("./outils.cjs");
+const { lireDonnees, seConnecter, publierMois } = require("./outils.cjs");
 
 test.setTimeout(300_000);
 
@@ -40,11 +40,11 @@ test("IIIA : 3A et 4A placées ensemble sans conflit, chaque étudiant voit sa p
   await expect(arreter).toBeVisible();
   await expect(arreter).toBeHidden({ timeout: 240_000 });
   await expect(chiffre(page, "séances créées")).toHaveText(/^[1-9]\d*$/, { timeout: 240_000 });
-  await expect(chiffre(page, "règles dures enfreintes")).toHaveText("0");
+  await expect(chiffre(page, "conflits")).toHaveText("0");
   await testInfo.attach("rapport de génération", { body: await page.screenshot({ fullPage: true }), contentType: "image/png" });
 
-  // Première semaine de cours : la semaine type complète
-  const semaine = ["2026-10-19", "2026-10-24"];
+  // Première semaine de cours (du lundi au samedi) : la semaine type complète
+  const semaine = [iiia.periode.debut, new Date(Date.parse(`${iiia.periode.debut}T00:00:00Z`) + 5 * 86400000).toISOString().slice(0, 10)];
   const groupes3a = [iiia.groupes.promo3, iiia.groupes.g1, iiia.groupes.g2];
   const brut3a = (await Promise.all(groupes3a.map((g) => seancesDu(page, g, ...semaine)))).flat();
   // Une séance de promotion revient dans la liste de chaque groupe : une seule fois chacune
@@ -79,6 +79,9 @@ test("IIIA : 3A et 4A placées ensemble sans conflit, chaque étudiant voit sa p
     expect(s.salle.capacite, `${code} du ${s.date_seance} : salle assez grande`).toBeGreaterThanOrEqual(effectif);
   }
 
+  // Les étudiants ne voient rien avant la publication du mois par l'administration
+  await publierMois(page, { mois: semaine[0].slice(0, 7), idFiliere: iiia.filiere });
+
   // Chaque profil d'étudiant ne voit que sa promotion (emploi du temps du mois)
   const profils = [
     ["3A", iiia.etudiants.troisieme, "Analyse numérique", "Théorie des langages et compilation"],
@@ -87,7 +90,9 @@ test("IIIA : 3A et 4A placées ensemble sans conflit, chaque étudiant voit sa p
   for (const [nom, compte, attendu, absent] of profils) {
     const vue = await (await browser.newContext({ locale: "fr-FR" })).newPage();
     await seConnecter(vue, { email: compte.email, motDePasse, role: "etudiant" });
-    await vue.goto("/emploi-du-temps/mensuel");
+    // Le mois publié, pas le mois courant : le semestre d'essai commence le premier lundi après demain,
+    // qui tombe dans le mois suivant dès la fin du mois (le parcours échouait le 26 octobre 2026)
+    await vue.goto(`/emploi-du-temps/mensuel?mois=${semaine[0].slice(0, 7)}`);
     await expect(vue.getByText(attendu).first(), `${nom} voit ${attendu}`).toBeVisible({ timeout: 20_000 });
     await expect(vue.getByText(absent), `${nom} ne voit pas ${absent}`).toHaveCount(0);
     await testInfo.attach(`emploi du temps ${nom}`, { body: await vue.screenshot({ fullPage: true }), contentType: "image/png" });

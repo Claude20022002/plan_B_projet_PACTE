@@ -19,7 +19,7 @@ import { analyserQuestions, statistiques } from "./analyse.js";
 
 // Sans 0/O ni 1/I/L : un code dicté ou projeté ne se lit pas de travers
 const ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-const tirerCode = () => Array.from(crypto.randomBytes(6), (o) => ALPHABET[o % ALPHABET.length]).join("");
+export const tirerCode = () => Array.from(crypto.randomBytes(6), (o) => ALPHABET[o % ALPHABET.length]).join("");
 
 export const sessionDe = async (user, id) => {
     exigerEnseignant(user);
@@ -36,7 +36,7 @@ const lireDate = (brut, libelle) => {
 };
 
 /** Le groupe visé doit être l'une des classes de l'enseignant (ou l'un de leurs sous-groupes). */
-const verifierGroupe = async (user, idGroupe) => {
+export const verifierGroupe = async (user, idGroupe) => {
     if (idGroupe === undefined || idGroupe === null || idGroupe === "") return null;
     const id = Number(idGroupe);
     const classes = await mesClasses(user);
@@ -44,7 +44,8 @@ const verifierGroupe = async (user, idGroupe) => {
     return id;
 };
 
-const verifierSeance = async (user, idAffectation) => {
+/** La séance visée doit être l'une de celles de l'enseignant. */
+export const verifierSeance = async (user, idAffectation) => {
     if (idAffectation === undefined || idAffectation === null || idAffectation === "") return null;
     const seance = await Affectation.findOne({ where: { id_affectation: Number(idAffectation) || 0, id_user_enseignant: user.id_user }, attributes: ["id_affectation"] });
     if (!seance) throw new ErreurMetier("Cette séance n'est pas l'une des vôtres", 403);
@@ -57,6 +58,7 @@ export const vueSession = (s, compteurs = null) => ({
     code: s.code,
     titre: s.titre,
     statut: s.statut,
+    mode: s.mode ?? "rythme",
     essai: s.essai,
     reglages: s.reglages,
     ouverture: s.ouverture,
@@ -86,7 +88,7 @@ export const ouvrirSession = async (user, idQuestionnaire, { titre, reglages, ou
         id_questionnaire: quiz.id_questionnaire,
         id_user: user.id_user,
         titre: essai ? `Aperçu : ${quiz.titre}`.slice(0, 200) : lireTitre(titre, { requis: false }) || quiz.titre,
-        questions: questions.map((q) => ({ id_question: q.id_question, type: q.type, enonce: q.enonce, points: q.points, explication: q.explication, id_media: q.id_media, extrait: q.extrait, donnees: q.donnees })),
+        questions: questions.map((q) => ({ id_question: q.id_question, type: q.type, enonce: q.enonce, points: q.points, explication: q.explication, id_media: q.id_media, extrait: q.extrait, duree_s: q.duree_s ?? null, donnees: q.donnees })),
         reglages: essai ? { ...lireReglages(reglages, quiz.reglages), tentatives_max: 0 } : lireReglages(reglages, quiz.reglages),
         ouverture: essai ? null : debut,
         fermeture: essai ? null : fin,

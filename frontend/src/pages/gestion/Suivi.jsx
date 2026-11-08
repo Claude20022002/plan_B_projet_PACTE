@@ -14,6 +14,7 @@ import { fetchAll } from '../../utils/fetchAll';
 import { filieresGerables } from '../../utils/droits';
 import { ds } from '../../design-system/tokens';
 import { aujourdhui } from '../../../../shared/dates.js';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Suivi du réalisé (phase P7) : avancement de chaque enseignement face à son rythme (alerte de
@@ -26,7 +27,7 @@ export default function Suivi() {
     const admin = user?.role === 'admin';
     // « ?onglet=heures » ouvre les heures du mois (lien « séances à vérifier » du tableau de bord, R-9)
     const [onglet, setOnglet] = useState(() => (admin && new URLSearchParams(window.location.search).get('onglet') === 'heures' ? 1 : 0));
-    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const nombre = useMemo(() => new Intl.NumberFormat(localeEcran(i18n.language), { maximumFractionDigits: 1 }), [i18n.language]);
 
     return (
         <DashboardLayout>
@@ -146,7 +147,7 @@ function Avancement({ nombre, user }) {
                                     <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{l.groupes.join(', ')}</TableCell>
                                     <TableCell>
                                         <Box sx={{ position: 'relative' }}>
-                                            <LinearProgress variant="determinate" value={Math.min(100, (100 * l.heures_realisees) / (l.heures_prevues || 1))} sx={{ height: 6, borderRadius: 1, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }} />
+                                            <LinearProgress variant="determinate" value={Math.min(100, (100 * l.heures_realisees) / (l.heures_prevues || 1))} aria-label={t('tracking.barreAria', { module: l.module.nom_cours, type: l.type, faites: nombre.format(l.heures_realisees), prevues: nombre.format(l.heures_prevues) })} sx={{ height: 6, borderRadius: 1, bgcolor: 'divider', '& .MuiLinearProgress-bar': { bgcolor: 'primary.main' } }} />
                                             {/* Repère du rythme attendu à ce jour */}
                                             <Box aria-hidden sx={{ position: 'absolute', top: -3, bottom: -3, width: 2, bgcolor: 'text.primary', left: `${Math.min(100, (100 * l.heures_attendues) / (l.heures_prevues || 1))}%` }} />
                                         </Box>

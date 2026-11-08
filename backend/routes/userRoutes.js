@@ -2,6 +2,10 @@ import express from "express";
 import { reinitialiser as reinitialiserMfa } from "../services/mfa.js";
 import { contexteDe } from "../services/journalSecurite.js";
 import { planification } from "../utils/erreursPlanning.js";
+import { apercuDesactivation } from "../services/desactivation/apercu.js";
+import { annulerProgrammation, desactiver, reactiver } from "../services/desactivation/desactivation.js";
+import { apercuLot, desactiverEnLot, retablirEnLot } from "../services/desactivation/lot.js";
+import { anonymiser } from "../services/desactivation/anonymisation.js";
 import {
     getAllUsers,
     getUserById,
@@ -61,7 +65,20 @@ router.delete(
     planification(async (req, res) => res.json(await reinitialiserMfa(req.user, req.params.id, contexteDe(req))))
 );
 
-// 🗑️ Supprimer un utilisateur (Admin seulement)
+// Désactivation des comptes (lot ME-17, Admin seulement) : aperçu de ce qu'elle touche, désactivation
+// immédiate ou programmée, annulation d'une programmation, réactivation, anonymisation ; en lot :
+// aperçu (?ids=1,2 ou ?id_groupe=, &date=), désactivation, rétablissement d'un lot fait par erreur
+const admin = [authenticateToken, requireAdmin];
+router.get("/desactivations/apercu", ...admin, planification(async (req, res) => res.json(await apercuLot(req.user, req.query))));
+router.post("/reactivations", ...admin, planification(async (req, res) => res.json(await retablirEnLot(req.user, req.body ?? {}, contexteDe(req)))));
+router.get("/:id/desactivation", ...admin, planification(async (req, res) => res.json(await apercuDesactivation(req.params.id, { date: req.query.date }))));
+router.post("/:id/desactivation", ...admin, planification(async (req, res) => res.json(await desactiver(req.user, req.params.id, req.body ?? {}, contexteDe(req)))));
+router.delete("/:id/desactivation", ...admin, planification(async (req, res) => res.json(await annulerProgrammation(req.user, req.params.id, contexteDe(req)))));
+router.post("/:id/reactivation", ...admin, planification(async (req, res) => res.json(await reactiver(req.user, req.params.id, contexteDe(req)))));
+router.post("/:id/anonymisation", ...admin, planification(async (req, res) => res.json(await anonymiser(req.user, req.params.id, contexteDe(req)))));
+router.post("/desactivations", ...admin, planification(async (req, res) => res.json(await desactiverEnLot(req.user, req.body ?? {}, contexteDe(req)))));
+
+// 🗑️ Supprimer un utilisateur (Admin seulement) : seulement un compte sans historique (sinon le désactiver)
 router.delete(
     "/:id",
     authenticateToken,

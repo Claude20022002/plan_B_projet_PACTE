@@ -1,4 +1,4 @@
-import { Campus, Filiere, ResponsableFiliere, Users } from "../models/index.js";
+import { Filiere, ResponsableFiliere, Users } from "../models/index.js";
 import { asyncHandler } from "../middleware/asyncHandler.js";
 import { getPaginationParams, createPaginationResponse } from "../utils/paginationHelper.js";
 import { pick } from "../utils/validationHelper.js";
@@ -16,15 +16,9 @@ const FILIERE_FIELDS = [
     "cycle",
     "intitule_cycle",
     "premiere_annee_cycle",
-    "id_campus_prefere",
     "partenaire",
     "annees_a_hestim",
 ];
-
-const INCLUDE_CAMPUS = [{ model: Campus, as: "campus_prefere", attributes: ["id_campus", "code", "nom"] }];
-
-const campusInconnu = async (data) =>
-    data.id_campus_prefere !== undefined && data.id_campus_prefere !== null && !(await Campus.findByPk(data.id_campus_prefere));
 
 // 🔍 Récupérer toutes les filières (avec pagination)
 export const getAllFilieres = asyncHandler(async (req, res) => {
@@ -36,7 +30,6 @@ export const getAllFilieres = asyncHandler(async (req, res) => {
     const { count, rows: filieres } = await Filiere.findAndCountAll({
         where,
         include: [
-            ...INCLUDE_CAMPUS,
             {
                 model: ResponsableFiliere,
                 as: "responsables",
@@ -55,7 +48,7 @@ export const getAllFilieres = asyncHandler(async (req, res) => {
 
 // 🔍 Récupérer une filière par ID
 export const getFiliereById = asyncHandler(async (req, res) => {
-    const filiere = await Filiere.findOne({ where: { id_filiere: req.params.id }, include: INCLUDE_CAMPUS });
+    const filiere = await Filiere.findOne({ where: { id_filiere: req.params.id } });
 
     if (!filiere) {
         return res.status(404).json({
@@ -77,12 +70,7 @@ export const createFiliere = asyncHandler(async (req, res) => {
             error: `Une filière avec le code "${data.code_filiere}" existe déjà`,
         });
     }
-    if (await campusInconnu(data)) {
-        return res.status(400).json({ message: "Erreur de validation", error: "Campus préféré inconnu" });
-    }
-
-    const { id_filiere } = await Filiere.create(data);
-    const filiere = await Filiere.findByPk(id_filiere, { include: INCLUDE_CAMPUS });
+    const filiere = await Filiere.create(data);
 
     res.status(201).json({
         message: "Filière créée avec succès",
@@ -112,12 +100,7 @@ export const updateFiliere = asyncHandler(async (req, res) => {
             });
         }
     }
-    if (await campusInconnu(data)) {
-        return res.status(400).json({ message: "Erreur de validation", error: "Campus préféré inconnu" });
-    }
-
     await filiere.update(data);
-    await filiere.reload({ include: INCLUDE_CAMPUS });
 
     res.json({
         message: "Filière mise à jour avec succès",

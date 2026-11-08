@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import Ecran, { Message } from '../../board/Ecran';
 import { chargerResultatsQuiz } from '../../api/donnees';
+import QuizFerme from '../../quiz/QuizFerme';
+import useClassQuiz from '../../hooks/useClassQuiz';
 import { CIBLE_TACTILE, creerStyles, espace, useTheme } from '../../theme';
 
 /**
@@ -19,11 +21,14 @@ export default function Resultats() {
   const { id } = useLocalSearchParams();
   const [donnees, setDonnees] = useState(null);
   const [erreur, setErreur] = useState(false);
+  // Résultats d'une partie du service de quiz : un message s'il est éteint pour l'école (lot ME-0c)
+  const { pret, actif } = useClassQuiz();
+  const ferme = pret && !actif;
 
   useEffect(() => {
-    if (!/^\d{1,10}$/.test(String(id ?? ''))) return;
+    if (!actif || !/^\d{1,10}$/.test(String(id ?? ''))) return;
     chargerResultatsQuiz(id).then(setDonnees, () => setErreur(true));
-  }, [id]);
+  }, [id, actif]);
 
   const nombre = (n) => Number(n ?? 0).toLocaleString(i18n.language === 'en' ? 'en-GB' : 'fr-FR');
   const p = donnees?.partie;
@@ -39,8 +44,9 @@ export default function Resultats() {
   return (
     <Ecran titre={t('app.resultats.titre')} droite={retour} espaces={false}>
       <ScrollView contentContainerStyle={{ paddingBottom: 32 }}>
-        {erreur || !/^\d{1,10}$/.test(String(id ?? '')) ? <Message>{t('app.resultats.erreur')}</Message> : null}
-        {!donnees && !erreur ? <Message discret>{t('app.commun.chargement')}</Message> : null}
+        {ferme ? <QuizFerme /> : null}
+        {!ferme && (erreur || !/^\d{1,10}$/.test(String(id ?? ''))) ? <Message>{t('app.resultats.erreur')}</Message> : null}
+        {!ferme && !donnees && !erreur ? <Message discret>{t('app.commun.chargement')}</Message> : null}
         {donnees ? (
           <>
             <View style={styles.entete}>
@@ -51,7 +57,7 @@ export default function Resultats() {
             {donnees.moi ? (
               <View style={styles.score} accessible accessibilityLabel={t('app.resultats.monScoreLu', { score: donnees.moi.score, count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}>
                 <Text style={styles.scoreValeur}>{nombre(donnees.moi.score)}</Text>
-                <Text style={styles.scoreUnite}>pts</Text>
+                <Text style={styles.scoreUnite}>{t('app.resultats.unitePoints', { count: donnees.moi.score })}</Text>
                 <View style={{ flex: 1 }} />
                 <View style={{ alignItems: 'flex-end' }}>
                   <Text style={styles.rang}>{t('app.resultats.rang', { count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}</Text>

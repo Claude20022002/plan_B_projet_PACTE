@@ -1,0 +1,33 @@
+{
+  "code": "REG", "nom": "Réglementation",
+  "role": "Aucune valeur par défaut : une règle de pays est saisie par pays, type et niveau, jamais écrite dans le moteur.",
+  "groupes": [
+    { "code": "TRAVAIL", "nom": "Travail des enseignants",
+      "defauts": { "role": "donnee", "type": "duree_min", "niveaux": "GP", "priorite": 1, "validite": "annee", "modifiable": "plateforme" },
+      "parametres": [
+        { "code": "DUREE_LEGALE", "nom": "Durée légale du travail enseignant", "desc": "Durée de référence annuelle ou hebdomadaire.", "src": "9.1" },
+        { "code": "MAX_JOUR", "nom": "Durée maximale quotidienne", "desc": "Plafond légal : aucun plafond d'école ne le dépasse.", "src": "9.2" },
+        { "code": "MAX_SEMAINE", "nom": "Durée maximale hebdomadaire", "desc": "Plafond légal hebdomadaire.", "src": "9.3" },
+        { "code": "REPOS", "nom": "Temps de repos obligatoire", "desc": "Repos légal entre deux journées.", "src": "9.4" },
+        { "code": "PAUSE", "nom": "Temps de pause obligatoire", "desc": "Pause légale après une durée continue.", "src": "9.5" }
+      ] },
+    { "code": "PROGRAMME", "nom": "Programme et validation",
+      "defauts": { "role": "donnee", "type": "structure", "niveaux": "P", "priorite": 2, "validite": "annee", "modifiable": "plateforme" },
+      "parametres": [
+        { "code": "VOLUME_MATIERE", "nom": "Volume officiel par matière", "desc": "Volume officiel ; un écart est signalé avant le calcul.", "src": "9.6" },
+        { "code": "VOLUME_NIVEAU", "nom": "Volume officiel par niveau", "desc": "Total officiel d'un niveau.", "src": "9.7" },
+        { "code": "PROGRAMME", "nom": "Programme national", "desc": "Liste des matières obligatoires d'un niveau.", "src": "9.8" },
+        { "code": "PRESENCE", "nom": "Obligations de présence", "desc": "Séances à présence obligatoire.", "src": "9.13" },
+        { "code": "TP", "nom": "Réglementation des travaux pratiques", "desc": "Effectif ou encadrement imposé en TP.", "src": "9.18" },
+        { "code": "EXAMENS", "nom": "Règles concernant les examens", "desc": "Durées, tiers-temps, surveillance imposés.", "src": "9.21" },
+        { "code": "VALIDATION", "nom": "Règles de validation des enseignements", "desc": "Conditions de validation d'un module.", "src": "9.22" },
+        { "code": "ACCREDITATION", "nom": "Formations accréditées", "desc": "Obligations propres à une accréditation.", "src": "9.23" }
+      ] },
+    { "code": "REGLE", "nom": "Règles réglementaires",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "priorite": 1, "obligatoire": true, "modifiable": "non", "etat": "absent" },
+      "parametres": [
+        { "code": "HORAIRES", "nom": "Horaires réglementaires respectés", "desc": "Aucun plafond retenu ne dépasse le plafond légal renseigné.", "src": "18A.10" },
+        { "code": "VOLUMES_OFFICIELS", "nom": "Volumes officiels respectés", "desc": "Le volume d'une matière couvre le volume officiel renseigné.", "force_reglable": true, "obligatoire": false, "modifiable": "etablissement", "priorite": 2 }
+      ] }
+  ]
+}

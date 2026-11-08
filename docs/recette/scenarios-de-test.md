@@ -217,6 +217,65 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 - [ ] Notifications : la page affiche les plus récentes (200 au plus) ; le badge compte toutes les non lues.
 - [ ] Emploi du temps de l'étudiant (application) : les séances mutualisées avec un autre groupe apparaissent.
 
+## 10. Espace de cours (lots E-1 à E-10, maj34 et suivantes)
+
+Plan : `docs/plans/espace-de-cours.md`. Il faut une séance **en cours** pour l'enseignant (sinon pas de bloc « En cours ») et la Bibliothèque en ligne (StudyLib avec les documents de classe). Comptes : l'enseignant de la classe, un co-enseignant, l'enseignant d'un autre groupe, un étudiant de la classe, un étudiant d'un autre groupe.
+
+### Mes classes (E-4)
+
+- [ ] En tête, la séance en cours : module, groupe, effectif, fin et salle ; « Faire l'appel » est le bouton principal, « Lancer un quiz », « Créer un quiz » et « Supports de cours » sont secondaires.
+- [ ] L'appel terminé, le bouton principal devient « Voir l'appel ».
+- [ ] Dessous, une carte par classe (« Toutes mes classes »), la classe en cours comprise : un clic n'importe où sur la carte ouvre l'espace de la classe.
+- [ ] Une classe dont l'appel du jour est resté ouvert affiche « Appel du jour encore ouvert » et ouvre directement l'onglet Appel.
+- [ ] Cinq minutes avant la fin d'une séance sans appel terminé, le rappel s'affiche en haut de la page.
+- [ ] Sur un téléphone (360 px), les boutons passent à la ligne et les cartes sont l'une sous l'autre, sans défilement horizontal.
+
+### Supports d'une classe (E-2, E-3, E-9)
+
+- [ ] « Ajouter des supports » crée la section « Général ».
+- [ ] Glisser un PDF dans la zone de dépôt : la progression s'affiche, puis le support apparaît avec son type, sa taille, l'auteur et la date.
+- [ ] Un fichier de plus de 20 Mo est refusé avec un message clair.
+- [ ] « Ajouter un lien » : une adresse qui ne commence ni par `http://` ni par `https://` est refusée ; le titre est facultatif (le nom du site le remplace).
+- [ ] « Depuis la Bibliothèque » : la recherche demande deux caractères au moins et ne propose que des documents publiés ; « Ajouter » épingle le document dans la section, avec l'étiquette « Bibliothèque ».
+- [ ] Retirer un document épinglé ne le supprime pas de la Bibliothèque ; retirer un fichier déposé dans la classe le supprime.
+- [ ] Masquer un support : l'étudiant ne le voit plus ; l'enseignant le voit grisé avec « Masqué ».
+- [ ] Publier un support dans la Bibliothèque (confirmation) : il apparaît dans la Bibliothèque de toute l'école et reste dans la classe.
+- [ ] Sections : créer, renommer, masquer, monter, descendre ; supprimer n'est possible que pour une section vide.
+- [ ] Le co-enseignant ajoute un support mais ne peut ni modifier ni retirer celui d'un autre.
+- [ ] L'enseignant d'un autre groupe qui tape l'adresse de la classe voit « Cette classe n'existe pas ou ne fait pas partie des vôtres ».
+
+### Appel et élèves de la classe (E-6, E-7)
+
+- [ ] Dans l'écran d'appel, trois boutons par étudiant : présent, en retard, absent ; le motif d'un retard s'enregistre.
+- [ ] Une correction après l'appel est gardée avec son auteur et sa date.
+- [ ] Onglet « Appel » : les séances passées de la classe avec présents, retards et absents ; celle du jour ouvre l'appel.
+- [ ] Onglet « Élèves » : taux de présence, les plus absents d'abord ; l'export CSV s'ouvre dans Excel avec les accents.
+
+### Mon service (E-8)
+
+- [ ] Une seule entrée « Mon service » dans le menu, avec trois onglets : Mes services, Disponibilités, Demandes de report.
+- [ ] Chaque onglet a son adresse (`/mes-services`, `/disponibilites`, `/demandes-report`) : un lien gardé ou une notification ouvre le bon onglet.
+
+### Côté étudiant (E-5)
+
+- [ ] Site : « Mes cours » montre une carte par module suivi ; un module montre ses sections et ses supports publiés seulement (ni masqués, ni sections vides).
+- [ ] Un document s'ouvre dans un nouvel onglet ; un lien ouvre son site.
+- [ ] Application : « Mes cours » est en tête de l'onglet Bibliothèque ; une classe s'ouvre, un document s'ouvre dans la fiche habituelle.
+- [ ] L'étudiant d'un autre groupe ne voit pas la classe et ne peut pas ouvrir ses supports par leur adresse.
+
+### Bibliothèque pour l'enseignant (E-9, StudyLib)
+
+- [ ] Le sélecteur d'espaces mène la « Bibliothèque » à ses documents (`/biblio/documents`), pour tous les rôles.
+- [ ] L'enseignant qui ouvre `/biblio/dashboard`, `/biblio/profile` ou `/biblio/notifications` arrive sur son tableau, ses paramètres ou ses notifications dans Planner.
+- [ ] Dans StudyLib, l'enseignant n'a ni « Accueil » ni « Profil » dans le menu ; la cloche et sa pastille de profil mènent à Planner.
+- [ ] L'étudiant garde son tableau de bord, son profil et ses notifications dans StudyLib.
+
+### Aide (E-10)
+
+- [ ] Le panneau d'aide de l'enseignant propose « Partager un support avec une classe » sur Mes classes, et « Y aller » ouvre Mes classes.
+- [ ] Les fiches « Je ne peux pas assurer une séance », « Indiquer quand je peux enseigner » et « Accepter ou refuser un enseignement » citent « Mon service » et le bon onglet.
+- [ ] L'enseignant n'a plus de fiche « Écrire à ma classe » ; l'étudiant a « Retrouver les supports de mes cours ».
+
 ---
 
 ## Écarts constatés

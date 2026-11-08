@@ -4,6 +4,7 @@ import { Alert, Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, 
 import { quizAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import { Capitales } from './Panneau';
+import { localeEcran } from '../../utils/dates';
 
 /** Couleurs du nuage : celles des lignes de filière (orange, rouge et vert restent aux statuts) */
 const COULEURS_NUAGE = ds.lines;
@@ -70,7 +71,7 @@ export default function ResultatsQuiz({ idPartie, onClose }) {
   }, [idPartie]);
 
   const p = donnees?.partie;
-  const nombre = (n) => Number(n ?? 0).toLocaleString(i18n.language);
+  const nombre = (n) => Number(n ?? 0).toLocaleString(localeEcran(i18n.language));
   const meilleureMoyenne = Math.max(1, ...(donnees?.equipes ?? []).map((e) => e.moyenne));
 
   return (
@@ -91,7 +92,7 @@ export default function ResultatsQuiz({ idPartie, onClose }) {
             {donnees.moi && (
               <Section titre={t('jeux.resultats.monScore')}>
                 <Box sx={{ display: 'flex', gap: 4, alignItems: 'baseline', flexWrap: 'wrap' }}>
-                  <Capitales sx={{ fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{nombre(donnees.moi.score)} pts</Capitales>
+                  <Capitales sx={{ fontSize: '2.5rem', fontWeight: 700, fontVariantNumeric: 'tabular-nums' }}>{t('jeux.resultats.score', { count: donnees.moi.score, valeur: nombre(donnees.moi.score) })}</Capitales>
                   <Typography>{t('jeux.resultats.rang', { count: donnees.moi.rang, ordinal: true, total: p.nb_joueurs })}</Typography>
                   {p.nb_questions ? <Typography color="text.secondary">{t('jeux.resultats.bonnes', { bonnes: donnees.moi.bonnes, total: p.nb_questions })}</Typography> : null}
                 </Box>

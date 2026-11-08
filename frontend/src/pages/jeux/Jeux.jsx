@@ -9,6 +9,8 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
+  LinearProgress,
+  Link,
   MenuItem,
   Skeleton,
   Table,
@@ -25,23 +27,23 @@ import Panneau, { Capitales, LignePanneau } from '../../components/jeux/Panneau'
 import SceneJoueur, { Personnage } from '../../components/jeux/SceneJoueur';
 import ResultatsQuiz from '../../components/jeux/ResultatsQuiz';
 import ZoneQuizEtDevoirs from '../../components/jeux/ZoneQuizEtDevoirs';
-import CatalogueJeux from '../../components/jeux/CatalogueJeux';
-import PanneauQuizDirect from '../../components/quiz/PanneauQuizDirect';
+import PanneauSessions from '../../components/jeux/session/PanneauSessions';
+import LancerJeuDialog from '../../components/jeux/session/LancerJeuDialog';
 import { boutonPanneau, boutonPanneauPlein } from '../../components/jeux/styles';
 import { useAuth } from '../../contexts/AuthContext';
 import { useToast } from '../../contexts/ToastContext';
-import { jeuxAPI, quizAPI } from '../../services/api';
+import { jeuxAPI } from '../../services/api';
+import useClassQuiz from '../../hooks/useClassQuiz';
 import { ds } from '../../design-system/tokens';
 import { libelle } from '../../../../shared/jeux/catalogue.js';
 import { CONTEXTE_DEVOIRS, DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
 
-const RAFRAICHISSEMENT_QUIZ_MS = 20000;
-const urlSure = (url) => typeof url === 'string' && /^https?:\/\//.test(url);
-
 /**
- * Espace Jeux : les quiz en direct de la séance (ClassQuiz), les jeux proposés dans mes modules
- * et tous les jeux de la plateforme avec ma progression. L'enseignant y propose un jeu dans
- * ses modules et suit la progression de ses étudiants.
+ * Espace Jeux : les jeux proposés dans mes modules et tous les jeux de la plateforme avec ma
+ * progression. Les quiz se créent et se diffusent (en direct ou chacun à son rythme) dans
+ * « Mes quiz », plus ici (sortie de ClassQuiz, lot SC-3). Les jeux sont faits pour les étudiants :
+ * l'enseignant ne joue pas pour lui, il propose un jeu dans ses modules, le lance en classe
+ * (QR code projeté, chacun sur son téléphone ou tous ensemble au tableau) et suit ses étudiants.
  */
 export default function Jeux() {
   const { t, i18n } = useTranslation();
@@ -52,12 +54,14 @@ export default function Jeux() {
 
   const [accueil, setAccueil] = useState(null);
   const [erreur, setErreur] = useState(false);
-  const [quiz, setQuiz] = useState({ config: null, parties: [] });
   const [suivi, setSuivi] = useState(null); // { module, etudiants } | { chargement: true }
   const [proposition, setProposition] = useState(null); // { module, jeu, but, notion } : fenêtre « proposer »
-  const [historique, setHistorique] = useState([]);
   const [historiqueProf, setHistoriqueProf] = useState(null); // enseignant : quiz, devoirs, défis
   const [resultats, setResultats] = useState(null); // id de la partie affichée
+  const [lancement, setLancement] = useState(null); // jeu à lancer en classe (enseignant)
+  // Parties du service de quiz : retirées de l'historique quand l'école ne l'a pas (lot ME-0c)
+  const { actif: classQuiz } = useClassQuiz();
+  const historique = historiqueProf && historiqueProf.filter((e) => classQuiz || e.type !== 'quiz');
 
   const charger = useCallback(() => {
     jeuxAPI.getAccueil()
@@ -92,24 +96,6 @@ export default function Jeux() {
     }
     return `${t('jeux.historiqueProf.defis', { count: e.nb_defis })} ${t('jeux.historiqueProf.etudiants', { count: e.nb_etudiants })}`;
   };
-
-  // Quiz en direct : configuration une fois, parties en cours toutes les 20 s
-  useEffect(() => {
-    let actif = true;
-    quizAPI.getConfig().then((config) => actif && setQuiz((q) => ({ ...q, config }))).catch(() => { });
-    quizAPI.getHistorique().then((r) => actif && setHistorique(r?.data ?? [])).catch(() => { });
-    const lireParties = () =>
-      quizAPI
-        .getPartiesEnCours()
-        .then((r) => actif && setQuiz((q) => ({ ...q, parties: (r?.data ?? []).filter((p) => urlSure(p.url)) })))
-        .catch(() => { });
-    lireParties();
-    const id = setInterval(lireParties, RAFRAICHISSEMENT_QUIZ_MS);
-    return () => {
-      actif = false;
-      clearInterval(id);
-    };
-  }, []);
 
   const jouer = (jeu) => navigate(`/jeux/${jeu}`);
 
@@ -183,39 +169,11 @@ export default function Jeux() {
             seulement, un enseignant ne joue pas ── */}
         {accueil && !enseignant && <SceneJoueur user={user} profil={accueil.profil} jeux={accueil.jeux} onChoisir={choisirAvatar} />}
 
-        {/* ── Quiz en direct : parties en cours, lancement dans Planner (CQ-3) ── */}
-        <PanneauQuizDirect enseignant={enseignant} role={user?.role} config={quiz.config} parties={quiz.parties} />
+        {/* ── Sessions de jeu : celles en cours (enseignant), la saisie du code projeté (étudiant) ── */}
+        <PanneauSessions enseignant={enseignant} />
 
         {/* ── Mes quiz (créer, relire) : la zone quiz de l'enseignant, en haut (R-6) ── */}
         {accueil && <ZoneQuizEtDevoirs enseignant={enseignant} />}
-
-        {/* ── Étudiant : quiz terminés (résultats, défi par équipes, nuages de mots) ── */}
-        {!enseignant && historique.length > 0 && (
-          <Panneau titre={t('jeux.resultats.historique')} titreId="historique-titre">
-            {historique.slice(0, 8).map((h, i) => (
-              <LignePanneau
-                key={h.id}
-                premier={i === 0}
-                action={
-                  <Button size="small" variant="outlined" sx={boutonPanneau} onClick={() => setResultats(h.id)}>
-                    {t('jeux.resultats.voir')}
-                  </Button>
-                }
-              >
-                <Box sx={{ fontWeight: 600 }}>{h.titre}</Box>
-                <Box sx={{ fontSize: '0.875rem', color: ds.board.letterDim }}>
-                  {[
-                    h.module?.nom,
-                    h.terminee_le ? new Date(h.terminee_le).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short' }) : null,
-                    t('jeux.resultats.resumeEtudiant', { score: h.score, count: h.rang, ordinal: true, total: h.nb_joueurs }),
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </Box>
-              </LignePanneau>
-            ))}
-          </Panneau>
-        )}
 
         {/* ── Jeux de mes modules ─────────────────────────────────────── */}
         {(enseignant || modules.length > 0) && (
@@ -284,18 +242,82 @@ export default function Jeux() {
         )}
 
         {/* ── Tous les jeux ───────────────────────────────────────────── */}
-        <CatalogueJeux accueil={accueil} erreur={erreur} jouer={jouer} />
+        <Panneau titre={t('jeux.catalogue')} titreId="catalogue-titre">
+          {!accueil && !erreur && <Skeleton variant="rectangular" height={96} sx={{ bgcolor: ds.board.cell }} />}
+          {(accueil?.jeux ?? []).map((jeu, i) => {
+            const p = jeu.progression;
+            const pourcentage = p.total ? Math.round((100 * p.reussis) / p.total) : 0;
+            return (
+              <LignePanneau
+                key={jeu.code}
+                premier={i === 0}
+                lampe={!enseignant && p.reussis > 0 ? ds.board.live : null}
+                action={
+                  enseignant ? (
+                    <Button variant="contained" sx={boutonPanneauPlein} onClick={() => setLancement(jeu)}>
+                      {t('sessionsJeu.lancer.bouton')}
+                    </Button>
+                  ) : (
+                    <Button variant="contained" sx={boutonPanneauPlein} onClick={() => jouer(jeu.code)}>
+                      {p.reussis > 0 ? t('jeux.continuer') : t('jeux.jouer')}
+                    </Button>
+                  )
+                }
+              >
+                <Capitales sx={{ display: 'block', fontSize: '1.125rem' }}>{libelle(jeu.titre, i18n.language)}</Capitales>
+                <Box sx={{ fontSize: '0.9375rem', color: ds.board.letterDim, maxWidth: '72ch', mt: 0.25 }}>{libelle(jeu.resume, i18n.language)}</Box>
+                {/* La progression est celle de l'étudiant : l'enseignant ne joue pas pour lui */}
+                <Box sx={{ display: enseignant ? 'none' : 'flex', alignItems: 'center', gap: 1.5, mt: 1, maxWidth: 420 }}>
+                  <LinearProgress
+                    variant="determinate"
+                    value={pourcentage}
+                    aria-label={t('jeux.progression', { count: p.reussis, total: p.total, points: p.points })}
+                    sx={{ flex: 1, height: 4, borderRadius: '2px', bgcolor: ds.board.seam, '& .MuiLinearProgress-bar': { bgcolor: ds.board.letter } }}
+                  />
+                  <Capitales sx={{ fontSize: '0.8125rem', color: ds.board.letterDim, fontVariantNumeric: 'tabular-nums', whiteSpace: 'nowrap' }}>
+                    {p.reussis}/{p.total} · {t('jeux.points', { count: p.points })}
+                  </Capitales>
+                </Box>
+                <Box sx={{ fontSize: '0.75rem', color: ds.board.letterDim, mt: 0.75 }}>
+                  {jeu.source ? (
+                    <>
+                      {t('jeux.source', { nom: jeu.source.nom, auteur: jeu.source.auteur, licence: jeu.source.licence })}{' '}
+                      <Link href={jeu.source.url} target="_blank" rel="noopener noreferrer" sx={{ color: ds.board.letter }}>
+                        {t('jeux.voirSource')}
+                      </Link>
+                    </>
+                  ) : (
+                    <>
+                      {t('simulations.original')}
+                      {jeu.curriculum && (
+                        <>
+                          {' · '}
+                          <Link href={jeu.curriculum.url} target="_blank" rel="noopener noreferrer" sx={{ color: ds.board.letter }}>
+                            {t('simulations.source')}
+                          </Link>
+                        </>
+                      )}
+                    </>
+                  )}
+                </Box>
+              </LignePanneau>
+            );
+          })}
+          <LignePanneau>
+            <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.bientot')}</Typography>
+          </LignePanneau>
+        </Panneau>
 
         {/* ── Enseignant : petit historique (quiz terminés, devoirs, défis réussis dans ses modules) ── */}
         {enseignant && (
           <Panneau titre={t('jeux.historiqueProf.titre')} titreId="historique-titre">
-            {historiqueProf === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
-            {historiqueProf?.length === 0 && (
+            {historique === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
+            {historique?.length === 0 && (
               <LignePanneau premier>
                 <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.historiqueProf.vide', { context: CONTEXTE_DEVOIRS })}</Typography>
               </LignePanneau>
             )}
-            {(historiqueProf ?? []).map((e, i) => (
+            {(historique ?? []).map((e, i) => (
               <LignePanneau
                 key={e.id}
                 premier={i === 0}
@@ -320,7 +342,8 @@ export default function Jeux() {
         )}
       </Box>
 
-      <ResultatsQuiz idPartie={resultats} onClose={() => setResultats(null)} />
+      <ResultatsQuiz idPartie={classQuiz ? resultats : null} onClose={() => setResultats(null)} />
+      <LancerJeuDialog jeu={lancement} modules={modules} onFermer={() => setLancement(null)} />
 
       {/* Proposer un jeu dans un module : but et notion visée */}
       <Dialog open={Boolean(proposition)} onClose={() => setProposition(null)} fullWidth maxWidth="xs">

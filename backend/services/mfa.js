@@ -5,6 +5,7 @@ import { AuthSession, MfaCodeSecours, MfaDefi, Users } from "../models/index.js"
 import { ErreurMetier } from "./planning/enseignements.js";
 import { adresseOtpauth, nouveauSecret, verifierCode } from "../utils/totp.js";
 import { compterRecents, journaliser } from "./journalSecurite.js";
+import { nomProduit } from "./etablissement/identite.js";
 
 /**
  * Double authentification (TOTP) : obligatoire pour l'administration (variable
@@ -39,6 +40,7 @@ const cle = () => {
         if (process.env.NODE_ENV === "production") throw new Error("MFA_KEY ou CSRF_SECRET requis");
         return crypto.createHash("sha256").update("hestim-mfa-dev").digest();
     }
+    // Sel figé (D-11) : le changer rendrait illisibles tous les secrets de double authentification déjà enregistrés
     return Buffer.from(crypto.hkdfSync("sha256", base, "hestim-planner", "secret-totp", 32));
 };
 
@@ -131,7 +133,7 @@ export const demarrerInscription = async (user) => {
     if (user.mfa_active) throw new ErreurMetier("La double authentification est déjà active", 409);
     const secret = nouveauSecret();
     await Users.update({ mfa_secret: chiffrer(secret), mfa_dernier_pas: null }, { where: { id_user: user.id_user } });
-    return { secret, adresse: adresseOtpauth({ secret, compte: user.email }) };
+    return { secret, adresse: adresseOtpauth({ secret, compte: user.email, emetteur: await nomProduit() }) };
 };
 
 /** Étape 2 : premier code juste → active, codes de secours (montrés une seule fois). */

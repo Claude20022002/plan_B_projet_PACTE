@@ -10,7 +10,7 @@
  *   toast.info('Aucune donnée disponible');
  */
 
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback, useMemo } from 'react';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
 
@@ -45,12 +45,15 @@ export function ToastProvider({ children }) {
     });
   }, []);
 
-  const toast = {
+  // Le même objet à chaque rendu : une trentaine de chargements ont `toast` dans leurs dépendances.
+  // Recréé à chaque message, il relançait ces chargements, et un chargement en échec affichait un
+  // message qui le relançait encore : environ 150 requêtes par seconde (recette du 20 octobre, B-1).
+  const toast = useMemo(() => ({
     success: (msg, opts) => show(msg, 'success', opts?.duration),
     error:   (msg, opts) => show(msg, 'error',   opts?.duration ?? 6000),
     warning: (msg, opts) => show(msg, 'warning', opts?.duration),
     info:    (msg, opts) => show(msg, 'info',    opts?.duration),
-  };
+  }), [show]);
 
   return (
     <ToastContext.Provider value={toast}>

@@ -11,7 +11,8 @@
     "test": "playwright test --config=playwright.parcours.config.cjs",
     "test:unit": "node --test \"src/**/*.test.js\"",
     "test:parcours": "playwright test --config=playwright.parcours.config.cjs",
-    "test:report": "playwright show-report playwright-report-parcours"
+    "test:report": "playwright show-report playwright-report-parcours",
+    "demo": "node scripts/demo-locale.mjs"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -27,7 +28,6 @@
     "@mui/icons-material": "^7.3.4",
     "@mui/material": "^7.3.4",
     "axios": "^1.16.0",
-    "chart.js": "^4.5.1",
     "formik": "^2.4.6",
     "i18next": "^26.4.2",
     "jspdf": "^4.2.1",

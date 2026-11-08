@@ -9,6 +9,7 @@ import ConfirmDialog from '../../common/ConfirmDialog';
 import FormReglages from './FormReglages';
 import CodeAcces from './CodeAcces';
 import { ChampEtiquettes } from './NouveauQuizDialog';
+import { localeEcran } from '../../../utils/dates';
 
 /** Onglet « Réglages » : titre, consignes, étiquettes et réglages par défaut du quiz. */
 export function OngletReglages({ quiz, onModifie }) {
@@ -78,7 +79,7 @@ export function OngletPassations({ quiz, rafraichir }) {
 
   if (sessions === null) return null;
   if (!sessions.length) return <Typography color="text.secondary">{t('studio.passation.aucune')}</Typography>;
-  const date = (d) => new Date(d).toLocaleString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const date = (d) => new Date(d).toLocaleString(localeEcran(i18n.language), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   return (
     <Paper variant="outlined" sx={{ borderRadius: 3 }}>
       <List disablePadding>

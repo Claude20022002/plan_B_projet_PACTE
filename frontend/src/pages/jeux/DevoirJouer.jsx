@@ -32,6 +32,9 @@ import PageHeader from '../../design-system/components/PageHeader';
 import { devoirsAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import { DEVOIRS_ACTIFS } from '../../../../shared/fonctions.js';
+import { localeEcran } from '../../utils/dates';
+import useClassQuiz from '../../hooks/useClassQuiz';
+import QuizFerme from '../../components/quiz/QuizFerme';
 
 /** Réponse de départ selon le type de question */
 const reponseInitiale = (q) => {
@@ -121,9 +124,23 @@ function Saisie({ question: q, valeur, changer, fige }) {
   return null;
 }
 
+/** Un devoir est un quiz du service de quiz : sans lui pour l'école, un message (lot ME-0c, règle C-5). */
+function DevoirSiClassQuiz() {
+  const { pret, actif } = useClassQuiz();
+  if (!pret) return null;
+  if (!actif) {
+    return (
+      <DashboardLayout>
+        <QuizFerme />
+      </DashboardLayout>
+    );
+  }
+  return <DevoirJouer />;
+}
+
 /** Écran d'un devoir ; devoirs masqués (lot D-1) : un ancien lien de notification ramène aux activités. */
 export default function DevoirJouerSiActif() {
-  return DEVOIRS_ACTIFS ? <DevoirJouer /> : <Navigate to="/jeux" replace />;
+  return DEVOIRS_ACTIFS ? <DevoirSiClassQuiz /> : <Navigate to="/jeux" replace />;
 }
 
 /**
@@ -173,7 +190,7 @@ function DevoirJouer() {
   const d = donnees?.devoir;
   const fige = Boolean(donnees?.rendu) || (d && !d.ouvert);
   const nonRepondues = donnees ? donnees.questions.filter((q, i) => !repondue(q, reponses[i] ?? reponseInitiale(q))).length : 0;
-  const limite = d ? new Date(d.date_limite).toLocaleString(i18n.language, { dateStyle: 'full', timeStyle: 'short' }) : '';
+  const limite = d ? new Date(d.date_limite).toLocaleString(localeEcran(i18n.language), { dateStyle: 'full', timeStyle: 'short' }) : '';
 
   return (
     <DashboardLayout>
@@ -187,7 +204,7 @@ function DevoirJouer() {
       {donnees?.rendu && (
         <Alert severity="success" icon={false} sx={{ mb: 3, alignItems: 'center' }}>
           <Stack direction="row" spacing={3} alignItems="baseline" flexWrap="wrap">
-            <Typography sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: '2rem' }}>{t('jeux.devoirs.note', { note: donnees.rendu.note.toLocaleString(i18n.language) })}</Typography>
+            <Typography sx={{ fontFamily: ds.font.board, fontWeight: 700, fontSize: '2rem' }}>{t('jeux.devoirs.note', { note: donnees.rendu.note.toLocaleString(localeEcran(i18n.language)) })}</Typography>
             <Typography>{t('jeux.devoirs.bonnes', { bonnes: donnees.rendu.bonnes, total: donnees.rendu.notees })}</Typography>
             {d.ouvert && <Typography color="text.secondary">{t('jeux.devoirs.correctionApres', { date: limite })}</Typography>}
           </Stack>

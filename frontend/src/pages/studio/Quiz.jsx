@@ -6,10 +6,14 @@ import { CheckCircleOutline, CancelOutlined, Timer, Repeat, Quiz as IconeQuiz } 
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import PageHeader from '../../design-system/components/PageHeader';
 import { passationAPI } from '../../services/studioApi';
+import { sessionsJeuAPI } from '../../services/api';
+import { localeEcran } from '../../utils/dates';
 
 /**
- * « Quiz » de l'étudiant : rejoindre un quiz par son code (ou par le lien /quiz/code/XXXXXX que
- * l'enseignant partage), lire les consignes, commencer ; retrouver ses quiz passés.
+ * « Quiz » de l'étudiant : rejoindre par son code (ou par le lien /quiz/code/XXXXXX que
+ * l'enseignant partage) un quiz du Studio ou un jeu lancé en classe, lire les consignes,
+ * commencer ; retrouver ses quiz passés. Les deux codes ont le même format : un code inconnu
+ * comme quiz est essayé comme jeu (retours du 21 octobre : l'étudiant n'a qu'une porte d'entrée).
  */
 
 function Consignes({ session, onCommencer, envoi }) {
@@ -68,14 +72,31 @@ export default function Quiz() {
     setEnvoi(true);
     setErreur(null);
     try {
-      setSession(await passationAPI.rejoindre(valeur));
+      const s = await passationAPI.rejoindre(valeur);
+      // Quiz en direct : on rejoint la partie de la classe
+      if (s.mode === 'direct') {
+        navigate(`/quiz/direct/${s.id_session}`, { replace: Boolean(codeLien) });
+        return;
+      }
+      setSession(s);
     } catch (err) {
       setSession(null);
-      setErreur(err.message);
+      if (err.status !== 404) {
+        setErreur(err.message);
+      } else {
+        // Pas un quiz : peut-être un jeu lancé en classe (au tableau ou chacun sur son téléphone)
+        try {
+          const jeu = await sessionsJeuAPI.rejoindre(valeur);
+          navigate(jeu.mode === 'collectif' ? `/jeux/direct/${jeu.id_session_jeu}` : `/jeux/${jeu.code_jeu}`);
+          return;
+        } catch (errJeu) {
+          setErreur(errJeu.status === 404 ? t('studio.joueur.codeInconnu') : errJeu.message);
+        }
+      }
     } finally {
       setEnvoi(false);
     }
-  }, []);
+  }, [navigate, codeLien, t]);
 
   useEffect(() => {
     if (codeLien) rejoindre(codeLien);
@@ -92,7 +113,7 @@ export default function Quiz() {
     }
   };
 
-  const date = (d) => new Date(d).toLocaleDateString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const date = (d) => new Date(d).toLocaleDateString(localeEcran(i18n.language), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
 
   return (
     <DashboardLayout>

@@ -1,12 +1,11 @@
 import { useTranslation } from 'react-i18next';
-import { Button, Dialog, DialogActions, DialogContent, DialogTitle, MenuItem, Stack, TextField } from '@mui/material';
+import { Button, Dialog, DialogActions, DialogContent, DialogTitle, Stack, TextField } from '@mui/material';
 
 /**
- * Dialogue de création ou de modification d'un groupe (promotion, TD ou TP). Le campus préféré
- * l'emporte sur celui de la filière pour le solveur ; laissé vide, un TD ou un TP prend celui de sa
- * promotion (backend/services/planning/groupes.js).
+ * Dialogue de création ou de modification d'un groupe (promotion, TD ou TP). Pas de campus : les
+ * salles se répartissent selon l'effectif, la capacité et la disponibilité (décision du 21 octobre 2026).
  */
-export default function GroupeDialog({ dialog, campus, onChange, onClose, onSubmit }) {
+export default function GroupeDialog({ dialog, onChange, onClose, onSubmit }) {
     const { t } = useTranslation();
     const { form } = dialog;
     const champ = (nom) => (e) => onChange(nom, e.target.value);
@@ -23,20 +22,6 @@ export default function GroupeDialog({ dialog, campus, onChange, onClose, onSubm
                             <TextField type="number" label={t('ref.groups.fields.size')} value={form.effectif} onChange={champ('effectif')} inputProps={{ min: 0 }} sx={{ minWidth: 120 }} />
                         </Stack>
                         <TextField label={t('ref.groups.fields.schoolYear')} value={form.annee_scolaire} onChange={champ('annee_scolaire')} placeholder="2026-2027" required />
-                        <TextField
-                            select
-                            label={t('ref.groups.fields.campus')}
-                            value={form.id_campus_prefere ?? ''}
-                            onChange={champ('id_campus_prefere')}
-                            helperText={t(form.type_groupe === 'promotion' ? 'ref.groups.fields.campusHelpPromotion' : 'ref.groups.fields.campusHelpSubgroup')}
-                        >
-                            <MenuItem value="">{t('common.aucun')}</MenuItem>
-                            {campus.map((c) => (
-                                <MenuItem key={c.id_campus} value={c.id_campus}>
-                                    {c.nom}
-                                </MenuItem>
-                            ))}
-                        </TextField>
                     </Stack>
                 </DialogContent>
                 <DialogActions>

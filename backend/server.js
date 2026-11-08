@@ -11,6 +11,7 @@ import { purgerStudio } from "./services/studio/iaGeneration.js";
 import { demarrerRenvoiQuotidien } from "./services/calendrier/envoiEdt.js";
 import { demarrerRappelsAppel } from "./services/presences/rappelAppel.js";
 import { passage } from "./services/taches/periodiques.js";
+import { passerDesactivations } from "./services/desactivation/programmation.js";
 
 dotenv.config();
 
@@ -60,6 +61,12 @@ const seedIfRequested = async () => {
         const actualiserRealise = () => passage("suivi-realise", marquerRealisees, (n) => n && `${n} séance(s) marquée(s) réalisée(s)`);
         actualiserRealise();
         setInterval(actualiserRealise, 60 * 60 * 1000).unref();
+
+        // Désactivations programmées (lot ME-17) : préavis 5 jours avant, puis désactivation le jour venu ; chaque heure
+        const desactivations = () =>
+            passage("desactivations", passerDesactivations, ({ preavis, desactives }) => (preavis || desactives) && `${preavis} préavis envoyé(s), ${desactives} compte(s) désactivé(s)`);
+        desactivations();
+        setInterval(desactivations, 60 * 60 * 1000).unref();
 
         // Journal de sécurité (au-delà de la durée de conservation) et compteurs des limiteurs de
         // connexion (fenêtres terminées) : au démarrage puis chaque jour

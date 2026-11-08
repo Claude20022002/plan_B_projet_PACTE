@@ -1,0 +1,19 @@
+{
+  "code": "universite", "nom": "Université et école d'ingénieurs",
+  "traits": { "unite": "UE et groupe", "enseignants": "Spécialisés", "duree": "CM, TD, TP", "groupes": "Multiples", "salles": "Multiples", "organisation": "Semestrielle", "priorite": "Compatibilité des ressources" },
+  "reglages": {
+    "OPT.PORTEE.HORIZON": { "valeur": "semestre" },
+    "OPT.PORTEE.MODELE_TEMPS": { "valeur": "semaine_type" },
+    "OPT.PORTEE.DECOUPAGE": { "valeur": "globale" },
+    "MAT.VOL.DUREE_MIN": { "valeur": 60 },
+    "MAT.VOL.DUREE_REC": { "valeur": 90 },
+    "MAT.VOL.DUREE_MAX": { "valeur": 210 },
+    "HOR.REGLE.MAX_CONSECUTIVES": { "valeur": 240 },
+    "PED.PROG.CM_AVANT_TD": { "poids": 5 },
+    "PED.ORG.LABO": { "valeur": true, "poids": 4 },
+    "PRF.ENS.CRENEAUX_PREFERES": { "poids": 1 },
+    "PRF.ENS.CRENEAUX_EVITER": { "poids": 3 },
+    "SAL.REGLE.TAILLE_ADAPTEE": { "poids": 1 },
+    "HOR.REGLE.UN_CAMPUS_PAR_JOUR": { "poids": 10 }
+  }
+}

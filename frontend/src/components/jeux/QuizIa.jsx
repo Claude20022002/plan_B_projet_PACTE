@@ -1,56 +1,49 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Box, Button, Skeleton, Typography } from '@mui/material';
 import { Add } from '@mui/icons-material';
-import { quizAPI, quizIaAPI } from '../../services/api';
-import { adresseEditeurQuiz } from '../../../../shared/espaces.js';
+import { quizIaAPI } from '../../services/api';
 import { ds } from '../../design-system/tokens';
 import Panneau, { Capitales, LignePanneau } from './Panneau';
-import CreerQuizDialog from '../quiz/creation/CreerQuizDialog';
 import RelireQuiz from '../quiz/creation/RelireQuiz';
 import ListeMesQuiz from '../quiz/mesQuiz/ListeMesQuiz';
+import ListeQuizStudio from '../quiz/mesQuiz/ListeQuizStudio';
 import { boutonPanneau, boutonPanneauPlein } from './styles';
+import { localeEcran } from '../../utils/dates';
+import useClassQuiz from '../../hooks/useClassQuiz';
 
 /**
- * « Mes quiz » de l'enseignant (page Activités) : « Créer un quiz » en un geste (générer, ou le
- * faire soi-même dans l'éditeur du service de quiz), puis les quiz générés, à relire avant leur
- * création, puis tous les quiz du service de quiz, modifiables depuis Planner (IA-5). Le panneau
- * n'apparaît que si l'une des deux façons de créer est installée.
- * @param {{ preselection?: { id_cours, id_groupe }, donnerEnDevoir?: (generation) => void, ouvrirGeneration?: boolean }} props
- *   ouvrirGeneration : « Créer un quiz » s'ouvre d'emblée (arrivée depuis « Mes classes »)
+ * « Mes quiz » de l'enseignant (page Activités, avec les devoirs) : « Créer un quiz » ouvre la
+ * création du Studio quiz, où un sujet ou un document suffit, sans classe ni module (R-9). Puis les
+ * quiz générés pour l'ancien service, à relire avant leur création, les quiz du Studio (à diffuser
+ * d'ici, code et QR code), puis tous les quiz du service de quiz, modifiables depuis Planner (IA-5).
+ * Sans le service de quiz pour l'école (lot ME-0c), seuls les quiz du Studio restent.
+ * @param {{ donnerEnDevoir?: (generation) => void }} props
  */
-export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouvrirGeneration = false }) {
+export default function PanneauQuizIa({ donnerEnDevoir }) {
   const { t, i18n } = useTranslation();
-  const [dispo, setDispo] = useState(null);
-  const [editeur, setEditeur] = useState(null);
-  const [generations, setGenerations] = useState(null);
-  const [creer, setCreer] = useState(false);
+  const { actif: classQuiz } = useClassQuiz();
+  const [toutesGenerations, setGenerations] = useState(null);
+  // Les générations se créent dans le service de quiz : masquées quand il est éteint
+  const generations = classQuiz ? toutesGenerations : [];
   const [ouverte, setOuverte] = useState(null); // { id, titre } de la génération relue
+  const [nbStudio, setNbStudio] = useState(null); // quiz du Studio (null : pas encore chargés)
   const monte = useRef(true);
 
   const charger = useCallback(() => {
-    quizIaAPI.disponibilite().then((d) => monte.current && setDispo(d)).catch(() => monte.current && setDispo({ disponible: false }));
     quizIaAPI.lister().then((l) => monte.current && setGenerations(Array.isArray(l) ? l : [])).catch(() => monte.current && setGenerations([]));
   }, []);
 
   useEffect(() => {
     monte.current = true;
     charger();
-    quizAPI
-      .getConfig()
-      .then((c) => monte.current && setEditeur(c?.peutLancer ? adresseEditeurQuiz(c.url) : null))
-      .catch(() => monte.current && setEditeur(null));
     return () => {
       monte.current = false;
     };
   }, [charger]);
 
-  useEffect(() => {
-    if (ouvrirGeneration) setCreer(true);
-  }, [ouvrirGeneration]);
-
-  if (!dispo?.disponible && !editeur) return null;
-  const date = (iso) => new Date(iso).toLocaleString(i18n.language, { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
+  const date = (iso) => new Date(iso).toLocaleString(localeEcran(i18n.language), { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
   const lampe = { pret: ds.board.letter, cree: ds.board.live, erreur: ds.brand.orange };
 
   return (
@@ -59,13 +52,13 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
         titre={t('jeux.quizIa.titre')}
         titreId="quiz-ia-titre"
         droite={
-          <Button size="small" variant="contained" startIcon={<Add />} sx={boutonPanneauPlein} onClick={() => setCreer(true)}>
-            {t('quizCreation.titre')}
+          <Button size="small" variant="contained" startIcon={<Add />} sx={boutonPanneauPlein} component={Link} to="/studio-quiz?nouveau=1">
+            {t('studio.banque.creer')}
           </Button>
         }
       >
         {generations === null && <Skeleton variant="rectangular" height={64} sx={{ bgcolor: ds.board.cell }} />}
-        {generations?.length === 0 && (
+        {generations?.length === 0 && nbStudio === 0 && (
           <LignePanneau premier>
             <Typography variant="body2" sx={{ color: ds.board.letterDim }}>{t('jeux.quizIa.aucune')}</Typography>
           </LignePanneau>
@@ -90,20 +83,9 @@ export default function PanneauQuizIa({ preselection = null, donnerEnDevoir, ouv
             </Capitales>
           </LignePanneau>
         ))}
-        <ListeMesQuiz />
+        <ListeQuizStudio onNombre={setNbStudio} />
+        {classQuiz && <ListeMesQuiz />}
       </Panneau>
-      <CreerQuizDialog
-        ouvert={creer}
-        fermer={() => setCreer(false)}
-        preselection={preselection}
-        generation={dispo?.disponible ? dispo : null}
-        editeur={editeur}
-        lancee={(id, sujet) => {
-          setCreer(false);
-          setOuverte({ id, titre: sujet });
-          charger();
-        }}
-      />
       <RelireQuiz
         id={ouverte?.id ?? null}
         titreInitial={ouverte?.titre ?? ''}

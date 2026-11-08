@@ -11,7 +11,9 @@ import { C, FONT_TITLE } from "../theme";
  * basculent en volets ;
  * dernière seconde immobile pour enchaîner sur la première slide.
  */
-export const S9Fin: React.FC<{ phrase?: string; action?: string; adresse?: string }> = ({ phrase: texte = "L'école, à l'heure.", action, adresse }) => {
+// `supports` remplace la ligne des plateformes (la vidéo Keynote dit « Déjà en ligne » : l'application
+// n'est pas encore sur les stores)
+export const S9Fin: React.FC<{ phrase?: string; action?: string; adresse?: string; supports?: string }> = ({ phrase: texte = "L'école, à l'heure.", action, adresse, supports }) => {
   const portrait = usePortrait();
   const cadre = useEnter(0, 12);
   const phrase = useEnter(46);
@@ -34,7 +36,9 @@ export const S9Fin: React.FC<{ phrase?: string; action?: string; adresse?: strin
         <Line size={portrait ? 60 : 54} style={{ ...fadeUp(phrase), maxWidth: portrait ? 940 : 1700, textAlign: "center" }}>
           {texte}
         </Line>
-        {portrait ? (
+        {supports ? (
+          <FlapText text={supports} start={54} fontSize={portrait ? 62 : 56} stagger={1} flip={4} hiddenBefore />
+        ) : portrait ? (
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 12 }}>
             <FlapText text="WEB · IPHONE" start={54} fontSize={62} stagger={1} flip={4} hiddenBefore />
             <FlapText text="ANDROID" start={62} fontSize={62} stagger={1} flip={4} hiddenBefore />

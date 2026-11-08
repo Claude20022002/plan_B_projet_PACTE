@@ -17,6 +17,7 @@ import {
 } from "../../models/index.js";
 import { seancesDeLEtudiant } from "../planning/monEmploiDuTemps.js";
 import { appliquerRamadan } from "../planning/ramadan.js";
+import { identite } from "../etablissement/identite.js";
 
 /**
  * Abonnement calendrier personnel (phase R4) : une adresse secrète, à ajouter une fois dans Google
@@ -30,6 +31,7 @@ const FUSEAU = process.env.APP_TIMEZONE || "Africa/Casablanca";
 const JOURS_AVANT = 28;
 const JOURS_APRES = 150;
 const FENETRE_ETUDIANT = 60; // monEmploiDuTemps refuse plus de 62 jours d'un coup
+// Identifiant technique figé (D-11) : le changer ferait apparaître chaque séance en double dans les agendas abonnés
 const DOMAINE_UID = "hestim-planner";
 
 // ── Format iCalendar (RFC 5545) ──────────────────────────────────────────
@@ -106,7 +108,7 @@ export const calendrierIcs = (nom, evenements, maintenant = new Date()) => {
     const lignes = [
         "BEGIN:VCALENDAR",
         "VERSION:2.0",
-        "PRODID:-//HESTIM//HESTIM Planner//FR",
+        "PRODID:-//Planner//Planner//FR",
         "CALSCALE:GREGORIAN",
         "METHOD:PUBLISH",
         `X-WR-CALNAME:${echapper(nom)}`,
@@ -131,19 +133,21 @@ const typeDe = (s) => s.enseignement?.composante?.type ?? s.cours?.type_cours ??
 
 const depuisSeance = (s, { avecGroupe = false } = {}) => {
     const type = typeDe(s);
-    const annule = s.statut === "annule";
+    // Une séance à reprogrammer (R-1) n'aura pas lieu à cette date : annulée dans l'agenda, avec sa raison
+    const aReprogrammer = s.statut === "a_reprogrammer";
+    const annule = s.statut === "annule" || aReprogrammer;
     const nomCours = s.cours?.nom_cours ?? "Séance";
     return {
         uid: `seance-${s.id_affectation}`,
         debut: instantLocal(s.date_seance, s.creneau.heure_debut),
         fin: instantLocal(s.date_seance, s.creneau.heure_fin),
-        titre: `${annule ? "Annulé : " : s.statut === "reporte" ? "Reporté : " : ""}${nomCours}${type ? ` (${type})` : ""}`,
+        titre: `${aReprogrammer ? "Reporté, date à venir : " : annule ? "Annulé : " : s.statut === "reporte" ? "Reporté : " : ""}${nomCours}${type ? ` (${type})` : ""}`,
         lieu: lieuDe(s),
         description: [
             s.enseignant ? `Enseignant : ${s.enseignant.prenom} ${s.enseignant.nom}` : null,
             avecGroupe && s.groupe ? `Groupe : ${s.groupe.nom_groupe}` : null,
             s.statut === "reporte" ? "Séance reportée : nouvel horaire." : null,
-            annule ? "Séance annulée." : null,
+            aReprogrammer ? "Séance reportée : la nouvelle date vous sera communiquée." : annule ? "Séance annulée." : null,
         ]
             .filter(Boolean)
             .join("\n"),
@@ -261,5 +265,6 @@ export const fluxIcs = async (jeton, maintenant = new Date()) => {
     const abonnement = await AbonnementCalendrier.findOne({ where: { jeton }, include: [{ model: Users, as: "user", attributes: ["id_user", "role", "prenom", "nom", "actif"] }] });
     if (!abonnement?.user?.actif) return null;
     const evenements = await evenementsDuCompte(abonnement.user, maintenant);
-    return calendrierIcs(`HESTIM · ${abonnement.user.prenom} ${abonnement.user.nom}`, evenements, maintenant);
+    const { nom_court: ecole } = await identite();
+    return calendrierIcs(`${ecole} · ${abonnement.user.prenom} ${abonnement.user.nom}`, evenements, maintenant);
 };

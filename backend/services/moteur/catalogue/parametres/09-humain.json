@@ -1,0 +1,24 @@
+{
+  "code": "HUM", "nom": "Contraintes humaines",
+  "groupes": [
+    { "code": "BESOIN", "nom": "Besoins des personnes",
+      "defauts": { "role": "donnee", "niveaux": "I", "cible": "groupe", "priorite": 2, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "ACCESSIBILITE", "nom": "Besoins d'accessibilité", "desc": "Un élève ou un enseignant à mobilité réduite impose des salles accessibles.", "type": "booleen", "defaut": false, "src": "3.38 12.10" },
+        { "code": "PAUSE_NECESSAIRE", "nom": "Temps de pause nécessaire", "desc": "Pause propre à un groupe.", "type": "duree_min", "src": "3.37" },
+        { "code": "MINEURS", "nom": "Public mineur", "desc": "Active les règles d'accueil et d'encadrement des mineurs.", "type": "booleen", "defaut": false, "niveaux": "P", "priorite": 1, "src": "9.19 16A.13" },
+        { "code": "PRIERE", "nom": "Temps de prière", "desc": "Plages à laisser libres si l'école l'a décidé ; ce choix reste le sien.", "type": "structure", "niveaux": "GP", "priorite": 3, "etat": "parametre", "ref": "pause_vendredi", "src": "7.46" }
+      ] },
+    { "code": "REGLE", "nom": "Règles humaines",
+      "defauts": { "role": "regle", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "priorite": 1, "etat": "absent" },
+      "parametres": [
+        { "code": "ACCESSIBILITE", "nom": "Salle accessible si besoin", "desc": "Un groupe qui a un besoin d'accessibilité n'a cours que dans une salle accessible.", "obligatoire": true, "modifiable": "non", "src": "9.20 12.10" },
+        { "code": "PAUSE_OBLIGATOIRE", "nom": "Pause obligatoire respectée", "desc": "Après la durée maximale, une pause d'au moins la durée fixée est tenue.", "obligatoire": true, "modifiable": "non", "src": "17B.12 9.5" },
+        { "code": "ENCADREMENT", "nom": "Encadrement des élèves", "desc": "Un élève mineur n'est jamais sans adulte : le trou est interdit ou couvert par une permanence.", "force_reglable": true, "priorite": 2, "modifiable": "etablissement", "defaut": false, "src": "9.16 16A.13" },
+        { "code": "RATIO_ENCADREMENT", "nom": "Ratio enseignant/apprenants", "desc": "Nombre maximal d'apprenants par adulte, propre au pays et à l'activité.", "type": "entier", "defaut": null, "niveaux": "GP", "force_reglable": true, "priorite": 2, "src": "9.17 9.18" },
+        { "code": "EQUITE", "nom": "Équilibre des charges entre enseignants", "desc": "Réduit les écarts entre services comparables.", "defaut": false, "force": "souple", "force_reglable": true, "poids": 4, "priorite": 4, "niveaux": "GP", "modifiable": "etablissement", "src": "14.7 18B.10 17D.11" },
+        { "code": "REMPLACABLE", "nom": "Faciliter les remplacements", "desc": "Garde, chaque créneau, un enseignant libre et compétent par discipline.", "defaut": false, "force": "souple", "force_reglable": true, "poids": 2, "priorite": 5, "niveaux": "G", "src": "14.21" },
+        { "code": "SURVEILLANCE_SIMPLE", "nom": "Faciliter la surveillance", "desc": "Regroupe les classes de mineurs pour une surveillance plus simple.", "defaut": false, "force": "souple", "force_reglable": true, "poids": 2, "priorite": 5, "niveaux": "G", "src": "14.18" }
+      ] }
+  ]
+}

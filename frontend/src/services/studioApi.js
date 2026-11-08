@@ -3,6 +3,7 @@
  * Enseignant : /api/studio-quiz ; étudiant (et aperçu de l'enseignant) : /api/passations.
  */
 import { request, telecharger } from './api';
+import { typeDuFichier } from '../utils/fichiers';
 
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -13,7 +14,8 @@ const avecQuery = (chemin, params) => {
   return `${chemin}${query ? `?${query}` : ''}`;
 };
 
-const typeDe = (fichier) => fichier.type || 'application/octet-stream';
+// Un .docx ou un .pptx arrive parfois sans type (navigateur sans Office) : le serveur le refuserait
+const typeDe = (fichier) => typeDuFichier(fichier) || 'application/octet-stream';
 
 export const studioAPI = {
   // Banque
@@ -25,6 +27,9 @@ export const studioAPI = {
   dupliquer: (id) => request(`/studio-quiz/questionnaires/${id}/dupliquer`, { method: 'POST' }),
   exporter: (id, titre) => telecharger(`/studio-quiz/questionnaires/${id}/export`, `${titre || 'quiz'}.json`),
   importer: (donnees) => request('/studio-quiz/import', { method: 'POST', body: donnees }),
+  // Quiz du service de quiz (ClassQuiz) : ceux qui restent à importer, puis l'import (en brouillon)
+  classquizAImporter: () => request('/studio-quiz/classquiz'),
+  classquizImporter: () => request('/studio-quiz/classquiz/importer', { method: 'POST' }),
 
   // Questions
   ajouterQuestion: (id, question) => request(`/studio-quiz/questionnaires/${id}/questions`, { method: 'POST', body: question }),
@@ -73,4 +78,15 @@ export const passationAPI = {
   repondre: (id, idQuestion, data) => request(`/passations/tentatives/${id}/reponses/${idQuestion}`, { method: 'PUT', body: data }),
   rendre: (id) => request(`/passations/tentatives/${id}/rendre`, { method: 'POST' }),
   urlMedia: (idTentative, idMedia) => `${API_BASE_URL}/passations/tentatives/${idTentative}/medias/${idMedia}`,
+};
+
+/** Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1) : l'enseignant anime, l'étudiant joue. */
+export const directAPI = {
+  lancer: (data) => request('/quiz-direct', { method: 'POST', body: data }),
+  vue: (id) => request(`/quiz-direct/${id}`),
+  agir: (id, action) => request(`/quiz-direct/${id}/${action}`, { method: 'POST' }),
+  rejoindre: (id) => request(`/quiz-direct/${id}/rejoindre`, { method: 'POST' }),
+  joueur: (id, depuis) => request(avecQuery(`/quiz-direct/${id}/joueur`, { depuis })),
+  repondre: (id, index, reponse) => request(`/quiz-direct/${id}/reponses`, { method: 'POST', body: { index, reponse } }),
+  urlMedia: (id, idMedia) => `${API_BASE_URL}/quiz-direct/${id}/medias/${idMedia}`,
 };

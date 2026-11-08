@@ -9,7 +9,6 @@ import {
     DialogTitle,
     FormControlLabel,
     IconButton,
-    InputAdornment,
     Paper,
     Stack,
     Switch,
@@ -26,6 +25,7 @@ import { Add, Delete, Edit } from '@mui/icons-material';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
 import StateChip from '../../design-system/components/StateChip';
+import TempsTrajet from '../../components/campus/TempsTrajet';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { campusAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
@@ -154,7 +154,7 @@ export default function Campus() {
                                         <TableCell>{t('ref.campus.cols.code')}</TableCell>
                                         <TableCell>{t('ref.campus.cols.name')}</TableCell>
                                         <TableCell sx={{ display: { xs: 'none', md: 'table-cell' } }}>{t('ref.campus.cols.address')}</TableCell>
-                                        <TableCell align="right">{t('ref.campus.cols.rooms')}</TableCell>
+                                        <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{t('ref.campus.cols.rooms')}</TableCell>
                                         <TableCell>{t('ref.campus.cols.state')}</TableCell>
                                         <TableCell align="right">{t('ref.rooms.cols.actions')}</TableCell>
                                     </TableRow>
@@ -167,7 +167,7 @@ export default function Campus() {
                                             <TableCell sx={{ display: { xs: 'none', md: 'table-cell' }, color: item.adresse ? 'text.primary' : 'text.secondary' }}>
                                                 {item.adresse || t('ref.campus.addressMissing')}
                                             </TableCell>
-                                            <TableCell align="right">{item.nb_salles}</TableCell>
+                                            <TableCell align="right" sx={{ display: { xs: 'none', sm: 'table-cell' } }}>{item.nb_salles}</TableCell>
                                             <TableCell>
                                                 {item.actif ? (
                                                     <Typography variant="body2" color="text.secondary">
@@ -193,62 +193,14 @@ export default function Campus() {
                     )}
                 </Paper>
 
-                <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
-                    <Typography variant="h2" component="h2">
-                        {t('ref.campus.travelTitle')}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary" sx={{ mt: 0.5, mb: 2, maxWidth: 720 }}>
-                        {t('ref.campus.travelIntro', { minutes: trajets.defaut_minutes })}
-                    </Typography>
-                    {paires.length === 0 ? (
-                        <Typography variant="body2" color="text.secondary">
-                            {t('ref.campus.needTwo')}
-                        </Typography>
-                    ) : (
-                        <Table size="small">
-                            <TableHead>
-                                <TableRow>
-                                    <TableCell>{t('ref.campus.cols.route')}</TableCell>
-                                    <TableCell>{t('ref.campus.cols.minutes')}</TableCell>
-                                    <TableCell>{t('ref.campus.cols.state')}</TableCell>
-                                    <TableCell align="right" />
-                                </TableRow>
-                            </TableHead>
-                            <TableBody>
-                                {paires.map((paire) => (
-                                    <TableRow key={paire.cle}>
-                                        <TableCell sx={{ fontWeight: 600, whiteSpace: 'nowrap' }}>
-                                            {paire.a.nom} ↔ {paire.b.nom}
-                                        </TableCell>
-                                        <TableCell sx={{ width: 180 }}>
-                                            <TextField
-                                                size="small"
-                                                type="number"
-                                                value={minutes[paire.cle] ?? ''}
-                                                placeholder={String(trajets.defaut_minutes)}
-                                                onChange={(e) => setMinutes((m) => ({ ...m, [paire.cle]: e.target.value }))}
-                                                inputProps={{ min: 0, max: 240, 'aria-label': `${paire.a.nom} ↔ ${paire.b.nom}` }}
-                                                InputProps={{ endAdornment: <InputAdornment position="end">min</InputAdornment> }}
-                                            />
-                                        </TableCell>
-                                        <TableCell>
-                                            {enregistres.has(paire.cle) ? (
-                                                <StateChip tone="success">{t('ref.campus.travelSet')}</StateChip>
-                                            ) : (
-                                                <StateChip tone="neutral">{t('ref.campus.travelDefault', { minutes: trajets.defaut_minutes })}</StateChip>
-                                            )}
-                                        </TableCell>
-                                        <TableCell align="right">
-                                            <Button size="small" variant="outlined" onClick={() => enregistrerTrajet(paire)} disabled={minutes[paire.cle] === undefined || minutes[paire.cle] === ''}>
-                                                {t('common.save')}
-                                            </Button>
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
-                            </TableBody>
-                        </Table>
-                    )}
-                </Paper>
+                <TempsTrajet
+                    paires={paires}
+                    minutes={minutes}
+                    enregistres={enregistres}
+                    defautMinutes={trajets.defaut_minutes}
+                    onMinutes={(cle, valeur) => setMinutes((m) => ({ ...m, [cle]: valeur }))}
+                    onEnregistrer={enregistrerTrajet}
+                />
             </Stack>
 
             <Dialog open={dialog.open} onClose={() => setDialog({ open: false, editing: null })} maxWidth="xs" fullWidth>

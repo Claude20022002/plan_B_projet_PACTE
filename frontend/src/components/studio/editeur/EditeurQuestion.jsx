@@ -13,7 +13,8 @@ import { ChampsAssociation, ChampsOrdre, ChampsZone } from './ChampsInteractifs'
 import MediaEditeur from './MediaEditeur';
 
 /**
- * Édition d'une question : énoncé, champs propres au type, média, points, explication. La
+ * Édition d'une question : énoncé, champs propres au type, média, points, temps en direct
+ * (facultatif : sinon celui de la diffusion), explication. La
  * validation tourne à chaque frappe (même règles que le serveur, shared/quiz/studio/types.js) et
  * dit ce qui manque avant d'enregistrer. Enregistrer une question proposée par l'IA vaut relecture.
  */
@@ -28,7 +29,7 @@ const nettoyer = (q) => {
   if (d.acceptees) d.acceptees = vide(d.acceptees);
   if (d.distracteurs) d.distracteurs = vide(d.distracteurs);
   if (d.trous) d.trous = d.trous.map((tr) => ({ ...tr, acceptees: vide(tr.acceptees), ...(vide(tr.options).length ? { options: vide(tr.options) } : { options: undefined }) }));
-  return { type: q.type, enonce: q.enonce, points: q.points, explication: q.explication || null, id_media: q.id_media ?? null, extrait: q.extrait ?? null, donnees: d };
+  return { type: q.type, enonce: q.enonce, points: q.points, explication: q.explication || null, id_media: q.id_media ?? null, extrait: q.extrait ?? null, duree_s: q.duree_s ?? null, donnees: d };
 };
 
 export default function EditeurQuestion({ idQuestionnaire, question, numero, medias, onMediaMaj, onEnregistree, onSupprimee, onDupliquee, dispo }) {
@@ -122,6 +123,15 @@ export default function EditeurQuestion({ idQuestionnaire, question, numero, med
         <Divider />
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
           <TextField type="number" label={t('studio.question.points')} value={brouillon.points} onChange={(e) => setBrouillon({ ...brouillon, points: e.target.value === '' ? '' : Number(e.target.value) })} inputProps={{ min: 0, max: 100, step: 0.5 }} sx={{ width: { sm: 120 } }} />
+          <TextField
+            type="number"
+            label={t('studio.question.duree')}
+            value={brouillon.duree_s ?? ''}
+            onChange={(e) => setBrouillon({ ...brouillon, duree_s: e.target.value === '' ? null : Number(e.target.value) })}
+            helperText={t('studio.question.dureeAide')}
+            inputProps={{ min: 5, max: 120, step: 5 }}
+            sx={{ width: { sm: 220 }, flexShrink: 0 }}
+          />
           <TextField label={t('studio.question.explication')} multiline minRows={1} value={brouillon.explication ?? ''} onChange={(e) => setBrouillon({ ...brouillon, explication: e.target.value })} inputProps={{ maxLength: 1500 }} fullWidth />
         </Stack>
       </Stack>

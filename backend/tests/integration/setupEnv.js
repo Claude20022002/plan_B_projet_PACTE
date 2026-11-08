@@ -5,7 +5,7 @@
  * la vraie base. La CI peut surcharger chaque valeur (ex: DB_PORT=3306).
  *
  * En local : docker run -d --name hestim_mysql_test -e MYSQL_ROOT_PASSWORD=test_root \
- *            -e MYSQL_DATABASE=hestim_test -p 3307:3306 mysql:8.0
+ *            -e MYSQL_DATABASE=hestim_test -p 3307:3306 mysql:8.4.13
  */
 const defaults = {
     NODE_ENV: "test",
@@ -43,6 +43,9 @@ const defaults = {
     // Devoirs ouverts : leur code reste testé alors qu'ils sont fermés par défaut en production
     // (lot D-2) ; devoirs.test.js les ferme le temps de vérifier la fermeture
     DEVOIRS_ACTIFS: "true",
+    // Envoi d'annonces aux classes par les enseignants ouvert : fermé par défaut en production (lot EC-5) ;
+    // le bloc « envoi fermé » de annonces.test.js le ferme le temps de vérifier la fermeture
+    ANNONCES_ENSEIGNANTS_ACTIVES: "true",
 };
 
 for (const [key, value] of Object.entries(defaults)) {

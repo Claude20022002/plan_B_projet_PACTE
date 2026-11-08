@@ -15,10 +15,10 @@ const repondreEtRendre = async (page) => {
   await page.getByRole("button", { name: "Suivant" }).click();
   await page.getByRole("radio", { name: /Vrai/ }).click();
   await page.getByRole("button", { name: "Terminer" }).click();
-  const rendre = page.getByRole("dialog", { name: "Rendre votre copie ?" });
+  const rendre = page.getByRole("dialog", { name: "Envoyer vos réponses ?" });
   await expect(rendre).toContainText("Vous avez répondu à toutes les questions.");
-  await rendre.getByRole("button", { name: "Rendre la copie" }).click();
-  await expect(page.getByRole("heading", { name: "Copie rendue" })).toBeVisible();
+  await rendre.getByRole("button", { name: "Envoyer mes réponses" }).click();
+  await expect(page.getByRole("heading", { name: "Réponses envoyées" })).toBeVisible();
   await expect(page.getByText("100 %")).toBeVisible();
 };
 
@@ -41,8 +41,16 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await page.getByRole("textbox", { name: "Énoncé" }).fill("Quel port utilise SSH ?");
   for (const [i, texte] of ["Port 21", "Port 22", "Port 23", "Port 80"].entries()) await page.getByRole("textbox", { name: `Option ${"ABCD"[i]}` }).fill(texte);
   await page.getByRole("radio", { name: "Bonne réponse : B" }).check();
+  // Son temps en direct : borné comme le direct, puis gardé par le serveur
+  const temps = page.getByRole("spinbutton", { name: "Temps en direct (secondes)" });
+  await temps.fill("200");
+  await expect(page.getByRole("status").filter({ hasText: "Durée : de 5 à 120 secondes" })).toBeVisible();
+  await temps.fill("20");
   await page.getByRole("button", { name: "Enregistrer", exact: true }).click();
   await expect(page.getByText("Question enregistrée")).toBeVisible();
+  const idQuiz = page.url().match(/\/studio-quiz\/(\d+)/)[1];
+  const quiz = await (await page.request.get(`/api/studio-quiz/questionnaires/${idQuiz}`)).json();
+  expect(quiz.questions.map((q) => q.duree_s)).toEqual([20]);
 
   // Question 2 : vrai ou faux (vrai par défaut)
   await page.getByRole("button", { name: "Ajouter une question" }).click();
@@ -52,8 +60,8 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await expect(page.getByText("2 questions · 2 points")).toBeVisible();
 
   // Ouvrir la passation : les deux accès, code et QR code
-  await page.getByRole("button", { name: "Ouvrir une passation" }).click();
-  const ouverture = page.getByRole("dialog", { name: "Ouvrir une passation" });
+  await page.getByRole("button", { name: "Diffuser ce quiz" }).click();
+  const ouverture = page.getByRole("dialog", { name: "Diffuser ce quiz" });
   await ouverture.getByRole("button", { name: "Ouvrir", exact: true }).click();
   const acces = page.getByRole("dialog", { name: "Réseaux, contrôle 1" });
   const qr = acces.getByRole("img", { name: /QR code menant au quiz/ });
@@ -71,7 +79,8 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
   await mobile.getByRole("textbox", { name: "Mot de passe", exact: true }).fill(motDePasse);
   await mobile.getByRole("button", { name: "Connexion", exact: true }).click();
   await expect(mobile).toHaveURL(new RegExp(`/quiz/code/${code}$`), { timeout: 20_000 });
-  await expect(mobile.getByRole("heading", { name: "Réseaux, contrôle 1" })).toBeVisible();
+  // Premier affichage de la page sur le serveur de développement : compilée à la demande
+  await expect(mobile.getByRole("heading", { name: "Réseaux, contrôle 1" })).toBeVisible({ timeout: 20_000 });
   await mobile.getByRole("button", { name: "Commencer" }).click();
   await repondreEtRendre(mobile);
   await telephone.close();
@@ -89,7 +98,21 @@ test("studio quiz : création, passation par QR code sur téléphone et par code
 
   // Résultats : deux copies, toutes deux réussies
   await acces.getByRole("button", { name: "Fermer" }).click();
-  await page.getByRole("tab", { name: "Passations" }).click();
+  await page.getByRole("tab", { name: "Diffusions" }).click();
   await page.getByRole("button", { name: "Résultats" }).click();
   await expect(page.getByRole("row").filter({ hasText: "Réussi" })).toHaveCount(2);
+
+  // Diffuser directement depuis « Mes quiz », sans passer par l'éditeur
+  await page.goto("/studio-quiz");
+  await page.getByRole("button", { name: "Diffuser" }).first().click();
+  const depuisListe = page.getByRole("dialog", { name: "Diffuser ce quiz" });
+  await depuisListe.getByRole("button", { name: "Ouvrir", exact: true }).click();
+  await expect(page.getByRole("img", { name: /QR code menant au quiz/ })).toBeVisible();
+
+  // Page Activités : plus de quiz (SC-3) ; « Mes quiz » est dans le menu et diffuse en direct ou au rythme de chacun
+  await page.goto("/jeux");
+  await expect(page.getByRole("heading", { name: "Activités", level: 2 })).toBeVisible();
+  await expect(page.getByRole("region", { name: "Mes quiz" })).toHaveCount(0);
+  await expect(page.getByRole("region", { name: "Quiz en direct" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Lancer un quiz" })).toHaveCount(0);
 });

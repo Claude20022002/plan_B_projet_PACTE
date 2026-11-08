@@ -1,0 +1,24 @@
+{
+  "code": "formation", "nom": "École privée et centre de formation",
+  "traits": { "unite": "Groupe de formation", "enseignants": "Formateurs, souvent externes", "duree": "Variable, sessions longues", "groupes": "Effectifs variables, parcours", "salles": "Louées ou partagées", "organisation": "Par sessions datées", "priorite": "Disponibilité des formateurs et coût" },
+  "reglages": {
+    "OPT.PORTEE.HORIZON": { "valeur": "semestre" },
+    "OPT.PORTEE.MODELE_TEMPS": { "valeur": "dates" },
+    "OPT.CALCUL.CHOIX_ENSEIGNANT": { "valeur": true },
+    "OPT.CALCUL.CHOIX_GROUPE": { "valeur": true },
+    "HOR.TYPE.FIXE": { "valeur": "flexible" },
+    "ETA.ORGA.COURS_SOIR": { "valeur": true },
+    "ETA.ORGA.COURS_WEEKEND": { "valeur": true },
+    "ENS.PRO.STATUT": { "valeur": "externe" },
+    "MAT.VOL.DUREE_MIN": { "valeur": 60 },
+    "MAT.VOL.DUREE_REC": { "valeur": 180 },
+    "MAT.VOL.DUREE_MAX": { "valeur": 240 },
+    "HOR.REGLE.MAX_CONSECUTIVES": { "valeur": 240 },
+    "HOR.REGLE.TROUS": { "poids": 3 },
+    "HOR.REGLE.COURS_TARDIFS": { "valeur": "21:30", "poids": 4 },
+    "GRP.REGLE.EFFECTIFS_BORNES": { "valeur": true, "poids": 10 },
+    "FIN.REGLE.MINIMISER_COUT": { "valeur": true, "poids": 5 },
+    "PED.PERIODE.INTENSIF": { "valeur": true },
+    "PED.PERIODE.CARTE": { "valeur": true }
+  }
+}

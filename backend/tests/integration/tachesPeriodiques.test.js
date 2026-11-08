@@ -2,6 +2,7 @@ import { resetDatabase, closeDatabase, createUser, createPlanningFixture } from 
 import { Notification } from "../../models/index.js";
 import { rappelerAppels } from "../../services/presences/rappelAppel.js";
 import { passage, tacheUnique } from "../../services/taches/periodiques.js";
+import sequelize from "../../config/db.js";
 import { aLHeureDeLEcole } from "./helpers/heureLocale.js";
 
 /**
@@ -53,6 +54,21 @@ describe("Tâches périodiques sous verrou", () => {
         const envoyes = [a, b].filter((p) => p.faite).reduce((total, p) => total + p.resultat, 0);
         expect(envoyes).toBe(1);
         expect(await Notification.count({ where: { id_user: enseignant.id_user, lien } })).toBe(1);
+    });
+
+    test("cinq passages lancés ensemble (démarrage du serveur) ne bloquent pas la base", async () => {
+        // Chaque passage garde une connexion pour son verrou et sa tâche en demande une autre : lancés
+        // ensemble, cinq passages prenaient les cinq connexions du pool et tout attendait 60 s
+        // (premières connexions des utilisateurs comprises). Ils passent maintenant l'un après l'autre.
+        const tache = () => sequelize.query("SELECT SLEEP(0.2) AS fini");
+        const passages = ["a", "b", "c", "d", "e"].map((n) => passage(`demarrage-${n}`, tache));
+
+        const debut = Date.now();
+        await sequelize.query("SELECT 1");
+        expect(Date.now() - debut).toBeLessThan(2000);
+
+        const issues = await Promise.all(passages);
+        expect(issues.map((i) => i.faite)).toEqual([true, true, true, true, true]);
     });
 
     test("une tâche en échec libère le verrou et ne lève pas d'erreur dans la minuterie", async () => {

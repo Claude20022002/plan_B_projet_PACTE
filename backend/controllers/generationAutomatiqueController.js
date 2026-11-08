@@ -15,12 +15,13 @@ import { ErreurMetier } from "../services/planning/enseignements.js";
 /**
  * POST /api/generation-automatique/generer
  * { id_periode, id_filieres?: number[], duree_secondes?: 10–600 } → 202 { session }
+ * Sans duree_secondes, la durée suit la taille du problème (R-4 : l'écran ne la demande plus).
  */
 export const genererAffectations = planification(async (req, res) => {
     const idPeriode = Number(req.body.id_periode);
     if (!idPeriode) throw new ErreurMetier("Période requise", 400);
     const idFilieres = Array.isArray(req.body.id_filieres) ? [...new Set(req.body.id_filieres.map(Number).filter(Boolean))] : [];
-    const duree = Math.min(600, Math.max(10, Number(req.body.duree_secondes) || 60));
+    const duree = req.body.duree_secondes ? Math.min(600, Math.max(10, Number(req.body.duree_secondes) || 60)) : null;
     try {
         const session = await lancerGeneration({ id_periode: idPeriode, id_filieres: idFilieres, dureeSecondes: duree, user: req.user });
         res.status(202).json({ message: "Génération lancée", session });
@@ -40,6 +41,7 @@ export const getSession = asyncHandler(async (req, res) => {
     const session = await GenerationSession.findByPk(req.params.id);
     if (!session) return res.status(404).json({ message: "Génération introuvable", error: "Génération introuvable" });
     const progression = session.status === "running" ? progressionEnMemoire(session.id_generation_session) : null;
+    // Pendant le placement, l'avancement est en mémoire (voir generation.js) ; l'étape reste « placement »
     res.json({ ...session.toJSON(), ...(progression ?? {}) });
 });
 

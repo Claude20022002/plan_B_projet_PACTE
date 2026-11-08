@@ -313,7 +313,47 @@ def lire_matinee():
     return montages
 
 
-GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "formes", "jeux", "admin", "mois", "heures", "etudiante", "prof"}
+def lire_keynote():
+    """Durées de la vidéo Keynote : TEMPS_KEYNOTE (Keynote.tsx)."""
+    source = open(os.path.join(ICI, "..", "src", "Keynote.tsx"), encoding="utf-8").read()
+    debut = source.index("export const TEMPS_KEYNOTE")
+    bloc = source[debut : source.index("} as const;", debut)]
+    return {scene: int(n) * TEMPS for scene, n in re.findall(r"(\w+): (\d+) \* BEAT", bloc)}
+
+
+def section_froid(musique, sec, sfx, debut, fin):
+    """Ouverture à froid de la Keynote : une nappe grave, un tic-tac d'horloge sur chaque temps,
+    les volets de « 13:29 » et de « SALLE », puis la case de la salle qui tourne sans s'arrêter."""
+    musique.ajouter(debut, nappe([33, 45, 52], fin - debut + 0.3), 0.55)
+    t = debut
+    while t < fin - 1e-6:
+        sec.ajouter(t, charleston(), 0.38, -0.2)
+        t += TEMPS
+    volets(sfx, debut + 0.27, debut + 1.0, 0.2)
+    volets(sfx, debut + 1.13, debut + 1.6, 0.18)
+    volets(sfx, debut + 1.6, fin, 0.07)
+
+
+def section_chaos(musique, sec, sfx, debut, fin, coupure):
+    """Les notifications s'empilent de plus en plus vite sur une tension qui monte, puis tout se
+    coupe d'un coup à `coupure` : le silence avant la révélation."""
+    section_tension(sec, musique, debut, coupure - 0.4)
+    sfx.ajouter(coupure - 2.0, montee(2.0), 0.7)
+    for k, image in enumerate([4, 16, 26, 35, 43, 50, 56, 62, 67, 72, 77, 82]):  # ARRIVEES de K2Chaos.tsx
+        sfx.ajouter(debut + image / 30, toucher(), 0.25 + 0.03 * k, -0.6 + 0.1 * k)
+
+
+def section_revelation(musique, sec, sfx, debut, fin):
+    """Après le silence : impact grave, cascade des triangles, reflet, nom en volets."""
+    sec.ajouter(debut + 0.05, impact(), 0.95)
+    musique.ajouter(debut, nappe([36, 48, 55, 60, 64, 67], fin - debut + 0.4), 0.75)
+    cascade(sfx, debut + 0.15)
+    sfx.ajouter(debut + 1.2, souffle(0.9, haut=True), 0.35)
+    volets(sfx, debut + 1.6, debut + 2.6)
+    roulement(sec, fin - 1.0, fin)
+
+
+GROOVE = {"agenda", "alerte", "supports", "resultats", "appel", "quiz", "bientot", "formes", "jeux", "admin", "mois", "heures", "etudiante", "prof", "salle", "classement"}
 
 
 def composer(ids, durees):
@@ -332,6 +372,12 @@ def composer(ids, durees):
             section_intro(musique, s, s + d)
             cascade(sfx, s + 0.3)
             volets(sfx, s + 1.6, s + 3.2)
+        elif i == "froid":
+            section_froid(musique, sec, sfx, s, s + d)
+        elif i == "chaos":
+            section_chaos(musique, sec, sfx, s, s + d, s + 114 / 30)  # COUPURE de K2Chaos.tsx
+        elif i == "revelation":
+            section_revelation(musique, sec, sfx, s, s + d)
         elif i == "campus":  # « Direction » s'ouvre sur un écran, pas sur le logo : entrée douce
             section_intro(musique, s, s + d)
             sfx.ajouter(s + 0.1, souffle(0.6), 0.4)
@@ -380,6 +426,14 @@ def composer(ids, durees):
             elif i == "jeux":
                 sfx.ajouter(s + 0.2, souffle(0.5, haut=True), 0.3)
                 sfx.ajouter(s + 1.2, toucher(), 0.4)
+                volets(sfx, s + 0.47, s + 2.2, 0.14)  # les noms des jeux en volets (Keynote)
+            elif i == "salle":  # Keynote : le téléphone arrive, la caméra avance, la salle se fixe
+                sfx.ajouter(s + 0.1, souffle(0.7), 0.45)
+                volets(sfx, s, s + 2.7, 0.08)
+                sfx.ajouter(s + 1.75, souffle(0.6, haut=True), 0.3)
+                sfx.ajouter(s + 2.75, impact(profond=False), 0.45)
+            elif i == "classement":
+                sfx.ajouter(s + 0.1, souffle(0.5, haut=True), 0.35)
             elif i in ("mois", "heures"):
                 sfx.ajouter(s + 0.1, souffle(0.5), 0.35)
             elif i == "admin":
@@ -410,3 +464,8 @@ if __name__ == "__main__":
         donnees = composer(list(temps), temps)
         wavfile.write(os.path.join(SORTIE, nom), SR, donnees)
         print(f"{nom} : {len(donnees) / SR:.2f} s ({', '.join(temps)})")
+    # « Keynote » : la vidéo de la présentation de 3 minutes
+    keynote = lire_keynote()
+    donnees = composer(list(keynote), keynote)
+    wavfile.write(os.path.join(SORTIE, "keynote.wav"), SR, donnees)
+    print(f"keynote.wav : {len(donnees) / SR:.2f} s ({', '.join(keynote)})")

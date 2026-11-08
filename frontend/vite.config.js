@@ -9,7 +9,7 @@ import path from 'path';
  *   react-core      → React + ReactDOM + Router (chargé toujours)
  *   mui-core        → MUI composants de base (chargé toujours)
  *   mui-icons       → ~900 icônes tree-shaked (chargé toujours)
- *   charts          → Recharts (chargé sur dashboards / statistiques)
+ *   (Recharts : pas de groupe manuel, il suit les pages Statistiques et Conflits)
  *   calendar        → FullCalendar (chargé sur pages emploi-du-temps)
  *   pdf-export      → jsPDF + jspdf-autotable (chargé on-demand)
  *   excel-export    → XLSX + PapaParse (chargé on-demand)
@@ -40,10 +40,9 @@ function manualChunks(id) {
     return 'mui-core';
   }
 
-  // ── Recharts — uniquement sur dashboards et statistiques ─────────────
-  if (id.includes('recharts') || id.includes('d3-')) {
-    return 'charts';
-  }
+  // Recharts n'a pas de groupe à lui : un groupe manuel attire aussi les petites dépendances qu'il
+  // partage avec le reste du site (clsx, react-is…), et la page d'accueil le préchargeait alors
+  // (audit du 15 octobre). Rollup le range seul avec les pages qui l'importent (Statistiques, Conflits).
 
   // ── FullCalendar — uniquement sur pages emploi-du-temps ──────────────
   if (id.includes('@fullcalendar')) {

@@ -31,11 +31,11 @@ export const FICHES = [
   // ── Enseignant ───────────────────────────────────────────────────────────
   { id: 'profAppel', roles: ['enseignant'], theme: 'seance', pages: ['/mes-classes', '/appel', '/dashboard/enseignant', '/mes-affectations'], lien: '/mes-classes' },
   { id: 'profRappel', roles: ['enseignant'], theme: 'seance', pages: ['/appel', '/mes-classes'], lien: '/mes-classes' },
-  { id: 'profQuizDirect', roles: ['enseignant'], theme: 'seance', pages: ['/mes-classes', '/jeux', '/dashboard/enseignant'], lien: '/mes-classes' },
-  { id: 'profQuizIa', roles: ['enseignant'], theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
+  { id: 'profQuizDirect', roles: ['enseignant'], theme: 'seance', pages: ['/studio-quiz'], lien: '/studio-quiz' },
+  { id: 'profQuizIa', roles: ['enseignant'], theme: 'classe', pages: ['/jeux'], lien: '/jeux' },
   { id: 'profDevoir', roles: ['enseignant'], devoirs: true, theme: 'classe', pages: ['/jeux', '/mes-classes'], lien: '/jeux' },
-  { id: 'profEcrire', roles: ['enseignant'], theme: 'classe', pages: ['/annonces', '/mes-classes'], lien: '/mes-classes' },
-  { id: 'profSupports', roles: ['enseignant'], theme: 'classe', pages: ['/mes-classes'], lien: '/biblio/' },
+  // Les supports d'une classe se gèrent dans son espace (espace-de-cours.md, lots E-3 et E-9)
+  { id: 'profSupports', roles: ['enseignant'], theme: 'classe', pages: ['/mes-classes'], lien: '/mes-classes' },
   { id: 'profReport', roles: ['enseignant'], theme: 'planning', pages: ['/mes-affectations', '/demandes-report', '/dashboard/enseignant', '/emploi-du-temps/enseignant'], lien: '/demandes-report' },
   { id: 'profAbsence', roles: ['enseignant'], theme: 'planning', pages: ['/disponibilites'], lien: '/disponibilites' },
   { id: 'profDispos', roles: ['enseignant'], theme: 'planning', pages: ['/disponibilites'], lien: '/disponibilites' },
@@ -46,7 +46,8 @@ export const FICHES = [
   // ── Étudiant ─────────────────────────────────────────────────────────────
   { id: 'etuEdt', roles: ['etudiant'], theme: 'etudiant', pages: ['/dashboard/etudiant', '/emploi-du-temps'], lien: '/emploi-du-temps/etudiant' },
   { id: 'etuPresence', roles: ['etudiant'], theme: 'etudiant', pages: ['/presence', '/dashboard/etudiant'], lien: null },
-  { id: 'etuDevoirs', roles: ['etudiant'], theme: 'etudiant', pages: ['/jeux'], lien: '/jeux' },
+  { id: 'etuDevoirs', roles: ['etudiant'], theme: 'etudiant', pages: ['/quiz'], lien: '/quiz' },
+  { id: 'etuCours', roles: ['etudiant'], theme: 'etudiant', pages: ['/mes-cours', '/dashboard/etudiant'], lien: '/mes-cours' },
   { id: 'etuAnnonces', roles: ['etudiant'], theme: 'etudiant', pages: ['/annonces', '/notifications'], lien: '/annonces' },
 ];
 

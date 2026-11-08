@@ -1,9 +1,10 @@
 import { Pressable, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { estChangee } from '../../../shared/session.js';
 import { couleurStatut, creerStyles, espace, lineColor, useTheme } from '../theme';
 
 /** Statuts affichés : une séance montrée a lieu ; seuls l'en-cours, le report et l'annulation se signalent */
-export const STATUTS_SIGNALES = new Set(['live', 'reporte', 'annule']);
+export const STATUTS_SIGNALES = new Set(['live', 'reporte', 'a_reprogrammer', 'annule']);
 
 /**
  * Une ligne du panneau : heure, carré de la filière, cours (type CM/TD/TP), salle et campus, et
@@ -14,7 +15,7 @@ export default function DepartureRow({ seance: s, enVedette = false, onPress }) 
   const { t } = useTranslation();
   const theme = useTheme();
   const styles = useStyles();
-  const statut = enVedette && s.status !== 'annule' && s.status !== 'reporte' ? 'live' : s.status;
+  const statut = enVedette && !estChangee(s.status) ? 'live' : s.status;
   const libelleStatut = t(`status.${statut}`);
   const couleur = statut === 'live' ? theme.couleurs.enCours : couleurStatut(theme, s.status);
   const annule = s.status === 'annule';
@@ -25,11 +26,11 @@ export default function DepartureRow({ seance: s, enVedette = false, onPress }) 
     <Pressable
       onPress={onPress}
       disabled={!onPress}
-      style={({ pressed }) => [styles.ligne, ['reporte', 'annule'].includes(s.status) && { borderLeftWidth: 3, borderLeftColor: couleur, paddingLeft: 13 }, pressed && styles.presse]}
+      style={({ pressed }) => [styles.ligne, estChangee(s.status) && { borderLeftWidth: 3, borderLeftColor: couleur, paddingLeft: 13 }, pressed && styles.presse]}
       accessibilityRole={onPress ? 'button' : undefined}
       accessibilityLabel={`${s.startLabel}, ${s.course}${s.courseType ? ` ${s.courseType}` : ''}, ${s.distanciel ? t('app.aDistance') : `${t('board.room')} ${s.room || '?'}`}${signale ? `, ${libelleStatut}` : ''}`}
     >
-      <Text style={[styles.heure, s.status === 'reporte' && { color: couleur }, annule && styles.barre]} maxFontSizeMultiplier={1.4}>
+      <Text style={[styles.heure, ['reporte', 'a_reprogrammer'].includes(s.status) && { color: couleur }, annule && styles.barre]} maxFontSizeMultiplier={1.4}>
         {s.startLabel}
       </Text>
       <View style={[styles.carre, { backgroundColor: lineColor(s.lineKey) }]} />

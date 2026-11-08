@@ -3,7 +3,8 @@ import { journaliser } from "../journalSecurite.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 import { chargerClasse, classeAutorisee, groupesVisiblesPar } from "./droits.js";
 import { ordreSuivant, sectionGeree, sectionGenerale, sectionsPubliees } from "./sections.js";
-import { lienDocument, lireDocument, publierDocument, supprimerDocument, transmettreDepot } from "./studylib.js";
+import { changementsOuverture, estOuvert } from "./ouverture.js";
+import { chercherDocuments, lienDocument, lireDocument, publierDocument, supprimerDocument, transmettreDepot } from "./studylib.js";
 
 /**
  * Supports d'une classe : documents de StudyLib (déposés depuis la classe ou épinglés depuis la
@@ -56,6 +57,18 @@ export const ajouterLien = async (user, cible, { titre, url } = {}) => {
     return creerSupport(user, section, { type: "lien", titre: titreOuDefaut(titre, adresse.hostname), url: adresse.href });
 };
 
+/**
+ * Documents de la Bibliothèque à épingler dans une classe (lot E-9) : seulement pour qui gère la
+ * classe, et la recherche part vers StudyLib après ce contrôle. 2 à 80 caractères, comme StudyLib.
+ */
+export const chercherBibliotheque = async (user, { idCours, idGroupe, jeton }, q) => {
+    await classeAutorisee(user, idCours, idGroupe, { gerer: true });
+    const texte = String(q ?? "").trim();
+    if (texte.length < 2 || texte.length > 80) throw new ErreurMetier("Tapez de 2 à 80 caractères", 400);
+    const documents = await chercherDocuments(jeton, texte);
+    return documents.map((d) => ({ id: d.id, titre: d.title, type: d.type ?? null, type_mime: d.mime_type ?? null, module: d.module ?? null }));
+};
+
 /** Épingle un document publié de la Bibliothèque, sans copie (StudyLib vérifie que l'enseignant le voit). */
 export const epinglerDocument = async (user, cible, { id_document, titre } = {}) => {
     const { section } = await sectionCible(user, cible);
@@ -80,9 +93,9 @@ const supportModifiable = async (user, idSupport) => {
     return support;
 };
 
-export const modifierSupport = async (user, idSupport, { titre, visible, id_section, ordre } = {}) => {
+export const modifierSupport = async (user, idSupport, { titre, visible, visible_du, visible_jusqu_au, id_section, ordre } = {}) => {
     const support = await supportModifiable(user, idSupport);
-    const changements = {};
+    const changements = changementsOuverture({ visible_du, visible_jusqu_au }, support);
     if (titre !== undefined) changements.titre = titreOuDefaut(titre, support.titre);
     if (visible !== undefined) changements.visible = Boolean(visible);
     if (ordre !== undefined && Number.isInteger(Number(ordre))) changements.ordre = Number(ordre);
@@ -119,7 +132,8 @@ export const ouvrirSupport = async (user, idSupport) => {
     const support = await SupportCours.findByPk(Number(idSupport) || 0, { include: [{ model: SectionCours, as: "section" }] });
     if (!support) throw new ErreurMetier("Support introuvable", 404);
     const { gere } = await classeAutorisee(user, support.section.id_cours, support.section.id_groupe);
-    if (!gere && !(support.visible && support.section.visible)) throw new ErreurMetier("Support introuvable", 404);
+    // Un support fermé ou pas encore ouvert est introuvable pour l'étudiant, même avec son adresse (lot EC-1)
+    if (!gere && !(estOuvert(support) && estOuvert(support.section))) throw new ErreurMetier("Support introuvable", 404);
     return support.type === "lien" ? support.url : lienDocument(support.id_document, user.id_user);
 };
 

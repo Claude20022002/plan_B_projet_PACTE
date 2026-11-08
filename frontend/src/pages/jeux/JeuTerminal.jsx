@@ -31,7 +31,8 @@ export default function JeuTerminal() {
   const terminal = useRef(null);
 
   const [reussis, setReussis] = useState(() => new Map());
-  const [erreurChargement, setErreurChargement] = useState(false);
+  // 'horsLigne' (réseau) ou 'nonPropose' (403 : aucun de ses modules ne propose ce jeu, recette M-12)
+  const [erreurChargement, setErreurChargement] = useState(null);
   const [indices, setIndices] = useState(0);
   const [retour, setRetour] = useState(null); // { ok, message, points }
   const [essai, setEssai] = useState(0); // « Recommencer » recrée le scénario
@@ -53,7 +54,7 @@ export default function JeuTerminal() {
     jeuxAPI
       .getProgression(CODE)
       .then((p) => actif && setReussis(new Map((p?.defis ?? []).map((d) => [d.id, d]))))
-      .catch(() => actif && setErreurChargement(true));
+      .catch((e) => actif && setErreurChargement(e?.status === 403 ? 'nonPropose' : 'horsLigne'));
     return () => {
       actif = false;
     };
@@ -73,6 +74,7 @@ export default function JeuTerminal() {
   const enregistrer = useCallback(
     async (id, niveauIndice) => {
       if (reussis.has(id)) return reussis.get(id).points;
+      if (erreurChargement === 'nonPropose') return pointsPour(defi.xp, niveauIndice);
       try {
         const r = await jeuxAPI.reussir(CODE, id, niveauIndice, [...partie.historique]);
         setReussis((m) => new Map(m).set(id, { id, points: r.points, indices: niveauIndice }));
@@ -82,7 +84,7 @@ export default function JeuTerminal() {
         return pointsPour(defi.xp, niveauIndice);
       }
     },
-    [reussis, defi, partie]
+    [reussis, defi, partie, erreurChargement]
   );
 
   // Après chaque commande : l'objectif est-il atteint ?
@@ -173,8 +175,8 @@ export default function JeuTerminal() {
       </Stack>
 
       {erreurChargement && (
-        <Alert severity="info" sx={{ mb: 2 }}>
-          {t('jeux.horsLigne')}
+        <Alert severity={erreurChargement === 'nonPropose' ? 'warning' : 'info'} sx={{ mb: 2 }}>
+          {t(erreurChargement === 'nonPropose' ? 'jeux.nonPropose' : 'jeux.horsLigne')}
         </Alert>
       )}
 

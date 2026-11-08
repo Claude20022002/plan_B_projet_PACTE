@@ -20,6 +20,7 @@ import { enseignementAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
 import { ds } from '../../design-system/tokens';
 import { TON_SERVICE, principalActif } from '../../utils/services';
+import { localeEcran } from '../../utils/dates';
 
 const ROLES = ['principal', 'co_enseignant'];
 /**
@@ -35,7 +36,7 @@ export default function EquipeDialog({ enseignement, onClose, onChange }) {
     const [heures, setHeures] = useState('');
     const [envoi, setEnvoi] = useState(false);
 
-    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const nombre = useMemo(() => new Intl.NumberFormat(localeEcran(i18n.language), { maximumFractionDigits: 1 }), [i18n.language]);
     const id = enseignement?.id_enseignement;
     const services = useMemo(() => enseignement?.services ?? [], [enseignement]);
     const aUnPrincipal = Boolean(principalActif(services));

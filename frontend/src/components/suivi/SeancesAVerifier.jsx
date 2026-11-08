@@ -6,6 +6,7 @@ import StateChip from '../../design-system/components/StateChip';
 import { TableSkeleton } from '../../design-system/components/PremiumSkeleton';
 import { suiviAPI } from '../../services/api';
 import { useToast } from '../../contexts/ToastContext';
+import { localeEcran } from '../../utils/dates';
 
 // Teinte de la pastille de chaque état (codes du serveur, services/planning/visaSeances.js)
 const TONS = { a_verifier: 'warning', confirmee: 'success', ecartee: 'danger' };
@@ -61,7 +62,7 @@ export default function SeancesAVerifier({ mois, onChange }) {
     setMotif('');
   };
 
-  const jour = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString(i18n.language, { weekday: 'short', day: 'numeric', month: 'short' });
+  const jour = (iso) => new Date(`${iso}T12:00:00`).toLocaleDateString(localeEcran(i18n.language), { weekday: 'short', day: 'numeric', month: 'short' });
   const enseignants = (s) => (s.enseignants ?? []).map((e) => `${e.prenom} ${e.nom}${e.statut === 'vacataire' ? ` (${t('ref.staff.statuses.vacataire')})` : ''}`).join(', ');
 
   return (

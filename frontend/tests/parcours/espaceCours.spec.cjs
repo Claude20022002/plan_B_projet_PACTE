@@ -44,6 +44,13 @@ test("espace de cours : l'enseignante dépose, l'étudiant consulte", async ({ b
   await prof.getByRole("button", { name: "Créer" }).click();
   await expect(prof.getByRole("heading", { name: "Semaine 2" })).toBeVisible();
 
+  // Un document de la Bibliothèque épinglé dans « Général », sans copie (lot E-9)
+  await prof.getByRole("button", { name: "Depuis la Bibliothèque" }).first().click();
+  await prof.getByRole("textbox", { name: "Rechercher un document" }).fill("OSI");
+  await prof.getByRole("button", { name: "Ajouter Le modèle OSI à la section" }).click();
+  await expect(prof.getByRole("dialog")).toHaveCount(0);
+  await expect(prof.getByText("Le modèle OSI")).toBeVisible();
+
   // Le lien est masqué aux étudiants
   await prof.getByRole("button", { name: "Actions pour La directive NIS 2" }).click();
   await prof.getByRole("menuitem", { name: "Masquer aux étudiants" }).click();
@@ -56,10 +63,31 @@ test("espace de cours : l'enseignante dépose, l'étudiant consulte", async ({ b
   await etu.goto("/mes-cours");
   await etu.getByRole("button", { name: new RegExp(seance.cours) }).click();
   await expect(etu.getByText("Chapitre 1 Introduction")).toBeVisible({ timeout: 20_000 });
+  await expect(etu.getByText("Le modèle OSI")).toBeVisible();
   await expect(etu.getByText("La directive NIS 2")).toHaveCount(0);
   await expect(etu.getByRole("heading", { name: "Semaine 2" })).toHaveCount(0);
   await expect(etu.getByRole("button", { name: /Actions pour/ })).toHaveCount(0);
   await capturer(etu, "espace-etudiant");
+
+  // Dates d'ouverture (lot EC-1) : le modèle OSI est programmé pour demain ; l'enseignante le voit
+  // marqué « Ouvre le … », l'étudiant ne le voit plus jusqu'à ce que la date soit retirée
+  const demain = new Date(Date.now() + 86_400_000).toISOString().slice(0, 10);
+  const dateOuverture = async (valeur) => {
+    await prof.getByRole("button", { name: "Actions pour Le modèle OSI" }).click();
+    await prof.getByRole("menuitem", { name: "Dates d’ouverture…" }).click();
+    await prof.getByLabel("Visible à partir du").fill(valeur);
+    await prof.getByRole("button", { name: "Enregistrer" }).click();
+    await expect(prof.getByText("Dates enregistrées.")).toBeVisible();
+  };
+  await dateOuverture(demain);
+  await expect(prof.getByText(/^Ouvre le /)).toBeVisible();
+  await etu.reload();
+  await expect(etu.getByText("Chapitre 1 Introduction")).toBeVisible({ timeout: 20_000 });
+  await expect(etu.getByText("Le modèle OSI")).toHaveCount(0);
+  await dateOuverture("");
+  await expect(prof.getByText(/^Ouvre le /)).toHaveCount(0);
+  await etu.reload();
+  await expect(etu.getByText("Le modèle OSI")).toBeVisible({ timeout: 20_000 });
 
   // Ouvrir le fichier : un nouvel onglet sur le lien signé de la Bibliothèque
   const [onglet] = await Promise.all([etu.waitForEvent("popup"), etu.getByText("Chapitre 1 Introduction").click()]);

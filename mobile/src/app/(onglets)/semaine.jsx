@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Pressable, RefreshControl, ScrollView, SectionList, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
+import { useLocalSearchParams } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { formatDayLabel, groupByDay, toLocalISODate } from '../../../../shared/session.js';
@@ -60,10 +61,23 @@ export default function Semaine() {
   const styles = useStyles();
   const margeBas = useMargeOnglets();
   const { t, i18n } = useTranslation();
+  const { date: dateDuLien } = useLocalSearchParams();
+  const dateDemandee = /^\d{4}-\d{2}-\d{2}$/.test(String(dateDuLien ?? '')) ? new Date(`${dateDuLien}T12:00:00`) : null;
   const [vue, setVue] = useState('liste');
-  const [lundi, setLundi] = useState(() => lundiDe(new Date()));
-  const [mois, setMois] = useState(() => new Date(new Date().getFullYear(), new Date().getMonth(), 1));
-  const [jourChoisi, setJourChoisi] = useState(() => toLocalISODate(new Date()));
+  const [lundi, setLundi] = useState(() => lundiDe(dateDemandee ?? new Date()));
+  const [mois, setMois] = useState(() => new Date((dateDemandee ?? new Date()).getFullYear(), (dateDemandee ?? new Date()).getMonth(), 1));
+  const [jourChoisi, setJourChoisi] = useState(() => toLocalISODate(dateDemandee ?? new Date()));
+
+  // Une alerte de report touchée alors que l'écran est déjà ouvert : on va à la semaine de la nouvelle date
+  const [dateTraitee, setDateTraitee] = useState(dateDuLien);
+  if (dateDuLien !== dateTraitee) {
+    setDateTraitee(dateDuLien);
+    if (dateDemandee) {
+      setLundi(lundiDe(dateDemandee));
+      setMois(new Date(dateDemandee.getFullYear(), dateDemandee.getMonth(), 1));
+      setJourChoisi(String(dateDuLien));
+    }
+  }
   const [fiche, setFiche] = useState(null);
   const [resultat, setResultat] = useState({ cle: null, seances: [], evenements: [], examens: [], erreur: false, horsLigne: null });
   const [rafraichit, setRafraichit] = useState(false);

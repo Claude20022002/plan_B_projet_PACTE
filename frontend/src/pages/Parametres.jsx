@@ -218,11 +218,9 @@ export default function Parametres() {
                                         }
                                     }}
                                 />
-                                <label htmlFor="avatar-upload">
-                                    <IconButton color="primary" component="span">
-                                        <PhotoCamera />
-                                    </IconButton>
-                                </label>
+                                <IconButton color="primary" onClick={() => fileInputRef.current?.click()} aria-label={t('common.changerPhoto')}>
+                                    <PhotoCamera />
+                                </IconButton>
                                 <Typography variant="caption" display="block" sx={{ mt: 1 }}>
                                     Cliquez pour changer votre photo de profil
                                 </Typography>
@@ -261,6 +259,8 @@ export default function Parametres() {
                                     (formik.touched.email && formik.errors.email) ||
                                     (!isAdmin && "Pour changer d'adresse, contactez l'administration")
                                 }
+                                // L'aide reste lisible quand le champ est grisé : c'est une consigne, pas une commande (M-13, contraste)
+                                slotProps={{ formHelperText: { sx: { '&.Mui-disabled': { color: 'text.secondary' } } } }}
                             />
                             <TextField
                                 fullWidth

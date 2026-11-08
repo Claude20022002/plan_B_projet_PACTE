@@ -41,7 +41,17 @@ http://{$FICHIERS_ADDRESS} {
 # Jeux pédagogiques (ClassQuiz)
 http://{$QUIZ_ADDRESS} {
 	encode zstd gzip
-	header -Server
+	# En-têtes de sécurité (audit du 15 octobre) : le site du quiz n'en renvoyait aucun. Aucune page
+	# de Planner ne l'affiche dans un cadre (l'application l'ouvre dans une vue navigateur) : les
+	# cadres sont refusés. Pas de CSP complète : le site SvelteKit charge des scripts en ligne.
+	header {
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
+		X-Content-Type-Options nosniff
+		X-Frame-Options DENY
+		Content-Security-Policy "frame-ancestors 'none'"
+		Referrer-Policy strict-origin-when-cross-origin
+		-Server
+	}
 	handle /api/* {
 		reverse_proxy quiz-api:80
 	}

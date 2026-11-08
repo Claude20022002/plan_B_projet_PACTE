@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { chargerJetons, definirJetons, definirSurSessionPerdue, ErreurApi, jetonsCourants, planner } from '../api/client';
-import { desinscrireDesNotifications, inscrireAuxNotifications } from '../push';
+import { desinscrireDesNotifications, inscrireSiAutorise } from '../push';
 import { viderCache } from '../cache';
 
 /**
@@ -72,8 +72,9 @@ export function AuthProvider({ children }) {
       }
       setUtilisateur(donnees.user);
       setEtat('connecte');
-      // Les alertes ne bloquent pas l'entrée dans l'application
-      inscrireAuxNotifications().catch(() => {});
+      // Les alertes ne bloquent pas l'entrée dans l'application ; la première demande vient de
+      // la proposition du premier lancement (alertes/PropositionAlertes.jsx)
+      inscrireSiAutorise().catch(() => {});
     },
     [oublier]
   );

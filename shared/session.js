@@ -7,6 +7,8 @@
  * statut, filière, et position dans le temps (passée, en cours, prochaine).
  */
 
+import { localeEcran } from './dates.js';
+
 const pad = (n) => String(n).padStart(2, '0');
 
 /** "09:00:00" → "09:00" */
@@ -77,6 +79,10 @@ export const toBoardSession = (a) => {
     roomType: a.salle?.type_salle || '',
     status: a.statut || 'planifie',
     lineKey: a.cours?.id_filiere ?? a.groupe?.id_filiere ?? a.groupe?.nom_groupe,
+    // Séance à distance et son lien de visio (lot EC-11, même règle que le serveur : composante en
+    // distanciel ou hybride, ou pas de salle)
+    aDistance: ['distanciel', 'hybride'].includes(a.enseignement?.composante?.modalite) || !a.salle,
+    lienVisio: a.lien_visio || null,
     raw: a,
   };
 };
@@ -85,15 +91,34 @@ export const toBoardSession = (a) => {
 export const byStart = (x, y) => (x.start?.getTime() ?? 0) - (y.start?.getTime() ?? 0);
 
 /**
- * Séance « en vedette » : celle en cours, sinon la prochaine non annulée.
+ * Vrai pour une séance qui ne se tient pas comme prévu : reportée, reportée à une date encore
+ * inconnue (R-1 : elle reste affichée à sa date d'origine) ou annulée. Elle est alors signalée.
+ */
+export const estChangee = (status) => ['reporte', 'a_reprogrammer', 'annule'].includes(status);
+
+/**
+ * Séance « en vedette » : celle en cours, sinon la prochaine qui a bien lieu
+ * (ni annulée, ni en attente de sa nouvelle date).
  * Une seule à la fois (la couleur réservée ne s'applique qu'à elle).
  */
 export const findSpotlight = (sessions, now = new Date()) => {
-  const active = sessions.filter((s) => s.status !== 'annule' && s.end && s.end > now);
+  const active = sessions.filter((s) => !['annule', 'a_reprogrammer'].includes(s.status) && s.end && s.end > now);
   const live = active.find((s) => s.start <= now && s.end > now);
   if (live) return { session: live, phase: 'live' };
   const next = active.filter((s) => s.start > now).sort(byStart)[0];
   return next ? { session: next, phase: 'next' } : null;
+};
+
+/**
+ * Phase affichée sur une ligne du panneau : celle de la séance en vedette, ou « En cours » pour
+ * toute autre séance qui a lieu maintenant (plusieurs cours en même temps sur le campus : audit
+ * du 15 octobre). Rend undefined pour une séance qui n'est ni l'une ni l'autre.
+ */
+export const phaseDeLaLigne = (s, spotlight, now = new Date()) => {
+  if (spotlight?.session?.id === s.id) return spotlight.phase;
+  // Une séance reportée garde son statut (orange) même à l'heure prévue
+  const prevue = s.status === 'planifie' || s.status === 'confirme';
+  return prevue && s.start && s.end && s.start <= now && s.end > now ? 'live' : undefined;
 };
 
 /** Repli sans Intl.RelativeTimeFormat (Hermes, le moteur de React Native, ne l'a pas toujours). */
@@ -127,10 +152,10 @@ export const relativeTo = (target, language, now = new Date()) => {
   return relatifSimple(valeur, unite, language);
 };
 
-/** « lundi 5 octobre » / « Monday, October 5 » */
+/** « lundi 5 octobre » / « Monday 5 October » */
 export const formatDayLabel = (isoDate, language, options = {}) => {
   const [y, m, d] = String(isoDate).split('-').map(Number);
-  return new Intl.DateTimeFormat(language, { weekday: 'long', day: 'numeric', month: 'long', ...options }).format(
+  return new Intl.DateTimeFormat(localeEcran(language), { weekday: 'long', day: 'numeric', month: 'long', ...options }).format(
     new Date(y, m - 1, d)
   );
 };

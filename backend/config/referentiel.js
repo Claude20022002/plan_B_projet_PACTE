@@ -80,6 +80,9 @@ export const normaliserTypeComposante = (valeur) => {
     return "CM";
 };
 
+/** Libellé d'année universitaire ramené à une forme unique (« 2025/2026 » → « 2025-2026 »). */
+export const normaliserAnnee = (texte) => String(texte ?? "").replace("/", "-").trim();
+
 /** Numéro d'année d'études lu dans un libellé de niveau (« 4ème année », « 4A », « 1ère année Prépa »). */
 export const anneeDepuisNiveau = (niveau) => {
     const chiffre = String(niveau || "").match(/\d/);

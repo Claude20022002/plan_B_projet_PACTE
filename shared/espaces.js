@@ -20,7 +20,9 @@ export const ESPACES = [
     icone: 'library',
     titre: { fr: 'Bibliothèque', en: 'Library' },
     resume: { fr: 'Supports de cours, stages, projets', en: 'Course materials, internships, projects' },
-    chemin: '/biblio/dashboard',
+    // La Bibliothèque s'ouvre sur ses documents (décision du 15 octobre, lot E-9) ; l'enseignant
+    // n'a plus de tableau de bord dans StudyLib
+    chemin: '/biblio/documents',
   },
   // Pas d'espace Activités : on y entre par le scan du QR que projette l'enseignant, comme sur
   // Wooclap (remarques-par-profil.md, § 10) ; le menu du site garde sa page.
@@ -52,13 +54,3 @@ export const adresseEspace = (code, { role, urlQuiz } = {}) => {
   }
   return ESPACES.find((e) => e.code === code)?.chemin ?? null;
 };
-
-/**
- * Éditeur de quiz du service de quiz, l'enseignant connecté par son compte Planner (« Le faire
- * moi-même » dans « Créer un quiz »).
- * @param {string|null} urlQuiz
- * @returns {string|null} null si le service de quiz n'est pas installé
- */
-export const adresseEditeurQuiz = (urlQuiz) =>
-  typeof urlQuiz === 'string' && /^https?:\/\//.test(urlQuiz) ? `${urlQuiz.replace(/\/$/, '')}/account/login?sso=1&returnTo=%2Fcreate` : null;
-

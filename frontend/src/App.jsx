@@ -17,11 +17,14 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import PrivateRoute from './components/common/PrivateRoute';
 import VersTableau from './components/espaces/VersTableau';
 import { routesProjection } from './routes/projection';
+import { routesMotDePasse } from './routes/motDePasse';
+import { routesJeux } from './routes/jeux';
 
 // ── Composants de layout critique (jamais lazy — trop fréquents) ──────────
-import PageSkeleton from './components/common/PageSkeleton';
-import AuthSkeleton from './components/common/AuthSkeleton';
-import ErrorBoundary from './components/common/ErrorBoundary';
+import PageSkeleton    from './components/common/PageSkeleton';
+import AuthSkeleton    from './components/common/AuthSkeleton';
+import ErrorBoundary   from './components/common/ErrorBoundary';
+import { SURVEILLANCES_ACTIVES } from '../../shared/fonctions.js';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // LAZY IMPORTS — 1 chunk par groupe logique
@@ -29,14 +32,12 @@ import ErrorBoundary from './components/common/ErrorBoundary';
 // ─────────────────────────────────────────────────────────────────────────────
 
 // ── Auth (chunk léger — affiché non authentifié) ──────────────────────────
-const Connexion = lazy(() => import('./pages/Connexion'));
-const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
-const ResetPassword = lazy(() => import('./pages/ResetPassword'));
-const ChangerMotDePasse = lazy(() => import('./pages/ChangerMotDePasse'));
-const Accueil = lazy(() => import('./pages/Accueil'));
-const Annonces = lazy(() => import('./pages/Annonces'));
-const Appel = lazy(() => import('./pages/Appel'));
-const Presence = lazy(() => import('./pages/Presence'));
+const Connexion      = lazy(() => import('./pages/Connexion'));
+// Mot de passe oublié, réinitialisation, changement : routes/motDePasse.jsx
+const Accueil        = lazy(() => import('./pages/Accueil'));
+const Annonces       = lazy(() => import('./pages/Annonces'));
+const Appel          = lazy(() => import('./pages/Appel'));
+const Presence       = lazy(() => import('./pages/Presence'));
 
 // ── Dashboards (chunk par rôle) ───────────────────────────────────────────
 const AdminDashboard = lazy(() => import('./pages/dashboard/AdminDashboard'));
@@ -60,7 +61,8 @@ const GenerationAuto = lazy(() => import('./pages/gestion/GenerationAutomatique'
 const Campus = lazy(() => import('./pages/gestion/Campus'));
 const Calendrier = lazy(() => import('./pages/gestion/Calendrier'));
 const ParametresPlanning = lazy(() => import('./pages/gestion/ParametresPlanning'));
-const Enseignements = lazy(() => import('./pages/gestion/Enseignements'));
+const IdentiteEcole      = lazy(() => import('./pages/gestion/IdentiteEcole'));
+const Enseignements      = lazy(() => import('./pages/gestion/Enseignements'));
 
 // ── Emplois du temps (chunk "calendar" — FullCalendar isolé) ─────────────
 const EmploiDuTempsAdmin = lazy(() => import('./pages/emploi-du-temps/EmploiDuTempsAdmin'));
@@ -89,14 +91,15 @@ const Suivi = lazy(() => import('./pages/gestion/Suivi'));
 const Preparation = lazy(() => import('./pages/gestion/Preparation'));
 const SignalementsPresence = lazy(() => import('./pages/gestion/SignalementsPresence'));
 const JournalSecurite = lazy(() => import('./pages/gestion/JournalSecurite'));
-import { routesJeux } from './routes/jeux';
 // Studio quiz : banque, éditeur et résultats (enseignant) ; rejoindre et passer un quiz (étudiant)
-const MesQuiz = lazy(() => import('./pages/studio/MesQuiz'));
-const EditeurQuiz = lazy(() => import('./pages/studio/EditeurQuiz'));
-const ResultatsQuiz = lazy(() => import('./pages/studio/Resultats'));
-const QuizEtudiant = lazy(() => import('./pages/studio/Quiz'));
-const Epreuve = lazy(() => import('./pages/studio/Epreuve'));
-const NotFound = lazy(() => import('./pages/NotFound'));
+const MesQuiz        = lazy(() => import('./pages/studio/MesQuiz'));
+const EditeurQuiz    = lazy(() => import('./pages/studio/EditeurQuiz'));
+const ResultatsQuiz  = lazy(() => import('./pages/studio/Resultats'));
+const QuizEtudiant   = lazy(() => import('./pages/studio/Quiz'));
+const Epreuve        = lazy(() => import('./pages/studio/Epreuve'));
+const DirectProjection = lazy(() => import('./pages/studio/DirectProjection'));
+const DirectJoueur   = lazy(() => import('./pages/studio/DirectJoueur'));
+const NotFound       = lazy(() => import('./pages/NotFound'));
 
 // ─────────────────────────────────────────────────────────────────────────────
 // HELPERS — Suspense boundaries avec fallback adapté
@@ -146,15 +149,7 @@ export default function App() {
           <Route path="/connexion" element={
             <PublicPage><Connexion /></PublicPage>
           } />
-          <Route path="/forgot-password" element={
-            <PublicPage><ForgotPassword /></PublicPage>
-          } />
-          <Route path="/changer-mot-de-passe" element={
-            <PublicPage><ChangerMotDePasse /></PublicPage>
-          } />
-          <Route path="/reset-password" element={
-            <PublicPage><ResetPassword /></PublicPage>
-          } />
+          {routesMotDePasse()}
 
           {/* ── Dashboards ────────────────────────────────────────────── */}
           <Route path="/dashboard/admin" element={
@@ -252,6 +247,11 @@ export default function App() {
           <Route path="/gestion/parametres-planning" element={
             <PrivateRoute requiredRole="admin">
               <AppPage><ParametresPlanning /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/gestion/identite" element={
+            <PrivateRoute requiredRole="admin">
+              <AppPage><IdentiteEcole /></AppPage>
             </PrivateRoute>
           } />
 
@@ -379,6 +379,17 @@ export default function App() {
               <AppPage><ResultatsQuiz /></AppPage>
             </PrivateRoute>
           } />
+          {/* Quiz en direct : l'enseignant projette, l'étudiant joue (lot SC-1b) */}
+          <Route path="/studio-quiz/direct/:id" element={
+            <PrivateRoute requiredRole="enseignant">
+              <AppPage><DirectProjection /></AppPage>
+            </PrivateRoute>
+          } />
+          <Route path="/quiz/direct/:id" element={
+            <PrivateRoute requiredRole="etudiant">
+              <AppPage><DirectJoueur /></AppPage>
+            </PrivateRoute>
+          } />
           <Route path="/studio-quiz/:id" element={
             <PrivateRoute requiredRole="enseignant">
               <AppPage><EditeurQuiz /></AppPage>
@@ -419,7 +430,7 @@ export default function App() {
             </PrivateRoute>
           } />
           <Route path="/mes-examens" element={
-            <PrivateRoute requiredRole={['etudiant', 'admin']}>
+            <PrivateRoute requiredRole={SURVEILLANCES_ACTIVES ? ['etudiant', 'admin'] : 'etudiant'}>
               <AppPage><MesExamens /></AppPage>
             </PrivateRoute>
           } />

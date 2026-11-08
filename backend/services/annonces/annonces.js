@@ -19,8 +19,11 @@ import { ErreurMetier } from "../planning/enseignements.js";
 import { groupesANotifier } from "../planning/seances.js";
 import { filieresDuResponsable } from "../planning/droits.js";
 import { ancetres } from "../planning/groupes.js";
+import { groupesAuCampus } from "../planning/campusDesSeances.js";
+import { aujourdhui } from "../planning/affectationRules.js";
 import { sendEmail } from "../../utils/sendEmail.js";
 import { TYPES_IMAGES_PDF, verifierFichier } from "../../utils/fichiers.js";
+import { MESSAGE_CLASSES_FERMEES, annoncesEnseignantsActives } from "./interrupteur.js";
 
 /**
  * Annonces ciblées (phase R1, remplace les e-mails d'information de l'école).
@@ -91,6 +94,8 @@ const verifierCible = async (user, { portee, id_cible, niveau, public: publicVis
     if (droits.tout) return cible;
     if (idFiliere && droits.filieres.has(idFiliere)) return cible;
     if (portee === "groupe" && droits.groupesCours.has(id_cible)) {
+        // Un enseignant qui n'est pas responsable de la filière du groupe n'écrit à sa classe que si l'envoi est ouvert (lot EC-5)
+        if (!annoncesEnseignantsActives()) throw new ErreurMetier(MESSAGE_CLASSES_FERMEES, 403, "ANNONCES_CLASSES_FERMEES");
         if (publicVise !== "etudiants") throw new ErreurMetier("Un enseignant écrit aux étudiants de ses groupes", 403);
         return cible;
     }
@@ -104,10 +109,10 @@ const groupesDeLaCible = async ({ portee, id_cible, niveau }) => {
     if (portee === "etablissement") return null;
     let racines;
     if (portee === "groupe") racines = [id_cible];
+    // Un campus : les groupes qui y ont cours dans les 30 prochains jours (une filière n'a pas de campus)
+    else if (portee === "campus") racines = await groupesAuCampus(id_cible, aujourdhui());
     else {
-        const where = {};
-        if (portee === "campus") where.id_filiere = (await Filiere.findAll({ where: { id_campus_prefere: id_cible }, attributes: ["id_filiere"] })).map((f) => f.id_filiere);
-        else where.id_filiere = id_cible;
+        const where = { id_filiere: id_cible };
         if (portee === "niveau") where.niveau = niveau;
         racines = (await Groupe.findAll({ where, attributes: ["id_groupe"] })).map((g) => g.id_groupe);
     }
@@ -173,8 +178,8 @@ const apercu = (texte) => (texte.length > 200 ? `${texte.slice(0, 197)}…` : te
 
 /** E-mails après validation, un par un, sans jamais bloquer ni faire échouer l'envoi. */
 const envoyerEmails = (destinataires, annonce, auteur) => {
-    const sujet = `[HESTIM] ${annonce.titre}`;
-    const texte = `${annonce.corps}\n\n${auteur.prenom} ${auteur.nom}\nÀ retrouver dans HESTIM Planner, rubrique Annonces.`;
+    const sujet = `[{{ecole}}] ${annonce.titre}`;
+    const texte = `${annonce.corps}\n\n${auteur.prenom} ${auteur.nom}\nÀ retrouver dans {{produit}}, rubrique Annonces.`;
     (async () => {
         for (const d of destinataires) {
             if (!d.email) continue;
@@ -190,10 +195,12 @@ const envoyerEmails = (destinataires, annonce, auteur) => {
 /** Cibles proposées dans le formulaire, selon les droits de l'utilisateur. */
 export const ciblesPossibles = async (user) => {
     const droits = await droitsDe(user);
+    // Envoi aux classes fermé (lot EC-5) : ses groupes de cours ne sont plus proposés, seulement ceux de ses filières
+    const groupesDeCours = annoncesEnseignantsActives() ? [...droits.groupesCours] : [];
     const groupesVisibles = droits.tout
         ? await Groupe.findAll({ attributes: ["id_groupe", "nom_groupe", "niveau", "id_filiere", "type_groupe"], order: [["nom_groupe", "ASC"]] })
         : await Groupe.findAll({
-              where: { [Op.or]: [{ id_filiere: [...droits.filieres] }, { id_groupe: [...droits.groupesCours] }] },
+              where: { [Op.or]: [{ id_filiere: [...droits.filieres] }, { id_groupe: groupesDeCours }] },
               attributes: ["id_groupe", "nom_groupe", "niveau", "id_filiere", "type_groupe"],
               order: [["nom_groupe", "ASC"]],
           });
@@ -210,8 +217,9 @@ export const ciblesPossibles = async (user) => {
     }
     const responsable = droits.tout || droits.filieres.size > 0;
     return {
-        portees: droits.tout ? PORTEES_EVENEMENT : responsable ? ["filiere", "niveau", "groupe"] : ["groupe"],
-        publics: responsable ? PUBLICS : ["etudiants"],
+        // Aucune portée : cet enseignant ne peut pas écrire (le site masque alors « Nouvelle annonce »)
+        portees: droits.tout ? PORTEES_EVENEMENT : responsable ? ["filiere", "niveau", "groupe"] : annoncesEnseignantsActives() ? ["groupe"] : [],
+        publics: responsable ? PUBLICS : annoncesEnseignantsActives() ? ["etudiants"] : [],
         campus: droits.tout ? (await Campus.findAll({ where: { actif: true }, attributes: ["id_campus", "nom"] })).map((c) => ({ id: c.id_campus, nom: c.nom })) : [],
         filieres: filieres.map((f) => ({ id: f.id_filiere, code: f.code_filiere, nom: f.nom_filiere, niveaux: [...(niveauxParFiliere.get(f.id_filiere) ?? [])].sort() })),
         groupes: groupesVisibles.map((g) => ({ id: g.id_groupe, nom: g.nom_groupe, niveau: g.niveau, id_filiere: g.id_filiere, type: g.type_groupe })),

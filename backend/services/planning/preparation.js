@@ -9,6 +9,7 @@ import {
     Enseignant,
     Enseignement,
     EnseignementEnseignant,
+    EnvoiEdt,
     Evenement,
     Filiere,
     Groupe,
@@ -17,7 +18,7 @@ import {
 } from "../../models/index.js";
 import { ErreurMetier } from "./enseignements.js";
 import { STATUTS_ACTIFS } from "./affectationRules.js";
-import { anneeDepuisNiveau, periodeDuSemestre } from "../../config/referentiel.js";
+import { anneeDepuisNiveau, normaliserAnnee, periodeDuSemestre } from "../../config/referentiel.js";
 import { filieresDuResponsable } from "./droits.js";
 import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 
@@ -29,7 +30,6 @@ import { creerNotificationsMultiples } from "../../utils/notificationHelper.js";
 
 const pourcent = (fait, total) => (total ? Math.round((100 * fait) / total) : 0);
 const etat = (avancement, total = 1) => (total === 0 ? "a_faire" : avancement >= 100 ? "fait" : avancement > 0 ? "en_cours" : "a_faire");
-const normaliserAnnee = (v) => String(v || "").replace("/", "-").trim();
 
 /** Étape 1 (commune) : période datée, fériés et semaine d'examens dans le calendrier. */
 const etapeCalendrier = async (periode) => {
@@ -77,7 +77,7 @@ const chargerDonnees = async ({ filieres, periode }) => {
         enseignements.length
             ? Affectation.findAll({
                   where: { id_enseignement: [...filiereDe.keys()], statut: STATUTS_ACTIFS, date_seance: { [Op.between]: [periode.date_debut, periode.date_fin] } },
-                  attributes: ["id_affectation", "id_enseignement", "statut"],
+                  attributes: ["id_affectation", "id_enseignement", "statut", "date_seance"],
               })
             : [],
         // Conflits non résolus touchant une séance de la période : filtrés par jointure (pas de longue liste d'identifiants)
@@ -99,7 +99,14 @@ const chargerDonnees = async ({ filieres, periode }) => {
     ]);
     const declarants = new Set(disponibilites.map((d) => d.id_user_enseignant));
 
+    // Mois publiés (« Publier et envoyer » de l'EDT du mois) par filière : un EnvoiEdt par classe et par mois
+    const filiereDuGroupe = new Map(groupes.map((g) => [g.id_groupe, g.id_filiere]));
+    const envois = groupes.length ? await EnvoiEdt.findAll({ where: { id_groupe: groupes.map((g) => g.id_groupe) }, attributes: ["id_groupe", "mois"] }) : [];
+    const moisPublies = new Map(idsFilieres.map((id) => [id, new Set()]));
+    for (const e of envois) moisPublies.get(filiereDuGroupe.get(e.id_groupe))?.add(e.mois);
+
     return {
+        moisPublies,
         cours: parFiliere(cours, (c) => c.id_filiere),
         groupes: parFiliere(groupes, (g) => g.id_filiere),
         enseignements: parFiliere(enseignements, (e) => filiereDe.get(e.id_enseignement)),
@@ -138,7 +145,10 @@ const etapesFiliere = ({ filiere, periode, anneeScolaire, donnees }) => {
 
     const conflits = donnees.conflits.get(filiere.id_filiere);
     const revue = generation === 0 ? 0 : conflits ? 50 : 100;
-    const publication = generation === 100 && conflits === 0 ? 100 : 0;
+    // Publication : les mois de la période qui ont des séances, publiés aux étudiants par l'administration
+    const moisAvecSeances = [...new Set(seances.map((s) => String(s.date_seance).slice(0, 7)))];
+    const moisPublies = moisAvecSeances.filter((m) => donnees.moisPublies.get(filiere.id_filiere).has(m));
+    const publication = pourcent(moisPublies.length, moisAvecSeances.length);
 
     return [
         { cle: "maquette", avancement: maquette, etat: etat(maquette, modules.length), detail: { modules: modules.length, sans_composante: modules.length - avecComposantes }, lien: "/gestion/cours" },
@@ -153,7 +163,7 @@ const etapesFiliere = ({ filiere, periode, anneeScolaire, donnees }) => {
         },
         { cle: "generation", avancement: generation, etat: etat(generation, enseignements.length), detail: { planifies, seances: seances.length }, lien: "/gestion/generation-automatique" },
         { cle: "revue", avancement: revue, etat: etat(revue), detail: { conflits }, lien: "/gestion/conflits" },
-        { cle: "publication", avancement: publication, etat: etat(publication), detail: { confirmees: seances.filter((s) => s.statut === "confirme").length }, lien: "/gestion/emplois-du-temps" },
+        { cle: "publication", avancement: publication, etat: etat(publication), detail: { mois: moisAvecSeances.length, publies: moisPublies.length }, lien: "/emploi-du-temps/mensuel" },
     ];
 };
 

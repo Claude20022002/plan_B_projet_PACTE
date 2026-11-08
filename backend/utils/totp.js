@@ -79,5 +79,5 @@ export const verifierCode = (secretBase32, code, { maintenant = new Date(), dern
 };
 
 /** Adresse à mettre dans le QR code, lue par l'application d'authentification. */
-export const adresseOtpauth = ({ secret, compte, emetteur = "HESTIM Planner" }) =>
+export const adresseOtpauth = ({ secret, compte, emetteur = "Planner" }) =>
     `otpauth://totp/${encodeURIComponent(`${emetteur}:${compte}`)}?secret=${secret}&issuer=${encodeURIComponent(emetteur)}&algorithm=SHA1&digits=${CHIFFRES}&period=${PAS_SECONDES}`;

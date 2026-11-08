@@ -14,6 +14,9 @@ export const espaceCoursAPI = {
   modifierSection: (id, champs) => request(`/sections-cours/${id}`, { method: 'PUT', body: champs }),
   supprimerSection: (id) => request(`/sections-cours/${id}`, { method: 'DELETE' }),
   ajouterLien: (idSection, lien) => request(`/sections-cours/${idSection}/liens`, { method: 'POST', body: lien }),
+  // Documents publiés de la Bibliothèque à épingler dans la classe, sans copie (lot E-9)
+  chercherBibliotheque: (idCours, idGroupe, q) => request(`${classe(idCours, idGroupe)}/bibliotheque?${new URLSearchParams({ q })}`),
+  epingler: (idSection, idDocument) => request(`/sections-cours/${idSection}/bibliotheque`, { method: 'POST', body: { id_document: idDocument } }),
   modifierSupport: (id, champs) => request(`/supports-cours/${id}`, { method: 'PUT', body: champs }),
   retirerSupport: (id) => request(`/supports-cours/${id}`, { method: 'DELETE' }),
   publierSupport: (id) => request(`/supports-cours/${id}/publier`, { method: 'POST' }),
@@ -24,6 +27,12 @@ export const espaceCoursAPI = {
   appels: (idCours, idGroupe) => request(`${classe(idCours, idGroupe)}/appels`),
   eleves: (idCours, idGroupe) => request(`${classe(idCours, idGroupe)}/eleves`),
   exporterPresences: (idCours, idGroupe, nom) => telecharger(`${classe(idCours, idGroupe)}/presences.csv`, nom),
+  // Sondages de la classe (lot EC-9) : { actif, gere, sondages } ; réponse anonyme et définitive
+  sondages: (idCours, idGroupe) => request(`${classe(idCours, idGroupe)}/sondages`),
+  creerSondage: (idCours, idGroupe, sondage) => request(`${classe(idCours, idGroupe)}/sondages`, { method: 'POST', body: sondage }),
+  repondreSondage: (id, idChoix) => request(`/sondages/${id}/reponse`, { method: 'POST', body: { id_choix: idChoix } }),
+  cloreSondage: (id) => request(`/sondages/${id}/cloture`, { method: 'POST' }),
+  supprimerSondage: (id) => request(`/sondages/${id}`, { method: 'DELETE' }),
 };
 
 /** Le serveur rend une erreur au format commun { message } ; sinon un message générique. */

@@ -1,6 +1,7 @@
 import { resetDatabase, closeDatabase, createUser, loginAs } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Affectation, AnneeUniversitaire, Appartenir, Campus, Cours, CoursComposante, Creneau, Enseignement, Evenement, Filiere, Groupe, Periode, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle } from "../../models/index.js";
+import { lignesDuMois } from "../../services/calendrier/envoiEdt.js";
+import { Affectation, AnneeUniversitaire, Appartenir, Campus, Cours, CoursComposante, Creneau, Enseignement, EnvoiEdt, Evenement, Filiere, Groupe, Periode, Salle, SessionExamen, SessionExamenGroupe, SessionExamenSalle } from "../../models/index.js";
 
 /**
  * Phase D2 : emploi du temps de l'étudiant connecté pour l'application mobile.
@@ -12,6 +13,13 @@ let clients;
 let ref;
 
 const JOUR = "2027-03-02";
+/** Publie (ou republie) un mois pour une classe, comme « Publier et envoyer », sans notification. */
+const publier = async (groupe, mois) => {
+    const seances = await lignesDuMois(groupe, mois);
+    const envoi = await EnvoiEdt.findOne({ where: { id_groupe: groupe.id_groupe, mois } });
+    if (envoi) await envoi.update({ seances });
+    else await EnvoiEdt.create({ id_groupe: groupe.id_groupe, mois, seances, envoye_le: new Date(), nb_destinataires: 1 });
+};
 const seance = (extra) => ({ date_seance: JOUR, statut: "planifie", id_user_enseignant: enseignant.id_user, id_creneau: ref.creneau.id_creneau, id_cours: ref.cours.id_cours, id_salle: ref.salle.id_salle, ...extra });
 
 beforeAll(async () => {
@@ -52,11 +60,44 @@ beforeAll(async () => {
         seance({ ...base, id_groupe: autre.id_groupe, date_seance: "2027-03-05" }), // autre filière : non
         seance({ ...base, id_groupe: td1.id_groupe, date_seance: "2027-05-10" }), // hors période demandée
     ]);
+    // Les mois de mars et de mai sont publiés pour le TD de l'étudiant ; pas avril (voir le test de publication)
+    await publier(td1, "2027-03");
+    await publier(td1, "2027-05");
 });
 afterAll(closeDatabase);
 beforeEach(resetRateLimiters);
 
 describe("GET /api/emplois-du-temps/moi", () => {
+    test("un mois n'est vu qu'une fois publié (décision du 21 octobre 2026), et tout de suite après", async () => {
+        await Affectation.create(seance({ id_user_admin: ref.admin.id_user, id_groupe: ref.td1.id_groupe, date_seance: "2027-04-12" }));
+        const lire = async () => (await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-04-01&au=2027-04-30")).body.seances;
+        expect(await lire()).toHaveLength(0);
+        await publier(ref.td1, "2027-04");
+        expect(await lire()).toHaveLength(1);
+    });
+
+    test("un changement en masse ne se voit qu'à la publication suivante (21 octobre 2026)", async () => {
+        const salleNeuve = await Salle.create({ nom_salle: "G-MOB2", type_salle: "Salle de cours", capacite: 60, id_campus: ref.salle.id_campus });
+        const cible = await Affectation.findOne({ where: { id_groupe: ref.td1.id_groupe, date_seance: "2027-04-12" } });
+        // Comme une régénération : la séance bouge en base, sans notification
+        await cible.update({ id_salle: salleNeuve.id_salle, date_seance: "2027-04-13" });
+        const lire = async () => (await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-04-01&au=2027-04-30")).body.seances.find((s) => s.id_affectation === cible.id_affectation);
+        expect(await lire()).toMatchObject({ date_seance: "2027-04-12", salle: { nom_salle: "G-MOB1" } });
+        await publier(ref.td1, "2027-04");
+        expect(await lire()).toMatchObject({ date_seance: "2027-04-13", salle: { nom_salle: "G-MOB2" } });
+    });
+
+    test("un changement ponctuel, dont l'étudiant est prévenu, se voit aussitôt", async () => {
+        const cible = await Affectation.findOne({ where: { id_groupe: ref.td1.id_groupe, date_seance: "2027-04-13" } });
+        const admin = await loginAs(ref.admin);
+        expect((await admin.send("put", `/api/affectations/${cible.id_affectation}`, { date_seance: "2027-04-20" })).status).toBe(200);
+        const lire = async () => (await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-04-01&au=2027-04-30")).body.seances.find((s) => s.id_affectation === cible.id_affectation);
+        expect((await lire())?.date_seance).toBe("2027-04-20");
+        // Annulée à la main : visible tout de suite, barrée
+        expect((await admin.send("put", `/api/affectations/${cible.id_affectation}`, { statut: "annule" })).status).toBe(200);
+        expect((await lire())?.statut).toBe("annule");
+    });
+
     test("ses groupes, leurs parents et les mutualisations ; annulées visibles ; voisins exclus", async () => {
         const reponse = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-01&au=2027-03-07");
         expect(reponse.status).toBe(200);
@@ -75,6 +116,7 @@ describe("GET /api/emplois-du-temps/moi", () => {
     test("séance reportée : date et créneau d'origine fournis pour le détail", async () => {
         const avant = await Creneau.create({ jour_semaine: "lundi", heure_debut: "14:00", heure_fin: "15:45", duree_minutes: 105, rang: 3 });
         await Affectation.create(seance({ id_user_admin: ref.admin.id_user, id_groupe: ref.td1.id_groupe, date_seance: "2027-03-06", statut: "reporte", date_seance_initiale: "2027-03-01", id_creneau_initial: avant.id_creneau }));
+        await publier(ref.td1, "2027-03");
         const { body } = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-06&au=2027-03-06");
         expect(body.seances).toHaveLength(1);
         expect(body.seances[0]).toMatchObject({ statut: "reporte", date_seance: "2027-03-06", date_seance_initiale: "2027-03-01", creneauInitial: { heure_debut: "14:00:00", heure_fin: "15:45:00" } });
@@ -83,6 +125,7 @@ describe("GET /api/emplois-du-temps/moi", () => {
     test("agenda : les événements qui le concernent et ses examens publiés", async () => {
         const { admin, promo, td1, td2, autre, cours, salle } = ref;
         const ev = (extra) => ({ date_debut: "2027-03-01", date_fin: "2027-03-01", id_user_createur: admin.id_user, bloque_affectations: false, ...extra });
+        const stendhal = await Campus.findOne({ where: { code: "ST" } });
         await Evenement.bulkCreate([
             ev({ titre: "Fête du Trône", type_evenement: "ferie", portee: "etablissement" }),
             ev({ titre: "Vacances de printemps", type_evenement: "vacances", portee: "filiere", id_cible: promo.id_filiere, date_debut: "2027-03-04", date_fin: "2027-03-12" }),
@@ -91,6 +134,9 @@ describe("GET /api/emplois-du-temps/moi", () => {
             ev({ titre: "Vacances autre filière", type_evenement: "vacances", portee: "filiere", id_cible: autre.id_filiere }),
             ev({ titre: "Réunion pédagogique", type_evenement: "reunion", portee: "etablissement" }),
             ev({ titre: "Hors période", type_evenement: "ferie", portee: "etablissement", date_debut: "2027-05-01", date_fin: "2027-05-01" }),
+            // Une filière n'a pas de campus : l'étudiant voit ceux des campus où il a cours sur la période
+            ev({ titre: "Fermeture du campus où il a cours", type_evenement: "autre", portee: "campus", id_cible: salle.id_campus }),
+            ev({ titre: "Fermeture de l'autre campus", type_evenement: "autre", portee: "campus", id_cible: stendhal.id_campus }),
         ]);
         const base = { id_cours: cours.id_cours, heure_debut: "09:00", heure_fin: "11:00", id_createur: admin.id_user };
         const [publie, brouillon, voisin] = await SessionExamen.bulkCreate([
@@ -106,7 +152,7 @@ describe("GET /api/emplois-du-temps/moi", () => {
         await SessionExamenSalle.create({ id_session: publie.id_session, id_salle: salle.id_salle });
 
         const { body } = await clients.etudiant.get("/api/emplois-du-temps/moi?du=2027-03-01&au=2027-03-07");
-        expect(body.evenements.map((e) => e.titre).sort()).toEqual(["Fête du Trône", "Journée 4e année", "Vacances de printemps"]);
+        expect(body.evenements.map((e) => e.titre).sort()).toEqual(["Fermeture du campus où il a cours", "Fête du Trône", "Journée 4e année", "Vacances de printemps"]);
         expect(body.evenements.find((e) => e.type === "vacances")).toEqual(expect.objectContaining({ date_debut: "2027-03-04", date_fin: "2027-03-12" }));
         expect(body.examens).toEqual([expect.objectContaining({ titre: "Examen d'anglais", date: "2027-03-02", cours: { code: "MOB-ANG", nom: "Anglais" }, salles: ["G-MOB1"] })]);
     });

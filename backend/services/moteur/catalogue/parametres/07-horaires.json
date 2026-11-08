@@ -1,0 +1,56 @@
+{
+  "code": "HOR", "nom": "Horaires et créneaux",
+  "groupes": [
+    { "code": "GRILLE", "nom": "Grille de la semaine",
+      "defauts": { "role": "donnee", "niveaux": "GP", "priorite": 1, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "CRENEAUX", "nom": "Créneaux de la grille", "desc": "Jour, début, fin et rang de chaque créneau, par rythme.", "type": "structure", "obligatoire": true, "etat": "solveur", "ref": "Creneau", "src": "7.3 7.4 7.8" },
+        { "code": "DUREE_PERIODE", "nom": "Durée d'une période", "desc": "Unité de la grille (de 15 à 120 min). Aujourd'hui, chaque créneau a sa durée, mais une séance ne couvre que 1 ou 2 créneaux.", "type": "duree_min", "etat": "base", "ref": "Creneau.duree_minutes", "src": "7.5" },
+        { "code": "INTERVALLE", "nom": "Intervalle entre deux séances", "desc": "Marge prévue par la grille entre deux créneaux.", "type": "duree_min", "defaut": 0, "priorite": 2, "src": "7.7 7.15" },
+        { "code": "SEUIL_SUITE", "nom": "Écart maximal entre créneaux qui se suivent", "desc": "Deux créneaux forment une même séance si l'écart reste sous ce seuil (30 min en dur).", "type": "duree_min", "defaut": 30, "priorite": 3, "etat": "solveur", "ref": "probleme.js, UsageDesSalles.PAUSE_COURTE" },
+        { "code": "DEBUT_APRES_MIDI", "nom": "Début de l'après-midi", "desc": "Sépare matin et après-midi (12 h 30 en dur dans deux fichiers).", "type": "heure", "defaut": "12:30", "priorite": 2, "etat": "solveur", "ref": "probleme.js, ContraintesEmploiDuTemps.APRES_MIDI" },
+        { "code": "PAUSE_MATIN", "nom": "Durée de la pause du matin", "desc": "Récréation ou pause de la matinée.", "type": "duree_min", "priorite": 2, "src": "7.10 16A.5" },
+        { "code": "PAUSE_MIDI", "nom": "Durée de la pause du midi", "desc": "Temps de repas à garantir.", "type": "duree_min", "priorite": 2, "src": "7.11 16A.9" },
+        { "code": "PAUSE_APRES_MIDI", "nom": "Durée de la pause de l'après-midi", "desc": "Pause de l'après-midi.", "type": "duree_min", "priorite": 3, "src": "7.12" },
+        { "code": "DEJEUNER_DEBUT", "nom": "Début de la pause déjeuner", "desc": "Plage possible du déjeuner, début.", "type": "heure", "priorite": 2, "src": "7.13" },
+        { "code": "DEJEUNER_FIN", "nom": "Fin de la pause déjeuner", "desc": "Plage possible du déjeuner, fin.", "type": "heure", "priorite": 2, "src": "7.14" },
+        { "code": "DEPLACEMENT_SALLES", "nom": "Temps de déplacement entre salles", "desc": "Marge entre deux salles d'un même campus.", "type": "duree_min", "defaut": 0, "priorite": 3, "src": "7.16 6.52 12.9" },
+        { "code": "TRANSITION_AGE", "nom": "Temps de transition", "desc": "Temps de changement d'activité chez les plus jeunes.", "type": "duree_min", "defaut": 0, "priorite": 3, "src": "16A.11" }
+      ] },
+    { "code": "TYPE", "nom": "Types de créneaux",
+      "defauts": { "role": "donnee", "type": "structure", "niveaux": "GP", "priorite": 3, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "FIXE", "nom": "Créneaux fixes ou flexibles", "desc": "Fixe : grille commune. Flexible : le début d'une séance peut glisser sur des périodes.", "type": "enum", "valeurs": ["fixe", "flexible"], "defaut": "fixe", "priorite": 2, "etat": "solveur", "ref": "toujours fixe aujourd'hui", "src": "7.19 7.20" },
+        { "code": "RESERVES_PRINCIPALES", "nom": "Réservés aux matières principales", "desc": "Plages à garder pour les matières principales.", "src": "7.21" },
+        { "code": "RESERVES_SPORT", "nom": "Réservés aux activités sportives", "desc": "Plages à garder pour le sport.", "src": "7.22" },
+        { "code": "RESERVES_TP", "nom": "Réservés aux TP", "desc": "Plages à garder pour les TP.", "src": "7.23" },
+        { "code": "RESERVES_TD", "nom": "Réservés aux TD", "desc": "Plages à garder pour les TD.", "src": "7.24" },
+        { "code": "RESERVES_EXAMENS", "nom": "Réservés aux examens", "desc": "Plages à garder pour les examens.", "src": "7.25" },
+        { "code": "RESERVES_EXTRA", "nom": "Réservés aux activités extrascolaires", "desc": "Plages libres de cours pour ces activités.", "src": "7.26" },
+        { "code": "RESERVES_REUNIONS", "nom": "Réservés aux réunions", "desc": "Plages communes, libres pour que les enseignants se réunissent.", "src": "7.27" },
+        { "code": "RESERVES_FORMATIONS", "nom": "Réservés aux formations", "desc": "Plages de formation du personnel.", "src": "7.28" },
+        { "code": "RESERVES_SOUTIEN", "nom": "Réservés au soutien", "desc": "Plages de cours de soutien.", "src": "7.29 8.27 16B.8" },
+        { "code": "RESERVES_PROJETS", "nom": "Réservés aux projets", "desc": "Plages de projet.", "src": "7.30 8.25 16C.12 16E.14" }
+      ] },
+    { "code": "REGLE", "nom": "Règles de la journée",
+      "defauts": { "role": "regle", "niveaux": "GPI", "cible": "groupe", "force": "souple", "force_reglable": true, "priorite": 3, "validite": "periode", "etat": "absent" },
+      "parametres": [
+        { "code": "GRILLE_RYTHME", "nom": "Grille du rythme", "desc": "Une séance reste sur la grille du rythme de sa filière.", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "force_reglable": false, "obligatoire": true, "priorite": 1, "modifiable": "non", "etat": "solveur", "regle_solveur": "Grille du régime", "ref": "grilleDuRegime" },
+        { "code": "HEURES_AUTORISEES", "nom": "Heures autorisées", "desc": "Aucune séance hors des heures et jours d'ouverture.", "type": "booleen", "defaut": true, "niveaux": "G", "force": "strict", "force_reglable": false, "obligatoire": true, "priorite": 1, "modifiable": "non", "src": "17B.16" },
+        { "code": "MAX_H_JOUR_GROUPE", "nom": "Maximum d'heures par jour", "desc": "Plafond quotidien d'un groupe, en minutes (règle du solveur commune avec les enseignants).", "type": "duree_min", "defaut": 480, "force": "strict", "etat": "solveur", "ref": "max_heures_jour_groupe, maxHeuresJour", "priorite": 2, "src": "7.31 14.8" },
+        { "code": "MIN_H_JOUR_GROUPE", "nom": "Minimum d'heures par jour", "desc": "Évite les journées presque vides.", "type": "duree_min", "poids": 5, "src": "7.32 7.40" },
+        { "code": "MAX_CONSECUTIVES", "nom": "Maximum d'heures consécutives", "desc": "Temps de cours continu à ne pas dépasser sans pause.", "type": "duree_min", "poids": 25, "priorite": 2, "src": "7.33" },
+        { "code": "JOURNEE_LONGUE", "nom": "Éviter les journées trop longues", "desc": "Amplitude entre la première et la dernière séance d'un groupe.", "type": "duree_min", "poids": 10, "src": "7.39 18B.3 14.2" },
+        { "code": "TROUS", "nom": "Éviter les trous", "desc": "Pas de rang vide entre deux cours d'un groupe. Le midi n'en est pas un.", "type": "booleen", "defaut": true, "poids": 5, "etat": "solveur", "regle_solveur": "Journées sans trous", "ref": "trousDansLaJournee", "src": "7.41 18B.2 14.1 14.9 17D.4" },
+        { "code": "CHANGEMENT_SALLE", "nom": "Éviter les changements de salle", "desc": "Deux cours qui se suivent restent dans la même salle.", "type": "booleen", "defaut": true, "poids": 2, "etat": "solveur", "regle_solveur": "Même salle pour deux cours qui se suivent", "ref": "UsageDesSalles.changementsDeSalle", "src": "7.42 18B.9 14.17 17D.12" },
+        { "code": "CHANGEMENT_BATIMENT", "nom": "Éviter les changements de bâtiment", "desc": "Deux cours qui se suivent restent dans le même bâtiment.", "type": "booleen", "defaut": false, "poids": 4, "src": "7.43" },
+        { "code": "UN_CAMPUS_PAR_JOUR", "nom": "Un seul campus par jour", "desc": "Un groupe reste sur un campus dans sa journée.", "type": "booleen", "defaut": true, "poids": 10, "etat": "solveur", "regle_solveur": "Un seul campus par jour pour un groupe", "ref": "unSeulCampusParJour" },
+        { "code": "COURS_TARDIFS", "nom": "Limiter les cours tardifs", "desc": "Heure après laquelle une séance est pénalisée.", "type": "heure", "poids": 8, "src": "7.44 18B.7 14.6 14.10 17D.9" },
+        { "code": "COURS_TOT", "nom": "Limiter les cours trop tôt", "desc": "Heure avant laquelle une séance est pénalisée.", "type": "heure", "poids": 4, "src": "14.6" },
+        { "code": "PLAGES_RESTREINTES", "nom": "Plages restreintes", "desc": "Jour et heures interdits ou à éviter, par rythme (ex-« samedi après-midi », poids 50 ; ex-« pause du vendredi », hors du solveur aujourd'hui).", "type": "structure", "poids": 50, "priorite": 2, "etat": "solveur", "regle_solveur": "Pas de samedi après-midi", "ref": "samedi_apres_midi_initiale, pause_vendredi ; D-09", "src": "7.46" },
+        { "code": "TRANSPORT_SCOLAIRE", "nom": "Respecter les horaires de transport", "desc": "Les cours finissent à temps pour les cars.", "type": "structure", "force": "strict", "src": "7.45 12.5" },
+        { "code": "REPAS", "nom": "Respecter le temps de repas", "desc": "Une pause de la durée demandée reste libre dans la plage du déjeuner.", "type": "booleen", "defaut": true, "poids": 30, "priorite": 2, "src": "7.47 14.13" },
+        { "code": "EQUILIBRE_SEMAINE", "nom": "Équilibre des heures sur la semaine", "desc": "Heures réparties également sur les jours.", "type": "booleen", "defaut": false, "poids": 6, "src": "17D.6" }
+      ] }
+  ]
+}

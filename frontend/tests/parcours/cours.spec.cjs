@@ -4,13 +4,15 @@
  * le supprime. Chaque étape est vérifiée à l'écran, comme l'utilisateur la voit.
  */
 const { test, expect } = require("@playwright/test");
-const { lireDonnees, seConnecter } = require("./outils.cjs");
+const { lireDonnees, seConnecter, supprimerModule } = require("./outils.cjs");
 
 test.setTimeout(90_000);
 
 test("maquette : créer un module, ajouter une composante, le renommer, le supprimer", async ({ page }) => {
   const { admin, motDePasse } = lireDonnees();
   await seConnecter(page, { email: admin.email, motDePasse, role: "admin" });
+  // Un essai précédent arrêté en route a pu laisser le module : on repart sans lui
+  await supprimerModule(page, { code: "PRC-RES", semestre: "S7" });
   await page.goto("/gestion/cours");
 
   // Créer : code, intitulé, filière, niveau, semestre, et la première composante (CM, 21 h)
@@ -33,8 +35,14 @@ test("maquette : créer un module, ajouter une composante, le renommer, le suppr
   await ligne.getByRole("button", { name: "Afficher les composantes de Réseaux avancés" }).click();
   const composantes = page.getByRole("table", { name: "Composantes de Réseaux avancés" });
   await expect(composantes.getByRole("row", { name: /CM/ })).toBeVisible();
-  await page.getByRole("button", { name: "Ajouter une composante" }).click();
+  // La ligne se déplie avec une animation : on attend qu'elle soit finie avant de cliquer, sinon, sur
+  // une machine lente, le clic part pendant que le bouton glisse et le dialogue ne s'ouvre pas (CI)
+  await expect(page.locator(".MuiCollapse-root.MuiCollapse-entered").getByRole("button", { name: "Ajouter une composante" })).toBeVisible();
   const composante = page.getByRole("dialog", { name: /Ajouter une composante/ });
+  await expect(async () => {
+    await page.getByRole("button", { name: "Ajouter une composante" }).click({ timeout: 3_000 });
+    await expect(composante.getByRole("combobox", { name: "Type" })).toBeVisible({ timeout: 3_000 });
+  }).toPass({ timeout: 30_000 });
   await composante.getByRole("combobox", { name: "Type" }).click();
   await page.getByRole("option", { name: "TD", exact: true }).click();
   await composante.getByRole("spinbutton", { name: "Volume (heures)" }).fill("14");

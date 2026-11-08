@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { useTranslation } from 'react-i18next';
-import { toLocalISODate } from '../../../shared/session.js';
+import { estChangee, toLocalISODate } from '../../../shared/session.js';
 import { couleurStatut, creerStyles, lineColor, useTheme } from '../theme';
 import { useMargeOnglets } from '../verre/Verre';
 import { abregerCours } from './abreger';
@@ -104,7 +104,7 @@ export default function GrilleSemaine({ lundi, seances, onSeance }) {
                   <View key={h} style={[styles.trait, { top: (h - debut) * HEURE }]} />
                 ))}
                 {duJour.map(({ s, colonne, colonnes }) => {
-                  const statut = ['reporte', 'annule'].includes(s.status) ? s.status : null;
+                  const statut = estChangee(s.status) ? s.status : null;
                   const couleur = statut ? couleurStatut(theme, statut) : lineColor(s.courseCode);
                   const haut = ((minutesDe(s.start) - debut * 60) / 60) * HEURE;
                   const hauteur = Math.max(22, ((s.end - s.start) / 3_600_000) * HEURE - 2);

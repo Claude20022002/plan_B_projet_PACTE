@@ -1,6 +1,6 @@
 import { resetDatabase, closeDatabase, createUser, loginAs, createPlanningFixture } from "./helpers/testApp.js";
 import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
-import { Campus, CoursComposante, Enseignement } from "../../models/index.js";
+import { CoursComposante, Enseignement } from "../../models/index.js";
 import { groupesLies } from "../../services/planning/groupes.js";
 import { detecterConflitsPourAffectation } from "../../utils/detectConflicts.js";
 
@@ -31,23 +31,23 @@ const creerGroupe = async (data) => {
 
 describe("Filières : cycle, école et double diplôme", () => {
     test("création avec les champs de structure, valeurs hors liste refusées", async () => {
-        const gandhi = await Campus.findOne({ where: { code: "G" } });
         const filiere = await creerFiliere("IIIA", {
             nom_filiere: "Ingénierie Informatique et Intelligence Artificielle",
             ecole: "engineering",
             cycle: "ingenieur",
             intitule_cycle: "cycle Ingénieur d'Etat",
             premiere_annee_cycle: 3,
-            id_campus_prefere: gandhi.id_campus,
             partenaire: "ESTIA",
             annees_a_hestim: 4,
         });
-        expect(filiere).toMatchObject({ cycle: "ingenieur", premiere_annee_cycle: 3, campus_prefere: { code: "G" } });
+        expect(filiere).toMatchObject({ cycle: "ingenieur", premiere_annee_cycle: 3 });
 
         const mauvaisCycle = await clients.admin.send("put", `/api/filieres/${filiere.id_filiere}`, { cycle: "doctorat" });
         expect(mauvaisCycle.status).toBe(400);
-        const campusInconnu = await clients.admin.send("put", `/api/filieres/${filiere.id_filiere}`, { id_campus_prefere: 9999 });
-        expect(campusInconnu.status).toBe(400);
+        // Une filière n'a pas de campus (21 octobre 2026) : le champ est ignoré
+        const avecCampus = await clients.admin.send("put", `/api/filieres/${filiere.id_filiere}`, { id_campus_prefere: 1 });
+        expect(avecCampus.status).toBe(200);
+        expect(avecCampus.body.filiere).not.toHaveProperty("id_campus_prefere");
     });
 });
 

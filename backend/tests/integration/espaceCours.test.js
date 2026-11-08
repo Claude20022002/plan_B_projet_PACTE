@@ -45,6 +45,12 @@ const fauxStudyLib = async (url, options) => {
     }
     const l = /^\/interne\/documents\/([^/]+)\/lien$/.exec(chemin);
     if (l && jeton.aud === "studylib-interne" && jeton.doc === l[1] && documents.has(l[1])) return reponse(200, { url: `https://fichiers.test/${l[1]}`, expires_in: 300 });
+    // Recherche de la Bibliothèque : les documents publiés seulement, comme StudyLib
+    if (options.method === "GET" && chemin === "/documents/search" && jeton.sub) {
+        const q = (adresse.searchParams.get("q") ?? "").toLowerCase();
+        const trouves = [...documents.values()].filter((d) => d.visibility === "school" && d.title.toLowerCase().includes(q));
+        return reponse(200, { data: trouves.map((d) => ({ id: d.id, title: d.title, type: "cours", mime_type: d.mime_type, module: d.module })) });
+    }
     return reponse(401, { message: "Unauthenticated." });
 };
 
@@ -170,6 +176,28 @@ describe("Espace de cours : supports d'une classe", () => {
         expect((await client.send("delete", `/api/supports-cours/${res.body.id_support}`)).status).toBe(204);
         expect(appelsStudyLib()).toEqual([]);
         expect(documents.has(publie)).toBe(true);
+    });
+
+    test("chercher dans la Bibliothèque : l'enseignant de la classe seulement, StudyLib appelé après le contrôle (E-9)", async () => {
+        const publie = crypto.randomUUID();
+        documents.set(publie, { id: publie, title: "Réseaux : le modèle OSI", visibility: "school", owner: "999", mime_type: "application/pdf", module: { code: "RES" } });
+        const deClasse = crypto.randomUUID();
+        documents.set(deClasse, { id: deClasse, title: "Réseaux : notes de classe", visibility: "class", owner: "999", module: { code: "RES" } });
+        const recherche = (q) => `${base}/bibliotheque?${new URLSearchParams({ q })}`;
+
+        const res = await (await loginAs(prof)).get(recherche("Réseaux"));
+        expect(res.status).toBe(200);
+        expect(res.body).toEqual([{ id: publie, titre: "Réseaux : le modèle OSI", type: "cours", type_mime: "application/pdf", module: { code: "RES" } }]);
+        const [appel] = appelsStudyLib();
+        expect(appel).toMatchObject({ methode: "GET", chemin: "/documents/search", parametres: { q: "Réseaux" } });
+        expect(String(appel.jeton.sub)).toBe(String(prof.id_user));
+
+        // Trop court, un étudiant de la classe, l'enseignant d'un autre TD : refusés sans appel à StudyLib
+        // (une classe qu'on ne gère pas est « introuvable », comme pour les autres ajouts)
+        expect((await (await loginAs(prof)).get(recherche("R"))).status).toBe(400);
+        expect((await (await loginAs(etuTd1)).get(recherche("Réseaux"))).status).toBe(404);
+        expect((await (await loginAs(profTd2)).get(recherche("Réseaux"))).status).toBe(404);
+        expect(appelsStudyLib()).toEqual([]);
     });
 
     test("un co-enseignant ajoute mais ne retire pas le support d'un autre ; l'auteur publie puis retire", async () => {

@@ -36,6 +36,7 @@ import { filieresGerables } from '../../utils/droits';
 import { fetchAll } from '../../utils/fetchAll';
 import { ds, lineColor } from '../../design-system/tokens';
 import { aujourdhui } from '../../../../shared/dates.js';
+import { localeEcran } from '../../utils/dates';
 
 /**
  * Enseignements d'une période : ce qui sera réellement planifié (une composante de module,
@@ -58,7 +59,7 @@ export default function Enseignements() {
     const [aSupprimer, setASupprimer] = useState(null);
     const [idEquipe, setIdEquipe] = useState(null);
 
-    const nombre = useMemo(() => new Intl.NumberFormat(i18n.language === 'en' ? 'en-GB' : 'fr-FR', { maximumFractionDigits: 1 }), [i18n.language]);
+    const nombre = useMemo(() => new Intl.NumberFormat(localeEcran(i18n.language), { maximumFractionDigits: 1 }), [i18n.language]);
 
     useEffect(() => {
         (async () => {
@@ -187,7 +188,7 @@ export default function Enseignements() {
         <DashboardLayout>
             <Paper sx={{ p: { xs: 1.5, md: 2 }, border: '1px solid', borderColor: 'divider' }}>
                 <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1.5, alignItems: 'center', justifyContent: 'space-between', mb: 1.5 }}>
-                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5}>
+                    <Stack direction={{ xs: 'column', sm: 'row' }} spacing={1.5} sx={{ width: { xs: '100%', sm: 'auto' }, minWidth: 0 }}>
                         <TextField select size="small" label={t('ref.teaching.period')} value={idPeriode} onChange={(e) => setIdPeriode(e.target.value)} sx={{ minWidth: 200 }}>
                             {periodes.map((p) => (
                                 <MenuItem key={p.id_periode} value={p.id_periode}>
@@ -268,7 +269,8 @@ export default function Enseignements() {
                                     const mutualise = e.groupes.length > 1;
                                     return (
                                         <TableRow key={e.id_enseignement} hover selected={selection.has(e.id_enseignement)}>
-                                            <TableCell padding="checkbox">
+                                            {/* Un tableau « small » retire la marge de la case (20 px) : 2 px la portent à 24 px (WCAG 2.5.8) */}
+                                            <TableCell padding="checkbox" sx={{ '&& > *': { p: '2px' } }}>
                                                 <Checkbox
                                                     size="small"
                                                     checked={selection.has(e.id_enseignement)}
@@ -379,7 +381,7 @@ function Equipe({ services = [], onOuvrir }) {
             component="button"
             type="button"
             onClick={onOuvrir}
-            sx={{ all: 'unset', cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center', '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 } }}
+            sx={{ all: 'unset', cursor: 'pointer', display: 'flex', flexWrap: 'wrap', gap: 0.75, alignItems: 'center', minHeight: 24, '&:focus-visible': { outline: '2px solid', outlineColor: 'primary.main', outlineOffset: 2 } }}
         >
             {!principalActif(services) && <StateChip tone="warning">{t('ref.teaching.team.none')}</StateChip>}
             {visibles.map((s) => (
