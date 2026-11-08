@@ -64,7 +64,7 @@ Registre unique à partir du 7 novembre 2026.
 | 7 nov. | Ce plan par modules remplace tous les plans précédents ; une session = une fonction, sur sa branche, fusionnée si la définition de « terminé » est tenue | — |
 | 7 nov. | Nouveau serveur Debian, partagé avec n8n (adresse et accès hors du dépôt, qui est public) : **tout en conteneurs, n8n n'est jamais touché** | serveur provisoire du 31 octobre |
 | 8 nov. | `docs/users.xlsx` ne contient que des personnes fictives : **pas de réécriture de l'historique** ; le dépôt reste public (GitHub Actions) | Q-14 |
-| 8 nov. | **`main` protégée** : CI verte exigée avant de fusionner, une fois les parcours du dimanche corrigés (QUA-07) | Q-15 |
+| 8 nov. | **`main` protégée** : CI verte exigée avant de fusionner (déjà en place : les 6 contrôles de la CI) ; les parcours qui échouaient le dimanche sont corrigés (QUA-07) | Q-15 |
 | 8 nov. | **Un élève a un compte, créé par son établissement** (jamais d'inscription libre) | Q-02 (« séparer la personne du compte ») et Q-14 de conception-c5 |
 | 8 nov. | Les réponses proposées aux questions Q-1 à Q-13 de [conception-c5](../conception/vie-scolaire/conception-c5-modele-donnees-scolaire.md) sont retenues ; sa Q-14 est remplacée par la décision précédente | Q-03 |
 
