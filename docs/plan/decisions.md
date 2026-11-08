@@ -63,6 +63,10 @@ Registre unique à partir du 7 novembre 2026.
 | 7 nov. | **Le dépôt GitHub reste public** (limite de durée de GitHub Actions sur un dépôt privé) ; règle : aucune donnée réelle ni aucun secret dans le dépôt | « dépôt privé » du 11 octobre |
 | 7 nov. | Ce plan par modules remplace tous les plans précédents ; une session = une fonction, sur sa branche, fusionnée si la définition de « terminé » est tenue | — |
 | 7 nov. | Nouveau serveur Debian, partagé avec n8n (adresse et accès hors du dépôt, qui est public) : **tout en conteneurs, n8n n'est jamais touché** | serveur provisoire du 31 octobre |
+| 8 nov. | `docs/users.xlsx` ne contient que des personnes fictives : **pas de réécriture de l'historique** ; le dépôt reste public (GitHub Actions) | Q-14 |
+| 8 nov. | **`main` protégée** : CI verte exigée avant de fusionner, une fois les parcours du dimanche corrigés (QUA-07) | Q-15 |
+| 8 nov. | **Un élève a un compte, créé par son établissement** (jamais d'inscription libre) | Q-02 (« séparer la personne du compte ») et Q-14 de conception-c5 |
+| 8 nov. | Les réponses proposées aux questions Q-1 à Q-13 de [conception-c5](../conception/vie-scolaire/conception-c5-modele-donnees-scolaire.md) sont retenues ; sa Q-14 est remplacée par la décision précédente | Q-03 |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.
@@ -80,8 +84,6 @@ Registre unique à partir du 7 novembre 2026.
 | N° | Question | Proposition | Bloque |
 |---|---|---|---|
 | Q-01 | Effectif réel, budget, date cible. Qui finance une équipe plus nombreuse, et jusqu'à quand ? | viser la rentrée de septembre 2027 pour le pack « École privée », sinon réduire le pack | l'étape 4 |
-| Q-02 | Un élève doit-il avoir un compte ? (`Users.email` et `password_hash` obligatoires) | séparer la personne du compte, après une étude d'impact fichier par fichier ; pas d'adresse factice | VSC-01 |
-| Q-03 | Les 14 questions de conception du modèle du scolaire (réutiliser les tables, cycle implicite, groupes transversaux, responsable légal, inscription, CIN et santé, notes absentes, paiements…) | réponses proposées dans [conception-c5](../conception/vie-scolaire/conception-c5-modele-donnees-scolaire.md) | VSC-01 |
 | Q-04 | Relecture du contrat de MP-1 (R-1 à R-10 du groupe B) | à répondre avant les écrans de MOT-01 | MOT-01 (écrans) |
 | Q-05 | Fin de la ligne Timefold 1.x (annoncée début 2027, à confirmer) ; en 2.x, `ScoreAnalysis`, qu'utilise le solveur, devient payant | décider dans MOT-04, avant l'étape 3 | MOT-03, EP-4 |
 | Q-06 | Entretiens de terrain : séparés de toute démonstration ? | oui : cinq directeurs écoutés, sans rien leur montrer, avant de concevoir VSC-04 et FIN-01 | VSC-04, FIN-01 |
@@ -92,9 +94,8 @@ Registre unique à partir du 7 novembre 2026.
 | Q-11 | Nom de domaine du nouveau serveur, et du site vitrine | à choisir avant EXP-02 et VIT-02 | EXP-02, VIT-02 |
 | Q-12 | Images du registre GitHub (`ghcr.io`) publiques ou privées ? | publiques (aucun secret dans les images) ; sinon un jeton en lecture seule sur le serveur | EXP-03 |
 | Q-13 | Service de sonde : Better Stack ou UptimeRobot | à l'inscription, selon les limites de l'offre gratuite | EXP-05 |
-| Q-14 | Réécrire l'historique Git pour effacer `docs/users.xlsx`, dans un dépôt public ? | oui, si les personnes sont réelles ; et changer les mots de passe de ces comptes s'ils existent encore (QUA-06) | — |
-| Q-15 | Protection de `main` : exiger une CI verte avant de fusionner | oui (gratuit sur un dépôt public) | — |
 | Q-16 | Règles du carnet de notes (modification, verrouillage, arrondis) | à faire valider par une scolarité et le juriste | VSC-04 |
 | Q-17 | Règles de modération de la messagerie | à trancher avant COU-08 | COU-08 |
 | Q-18 | Nom de l'application dans les magasins | « Planner » sauf conflit de marque | MOB |
 | Q-19 | Les 28 questions juridiques, fiscales et Massar de l'étude du modèle économique | gelées, sauf Massar (VSC-05) et loi 09-08 (condition légale) | VSC-05 |
+| Q-20 | Un élève a un compte (décision du 8 novembre), mais un enfant de 6 ans n'a pas d'adresse électronique, et `Users.email` est obligatoire et unique. Avec quoi se connecte-t-il ? | un **identifiant donné par l'école**, adresse facultative, mot de passe initial remis par l'école (ou par le parent) ; pas d'adresse factice. Étude d'impact sur chaque fichier qui lit `Users.email` (connexion, réinitialisation, notifications, import) | VSC-01 |

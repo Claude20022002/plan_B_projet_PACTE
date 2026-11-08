@@ -22,7 +22,7 @@
 | **Administration de l'école** (scolarité, direction) | rôle `admin` : tout le référentiel, la planification, les comptes, l'identité, les statistiques ; double authentification | habilitations à portée (ADM-01) ; configuration et import (ADM-02 à ADM-04) |
 | **Responsable** (filière, niveau, cycle) | un enseignant inscrit dans `ResponsableFiliere`, avec des droits sur ses filières | portée par niveau ou par cycle pour le scolaire (ADM-01) |
 | **Enseignant** | rôle `enseignant` : ses séances, l'appel, ses classes, l'espace de cours, le Studio quiz, ses disponibilités, ses reports | saisie déléguée et notes (VSC), rien de nouveau sans retirer une tâche (EP-6) |
-| **Élève ou étudiant** | rôle `etudiant` : emploi du temps, appel par QR, cours, quiz, jeux, bibliothèque | un élève sans compte possible (VSC-01, Q-02) |
+| **Élève ou étudiant** | rôle `etudiant` : emploi du temps, appel par QR, cours, quiz, jeux, bibliothèque | compte de l'élève créé par l'établissement, connexion sans adresse électronique (VSC-01, Q-20) |
 | **Parent** | **n'existe pas** | ADM-05 avec VSC-02 et MOB-05 |
 
 ## Ce qui existe

@@ -130,5 +130,5 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 | [QUA-03](modules/QUA-qualite-docs.md) | Clore l'étude de la pile | 1 | S | à faire |  |
 | [QUA-04](modules/QUA-qualite-docs.md) | Reste des dates | libre | S | à faire |  |
 | [QUA-05](modules/QUA-qualite-docs.md) | Supprimer les branches et les dossiers de travail morts, après vérification de leur… | libre | S | à faire |  |
-| [QUA-06](modules/QUA-qualite-docs.md) | `docs/users.xlsx` | 0 | S | à faire |  |
-| [QUA-07](modules/QUA-qualite-docs.md) | Protéger `main` | 0 | S | à faire |  |
+| [QUA-06](modules/QUA-qualite-docs.md) | `docs/users.xlsx` | 0 | S | fait (personnes fictives, rien à réécrire) |  |
+| [QUA-07](modules/QUA-qualite-docs.md) | Protéger `main` | 0 | S | en cours (après la correction des parcours du dimanche) |  |

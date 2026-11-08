@@ -140,7 +140,7 @@ Tirées des reproches faits aux autres outils ([étude de marché](../etude-marc
 | Quatre prix en circulation (4,99, 5,40, 9,99 MAD, grille de 149 à 899 DH) | prix gelés avec la vente ; une seule grille quand elle reprend (VEN) |
 | Mêmes identifiants pour des choses différentes (R-, P-1, D-, MP, MO, SC, F, I, M-) | identifiants par module, colonne « ancien nom » |
 | Jalon de V2 impossible : la migration 0003 crée les campus d'HESTIM dans toute base neuve | PLA-03 base neuve sans données d'école |
-| Un élève ne peut exister que comme compte (`Users.email` et `password_hash` obligatoires) | question Q-14 de VSC-01 : séparer la personne du compte |
+| Un élève ne peut exister que comme compte (`Users.email` et `password_hash` obligatoires) | décision du 8 novembre : un compte créé par l'établissement ; identifiant sans adresse à concevoir (Q-20, VSC-01) |
 | « 15 canaux d'isolation fermés en V2 », alors que leurs lots étaient en V5 ; I-16 oublié | PLA-02 dit exactement ce que l'étape 2 ferme ; 16 canaux |
 | Le moteur presque absent du plan ; ME-14a mesuré sur le mauvais jeu | ligne MOT complète, MOT-02 sur un jeu scolaire, décision sur Timefold 1.x |
 | Tailles sans rapport avec le travail (notes et bulletins en 7 jours, arabe en 5) | tailles révisées, dites comme des estimations |
