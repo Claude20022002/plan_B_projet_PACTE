@@ -2,7 +2,7 @@
 
 Ce dossier dit **comment** une partie de Planner est construite. Le **quoi** et le **quand** sont dans le [plan par modules](../plan/README.md).
 
-Une conception nouvelle se range ici, dans le dossier de son module. Elle s'écrit avant le code pour toute fonction de taille M ou plus, avec ses diagrammes en Mermaid. Elle se met à jour quand le code change.
+Une conception nouvelle se range ici, dans le dossier de son module, nommée `<identifiant>-<mot>.md`, à partir du [modèle](../plan/modeles/conception.md). **Elle s'écrit et se fait valider par le chef de projet avant toute ligne de code** ([organisation.md](../plan/organisation.md), § 5), avec ses diagrammes en Mermaid. Elle se met à jour quand le code change.
 
 | Dossier | Contenu | Module |
 |---|---|---|

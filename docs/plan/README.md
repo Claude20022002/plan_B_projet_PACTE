@@ -4,9 +4,13 @@
 
 | Document | Pour |
 |---|---|
-| [suivi.md](suivi.md) | **À ouvrir en début de session** : une ligne par fonction (état, branche, PR), numéros de migration réservés |
+| [../../AGENTS.md](../../AGENTS.md) | **Les règles obligatoires de toute session**, pour les agents d'IA comme pour l'équipe |
+| [organisation.md](organisation.md) | Rôles (le chef de projet est **Claude20022002**), chantiers de module, une branche par tâche, plan de conception avant le code, questions, fin de session, sessions longues |
+| [suivi.md](suivi.md) | **À ouvrir en début de session et à mettre à jour à la fin, obligatoirement** : une ligne par fonction (état, branche, PR), chantiers ouverts, numéros de migration réservés |
 | [decisions.md](decisions.md) | Décisions en vigueur et questions ouvertes, en un seul endroit |
 | [modules/](modules/) | Un fichier par module : ce qui existe, les fonctions à faire, leur critère de « terminé » |
+| [modeles/](modeles/) | Modèles du [plan de conception](modeles/conception.md) et de la [fiche de session](modeles/fiche-de-session.md) |
+| [../sessions/](../sessions/) | Une fiche par session, avec son prompt de reprise ; les comptes rendus d'avant le 9 novembre |
 | [../conception/](../conception/README.md) | Conceptions et contrats encore en vigueur (architecture, moteur, isolation, déploiement…) |
 | [../ecole/plan.txt](../ecole/plan.txt) | La **vision** à long terme (ERP modulaire pour l'Afrique). Pas un plan : ses choix de pile et de prix ne s'appliquent pas |
 
@@ -14,23 +18,26 @@
 
 Chaque fonction porte l'identifiant de son module (`MOT-03`). Aucun numéro ne sert deux fois. La colonne « ancien nom » des fichiers de module permet de retrouver les traces dans les archives, les commits et le code (`ME-3a`, `EC-9`, `F-13`…).
 
-| Code | Module | Fichier | Branches |
+Un module se travaille par **chantier** : le chef l'ouvre, au plus 3 sont ouverts à la fois, et un chantier commencé se termine ([organisation.md](organisation.md), § 3). La branche d'une tâche se nomme par son type, puis son identifiant : `feat/pla-05-creer-ecole`, `fix/edt-…`, `etude/pla-06-…` ([organisation.md](organisation.md), § 4).
+
+| Code | Module | Fichier | Identifiants |
 |---|---|---|---|
-| PLA | Plateforme multi-écoles et isolation | [PLA-plateforme.md](modules/PLA-plateforme.md) | `pla/` |
-| EXP | Déploiement, exploitation, sauvegardes, supervision | [EXP-exploitation.md](modules/EXP-exploitation.md) | `exp/` |
-| MOT | Moteur de planification (solveur, catalogue, profils) | [MOT-moteur.md](modules/MOT-moteur.md) | `mot/` |
-| EDT | Emploi du temps, côté application (séances, publication, examens, salles) | [EDT-emploi-du-temps.md](modules/EDT-emploi-du-temps.md) | `edt/` |
-| ADM | Administration selon les rôles (comptes, droits, configuration, import, années) | [ADM-administration.md](modules/ADM-administration.md) | `adm/` |
-| VSC | Vie scolaire (élèves, familles, absences, notes, bulletins, Massar) | [VSC-vie-scolaire.md](modules/VSC-vie-scolaire.md) | `vsc/` |
-| COU | Espace de cours (supports, devoirs, sondages, échanges) | [COU-espace-de-cours.md](modules/COU-espace-de-cours.md) | `cou/` |
-| BIB | Bibliothèque (StudyLib, fichiers) | [BIB-bibliotheque.md](modules/BIB-bibliotheque.md) | `bib/` |
-| QJE | Quiz, jeux pédagogiques et IA | [QJE-quiz-jeux-ia.md](modules/QJE-quiz-jeux-ia.md) | `qje/` |
-| MOB | Application mobile | [MOB-application.md](modules/MOB-application.md) | `mob/` |
-| UIX | Interface du site (socle neutre, accessibilité, langues, textes) | [UIX-interface.md](modules/UIX-interface.md) | `uix/` |
-| VIT | Site vitrine public et contact | [VIT-site-vitrine.md](modules/VIT-site-vitrine.md) | `vit/` |
-| VEN | Vente, registre des modules, abonnements | [VEN-vente-modules.md](modules/VEN-vente-modules.md) | `ven/` |
-| FIN | Finance de l'école (frais, caisse, reçus, heures des vacataires) | [FIN-finance-ecole.md](modules/FIN-finance-ecole.md) | `fin/` |
-| QUA | Qualité du code, tests et documentation | [QUA-qualite-docs.md](modules/QUA-qualite-docs.md) | `qua/` |
+| PLA | Plateforme multi-écoles et isolation | [PLA-plateforme.md](modules/PLA-plateforme.md) | `PLA-01`… |
+| EXP | Déploiement, exploitation, sauvegardes, supervision | [EXP-exploitation.md](modules/EXP-exploitation.md) | `EXP-01`… |
+| MOT | Moteur de planification (solveur, catalogue, profils) | [MOT-moteur.md](modules/MOT-moteur.md) | `MOT-01`… |
+| EDT | Emploi du temps, côté application (séances, publication, examens, salles) | [EDT-emploi-du-temps.md](modules/EDT-emploi-du-temps.md) | `EDT-01`… |
+| ADM | Administration selon les rôles (comptes, droits, configuration, import, années) | [ADM-administration.md](modules/ADM-administration.md) | `ADM-01`… |
+| VSC | Vie scolaire (élèves, familles, absences, notes, bulletins, Massar) | [VSC-vie-scolaire.md](modules/VSC-vie-scolaire.md) | `VSC-01`… |
+| COU | Espace de cours (supports, devoirs, sondages, échanges) | [COU-espace-de-cours.md](modules/COU-espace-de-cours.md) | `COU-01`… |
+| BIB | Bibliothèque (StudyLib, fichiers) | [BIB-bibliotheque.md](modules/BIB-bibliotheque.md) | `BIB-01`… |
+| QJE | Quiz, jeux pédagogiques et IA | [QJE-quiz-jeux-ia.md](modules/QJE-quiz-jeux-ia.md) | `QJE-01`… |
+| MOB | Application mobile | [MOB-application.md](modules/MOB-application.md) | `MOB-01`… |
+| UIX | Interface du site (socle neutre, accessibilité, langues, textes) | [UIX-interface.md](modules/UIX-interface.md) | `UIX-01`… |
+| VIT | Site vitrine public et contact | [VIT-site-vitrine.md](modules/VIT-site-vitrine.md) | `VIT-01`… |
+| VEN | Vente, registre des modules, abonnements | [VEN-vente-modules.md](modules/VEN-vente-modules.md) | `VEN-01`… |
+| FIN | Finance de l'école (frais, caisse, reçus, heures des vacataires) | [FIN-finance-ecole.md](modules/FIN-finance-ecole.md) | `FIN-01`… |
+| QUA | Qualité du code, tests et documentation | [QUA-qualite-docs.md](modules/QUA-qualite-docs.md) | `QUA-01`… |
+| MKT | Marketing, par des agents spécialisés (vente gelée : on prépare, on ne publie pas) | [MKT-marketing.md](modules/MKT-marketing.md) | `MKT-01`… |
 
 ## 2. L'ordre : des étapes, pas des dates
 
@@ -44,7 +51,7 @@ Chaque fonction porte l'identifiant de son module (`MOT-03`). Aucun numéro ne s
 | **3. Une école scolaire se configure seule** | Une personne extérieure configure une école et génère **un vrai collège avec groupes de langue** ; chaque refus s'explique | MOT-03, MOT-04, MOT-06, MOT-07, ADM-02 à ADM-04, UIX-02, EDT-01, EDT-03, VEN-02 |
 | **4. Pack « École privée »** | Une école fictive de la maternelle au lycée tourne de bout en bout : familles, emploi du temps, absences prévenues, notes et bulletins, frais, espace parents en arabe et en français | VSC-02 à VSC-05, FIN-01, FIN-02, COU-02 à COU-05, MOB-05, MOB-06, UIX-04, MOT-09, EXP-08 |
 | **5. Durée de vie** | Formation professionnelle ; passage d'année sans aide ; export complet d'une école | ADM-01, ADM-06, ADM-07, PLA-08 à PLA-13, MOT-10, MOT-11, VSC-06, BIB-02, EDT-05 |
-| **Libre** | Sans dépendance : à prendre à n'importe quelle session | QJE-01 à QJE-07, BIB-03, BIB-04, VIT-01 à VIT-04, COU-01, COU-06, COU-07, MOB-01, MOB-02, MOB-07, UIX-03, UIX-05, UIX-06, EDT-02, EDT-04, EXP-09, FIN-03, QUA-01, QUA-02, QUA-04, QUA-05 |
+| **Libre** | Sans dépendance : à prendre à n'importe quelle session | QJE-01 à QJE-07, BIB-03, BIB-04, VIT-01 à VIT-04, COU-01, COU-06, COU-07, MOB-01, MOB-02, MOB-07, UIX-03, UIX-05, UIX-06, EDT-02, EDT-04, EXP-09, FIN-03, QUA-01, QUA-02, QUA-04, QUA-05, MKT-01 à MKT-07 |
 
 Une fonction d'une étape peut commencer avant la fin de l'étape précédente si ses dépendances (colonne « dépend de ») sont faites.
 
@@ -52,33 +59,36 @@ Une fonction d'une étape peut commencer avant la fin de l'étape précédente s
 
 ## 3. La routine d'une session
 
-Une session = **une fonction** d'un module, sur **sa branche**, fusionnée **seulement si tout est correct**.
+Une session = **une fonction** d'un chantier ouvert, sur **sa branche**, fusionnée **seulement si tout est correct**. Les règles complètes : [AGENTS.md](../../AGENTS.md) et [organisation.md](organisation.md).
 
 ```powershell
-# 1. Choisir une ligne « à faire » de docs/plan/suivi.md dont les dépendances sont faites,
-#    et la passer à « en cours » (avec la branche) dans le premier commit de la branche.
+# 1. Choisir, avec le chef, une ligne « à faire » d'un chantier ouvert de docs/plan/suivi.md
+#    dont les dépendances sont faites.
 cd "C:\Users\clusa\Desktop\Github Project\plan_B_projet_PACTE"
 git switch main; git pull --ff-only
-$M = "mot"; $F = "mot-03-validation"          # code du module, puis l'identifiant et un mot
-git worktree add "..\travaux-planner\$F" -b "$M/$F" origin/main
+$T = "feat"; $F = "mot-03-validation"         # type (feat, fix, etude, refactor, test, doc, chore, mkt), puis identifiant et mot
+git worktree add "..\travaux-planner\$F" -b "$T/$F" origin/main
 # Pour lancer les tests sans réinstaller : jonction vers les node_modules du dépôt principal
 cmd /c mklink /J "..\travaux-planner\$F\backend\node_modules" "backend\node_modules"
 
 # 2. Travailler dans ..\travaux-planner\$F
-#    - conception d'abord (avec diagrammes) pour une fonction M ou plus, commit à part ;
+#    - questions au chef, puis plan de conception (docs/plan/modeles/conception.md) ;
+#    - AUCUN CODE avant que le chef ait validé le plan ;
+#    - premier commit : le plan seul, et suivi.md passé à « en cours » ;
 #    - un test qui fige chaque correctif ;
 #    - git add <fichiers>, jamais git add .
 
 # 3. Vérifier en local (base MySQL rapide, voir DEPLOIEMENT.md) : tests du serveur, du site.
 #    Les parcours tournent dans la CI de la PR : ne pas les lancer en même temps que la suite.
 
-# 4. Publier et ouvrir la PR : le modèle de PR affiche la liste « terminé »
-git -C "..\travaux-planner\$F" push -u origin "$M/$F"
-gh pr create --base main --head "$M/$F" --title "MOT-03 : validation avant le calcul" --fill
+# 4. Fin de session (obligatoire) : suivi.md, fichier du module, fiche docs/sessions/…, prompt de reprise.
+#    Puis le CHEF DE PROJET publie et ouvre la PR : le modèle de PR affiche la liste « terminé »
+git -C "..\travaux-planner\$F" push -u origin "$T/$F"
+gh pr create --base main --head "$T/$F" --title "MOT-03 : validation avant le calcul" --fill
 
 # 5. Fusionner seulement si tout est correct (§ 4)
-gh pr checks "$M/$F" --watch
-gh pr merge "$M/$F" --merge --delete-branch
+gh pr checks "$T/$F" --watch
+gh pr merge "$T/$F" --merge --delete-branch
 
 # 6. Clore : ligne de suivi.md à « fait » (dans la PR) ; retirer la jonction puis le dossier
 cmd /c rmdir "..\travaux-planner\$F\backend\node_modules"

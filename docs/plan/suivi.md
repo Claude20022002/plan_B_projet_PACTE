@@ -1,8 +1,37 @@
 # Suivi des fonctions
 
-Une ligne par fonction. **À mettre à jour dans la PR de la fonction** : l'état passe à « en cours » (avec la branche) au premier commit, puis à « fait » (avec la PR) à la fusion. Le détail, les dépendances et les critères de « terminé » sont dans le fichier du module (lien sur l'identifiant).
+**Le seul tableau des fonctions et de leur état.** Toute personne et tout agent le met à jour **à la fin de chaque session, obligatoirement** ([organisation.md](organisation.md), § 7), dans la branche de sa tâche, avec sa fiche de session dans `docs/sessions/`.
+
+Une ligne par fonction. L'état passe à « en cours » (avec la branche) au premier commit, à « PR ouverte » (avec le numéro) quand la PR existe, puis à « fait » à la fusion. Le détail, les dépendances et les critères de « terminé » sont dans le fichier du module (lien sur l'identifiant). L'état réel = ce fichier sur `main`, plus les PR ouvertes (`gh pr list`).
 
 États : à faire · en cours · PR ouverte · fait · reporté (plus tard, sans date) · gelé (attend la reprise de la vente) · conditionnel (attend une décision).
+
+## Chantiers
+
+Au plus **3 chantiers ouverts** en même temps, bloqués compris. On ne prend une fonction que dans un chantier ouvert. Un chantier ouvert se termine avant d'en ouvrir un autre à sa place ([organisation.md](organisation.md), § 3).
+
+### Ouverts (2 sur 3)
+
+| Module | Ouvert le | Fonctions du chantier, dans l'ordre | Reste | État |
+|---|---|---|---|---|
+| [EXP](modules/EXP-exploitation.md) | avant le 9 nov. (EXP-01 en cours) | EXP-01, EXP-02, EXP-03, EXP-04, EXP-05 | 5 | ouvert ; liste à confirmer par le chef |
+| [PLA](modules/PLA-plateforme.md) | 9 nov. 2026 | PLA-06, PLA-03, PLA-05, PLA-01, PLA-02, PLA-04, PLA-07 | 7 | ouvert ; ordre à valider par le chef. PLA-01 attend EXP-02 et QUA-03, PLA-07 attend EXP-04 |
+
+### Fermés
+
+| Module | Ouvert le | Fermé le | Fonctions |
+|---|---|---|---|
+| — | | | |
+
+### Travaux en cours hors chantier, d'avant la règle
+
+| Quoi | Branche ou PR | À faire |
+|---|---|---|
+| Correctif : le dimanche s'affiche dans l'emploi du temps (CI de `main` rouge le dimanche) | `fix/edt-dimanche-visible` (local) | pousser, PR, fusionner en premier |
+| Essai du contexte d'école (base de PLA-01) | #142 | fusionner après le correctif |
+| MOT-01, partie serveur (MP-1) | #156 | fusionner après #142 |
+| Plan par modules | #161 | fusionner après #156 |
+| Organisation de l'équipe, module MKT | `doc/organisation-equipe` | fusionner après #161 |
 
 ## Numéros de migration réservés
 
@@ -12,7 +41,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 |---|---|---|
 | 0059 | COU-01 sondages (EC-9) | fusionnée |
 | 0060 | UIX-01 socle neutre | réservée |
-| 0061 | MOT-01 valeurs du moteur (MP-1) | fusionnée |
+| 0061 | MOT-01 valeurs du moteur (MP-1) | dans la PR #156, pas encore fusionnée |
 | 0062 à 0079 | VSC-01 et suivantes : tables du scolaire | réservées |
 | 0080 et plus | libres | — |
 
@@ -20,7 +49,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 
 | ID | Fonction | Étape | Taille | État | Branche ou PR |
 |---|---|---|---|---|---|
-| [PLA-01](modules/PLA-plateforme.md) | Contexte d'école en production | 2 | L | à faire (essai fait) | #142 (essai) |
+| [PLA-01](modules/PLA-plateforme.md) | Contexte d'école en production | 2 | L | à faire (essai en PR, pas encore fusionné) | #142 (essai) |
 | [PLA-02](modules/PLA-plateforme.md) | Fermer les canaux de l'étape 2 | 2 | L | à faire |  |
 | [PLA-03](modules/PLA-plateforme.md) | Base neuve sans données d'école | 2 | M | à faire |  |
 | [PLA-04](modules/PLA-plateforme.md) | Tests d'isolation de chaque route dans la CI, côté serveur et parcours | 2 | M + S | à faire |  |
@@ -42,7 +71,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 | [EXP-07](modules/EXP-exploitation.md) | Noms neutres | 2 | M | à faire |  |
 | [EXP-08](modules/EXP-exploitation.md) | Test d'intrusion et de charge, avant que toute école extérieure utilise l'installation… | 4 | M | à faire |  |
 | [EXP-09](modules/EXP-exploitation.md) | Mises à jour de StudyLib et ClassQuiz par la CI comme le reste (aujourd'hui par paquets) | libre | M | à faire |  |
-| [MOT-01](modules/MOT-moteur.md) | Valeurs du moteur datées et résolues (profil, école, niveau) | 1 | M | fait (serveur) ; écrans avec ADM-02 | MP-1 |
+| [MOT-01](modules/MOT-moteur.md) | Valeurs du moteur datées et résolues (profil, école, niveau) | 1 | M | PR ouverte (partie serveur) ; écrans avec ADM-02 | #156 |
 | [MOT-02](modules/MOT-moteur.md) | Mesurer le solveur sur un jeu scolaire (collège de 600 élèves), puis sur 20 000… | 1 | M | à faire |  |
 | [MOT-03](modules/MOT-moteur.md) | Validation avant le calcul | 3 | M | à faire |  |
 | [MOT-04](modules/MOT-moteur.md) | Modèle neutre et évaluateur indépendant | 3 | L + M | à faire |  |
@@ -125,6 +154,16 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 | [FIN-01](modules/FIN-finance-ecole.md) | Frais, échéanciers, caisse, reçus bilingues numérotés sans trou | 4 | XL | à faire |  |
 | [FIN-02](modules/FIN-finance-ecole.md) | Relances, impayés, export comptable (EP-5) | 4 | L | à faire |  |
 | [FIN-03](modules/FIN-finance-ecole.md) | Relevé mensuel des heures des vacataires, à partir des séances visées | libre | M | à faire |  |
+| [MKT-01](modules/MKT-marketing.md) | Sauvegarder l'agence (premier commit, dépôt privé, règles de l'équipe) | libre | S | à faire |  |
+| [MKT-02](modules/MKT-marketing.md) | Contexte produit et personas à la cible du 7 novembre | libre | M | à faire |  |
+| [MKT-03](modules/MKT-marketing.md) | Argumentaire par cible, tiré des exigences produit | libre | M | à faire |  |
+| [MKT-04](modules/MKT-marketing.md) | Textes du site vitrine et du formulaire de contact | libre | M | à faire |  |
+| [MKT-05](modules/MKT-marketing.md) | Vidéo de démonstration sur une école fictive | libre | M | à faire |  |
+| [MKT-06](modules/MKT-marketing.md) | Charte visuelle et gabarits de visuels | libre | M | à faire |  |
+| [MKT-07](modules/MKT-marketing.md) | Plan de mesure à coût nul | libre | S | à faire |  |
+| [MKT-08](modules/MKT-marketing.md) | Calendrier éditorial et publications | quand la vente reprend | M | gelé |  |
+| [MKT-09](modules/MKT-marketing.md) | Supports commerciaux pour les directeurs | quand la vente reprend | M | gelé |  |
+| [MKT-10](modules/MKT-marketing.md) | Campagne de lancement auprès des écoles | quand la vente reprend | L | gelé |  |
 | [QUA-01](modules/QUA-qualite-docs.md) | `README.md` et `PRODUCT.md` à jour | libre | M | à faire |  |
 | [QUA-02](modules/QUA-qualite-docs.md) | Découper les contrôleurs trop longs, sans changer leur comportement, chacun couvert… | libre | M par contrôleur | à faire |  |
 | [QUA-03](modules/QUA-qualite-docs.md) | Clore l'étude de la pile | 1 | S | à faire |  |

@@ -18,7 +18,7 @@
 ## Ce qui existe
 
 - **Une seule base aujourd'hui** : `backend/config/db.js`.
-- **Essai du contexte d'école** (#142, fusionné le 7 novembre) :
+- **Essai du contexte d'école** (#142, **PR ouverte, pas encore fusionnée** au 9 novembre ; mise à jour sur `main` le 7 novembre) :
   - `backend/contexte/etablissement.js` (`AsyncLocalStorage`) et `backend/contexte/resolveur.js` ;
   - `backend/models/definitions.js` contient les modèles et leurs relations ; `backend/models/index.js` n'exporte plus que des résolveurs ;
   - un test à deux bases ;

@@ -67,6 +67,13 @@ Registre unique à partir du 7 novembre 2026.
 | 8 nov. | **`main` protégée** : CI verte exigée avant de fusionner (déjà en place : les 6 contrôles de la CI) ; les parcours qui échouaient le dimanche sont corrigés (QUA-07) | Q-15 |
 | 8 nov. | **Un élève a un compte, créé par son établissement** (jamais d'inscription libre) | Q-02 (« séparer la personne du compte ») et Q-14 de conception-c5 |
 | 8 nov. | Les réponses proposées aux questions Q-1 à Q-13 de [conception-c5](../conception/vie-scolaire/conception-c5-modele-donnees-scolaire.md) sont retenues ; sa Q-14 est remplacée par la décision précédente | Q-03 |
+| 9 nov. | **Le chef de projet est le compte Claude20022002**, initiateur et maître du projet : lui seul pousse, fusionne, ouvre et ferme un chantier, valide un plan, tranche une décision ([organisation.md](organisation.md)) | — |
+| 9 nov. | **Chantiers de module** : au plus 3 ouverts à la fois ; on ne prend une fonction que dans un chantier ouvert ; un chantier commencé se termine | — |
+| 9 nov. | **Une tâche, une branche**, nommée par son type (`feat/`, `fix/`, `etude/`, `refactor/`, `test/`, `doc/`, `chore/`, `mkt/`) puis son identifiant | les préfixes de module (`pla/`, `mot/`…) du 7 novembre |
+| 9 nov. | **Aucun code sans plan de conception validé** par le chef ; l'agent pose ses questions avant, sans rien supposer | « conception d'abord pour une fonction M ou plus » du 7 novembre |
+| 9 nov. | **Fin de session obligatoire** : `suivi.md` à jour et une fiche de session avec son prompt de reprise ; une session trop longue se résume (`/compact`) ou passe la main | — |
+| 9 nov. | Module **MKT** (marketing) ajouté, porté par les 9 agents de `..\planner-marketing` ; la vente reste gelée : on prépare, on ne publie pas | — |
+| 9 nov. | Chantier **PLA** ouvert ; chantier **EXP** reconnu ouvert (EXP-01 en cours) | — |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.
