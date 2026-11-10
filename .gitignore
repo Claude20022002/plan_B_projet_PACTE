@@ -46,3 +46,7 @@ Jeux_HESTIM/
 
 # Secrets du serveur (clés Google Drive, etc.), créés par deploy/vps/generer-env.sh dans /opt/hestim
 /secrets/
+
+# Banc de mesure PLA-06 : machines, secrets et résultats bruts restent sur la machine
+scripts/mesures/**/.local/
+scripts/mesures/**/resultats/
