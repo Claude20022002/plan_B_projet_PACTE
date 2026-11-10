@@ -28,11 +28,11 @@ Au plus **3 chantiers ouverts** en même temps, bloqués compris. On ne prend un
 
 | Quoi | Branche ou PR | À faire |
 |---|---|---|
-| Correctif : le dimanche s'affiche dans l'emploi du temps (CI de `main` rouge le dimanche) | `fix/edt-dimanche-visible` (local) | pousser, PR, fusionner en premier |
-| Essai du contexte d'école (base de PLA-01) | #142 | fusionner après le correctif |
-| MOT-01, partie serveur (MP-1) | #156 | fusionner après #142 |
-| Plan par modules | #161 | fusionner après #156 |
-| Organisation de l'équipe, module MKT | `doc/organisation-equipe` | fusionner après #161 |
+| Correctif : le dimanche s'affiche dans l'emploi du temps (CI de `main` rouge le dimanche) | #162 | relancer les parcours en échec (ils ont croisé minuit UTC), puis fusionner |
+| Essai du contexte d'école (base de PLA-01) | #142 | **fusionnée le 10 nov.** |
+| MOT-01, partie serveur (MP-1) | #156 | **fusionnée le 10 nov.** |
+| Plan par modules | #161 | fusionner (le faux conflit vient de deux ancêtres communs ; `main` fusionné dans la branche le 10 nov.) |
+| Organisation de l'équipe, module MKT | #163 | fusionner après #161 |
 
 ## Numéros de migration réservés
 
@@ -42,7 +42,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 |---|---|---|
 | 0059 | COU-01 sondages (EC-9) | fusionnée |
 | 0060 | UIX-01 socle neutre | réservée |
-| 0061 | MOT-01 valeurs du moteur (MP-1) | dans la PR #156, pas encore fusionnée |
+| 0061 | MOT-01 valeurs du moteur (MP-1) | fusionnée (#156, 10 nov.) |
 | 0062 à 0079 | VSC-01 et suivantes : tables du scolaire | réservées |
 | 0080 et plus | libres | — |
 
@@ -50,7 +50,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 
 | ID | Fonction | Étape | Taille | État | Branche ou PR |
 |---|---|---|---|---|---|
-| [PLA-01](modules/PLA-plateforme.md) | Contexte d'école en production | 2 | L | à faire (essai en PR, pas encore fusionné) | #142 (essai) |
+| [PLA-01](modules/PLA-plateforme.md) | Contexte d'école en production | 2 | L | à faire (essai fusionné le 10 nov.) | #142 (essai) |
 | [PLA-02](modules/PLA-plateforme.md) | Fermer les canaux de l'étape 2 | 2 | L | à faire |  |
 | [PLA-03](modules/PLA-plateforme.md) | Base neuve sans données d'école | 2 | M | à faire |  |
 | [PLA-04](modules/PLA-plateforme.md) | Tests d'isolation de chaque route dans la CI, côté serveur et parcours | 2 | M + S | à faire |  |
@@ -72,7 +72,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 | [EXP-07](modules/EXP-exploitation.md) | Noms neutres | 2 | M | à faire |  |
 | [EXP-08](modules/EXP-exploitation.md) | Test d'intrusion et de charge, avant que toute école extérieure utilise l'installation… | 4 | M | à faire |  |
 | [EXP-09](modules/EXP-exploitation.md) | Mises à jour de StudyLib et ClassQuiz par la CI comme le reste (aujourd'hui par paquets) | libre | M | à faire |  |
-| [MOT-01](modules/MOT-moteur.md) | Valeurs du moteur datées et résolues (profil, école, niveau) | 1 | M | PR ouverte (partie serveur) ; écrans avec ADM-02 | #156 |
+| [MOT-01](modules/MOT-moteur.md) | Valeurs du moteur datées et résolues (profil, école, niveau) | 1 | M | fait (serveur, #156, 10 nov.) ; écrans avec ADM-02 | #156 |
 | [MOT-02](modules/MOT-moteur.md) | Mesurer le solveur sur un jeu scolaire (collège de 600 élèves), puis sur 20 000… | 1 | M | à faire |  |
 | [MOT-03](modules/MOT-moteur.md) | Validation avant le calcul | 3 | M | à faire |  |
 | [MOT-04](modules/MOT-moteur.md) | Modèle neutre et évaluateur indépendant | 3 | L + M | à faire |  |
