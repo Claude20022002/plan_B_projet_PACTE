@@ -77,6 +77,9 @@ Registre unique à partir du 7 novembre 2026.
 | 10 nov. | Chantier **QUA** ouvert, limité à **QUA-03** (clore l'étude de la pile), pour débloquer PLA-01 : 3 chantiers ouverts sur 3 | — |
 | 10 nov. | L'agence marketing se sauvegarde dans un **dépôt GitHub privé** `planner-marketing` (logos, stratégie) ; la vente reste gelée : le marketing prépare, ne publie pas | — |
 | 10 nov. | PLA-06 : mesure en local, MySQL limité aux ressources du nouveau serveur ; 200 bases au schéma complet, chacune avec une école fictive d'environ 300 élèves ; seuils, activité et réglages proposés le 9 novembre, retenus le 10 ; si D-01 tombe, le chantier PLA s'arrête jusqu'à décision | — |
+| 10 nov. | **Jeux : aucun nom ni adresse d'école** ; `curriculum` = discipline et niveau visés. Le § 1 du contrat des jeux est amendé | la page HESTIM du programme exigée le 16 octobre |
+| 10 nov. | **Jeux : un essai raté ne donne pas la réponse.** On dit ce qui est faux ; la solution s'obtient sur demande ou après trois essais ratés, et coûte les points du défi (contrat des jeux, § 1.0) | — |
+| 10 nov. | **QJE-04 : exception à la limite de 3 chantiers**, pour QJE-04 seule (la branche d'Alexis prend du retard sur `main`). Alexis corrige B-1, B-2 et I-1 sur sa branche | — |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.

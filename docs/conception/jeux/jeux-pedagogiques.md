@@ -15,7 +15,7 @@ Un jeu = **une entrée de catalogue + un moteur partagé + un écran web + un é
 
 | Pièce | Où | Règle |
 |---|---|---|
-| Entrée de catalogue | `shared/jeux/catalogue.js` (terminal) ou `shared/simulations/catalogue/<code>.js` (simulations) | `code` stable (il est enregistré en base, ne jamais le renommer), `type`, `discipline`, `titre` et `resume` en **fr et en**, `source` (jeu repris : nom, auteur, url, licence) **ou** `curriculum` (jeu original : page HESTIM du programme) |
+| Entrée de catalogue | `shared/jeux/catalogue.js` (terminal) ou `shared/simulations/catalogue/<code>.js` (simulations) | `code` stable (il est enregistré en base, ne jamais le renommer), `type`, `discipline`, `titre` et `resume` en **fr et en**, `source` (jeu repris : nom, auteur, url, licence) **ou** `curriculum` (jeu original : **discipline et niveau visés, sans nom ni adresse d'école** ; amendé le 10 novembre, l'ancienne règle demandait la page du programme d'HESTIM) |
 | Défis | dans l'entrée | `id` stable, `niveau`, `xp` ; l'XP n'est lue que côté serveur |
 | Modes | dans l'entrée | `modes` : `['individuel']`, ou `['individuel', 'collectif']` si le jeu fournit son rejeu au tableau (§ 1.1) |
 | Moteur | `shared/<famille>/` | Fonctions pures, sans réseau ni DOM : même code pour le serveur, le site et l'application |
@@ -23,6 +23,18 @@ Un jeu = **une entrée de catalogue + un moteur partagé + un écran web + un é
 | Accès | `jeuAccessible` | Un étudiant ne joue qu'à un jeu **proposé dans un de ses modules** ; revérifié à chaque essai |
 | Écrans | `frontend/src/pages/jeux/`, `mobile/src/app/` | 360 px de large au minimum, cibles tactiles de 44 px, thème Planner (clair et sombre) |
 | Textes | `shared/<famille>/i18n.js` | Aucune chaîne en dur, français par défaut |
+
+Planner sert plusieurs écoles et son dépôt est public : **aucun jeu ne nomme une école**, ni dans ses textes, ni dans ses liens. `scripts/verifier-neutre.mjs` le vérifie dans la CI (règle du 7 novembre, amendement du 10 novembre).
+
+### 1.0 Le retour après un essai (décision du 10 novembre)
+
+Un essai raté **ne donne pas la réponse** ; sinon les points s'obtiendraient en deux essais.
+
+1. **Après un échec**, le serveur dit **quels éléments sont faux** (`correct: false`) et pourquoi en termes généraux (code de problème). Il ne renvoie **ni la valeur attendue, ni la bonne position, ni le bon classement**.
+2. **La solution** s'obtient par une demande explicite (« Voir la solution ») : sur demande à tout moment, et proposée d'office après **trois essais ratés** du même défi.
+3. **Voir la solution coûte les points** du défi. Une réussite après la solution est enregistrée **sans points** et se distingue dans le suivi de l'enseignant (« réussi avec la solution »).
+4. **Le serveur garde la trace** qu'une solution a été vue (par étudiant, jeu et défi), avant de la renvoyer. Il ne croit jamais le client sur ce point. Le stockage est choisi dans le plan de la correction (migration **0080** réservée) : `JeuProgressions.reussi_le` est obligatoire, une ligne ne peut donc pas noter une solution vue avant une réussite.
+5. **Tests** : un échec ne contient aucune valeur attendue (un test par moteur) ; demander la solution puis réussir donne 0 point ; la solution d'un jeu hors module est refusée (403).
 
 ### 1.1 Jouer en classe : les modes
 

@@ -39,10 +39,10 @@ Résultats sur la branche fusionnée avec `main` :
 
 | N° | Question | Proposition | État |
 |---|---|---|---|
-| J-1 | Qui corrige B-1 et B-2 : Alexis sur sa branche, ou nous sur une branche `fix/qje-04-…` ? | Alexis : c'est son travail, et les corrections sont courtes | **en attente** |
-| J-2 | Amender le § 1 du contrat : plus de page de programme d'une école dans `curriculum` (B-1) | oui, discipline et niveau seulement | **en attente** |
-| J-3 | Les réponses attendues renvoyées après un échec (I-1) | ne dire que ce qui est faux ; la solution après trois essais ou sur demande, sans points | **en attente** |
-| J-4 | QJE n'est pas un chantier ouvert (3 sur 3). Faire une exception pour QJE-04, ou attendre la fermeture d'un chantier ? | exception pour QJE-04 seule : la branche d'Alexis vieillit (55 commits de retard) | **en attente** |
+| J-1 | Qui corrige B-1 et B-2 : Alexis sur sa branche, ou nous sur une branche `fix/qje-04-…` ? | Alexis : c'est son travail, et les corrections sont courtes | **validé le 10 nov.** |
+| J-2 | Amender le § 1 du contrat : plus de page de programme d'une école dans `curriculum` (B-1) | oui, discipline et niveau seulement | **validé le 10 nov.** |
+| J-3 | Les réponses attendues renvoyées après un échec (I-1) | ne dire que ce qui est faux ; la solution après trois essais ou sur demande, sans points | **validé le 10 nov.** |
+| J-4 | QJE n'est pas un chantier ouvert (3 sur 3). Faire une exception pour QJE-04, ou attendre la fermeture d'un chantier ? | exception pour QJE-04 seule : la branche d'Alexis vieillit (55 commits de retard) | **validé le 10 nov.** |
 
 ## État laissé
 
