@@ -43,3 +43,6 @@ __pycache__/
 
 # Projet d'un autre groupe (jeux), gardé hors de ce dépôt (décision du 15 octobre 2026)
 Jeux_HESTIM/
+
+# Secrets du serveur (clés Google Drive, etc.), créés par deploy/vps/generer-env.sh dans /opt/hestim
+/secrets/

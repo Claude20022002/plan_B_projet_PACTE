@@ -3,7 +3,7 @@ import { signerJetonService } from "../../utils/jetons.js";
 import { ErreurMetier } from "../planning/enseignements.js";
 
 /**
- * Client de l'API de StudyLib pour l'espace de cours (docs/plans/espace-de-cours.md, § 3).
+ * Client de l'API de StudyLib pour l'espace de cours (docs/archives/plans/espace-de-cours.md, § 3).
  * StudyLib est la seule réserve des fichiers : Planner y transmet le dépôt de l'enseignant avec
  * le jeton de celui-ci (StudyLib applique ses propres contrôles), et demande les liens des
  * étudiants avec un jeton de service limité à un document. Planner ne lit ni ne garde de fichier.

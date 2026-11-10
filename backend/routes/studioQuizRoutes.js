@@ -12,7 +12,7 @@ import * as ia from "../services/studio/iaGeneration.js";
 import * as classquiz from "../services/studio/importClassQuiz.js";
 
 /**
- * Studio quiz, côté enseignant (docs/plans/studio-quiz.md). Tout est réservé à l'auteur : un quiz,
+ * Studio quiz, côté enseignant (docs/archives/plans/studio-quiz.md). Tout est réservé à l'auteur : un quiz,
  * un média, une passation ou une copie d'un collègue répond 404.
  *
  *  Banque       GET/POST /questionnaires · GET/PUT/DELETE /questionnaires/:id

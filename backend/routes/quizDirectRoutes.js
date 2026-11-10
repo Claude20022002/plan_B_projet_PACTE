@@ -7,7 +7,7 @@ import { mediaDuDirect, rejoindreDirect, repondreDirect, vueJoueur } from "../se
 import { diffuserMedia } from "../services/studio/medias.js";
 
 /**
- * Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1a).
+ * Quiz en direct du Studio (docs/archives/plans/sortie-classquiz.md, lot SC-1a).
  * Enseignant :
  *  - POST /api/quiz-direct                 { id_questionnaire, titre?, id_groupe?, id_affectation?, duree_question_s? }
  *  - GET  /api/quiz-direct/:id             l'écran à projeter

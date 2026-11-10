@@ -6,7 +6,7 @@ import { copierMediaClassQuiz } from "./mediasClassQuiz.js";
 import { creerQuestionnaire, exigerEnseignant, insererQuestions, questionnaireDe, QUESTIONS_MAX } from "./questionnaires.js";
 
 /**
- * Import des quiz de ClassQuiz dans le Studio quiz (docs/plans/sortie-classquiz.md, lot SC-2) : Planner
+ * Import des quiz de ClassQuiz dans le Studio quiz (docs/archives/plans/sortie-classquiz.md, lot SC-2) : Planner
  * ne doit plus dépendre de ClassQuiz, et les quiz que les enseignants y ont créés doivent survivre
  * à son retrait. La lecture passe par les routes signées du fork (/api/v1/hestim/…). Aucun code du fork
  * n'est repris : seulement la forme de ses questions, correspondance ci-dessous.

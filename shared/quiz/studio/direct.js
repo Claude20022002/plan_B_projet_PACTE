@@ -2,7 +2,7 @@ import { normaliser } from './correction.js';
 import { melanger } from './vueEtudiant.js';
 
 /**
- * Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1) : règles communes au serveur,
+ * Quiz en direct du Studio (docs/archives/plans/sortie-classquiz.md, lot SC-1) : règles communes au serveur,
  * au site et à l'application. Fonctions pures, sans réseau ni DOM.
  *
  * Déroulé d'une diffusion en direct, au signal de l'enseignant :

@@ -1,7 +1,7 @@
 import { ErreurMetier } from "../planning/enseignements.js";
 
 /**
- * Client d'IA configurable (plan docs/plans/quiz-ia.md, lot IA-1). Deux familles d'API :
+ * Client d'IA configurable (plan docs/archives/plans/quiz-ia.md, lot IA-1). Deux familles d'API :
  *  - « openai-compatible » (par défaut) : DeepSeek, Mistral, OpenAI, Groq… (POST {url}/chat/completions) ;
  *  - « anthropic » : POST {url}/messages.
  * Variables : IA_FOURNISSEUR, IA_URL, IA_CLE, IA_MODELE, IA_DELAI_MS. Sans IA_CLE, la fonction est

@@ -3,7 +3,7 @@
 **Document version:** v1
 **Last updated:** 13 octobre 2026
 
-Fiche de positionnement de HESTIM Planner, lue par les skills de marketing (`.claude/skills/`). Rédigée à partir du README, des plans (`docs/plans/`) et des comptes rendus (`docs/sessions/`). Ce qui n'est pas établi est marqué `[À VÉRIFIER]` : ne pas l'affirmer dans un texte publié.
+Fiche de positionnement de HESTIM Planner, lue par les skills de marketing (`.claude/skills/`). Rédigée à partir du README, du plan (`docs/plan/`) et des comptes rendus (`docs/sessions/`). Ce qui n'est pas établi est marqué `[À VÉRIFIER]` : ne pas l'affirmer dans un texte publié.
 
 ## Product Overview
 **One-liner :** Toute l'école à l'heure, dans une seule application.

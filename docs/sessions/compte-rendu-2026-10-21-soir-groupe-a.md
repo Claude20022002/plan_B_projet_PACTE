@@ -1,6 +1,6 @@
 # Compte rendu du soir du 21 octobre 2026 (groupe A : serveur, solveur, déploiement)
 
-À lire **après** `compte-rendu-2026-10-21-groupe-a.md` (le matin) et avec le plan du groupe B, `docs/plans/plan-groupe-b-2026-10-22.md` (§ 3 mis à jour ce soir). Règles de code : § 6 de `docs/plans/assainissement.md`.
+À lire **après** `compte-rendu-2026-10-21-groupe-a.md` (le matin) et avec le plan du groupe B, `docs/archives/plans/plan-groupe-b-2026-10-22.md` (§ 3 mis à jour ce soir). Règles de code : § 6 de `docs/archives/plans/assainissement.md`.
 
 ## 1. L'essentiel
 

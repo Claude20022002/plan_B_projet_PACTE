@@ -14,7 +14,7 @@ import { analyserQuestions, statistiques } from "./analyse.js";
  * l'enseignant peut ensuite retoucher son quiz sans changer ce que ses étudiants ont passé.
  * L'étudiant la rejoint par un code (comme une salle Kahoot ou un test Moodle à mot de passe).
  * Rattacher la passation à une séance ou à une classe est facultatif : c'est le lien que l'espace
- * de cours (docs/plans/espace-de-cours.md, lot E-8) utilise pour ranger les résultats.
+ * de cours (docs/archives/plans/espace-de-cours.md, lot E-8) utilise pour ranger les résultats.
  */
 
 // Sans 0/O ni 1/I/L : un code dicté ou projeté ne se lit pas de travers

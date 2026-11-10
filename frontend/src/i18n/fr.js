@@ -550,7 +550,7 @@ const fr = {
     disponibilites: 'Disponibilités',
     reports: 'Demandes de report',
   },
-  // Espace de cours d'une classe (docs/plans/espace-de-cours.md)
+  // Espace de cours d'une classe (docs/archives/plans/espace-de-cours.md)
   espaceCours: {
     titrePage: 'Espace de cours',
     mesCours: 'Mes cours',

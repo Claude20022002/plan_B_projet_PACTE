@@ -1,5 +1,5 @@
 /**
- * Types de questions du Studio quiz (moteur de quiz natif de Planner, docs/plans/studio-quiz.md).
+ * Types de questions du Studio quiz (moteur de quiz natif de Planner, docs/archives/plans/studio-quiz.md).
  * Partagé par le serveur (validation, correction), le site (éditeur, joueur) et l'application.
  *
  * Chaque question a la même enveloppe :

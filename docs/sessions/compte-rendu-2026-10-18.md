@@ -1,6 +1,6 @@
 # État complet du projet HESTIM Planner (18 octobre 2026)
 
-À lire en début de session : il remplace les comptes rendus du 15, du 16 et du 17 octobre pour l'état du projet. Les règles de travail restent celles du § 4 de `compte-rendu-2026-10-11.md`, et les règles de code celles du § 6 de `docs/plans/assainissement.md`.
+À lire en début de session : il remplace les comptes rendus du 15, du 16 et du 17 octobre pour l'état du projet. Les règles de travail restent celles du § 4 de `compte-rendu-2026-10-11.md`, et les règles de code celles du § 6 de `docs/archives/plans/assainissement.md`.
 
 ## 1. L'essentiel
 
@@ -57,7 +57,7 @@ L'appel se fait par QR projeté qui change toutes les 30 s, à trois statuts. **
 | Défaut de production | **Tâches périodiques une à la fois** (#50) : à chaque démarrage, cinq tâches prenaient les cinq connexions de la base, qui restait bloquée 60 s (première connexion d'un utilisateur : 59,5 s ; purges quotidiennes en échec). C'était aussi la cause du parcours Playwright qui échouait au premier test |
 | Mobile | Page Projets de la Bibliothèque sans débordement sur téléphone (StudyLib #8) |
 | Dépôt | `Jeux_HESTIM/` retiré et ignoré (#41) |
-| Jeux | Contrat d'un jeu et relecture de la branche d'Alexis (`docs/plans/jeux-pedagogiques.md`, #43) |
+| Jeux | Contrat d'un jeu et relecture de la branche d'Alexis (`docs/conception/jeux/jeux-pedagogiques.md`, #43) |
 | Présentation | Vidéo Keynote (62 s) et discours de 3 minutes (`docs/presentation/discours-keynote.md`, #44) ; sur `video/promo`, non fusionnés : Keynote 1 min 20, Lancement (67 s, voix off), PactePromo en 16:9, 9:16 et 1:1 (`docs/presentation/video/out/`) |
 
 ## 5. Chantiers ouverts (branches non fusionnées)

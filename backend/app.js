@@ -200,11 +200,11 @@ app.use("/api/presences", presenceRoutes);
 app.use("/api/devoirs", devoirRoutes);
 app.use("/api/journal-securite", journalSecuriteRoutes);
 app.use("/api/quiz-ia", quizIaRoutes);
-// Espace de cours des classes (docs/plans/espace-de-cours.md) : /classes, /sections-cours, /supports-cours
+// Espace de cours des classes (docs/archives/plans/espace-de-cours.md) : /classes, /sections-cours, /supports-cours
 app.use("/api", espaceCoursRoutes);
 app.use("/api", sondageRoutes);
 app.use("/api", etablissementRoutes);
-// Studio quiz : moteur de quiz natif (docs/plans/studio-quiz.md)
+// Studio quiz : moteur de quiz natif (docs/archives/plans/studio-quiz.md)
 app.use("/api/studio-quiz", studioQuizRoutes);
 app.use("/api/passations", passationRoutes);
 

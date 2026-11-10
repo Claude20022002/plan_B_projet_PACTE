@@ -8,7 +8,7 @@ Toutes les commandes du serveur se lancent en `root`. Le chef de projet les lanc
 
 ### Mettre en ligne par la commande (lot ME-0b)
 
-Conception et diagrammes : `docs/plans/planner-multi-etablissements/conception-me0b-deploiement.md`. Après chaque fusion sur `main`, la CI publie, une fois tous les contrôles verts, les images du serveur, du site, du solveur et des scripts d'exploitation sur `ghcr.io/claude20022002`, au nom du commit. Il n'y a rien à construire sur le PC.
+Conception et diagrammes : `docs/conception/exploitation/conception-me0b-deploiement.md`. Après chaque fusion sur `main`, la CI publie, une fois tous les contrôles verts, les images du serveur, du site, du solveur et des scripts d'exploitation sur `ghcr.io/claude20022002`, au nom du commit. Il n'y a rien à construire sur le PC.
 
 1. **Choisir le commit** : celui de la fusion sur `main` dont le job « Publier » de la CI est vert (onglet Actions). Le commit court (7 caractères) ou complet (40) convient.
 2. **Répéter sans rien changer** : `bash /opt/hestim/deploy/vps/deployer.sh --essai <commit>` (tire les images et vérifie qu'elles portent ce commit).
@@ -306,7 +306,7 @@ Pendant l'arrêt, la tâche `*/15` de `sauvegarder-journaux.sh` peut échouer un
 
 ### Supervision (lot ME-21)
 
-Conception et diagrammes : `docs/plans/planner-multi-etablissements/conception-me21-supervision.md`. Une sonde hébergée (Better Stack ou UptimeRobot) interroge Planner depuis l'extérieur et prévient la personne d'astreinte par courriel et par notification sur le téléphone. Aucune donnée d'élève ne sort : la sonde ne lit que des codes HTTP et des mots-clés.
+Conception et diagrammes : `docs/conception/exploitation/conception-me21-supervision.md`. Une sonde hébergée (Better Stack ou UptimeRobot) interroge Planner depuis l'extérieur et prévient la personne d'astreinte par courriel et par notification sur le téléphone. Aucune donnée d'élève ne sort : la sonde ne lit que des codes HTTP et des mots-clés.
 
 1. **Sur le serveur, une fois** : ajouter à `/opt/hestim/.env.docker` le jeton des mesures et le nom de l'école dans les journaux, puis recréer le conteneur du serveur de Planner (un simple redémarrage ne relit pas `.env.docker`) :
    ```bash

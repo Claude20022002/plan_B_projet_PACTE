@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Mise en ligne en une commande (lot ME-0b ; conception : docs/plans/planner-multi-etablissements/
+# Mise en ligne en une commande (lot ME-0b ; conception : docs/archives/plans/planner-multi-etablissements/
 # conception-me0b-deploiement.md). Remplace preparer-maj.sh et appliquer-maj.sh pour Planner :
 # les images sont construites et publiées par la CI après chaque fusion sur main, au nom du commit.
 # À lancer en root sur le serveur :

@@ -4,7 +4,7 @@ import { ErreurMetier } from "../planning/enseignements.js";
 import { SIGNATURES } from "../../utils/fichiers.js";
 
 /**
- * Texte d'un support de cours, découpé en repères citables (plan docs/plans/quiz-ia.md, lot IA-2) :
+ * Texte d'un support de cours, découpé en repères citables (plan docs/archives/plans/quiz-ia.md, lot IA-2) :
  * page d'un PDF, diapositive d'un PowerPoint (notes de l'orateur comprises), partie d'un Word
  * (un Word n'a pas de pages fixes : parties d'environ MOTS_PAR_PARTIE mots).
  * Le fichier n'est lu qu'en mémoire et n'est jamais conservé.

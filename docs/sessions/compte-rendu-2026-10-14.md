@@ -4,7 +4,7 @@
 
 **Deux groupes travaillent en parallèle** : groupe A (socle : `backend/`, `solver/`, `deploy/`, `docs/`) et groupe B (interface : `frontend/`, `mobile/`, `shared/`). Le chef de projet dit son groupe à chaque session ; s'il ne le dit pas, le demander. Les deux dernières sessions ont été menées pour les deux groupes à la demande du chef de projet, chacun dans son dossier et ses branches.
 
-L'index de toute la documentation est dans [docs/README.md](../README.md). Le détail de chaque lot est dans [journal-groupe-a.md](journal-groupe-a.md) et [journal-groupe-b.md](journal-groupe-b.md).
+L'index de toute la documentation est dans [docs/README.md](../README.md). Le détail de chaque lot est dans [journal-groupe-a.md](../archives/sessions/journal-groupe-a.md) et [journal-groupe-b.md](../archives/sessions/journal-groupe-b.md).
 
 ## 1. L'essentiel
 
@@ -166,7 +166,7 @@ Solutions pour récupérer des jeux, de la plus sûre à la plus risquée :
 | # | Solution | Ce qu'on récupère | Droit | Travail |
 |---|---|---|---|---|
 | 1 | L'enseignant reprend **ses propres** quiz : import par tableur, ou par identifiant Kahoot | Les quiz que les enseignants de l'école ont déjà faits | Sûr : l'auteur reprend son travail | Petit : brancher une route existante dans « Mes quiz » |
-| 2 | Génération par l'IA depuis un support de cours (`docs/plans/quiz-ia.md`) | Des quiz neufs, sur le contenu de l'école | Sûr | Rien à ajouter |
+| 2 | Génération par l'IA depuis un support de cours (`docs/archives/plans/quiz-ia.md`) | Des quiz neufs, sur le contenu de l'école | Sûr | Rien à ajouter |
 | 3 | Contenus sous licence libre : banques de questions, jeux à code ouvert, simulations | Des questions et des jeux entiers | Sûr si la licence est respectée : auteur cité, licence gardée, comme pour Terminal Linux | Moyen : un jeu = un moteur et un écran |
 | 4 | S'inspirer des mécaniques (podium, équipes, remise en ordre, estimation) et tout réécrire | Des formes de jeu, pas de contenu | Sûr : une mécanique n'est pas protégée ; le nom, les visuels, les textes et le code le sont | Moyen à grand |
 | 5 | Import par identifiant de quiz **publics** d'autres auteurs | N'importe quel quiz public de Kahoot | **Risqué** : le quiz appartient à son auteur, et l'adresse lue n'est pas une interface officielle de Kahoot | Petit, mais à ne pas ouvrir sans accord |

@@ -1,5 +1,5 @@
 # shellcheck shell=bash
-# Fonctions de deployer.sh (lot ME-0b, docs/plans/planner-multi-etablissements/conception-me0b-deploiement.md),
+# Fonctions de deployer.sh (lot ME-0b, docs/conception/exploitation/conception-me0b-deploiement.md),
 # à part pour être essayées sur un faux Docker (deploy/vps/tests/tester-deployer.sh).
 # Variables attendues : REGISTRE (ghcr.io/claude20022002), HESTIM (/opt/hestim).
 

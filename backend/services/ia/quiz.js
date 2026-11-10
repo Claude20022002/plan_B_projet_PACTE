@@ -10,7 +10,7 @@ import { creerQuizClassQuiz } from "../quiz/devoirs.js";
 import { nomProduit } from "../etablissement/identite.js";
 
 /**
- * Quiz générés par l'IA (docs/plans/quiz-ia.md, lot IA-3). L'enseignant dépose un support pour
+ * Quiz générés par l'IA (docs/archives/plans/quiz-ia.md, lot IA-3). L'enseignant dépose un support pour
  * l'un de ses modules ; le texte est envoyé au modèle, qui propose des QCM ; Planner valide
  * strictement chaque question et garde un brouillon que l'enseignant relit avant toute création
  * dans ClassQuiz. La génération est asynchrone : la route répond aussitôt, le navigateur suit l'état.

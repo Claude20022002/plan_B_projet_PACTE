@@ -6,7 +6,7 @@ import { aujourdhui } from "../planning/affectationRules.js";
 import { journaliser } from "../journalSecurite.js";
 
 /**
- * Historique de l'appel d'une classe (docs/plans/espace-de-cours.md, lot E-6), pour l'enseignant de
+ * Historique de l'appel d'une classe (docs/archives/plans/espace-de-cours.md, lot E-6), pour l'enseignant de
  * la classe et l'administration : les séances et leur bilan, le taux de présence de chaque étudiant,
  * l'export en CSV. Seules les séances dont l'appel est fermé comptent dans les taux : un appel non
  * fait ne rend personne absent.

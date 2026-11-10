@@ -1,6 +1,6 @@
 # Script de la vidéo de présentation (lot V-1)
 
-Rédigé le 11 octobre 2026. Il remplace `prompt-video-motion-design.md` (vidéo de 42 s) et le tableau des scènes de `video/README.md` (62 s) comme référence de ce que la vidéo raconte. Il suit `docs/plans/remarques-par-profil.md`, § 6.
+Rédigé le 11 octobre 2026. Il remplace `prompt-video-motion-design.md` (vidéo de 42 s) et le tableau des scènes de `video/README.md` (62 s) comme référence de ce que la vidéo raconte. Il suit `docs/archives/plans/remarques-par-profil.md`, § 6.
 
 **Statut : à valider par le chef de projet.** Le montage du 12 octobre 2026 (`video/out/matinee-ecole.mp4`, 1 min 15, et `matinee-ecole-9x16.mp4`, 40 s) suit ce script avec trois décisions prises ce jour-là, qui l'emportent sur les sections 2 à 4 ci-dessous :
 

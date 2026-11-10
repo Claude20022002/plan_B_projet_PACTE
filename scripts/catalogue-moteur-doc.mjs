@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
-* Génère les pages lisibles du catalogue du moteur (docs/plans/moteur-planification/catalogue) depuis
+* Génère les pages lisibles du catalogue du moteur (docs/conception/moteur-planification/catalogue) depuis
 * les fichiers JSON de backend/services/moteur/catalogue. Les JSON font foi : ne pas modifier ces pages
 * à la main. Un test échoue si elles ne sont plus à jour.
 *
@@ -13,7 +13,7 @@ import { chargerDependances, chargerFamilles, chargerParametres, chargerProfils 
 import { rangsDeCalcul } from '../backend/services/moteur/catalogue/verifier.js';
 
 const RACINE = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
-const DOSSIER = path.join(RACINE, 'docs/plans/moteur-planification/catalogue');
+const DOSSIER = path.join(RACINE, 'docs/conception/moteur-planification/catalogue');
 
 const AVERTISSEMENT = '<!-- Page générée par scripts/catalogue-moteur-doc.mjs depuis backend/services/moteur/catalogue : ne pas modifier à la main. -->\n\n';
 const NIVEAUX = { G: 'global', P: 'pédagogique', I: 'individuel' };

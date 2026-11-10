@@ -1,6 +1,6 @@
 # Étude de benchmark concurrentiel : ERP scolaire modulaire
 
-> **Document d'étude rédigé par ChatGPT, corrigé le 4 novembre 2026.** Prix relus sur les pages officielles ce jour-là, prix affichés, pas des devis. Le benchmark de référence, plus complet (20 éditeurs marocains), avec ses sources et ses réserves, est docs/plans/modele-economique/benchmark.md. Aucun concurrent n'a été testé. Les recommandations ci-dessous restent celles de ChatGPT, sauf là où une décision du chef de projet est indiquée.
+> **Document d'étude rédigé par ChatGPT, corrigé le 4 novembre 2026.** Prix relus sur les pages officielles ce jour-là, prix affichés, pas des devis. Le benchmark de référence, plus complet (20 éditeurs marocains), avec ses sources et ses réserves, est docs/archives/plans/modele-economique/benchmark.md. Aucun concurrent n'a été testé. Les recommandations ci-dessous restent celles de ChatGPT, sauf là où une décision du chef de projet est indiquée.
 
 Étude de marché – Novembre 2026
 
@@ -111,7 +111,7 @@ Proposition de vente : centraliser les processus académiques, administratifs et
 
 Cette catégorie est particulièrement importante, car elle représente vos concurrents commerciaux directs.
 
-Liste complétée le 4 novembre 2026 : les éditeurs ci-dessous ne sont qu'une partie du marché. Acadelta, SchoolApp, Minassa, Tayssir, SchoolMA, E-Schools, EduSchoolConnect, Qalam, EduConnect, Mon Ecole PRO, E-Madrassati et Medrassa sont aussi actifs (voir docs/plans/modele-economique/benchmark.md).
+Liste complétée le 4 novembre 2026 : les éditeurs ci-dessous ne sont qu'une partie du marché. Acadelta, SchoolApp, Minassa, Tayssir, SchoolMA, E-Schools, EduSchoolConnect, Qalam, EduConnect, Mon Ecole PRO, E-Madrassati et Medrassa sont aussi actifs (voir docs/archives/plans/modele-economique/benchmark.md).
 
 5\. Skoolly
 
@@ -588,7 +588,7 @@ Positionnement premium avec fonctionnalités avancées
 
 Valider mes orientations
 
-**Décisions des 4 et 5 novembre 2026 :** écoles privées d'abord, puis formation professionnelle ; plusieurs écoles sur une installation en premier ; vente mise de côté ; le socle est inclus dans tout abonnement. Voir docs/plans/plan-produit/04-plan-fusionne.md.
+**Décisions des 4 et 5 novembre 2026 :** écoles privées d'abord, puis formation professionnelle ; plusieurs écoles sur une installation en premier ; vente mise de côté ; le socle est inclus dans tout abonnement. Voir docs/archives/plans/plan-produit/04-plan-fusionne.md.
 
 Le véritable objectif est de construire une plateforme dont les établissements peuvent commencer à utiliser une seule fonctionnalité, puis augmenter progressivement leur utilisation et leur abonnement.
 

@@ -106,7 +106,7 @@ describe("catalogue du moteur : profils", () => {
 describe("catalogue du moteur : documentation", () => {
     test("les pages générées sont à jour (node scripts/catalogue-moteur-doc.mjs)", async () => {
         const { pagesDuCatalogue } = await import(pathToFileURL(path.join(RACINE, "scripts/catalogue-moteur-doc.mjs")).href);
-        const dossier = path.join(RACINE, "docs/plans/moteur-planification/catalogue");
+        const dossier = path.join(RACINE, "docs/conception/moteur-planification/catalogue");
         const pages = pagesDuCatalogue();
         expect(readdirSync(dossier).sort()).toEqual(Object.keys(pages).sort());
         for (const [nom, contenu] of Object.entries(pages)) expect(readFileSync(path.join(dossier, nom), "utf8").replace(/\r\n/g, "\n")).toBe(contenu);
