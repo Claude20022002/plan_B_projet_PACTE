@@ -44,14 +44,29 @@ Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 - **Démarrage** : les migrations de la base unique s'appliquent avant d'écouter. **62 migrations, 78 modèles.**
 - **Données** : `backend/seed.js` crée l'école de démonstration (environ 680 étudiants, une quinzaine de groupes, des enseignements), **sans aucune séance** : les séances viennent de la génération.
 - **MySQL de l'ancien serveur** (`deploy/vps/mysql.cnf`) : mémoire tampon de 128 Mo, `max_connections = 60`, `table_open_cache = 400`, conteneur de 512 Mo.
-- **Les autres services de Planner ont 3,2 Go de limites** (`deploy/vps/docker-compose.vps.yml`) : solveur 640 Mo, StudyLib 544 Mo, ClassQuiz 1,2 Go, MinIO, Meilisearch, Redis, Caddy, site. Sans ClassQuiz, il reste 2,0 Go.
+- **Les autres services de Planner ont 3,2 Go de limites** (`deploy/vps/docker-compose.vps.yml`) : solveur 640 Mo, StudyLib 544 Mo, ClassQuiz 1,2 Go, MinIO, Meilisearch, Redis, Caddy, site. Sans ClassQuiz, il reste 2,0 Go. Ce sont des plafonds : l'ancien serveur faisait tourner tout Planner, plus une autre application, dans 3,7 Go.
+- **Le nouveau serveur** (P-4, relevé le 10 novembre ; ni nom ni adresse ici, le dépôt est public) :
+
+  | Élément | Valeur |
+  |---|---|
+  | Processeurs | 4 cœurs virtuels (Intel Haswell), 1 fil par cœur |
+  | Mémoire | 7,6 Gio ; **aucune mémoire d'échange** (swap) |
+  | Disque | 74 Go, 32 Go libres (ext4) ; annoncé rotatif, peut-être un disque virtuel |
+  | Docker | 29.4.3, Compose v5.1.3, cgroup v2 |
+  | Fichiers ouverts dans un conteneur | 1 024 (souple), 524 288 (maximum) |
+  | Déjà en service, sans limite de mémoire | n8n 367 Mio, sa base PostgreSQL 49 Mio, Qdrant 96 Mio, Traefik 66 Mio (le proxy de l'hôte), **Ollama 4,7 Gio** |
+
+  Avec un modèle chargé dans Ollama, il reste **environ 2,3 Gio** pour Planner. Sans modèle chargé, il en reste environ 7 Gio. Ollama calcule aussi sur les mêmes 4 cœurs : pendant une réponse d'Ollama, Planner manquerait de processeur (C-22, C-23).
 
 ## 3. Questions et réponses
 
 | N° | Question | Proposition | Réponse du chef |
 |---|---|---|---|
 | P-3 | Où mesurer ? | en local, MySQL limité ; courte vérification sur le serveur pendant EXP-02 | validé le 10 nov. |
-| P-4 | Caractéristiques du nouveau serveur, et du poste de mesure (P-3) | commandes de lecture seule données au chef le 10 nov. : sur le serveur après connexion SSH, et sur le poste en PowerShell | **résultats attendus** (le premier essai a tourné sur le poste Windows, pas sur le serveur) |
+| P-4 | Caractéristiques du nouveau serveur, et du poste de mesure (P-3) | commandes de lecture seule | **serveur : relevé le 10 nov.** (§ 2) ; **poste : attendu** (les commandes ont tourné sur le serveur) |
+| **P-19** | Ollama doit-il rester sur ce serveur, avec un modèle chargé en permanence (4,7 Gio) ? | à décider avec ses chiffres exacts : modèle, durée de maintien en mémoire, part réelle de la mémoire. Sinon : le décharger après usage, le limiter, ou le déplacer | |
+| **P-20** | Ajouter une mémoire d'échange (swap) de 2 à 4 Go sur le serveur ? | oui, dans EXP-02 : sans elle, un pic de mémoire fait tuer un conteneur au hasard (n8n compris) | |
+| **P-21** | n8n a-t-il des traitements lourds, à quelles heures ? | à dire par le chef ; la mesure prend le pic, pas la moyenne | |
 | P-4 bis | Deux enveloppes, 4 et 8 Go | **remplacée par C-1** (§ 12) | validée le 10 nov., puis remplacée |
 | P-5 | 200 bases, chacune avec une école fictive | oui | validé le 10 nov. |
 | P-5 bis, ter | Base modèle tirée de `seed.js` ; séances recopiées par SQL | validé le 10 nov. ; **précisé par C-5 et C-6** | validé |
@@ -124,7 +139,7 @@ sequenceDiagram
 
 | Seuil | Mesure | Valeur |
 |---|---|---|
-| S1 (C-1, P-15) | M1 + M2 sous charge | besoin de Node et de MySQL + autres services (3,2 Go ; 2,0 Go sans ClassQuiz) + 20 % ≤ mémoire du serveur moins le pic de n8n |
+| S1 (C-1, P-15) | M1 + M2 sous charge | besoin de Node et de MySQL + autres services (3,2 Go ; 2,0 Go sans ClassQuiz) + 20 % ≤ 7,6 Gio moins le pic de n8n, Qdrant, Traefik **et Ollama** (P-19) |
 | S2 | M4 | première réponse en moins de **60 s** |
 | S3 | M5b | migration d'étude sur 200 bases en moins de **30 min** |
 | S4 | M6 | p95 en moins de **1 s** au rythme de P-17 ; aucune erreur (réponse 5xx, refus de connexion ou délai de plus de 10 s) |
@@ -252,3 +267,7 @@ Le chef de projet a demandé de chercher les failles du plan avant de le valider
 | C-19 | Place disque du poste non vérifiée | faible | contrôle avant la préparation |
 | C-20 | `docker stats` sous Docker Desktop compte une part du cache de fichiers | faible | méthode de calcul écrite et appliquée |
 | C-21 | L'école par défaut (`DB_NAME`) aurait fait une 201e base | faible | école 001 = école par défaut |
+| C-22 | Le serveur n'est pas vide : **Ollama occupe 4,7 Gio** sur 7,6. Avec lui chargé, les seuls plafonds des autres services de Planner (3,2 Go) dépassent ce qui reste (2,3 Gio), avant même MySQL et Node | haute : S1 échoue d'avance | P-19 ; le rapport donne le besoin de Planner, avec et sans Ollama ; série de relevé de la mémoire réelle des autres services (pas seulement leurs plafonds) |
+| C-23 | Ollama calcule sur les 4 mêmes cœurs que Planner | moyenne : p95 dégradé pendant ses réponses | une série M6 avec 3 cœurs sur 4 occupés, pour simuler une réponse d'Ollama |
+| C-24 | Aucune mémoire d'échange : un dépassement fait tuer un processus par le noyau, peut-être n8n | haute pour n8n | P-20 ; la vérification P-13 ne se fait qu'avec une marge de 1 Gio |
+| C-25 | Le proxy de l'hôte est **Traefik**, pas nginx comme sur l'ancien serveur (`deploy/vps/nginx-hestim.conf`) | moyenne, pour EXP-02 | signalé au chantier EXP |

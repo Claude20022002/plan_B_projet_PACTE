@@ -49,7 +49,8 @@
 
 | N° | Question | Réponse | État |
 |---|---|---|---|
-| P-4 | Caractéristiques du nouveau serveur | commandes données au chef (ci-dessous) | **résultats attendus** |
+| P-4 | Caractéristiques du nouveau serveur | relevé le 10 nov. (plan, § 2) ; poste de mesure encore attendu | serveur réglé |
+| P-19 à P-21 | Ollama (4,7 Gio), mémoire d'échange, pics de n8n | — | **en attente** |
 | P-11 à P-14 | voir le plan, § 3 | validées le 10 nov. | réglé |
 | P-15 | S1 sur le besoin réel (C-1) | — | **en attente** |
 | P-16 | Garder les ~680 étudiants du seed (C-6) | — | **en attente** |
@@ -95,6 +96,7 @@ docker info --format 'CPUs={{.NCPU}} Mem={{.MemTotal}} Version={{.ServerVersion}
 2. Le chef pousse, puis fusionne #162, #142, #156, #161 et #163.
 3. Cette branche fusionne `origin/main`. Les réponses vont dans le § 3 du plan, la ligne « Validé » est remplie, et le tout est commité.
 4. Étapes 3 à 8 du plan (§ 9).
+5. **Pour le chantier EXP** (EXP-01, EXP-02) : sur le nouveau serveur, le proxy de l'hôte est **Traefik** (conteneur de n8n), pas nginx ; aucune mémoire d'échange ; Ollama occupe 4,7 Gio sans limite (plan PLA-06, § 2 et C-22 à C-25).
 
 ## Commandes pour le chef de projet
 
