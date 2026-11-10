@@ -21,10 +21,12 @@ import CarteSeance from './CarteSeance';
 import FicheSeance from './FicheSeance';
 import ListeSemaine from './ListeSemaine';
 import { localeEcran } from '../../utils/dates';
+import { joursMasques } from '../../utils/semaine';
 
 /**
  * Emploi du temps hebdomadaire, séances en cartes claires (R-7) :
  * - ordinateur : grille lundi → samedi à échelle horaire fixe (toutes les semaines comparables),
+ *   plus le dimanche quand une séance de la semaine y tombe ;
  *   chaque séance en carte haute de sa durée, liseré de la couleur du module ;
  * - téléphone (ou vue liste) : les mêmes cartes, jour par jour.
  * S'ouvre sur la semaine qui contient effectivement des séances.
@@ -207,7 +209,7 @@ export default function EnhancedTimetable({ affectations = [], actions, columns 
             locale={i18n.language === 'fr' ? 'fr' : 'en-gb'}
             headerToolbar={false}
             firstDay={1}
-            hiddenDays={[0]}
+            hiddenDays={joursMasques(weekSessions)}
             allDaySlot={false}
             slotMinTime="08:30:00"
             slotMaxTime="18:30:00"
