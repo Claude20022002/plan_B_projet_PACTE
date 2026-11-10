@@ -17,7 +17,8 @@ D-01 dit : **une base MySQL par école**, chacune avec son utilisateur, sur une 
 - dit **la mémoire et le nombre de processeurs nécessaires** pour 200 écoles, et si le nouveau serveur les a ;
 - conclut **D-01 confirmée** ou **D-01 rouverte**, ce que le chef inscrit dans [decisions.md](../../plan/decisions.md) ;
 - donne les réglages à reprendre dans EXP-02 et PLA-01 : pools, `max_connections`, `table_open_cache`, `open_files_limit`, mémoire de MySQL ;
-- liste ce que la mesure a révélé pour PLA-01 et PLA-02 (tâches périodiques, limiteurs, démarrage).
+- liste ce que la mesure a révélé pour PLA-01 et PLA-02 (tâches périodiques, limiteurs, démarrage) ;
+- dit **sur quelles machines** chaque chiffre a été mesuré. Les machines du 10 novembre sont **provisoires** (P-24) : les chiffres sont marqués « provisoires », et une série de confirmation est refaite sur la machine définitive quand elle existe.
 
 Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 
@@ -78,7 +79,8 @@ Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 | **P-17** | Rythme de l'activité : 50 utilisateurs par école active, une consultation toutes les 30 s (environ 33 requêtes par seconde), puis une rampe jusqu'à ce que le p95 dépasse 1 s (C-13) | oui | validé le 10 nov. |
 | **P-18** | Les tâches périodiques tournent pendant la mesure, sur les 200 écoles (C-2) | oui | validé le 10 nov. |
 | **P-22** | Piloter une série depuis le PC Windows : `serie.mjs` y tourne, lance `charge.mjs` sur place, et commande le PC Ubuntu par SSH (clé, pas de mot de passe) | oui ; sinon le chef lance les deux moitiés à la main, à l'heure dite | |
-| **P-23** | Le PC Ubuntu : processeurs, mémoire, disque, Docker, Node 22, même réseau local que le PC Windows, allumé pendant les séries (environ 8 h) | doit offrir au moins 4 cœurs et 8 Go, pour imiter le serveur | |
+| **P-23** | Le PC Ubuntu : processeurs, mémoire, disque, Docker, Node 22, même réseau local que le PC Windows, allumé pendant les séries (environ 8 h) | doit offrir au moins 4 cœurs et 8 Go, pour imiter le serveur | **4 Go de mémoire, 1 To de disque** (10 nov.) : moins que les 8 Go voulus ; processeurs, Docker, Node, réseau et SSH encore à relever |
+| **P-24** | Avec 4 Go, comment répartir la mesure ? | **mixte** : le PC Ubuntu fait les paliers MySQL de 1 et 2 Go ; le palier de 4 Go se fait sur le PC Windows seulement si celui de 2 Go échoue | **validé le 10 nov., comme solution provisoire** (C-26) |
 
 ## 4. Solution
 
@@ -86,7 +88,9 @@ Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 
 Un **banc de mesure** à part, dans `scripts/mesures/pla-06/`, **sur deux machines** (P-3) :
 - **PC Ubuntu** : MySQL, le serveur de banc et `releves.mjs`, dans Docker natif, comme sur le serveur Debian ;
-- **PC Windows** : `charge.mjs` et `serie.mjs`, qui pilote le PC Ubuntu par SSH (P-22). La charge passe donc par le réseau, comme celle de vrais utilisateurs. **Rien ne change dans `backend/`** : le banc importe `app.js` et les modules de l'essai, crée lui-même la connexion de chaque école, et règle tout par des variables d'environnement qui existent déjà.
+- **PC Windows** : `charge.mjs` et `serie.mjs`, qui pilote le PC Ubuntu par SSH (P-22). La charge passe donc par le réseau, comme celle de vrais utilisateurs.
+- **Paliers** (P-24) : MySQL à 1 Go puis 2 Go sur le PC Ubuntu (4 Go de mémoire), bureau graphique arrêté pendant les séries (`systemctl isolate multi-user.target`). Le palier de 4 Go ne se mesure que si celui de 2 Go échoue, et alors sur le PC Windows (Docker Desktop), avec l'écart dit dans le rapport.
+- **Machines interchangeables** : la répartition est **provisoire** (P-24). Les adresses, les rôles et les limites de chaque machine se règlent dans `.local/machines.json` (ignoré par Git), jamais dans le code. Changer de machine ne demande aucune modification des scripts. **Rien ne change dans `backend/`** : le banc importe `app.js` et les modules de l'essai, crée lui-même la connexion de chaque école, et règle tout par des variables d'environnement qui existent déjà.
 
 - **MySQL 8.4.13** dans un conteneur limité en mémoire (paliers de C-1) et en processeurs. Les fichiers ouverts (`ulimits`) sont réglés comme sur le serveur (P-4).
 - **Le serveur de banc** tourne dans un conteneur Node 22, avec un nombre de processeurs fixé, pour ne pas mesurer la machine hôte.
@@ -206,6 +210,7 @@ C'est une étude : il n'y a pas de test de production à ajouter. Ces contrôles
 - `/moi` renvoie au moins une séance pour l'étudiant témoin de chaque école.
 
 **Pendant une série**
+- une série est **annulée** si une machine du banc se sert de sa mémoire d'échange (relevé de `vmstat` côté Ubuntu) : elle ne mesurerait plus que la lenteur du disque ;
 - aucune réponse 429 : `RATE_LIMIT_API_MAX` est relevé, chaque utilisateur virtuel a sa propre adresse `X-Forwarded-For` et ne se connecte qu'une fois ;
 - une réponse 429 annule la série.
 
@@ -275,6 +280,7 @@ Le chef de projet a demandé de chercher les failles du plan avant de le valider
 | C-19 | Place disque du poste non vérifiée | faible | contrôle avant la préparation |
 | C-20 | `docker stats` sous Docker Desktop compte une part du cache de fichiers | faible | méthode de calcul écrite et appliquée |
 | C-21 | L'école par défaut (`DB_NAME`) aurait fait une 201e base | faible | école 001 = école par défaut |
+| C-26 | Le PC Ubuntu n'a que 4 Go : le palier de 4 Go de MySQL n'y tient pas, et un besoin de plus de 2,5 Go le ferait utiliser sa mémoire d'échange | haute : mesure fausse sans erreur | paliers de 1 et 2 Go sur Ubuntu ; 4 Go sur Windows si besoin ; série annulée en cas de mémoire d'échange ; machines réglées hors du code ; chiffres provisoires (P-24) |
 | C-22 | Le serveur n'est pas vide : **Ollama occupe 4,7 Gio** sur 7,6. Avec lui chargé, les seuls plafonds des autres services de Planner (3,2 Go) dépassent ce qui reste (2,3 Gio), avant même MySQL et Node | haute : S1 échoue d'avance | P-19 ; le rapport donne le besoin de Planner, avec et sans Ollama ; série de relevé de la mémoire réelle des autres services (pas seulement leurs plafonds) |
 | C-23 | Ollama calcule sur les 4 mêmes cœurs que Planner | moyenne : p95 dégradé pendant ses réponses | une série M6 avec 3 cœurs sur 4 occupés, pour simuler une réponse d'Ollama |
 | C-24 | Aucune mémoire d'échange : un dépassement fait tuer un processus par le noyau, peut-être n8n | haute pour n8n | P-20 ; la vérification P-13 ne se fait qu'avec une marge de 1 Gio |

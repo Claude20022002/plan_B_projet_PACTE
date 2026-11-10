@@ -58,7 +58,9 @@
 | P-17 | 50 utilisateurs par école active, toutes les 30 s, puis rampe (C-13) | validé le 10 nov. | réglé |
 | P-18 | Tâches périodiques lancées sur les 200 écoles (C-2) | validé le 10 nov. | réglé |
 | P-22 | Piloter une série depuis le PC Windows par SSH vers le PC Ubuntu | — | **en attente** |
-| P-23 | Chiffres et prérequis du PC Ubuntu (au moins 4 cœurs et 8 Go, Docker, Node 22, même réseau local) | — | **en attente** |
+| P-23 | Chiffres et prérequis du PC Ubuntu (au moins 4 cœurs et 8 Go, Docker, Node 22, même réseau local) | 4 Go de mémoire, 1 To de disque ; le reste à relever | **en partie** |
+| P-24 | Répartition avec 4 Go | mixte : 1 et 2 Go sur Ubuntu, 4 Go sur Windows si besoin ; **solution provisoire** | réglé le 10 nov. |
+| P-25 | Par quoi et quand la machine provisoire sera-t-elle remplacée ? (pour la série de confirmation) | — | **en attente** |
 
 ## Commandes de reconnaissance du serveur (P-4)
 
@@ -117,8 +119,8 @@ sur la branche etude/pla-06-mesure-d01, dans le dossier ..	ravaux-planner\pla-06
 Lis d'abord AGENTS.md, docs/plan/README.md, docs/plan/suivi.md, le plan VALIDÉ
 docs/conception/plateforme/pla-06-mesure-d01.md (tout, surtout § 2, § 4, § 5, § 8, § 9 et § 12)
 et cette fiche (docs/sessions/2026-11-10-etude-pla-06-mesure-d01.md).
-Le plan est validé le 10 novembre : banc (MySQL 8.4.13 et serveur de banc, Docker natif) sur le PC Ubuntu,
-charge depuis le PC Windows par le réseau local ; P-22 et P-23 : <réponses et chiffres du PC Ubuntu à coller ici>.
+Le plan est validé le 10 novembre : banc MIXTE et PROVISOIRE (P-24) : PC Ubuntu de 4 Go pour MySQL (paliers 1 et 2 Go)
+et le serveur de banc, charge depuis le PC Windows ; machines réglées dans .local/machines.json, jamais dans le code ; P-22 et P-23 : <réponses et chiffres du PC Ubuntu à coller ici>.
 Code les étapes 3 à 8 du § 9 dans scripts/mesures/pla-06/, une étape par commit, chaque fichier sous 300 lignes
 avec son commentaire de rôle : rien dans backend/ ni deploy/, aucun export, résultat brut ni secret dans le dépôt
 (.gitignore d'abord). Tu ne lances aucune série toi-même sur le PC Ubuntu : tu donnes les commandes au chef.
