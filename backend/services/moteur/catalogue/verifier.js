@@ -200,6 +200,8 @@ export const verifierProfil = (profil, parametres, dependances) => {
         if (p.type === "enum" && "valeur" in reglage && reglage.valeur !== null && !p.valeurs.includes(reglage.valeur)) erreurs.push(`${profil.code} : ${id} hors liste : ${reglage.valeur}`);
         if ("force" in reglage && !p.force_reglable) erreurs.push(`${profil.code} : la force de ${id} n'est pas réglable`);
         if ("poids" in reglage && (reglage.force ?? p.force) !== "souple") erreurs.push(`${profil.code} : ${id} n'est pas souple, il n'a pas de poids`);
+        // Une règle stricte n'a pas de poids au catalogue : l'assouplir sans en donner un la rendrait sans effet
+        if (p.force_reglable && reglage.force === "souple" && !(reglage.poids > 0) && !(p.poids > 0)) erreurs.push(`${profil.code} : ${id} devient souple sans poids`);
     }
     return [...erreurs, ...coherenceDesValeurs(valeursDuProfil(profil, parametres), dependances).map((m) => `${profil.code} : ${m}`)];
 };

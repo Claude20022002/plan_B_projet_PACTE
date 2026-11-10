@@ -4,7 +4,7 @@ import { journaliser } from "../journalSecurite.js";
 import { etudiantsAttendus, seanceDeLEnseignant } from "./appel.js";
 
 /**
- * Statut d'un étudiant à l'appel (docs/plans/espace-de-cours.md, lot E-6) : présent, en retard ou
+ * Statut d'un étudiant à l'appel (docs/archives/plans/espace-de-cours.md, lot E-6) : présent, en retard ou
  * absent. Pas de statut « excusé » (décision du 15 octobre 2026). Absent = pas de ligne de
  * présence ; un retard est une présence (l'étudiant est dans la salle), marquée comme telle.
  */

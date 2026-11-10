@@ -1,5 +1,5 @@
 /**
- * Espace de cours d'une classe (docs/plans/espace-de-cours.md) : sections et supports. Les fichiers
+ * Espace de cours d'une classe (docs/archives/plans/espace-de-cours.md) : sections et supports. Les fichiers
  * vont dans la Bibliothèque (StudyLib) par le serveur de Planner ; le site ne voit que des références.
  */
 import { authAPI, ensureCsrfToken, request, telecharger } from './api';

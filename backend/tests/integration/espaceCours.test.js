@@ -6,7 +6,7 @@ import { Appartenir, CoursComposante, Enseignement, EnseignementEnseignant, Grou
 import { definirClientStudyLib, transmettreDepot } from "../../services/cours/studylib.js";
 
 /**
- * Espace de cours d'une classe (docs/plans/espace-de-cours.md, lot E-2). La promotion a deux TD ;
+ * Espace de cours d'une classe (docs/archives/plans/espace-de-cours.md, lot E-2). La promotion a deux TD ;
  * le TD1 (et son TP1) est la classe étudiée, confiée à deux enseignants ; le TD2 à un troisième.
  * StudyLib est remplacé par un faux qui garde ses documents et note chaque appel : on vérifie que
  * Planner n'appelle StudyLib qu'après avoir vérifié les droits, avec le bon jeton.

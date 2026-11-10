@@ -1,5 +1,5 @@
 /**
- * Appel à trois statuts (docs/plans/espace-de-cours.md, lot E-6) : présent, en retard, absent.
+ * Appel à trois statuts (docs/archives/plans/espace-de-cours.md, lot E-6) : présent, en retard, absent.
  * Absent reste l'absence de ligne ; une présence porte désormais son statut (« present » par
  * défaut : toutes les lignes existantes le sont) et, facultatif, un motif court. modifie_par et
  * modifie_le gardent la trace d'une correction faite à la main, après le scan ou après l'appel.

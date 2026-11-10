@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Tab, Tabs } from '@mui/material';
 
 /**
- * « Mon service » de l'enseignant (docs/plans/espace-de-cours.md, lot E-8) : ses services, ses
+ * « Mon service » de l'enseignant (docs/archives/plans/espace-de-cours.md, lot E-8) : ses services, ses
  * disponibilités et ses demandes de report, trois onglets d'une même rubrique au lieu de trois
  * entrées de menu. Chaque onglet garde son adresse : les notifications, les fiches d'aide et le
  * tableau de bord qui y mènent restent valables.

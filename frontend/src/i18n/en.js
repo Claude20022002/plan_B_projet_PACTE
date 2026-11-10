@@ -550,7 +550,7 @@ const en = {
     disponibilites: 'Availability',
     reports: 'Rescheduling requests',
   },
-  // Course space of a class (docs/plans/espace-de-cours.md)
+  // Course space of a class (docs/archives/plans/espace-de-cours.md)
   espaceCours: {
     titrePage: 'Course space',
     mesCours: 'My courses',

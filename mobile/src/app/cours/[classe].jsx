@@ -15,7 +15,7 @@ import { CIBLE_TACTILE, creerStyles, espace, lineColor, useTheme } from '../../t
 const CLASSE = /^(\d{1,10})-(\d{1,10})$/;
 
 /**
- * Un de mes cours (docs/plans/espace-de-cours.md, lot E-5) : les supports que mes enseignants ont
+ * Un de mes cours (docs/archives/plans/espace-de-cours.md, lot E-5) : les supports que mes enseignants ont
  * publiés pour ma classe, section par section, rangés comme les documents d'un module. Un document
  * s'ouvre dans la fiche habituelle (téléchargement, lecture hors connexion) ; un lien, dans le
  * navigateur du téléphone. Les sondages ouverts de l'enseignant (lot EC-9) passent en tête.

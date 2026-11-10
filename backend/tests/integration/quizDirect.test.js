@@ -3,7 +3,7 @@ import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import { Appartenir, Groupe, Notification, SessionQuiz } from "../../models/index.js";
 
 /**
- * Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1a) : lancement par l'enseignant
+ * Quiz en direct du Studio (docs/archives/plans/sortie-classquiz.md, lot SC-1a) : lancement par l'enseignant
  * pour sa classe, arrivée par le code, question par question, réponses corrigées et chronométrées
  * par le serveur (justesse et rapidité), fermeture d'office, classement, équipes, podium.
  */

@@ -31,6 +31,7 @@ import campusRoutes from "./routes/campusRoutes.js";
 import calendrierRoutes from "./routes/calendrierRoutes.js";
 import evenementRoutes from "./routes/evenementRoutes.js";
 import parametrePlanningRoutes from "./routes/parametrePlanningRoutes.js";
+import moteurValeursRoutes from "./routes/moteurValeursRoutes.js";
 import composanteRoutes from "./routes/composanteRoutes.js";
 import enseignementRoutes from "./routes/enseignementRoutes.js";
 import serviceRoutes from "./routes/serviceRoutes.js";
@@ -73,6 +74,7 @@ import {
     notFound,
     optionalAuth,
 } from "./middleware/index.js";
+import { choisirEtablissement } from "./middleware/etablissementMiddleware.js";
 
 dotenv.config();
 
@@ -111,6 +113,9 @@ app.use(
         credentials: true,
     })
 );
+
+// Établissement de la requête (D-03, essai de ME-3a) : avant tout accès à la base
+app.use(choisirEtablissement);
 
 // Fournisseur OpenID Connect (ClassQuiz) : avant les lecteurs de corps, qu'oidc-provider gère
 // lui-même ; hors CSRF (le client s'authentifie par son secret sur /token)
@@ -174,6 +179,7 @@ app.use("/api/campus", campusRoutes);
 app.use("/api/calendrier", calendrierRoutes);
 app.use("/api/evenements", evenementRoutes);
 app.use("/api/parametres-planning", parametrePlanningRoutes);
+app.use("/api/moteur", moteurValeursRoutes);
 app.use("/api/composantes", composanteRoutes);
 app.use("/api/enseignements", enseignementRoutes);
 app.use("/api/services", serviceRoutes);
@@ -194,11 +200,11 @@ app.use("/api/presences", presenceRoutes);
 app.use("/api/devoirs", devoirRoutes);
 app.use("/api/journal-securite", journalSecuriteRoutes);
 app.use("/api/quiz-ia", quizIaRoutes);
-// Espace de cours des classes (docs/plans/espace-de-cours.md) : /classes, /sections-cours, /supports-cours
+// Espace de cours des classes (docs/archives/plans/espace-de-cours.md) : /classes, /sections-cours, /supports-cours
 app.use("/api", espaceCoursRoutes);
 app.use("/api", sondageRoutes);
 app.use("/api", etablissementRoutes);
-// Studio quiz : moteur de quiz natif (docs/plans/studio-quiz.md)
+// Studio quiz : moteur de quiz natif (docs/archives/plans/studio-quiz.md)
 app.use("/api/studio-quiz", studioQuizRoutes);
 app.use("/api/passations", passationRoutes);
 

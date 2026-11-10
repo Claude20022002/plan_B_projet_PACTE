@@ -9,7 +9,7 @@ import { jetonDe } from "../services/cours/studylib.js";
 import { appelsDeLaClasse, elevesDeLaClasse, exporterPresences } from "../services/presences/historique.js";
 
 /**
- * Espace de cours d'une classe (docs/plans/espace-de-cours.md, § 7). Une classe est désignée par
+ * Espace de cours d'une classe (docs/archives/plans/espace-de-cours.md, § 7). Une classe est désignée par
  * son module et son groupe ; les droits sont vérifiés dans services/cours/droits.js. Les fichiers
  * vont dans StudyLib : le dépôt est transmis en flux, sans être lu ici (pas de lecteur de corps
  * multipart dans Planner).

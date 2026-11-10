@@ -6,7 +6,7 @@ import { groupesDeLAnnee } from "../annees/annees.js";
 
 /**
  * Droits sur l'espace de cours d'une classe (module, groupe). Deux questions seulement, testées à
- * part (docs/plans/espace-de-cours.md, § 8) :
+ * part (docs/archives/plans/espace-de-cours.md, § 8) :
  *  - gérer : l'administration, ou un enseignant dont c'est la classe (ou un sous-groupe de sa
  *    classe, ou la filière dont il est responsable) ;
  *  - voir : qui gère, ou un étudiant du groupe ou de l'un de ses sous-groupes (un étudiant de TP

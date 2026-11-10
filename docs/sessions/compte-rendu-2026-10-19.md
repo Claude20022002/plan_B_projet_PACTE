@@ -1,6 +1,6 @@
 # Compte rendu de la session du 18 au 20 octobre 2026
 
-À lire **après** `compte-rendu-2026-10-18.md` (état complet du projet, PR #52, pas encore fusionné) : ce compte rendu ne reprend que ce qui a changé depuis. Les règles de travail restent celles du § 4 de `compte-rendu-2026-10-11.md`, et les règles de code celles du § 6 de `docs/plans/assainissement.md`.
+À lire **après** `compte-rendu-2026-10-18.md` (état complet du projet, PR #52, pas encore fusionné) : ce compte rendu ne reprend que ce qui a changé depuis. Les règles de travail restent celles du § 4 de `compte-rendu-2026-10-11.md`, et les règles de code celles du § 6 de `docs/archives/plans/assainissement.md`.
 
 ## 1. L'essentiel
 
@@ -49,7 +49,7 @@
 - `routes/sessionJeuRoutes.js` (`/api/sessions-jeu`), `services/jeux/sessions.js` (enseignant), `services/jeux/sessionsEtudiant.js` (étudiant). Codes à 6 caractères sans 0/O/1/I/L ; 20 codes essayés par quart d'heure et par compte ; seuls les étudiants du module entrent ; le code n'est jamais renvoyé aux étudiants.
 - Lancer une session propose le jeu dans le module s'il ne l'était pas (c'est ce qui ouvre le jeu aux étudiants).
 - `shared/terminal/tableau.js` : le même rejeu du terminal au tableau, sur les téléphones et au serveur (joueur « classe »).
-- Catalogue : chaque jeu déclare ses `modes` (`shared/jeux/catalogue.js`, `modesDuJeu`) ; le terminal Linux a les deux. **Un jeu sans `modes` ne se lance qu'en individuel** : les simulations d'Alexis devront le déclarer (le contrat `docs/plans/jeux-pedagogiques.md` n'a pas été modifié, en attente de l'accord du chef de projet).
+- Catalogue : chaque jeu déclare ses `modes` (`shared/jeux/catalogue.js`, `modesDuJeu`) ; le terminal Linux a les deux. **Un jeu sans `modes` ne se lance qu'en individuel** : les simulations d'Alexis devront le déclarer (le contrat `docs/conception/jeux/jeux-pedagogiques.md` n'a pas été modifié, en attente de l'accord du chef de projet).
 - **Limite de requêtes** : les téléphones relisent le tableau toutes les 3 s. Le limiteur global (500 par quart d'heure **par IP**) laisse passer `/api/sessions-jeu`, qui a sa propre limite **par compte** (900 par quart d'heure). Le routeur reste derrière la protection CSRF et les autres contrôles (`app.js`).
 
 ## 4. Déploiement

@@ -8,7 +8,7 @@ import EmptyState from '../design-system/components/EmptyState';
 import { espaceCoursAPI } from '../services/espaceCours';
 
 /**
- * « Mes cours » de l'étudiant (docs/plans/espace-de-cours.md, § 5.3) : une carte par cours qui a
+ * « Mes cours » de l'étudiant (docs/archives/plans/espace-de-cours.md, § 5.3) : une carte par cours qui a
  * des supports publiés par ses enseignants. La Bibliothèque reste le lieu des documents de toute
  * l'école ; ici, seulement ceux de ses classes.
  */

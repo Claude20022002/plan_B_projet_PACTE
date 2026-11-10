@@ -12,7 +12,7 @@ import { bonneReponse } from "../../../shared/quiz/studio/correction.js";
 import { vueEtudiant } from "../../../shared/quiz/studio/vueEtudiant.js";
 
 /**
- * Quiz en direct du Studio, côté enseignant (docs/plans/sortie-classquiz.md, lot SC-1a) : lancer
+ * Quiz en direct du Studio, côté enseignant (docs/archives/plans/sortie-classquiz.md, lot SC-1a) : lancer
  * une diffusion en direct, la faire avancer question par question, et l'écran à projeter.
  * L'écran projeté ne montre jamais la bonne réponse avant la correction.
  */

@@ -1,5 +1,5 @@
 /**
- * Parcours « espace de cours » (docs/plans/espace-de-cours.md, lots E-3 et E-5) : l'enseignante
+ * Parcours « espace de cours » (docs/archives/plans/espace-de-cours.md, lots E-3 et E-5) : l'enseignante
  * ouvre sa classe depuis Mes classes, dépose un fichier et ajoute un lien, en masque un ; un
  * étudiant de la classe retrouve le cours dans « Mes cours » et n'y voit que ce qui est publié.
  * La Bibliothèque est la fausse de fausseBibliotheque.mjs. PARCOURS_CAPTURES=<dossier> enregistre

@@ -1,5 +1,5 @@
 /**
- * Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1a) : une diffusion de plus,
+ * Quiz en direct du Studio (docs/archives/plans/sortie-classquiz.md, lot SC-1a) : une diffusion de plus,
  * question par question au signal de l'enseignant, qui remplacera les parties de ClassQuiz.
  *  - SessionsQuiz gagne son mode (« rythme » : chacun à son rythme, « direct ») et, en direct,
  *    l'étape en cours, la question projetée, l'heure de son ouverture et un numéro de version ;

@@ -1,6 +1,6 @@
 # Compte rendu de la session du 21 octobre 2026 (groupe A : serveur, solveur, déploiement)
 
-À lire **après** `compte-rendu-2026-10-20.md` (état du projet, incident du déplacement, décisions du 20 octobre) et **avec** `compte-rendu-2026-10-21.md` (PR #69, groupe B : retours du chef de projet, plan R-0 à R-11, textes humanisés, report côté site). Les deux comptes rendus du 21 ne se recoupent pas : celui-ci ne parle que de ce que le groupe A a fait. Règles de travail : § 4 de `compte-rendu-2026-10-11.md` ; règles de code : § 6 de `docs/plans/assainissement.md`. Recette de référence : `docs/recette/recette-2026-10-20.md` (défauts B-1, B-2, M-1 à M-13, m-1 à m-18).
+À lire **après** `compte-rendu-2026-10-20.md` (état du projet, incident du déplacement, décisions du 20 octobre) et **avec** `compte-rendu-2026-10-21.md` (PR #69, groupe B : retours du chef de projet, plan R-0 à R-11, textes humanisés, report côté site). Les deux comptes rendus du 21 ne se recoupent pas : celui-ci ne parle que de ce que le groupe A a fait. Règles de travail : § 4 de `compte-rendu-2026-10-11.md` ; règles de code : § 6 de `docs/archives/plans/assainissement.md`. Recette de référence : `docs/recette/recette-2026-10-20.md` (défauts B-1, B-2, M-1 à M-13, m-1 à m-18).
 
 ## 1. L'essentiel
 

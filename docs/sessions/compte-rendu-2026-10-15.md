@@ -2,7 +2,7 @@
 
 À lire en début de session, avant tout travail. Il remplace `compte-rendu-2026-10-14.md` pour l'état du projet. Les règles de travail entre les groupes et les règles de code (§ 4 de `compte-rendu-2026-10-11.md`) restent valables.
 
-Session menée pour les deux groupes à la demande du chef de projet (serveur, site, application, StudyLib, déploiement). Le plan de référence est [docs/plans/espace-de-cours.md](../plans/espace-de-cours.md) ; celui du quiz, [docs/plans/studio-quiz.md](../plans/studio-quiz.md).
+Session menée pour les deux groupes à la demande du chef de projet (serveur, site, application, StudyLib, déploiement). Le plan de référence est [docs/archives/plans/espace-de-cours.md](../archives/plans/espace-de-cours.md) ; celui du quiz, [docs/archives/plans/studio-quiz.md](../archives/plans/studio-quiz.md).
 
 ## 1. L'essentiel
 
@@ -84,7 +84,7 @@ Tests passés sur la branche d'intégration (même contenu que `main` hors PR #3
    - PowerShell : `cd frontend; npm ci; $env:VITE_API_URL="/api"; npm run build; cd ..`
    - Git Bash : `bash deploy/vps/preparer-maj.sh maj35` (sans `--studylib` : StudyLib n'a pas changé depuis maj34), puis `tar -xOzf deploy/vps/paquets/maj35.tar.gz maj35/VERSION`
    - Appliquer comme maj34 (`scp`, puis `appliquer-maj.sh` sur le serveur), hors des heures de cours.
-   - Variables d'IA du Studio facultatives (`docs/plans/studio-quiz.md`, § 5) : sans elles, les fonctions d'IA du Studio disparaissent de l'écran.
+   - Variables d'IA du Studio facultatives (`docs/archives/plans/studio-quiz.md`, § 5) : sans elles, les fonctions d'IA du Studio disparaissent de l'écran.
 4. **Essayer l'application** sur l'émulateur `hestim_pixel` (Expo Go) : onglet Bibliothèque → Mes cours → une classe → un document et un lien. Ne pas lancer l'émulateur pendant les tests (mémoire du poste, § 7).
 
 ## 6. Ce qui reste

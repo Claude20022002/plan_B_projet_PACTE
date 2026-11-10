@@ -1,6 +1,6 @@
 # Compte rendu de la session du groupe B, 20 et 21 octobre 2026
 
-À lire en début de la prochaine session, **après** `compte-rendu-2026-10-20.md` (groupe A : décisions, limite par compte, incident du déplacement) et `docs/recette/recette-2026-10-20.md`. Le plan de travail est `docs/plans/retours-2026-10-21.md` : les retours du chef de projet, le plan en trois vagues et ses réponses (§ 5). Les règles de travail et de code restent celles de `docs/plans/assainissement.md`, § 6.
+À lire en début de la prochaine session, **après** `compte-rendu-2026-10-20.md` (groupe A : décisions, limite par compte, incident du déplacement) et `docs/recette/recette-2026-10-20.md`. Le plan de travail est `docs/archives/plans/retours-2026-10-21.md` : les retours du chef de projet, le plan en trois vagues et ses réponses (§ 5). Les règles de travail et de code restent celles de `docs/archives/plans/assainissement.md`, § 6.
 
 ## 1. L'essentiel
 
@@ -49,13 +49,13 @@ Recette du 20 octobre : B-2, M-5, M-6, M-8, M-10.
 
 ### 2.4 Documents
 
-- `docs/plans/retours-2026-10-21.md` : les 8 retours, ce que le dépôt montre pour chacun, le plan (R-0 à R-8), puis les réponses et les lots R-9 à R-11 (§ 5). Branche `b/plan-retours-2026-10-21`, avec ce compte rendu : **PR à ouvrir**.
+- `docs/archives/plans/retours-2026-10-21.md` : les 8 retours, ce que le dépôt montre pour chacun, le plan (R-0 à R-8), puis les réponses et les lots R-9 à R-11 (§ 5). Branche `b/plan-retours-2026-10-21`, avec ce compte rendu : **PR à ouvrir**.
 
 ## 3. PR ouvertes et ordre de fusion
 
 | Ordre | PR | Branche | Base | Contenu |
 |---|---|---|---|---|
-| 1 | #61 | `b/textes-etudiant` | `main` | Textes étudiant humanisés (et la charte `docs/plans/ton-des-textes.md`) |
+| 1 | #61 | `b/textes-etudiant` | `main` | Textes étudiant humanisés (et la charte `docs/archives/plans/ton-des-textes.md`) |
 | 2 | #62 | `b/textes-enseignant` | `b/textes-etudiant` | Textes enseignant humanisés |
 | 3 | #63 | `b/report-creneaux-libres` | `b/textes-enseignant` | Report (§ 2.2) |
 | 4 | #64 | `b/r2-surveillances` | #63 | R-2 |
@@ -160,7 +160,7 @@ Les dossiers ont des jonctions `node_modules` vers le dépôt principal (`fronte
 | **R-1** | Report « à une date ultérieure » : troisième choix d'approbation, liste « Séances à reprogrammer », affichage « Reportée · date à venir » | Groupe A, même lot |
 | **R-4** | Génération sans durée, écran d'attente, résumé court, exploration des classes une à une (format de l'école ou tableau, PDF) | Groupe A, même lot |
 | **R-3** | Filières : « Les deux campus » au lieu des écoles ; liste complète | Recherche sur hestim.ma, puis validation du chef de projet |
-| **Textes administration** | Gestion, génération, préparation, suivi, réservations, messages du serveur, selon `docs/plans/ton-des-textes.md` ; avec R-4 et R-5 | Fusion de #61 et #62 |
+| **Textes administration** | Gestion, génération, préparation, suivi, réservations, messages du serveur, selon `docs/archives/plans/ton-des-textes.md` ; avec R-4 et R-5 | Fusion de #61 et #62 |
 | **M-7** (recette) | Une alerte de report ouvre la semaine de la nouvelle date (site et application) | Rien |
 | Recette, reste | M-8 (« Mes séances » en cartes sur téléphone), M-9 (débordements horizontaux de cinq pages), M-12 (jeu non proposé présenté comme une panne réseau), M-13 (titre de page, lien d'évitement, lecture du panneau, barres de progression sans nom…), mineurs m-1 à m-17 | Rien |
 
@@ -198,7 +198,7 @@ Les dossiers ont des jonctions `node_modules` vers le dépôt principal (`fronte
 
 ## 11. Pour démarrer la prochaine session
 
-1. Lire ce compte rendu, puis `docs/plans/retours-2026-10-21.md` (§ 3 et § 5).
+1. Lire ce compte rendu, puis `docs/archives/plans/retours-2026-10-21.md` (§ 3 et § 5).
 2. Vérifier l'état des PR : `gh pr list --state all --limit 20`.
 3. Relancer la démonstration si besoin : `cd ..\planner-vague1\frontend; npm run demo`.
 4. Commencer par **R-7**, **R-10** et **R-11** (rien à attendre), puis **R-3** (recherche des filières sur hestim.ma, à faire valider), puis R-9, R-1 et R-4 avec le groupe A.

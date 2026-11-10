@@ -1,5 +1,5 @@
 /**
- * Visa de l'administration sur une séance réalisée (docs/plans/remarques-par-profil.md, lot R-11).
+ * Visa de l'administration sur une séance réalisée (docs/archives/plans/remarques-par-profil.md, lot R-11).
  * Une séance passée est comptée réalisée d'office, même si le cours n'a pas eu lieu : avant
  * l'export de la paie des vacataires, l'administration confirme ou écarte les séances sans appel
  * validé. Une ligne par séance décidée ; pas de ligne = pas de décision.

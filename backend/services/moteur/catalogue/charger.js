@@ -3,7 +3,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 /**
- * Charge le catalogue des paramètres du moteur de planification (docs/plans/moteur-planification).
+ * Charge le catalogue des paramètres du moteur de planification (docs/conception/moteur-planification).
  * Le catalogue est une donnée : il décrit chaque paramètre, ses valeurs par défaut et ses dépendances.
  * Les valeurs d'une école vivront ailleurs, dans ses versions de paramètres datées (D-07).
  * Les fichiers JSON regroupent les paramètres par groupe : les propriétés communes sont écrites une

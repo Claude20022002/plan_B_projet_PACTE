@@ -1,5 +1,5 @@
 /**
- * Demandes de changement de téléphone (docs/plans/remarques-par-profil.md, lot R-10). Un compte
+ * Demandes de changement de téléphone (docs/archives/plans/remarques-par-profil.md, lot R-10). Un compte
  * étudiant est lié à un seul téléphone pour l'appel ; quand il en change, l'étudiant déclare le
  * nouveau depuis l'application et l'administration accepte ou refuse. Une ligne par demande, gardée
  * après décision : la trace reste, pour que la protection contre la fraude reste entière.

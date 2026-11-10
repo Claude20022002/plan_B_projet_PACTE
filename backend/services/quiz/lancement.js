@@ -5,7 +5,7 @@ import { appelerClassQuiz } from "./clientClassQuiz.js";
 import { enregistrerPartie, seanceEnCours } from "./parties.js";
 
 /**
- * Partie en direct lancée depuis Planner (docs/plans/quiz-ia.md, lot CQ-1). L'enseignant ne passe
+ * Partie en direct lancée depuis Planner (docs/archives/plans/quiz-ia.md, lot CQ-1). L'enseignant ne passe
  * plus par le site du quiz : Planner demande au fork de créer la partie (route signée), la rattache
  * à la séance, prévient les étudiants, puis remet à l'enseignant de quoi animer la partie.
  *

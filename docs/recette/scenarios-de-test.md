@@ -219,7 +219,7 @@ Cocher chaque case (`[x]`) une fois le résultat attendu constaté. Noter tout �
 
 ## 10. Espace de cours (lots E-1 à E-10, maj34 et suivantes)
 
-Plan : `docs/plans/espace-de-cours.md`. Il faut une séance **en cours** pour l'enseignant (sinon pas de bloc « En cours ») et la Bibliothèque en ligne (StudyLib avec les documents de classe). Comptes : l'enseignant de la classe, un co-enseignant, l'enseignant d'un autre groupe, un étudiant de la classe, un étudiant d'un autre groupe.
+Plan : `docs/archives/plans/espace-de-cours.md`. Il faut une séance **en cours** pour l'enseignant (sinon pas de bloc « En cours ») et la Bibliothèque en ligne (StudyLib avec les documents de classe). Comptes : l'enseignant de la classe, un co-enseignant, l'enseignant d'un autre groupe, un étudiant de la classe, un étudiant d'un autre groupe.
 
 ### Mes classes (E-4)
 

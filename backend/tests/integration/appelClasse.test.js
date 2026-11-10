@@ -4,7 +4,7 @@ import { resetRateLimiters } from "../../middleware/rateLimiterMiddleware.js";
 import { Affectation, AppelSeance, Appartenir, CoursComposante, Enseignement, EnseignementEnseignant, JournalSecurite, Presence } from "../../models/index.js";
 
 /**
- * Appel à trois statuts et historique d'une classe (docs/plans/espace-de-cours.md, lot E-6) :
+ * Appel à trois statuts et historique d'une classe (docs/archives/plans/espace-de-cours.md, lot E-6) :
  * présent, en retard, absent (pas d'« excusé ») ; correction après l'appel journalisée ; bilan des
  * séances, taux par étudiant (appels fermés seulement), export CSV protégé contre les formules.
  */

@@ -1,5 +1,5 @@
 /**
- * Appels au Studio quiz (moteur de quiz natif de Planner, docs/plans/studio-quiz.md).
+ * Appels au Studio quiz (moteur de quiz natif de Planner, docs/archives/plans/studio-quiz.md).
  * Enseignant : /api/studio-quiz ; étudiant (et aperçu de l'enseignant) : /api/passations.
  */
 import { request, telecharger } from './api';
@@ -80,7 +80,7 @@ export const passationAPI = {
   urlMedia: (idTentative, idMedia) => `${API_BASE_URL}/passations/tentatives/${idTentative}/medias/${idMedia}`,
 };
 
-/** Quiz en direct du Studio (docs/plans/sortie-classquiz.md, lot SC-1) : l'enseignant anime, l'étudiant joue. */
+/** Quiz en direct du Studio (docs/archives/plans/sortie-classquiz.md, lot SC-1) : l'enseignant anime, l'étudiant joue. */
 export const directAPI = {
   lancer: (data) => request('/quiz-direct', { method: 'POST', body: data }),
   vue: (id) => request(`/quiz-direct/${id}`),

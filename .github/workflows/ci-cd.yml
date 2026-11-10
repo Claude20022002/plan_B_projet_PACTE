@@ -279,7 +279,7 @@ jobs:
   # Seulement après une fusion sur main et tous les contrôles verts : une image publiée a passé la
   # suite complète et les parcours. Étiquetées par le commit (complet et court) et « main » ; le
   # serveur les tire par « deployer.sh <commit> », qui vérifie l'étiquette revision.
-  # Conception : docs/plans/planner-multi-etablissements/conception-me0b-deploiement.md
+  # Conception : docs/conception/exploitation/conception-me0b-deploiement.md
   publier-images:
     name: Publier ${{ matrix.image }}
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'

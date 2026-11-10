@@ -78,7 +78,7 @@ Le Studio quiz demande une connexion à Planner : le jury n'a pas de compte. On 
 |---|---|---|
 | « Sur l'App Store et Google Play » | L'application n'est pas publiée sur les stores | « Sur le téléphone de chaque étudiant » |
 | « Les 684 étudiants de HESTIM » | Les données sont de démonstration | « Un semestre aux dimensions de HESTIM » |
-| « Huit jeux sont prêts » | Les simulations d'Alexis ne sont pas fusionnées (PR à venir, `docs/plans/jeux-pedagogiques.md`) | « Une bibliothèque de jeux, rangés par module » |
+| « Huit jeux sont prêts » | Les simulations d'Alexis ne sont pas fusionnées (PR à venir, `docs/conception/jeux/jeux-pedagogiques.md`) | « Une bibliothèque de jeux, rangés par module » |
 | « Pilote gratuit » | Pas décidé | Ne rien dire du prix du pilote |
 | Une adresse en `hestim.ma` | Elle n'existe pas | L'adresse réelle, ou aucune |
 

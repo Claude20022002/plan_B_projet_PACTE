@@ -1,5 +1,5 @@
 /**
- * Parcours « quiz en direct » (docs/plans/sortie-classquiz.md, lot SC-1) : l'enseignante crée un
+ * Parcours « quiz en direct » (docs/archives/plans/sortie-classquiz.md, lot SC-1) : l'enseignante crée un
  * quiz de deux questions et le lance en direct ; une étudiante arrive sur téléphone par le QR code
  * (/quiz/code/<code>, connexion puis retour), une autre saisit le code sur ordinateur. Chaque
  * question : les deux répondent, la question se ferme d'elle-même, chacune voit son résultat,

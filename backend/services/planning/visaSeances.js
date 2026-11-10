@@ -3,7 +3,7 @@ import { ErreurMetier } from "./enseignements.js";
 
 /**
  * Visa de l'administration sur les séances réalisées, avant l'export de la paie des vacataires
- * (docs/plans/remarques-par-profil.md, lot R-11).
+ * (docs/archives/plans/remarques-par-profil.md, lot R-11).
  *
  * Une séance passée devient réalisée d'office : rien ne dit que le cours a eu lieu. L'appel validé
  * (fermé par l'enseignant) est un indice, pas une preuve (décision du 11 octobre 2026). Une séance
