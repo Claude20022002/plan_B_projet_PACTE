@@ -39,6 +39,11 @@
 - Les autres services ont 3,2 Go de limites de mémoire (2,0 Go sans ClassQuiz).
 - Le seed ne crée aucune séance.
 - Aucun code écrit, aucun test lancé.
+- **CI du 10 novembre** :
+  - #162 a échoué aux parcours parce que la suite a démarré à 23 h 50 UTC. Le test « entre 23 h et minuit » prend la vraie heure du serveur (rappel d'appel affiché), et les données fixent « aujourd'hui » au démarrage, avant que la suite ne passe minuit. Le correctif n'est pas en cause : il suffit de relancer.
+  - #161, #163 et #164 : faux conflit. Ces branches avaient deux ancêtres communs avec `main`, et GitHub n'en retient qu'un. `main` a été fusionné dans chacune.
+  - `main` est vert avec #142 et #156.
+  - Le dépôt s'appelle maintenant `Claude20022002/Planner` ; l'adresse du dépôt local a été mise à jour.
 
 ## Questions
 
@@ -53,7 +58,9 @@
 
 ## Commandes de reconnaissance du serveur (P-4)
 
-En lecture seule, à lancer par le chef sur le nouveau serveur. Seuls les chiffres sont reportés dans le dépôt : ni adresse, ni nom de machine.
+En lecture seule. Seuls les chiffres sont reportés dans le dépôt : ni adresse, ni nom de machine.
+
+**Sur le serveur Debian**, et non dans PowerShell sur le poste : un premier essai, le 10 novembre, a tourné sur le poste Windows et n'a rien donné. Se connecter d'abord (`ssh <utilisateur>@<serveur>`), puis coller les lignes. Si `docker` répond « permission denied », préfixer les commandes `docker` par `sudo`.
 
 ```bash
 nproc; lscpu | grep -E "Model name|^CPU\(s\)|Thread|MHz"
@@ -65,6 +72,16 @@ docker stats --no-stream --format 'table {{.Name}}\t{{.CPUPerc}}\t{{.MemUsage}}'
 docker inspect --format '{{.Name}} limite={{.HostConfig.Memory}} cpus={{.HostConfig.NanoCpus}}' $(docker ps -q)
 docker run --rm debian:12-slim sh -c 'ulimit -n; ulimit -Hn'
 uptime
+```
+
+**Sur le poste de mesure** (PowerShell, Docker Desktop **démarré**), pour P-3 et C-19 :
+
+```powershell
+Get-CimInstance Win32_Processor | Select-Object Name, NumberOfCores, NumberOfLogicalProcessors
+"{0:N1} Go de mémoire" -f ((Get-CimInstance Win32_ComputerSystem).TotalPhysicalMemory / 1GB)
+Get-PSDrive C | Select-Object @{n='Libre (Go)';e={[math]::Round($_.Free/1GB,1)}}
+wsl --status; Get-Content "$env:USERPROFILE\.wslconfig" -ErrorAction SilentlyContinue
+docker info --format 'CPUs={{.NCPU}} Mem={{.MemTotal}} Version={{.ServerVersion}}'
 ```
 
 ## État laissé

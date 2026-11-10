@@ -24,7 +24,7 @@ Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 ## 2. Ce qui existe (vérifié dans le code le 10 novembre)
 
 - **Connexion unique** : `backend/config/db.js`, un `Sequelize` sans réglage de pool (5 connexions au plus par défaut).
-- **Essai du contexte d'école** (#142, branche `a/essai-me3a`, pas encore fusionnée) :
+- **Essai du contexte d'école** (#142, **fusionné le 10 novembre**) :
   - `contexte/etablissement.js` et `contexte/resolveur.js` ;
   - `middleware/etablissementMiddleware.js`, qui choisit l'école par le nom d'hôte ;
   - `migrations/migrator.js`, avec `migrateurPour(connexion)` ;
@@ -51,7 +51,7 @@ Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 | N° | Question | Proposition | Réponse du chef |
 |---|---|---|---|
 | P-3 | Où mesurer ? | en local, MySQL limité ; courte vérification sur le serveur pendant EXP-02 | validé le 10 nov. |
-| P-4 | Caractéristiques du nouveau serveur | commandes de lecture seule données au chef le 10 nov. | **résultats attendus** |
+| P-4 | Caractéristiques du nouveau serveur, et du poste de mesure (P-3) | commandes de lecture seule données au chef le 10 nov. : sur le serveur après connexion SSH, et sur le poste en PowerShell | **résultats attendus** (le premier essai a tourné sur le poste Windows, pas sur le serveur) |
 | P-4 bis | Deux enveloppes, 4 et 8 Go | **remplacée par C-1** (§ 12) | validée le 10 nov., puis remplacée |
 | P-5 | 200 bases, chacune avec une école fictive | oui | validé le 10 nov. |
 | P-5 bis, ter | Base modèle tirée de `seed.js` ; séances recopiées par SQL | validé le 10 nov. ; **précisé par C-5 et C-6** | validé |
