@@ -175,6 +175,14 @@ D-01 est **confirmée** si S1 à S5 tiennent avec un réglage MySQL au moins. Si
 | `docs/conception/plateforme/19-mesure-d01.md` | le rapport | 220 |
 | `docs/plan/suivi.md`, `modules/PLA-plateforme.md` | état, ce qui existe | — |
 
+Les résultats bruts restent hors du dépôt. Seuls leurs résumés chiffrés vont dans le rapport.
+
+**Écarts d'écriture du 10 novembre**, sans changement de principe (le rôle de chaque pièce est le même) :
+- **pas d'export `mysqldump`** : les 200 bases sont copiées dans MySQL même (`SHOW CREATE TABLE`, puis `INSERT … SELECT`). Les index et les clés étrangères sont gardés, et aucun fichier d'export n'existe ;
+- **les séances synthétiques** viennent d'une fonction pure et testée (`lib/seances.mjs`), pas d'un fichier SQL ;
+- **les mots de passe des écoles** sont dérivés d'un secret maître (HMAC) : rien à stocker par école ;
+- **découpage** : `lib/config.mjs`, `lib/stats.mjs`, `lib/seances.mjs`, `lib/bases.mjs`, `lib/ecoles.mjs`, `lib/taches.mjs`, `lib/http.mjs` ; tests dans `tests/pur.test.mjs` ; migration d'étude en `.mjs`.
+
 ## 6. Données
 
 - **Aucune migration de Planner**, aucune table changée. La migration d'étude ne vit que dans le banc.
@@ -280,6 +288,9 @@ Le chef de projet a demandé de chercher les failles du plan avant de le valider
 | C-19 | Place disque du poste non vérifiée | faible | contrôle avant la préparation |
 | C-20 | `docker stats` sous Docker Desktop compte une part du cache de fichiers | faible | méthode de calcul écrite et appliquée |
 | C-21 | L'école par défaut (`DB_NAME`) aurait fait une 201e base | faible | école 001 = école par défaut |
+| C-27 | **Trouvée à l'essai** : un fichier de réglage monté depuis Windows est ouvert en écriture à tous, et MySQL **l'ignore sans erreur** (« World-writable config file is ignored »). La série aurait tourné avec les valeurs par défaut | haute : mesure fausse sans erreur | le réglage est copié avec des droits stricts avant de lancer MySQL ; `/banc/sante` relit les variables ; `serie.mjs` arrête une série dont le réglage n'est pas celui demandé |
+| C-28 | **Trouvée en écrivant** : le jeton d'accès vit 15 min, et la montée en charge commence après environ 16 min ; elle aurait mesuré des 401, très rapides | haute : mesure fausse sans erreur | jeton de 4 h sur le banc seulement ; toute réponse 401 invalide la série |
+| C-29 | La règle « série refaite au-delà de 90 % de processeur » visait la machine mesurée ; avec deux machines, la saturation du banc est le résultat cherché | moyenne | la règle porte sur le générateur de charge (plus de 90 % d'un cœur : série invalide) |
 | C-26 | Le PC Ubuntu n'a que 4 Go : le palier de 4 Go de MySQL n'y tient pas, et un besoin de plus de 2,5 Go le ferait utiliser sa mémoire d'échange | haute : mesure fausse sans erreur | paliers de 1 et 2 Go sur Ubuntu ; 4 Go sur Windows si besoin ; série annulée en cas de mémoire d'échange ; machines réglées hors du code ; chiffres provisoires (P-24) |
 | C-22 | Le serveur n'est pas vide : **Ollama occupe 4,7 Gio** sur 7,6. Avec lui chargé, les seuls plafonds des autres services de Planner (3,2 Go) dépassent ce qui reste (2,3 Gio), avant même MySQL et Node | haute : S1 échoue d'avance | P-19 ; le rapport donne le besoin de Planner, avec et sans Ollama ; série de relevé de la mémoire réelle des autres services (pas seulement leurs plafonds) |
 | C-23 | Ollama calcule sur les 4 mêmes cœurs que Planner | moyenne : p95 dégradé pendant ses réponses | une série M6 avec 3 cœurs sur 4 occupés, pour simuler une réponse d'Ollama |

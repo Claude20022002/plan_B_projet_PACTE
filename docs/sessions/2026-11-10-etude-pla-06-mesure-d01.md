@@ -95,12 +95,53 @@ docker info --format 'CPUs={{.NCPU}} Mem={{.MemTotal}} Version={{.ServerVersion}
 - `docs/plan/suivi.md` : PLA-06 → en cours (plan revu, en attente de validation).
 - Chantiers ouverts : EXP (5 fonctions restantes), PLA (7), QUA (1).
 
+## Code du banc (10 novembre, suite de la session)
+
+Le banc est écrit, aux étapes 3 à 5 du plan, dans `scripts/mesures/pla-06/` ; le mode d'emploi est dans son README. **Essai réel sur ce PC (Docker Desktop), avec 3 écoles :**
+
+**Préparation**
+- M5a, une base neuve : 60 migrations en 15 s.
+- Seed : 82 s.
+- 34 200 séances synthétiques, 252 mois publiés.
+- 3 copies de 88 tables, environ 8,6 s chacune, 66 Mo en tout.
+- Contrôles réussis ; isolation vérifiée (`ER_TABLEACCESS_DENIED_ERROR`).
+
+**Serveur de banc et charge**
+- Le serveur écoute après 79 s : c'est la lenteur des fichiers montés depuis Windows.
+- Charge : 10 utilisateurs ; connexion p50 355 ms ; `/moi` p50 39 ms et p95 44 ms ; aucune erreur.
+- Isolation et contrôle C-4 réussis. Série valide.
+
+**Tâches périodiques**
+- Tour « longues » : 7 s pour 3 écoles.
+- Rappel d'appel : environ 60 ms par école.
+- Le tour du démarrage charge toutes les écoles : c'est la faille C-2, vue en vrai.
+
+**Migration d'étude**
+- Environ 240 ms par base, une à une, après une passe de chauffe.
+
+**Trouvé et corrigé pendant l'essai**
+- **C-27** : MySQL ignorait le fichier de réglage sans erreur.
+- **C-28** : un jeton de 15 min aurait rendu des 401 pendant la montée en charge.
+- Les programmes lancés par la préparation doivent tourner depuis `/app`.
+- Les commandes Docker sous Git Bash demandent `MSYS_NO_PATHCONV=1`.
+
+**Non essayés** : `releves.mjs`, qui lit `/proc` et ne tourne que sous Linux, et `serie.mjs`, qui a besoin du PC du banc et de SSH. Ils seront essayés demain sur le PC Ubuntu.
+
 ## Reste à faire, dans l'ordre
 
-1. **Fait le 10 nov.** : #142, #156, #161, #162 et #163 fusionnées ; `main` fusionné dans cette branche ; **plan validé** (P-15 à P-18 ; banc sur le PC Ubuntu, charge depuis le PC Windows).
-2. Le chef fournit P-22 et P-23 (commandes dans le prompt de reprise).
-3. **Nouvelle session** : étapes 3 à 8 du plan (§ 9), une étape par commit. Le code peut s'écrire avant P-23 ; les séries attendent le PC Ubuntu.
-4. **Pour le chantier EXP** (EXP-01, EXP-02) : sur le nouveau serveur, le proxy de l'hôte est **Traefik** (conteneur de n8n), pas nginx ; aucune mémoire d'échange ; Ollama occupe 4,7 Gio sans limite (Q-21, à trancher avant EXP-02).
+1. **PC Ubuntu** (11 nov.) :
+   - relever ses chiffres ;
+   - installer Docker Engine, Node 22, Git et `openssh-server` ;
+   - mettre en place la clé SSH (P-22) ;
+   - suivre le README du banc, § 1 et § 2.
+2. **Une petite série d'abord** (`--ecoles-banc 10`, `--duree 60`), pour essayer `releves.mjs` et `serie.mjs`.
+3. **Les séries** du README (§ 3).
+4. **Étape 7** : vérification sur le serveur, pendant EXP-02.
+5. **Étape 8** : le rapport `19-mesure-d01.md`.
+6. **Pour le chantier EXP** (EXP-01, EXP-02), à retenir sur le nouveau serveur :
+   - le proxy de l'hôte est **Traefik** (conteneur de n8n), pas nginx ;
+   - il n'y a aucune mémoire d'échange ;
+   - Ollama occupe 4,7 Gio sans limite (Q-21, à trancher avant EXP-02).
 
 ## Commandes pour le chef de projet
 
@@ -121,9 +162,9 @@ docs/conception/plateforme/pla-06-mesure-d01.md (tout, surtout § 2, § 4, § 5,
 et cette fiche (docs/sessions/2026-11-10-etude-pla-06-mesure-d01.md).
 Le plan est validé le 10 novembre : banc MIXTE et PROVISOIRE (P-24) : PC Ubuntu de 4 Go pour MySQL (paliers 1 et 2 Go)
 et le serveur de banc, charge depuis le PC Windows ; machines réglées dans .local/machines.json, jamais dans le code ; P-22 et P-23 : <réponses et chiffres du PC Ubuntu à coller ici>.
-Code les étapes 3 à 8 du § 9 dans scripts/mesures/pla-06/, une étape par commit, chaque fichier sous 300 lignes
-avec son commentaire de rôle : rien dans backend/ ni deploy/, aucun export, résultat brut ni secret dans le dépôt
-(.gitignore d'abord). Tu ne lances aucune série toi-même sur le PC Ubuntu : tu donnes les commandes au chef.
+Le banc est CODÉ et essayé sur 3 écoles (section « Code du banc » de cette fiche). Reste : préparer le PC Ubuntu
+avec le chef (README du banc, § 1 et § 2), une petite série d'essai, puis les séries (§ 3), et le rapport.
+Tu ne lances rien toi-même sur le PC Ubuntu : tu donnes les commandes au chef.
 Si le code contredit le plan : arrête-toi et demande. Fin de session : suivi.md, fiche dans docs/sessions/,
 prompt de reprise ; jamais de git push.
 ```

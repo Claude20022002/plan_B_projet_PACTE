@@ -8,12 +8,21 @@ services:
     image: mysql:8.4.13
     environment:
       MYSQL_ROOT_PASSWORD: ${MESURE_MYSQL_ROOT:?lancer d'abord « node preparer.mjs initialiser »}
-    # Mémoire tampon d'InnoDB fixée par la série : environ la moitié de la mémoire du conteneur
-    command: ["--innodb-buffer-pool-size=${MESURE_INNODB_POOL:-512M}"]
+      # Réglage de la série : defaut, production (celui de l'ancien serveur) ou ajuste
+      MESURE_REGLAGE: ${MESURE_REGLAGE:-production}
+      # Mémoire tampon d'InnoDB fixée par la série : environ la moitié de la mémoire du conteneur
+      MESURE_INNODB_POOL: ${MESURE_INNODB_POOL:-512M}
+    # Le réglage est COPIÉ avec des droits stricts avant de lancer MySQL : monté tel quel depuis
+    # Windows, il est ouvert en écriture à tous, et MySQL l'ignore sans erreur (constaté le
+    # 10 novembre). Le serveur de banc relit les variables, et serie.mjs arrête une série dont le
+    # réglage n'est pas celui demandé.
+    entrypoint:
+      - sh
+      - -c
+      - cp /reglages/$${MESURE_REGLAGE}.cnf /etc/mysql/conf.d/mesure.cnf && chmod 644 /etc/mysql/conf.d/mesure.cnf && exec docker-entrypoint.sh mysqld --innodb-buffer-pool-size=$${MESURE_INNODB_POOL}
     volumes:
       - planner_mesure_pla06:/var/lib/mysql
-      # Réglage de la série : defaut, production (celui de l'ancien serveur) ou ajuste
-      - ./mysql/${MESURE_REGLAGE:-production}.cnf:/etc/mysql/conf.d/mesure.cnf:ro
+      - ./mysql:/reglages:ro
     ports:
       # Jamais sur le réseau local : seul le serveur de banc lit MySQL
       - "127.0.0.1:3399:3306"

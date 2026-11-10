@@ -21,11 +21,14 @@ const option = (nom, defaut) => {
 };
 const journal = (m) => console.log(`[préparation ${new Date().toISOString().slice(11, 19)}] ${m}`);
 
-/** Lance un programme Node avec l'environnement donné ; `entree` est envoyée sur son entrée standard. */
+/**
+ * Lance un programme Node avec l'environnement donné, depuis /app (où sont les paquets du serveur,
+ * comme en production) ; `entree` est envoyée sur son entrée standard.
+ */
 const lancer = (argsNode, env, entree = null) =>
     new Promise((resoudre, rejeter) => {
         const debut = Date.now();
-        const p = spawn("node", argsNode, { env: { ...process.env, ...env }, stdio: [entree ? "pipe" : "ignore", "inherit", "inherit"] });
+        const p = spawn("node", argsNode, { cwd: "/app", env: { ...process.env, ...env }, stdio: [entree ? "pipe" : "ignore", "inherit", "inherit"] });
         if (entree) p.stdin.end(entree);
         p.on("error", rejeter);
         p.on("exit", (code) => (code === 0 ? resoudre(Date.now() - debut) : rejeter(new Error(`node ${argsNode.join(" ")} : code ${code}`))));
@@ -113,7 +116,8 @@ const preparerBases = async () => {
     const n = Number(option("ecoles", NB_ECOLES));
     const etapes = new Set(option("etapes", "modele,seances,publier,copies,controles").split(","));
     const { root, maitre } = lireSecrets();
-    const bases = await import("./lib/bases.mjs");
+    // Copie du module (son objet n'est pas extensible) pour y ranger le groupe de connexions
+    const bases = { ...(await import("./lib/bases.mjs")) };
     bases.pool = bases.poolRoot(root);
     const rapport = { debut: new Date().toISOString(), ecoles: n, etapes: [...etapes] };
     try {

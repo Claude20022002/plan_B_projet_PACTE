@@ -32,6 +32,9 @@ Object.assign(process.env, {
     RATE_LIMIT_API_MAX: "100000000",
     // Chaque utilisateur virtuel a sa propre adresse (X-Forwarded-For) : limites de connexion tenues
     TRUST_PROXY_HOPS: "1",
+    // Jeton d'accès de 4 h (15 min en production) : une série dure plus de 15 min, et des 401
+    // très rapides fausseraient la montée en charge (charge.mjs invalide la série s'il en voit)
+    JWT_ACCESS_TTL_SECONDS: "14400",
 });
 
 const { default: app } = await import("/app/app.js");
@@ -47,10 +50,19 @@ const json = (res, statut, corps) => {
     res.end(JSON.stringify(corps));
 };
 
+/** Réglages réellement appliqués par MySQL : serie.mjs les compare au réglage demandé. */
+const variablesMysql = async () => {
+    const ecole = ecoles.get(1);
+    const [lignes] = await ecole.occuper(() =>
+        ecole.contexte.sequelize.query("SHOW GLOBAL VARIABLES WHERE Variable_name IN ('max_connections', 'table_open_cache', 'innodb_buffer_pool_size', 'open_files_limit')")
+    );
+    return Object.fromEntries(lignes.map((l) => [l.Variable_name, Number(l.Value)]));
+};
+
 /** Routes du banc ; celles qui portent sur une école passent par son contexte (D-03), comme l'application. */
 const routesBanc = async (req, res, ecole) => {
     const url = new URL(req.url, "http://banc");
-    if (url.pathname === "/banc/sante") return json(res, 200, { ok: true, mode: MODE, ecoles: N, demarrage_ms: demarrage, chargees: bilanEcoles(ecoles).chargees });
+    if (url.pathname === "/banc/sante") return json(res, 200, { ok: true, mode: MODE, ecoles: N, demarrage_ms: demarrage, chargees: bilanEcoles(ecoles).chargees, mysql: await variablesMysql() });
     if (url.pathname === "/banc/memoire") return json(res, 200, { memoire: process.memoryUsage(), ecoles: { ...bilanEcoles(ecoles), reveils_ms: undefined } });
     if (url.pathname === "/banc/taches") return json(res, 200, statsTaches);
     if (url.pathname === "/banc/reveils") return json(res, 200, { reveils_ms: bilanEcoles(ecoles).reveils_ms });

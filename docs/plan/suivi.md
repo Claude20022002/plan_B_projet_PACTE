@@ -55,7 +55,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 | [PLA-03](modules/PLA-plateforme.md) | Base neuve sans données d'école | 2 | M | à faire |  |
 | [PLA-04](modules/PLA-plateforme.md) | Tests d'isolation de chaque route dans la CI, côté serveur et parcours | 2 | M + S | à faire |  |
 | [PLA-05](modules/PLA-plateforme.md) | Registre des écoles et création d'une école par une commande (base, migrations,… | 2 | L | à faire |  |
-| [PLA-06](modules/PLA-plateforme.md) | Mesure de D-01 | 1 | M | en cours : plan validé le 10 nov. ; code à écrire (étapes 3 à 8) | `etude/pla-06-mesure-d01` |
+| [PLA-06](modules/PLA-plateforme.md) | Mesure de D-01 | 1 | M | en cours : banc codé (étapes 3 à 5) et essayé sur 3 écoles le 10 nov. ; séries à lancer sur le PC Ubuntu (étape 6) | `etude/pla-06-mesure-d01` |
 | [PLA-07](modules/PLA-plateforme.md) | Sauvegarde et restauration par école (canal I-11) | 2 | M | à faire |  |
 | [PLA-08](modules/PLA-plateforme.md) | Console de l'équipe Planner (créer, suspendre, voir l'état des écoles) | 5, ou juste avant la 1re école extérieure | M | reporté |  |
 | [PLA-09](modules/PLA-plateforme.md) | Migrations par vagues, hors du démarrage du serveur | 5, ou juste avant la 1re école extérieure | M | reporté |  |
