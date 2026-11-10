@@ -15,7 +15,7 @@ Un jeu = **une entrée de catalogue + un moteur partagé + un écran web + un é
 
 | Pièce | Où | Règle |
 |---|---|---|
-| Entrée de catalogue | `shared/jeux/catalogue.js` (terminal) ou `shared/simulations/catalogue/<code>.js` (simulations) | `code` stable (il est enregistré en base, ne jamais le renommer), `type`, `discipline`, `titre` et `resume` en **fr et en**, `source` (jeu repris : nom, auteur, url, licence) **ou** `curriculum` (jeu original : page HESTIM du programme) |
+| Entrée de catalogue | `shared/jeux/catalogue.js` (terminal) ou `shared/simulations/catalogue/<code>.js` (simulations) | `code` stable (il est enregistré en base, ne jamais le renommer), `type`, `discipline`, `titre` et `resume` en **fr et en**, `source` (jeu repris : nom, auteur, url, licence) **ou** `curriculum` (jeu original : **discipline et niveau visés, sans nom ni adresse d'école** ; amendé le 10 novembre, l'ancienne règle demandait la page du programme d'HESTIM) |
 | Défis | dans l'entrée | `id` stable, `niveau`, `xp` ; l'XP n'est lue que côté serveur |
 | Modes | dans l'entrée | `modes` : `['individuel']`, ou `['individuel', 'collectif']` si le jeu fournit son rejeu au tableau (§ 1.1) |
 | Moteur | `shared/<famille>/` | Fonctions pures, sans réseau ni DOM : même code pour le serveur, le site et l'application |
@@ -23,6 +23,18 @@ Un jeu = **une entrée de catalogue + un moteur partagé + un écran web + un é
 | Accès | `jeuAccessible` | Un étudiant ne joue qu'à un jeu **proposé dans un de ses modules** ; revérifié à chaque essai |
 | Écrans | `frontend/src/pages/jeux/`, `mobile/src/app/` | 360 px de large au minimum, cibles tactiles de 44 px, thème Planner (clair et sombre) |
 | Textes | `shared/<famille>/i18n.js` | Aucune chaîne en dur, français par défaut |
+
+Planner sert plusieurs écoles et son dépôt est public : **aucun jeu ne nomme une école**, ni dans ses textes, ni dans ses liens. `scripts/verifier-neutre.mjs` le vérifie dans la CI (règle du 7 novembre, amendement du 10 novembre).
+
+### 1.0 Le retour après un essai (décision du 10 novembre)
+
+Un essai raté **ne donne pas la réponse** ; sinon les points s'obtiendraient en deux essais.
+
+1. **Après un échec**, le serveur dit **quels éléments sont faux** (`correct: false`) et pourquoi en termes généraux (code de problème). Il ne renvoie **ni la valeur attendue, ni la bonne position, ni le bon classement**.
+2. **La solution** s'obtient par une demande explicite (« Voir la solution ») : sur demande à tout moment, et proposée d'office après **trois essais ratés** du même défi.
+3. **Voir la solution coûte les points** du défi. Une réussite après la solution est enregistrée **sans points** et se distingue dans le suivi de l'enseignant (« réussi avec la solution »).
+4. **Le serveur garde la trace** qu'une solution a été vue (par étudiant, jeu et défi), avant de la renvoyer. Il ne croit jamais le client sur ce point. Le stockage est choisi dans le plan de la correction (migration **0080** réservée) : `JeuProgressions.reussi_le` est obligatoire, une ligne ne peut donc pas noter une solution vue avant une réussite.
+5. **Tests** : un échec ne contient aucune valeur attendue (un test par moteur) ; demander la solution puis réussir donne 0 point ; la solution d'un jeu hors module est refusée (403).
 
 ### 1.1 Jouer en classe : les modes
 
@@ -90,3 +102,46 @@ Règles :
 - Le commentaire retiré de `mobile/babel.config.js` (plugin des worklets de Reanimated) était utile : à remettre.
 
 **Reste à faire, hors de cette branche** : dans l'application, les jeux ne s'ouvrent encore que depuis l'écran `jeux.jsx`, qui n'a plus d'onglet. L'entrée prévue le 11 octobre (un scan, ou le module dans « Mes cours ») reste à construire ; c'est elle qui rendra les simulations visibles aux étudiants.
+
+## 6. Relecture de `jeux-pedagogique` (10 novembre 2026, commits `77087ad`, `2a56dd2` et `0620bbe`)
+
+**Contenu nouveau** : un dixième jeu, le **Labo Big-O** (classer des extraits d'algorithme par complexité) ; le catalogue découpé en un fichier par jeu ; des moteurs et des présentations séparés ; les routes des jeux sorties d'`App.jsx` (`frontend/src/routes/jeux.jsx`) ; le seed réparti par discipline.
+
+**Vérifié** sur la branche **fusionnée avec `main`** (`6fedf41`), dans un dossier de travail à part ; aucun conflit :
+
+| Contrôle | Résultat |
+|---|---|
+| Tests unitaires du serveur | 431 sur 431 |
+| Lint du serveur et du site | 0 erreur (17 et 24 avertissements de longueur) |
+| Tests unitaires du site, construction | 42 sur 42 ; construction réussie |
+| Tests de l'application | **72 sur 73** : `__tests__/simulations.test.js` échoue pour `big-o-lab` |
+| `scripts/verifier-neutre.mjs` | **échoue** : 11 mentions d'HESTIM dans `shared/simulations/` |
+| Tests d'intégration et parcours | non lancés (Docker arrêté) ; la CI les lancera |
+
+**Sécurité, conforme au contrat** :
+- le client envoie une réponse, jamais un score : un `points` envoyé est ignoré, un champ en trop dans la réponse est refusé (400) ;
+- l'accès au module est revérifié à chaque essai ; la première réussite seule est enregistrée ;
+- les dix moteurs sont des fonctions pures et bornées : une seule clé, des tableaux de 4 éléments, des entiers bornés, un programme de 40 pas au plus. Aucun code n'est exécuté, aucune boucle ne dépend de la saisie ;
+- les tests d'intégration couvrent : sans compte (401), hors module, sans jeton CSRF ou mauvais rôle (403), défi inconnu (404), score du client ignoré ;
+- aucune injection de HTML, aucun appel à un service tiers.
+
+**Bloquant : la CI échouerait** :
+
+| # | Point | Où | Correction |
+|---|---|---|---|
+| B-1 | Adresses du site d'HESTIM et mention « publiés par HESTIM » écrites en dur. Le § 1 de ce contrat demandait la page du programme d'HESTIM, mais la règle du 7 novembre (« aucun nom d'école en dur », dépôt public, plusieurs écoles) l'interdit désormais | `shared/simulations/catalogue/_aide.js`, `shared/simulations/i18n.js` | retirer les adresses ; `curriculum` devient une discipline et un niveau, sans école ; texte de cadre neutre. **Le § 1 de ce contrat est à amender** (décision du chef) |
+| B-2 | Le Labo Big-O n'a pas sa réponse de référence dans le test de l'application | `mobile/__tests__/simulations.test.js` (`premier`) | ajouter l'entrée `big-o-01` |
+
+**Important, à décider par le chef de projet** :
+
+| # | Point | Où |
+|---|---|---|
+| I-1 | Après un essai raté, les moteurs `sql`, `triage`, `complexite` (et d'autres) renvoient **la réponse attendue** de chaque élément (`attendu`). Un étudiant obtient les points en deux essais : un faux, puis la réponse donnée par le serveur. Ce n'est pas une faille de sécurité (ce sont des entraînements, `but: 'entrainer'`), mais les points et le suivi de l'enseignant perdent leur sens. Proposition : ne dire que quels éléments sont faux (`correct: false`), et révéler la réponse après trois essais ou sur un bouton « Voir la solution » sans points | `shared/simulations/moteurs/*.js` |
+
+**Reste de la relecture du 16 octobre, non bloquant** :
+- commentaires en anglais dans les tests et la configuration de Jest (`backend/tests/*/simulation*.test.js`, `mobile/jest.*.js`, noms des tests) ;
+- commentaire de `mobile/babel.config.js` toujours retiré ; condition inutile dans `mobile/jest.resolver.js` ;
+- environ 35 lignes d'`App.jsx` qui ne font que réaligner des espaces ;
+- `frontend/src/pages/jeux/Jeux.jsx` passe de 389 à 405 lignes. La règle veut qu'un lot ne fasse pas grossir un fichier déjà trop long.
+
+**Verdict** : la branche est **propre et sûre**, mais **pas fusionnable en l'état** : B-1 et B-2 feraient échouer la CI. Une fois B-1 et B-2 corrigés et I-1 tranché, la fusion se fait par une PR, avec la CI complète, intégration et parcours compris.
