@@ -64,7 +64,7 @@ Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 |---|---|---|---|
 | P-3 | Où mesurer ? | en local, MySQL limité ; courte vérification sur le serveur pendant EXP-02 | validé le 10 nov. |
 | P-4 | Caractéristiques du nouveau serveur, et du poste de mesure (P-3) | commandes de lecture seule | **serveur : relevé le 10 nov.** (§ 2) ; **poste : attendu** (les commandes ont tourné sur le serveur) |
-| **P-19** | Ollama doit-il rester sur ce serveur, avec un modèle chargé en permanence (4,7 Gio) ? | à décider avec ses chiffres exacts : modèle, durée de maintien en mémoire, part réelle de la mémoire. Sinon : le décharger après usage, le limiter, ou le déplacer | |
+| **P-19** | Ollama doit-il rester sur ce serveur, avec un modèle chargé en permanence (4,7 Gio) ? | à décider avec ses chiffres exacts : modèle, durée de maintien en mémoire, part réelle de la mémoire. Sinon : le décharger après usage, le limiter, ou le déplacer (par exemple sur le second PC, sous Ubuntu) | **reportée le 10 nov.** : ne bloque pas PLA-06 (S1 conclu dans les deux cas, avec et sans Ollama) ; **à trancher avant EXP-02** (Q-21 de `decisions.md`) |
 | **P-20** | Ajouter une mémoire d'échange (swap) de 2 à 4 Go sur le serveur ? | oui, dans EXP-02 : sans elle, un pic de mémoire fait tuer un conteneur au hasard (n8n compris) | |
 | **P-21** | n8n a-t-il des traitements lourds, à quelles heures ? | à dire par le chef ; la mesure prend le pic, pas la moyenne | |
 | P-4 bis | Deux enveloppes, 4 et 8 Go | **remplacée par C-1** (§ 12) | validée le 10 nov., puis remplacée |
@@ -144,6 +144,8 @@ sequenceDiagram
 | S3 | M5b | migration d'étude sur 200 bases en moins de **30 min** |
 | S4 | M6 | p95 en moins de **1 s** au rythme de P-17 ; aucune erreur (réponse 5xx, refus de connexion ou délai de plus de 10 s) |
 | S5 | M3, M8 | aucun refus de connexion, tâches périodiques comprises |
+
+Tant que P-19 n'est pas tranchée, S1 est conclu **dans les deux cas** : Ollama chargé (environ 2,3 Gio pour Planner) et Ollama ailleurs (environ 7 Gio).
 
 D-01 est **confirmée** si S1 à S5 tiennent avec un réglage MySQL au moins. Sinon, le rapport dit quel seuil cède, de combien, et ce qui le corrigerait. Il présente les options sans choisir : la décision revient au chef.
 

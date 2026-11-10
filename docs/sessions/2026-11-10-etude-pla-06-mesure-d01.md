@@ -50,7 +50,8 @@
 | N° | Question | Réponse | État |
 |---|---|---|---|
 | P-4 | Caractéristiques du nouveau serveur | relevé le 10 nov. (plan, § 2) ; poste de mesure encore attendu | serveur réglé |
-| P-19 à P-21 | Ollama (4,7 Gio), mémoire d'échange, pics de n8n | — | **en attente** |
+| P-19 | Ollama (4,7 Gio) | reportée par le chef le 10 nov. ; à trancher avant EXP-02 (Q-21) | reportée |
+| P-20, P-21 | Mémoire d'échange, pics de n8n | — | **en attente** |
 | P-11 à P-14 | voir le plan, § 3 | validées le 10 nov. | réglé |
 | P-15 | S1 sur le besoin réel (C-1) | — | **en attente** |
 | P-16 | Garder les ~680 étudiants du seed (C-6) | — | **en attente** |
