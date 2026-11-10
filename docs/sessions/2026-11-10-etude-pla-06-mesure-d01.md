@@ -53,10 +53,12 @@
 | P-19 | Ollama (4,7 Gio) | reportée par le chef le 10 nov. ; à trancher avant EXP-02 (Q-21) | reportée |
 | P-20, P-21 | Mémoire d'échange, pics de n8n | — | **en attente** |
 | P-11 à P-14 | voir le plan, § 3 | validées le 10 nov. | réglé |
-| P-15 | S1 sur le besoin réel (C-1) | — | **en attente** |
-| P-16 | Garder les ~680 étudiants du seed (C-6) | — | **en attente** |
-| P-17 | 50 utilisateurs par école active, toutes les 30 s, puis rampe (C-13) | — | **en attente** |
-| P-18 | Tâches périodiques lancées sur les 200 écoles (C-2) | — | **en attente** |
+| P-15 | S1 sur le besoin réel (C-1) | validé le 10 nov. | réglé |
+| P-16 | Garder les ~680 étudiants du seed (C-6) | validé le 10 nov. | réglé |
+| P-17 | 50 utilisateurs par école active, toutes les 30 s, puis rampe (C-13) | validé le 10 nov. | réglé |
+| P-18 | Tâches périodiques lancées sur les 200 écoles (C-2) | validé le 10 nov. | réglé |
+| P-22 | Piloter une série depuis le PC Windows par SSH vers le PC Ubuntu | — | **en attente** |
+| P-23 | Chiffres et prérequis du PC Ubuntu (au moins 4 cœurs et 8 Go, Docker, Node 22, même réseau local) | — | **en attente** |
 
 ## Commandes de reconnaissance du serveur (P-4)
 
@@ -93,11 +95,10 @@ docker info --format 'CPUs={{.NCPU}} Mem={{.MemTotal}} Version={{.ServerVersion}
 
 ## Reste à faire, dans l'ordre
 
-1. Le chef lance les commandes de P-4, en donne les chiffres, et répond à P-15 à P-18 (ou fait corriger le plan).
-2. Le chef pousse, puis fusionne #162, #142, #156, #161 et #163.
-3. Cette branche fusionne `origin/main`. Les réponses vont dans le § 3 du plan, la ligne « Validé » est remplie, et le tout est commité.
-4. Étapes 3 à 8 du plan (§ 9).
-5. **Pour le chantier EXP** (EXP-01, EXP-02) : sur le nouveau serveur, le proxy de l'hôte est **Traefik** (conteneur de n8n), pas nginx ; aucune mémoire d'échange ; Ollama occupe 4,7 Gio sans limite (plan PLA-06, § 2 et C-22 à C-25).
+1. **Fait le 10 nov.** : #142, #156, #161, #162 et #163 fusionnées ; `main` fusionné dans cette branche ; **plan validé** (P-15 à P-18 ; banc sur le PC Ubuntu, charge depuis le PC Windows).
+2. Le chef fournit P-22 et P-23 (commandes dans le prompt de reprise).
+3. **Nouvelle session** : étapes 3 à 8 du plan (§ 9), une étape par commit. Le code peut s'écrire avant P-23 ; les séries attendent le PC Ubuntu.
+4. **Pour le chantier EXP** (EXP-01, EXP-02) : sur le nouveau serveur, le proxy de l'hôte est **Traefik** (conteneur de n8n), pas nginx ; aucune mémoire d'échange ; Ollama occupe 4,7 Gio sans limite (Q-21, à trancher avant EXP-02).
 
 ## Commandes pour le chef de projet
 
@@ -111,16 +112,25 @@ gh pr create --draft --base main --head etude/pla-06-mesure-d01 --title "PLA-06 
 ## Prompt de reprise
 
 ```text
-Tu reprends PLA-06 (mesure de D-01 : 200 écoles, une base chacune, sur un serveur) du chantier PLA,
-sur la branche etude/pla-06-mesure-d01, dans le dossier ..\travaux-planner\pla-06-mesure-d01.
-Lis d'abord AGENTS.md, docs/plan/README.md, docs/plan/organisation.md, docs/plan/suivi.md,
-le plan docs/conception/plateforme/pla-06-mesure-d01.md (surtout § 3 et § 12) et cette fiche
-(docs/sessions/2026-11-10-etude-pla-06-mesure-d01.md).
-Vérifie avec gh pr list que #162, #142, #156, #161 et #163 sont fusionnées ; sinon, dis-le avant tout.
-Chiffres du serveur (P-4) : <à coller ici, sans adresse ni nom de machine>.
-Réponses à P-15 à P-18 et validation du plan : <à coller ici>.
-Ensuite : fusionne origin/main dans la branche (pas de rebase), reporte les réponses dans le § 3,
-remplis la ligne « Validé », commite, puis code les étapes 3 à 8 du § 9, une étape par commit.
-Rien dans backend/ ni dans deploy/, aucun export ni secret dans le dépôt, rien sur le serveur de production.
-Fin de session : suivi.md, fiche dans docs/sessions/, prompt de reprise, jamais de git push.
+Tu reprends PLA-06 (mesure de D-01 : 200 écoles, une base chacune, sur un serveur) du chantier PLA de Planner,
+sur la branche etude/pla-06-mesure-d01, dans le dossier ..	ravaux-planner\pla-06-mesure-d01.
+Lis d'abord AGENTS.md, docs/plan/README.md, docs/plan/suivi.md, le plan VALIDÉ
+docs/conception/plateforme/pla-06-mesure-d01.md (tout, surtout § 2, § 4, § 5, § 8, § 9 et § 12)
+et cette fiche (docs/sessions/2026-11-10-etude-pla-06-mesure-d01.md).
+Le plan est validé le 10 novembre : banc (MySQL 8.4.13 et serveur de banc, Docker natif) sur le PC Ubuntu,
+charge depuis le PC Windows par le réseau local ; P-22 et P-23 : <réponses et chiffres du PC Ubuntu à coller ici>.
+Code les étapes 3 à 8 du § 9 dans scripts/mesures/pla-06/, une étape par commit, chaque fichier sous 300 lignes
+avec son commentaire de rôle : rien dans backend/ ni deploy/, aucun export, résultat brut ni secret dans le dépôt
+(.gitignore d'abord). Tu ne lances aucune série toi-même sur le PC Ubuntu : tu donnes les commandes au chef.
+Si le code contredit le plan : arrête-toi et demande. Fin de session : suivi.md, fiche dans docs/sessions/,
+prompt de reprise ; jamais de git push.
+```
+
+Commandes à lancer **sur le PC Ubuntu** pour P-23 :
+
+```bash
+nproc; lscpu | grep -E "Model name|^CPU\(s\)|Thread"; free -h; df -h / ; lsb_release -d
+docker version --format '{{.Server.Version}}' 2>/dev/null || echo "Docker absent"
+node --version 2>/dev/null || echo "Node absent"
+ip -4 -brief addr | grep -v "^lo"; systemctl is-active ssh 2>/dev/null || echo "serveur SSH absent"
 ```

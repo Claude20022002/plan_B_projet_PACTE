@@ -5,7 +5,7 @@
 | Module | [PLA](../../plan/modules/PLA-plateforme.md) · chantier ouvert le 9 novembre 2026, ordre validé le 10 |
 | Branche | `etude/pla-06-mesure-d01` (une étude : rien de ce code ne part en production) |
 | Rédigé par | Claude Code (Opus 5.5), le 2026-11-10 ; revu le même jour (§ 12) |
-| **Validé** | propositions du 9 novembre validées le 10 ; **corrections de la revue (§ 12) et questions P-15 à P-18 en attente** |
+| **Validé** | **par Claude20022002 le 2026-11-10** (propositions du 9, revue du § 12, P-15 à P-18, machine de mesure). Restent à fournir avant la première série : P-22 et P-23 (prérequis du PC Ubuntu) |
 
 ## 1. Objet et critère de « terminé »
 
@@ -62,7 +62,7 @@ Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 
 | N° | Question | Proposition | Réponse du chef |
 |---|---|---|---|
-| P-3 | Où mesurer ? | en local, MySQL limité ; courte vérification sur le serveur pendant EXP-02 | validé le 10 nov. |
+| P-3 | Où mesurer ? | en local, MySQL limité ; courte vérification sur le serveur pendant EXP-02 | validé le 10 nov., **précisé le 10 nov. : le banc (MySQL et serveur) sur le PC Ubuntu, la charge depuis le PC Windows**, par le réseau local |
 | P-4 | Caractéristiques du nouveau serveur, et du poste de mesure (P-3) | commandes de lecture seule | **serveur : relevé le 10 nov.** (§ 2) ; **poste : attendu** (les commandes ont tourné sur le serveur) |
 | **P-19** | Ollama doit-il rester sur ce serveur, avec un modèle chargé en permanence (4,7 Gio) ? | à décider avec ses chiffres exacts : modèle, durée de maintien en mémoire, part réelle de la mémoire. Sinon : le décharger après usage, le limiter, ou le déplacer (par exemple sur le second PC, sous Ubuntu) | **reportée le 10 nov.** : ne bloque pas PLA-06 (S1 conclu dans les deux cas, avec et sans Ollama) ; **à trancher avant EXP-02** (Q-21 de `decisions.md`) |
 | **P-20** | Ajouter une mémoire d'échange (swap) de 2 à 4 Go sur le serveur ? | oui, dans EXP-02 : sans elle, un pic de mémoire fait tuer un conteneur au hasard (n8n compris) | |
@@ -73,16 +73,20 @@ Si D-01 tombe, le chantier PLA s'arrête jusqu'à la décision du chef (P-10).
 | P-6 | Seuils | **S1 corrigé par C-1** | validé le 10 nov. (S2 à S5) |
 | P-7, P-8, P-9, P-10 | Activité, pools, réglages MySQL, livrables | **P-7 précisé par C-13, P-8 mis en doute par C-2** | validé le 10 nov. |
 | P-11 à P-14 | Les deux démarrages ; pas de dépendance ; MySQL temporaire sur le serveur ; attendre les fusions | oui | validé le 10 nov. |
-| **P-15** | S1 calculé sur le besoin réel : Node + MySQL + autres services + 20 % de marge ≤ mémoire du serveur moins le pic de n8n (C-1) | oui | |
-| **P-16** | Garder les ~680 étudiants du seed, soit le double de la cible, plutôt que d'en supprimer, ce qui casse des clés étrangères (C-6) | oui : si D-01 tient avec 680, elle tient avec 300 | |
-| **P-17** | Rythme de l'activité : 50 utilisateurs par école active, une consultation toutes les 30 s (environ 33 requêtes par seconde), puis une rampe jusqu'à ce que le p95 dépasse 1 s (C-13) | oui | |
-| **P-18** | Les tâches périodiques tournent pendant la mesure, sur les 200 écoles (C-2) | oui | |
+| **P-15** | S1 calculé sur le besoin réel : Node + MySQL + autres services + 20 % de marge ≤ mémoire du serveur moins le pic de n8n (C-1) | oui | validé le 10 nov. |
+| **P-16** | Garder les ~680 étudiants du seed, soit le double de la cible, plutôt que d'en supprimer, ce qui casse des clés étrangères (C-6) | oui : si D-01 tient avec 680, elle tient avec 300 | validé le 10 nov. |
+| **P-17** | Rythme de l'activité : 50 utilisateurs par école active, une consultation toutes les 30 s (environ 33 requêtes par seconde), puis une rampe jusqu'à ce que le p95 dépasse 1 s (C-13) | oui | validé le 10 nov. |
+| **P-18** | Les tâches périodiques tournent pendant la mesure, sur les 200 écoles (C-2) | oui | validé le 10 nov. |
+| **P-22** | Piloter une série depuis le PC Windows : `serie.mjs` y tourne, lance `charge.mjs` sur place, et commande le PC Ubuntu par SSH (clé, pas de mot de passe) | oui ; sinon le chef lance les deux moitiés à la main, à l'heure dite | |
+| **P-23** | Le PC Ubuntu : processeurs, mémoire, disque, Docker, Node 22, même réseau local que le PC Windows, allumé pendant les séries (environ 8 h) | doit offrir au moins 4 cœurs et 8 Go, pour imiter le serveur | |
 
 ## 4. Solution
 
 ### 4.1 Principe
 
-Un **banc de mesure** à part, dans `scripts/mesures/pla-06/`. **Rien ne change dans `backend/`** : le banc importe `app.js` et les modules de l'essai, crée lui-même la connexion de chaque école, et règle tout par des variables d'environnement qui existent déjà.
+Un **banc de mesure** à part, dans `scripts/mesures/pla-06/`, **sur deux machines** (P-3) :
+- **PC Ubuntu** : MySQL, le serveur de banc et `releves.mjs`, dans Docker natif, comme sur le serveur Debian ;
+- **PC Windows** : `charge.mjs` et `serie.mjs`, qui pilote le PC Ubuntu par SSH (P-22). La charge passe donc par le réseau, comme celle de vrais utilisateurs. **Rien ne change dans `backend/`** : le banc importe `app.js` et les modules de l'essai, crée lui-même la connexion de chaque école, et règle tout par des variables d'environnement qui existent déjà.
 
 - **MySQL 8.4.13** dans un conteneur limité en mémoire (paliers de C-1) et en processeurs. Les fichiers ouverts (`ulimits`) sont réglés comme sur le serveur (P-4).
 - **Le serveur de banc** tourne dans un conteneur Node 22, avec un nombre de processeurs fixé, pour ne pas mesurer la machine hôte.
@@ -183,6 +187,7 @@ D-01 est **confirmée** si S1 à S5 tiennent avec un réglage MySQL au moins. Si
 - **Isolation du parcours mesuré**, vérifiée de deux façons :
   - avant chaque série, 20 requêtes à 20 écoles renvoient chacune le nom de **sa** base ;
   - une série de diagnostic à part (`general_log` allumé, jamais pendant une mesure) vérifie que les requêtes de l'école N ne touchent que la base N, pour les écritures des limiteurs comme pour les lectures.
+- **Réseau local** : sur le PC Ubuntu, MySQL n'écoute que sur `127.0.0.1`. Seul le port HTTP du serveur de banc s'ouvre au réseau local, pour l'adresse du PC Windows seulement (règle de pare-feu `ufw`), et il est refermé après les séries.
 - **Rien sur le serveur de production.** Pour la vérification P-13 :
   - conteneur temporaire, lancé par le chef ;
   - mémoire limitée à la moitié de la mémoire libre ;
@@ -226,7 +231,8 @@ C'est une étude : il n'y a pas de test de production à ajouter. Ces contrôles
 
 | Risque | Parade |
 |---|---|
-| Docker Desktop sous Windows n'a pas les entrées et sorties d'un Debian | volume nommé ; vérification P-13 ; écart dit dans le rapport |
+| Le PC Ubuntu n'est pas le serveur (processeur, disque) | limites de processeurs et de mémoire égales à celles du serveur ; vérification P-13 ; écart dit dans le rapport |
+| Le réseau local ajoute un peu de latence | mesurée à vide (requête de santé) et donnée à part dans le rapport |
 | Le poste n'a pas assez de mémoire ou de disque | contrôle avant la préparation (environ 10 Go de disque) ; paliers plus bas, extrapolation dite |
 | La fabrique de l'essai ne coûte pas ce que coûtera celle de PLA-01 | coût par école donné et sourcé ; PLA-01 le remesure |
 | Le générateur de charge partage l'hôte | serveur et MySQL dans des conteneurs limités ; série refaite au-delà de 90 % de processeur |
@@ -256,7 +262,7 @@ Le chef de projet a demandé de chercher les failles du plan avant de le valider
 | C-6 | Ramener le seed à 300 étudiants supprime des lignes liées (clés étrangères), une source d'erreurs | moyenne | garder ~680 étudiants, une majoration (P-16) |
 | C-7 | « Les 3 dernières migrations sur 200 bases » demandait des bases dans un état antérieur, ou des `down` jamais éprouvés | moyenne | migration d'étude, hors de `backend/migrations` |
 | C-8 | Mots de passe « en mémoire seulement », alors que la préparation et le serveur sont deux processus | moyenne : irréalisable | `.local/secrets.json`, ignoré et effacé |
-| C-9 | Le serveur Node sans limite et le générateur de charge sur le même hôte | moyenne | conteneurs limités ; seuil de 90 % de processeur |
+| C-9 | Le serveur Node sans limite et le générateur de charge sur le même hôte | moyenne | conteneurs limités ; **charge envoyée depuis une autre machine** (P-3, précisé le 10 nov.) ; seuil de 90 % de processeur |
 | C-10 | Cache froid compté ; coût du réveil d'une école endormie non mesuré | moyenne | 2 min de chauffe ; M4c |
 | C-11 | Une écriture par la connexion par défaut fuit sans erreur : rien ne l'aurait vue | moyenne | parcours vérifié hors des 23 fichiers ; série de diagnostic avec `general_log` |
 | C-12 | `fetch` de Node peut ignorer l'en-tête `Host` | faible | `node:http` avec un agent persistant |
