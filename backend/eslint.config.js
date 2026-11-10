@@ -13,7 +13,7 @@ const longueur = (max) => ["warn", { max, skipBlankLines: true, skipComments: tr
  * Accès à la base (revue d'expert, fichier 16, A-2 et R-2) : avec plusieurs écoles, chaque requête
  * lira les modèles de son école (ME-3a, D-03). Le code passe donc par models/index.js pour les
  * modèles et par models/acces.js pour une transaction ou une requête SQL, jamais par la connexion
- * (config/db.js) ; un modèle n'en importe pas un autre (index.js les relie). Les fichiers
+ * (config/db.js) ; un modèle n'en importe pas un autre (definitions.js les relie). Les fichiers
  * qui le font déjà sont figés ici, le 29 octobre 2026 : la liste ne fait que raccourcir, ME-3a la
  * reprendra. Hors règle : modèles, migrations, tests et points d'entrée (server.js, seed.js), qui
  * ouvrent ou préparent la connexion eux-mêmes.
@@ -44,7 +44,6 @@ const CONNEXION_DEJA_IMPORTEE = [
     "services/studio/tentatives.js",
     "services/taches/periodiques.js", // nomme son verrou d'après la base : à reprendre avec ME-3a
 ];
-const MODELE_DEJA_IMPORTE = ["models/Groupe.js"]; // AnneeUniversitaire (ME-18)
 
 const interdire = (regex, message) => ["error", { patterns: [{ regex, message }] }];
 
@@ -77,21 +76,23 @@ export default defineConfig([
     },
     {
         files: ["**/*.{js,mjs}"],
-        ignores: ["models/**", "migrations/**", "tests/**", "server.js", "seed.js", ...CONNEXION_DEJA_IMPORTEE],
+        // contexte/ : le module de contexte (D-03) relie les établissements à leurs connexions
+        ignores: ["models/**", "migrations/**", "tests/**", "contexte/**", "server.js", "seed.js", ...CONNEXION_DEJA_IMPORTEE],
         rules: {
             "no-restricted-imports": interdire(
-                "(^|/)config/db(\\.js)?$",
+                "(^|/)(config/db|models/definitions)(\\.js)?$",
                 "Pas de connexion directe : les modèles viennent de models/index.js, une transaction ou une requête SQL de models/acces.js (enTransaction, requete). Avec plusieurs écoles, la connexion dépendra de la requête (ME-3a, R-2).",
             ),
         },
     },
     {
         files: ["models/**/*.js"],
-        ignores: ["models/index.js", ...MODELE_DEJA_IMPORTE],
+        // definitions.js relie les modèles ; index.js en exporte les résolveurs (essai de ME-3a)
+        ignores: ["models/index.js", "models/definitions.js"],
         rules: {
             "no-restricted-imports": interdire(
                 "^\\./",
-                "Un modèle n'importe pas un autre modèle : les relations se déclarent dans models/index.js (ME-3a, R-2).",
+                "Un modèle n'importe pas un autre modèle : les relations et les crochets entre modèles se posent dans models/definitions.js ; un crochet lit les autres modèles par instance.sequelize.models (ME-3a, R-2).",
             ),
         },
     },
