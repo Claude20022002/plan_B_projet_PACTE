@@ -10,12 +10,13 @@ Une ligne par fonction. L'état passe à « en cours » (avec la branche) au pre
 
 Au plus **3 chantiers ouverts** en même temps, bloqués compris. On ne prend une fonction que dans un chantier ouvert. Un chantier ouvert se termine avant d'en ouvrir un autre à sa place ([organisation.md](organisation.md), § 3).
 
-### Ouverts (2 sur 3)
+### Ouverts (3 sur 3)
 
 | Module | Ouvert le | Fonctions du chantier, dans l'ordre | Reste | État |
 |---|---|---|---|---|
-| [EXP](modules/EXP-exploitation.md) | avant le 9 nov. (EXP-01 en cours) | EXP-01, EXP-02, EXP-03, EXP-04, EXP-05 | 5 | ouvert ; liste à confirmer par le chef |
-| [PLA](modules/PLA-plateforme.md) | 9 nov. 2026 | PLA-06, PLA-03, PLA-05, PLA-01, PLA-02, PLA-04, PLA-07 | 7 | ouvert ; ordre à valider par le chef. PLA-01 attend EXP-02 et QUA-03, PLA-07 attend EXP-04 |
+| [EXP](modules/EXP-exploitation.md) | avant le 9 nov. (EXP-01 en cours) | EXP-01, EXP-02, EXP-03, EXP-04, EXP-05 | 5 | ouvert ; liste confirmée le 10 nov. |
+| [PLA](modules/PLA-plateforme.md) | 9 nov. 2026 | PLA-06, PLA-03, PLA-05, PLA-01, PLA-02, PLA-04, PLA-07 | 7 | ouvert ; ordre validé le 10 nov. PLA-01 attend EXP-02 et QUA-03, PLA-07 attend EXP-04 |
+| [QUA](modules/QUA-qualite-docs.md) | 10 nov. 2026 | QUA-03 | 1 | ouvert, limité à QUA-03 pour débloquer PLA-01 |
 
 ### Fermés
 

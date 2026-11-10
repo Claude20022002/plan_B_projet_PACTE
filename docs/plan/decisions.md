@@ -73,7 +73,10 @@ Registre unique à partir du 7 novembre 2026.
 | 9 nov. | **Aucun code sans plan de conception validé** par le chef ; l'agent pose ses questions avant, sans rien supposer | « conception d'abord pour une fonction M ou plus » du 7 novembre |
 | 9 nov. | **Fin de session obligatoire** : `suivi.md` à jour et une fiche de session avec son prompt de reprise ; une session trop longue se résume (`/compact`) ou passe la main | — |
 | 9 nov. | Module **MKT** (marketing) ajouté, porté par les 9 agents de `..\planner-marketing` ; la vente reste gelée : on prépare, on ne publie pas | — |
-| 9 nov. | Chantier **PLA** ouvert ; chantier **EXP** reconnu ouvert (EXP-01 en cours) | — |
+| 9 nov. | Chantier **PLA** ouvert, dans l'ordre PLA-06, PLA-03, PLA-05, PLA-01, PLA-02, PLA-04, PLA-07 ; ordre validé et chantier **EXP** confirmé ouvert (EXP-01 à EXP-05) le 10 novembre | — |
+| 10 nov. | Chantier **QUA** ouvert, limité à **QUA-03** (clore l'étude de la pile), pour débloquer PLA-01 : 3 chantiers ouverts sur 3 | — |
+| 10 nov. | L'agence marketing se sauvegarde dans un **dépôt GitHub privé** `planner-marketing` (logos, stratégie) ; la vente reste gelée : le marketing prépare, ne publie pas | — |
+| 10 nov. | PLA-06 : mesure en local, MySQL limité aux ressources du nouveau serveur ; 200 bases au schéma complet, chacune avec une école fictive d'environ 300 élèves ; seuils, activité et réglages proposés le 9 novembre, retenus le 10 ; si D-01 tombe, le chantier PLA s'arrête jusqu'à décision | — |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.

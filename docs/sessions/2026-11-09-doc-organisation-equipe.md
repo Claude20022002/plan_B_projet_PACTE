@@ -67,11 +67,11 @@ Posées au chef de projet dans le message de fin de session. Les réponses seron
 
 | N° | Question | Proposition | État |
 |---|---|---|---|
-| O-1 | Limite de chantiers ouverts | 3 | en attente |
-| O-2 | Le chantier EXP (EXP-01 à EXP-05) est-il bien ouvert ? | oui, il l'était de fait | en attente |
-| O-3 | Dépôt de l'agence marketing | dépôt GitHub privé `planner-marketing` (logos et stratégie hors du dépôt public) | en attente |
-| O-4 | Gel de la vente : le marketing prépare sans publier | oui, jusqu'à décision contraire | en attente |
-| P-1 à P-10 | Questions du chantier PLA (ordre, PLA-06) | voir le message de fin de session | en attente |
+| O-1 | Limite de chantiers ouverts | 3 | **validé** le 10 nov. |
+| O-2 | Le chantier EXP (EXP-01 à EXP-05) est-il bien ouvert ? | oui, il l'était de fait | **validé** le 10 nov. |
+| O-3 | Dépôt de l'agence marketing | dépôt GitHub privé `planner-marketing` (logos et stratégie hors du dépôt public) | **validé** le 10 nov. |
+| O-4 | Gel de la vente : le marketing prépare sans publier | oui, jusqu'à décision contraire | **validé** le 10 nov. |
+| P-1 à P-10 | Questions du chantier PLA (ordre, PLA-06) | voir le message de fin de session | **propositions validées** le 10 nov. ; P-4 (caractéristiques du serveur) reste sans réponse, faute de proposition |
 
 ## État laissé
 
