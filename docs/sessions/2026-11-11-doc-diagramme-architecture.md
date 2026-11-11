@@ -52,8 +52,11 @@ Dans ce dépôt, sur `doc/diagramme-architecture` :
 | 1 | Cible élargie aux écoles publiques (« toute structure de formation ») : à inscrire dans `docs/plan/decisions.md` ? | dit par le chef le 11 novembre ; inscription à faire par le chef, pas dans cette branche (une tâche par branche) | ouverte |
 | 2 | Quel chantier pour l'agence (3 sur 3 ouverts) ? | proposition : chantier MKT limité à MKT-01 et MKT-02, avec une limite portée à 4 | ouverte |
 | 3 | Premier commit complet de `..\planner-marketing` et dépôt privé (MKT-01) | premier commit fait par le chef le 11 novembre (`03f32d4`, 411 fichiers, aucun MP4) ; reste le dépôt distant privé, que le chef crée et pousse | en partie réglée |
-| 4 | Piste du logo : A, B ou C ? | recommandation : A « le volet » | ouverte |
-| 5 | L-3 et L-5 (`01-assemblage-et-pose.md`) | propositions écrites | ouverte |
+| 4 | Piste du logo : A, B ou C ? | **A « le volet »**, choisie par le chef le 11 novembre. Kit fait : `marketing/brand/logo/kit/` (commit `cbc9b74` de l'agence), contrôle qualité validé pour un usage interne et pour la pose dans le produit | réglée |
+| 5 | L-3 et L-5 (`01-assemblage-et-pose.md`) | validées par le chef le 11 novembre | réglée |
+| 6 | Hauteur de PLANNER à côté du logo d'une école : 50 % (validé) ou 40 % (proposé après l'essai avec ORION et NOVA) | proposition : 40 % | ouverte |
+| 7 | Pose du logo dans le produit : critères de « terminé » d'UIX-01 et de MOB-03, ou une fonction à part ? | proposition : critères d'UIX-01 et de MOB-03 (fichiers et correspondances dans `kit/README.md`, § 10) | ouverte |
+| 8 | Recherche d'antériorité à l'OMPIC : qui, quand ? | avant toute diffusion publique du logo | ouverte |
 
 ## État laissé
 
@@ -62,9 +65,10 @@ Dans ce dépôt, sur `doc/diagramme-architecture` :
 
 ## Reste à faire, dans l'ordre
 
-1. Le chef relit le diagramme, puis pousse et ouvre la PR.
-2. Le chef choisit la piste du logo et valide L-3 et L-5. L'agence prépare ensuite le kit, dans `marketing/brand/logo/kit/`.
-3. Le chef ouvre un chantier pour l'agence, puis MKT-01.
+1. Le chef ouvre la PR du diagramme. La branche est poussée ; le premier `gh pr create` a échoué parce qu'il a été lancé depuis `..\planner-marketing`, qui n'a pas de dépôt distant.
+2. Le chef tranche les questions 6 à 8 du logo.
+3. Une session du produit pose le logo (UIX-01, MOB-03, EDT-04) avec les fichiers du kit.
+4. Le chef ouvre un chantier pour l'agence ; MKT-01 n'attend plus que le dépôt privé.
 
 ## Commandes pour le chef de projet
 
