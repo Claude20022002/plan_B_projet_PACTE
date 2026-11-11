@@ -77,6 +77,7 @@ Registre unique à partir du 7 novembre 2026.
 | 10 nov. | Chantier **QUA** ouvert, limité à **QUA-03** (clore l'étude de la pile), pour débloquer PLA-01 : 3 chantiers ouverts sur 3 | — |
 | 10 nov. | L'agence marketing se sauvegarde dans un **dépôt GitHub privé** `planner-marketing` (logos, stratégie) ; la vente reste gelée : le marketing prépare, ne publie pas | — |
 | 10 nov. | PLA-06 : mesure en local, MySQL limité aux ressources du nouveau serveur ; 200 bases au schéma complet, chacune avec une école fictive d'environ 300 élèves ; seuils, activité et réglages proposés le 9 novembre, retenus le 10 ; si D-01 tombe, le chantier PLA s'arrête jusqu'à décision | — |
+| 11 nov. | **Ollama est retiré du nouveau serveur** (4,7 Gio sur 7,6). Planner y dispose d'environ 7 Gio. La suppression se fait après avoir vérifié que n8n ne s'en sert pas, conteneur arrêté d'abord, données effacées en dernier (EXP-02) | Q-21 |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.
@@ -108,5 +109,4 @@ Registre unique à partir du 7 novembre 2026.
 | Q-17 | Règles de modération de la messagerie | à trancher avant COU-08 | COU-08 |
 | Q-18 | Nom de l'application dans les magasins | « Planner » sauf conflit de marque | MOB |
 | Q-19 | Les 28 questions juridiques, fiscales et Massar de l'étude du modèle économique | gelées, sauf Massar (VSC-05) et loi 09-08 (condition légale) | VSC-05 |
-| Q-21 | Ollama (l'IA de n8n) occupe 4,7 Gio sur les 7,6 du nouveau serveur, sans limite ; le serveur n'a pas de mémoire d'échange. Le garder, le limiter, le décharger après usage, ou le déplacer (second PC sous Ubuntu) ? Reportée le 10 novembre | trancher avec ses chiffres exacts (`ollama ps`, mémoire réelle) ; ajouter 2 à 4 Go de mémoire d'échange | **EXP-02** (pas PLA-06) |
 | Q-20 | Un élève a un compte (décision du 8 novembre), mais un enfant de 6 ans n'a pas d'adresse électronique, et `Users.email` est obligatoire et unique. Avec quoi se connecte-t-il ? | un **identifiant donné par l'école**, adresse facultative, mot de passe initial remis par l'école (ou par le parent) ; pas d'adresse factice. Étude d'impact sur chaque fichier qui lit `Users.email` (connexion, réinitialisation, notifications, import) | VSC-01 |

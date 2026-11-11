@@ -50,7 +50,7 @@
 | N° | Question | Réponse | État |
 |---|---|---|---|
 | P-4 | Caractéristiques du nouveau serveur | relevé le 10 nov. (plan, § 2) ; poste de mesure encore attendu | serveur réglé |
-| P-19 | Ollama (4,7 Gio) | reportée par le chef le 10 nov. ; à trancher avant EXP-02 (Q-21) | reportée |
+| P-19 | Ollama (4,7 Gio) | **tranchée le 11 nov. : retiré du serveur** (avant EXP-02, après vérification de n8n) | réglé |
 | P-20, P-21 | Mémoire d'échange, pics de n8n | — | **en attente** |
 | P-11 à P-14 | voir le plan, § 3 | validées le 10 nov. | réglé |
 | P-15 | S1 sur le besoin réel (C-1) | validé le 10 nov. | réglé |
@@ -141,7 +141,7 @@ Le banc est écrit, aux étapes 3 à 5 du plan, dans `scripts/mesures/pla-06/` ;
 6. **Pour le chantier EXP** (EXP-01, EXP-02), à retenir sur le nouveau serveur :
    - le proxy de l'hôte est **Traefik** (conteneur de n8n), pas nginx ;
    - il n'y a aucune mémoire d'échange ;
-   - Ollama occupe 4,7 Gio sans limite (Q-21, à trancher avant EXP-02).
+   - Ollama occupe 4,7 Gio : **il sera retiré** (décision du 11 nov.), après vérification que n8n ne s'en sert pas.
 
 ## Commandes pour le chef de projet
 
