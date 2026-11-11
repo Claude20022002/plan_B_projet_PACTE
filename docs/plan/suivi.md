@@ -33,6 +33,8 @@ Au plus **3 chantiers ouverts** en même temps, bloqués compris. On ne prend un
 | MOT-01, partie serveur (MP-1) | #156 | **fusionnée le 10 nov.** |
 | Plan par modules | #161 | fusionner (le faux conflit vient de deux ancêtres communs ; `main` fusionné dans la branche le 10 nov.) |
 | Organisation de l'équipe, module MKT | #163 | fusionner après #161 |
+| Étude « Outils scolaires et besoins par pays » (11 nov.) | `doc/inventaire-outils-formation` (30067f0) | pousser, ouvrir la PR |
+| Exception MKT du 11 nov. : kit vidéo « problèmes et besoins » (MKT-05) et présentation aux chefs d'établissement (MKT-09, Canva `DAHanRcCaps`) | `mkt/mkt-05-kit-video` | pousser, ouvrir la PR ; insérer la vidéo et le contact dans Canva |
 
 ## Numéros de migration réservés
 
@@ -159,11 +161,11 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 | [MKT-02](modules/MKT-marketing.md) | Contexte produit et personas à la cible du 7 novembre | libre | M | à faire |  |
 | [MKT-03](modules/MKT-marketing.md) | Argumentaire par cible, tiré des exigences produit | libre | M | à faire |  |
 | [MKT-04](modules/MKT-marketing.md) | Textes du site vitrine et du formulaire de contact | libre | M | à faire |  |
-| [MKT-05](modules/MKT-marketing.md) | Vidéo de démonstration sur une école fictive | libre | M | à faire |  |
+| [MKT-05](modules/MKT-marketing.md) | Vidéo de démonstration sur une école fictive | libre | M | en cours : kit et script de 1 min 30 écrits, montage par le chef | `mkt/mkt-05-kit-video` |
 | [MKT-06](modules/MKT-marketing.md) | Charte visuelle et gabarits de visuels | libre | M | à faire |  |
 | [MKT-07](modules/MKT-marketing.md) | Plan de mesure à coût nul | libre | S | à faire |  |
 | [MKT-08](modules/MKT-marketing.md) | Calendrier éditorial et publications | quand la vente reprend | M | gelé |  |
-| [MKT-09](modules/MKT-marketing.md) | Supports commerciaux pour les directeurs | quand la vente reprend | M | gelé |  |
+| [MKT-09](modules/MKT-marketing.md) | Supports commerciaux pour les directeurs | quand la vente reprend | M | gelé ; exception du 11 nov. : présentation aux chefs d'établissement préparée (Canva `DAHanRcCaps`) | `mkt/mkt-05-kit-video` |
 | [MKT-10](modules/MKT-marketing.md) | Campagne de lancement auprès des écoles | quand la vente reprend | L | gelé |  |
 | [QUA-01](modules/QUA-qualite-docs.md) | `README.md` et `PRODUCT.md` à jour | libre | M | à faire |  |
 | [QUA-02](modules/QUA-qualite-docs.md) | Découper les contrôleurs trop longs, sans changer leur comportement, chacun couvert… | libre | M par contrôleur | à faire |  |

@@ -1,12 +1,14 @@
 # Kit vidéo Planner
 
-25 octobre 2026 · Rodrigue Nzuzi
+25 octobre 2026 · Rodrigue Nzuzi · mis à jour le 11 novembre 2026 (public élargi, école pilote anonymisée, prix retiré)
 
-Planner prend le nom, le logo et les couleurs de chaque école, sur le site comme sur l'application : c'est le cœur des vidéos de promotion destinées aux autres écoles. Ce kit donne les messages, les écrans à filmer, les scénarios et les règles à respecter.
+Planner prend le nom, le logo et les couleurs de chaque établissement, sur le site comme sur l'application : c'est le cœur des vidéos de promotion. Depuis le 11 novembre, elles s'adressent à **toute structure de formation, publique ou privée** : école, collège, lycée, supérieur, formation professionnelle. Ce kit donne les messages, les écrans à filmer, les scénarios et les règles à respecter.
+
+**Vidéo en cours** : [Script problemes et besoins 1 min 30.md](<Script problemes et besoins 1 min 30.md>), avec la voix off, les textes à l'écran, les images et les captures à faire.
 
 ## Message central
 
-**« Votre école, votre Planner. »** Le même produit devient « HESTIM Planner », « ORION Planner » ou « NOVA Planner » (écoles de démonstration) : nom, logo et couleurs de l'école sur chaque page, chaque courriel, chaque PDF et dans l'application des étudiants.
+**« Votre établissement, votre Planner. »** Le même produit devient « ORION Planner » ou « NOVA Planner » (écoles de démonstration) : nom, logo et couleurs de l'établissement sur chaque page, chaque courriel, chaque PDF et dans l'application des apprenants.
 
 Trois idées portent toutes les vidéos, dans cet ordre :
 
@@ -143,20 +145,17 @@ Le même Planner, sans une ligne de code changée, sous quatre écoles : l'écol
 
 ## Chiffres et offre
 
-Le prix décidé est de **5,40 MAD HT par compte actif et par mois** (6,48 MAD TTC), intelligence artificielle comprise. À faire valider par le chef de projet avant toute diffusion publique : la TVA reste à confirmer par l'expert-comptable.
+**Aucun prix dans les vidéos** (décision du 11 novembre) : les prix de Planner sont gelés avec la vente ([VEN](../docs/plan/modules/VEN-vente-modules.md)). L'offre se présente en packs et en modules vendus seuls, « selon l'effectif, sur devis ». Les montants de 4,99, 5,40 et 9,99 MAD des anciens documents ne se citent plus.
 
 | Ce qu'on peut dire | Valeur | À vérifier avant diffusion |
 | --- | --- | --- |
-| Prix par compte actif et par mois | 5,40 MAD HT, 6,48 MAD TTC | Taux de TVA |
-| Qui paie | L'école, jamais l'étudiant | — |
-| IA comprise | Préparation de quiz, questions, suggestions de documents, dans une enveloppe mensuelle par école | Fonctions médias (image, voix) : fournisseur pas encore choisi |
-| Contrat | Annuel, minimum de 80 % des comptes prévus sur 10 mois, régularisé une fois par an | — |
-| École pilote | 3 premiers mois offerts, accompagnement compris | Proposition pas encore validée |
+| Qui paie | L'établissement, jamais l'apprenant ni sa famille | — |
+| Offre | Packs « Emploi du temps », « Vie de l'établissement », « Gestion complète » (objectif), et modules vendus seuls | Contenu des packs à confirmer par le chef |
+| Essai | Un semestre pilote, accompagnement inclus, conditions fixées ensemble | Aucune durée offerte n'est promise |
 | Disponibilité | 99,5 % par mois, maintenance annoncée le dimanche matin | Engagement proposé, pas encore signé |
 | Support | Du lundi au samedi, de 8 h à 19 h | Proposition |
-| Hébergement au Maroc | Instance dédiée chez un hébergeur marocain, sur devis | Hébergeur pas encore choisi |
 
-Aucun chiffre d'adoption, aucun témoignage et aucun client autre que l'école pilote HESTIM n'existe à ce jour : n'en citer aucun.
+Une seule école est en service : une école supérieure privée de Casablanca, **citée sans son nom** (décision du 11 novembre). Chiffres utilisables : 29 classes avec leur emploi du temps du mois dans Planner, 2 620 séances d'un semestre placées sans double réservation (relevés du 22 octobre). Aucun autre chiffre d'adoption, aucun témoignage : n'en citer aucun.
 
 ## Ce qu'on ne montre pas, ce qu'on ne dit pas
 

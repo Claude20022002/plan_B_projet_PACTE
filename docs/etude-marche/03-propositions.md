@@ -161,3 +161,16 @@ Par ordre chronologique. Une décision remplacée reste dans le tableau, avec ce
 | P-81 | 5 nov. | Ajouter au plan les lots du moteur : MP-1 à MP-4, décision sur Timefold, levée des limites ; ME-14a sur un jeu scolaire. | plan-produit 06, B-4 | à trancher |
 | P-82 | 5 nov. | Clore l'étude de la pile en V1 ; mesurer D-01 sur 200 bases ; aucune donnée réelle de mineur avant le contrat, la CNDP et ME-22. | plan-produit 06, A-1, A-4, A-5 | à trancher |
 | P-83 | 5 nov. | Garder `a/mp1-valeurs` (valeurs versionnées, migration 0061) et l'ouvrir en PR avant F-04. | groupe A | proposée (groupe A) |
+
+### Vidéo et présentation aux chefs d'établissement (11 nov.)
+
+| N° | Date | Proposition | Source | Statut |
+| --- | --- | --- | --- | --- |
+| P-84 | 11 nov. | Vidéo de 1 min 30 « problèmes et besoins » : quatre problèmes sourcés, la réponse de Planner sur l'école fictive ORION, une carte d'objectifs, une invitation (`kit-video-planner/Script problemes et besoins 1 min 30.md`). | conv., études du 4 et du 11 nov. | **décidée** (durée 1 min 30 ; montage par le chef) |
+| P-85 | 11 nov. | Présentation de 14 pages aux chefs d'établissement, copie Canva de la version Direction, l'original intact (`DAHanRcCaps`). | conv. | **décidée** |
+| P-86 | 11 nov. | Packs sans montant (« selon l'effectif, sur devis ») : Emploi du temps, Vie de l'établissement, Gestion complète (objectif) ; et des modules vendus seuls. | conv. | **décidée** |
+| P-87 | 11 nov. | Citer l'école en service sans son nom : « une école supérieure privée de Casablanca ». | conv. | **décidée** |
+| P-88 | 11 nov. | Offre pilote sans durée offerte : un semestre accompagné, aux conditions fixées ensemble. | conv. | **décidée** |
+| P-89 | 11 nov. | Page d'engagements limitée à ce qui est vrai ; l'export complet (PLA-12) présenté comme objectif. | conv. | **décidée** |
+| P-90 | 11 nov. | Les modules prévus se présentent comme des objectifs, jamais comme disponibles, et sans date. | conv. (V-5) | **décidée** |
+| P-91 | 11 nov. | Couverture avec le logo « le volet » et la planche du kit du logo ; capture ORION à la place des écrans réels de HESTIM. | conv. | **décidée** |

@@ -77,6 +77,9 @@ Registre unique à partir du 7 novembre 2026.
 | 10 nov. | Chantier **QUA** ouvert, limité à **QUA-03** (clore l'étude de la pile), pour débloquer PLA-01 : 3 chantiers ouverts sur 3 | — |
 | 10 nov. | L'agence marketing se sauvegarde dans un **dépôt GitHub privé** `planner-marketing` (logos, stratégie) ; la vente reste gelée : le marketing prépare, ne publie pas | — |
 | 10 nov. | PLA-06 : mesure en local, MySQL limité aux ressources du nouveau serveur ; 200 bases au schéma complet, chacune avec une école fictive d'environ 300 élèves ; seuils, activité et réglages proposés le 9 novembre, retenus le 10 ; si D-01 tombe, le chantier PLA s'arrête jusqu'à décision | — |
+| 11 nov. | **Exception hors chantier** : le kit de la vidéo « problèmes et besoins » (MKT-05, 1 min 30, montée par le chef) et la présentation aux chefs d'établissement (MKT-09, copie Canva) se préparent maintenant ; MKT-09 reste gelé pour le reste, rien ne se diffuse sans le chef | — |
+| 11 nov. | La cible est **toute structure de formation, publique et privée** ; vocabulaire neutre (« établissement », « apprenants ») | la cible du 7 novembre (écoles privées d'abord) pour les supports de présentation |
+| 11 nov. | Dans les supports : **packs sans montant** (« selon l'effectif, sur devis ») et modules vendus seuls ; l'école en service est citée **sans son nom** (« une école supérieure privée de Casablanca ») ; offre pilote **sans durée offerte** ; les modules prévus se présentent comme des **objectifs**, jamais comme disponibles | les prix de 4,99, 5,40 et 9,99 MAD, et les « 3 mois offerts » de la présentation à HESTIM |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.
