@@ -75,8 +75,8 @@ Réponses du chef aux questions Q-1 à Q-8 :
 ## Commandes pour le chef de projet
 
 ```powershell
-git -C "..\travaux-planner\inventaire-outils-formation" push -u origin doc/inventaire-outils-formation
-gh pr create --base main --head doc/inventaire-outils-formation --title "Inventaire des outils des établissements et modules à créer (11 novembre)" --fill
+# La PR #167 existe déjà (rapport et notes, commit 30067f0) : il suffit de pousser la suite.
+git -C "..\travaux-planner\inventaire-outils-formation" push origin doc/inventaire-outils-formation
 git -C "..\travaux-planner\pla-06-mesure-d01" push origin etude/pla-06-mesure-d01
 ```
 
