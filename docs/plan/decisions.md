@@ -77,6 +77,8 @@ Registre unique à partir du 7 novembre 2026.
 | 10 nov. | Chantier **QUA** ouvert, limité à **QUA-03** (clore l'étude de la pile), pour débloquer PLA-01 : 3 chantiers ouverts sur 3 | — |
 | 10 nov. | L'agence marketing se sauvegarde dans un **dépôt GitHub privé** `planner-marketing` (logos, stratégie) ; la vente reste gelée : le marketing prépare, ne publie pas | — |
 | 10 nov. | PLA-06 : mesure en local, MySQL limité aux ressources du nouveau serveur ; 200 bases au schéma complet, chacune avec une école fictive d'environ 300 élèves ; seuils, activité et réglages proposés le 9 novembre, retenus le 10 ; si D-01 tombe, le chantier PLA s'arrête jusqu'à décision | — |
+| 11 nov. | **Grille de prix en dollars validée** pour les supports ([05-modele-economique.md](../etude-marche/05-modele-economique.md)) : écoles par effectif (Vie de l'établissement 29, 39, 99, 199 USD HT par mois), supérieur et formation par apprenant actif (0,20, 0,60, 1,00 USD, minimum 99 USD) ; à confirmer par les entretiens de VEN-02 avant toute signature | « pas de prix dans les supports » (même jour, plus tôt) ; 4,99, 5,40 et 9,99 MAD |
+| 11 nov. | Présentation aux chefs d'établissement refaite **orientée vente**, en commençant par le supérieur et la formation professionnelle ; modules à venir dans le catalogue avec une étiquette « bientôt » ; capture de l'école en service gardée, nom et logo masqués | — |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.
