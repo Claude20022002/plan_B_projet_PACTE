@@ -51,7 +51,7 @@ Dans ce dépôt, sur `doc/diagramme-architecture` :
 |---|---|---|---|
 | 1 | Cible élargie aux écoles publiques (« toute structure de formation ») : à inscrire dans `docs/plan/decisions.md` ? | dit par le chef le 11 novembre ; inscription à faire par le chef, pas dans cette branche (une tâche par branche) | ouverte |
 | 2 | Quel chantier pour l'agence (3 sur 3 ouverts) ? | proposition : chantier MKT limité à MKT-01 et MKT-02, avec une limite portée à 4 | ouverte |
-| 3 | Premier commit complet de `..\planner-marketing` et dépôt privé (MKT-01) | proposition : tout sauf ce que `.gitignore` exclut ; dépôt créé et poussé par le chef | ouverte |
+| 3 | Premier commit complet de `..\planner-marketing` et dépôt privé (MKT-01) | premier commit fait par le chef le 11 novembre (`03f32d4`, 411 fichiers, aucun MP4) ; reste le dépôt distant privé, que le chef crée et pousse | en partie réglée |
 | 4 | Piste du logo : A, B ou C ? | recommandation : A « le volet » | ouverte |
 | 5 | L-3 et L-5 (`01-assemblage-et-pose.md`) | propositions écrites | ouverte |
 
