@@ -33,6 +33,7 @@ Au plus **3 chantiers ouverts** en même temps, bloqués compris. On ne prend un
 | MOT-01, partie serveur (MP-1) | #156 | **fusionnée le 10 nov.** |
 | Plan par modules | #161 | fusionner (le faux conflit vient de deux ancêtres communs ; `main` fusionné dans la branche le 10 nov.) |
 | Organisation de l'équipe, module MKT | #163 | fusionner après #161 |
+| Diagramme d'architecture `docs/architecture/vue-d-ensemble/` (demandé par le chef le 11 nov., skill `stack-diagram` de l'agence) | `doc/diagramme-architecture` | relire, puis PR |
 
 ## Numéros de migration réservés
 

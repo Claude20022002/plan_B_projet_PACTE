@@ -1,5 +1,7 @@
 # 🧱 Architecture du Projet HESTIM Planning
 
+> **11 novembre 2026** : la vue à jour de ce qui tourne sur une installation est [vue-d-ensemble/](vue-d-ensemble/README.md) (conteneurs, flux, services extérieurs, sauvegarde), d'après `docker-compose.yml` de `main`. La suite de cette page date de début octobre (trois tiers, avant la Bibliothèque, le Quiz et le solveur) : elle reste pour l'historique.
+
 ## 🏫 Projet : Plateforme de Planification HESTIM
 
 **Objectif :** gérer et optimiser la réservation des cours, des salles et des emplois du temps pour les enseignants et étudiants de l'HESTIM.
