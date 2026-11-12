@@ -14,7 +14,12 @@ import { BEAT, C, FPS } from "./theme";
 import { Carrousel, HAUTEUR, LARGEUR, NB_PAGES } from "./carrousel/Carrousel";
 import { Direction, TEMPS_DIRECTION } from "./Direction";
 import { Keynote, TEMPS_KEYNOTE } from "./Keynote";
+import { Keynote80, TEMPS_KEYNOTE_80 } from "./Keynote80";
 import { Matinee, MatineeReseaux, TEMPS_RESEAUX, TEMPS_SALLE, dureeTotale } from "./Matinee";
+import { PactePromo } from "./promo/PactePromo";
+import { Lancement } from "./lancement/Lancement";
+import { DUREE_LANCEMENT } from "./lancement/voix";
+import { DUREE_TOTALE as DUREE_PROMO, FPS as FPS_PROMO } from "./promo/timing";
 
 // ─── Timings (en temps à 120 BPM ; 1 temps = 15 images = 0,5 s) ─────────────────────────
 // Chaque coupe tombe sur un temps. Modifier une durée décale les scènes suivantes.
@@ -126,8 +131,15 @@ export const RemotionRoot: React.FC = () => (
     <Composition id="Direction" component={Direction} durationInFrames={dureeTotale(TEMPS_DIRECTION)} fps={FPS} width={1920} height={1080} />
     {/* La vidéo de la présentation de 3 minutes, entre deux moments du discours (../discours-keynote.md) */}
     <Composition id="Keynote" component={Keynote} durationInFrames={dureeTotale(TEMPS_KEYNOTE)} fps={FPS} width={1920} height={1080} />
+    <Composition id="Keynote80" component={Keynote80} durationInFrames={dureeTotale(TEMPS_KEYNOTE_80)} fps={FPS} width={1920} height={1080} />
     <Composition id="MatineeReseaux" component={MatineeReseaux} durationInFrames={dureeTotale(TEMPS_RESEAUX)} fps={FPS} width={1080} height={1920} />
     {/* Carrousel LinkedIn : une image par page (npm run carrousel) */}
+    {/* Film de lancement (voix off continue, plans courts) : src/lancement/, durée tirée de la voix */}
+    <Composition id="Lancement" component={Lancement} durationInFrames={DUREE_LANCEMENT} fps={30} width={1920} height={1080} />
+    {/* Vidéo publicitaire de 60 s avec avatars (src/promo/, STORYBOARD.md), en 16:9, 9:16 et 1:1 */}
+    <Composition id="PactePromo" component={PactePromo} durationInFrames={DUREE_PROMO} fps={FPS_PROMO} width={1920} height={1080} />
+    <Composition id="PactePromoVertical" component={PactePromo} durationInFrames={DUREE_PROMO} fps={FPS_PROMO} width={1080} height={1920} />
+    <Composition id="PactePromoCarre" component={PactePromo} durationInFrames={DUREE_PROMO} fps={FPS_PROMO} width={1080} height={1080} />
     <Composition id="Carrousel" component={Carrousel} durationInFrames={NB_PAGES} fps={FPS} width={LARGEUR} height={HAUTEUR} />
   </>
 );
