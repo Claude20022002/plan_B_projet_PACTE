@@ -35,7 +35,7 @@
 
 | ID | Fonction | Ancien nom | Étape | Taille | Dépend de | État |
 |---|---|---|---|---|---|---|
-| PLA-01 | Contexte d'école en production : mode strict allumé, toute requête dans le contexte de son école | ME-3a | 2 | L | EXP-02, QUA-03 | à faire (essai fait) |
+| PLA-01 | Contexte d'école en production : mode strict allumé, toute requête dans le contexte de son école | ME-3a | 2 | L | EXP-02 | à faire (essai fait) |
 | PLA-02 | Fermer les canaux de l'étape 2 : I-1, I-2, I-3, I-6, I-7, I-8, I-10, I-13, **I-16** (réglages par école au lieu de variables d'environnement) | ME-3b, I-16 | 2 | L | PLA-01 | à faire |
 | PLA-03 | Base neuve sans données d'école : la migration 0003 ne crée plus de campus dans une base sans comptes ; un **schéma de départ** évite de rejouer 60 migrations | B-1 de la revue | 2 | M | — | à faire |
 | PLA-04 | Tests d'isolation de chaque route dans la CI, côté serveur et parcours : rien d'une école n'apparaît dans l'autre | ME-6 | 2 | M + S | PLA-01 | à faire |

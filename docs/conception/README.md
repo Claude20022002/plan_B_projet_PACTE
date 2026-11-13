@@ -10,6 +10,7 @@ Une conception nouvelle se range ici, dans le dossier de son module, nommée `<i
 | [moteur-planification/](moteur-planification/README.md) | Moteur par profil, [catalogue des 498 paramètres](moteur-planification/catalogue/README.md) (pages générées depuis les JSON du serveur), [écarts du solveur](moteur-planification/ecarts-du-solveur.md), [conception de MP-1](moteur-planification/conception-mp1.md) et [sa relecture](moteur-planification/relecture-mp1-contrat.md) | MOT |
 | [exploitation/](exploitation/) | [Mise en ligne en une commande (ME-0b)](exploitation/conception-me0b-deploiement.md), [supervision (ME-21)](exploitation/conception-me21-supervision.md) | EXP |
 | [interface/](interface/) | [Socle neutre](interface/conception-socle-neutre.md) | UIX |
+| [qualite/](qualite/) | [Étude de la pile : critères et verdicts (QUA-03)](qualite/pile.md) et [son plan](qualite/qua-03-plan.md) | QUA |
 | [espace-de-cours/](espace-de-cours/) | [Sondage de l'enseignant (EC-9)](espace-de-cours/conception-ec9-sondage.md) | COU |
 | [vie-scolaire/](vie-scolaire/) | [Modèle de données du scolaire (C-5)](vie-scolaire/conception-c5-modele-donnees-scolaire.md), plan du document à valider | VSC |
 | [jeux/](jeux/) | [Contrat des jeux pédagogiques](jeux/jeux-pedagogiques.md) | QJE |
