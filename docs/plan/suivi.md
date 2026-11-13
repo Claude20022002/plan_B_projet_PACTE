@@ -195,7 +195,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 | [MKT-10](modules/MKT-marketing.md) | Campagne de lancement auprès des écoles | quand la vente reprend | L | gelé |  |
 | [QUA-01](modules/QUA-qualite-docs.md) | `README.md` et `PRODUCT.md` à jour | libre | M | à faire |  |
 | [QUA-02](modules/QUA-qualite-docs.md) | Découper les contrôleurs trop longs, sans changer leur comportement, chacun couvert… | libre | M par contrôleur | à faire |  |
-| [QUA-03](modules/QUA-qualite-docs.md) | Clore l'étude de la pile | 1 | S | à faire |  |
+| [QUA-03](modules/QUA-qualite-docs.md) | Clore l'étude de la pile | 1 | S | en cours (plan validé le 13 nov.) | `etude/qua-03-pile` |
 | [QUA-04](modules/QUA-qualite-docs.md) | Reste des dates | libre | S | à faire |  |
 | [QUA-05](modules/QUA-qualite-docs.md) | Supprimer les branches et les dossiers de travail morts, après vérification de leur… | libre | S | à faire |  |
 | [QUA-06](modules/QUA-qualite-docs.md) | `docs/users.xlsx` | 0 | S | fait (personnes fictives, rien à réécrire) |  |

@@ -32,7 +32,7 @@
 |---|---|---|---|---|---|---|
 | QUA-01 | `README.md` et `PRODUCT.md` à jour : produit pour toute école, modules, tests, installation | R-4, I-1 de la revue | libre | M | — | à faire |
 | QUA-02 | Découper les contrôleurs trop longs, sans changer leur comportement, chacun couvert par ses tests | A-6 | libre | M par contrôleur | — | à faire |
-| QUA-03 | Clore l'étude de la pile : une page de critères, la décision du 4 novembre (rien ne change) confirmée ou rouverte | A-4 de la revue | 1 | S | — | à faire |
+| QUA-03 | Clore l'étude de la pile : une page de critères, la décision du 4 novembre (rien ne change) confirmée ou rouverte | A-4 de la revue | 1 | S | — | en cours ([plan](../../conception/qualite/qua-03-plan.md)) |
 | QUA-04 | Reste des dates : plus aucun `toISOString().slice(0,10)` (dans `exportEmploiDuTemps.js`) | B-2 | libre | S | — | à faire |
 | QUA-05 | Supprimer les branches et les dossiers de travail morts, après vérification de leur contenu ; fermer #40 | C-1, P-57 | libre | S | — | à faire |
 | QUA-06 | `docs/users.xlsx` : si les personnes sont réelles, prévenir l'école, changer les mots de passe des comptes concernés s'ils existent encore, puis décider de la réécriture de l'historique (Q-14) | 0-1, A-1 | 0 | S | — | fait : personnes fictives, décision du 8 nov. |
