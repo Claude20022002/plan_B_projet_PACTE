@@ -104,6 +104,12 @@ La liste complète est dans la dernière section du rapport.
 
 ## 6. Décisions à prendre
 
+**Réponses du chef de projet, le 13 novembre** (écrites dans [decisions.md](../plan/decisions.md)) :
+- **I-1** : les douze modules entrent dans le plan. COM, ETA et PAI vont à l'étape 4 ; RHP, FOR, DOC et INS à l'étape 5 ; les autres sont reportés.
+- **I-2** : oui. Trois fonctions sont aussi déplacées : FIN-03 devient RHP-01, VSC-05 devient ETA-02, COU-07 devient STA-01.
+- **I-3** et **I-5** : oui.
+- **I-4** : couvert par le modèle économique du 11 novembre (#169).
+
 | N° | Question | Proposition | Bloque |
 |---|---|---|---|
 | I-1 | Quels modules proposés entrent dans le plan (`docs/plan/modules/`) ? | COM, ETA et PAI tout de suite, puisqu'ils conditionnent le pack « École privée » ; RHP, FOR, DOC et INS à l'étape 5 ; les autres notés « reporté » | la mise à jour du plan |

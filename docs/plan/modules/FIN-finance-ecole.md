@@ -4,20 +4,21 @@
 - frais de scolarité et échéanciers ;
 - caisse et reçus ;
 - relances et impayés ;
-- export comptable ;
-- relevé des heures des vacataires pour la paie.
+- export comptable.
 
 C'est ce qu'une école privée demande le plus après les notes. L'argent **de Planner** (abonnements, factures), lui, est dans VEN.
+
+**Hors module** (décision du 13 novembre) :
+- le relevé des heures des vacataires et la paie : [RHP](RHP-personnel-paie.md) (FIN-03 y est devenue RHP-01) ;
+- l'encaissement en ligne et le rapprochement des paiements : [PAI](PAI-paiements.md) ;
+- cantine, transport, internat : [SER](SER-services-annexes.md).
 
 **Tables possédées** : les tables de frais, d'échéances, de paiements et de reçus, à concevoir dans VSC-01.
 
 ## Ce qui existe
 
 - **Rien pour les frais.**
-- **Pour les heures** :
-  - le visa des séances par l'administration (`VisaSeance`, migration 0039) ;
-  - le service des enseignants (`serviceRoutes`, « Mon service »).
-- **Règle déjà posée** : un appel validé est un indice, pas une preuve. Le visa de l'administration est demandé avant tout export pour la paie.
+- Ce qui existe pour les heures (visa des séances, « Mon service ») est décrit dans [RHP](RHP-personnel-paie.md).
 
 ## Fonctions
 
@@ -25,7 +26,8 @@ C'est ce qu'une école privée demande le plus après les notes. L'argent **de P
 |---|---|---|---|---|---|---|
 | FIN-01 | Frais, échéanciers, caisse, reçus bilingues numérotés sans trou ; paiement par élève ou par famille ; colonne `devise` dès le départ | F-14 | 4 | XL | VSC-02, VEN-02 | à faire |
 | FIN-02 | Relances, impayés, export comptable (EP-5) | F-14 | 4 | L | FIN-01 | à faire |
-| FIN-03 | Relevé mensuel des heures des vacataires, à partir des séances visées ; export pour la paie | remarques § 8, F-21 | libre | M | — | à faire |
+
+FIN-03 est devenue **RHP-01** le 13 novembre ([RHP](RHP-personnel-paie.md)) ; son numéro ne resservira pas.
 
 ## Critères de « terminé »
 
@@ -35,7 +37,6 @@ C'est ce qu'une école privée demande le plus après les notes. L'argent **de P
   - la règle est confirmée par un expert-comptable ;
   - une fratrie paie en un seul reçu.
 - **FIN-02** : l'export est accepté par le logiciel comptable d'une école, ou par l'expert-comptable.
-- **FIN-03** : le relevé d'un mois ne compte que les séances visées ; il est identique s'il est refait.
 
 ## Exigences produit
 
