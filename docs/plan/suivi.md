@@ -28,11 +28,12 @@ Au plus **3 chantiers ouverts** en même temps, bloqués compris. On ne prend un
 
 | Quoi | Branche ou PR | À faire |
 |---|---|---|
-| Correctif : le dimanche s'affiche dans l'emploi du temps (CI de `main` rouge le dimanche) | #162 | relancer les parcours en échec (ils ont croisé minuit UTC), puis fusionner |
+| Correctif : le dimanche s'affiche dans l'emploi du temps (CI de `main` rouge le dimanche) | #162 | **fusionnée le 10 nov.** |
 | Essai du contexte d'école (base de PLA-01) | #142 | **fusionnée le 10 nov.** |
 | MOT-01, partie serveur (MP-1) | #156 | **fusionnée le 10 nov.** |
-| Plan par modules | #161 | fusionner (le faux conflit vient de deux ancêtres communs ; `main` fusionné dans la branche le 10 nov.) |
-| Organisation de l'équipe, module MKT | #163 | fusionner après #161 |
+| Plan par modules | #161 | **fusionnée le 10 nov.** |
+| Organisation de l'équipe, module MKT | #163 | **fusionnée le 10 nov.** |
+| Inventaire des outils des établissements, modules à créer (hors chantier, accord du chef le 11 nov.) | `doc/inventaire-outils-formation` | décisions I-1 à I-5 du fichier `docs/etude-marche/06-outils-structures-formation.md`, puis fusionner |
 
 ## Numéros de migration réservés
 
