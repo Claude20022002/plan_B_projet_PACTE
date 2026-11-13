@@ -34,7 +34,7 @@ Réponses du chef aux questions Q-1 à Q-8 :
 
 - `docs/etude-marche/research_notes/Outils scolaires et besoins par pays/` : 9 fichiers de notes sourcées (Maghreb, Afrique centrale, Afrique de l'Ouest, de l'Est et du Sud, Europe francophone, Europe et produits internationaux, centres de formation, argent et personnel, avis des utilisateurs et sécurité, modèles économiques).
 - `docs/etude-marche/reports/Outils scolaires et besoins par pays.md` : le rapport de synthèse (18 besoins, différences par région et par niveau, 12 modules proposés, 6 packs, consommables, sortie des données, 9 garanties de liaison, limites).
-- `docs/etude-marche/05-outils-structures-formation.md` : le résumé pour le chef de projet et les décisions I-1 à I-5.
+- `docs/etude-marche/06-outils-structures-formation.md` : le résumé pour le chef de projet et les décisions I-1 à I-5.
 - `docs/etude-marche/README.md` : index mis à jour.
 - `docs/plan/suivi.md` : #161, #162 et #163 sont marquées fusionnées ; ajout de la ligne de cette tâche, hors chantier.
 
@@ -49,7 +49,7 @@ Réponses du chef aux questions Q-1 à Q-8 :
 
 | N° | Question | Réponse | État |
 |---|---|---|---|
-| I-1 à I-5 | Modules à entrer dans le plan, ordre de l'étape 4, seconde passe de recherche, règles commerciales, entretiens de terrain (voir `05-outils-structures-formation.md`, § 6) | — | **en attente** |
+| I-1 à I-5 | Modules à entrer dans le plan, ordre de l'étape 4, seconde passe de recherche, règles commerciales, entretiens de terrain (voir `06-outils-structures-formation.md`, § 6) | — | **en attente** |
 | Thème | Le bleu comme couleur de Planner | avis donné : oui, avec un bleu propre à Planner (pas le marine de l'école pilote) ; modifie les règles N-4 de la conception du socle neutre (encre ardoise par défaut, focus bleu) ; à reporter dans le plan de UIX-01 et `decisions.md` | **en attente** de l'accord du chef |
 | V-1 | Kit vidéo : tâche à part, sur sa propre branche | proposé : `mkt/mkt-05-kit-video`, exception de chantier (MKT n'est pas ouvert) | **en attente** |
 | V-2 | Source de la vidéo précédente | faite avec Claude sur un autre compte (lien de conversation partagé), voix ElevenLabs ; le kit existant est `kit-video-planner/` | réglé |
@@ -85,7 +85,7 @@ git -C "..\travaux-planner\pla-06-mesure-d01" push origin etude/pla-06-mesure-d0
 ```text
 Tu reprends l'inventaire des outils des établissements de Planner (tâche doc/ hors chantier),
 branche doc/inventaire-outils-formation, dossier ..\travaux-planner\inventaire-outils-formation.
-Lis AGENTS.md, docs/plan/README.md, docs/plan/suivi.md, docs/etude-marche/05-outils-structures-formation.md,
+Lis AGENTS.md, docs/plan/README.md, docs/plan/suivi.md, docs/etude-marche/06-outils-structures-formation.md,
 le rapport docs/etude-marche/reports/Outils scolaires et besoins par pays.md
 et cette fiche (docs/sessions/2026-11-11-doc-inventaire-outils-formation.md).
 Réponses du chef à I-1 à I-5 : <à coller ici>.
@@ -101,7 +101,7 @@ Tu prépares le kit de la vidéo de présentation de Planner (MKT-05, exception 
 sur une branche mkt/mkt-05-kit-video partant de origin/main, dans ..\travaux-planner\mkt-05-kit-video.
 Lis AGENTS.md, docs/plan/modules/MKT-marketing.md, kit-video-planner/Kit vidéo Planner.md (kit du 25 octobre,
 3 scénarios, 20 captures, logos fictifs ORION et NOVA), DESIGN.md, docs/conception/interface/conception-socle-neutre.md,
-docs/etude-marche/05-outils-structures-formation.md et cette fiche (docs/sessions/2026-11-11-doc-inventaire-outils-formation.md, questions V-1 à V-6).
+docs/etude-marche/06-outils-structures-formation.md et cette fiche (docs/sessions/2026-11-11-doc-inventaire-outils-formation.md, questions V-1 à V-6).
 Décisions du chef : public = directeurs d'écoles (maternelle au lycée) et de centres de formation ; versions de 2 min et de 30 s ;
 école FICTIVE à la place de l'école pilote ; ne montrer que ce qui fonctionne aujourd'hui ;
 les modules prévus apparaissent seulement comme des OBJECTIFS (« Planner s'enrichit pour couvrir… »), jamais comme disponibles ;

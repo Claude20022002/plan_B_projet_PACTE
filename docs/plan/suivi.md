@@ -33,7 +33,7 @@ Au plus **3 chantiers ouverts** en même temps, bloqués compris. On ne prend un
 | MOT-01, partie serveur (MP-1) | #156 | **fusionnée le 10 nov.** |
 | Plan par modules | #161 | **fusionnée le 10 nov.** |
 | Organisation de l'équipe, module MKT | #163 | **fusionnée le 10 nov.** |
-| Inventaire des outils des établissements, modules à créer (hors chantier, accord du chef le 11 nov.) | `doc/inventaire-outils-formation` | décisions I-1 à I-5 du fichier `docs/etude-marche/05-outils-structures-formation.md`, puis fusionner |
+| Inventaire des outils des établissements, modules à créer (hors chantier, accord du chef le 11 nov.) | `doc/inventaire-outils-formation` | décisions I-1 à I-5 du fichier `docs/etude-marche/06-outils-structures-formation.md`, puis fusionner |
 
 ## Numéros de migration réservés
 
