@@ -30,10 +30,11 @@
 |---|---|---|---|---|---|---|
 | VSC-01 | **Modèle de données du scolaire** (conception seule, avec diagrammes) : entités, correspondance avec le supérieur, profils, plusieurs écoles, plan de migrations, propriétaires des tables. Réponse à Q-20 (compte de l'élève) | C-5 | 1 | L | — | plan du document à valider |
 | VSC-02 | Élèves et familles : responsables légaux, inscription d'une année, réinscription, fratries | F-10 | 4 | L | VSC-01, PLA-01 | à faire |
-| VSC-03 | Absences prévenues aux parents, justificatifs, saisie déléguée (EP-6) | F-12 | 4 | M | VSC-02 | à faire |
+| VSC-03 | Absences prévenues aux parents (envoi par COM), justificatifs, saisie déléguée (EP-6) | F-12 | 4 | M | VSC-02, COM-01 | à faire |
 | VSC-04 | Notes et bulletins : périodes, évaluations, coefficients, note absente distincte de zéro, verrouillage par période, tableau d'avancement de la saisie, conseil de classe ; comprend le carnet de notes officiel et les grilles d'évaluation | F-13, EC-3, EC-4 | 4 | XL | VSC-02, Q-06, Q-16 | à faire |
-| VSC-05 | Massar : import des listes, export des absences et des notes **au format accepté** (EP-5) | F-17 | 4 | M | VSC-03, VSC-04 | à faire |
-| VSC-06 | Formation professionnelle : profil, assiduité pour les bourses, plafond de cumul | F-20, F-22 | 5 | M + S | MOT-05 | à faire |
+| VSC-06 | Formation professionnelle : profil, assiduité pour les bourses | F-20 | 5 | M | MOT-05 | à faire |
+
+Décisions du 13 novembre : VSC-05 (Massar) est devenue **ETA-02** ([ETA](ETA-echanges-etat.md)) ; le plafond de cumul de VSC-06 (F-22) est passé dans **RHP-02** ([RHP](RHP-personnel-paie.md)). Le numéro VSC-05 ne resservira pas.
 
 ## Critères de « terminé »
 
@@ -47,7 +48,6 @@
   - le bulletin d'une classe s'imprime en un clic ;
   - une absence à une évaluation ne change pas la moyenne ;
   - une note modifiée après verrouillage garde son historique.
-- **VSC-05** : le fichier exporté est accepté par Massar. Cela se vérifie avec une école, ou avec la réponse de l'AREF.
 
 ## Condition légale
 

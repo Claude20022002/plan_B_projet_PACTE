@@ -23,7 +23,7 @@
 | MOB-02 | Rôle enseignant : emploi du temps, appel, classes ; reprendre ou fermer `b/v4-application` | M-1 à M-3 | libre | L | — | à faire |
 | MOB-03 | Thème neutre et thème de l'école ; **choisir le téléphone de référence** et mesurer l'ouverture (moins de 2 s, EP-3) | SN-1 (application) | 2 | M | UIX-01 | à faire |
 | MOB-04 | Trouver son école : par adresse ou par code | ME-8 réduit | 5 | M | PLA-10, MOB-07 | reporté |
-| MOB-05 | Espace parents : enfants, emploi du temps, absences, notes, frais ; notifications par plages et résumés (EP-7) | F-15 | 4 | L | ADM-05, VSC-03 | à faire |
+| MOB-05 | Espace parents : enfants, emploi du temps, absences, notes, frais ; notifications par plages et résumés, envoyées par COM (EP-7) | F-15 | 4 | L | ADM-05, VSC-03, COM-01 | à faire |
 | MOB-06 | Emploi du temps lisible hors ligne (EP-3) | F-15 | 4 | M | — | à faire |
 | MOB-07 | Adresse de l'API qui n'est plus figée à la construction (une application pour toutes les installations) | I-12 | libre | M | — | à faire |
 

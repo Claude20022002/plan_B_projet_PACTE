@@ -77,6 +77,11 @@ Registre unique à partir du 7 novembre 2026.
 | 10 nov. | Chantier **QUA** ouvert, limité à **QUA-03** (clore l'étude de la pile), pour débloquer PLA-01 : 3 chantiers ouverts sur 3 | — |
 | 10 nov. | L'agence marketing se sauvegarde dans un **dépôt GitHub privé** `planner-marketing` (logos, stratégie) ; la vente reste gelée : le marketing prépare, ne publie pas | — |
 | 10 nov. | PLA-06 : mesure en local, MySQL limité aux ressources du nouveau serveur ; 200 bases au schéma complet, chacune avec une école fictive d'environ 300 élèves ; seuils, activité et réglages proposés le 9 novembre, retenus le 10 ; si D-01 tombe, le chantier PLA s'arrête jusqu'à décision | — |
+| 13 nov. | **Douze modules ajoutés au plan**, tirés de l'inventaire du 11 novembre ([06-outils-structures-formation.md](../etude-marche/06-outils-structures-formation.md)) : COM, ETA, PAI à l'étape 4 ; RHP, FOR, DOC, INS à l'étape 5 ; PIL, GRP, STA (sauf STA-01), SER, STK, ETA-03 et PAI-03 **reportés** ; tailles provisoires, à corriger dans chaque plan de conception (environ 53 jours bruts de plus) | — |
+| 13 nov. | **Fonctions déplacées**, numéros jamais réutilisés : FIN-03 devient RHP-01, VSC-05 devient ETA-02, COU-07 devient STA-01 ; le plafond de cumul de VSC-06 passe dans RHP-02 | — |
+| 13 nov. | Tout module qui prévient quelqu'un passe par **COM** (service d'envoi commun, plages de silence) ; VSC-03 et MOB-05 dépendent de COM-01 | — |
+| 13 nov. | **FIN, COM et PAI attendent les entretiens de VEN-02**, qui confirment le module d'achat de chaque marché (décision I-5 de l'inventaire) | — |
+| 13 nov. | Une **seconde passe de recherche**, ciblée sur ce que l'inventaire n'a pas pu voir (avis des magasins d'applications, aSc, Hyperplanning, paiement des frais au Maroc, pays non couverts), se fera plus tard dans une session à part (décision I-3) | — |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.
@@ -107,5 +112,5 @@ Registre unique à partir du 7 novembre 2026.
 | Q-16 | Règles du carnet de notes (modification, verrouillage, arrondis) | à faire valider par une scolarité et le juriste | VSC-04 |
 | Q-17 | Règles de modération de la messagerie | à trancher avant COU-08 | COU-08 |
 | Q-18 | Nom de l'application dans les magasins | « Planner » sauf conflit de marque | MOB |
-| Q-19 | Les 28 questions juridiques, fiscales et Massar de l'étude du modèle économique | gelées, sauf Massar (VSC-05) et loi 09-08 (condition légale) | VSC-05 |
+| Q-19 | Les 28 questions juridiques, fiscales et Massar de l'étude du modèle économique | gelées, sauf Massar (ETA-02, ancienne VSC-05) et loi 09-08 (condition légale) | ETA-02 |
 | Q-20 | Un élève a un compte (décision du 8 novembre), mais un enfant de 6 ans n'a pas d'adresse électronique, et `Users.email` est obligatoire et unique. Avec quoi se connecte-t-il ? | un **identifiant donné par l'école**, adresse facultative, mot de passe initial remis par l'école (ou par le parent) ; pas d'adresse factice. Étude d'impact sur chaque fichier qui lit `Users.email` (connexion, réinitialisation, notifications, import) | VSC-01 |
