@@ -82,6 +82,7 @@ Registre unique à partir du 7 novembre 2026.
 | 13 nov. | Tout module qui prévient quelqu'un passe par **COM** (service d'envoi commun, plages de silence) ; VSC-03 et MOB-05 dépendent de COM-01 | — |
 | 13 nov. | **FIN, COM et PAI attendent les entretiens de VEN-02**, qui confirment le module d'achat de chaque marché (décision I-5 de l'inventaire) | — |
 | 13 nov. | Une **seconde passe de recherche**, ciblée sur ce que l'inventaire n'a pas pu voir (avis des magasins d'applications, aSc, Hyperplanning, paiement des frais au Maroc, pays non couverts), se fera plus tard dans une session à part (décision I-3) | — |
+| 13 nov. | **La pile est confirmée** (QUA-03, [pile.md](../conception/qualite/pile.md)) : Express, Sequelize, MySQL 8.4, React et MUI, Expo, Timefold et Java 21, JWT ; la pile de `plan.txt` reste écartée. Confirmation **sous condition que D-01 tienne** (PLA-06). Sequelize est gardé sous surveillance. Montées à prévoir, non décidées : Spring Boot 4 (support libre de la 3.3 fini le 30 juin 2025), Timefold 1.31 puis MOT-04, Node 24, Express 5. Conditions de réouverture : § 5 de la page | la décision du 4 novembre (« l'étude de la pile se clôt dans QUA-03 ») |
 
 **Questions anciennes déjà réglées**, gardées pour mémoire :
 - **Q-8** : partage des heures éteint par défaut.
@@ -100,7 +101,7 @@ Registre unique à partir du 7 novembre 2026.
 |---|---|---|---|
 | Q-01 | Effectif réel, budget, date cible. Qui finance une équipe plus nombreuse, et jusqu'à quand ? | viser la rentrée de septembre 2027 pour le pack « École privée », sinon réduire le pack | l'étape 4 |
 | Q-04 | Relecture du contrat de MP-1 (R-1 à R-10 du groupe B) | à répondre avant les écrans de MOT-01 | MOT-01 (écrans) |
-| Q-05 | Fin de la ligne Timefold 1.x (annoncée début 2027, à confirmer) ; en 2.x, `ScoreAnalysis`, qu'utilise le solveur, devient payant | décider dans MOT-04, avant l'étape 3 | MOT-03, EP-4 |
+| Q-05 | Fin de la ligne Timefold 1.x : correctifs annoncés **pendant 2026 seulement** (constaté le 13 nov., QUA-03) ; Spring Boot 3.3, sous le solveur, est sans support libre depuis le 30 juin 2025 ; en 2.x, `ScoreAnalysis`, qu'utilise le solveur, devient payant | décider dans MOT-04, avant l'étape 3 | MOT-03, EP-4 |
 | Q-06 | Entretiens de terrain : séparés de toute démonstration ? | oui : cinq directeurs écoutés, sans rien leur montrer, avant de concevoir VSC-04 et FIN-01 | VSC-04, FIN-01 |
 | Q-07 | Primaire et maternelle : emploi du temps généré, ou simple saisie ? | collège et lycée générés d'abord ; primaire et maternelle en saisie simple tant qu'un entretien n'en dit pas plus | MOT-07 |
 | Q-08 | Le catalogue n'a pas de profil maternelle ; la colonne « École privée » de `profils.md` désigne le profil formation | ajouter un profil ou décider que la maternelle n'est pas générée (avec Q-07) | MOT-05 |

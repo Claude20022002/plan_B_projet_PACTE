@@ -15,8 +15,8 @@ Au plus **3 chantiers ouverts** en même temps, bloqués compris. On ne prend un
 | Module | Ouvert le | Fonctions du chantier, dans l'ordre | Reste | État |
 |---|---|---|---|---|
 | [EXP](modules/EXP-exploitation.md) | avant le 9 nov. (EXP-01 en cours) | EXP-01, EXP-02, EXP-03, EXP-04, EXP-05 | 5 | ouvert ; liste confirmée le 10 nov. |
-| [PLA](modules/PLA-plateforme.md) | 9 nov. 2026 | PLA-06, PLA-03, PLA-05, PLA-01, PLA-02, PLA-04, PLA-07 | 7 | ouvert ; ordre validé le 10 nov. PLA-01 attend EXP-02 et QUA-03, PLA-07 attend EXP-04 |
-| [QUA](modules/QUA-qualite-docs.md) | 10 nov. 2026 | QUA-03 | 1 | ouvert, limité à QUA-03 pour débloquer PLA-01 |
+| [PLA](modules/PLA-plateforme.md) | 9 nov. 2026 | PLA-06, PLA-03, PLA-05, PLA-01, PLA-02, PLA-04, PLA-07 | 7 | ouvert ; ordre validé le 10 nov. PLA-01 attend EXP-02 (QUA-03 levée le 13 nov. : pile confirmée), PLA-07 attend EXP-04 |
+| [QUA](modules/QUA-qualite-docs.md) | 10 nov. 2026 | QUA-03 | 1 | ouvert, limité à QUA-03 ; étude faite le 13 nov. : **le chantier se ferme à la fusion** de `etude/qua-03-pile` |
 
 ### Fermés
 
@@ -195,7 +195,7 @@ Réserver ici **avant** d'écrire une migration. Le moteur de migrations (Umzug)
 | [MKT-10](modules/MKT-marketing.md) | Campagne de lancement auprès des écoles | quand la vente reprend | L | gelé |  |
 | [QUA-01](modules/QUA-qualite-docs.md) | `README.md` et `PRODUCT.md` à jour | libre | M | à faire |  |
 | [QUA-02](modules/QUA-qualite-docs.md) | Découper les contrôleurs trop longs, sans changer leur comportement, chacun couvert… | libre | M par contrôleur | à faire |  |
-| [QUA-03](modules/QUA-qualite-docs.md) | Clore l'étude de la pile | 1 | S | en cours (plan validé le 13 nov.) | `etude/qua-03-pile` |
+| [QUA-03](modules/QUA-qualite-docs.md) | Clore l'étude de la pile | 1 | S | en cours : étude faite, à fusionner | `etude/qua-03-pile` |
 | [QUA-04](modules/QUA-qualite-docs.md) | Reste des dates | libre | S | à faire |  |
 | [QUA-05](modules/QUA-qualite-docs.md) | Supprimer les branches et les dossiers de travail morts, après vérification de leur… | libre | S | à faire |  |
 | [QUA-06](modules/QUA-qualite-docs.md) | `docs/users.xlsx` | 0 | S | fait (personnes fictives, rien à réécrire) |  |

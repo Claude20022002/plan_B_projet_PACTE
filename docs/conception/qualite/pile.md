@@ -141,9 +141,9 @@ Deux faits demandent une action, sans changer la pile :
 1. **Spring Boot 3.3 est sans support libre**, et **Timefold 1.x ne sera plus corrigé après 2026**. MOT-04 et la montée du solveur deviennent plus urgentes que ne le disait Q-05.
 2. **Sequelize** est maintenu par une petite équipe, et sa version 7 n'arrive pas. On le garde parce que R-2 borne le coût d'un changement futur, mais on le surveille.
 
-**Ligne proposée pour `docs/plan/decisions.md`** (section 2) :
+**Ligne inscrite le 13 novembre dans [decisions.md](../../plan/decisions.md)** (section 2) :
 
-> 13 nov. | **La pile est confirmée** (QUA-03, [pile.md](../conception/qualite/pile.md)) : Express, Sequelize, MySQL 8.4, React et MUI, Expo, Timefold et Java 21, JWT. La pile de `plan.txt` reste écartée. Confirmation **sous condition que D-01 tienne** (PLA-06). Montées à prévoir, non décidées : Spring Boot 4 (support libre de la 3.3 fini), Timefold 1.31 puis MOT-04, Node 24, Express 5. Conditions de réouverture : § 5 de la page | la décision du 4 novembre (« l'étude se clôt dans QUA-03 »)
+> 13 nov. | **La pile est confirmée** (QUA-03, cette page) : Express, Sequelize, MySQL 8.4, React et MUI, Expo, Timefold et Java 21, JWT ; la pile de `plan.txt` reste écartée. Confirmation **sous condition que D-01 tienne** (PLA-06). Sequelize est gardé sous surveillance. Montées à prévoir, non décidées : Spring Boot 4 (support libre de la 3.3 fini le 30 juin 2025), Timefold 1.31 puis MOT-04, Node 24, Express 5. Conditions de réouverture : § 5 de la page | la décision du 4 novembre (« l'étude se clôt dans QUA-03 »)
 
 ## 5. Conditions de réouverture
 
