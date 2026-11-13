@@ -1,0 +1,14 @@
+# Réglage « ajuste » du banc PLA-06 : point de départ pour 200 bases d'environ 75 tables
+# (environ 15 000 tables). Les valeurs sont celles que la mesure doit valider ou corriger.
+[mysqld]
+performance_schema = OFF
+# 20 écoles actives × 5 connexions, plus les tâches périodiques et une marge
+max_connections = 300
+# Tables ouvertes en même temps : les écoles actives, pas les 15 000
+table_open_cache = 4000
+table_definition_cache = 4000
+innodb_open_files = 4000
+# Le serveur relève lui-même sa limite de fichiers jusqu'au maximum du conteneur
+open_files_limit = 65535
+innodb_log_buffer_size = 8M
+key_buffer_size = 8M

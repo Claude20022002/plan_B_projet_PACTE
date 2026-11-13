@@ -1,0 +1,4 @@
+# Réglage « defaut » du banc PLA-06 : MySQL 8.4 tel quel, sauf performance_schema, éteint comme en
+# production (il prend de la mémoire et fausserait M2). La mémoire tampon vient de la série.
+[mysqld]
+performance_schema = OFF

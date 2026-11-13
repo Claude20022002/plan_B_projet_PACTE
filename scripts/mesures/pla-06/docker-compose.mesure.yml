@@ -1,0 +1,86 @@
+# Banc de mesure PLA-06 (mesure de D-01, une base par école) : MySQL 8.4.13 et le serveur de banc,
+# limités comme sur le serveur. Jamais sur la production. Mode d'emploi : README.md.
+# Les variables MESURE_* viennent de .local/mesure.env (mot de passe root) et de serie.mjs (réglages).
+name: planner-mesure-pla06
+
+services:
+  mysql:
+    image: mysql:8.4.13
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MESURE_MYSQL_ROOT:?lancer d'abord « node preparer.mjs initialiser »}
+      # Réglage de la série : defaut, production (celui de l'ancien serveur) ou ajuste
+      MESURE_REGLAGE: ${MESURE_REGLAGE:-production}
+      # Mémoire tampon d'InnoDB fixée par la série : environ la moitié de la mémoire du conteneur
+      MESURE_INNODB_POOL: ${MESURE_INNODB_POOL:-512M}
+    # Le réglage est COPIÉ avec des droits stricts avant de lancer MySQL : monté tel quel depuis
+    # Windows, il est ouvert en écriture à tous, et MySQL l'ignore sans erreur (constaté le
+    # 10 novembre). Le serveur de banc relit les variables, et serie.mjs arrête une série dont le
+    # réglage n'est pas celui demandé.
+    entrypoint:
+      - sh
+      - -c
+      - cp /reglages/$${MESURE_REGLAGE}.cnf /etc/mysql/conf.d/mesure.cnf && chmod 644 /etc/mysql/conf.d/mesure.cnf && exec docker-entrypoint.sh mysqld --innodb-buffer-pool-size=$${MESURE_INNODB_POOL}
+    volumes:
+      - planner_mesure_pla06:/var/lib/mysql
+      - ./mysql:/reglages:ro
+    ports:
+      # Jamais sur le réseau local : seul le serveur de banc lit MySQL
+      - "127.0.0.1:3399:3306"
+    mem_limit: ${MESURE_MYSQL_MEMOIRE:-2g}
+    # Pas de mémoire d'échange pour le conteneur : un dépassement se voit (arrêt), il ne se cache pas
+    memswap_limit: ${MESURE_MYSQL_MEMOIRE:-2g}
+    cpus: ${MESURE_MYSQL_CPUS:-2}
+    # Fichiers ouverts comme sur le serveur (relevé du 10 novembre : 1 024 souple, 524 288 maximum)
+    ulimits:
+      nofile:
+        soft: ${MESURE_FICHIERS_SOUPLE:-1024}
+        hard: ${MESURE_FICHIERS_MAX:-524288}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+  banc:
+    image: node:22-bookworm-slim
+    working_dir: /banc
+    command: ["node", "/banc/serveur-banc.mjs"]
+    environment:
+      DB_HOST: mysql
+      DB_PORT: "3306"
+      NODE_ENV: production
+      ICU_TIMEZONE_FILES_DIR: /app/tzdata
+      MESURE_MODE: ${MESURE_MODE:-a}
+      MESURE_ECOLES: ${MESURE_ECOLES:-200}
+      MESURE_TACHES: ${MESURE_TACHES:-oui}
+    volumes:
+      # Le code de Planner en lecture seule : le banc ne change rien dans backend/, shared/ ni deploy/
+      - ../../../backend:/app:ro
+      - ../../../shared:/shared:ro
+      - ../../../deploy:/deploy:ro
+      # Le banc lui-même (et .local/, resultats/, ignorés par Git)
+      - .:/banc
+    ports:
+      # Adresse d'écoute réglée par MESURE_BANC_ECOUTE : l'adresse du PC du banc sur le réseau local,
+      # protégée par une règle de pare-feu qui n'admet que le PC qui envoie la charge (README)
+      - "${MESURE_BANC_ECOUTE:-127.0.0.1}:5099:5099"
+    mem_limit: ${MESURE_BANC_MEMOIRE:-1536m}
+    memswap_limit: ${MESURE_BANC_MEMOIRE:-1536m}
+    cpus: ${MESURE_BANC_CPUS:-1.5}
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+  # Installation des dépendances du serveur dans le conteneur (même système que le banc) :
+  # docker compose -f docker-compose.mesure.yml --profile installer run --rm installer
+  installer:
+    image: node:22-bookworm-slim
+    profiles: ["installer"]
+    working_dir: /app
+    command: ["npm", "ci", "--omit=dev", "--no-audit", "--no-fund"]
+    volumes:
+      - ../../../backend:/app
+
+volumes:
+  planner_mesure_pla06:
